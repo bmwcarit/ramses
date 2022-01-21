@@ -32,11 +32,11 @@ namespace ramses_internal
         const EGLNativeDisplayType    getNativeDisplayHandle() const;
         const EGLNativeWindowType     getNativeWindowHandle() const;
 
-        bool hasTitle() const override final;
+        bool hasTitle() const override;
 
     private:
-        void handleEvents() override final;
-        Bool setFullscreen(Bool fullscreen) override final;
+        void handleEvents() override;
+        Bool setFullscreen(Bool fullscreen) override;
 
         const EGLNativeDisplayType      m_nativeDisplayHandle = EGL_DEFAULT_DISPLAY;
         const UInt32                    m_deviceUnit;

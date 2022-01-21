@@ -9,6 +9,7 @@
 #include "ramses-client.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
@@ -22,6 +23,23 @@
  * @example ramses-example-local-viewport-link/src/main.cpp
  * @brief Example of linking viewport parameters to control scene position on screen
  */
+
+class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+{
+public:
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
+private:
+    bool m_windowClosed = false;
+};
 
 uint64_t nowMs()
 {
@@ -288,8 +306,10 @@ int main(int argc, char* argv[])
     int animParam = 0;
     bool animInc = true;
 
-    for (;;)
+    RendererEventHandler rendererEventHandler;
+    while (!rendererEventHandler.isWindowClosed())
     {
+        renderer.dispatchEvents(rendererEventHandler);
         scene1vpOffset->setValue(VPWidth/8 + VPWidth/2 * animParam/100, VPHeight/8 + VPHeight/4 * animParam/100);
         scene1vpSize->setValue(VPWidth/4 + VPWidth/2 * animParam/100, VPHeight/4 + VPHeight/4 * animParam/100);
         const auto invAnimParam = 100 - animParam;

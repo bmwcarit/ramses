@@ -524,8 +524,7 @@ namespace ramses_internal
             {
                 SceneUpdate sceneUpdate;
                 sceneUpdate.actions = std::move(result.actions);
-                for (auto& res : result.resources)
-                    sceneUpdate.resources.emplace_back(std::move(res));
+                sceneUpdate.resources.insert(sceneUpdate.resources.end(), std::make_move_iterator(result.resources.begin()), std::make_move_iterator(result.resources.end()));
                 sceneUpdate.flushInfos = std::move(result.flushInfos);
                 m_sceneRendererHandler->handleSceneUpdate(sceneId, std::move(sceneUpdate), providerID);
                 break;

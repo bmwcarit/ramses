@@ -32,7 +32,8 @@ namespace ramses_internal
         const bool hasNewActions = !m_scene.getSceneActionCollection().empty();
 
         SceneUpdate sceneUpdate;
-        if (!verifyAndGetResourceChanges(sceneUpdate, hasNewActions))
+        const auto resourceChangeState = verifyAndGetResourceChanges(sceneUpdate, hasNewActions);
+        if (resourceChangeState == ResourceChangeState::MissingResource)
         {
             LOG_ERROR_P(CONTEXT_CLIENT, "ClientSceneLogicDirect::flushSceneActions: At least one resource can't be loaded, "
                         "Scene {} can't be rendered. Consult log and run Scene::validate() for more information",  m_scene.getSceneId());

@@ -194,11 +194,30 @@ namespace
                 return false;
             m_readPipe = tmpPipes[0];
             m_WritePipe = tmpPipes[1];
+
+            m_ttyConnected = true;
+            // get current tty settings for recovery
+            if (::tcgetattr(stdinFd, &m_oldTerminalSettings) != 0)
+            {
+                if (errno == ENOTTY)
+                    m_ttyConnected = false;
+                else // filedescriptor closed or broken
+                    return false;
+            }
             return true;
         }
 
         ~ConsoleInputImpl()
         {
+            if (m_ttyConnected)
+            {
+                // restore terminal settings
+                const int stdinFd = ::fileno(stdin);
+                if (stdinFd != -1)
+                {
+                    tcsetattr(stdinFd, TCSANOW, &m_oldTerminalSettings);
+                }
+            }
             if (m_readPipe)
                 ::close(m_readPipe);
             if (m_WritePipe)
@@ -211,23 +230,11 @@ namespace
             if (stdinFd == -1)
                 return false;
 
-            bool ttyConnected = true;
-
-            // get current tty settings
-            struct termios oldTerminalSettings;
-            if (::tcgetattr(stdinFd, &oldTerminalSettings) != 0)
-            {
-                if (errno == ENOTTY)
-                    ttyConnected = false;
-                else // filedescriptor closed or broken
-                    return false;
-            }
-
-            if (ttyConnected)
+            if (m_ttyConnected)
             {
                 // disable echo
                 struct termios temporaryWithoutEcho;
-                std::memcpy(&temporaryWithoutEcho, &oldTerminalSettings, sizeof(struct termios));
+                std::memcpy(&temporaryWithoutEcho, &m_oldTerminalSettings, sizeof(struct termios));
                 temporaryWithoutEcho.c_lflag &= ~(ECHO | ICANON);
                 temporaryWithoutEcho.c_cc[VTIME] = 0;
                 temporaryWithoutEcho.c_cc[VMIN] = 1;
@@ -269,10 +276,10 @@ namespace
                 }
             }
 
-            if (ttyConnected)
+            if (m_ttyConnected)
             {
-                // restore termnal settings
-                tcsetattr(stdinFd, TCSANOW, &oldTerminalSettings);
+                // restore terminal settings
+                tcsetattr(stdinFd, TCSANOW, &m_oldTerminalSettings);
             }
 
             return ok;
@@ -289,6 +296,8 @@ namespace
     private:
         int m_readPipe = 0;
         int m_WritePipe = 0;
+        struct termios m_oldTerminalSettings;
+        bool m_ttyConnected = false;
     };
 }
 #endif

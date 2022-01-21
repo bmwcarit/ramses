@@ -24,13 +24,18 @@ namespace ramses_internal
         m_commands.swap(cmds);
     }
 
-    std::tuple<std::mutex&, std::condition_variable&> RendererCommandBuffer::getCVarForNewCommands()
+    void RendererCommandBuffer::blockingSwapCommands(RendererCommands& cmds, std::chrono::milliseconds timeout)
     {
-        return { m_lock, m_newCommandsCvar };
+        std::unique_lock<std::mutex> lock{m_lock};
+        m_newCommandsCvar.wait_for(lock, timeout, [&]() { return !m_commands.empty() || m_interruptBlockingSwapCommands; });
+        m_interruptBlockingSwapCommands = false;
+        m_commands.swap(cmds);
     }
 
-    void RendererCommandBuffer::swapCommands_unsafe(RendererCommands& cmds)
+    void RendererCommandBuffer::interruptBlockingSwapCommands()
     {
-        m_commands.swap(cmds);
+        std::unique_lock<std::mutex> lock{m_lock};
+        m_interruptBlockingSwapCommands = true;
+        m_newCommandsCvar.notify_all();
     }
 }

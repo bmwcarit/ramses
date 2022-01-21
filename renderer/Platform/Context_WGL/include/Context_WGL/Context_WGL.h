@@ -26,14 +26,14 @@ namespace ramses_internal
 
         Bool init();
 
-        void* getProcAddress(const Char* name) const final;
+        void* getProcAddress(const Char* name) const override;
 
         // Platform stuff used by other platform modules
         HGLRC getNativeContextHandle() const;
 
-        virtual bool swapBuffers() override final;
-        virtual bool enable() override final;
-        virtual bool disable() override final;
+        virtual bool swapBuffers() override;
+        virtual bool enable() override;
+        virtual bool disable() override;
 
     private:
         Bool initCustomPixelFormat();

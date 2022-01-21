@@ -16,7 +16,7 @@
 #include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
-#include "Utils/ImguiClientHelper.h"
+#include "ImguiClientHelper.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"

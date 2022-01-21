@@ -169,12 +169,17 @@ public:
         }
     }
 
+    void windowClosed(displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
     void run()
     {
         createProviderScene();
         createLocalConsumerScene();
         offerScenesViaDcsm();
-        for (;;)
+        while (!m_windowClosed)
         {
             dcsmControl->update(0, *this);
             renderer->dispatchEvents(*this);
@@ -350,6 +355,7 @@ private:
     bool m_providerSceneReady = false;
     bool m_consumerSceneReady = false;
     bool m_offscreenBufferCreated = false;
+    bool m_windowClosed = false;
 };
 
 int main(int argc, char* argv[])

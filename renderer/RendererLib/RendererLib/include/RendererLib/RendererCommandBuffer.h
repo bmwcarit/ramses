@@ -23,14 +23,15 @@ namespace ramses_internal
         void addAndConsumeCommandsFrom(RendererCommands& cmds);
         void swapCommands(RendererCommands& cmds);
 
-        std::tuple<std::mutex&, std::condition_variable&> getCVarForNewCommands();
-        void swapCommands_unsafe(RendererCommands& cmds);
+        void blockingSwapCommands(RendererCommands& cmds, std::chrono::milliseconds timeout);
+        void interruptBlockingSwapCommands();
 
     private:
         std::mutex m_lock;
         RendererCommands m_commands;
 
         std::condition_variable m_newCommandsCvar;
+        bool m_interruptBlockingSwapCommands = false;
     };
 
     template <typename T>

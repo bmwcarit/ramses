@@ -593,13 +593,15 @@ namespace ramses
         if (m_rendererLoopThreadType == ERendererLoopThreadType_UsingDoOneLoop)
             return addErrorEntry("RamsesRenderer::startThread Can not call startThread if doOneLoop is called before!");
 
-        // first time starting thread, create dispatching thread
-        if (m_rendererLoopThreadType == ERendererLoopThreadType_Undefined)
-            m_commandDispatchingThread = std::make_unique<ramses_internal::CommandDispatchingThread>(*m_displayDispatcher, m_rendererCommandBuffer, m_threadWatchdog);
-
-        m_rendererLoopThreadType = ERendererLoopThreadType_InRendererOwnThread;
         m_displayDispatcher->startDisplayThreadsUpdating();
         m_diplayThreadUpdating = true;
+
+        // First time starting thread, create dispatching thread.
+        // Dispatching thread must be created after dispatcher startDisplayThreadsUpdating above which enables display threaded mode
+        // and any existing queued up commands will be processed in threaded mode.
+        if (m_rendererLoopThreadType == ERendererLoopThreadType_Undefined)
+            m_commandDispatchingThread = std::make_unique<ramses_internal::CommandDispatchingThread>(*m_displayDispatcher, m_rendererCommandBuffer, m_threadWatchdog);
+        m_rendererLoopThreadType = ERendererLoopThreadType_InRendererOwnThread;
 
         return StatusOK;
     }

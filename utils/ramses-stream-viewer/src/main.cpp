@@ -10,6 +10,7 @@
 #include "ramses-utils.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
@@ -193,10 +194,27 @@ private:
     MeshEntries m_meshes;
 };
 
-class RendererEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
+class RendererEventHandler : public ramses::RendererEventHandlerEmpty
 {
 public:
-    explicit RendererEventHandler(StreamSourceViewer& sceneCreator)
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
+private:
+    bool m_windowClosed = false;
+};
+
+class RendererSceneControlEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
+{
+public:
+    explicit RendererSceneControlEventHandler(StreamSourceViewer& sceneCreator)
         : m_sceneCreator(sceneCreator)
     {
     }
@@ -359,7 +377,7 @@ int main(int argc, char* argv[])
     sceneControlAPI->setSceneState(sceneId, ramses::RendererSceneState::Rendered);
     sceneControlAPI->flush();
 
-    std::unique_ptr<RendererEventHandler> eventHandler;
+    std::unique_ptr<RendererSceneControlEventHandler> eventHandler;
     ramses::DcsmConsumer* dcsmConsumer = nullptr;
     std::unique_ptr<DcsmConsumerEventHandler> dcsmConsumerEventHandler;
 
@@ -370,11 +388,13 @@ int main(int argc, char* argv[])
     }
     else
     {
-        eventHandler = std::make_unique<RendererEventHandler>(sceneCreator);
+        eventHandler = std::make_unique<RendererSceneControlEventHandler>(sceneCreator);
     }
 
-    for (;;)
+    RendererEventHandler rendererEventHandler;
+    while (!rendererEventHandler.isWindowClosed())
     {
+        renderer->dispatchEvents(rendererEventHandler);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         if (dcsmSupportRequested)
         {

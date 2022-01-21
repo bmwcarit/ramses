@@ -13,8 +13,9 @@
 
 namespace ramses_internal
 {
-    ConnectionStatusUpdateNotifier::ConnectionStatusUpdateNotifier(const std::string& participantName, const std::string& usage, PlatformLock& frameworkLock)
+    ConnectionStatusUpdateNotifier::ConnectionStatusUpdateNotifier(const std::string& participantName, const LogContext& logContext, const std::string& usage, PlatformLock& frameworkLock)
         : m_participantName(participantName)
+        , m_logContext(logContext)
         , m_usage(usage)
         , m_lock(frameworkLock)
     {
@@ -50,7 +51,7 @@ namespace ramses_internal
         assert(status == EConnectionStatus_Connected || status == EConnectionStatus_NotConnected);
         if (status == EConnectionStatus_Connected)
         {
-            LOG_INFO(CONTEXT_COMMUNICATION, "ConnectionStatusUpdateNotifier(" << m_participantName << ":" << m_usage << ")::doStatusUpdate: newParticipantHasConnected " << participant);
+            LOG_INFO(m_logContext, "ConnectionStatusUpdateNotifier(" << m_participantName << ":" << m_usage << ")::doStatusUpdate: newParticipantHasConnected " << participant);
             m_currentState.put(participant);
             for(auto listener : m_listeners)
             {
@@ -59,7 +60,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_INFO(CONTEXT_COMMUNICATION, "ConnectionStatusUpdateNotifier(" << m_participantName << ":" << m_usage << ")::doStatusUpdate: participantHasDisconnected " << participant);
+            LOG_INFO(m_logContext, "ConnectionStatusUpdateNotifier(" << m_participantName << ":" << m_usage << ")::doStatusUpdate: participantHasDisconnected " << participant);
             m_currentState.remove(participant);
             for (auto listener : m_listeners)
             {

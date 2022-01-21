@@ -46,8 +46,8 @@ namespace ramses_internal
         , m_frameworkLock(frameworkLock)
         , m_thread("R_TCP_ConnSys")
         , m_statisticCollection(statisticCollection)
-        , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName().stdRef(), "ramses", frameworkLock)
-        , m_dcsmConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName().stdRef(), "dcsm", frameworkLock)
+        , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName().stdRef(), CONTEXT_COMMUNICATION, "ramses", frameworkLock)
+        , m_dcsmConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName().stdRef(), CONTEXT_COMMUNICATION, "dcsm", frameworkLock) // dcsm is not separated here, no extra context
         , m_sceneProviderHandler(nullptr)
         , m_sceneRendererHandler(nullptr)
         , m_dcsmProviderHandler(nullptr)

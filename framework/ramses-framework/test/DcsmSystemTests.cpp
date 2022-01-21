@@ -212,6 +212,39 @@ namespace ramses
         dispatch();
     }
 
+    TEST_F(ADcsmSystem, allowsToAssignAndUnassignToSameContentRepeatedlyWithMetadata)
+    {
+        DcsmMetadataCreator mdf;
+        mdf.setPreviewDescription(U"asdf");
+        EXPECT_CALL(consHandler, contentOffered(id, Category(123), ETechnicalContentType::RamsesSceneID));
+        EXPECT_EQ(provider.offerContentWithMetadata(id, Category(123), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote, mdf), StatusOK);
+
+        EXPECT_CALL(consHandler, contentMetadataUpdated(id, _)).
+            WillOnce(Invoke([](auto, auto& prov) { EXPECT_EQ(U"asdf", prov.getPreviewDescription()); }));
+
+        assignContentToConsumer(id, categoryInfo, AnimationInformation(), sceneId_t(18));
+        requestAndMarkReady(id);
+        showContent(id, AnimationInformation{ 200, 300 });
+
+        for (int i = 0; i < 3; ++i)
+        {
+            unassignConsumer(id, AnimationInformation{ 200, 300 });
+            EXPECT_CALL(provHandler, contentSizeChange(id, _, _)).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
+                ramses::CategoryInfoUpdate update{categoryInfo.getRenderSize(), categoryInfo.getCategoryRect(), categoryInfo.getSafeRect()};
+                EXPECT_EQ(update, infoupdate);
+                });
+            EXPECT_CALL(consHandler, contentDescription(id, TechnicalContentDescriptor{ 18 }));
+            EXPECT_EQ(consumer.assignContentToConsumer(id, categoryInfo), StatusOK);
+            EXPECT_CALL(consHandler, contentMetadataUpdated(id, _)).
+                WillOnce(Invoke([](auto, auto& prov) { EXPECT_EQ(U"asdf", prov.getPreviewDescription()); }));
+            dispatch();
+            requestAndMarkReady(id);
+            showContent(id, AnimationInformation{ 200, 300 });
+        }
+        stopOfferByProvider(id, AnimationInformation{ 200, 300 });
+    }
+
+
     TEST_F(ADcsmSystem, canUpdateMetadataAfterOffer)
     {
         offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);

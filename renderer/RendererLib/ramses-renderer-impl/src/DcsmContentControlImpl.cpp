@@ -601,16 +601,25 @@ namespace ramses
 
     void DcsmContentControlImpl::resetContentStateAfterTechnicalContentReset(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:resetContentStateToAssigned: content " << contentID << " will be reset to assigned");
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:resetContentStateAfterTechnicalContentReset: content " << contentID << " will be reset by unassigning and reassigning");
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
             return;
 
-        // signal temporary NotAvailable to user to indicate failure, will be immediately followed by Available event
-        m_pendingEvents.push_back({ EventType::ContentNotAvailable, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
+        if (StatusOK == m_dcsmConsumer.contentStateChange(contentID, EDcsmState::Offered, {}))
+        {
+            // signal temporary NotAvailable to user to indicate failure, will be immediately followed by Available event triggered by contentOffered
+            m_pendingEvents.push_back({ EventType::ContentNotAvailable, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
 
-        if (StatusOK == m_dcsmConsumer.contentStateChange(contentID, EDcsmState::Assigned, {}))
-            contentIt->second.dcsmState = ContentDcsmState::Assigned;
+            const auto category = contentIt->second.category;
+            const auto contentType = contentIt->second.contentType;
+
+            removeContent(contentID); // remove all associated states and data as we are supposed to get all (potentially conflicting) data again ramping up
+            contentOffered(contentID, category, contentType); // fake the now unknown content being newly offered
+        }
+        else
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:resetContentStateAfterTechnicalContentReset: error unassigning content " << contentID);
+
     }
 
     void DcsmContentControlImpl::applyTechnicalStateChange(TechnicalContentDescriptor techId, RendererSceneState state)
@@ -627,16 +636,18 @@ namespace ramses
             sceneInfo.sharedState.setRequestedState(RendererSceneState::Unavailable);
 
         // emit event if state changed for any of the associated contents
+        std::vector<ContentID> contentsToReset;
         for (const auto contentID : sceneInfo.associatedContents)
         {
             if (state == RendererSceneState::Unavailable)
-            {
-                resetContentStateAfterTechnicalContentReset(contentID); // triggers a contentNotAvailable event to indicate failure
-                lastStates[contentID] = ContentState::Invalid; // force trigger the next state update event
-                sceneInfo.sharedState.setDesiredState({ contentID, false }, RendererSceneState::Available);
-            }
-            handleContentStateChange(contentID, lastStates[contentID]);
+                contentsToReset.push_back(contentID);
+            else
+                handleContentStateChange(contentID, lastStates[contentID]);
         }
+
+        for (const auto contentID : contentsToReset)
+            resetContentStateAfterTechnicalContentReset(contentID);
+
 
         // trigger a potential state change that might result out of the new actual state
         goToConsolidatedDesiredState(techId);

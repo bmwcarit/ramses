@@ -11,6 +11,7 @@
 
 #include "TransportCommon/ConnectionSystemBase.h"
 #include "MockConnectionStatusListener.h"
+#include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
 
 namespace ramses_internal
@@ -23,6 +24,23 @@ namespace ramses_internal
         return pid == arg.participantId &&
             0 != arg.sessionId &&
             mid == arg.messageId;
+    }
+
+    struct StoreSessionAndReturnAction
+    {
+        template <typename Result, typename ArgumentTuple>
+        Result Perform(const ArgumentTuple& args) const
+        {
+            *sessionId = std::get<1>(args).sessionId;
+            return result;
+        }
+        uint64_t* sessionId;
+        bool result;
+    };
+
+    inline PolymorphicAction<StoreSessionAndReturnAction> StoreSessionAndReturn(uint64_t* sessionId, bool result)
+    {
+        return MakePolymorphicAction(StoreSessionAndReturnAction{sessionId, result});
     }
 
     namespace TestConnectionSystemBase
@@ -58,11 +76,13 @@ namespace ramses_internal
             TestConnectionSystem(const std::shared_ptr<StrictMock<StackMock>>& _stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
                                  UInt32 protocolVersion, PlatformLock& lock,
                                  std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
-                                 std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow)
+                                 std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow,
+                                 bool enableInitiatorResponder)
                 : ConnectionSystemBase(_stack, communicationUserID, namedPid, protocolVersion, lock,
                                        keepAliveInterval, keepAliveTimeout,
                                        std::move(steadyClockNow),
-                                       CONTEXT_COMMUNICATION, "TEST")
+                                       CONTEXT_COMMUNICATION, "TEST",
+                                       enableInitiatorResponder)
                 , stack(_stack)
             {
                 getConnectionStatusUpdateNotifier().registerForConnectionUpdates(&connections);

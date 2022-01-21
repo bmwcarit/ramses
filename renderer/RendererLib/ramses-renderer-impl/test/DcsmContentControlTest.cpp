@@ -2152,6 +2152,11 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
     update();
 
+    DcsmMetadataUpdate mdp(*new DcsmMetadataUpdateImpl);
+    m_dcsmHandler.contentMetadataUpdated(m_contentID1, mdp);
+    EXPECT_CALL(m_eventHandlerMock, contentMetadataUpdated(m_contentID1, _));
+    update();
+
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
     Mock::VerifyAndClearExpectations(&m_sceneControlMock);
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
@@ -2167,7 +2172,8 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
         Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
 
         // will release content to be able to reramp it back up when it becomes available
-        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
         m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Unavailable);
     }
 
@@ -2175,7 +2181,8 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     {
         // will release content to be able to reramp it back up when it becomes available
         EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(WaylandSurfaceID, false));
-        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
         m_sceneControlHandler.streamAvailabilityChanged(WaylandSurfaceID, false);
     }
 
@@ -2187,11 +2194,14 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
+    m_dcsmHandler.contentMetadataUpdated(m_contentID1, mdp);
     if (GetParam() == ETechnicalContentType::RamsesSceneID)
     {
+        m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
         m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     }
 
+    EXPECT_CALL(m_eventHandlerMock, contentMetadataUpdated(m_contentID1, _));
     update();
 
     // can reshow
@@ -2218,6 +2228,11 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update();
 
+    DcsmMetadataUpdate mdp(*new DcsmMetadataUpdateImpl);
+    m_dcsmHandler.contentMetadataUpdated(m_contentID1, mdp);
+    EXPECT_CALL(m_eventHandlerMock, contentMetadataUpdated(m_contentID1, _));
+    update();
+
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
     Mock::VerifyAndClearExpectations(&m_sceneControlMock);
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
@@ -2231,7 +2246,8 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
         Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
 
         // will release content to be able to reramp it back up when it becomes available
-        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
         m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Unavailable);
     }
 
@@ -2239,7 +2255,8 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     {
         // will release content to be able to reramp it back up when it becomes available
         EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(WaylandSurfaceID, false));
-        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{}));
+        EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
         m_sceneControlHandler.streamAvailabilityChanged(WaylandSurfaceID, false);
     }
 
@@ -2251,11 +2268,14 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
+    m_dcsmHandler.contentMetadataUpdated(m_contentID1, mdp);
     if (GetParam() == ETechnicalContentType::RamsesSceneID)
     {
+        m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
         m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     }
 
+    EXPECT_CALL(m_eventHandlerMock, contentMetadataUpdated(m_contentID1, _));
     update();
 
     // can reshow
@@ -2285,6 +2305,11 @@ TEST_F(ADcsmContentControl, resetsDcsmStateToAssignedIfTechnicalContentFails_Fro
     update();
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 
+    DcsmMetadataUpdate mdp(*new DcsmMetadataUpdateImpl);
+    m_dcsmHandler.contentMetadataUpdated(m_contentID1, mdp);
+    EXPECT_CALL(m_eventHandlerMock, contentMetadataUpdated(m_contentID1, _));
+    update();
+
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
     Mock::VerifyAndClearExpectations(&m_sceneControlMock);
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
@@ -2293,7 +2318,8 @@ TEST_F(ADcsmContentControl, resetsDcsmStateToAssignedIfTechnicalContentFails_Fro
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
 
     // will release content to be able to reramp it back up when it becomes available
-    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{}));
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{}));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Unavailable);
 
     // signals temporary not available to user to indicate failure
@@ -2304,7 +2330,10 @@ TEST_F(ADcsmContentControl, resetsDcsmStateToAssignedIfTechnicalContentFails_Fro
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
+    m_dcsmHandler.contentMetadataUpdated(m_contentID1, mdp);
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
+    EXPECT_CALL(m_eventHandlerMock, contentMetadataUpdated(m_contentID1, _));
     update();
 
     // can reshow

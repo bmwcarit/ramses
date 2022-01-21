@@ -339,6 +339,11 @@ namespace ramses_internal
             windowMask,
             &windowAttributes);
 
+        // prevent the window manager from destroying the window and closing the X11 connection
+        // (XPending will exit() if the X11 connection is lost)
+        m_X11WindowData.delWindow = XInternAtom(m_X11WindowData.display, "WM_DELETE_WINDOW", 0);
+        XSetWMProtocols(m_X11WindowData.display, m_X11WindowData.window, &m_X11WindowData.delWindow, 1);
+
         XSizeHints* sizeHints = XAllocSizeHints();
         sizeHints->flags = USPosition;
         if(!m_resizable)
@@ -415,11 +420,10 @@ namespace ramses_internal
             XEvent event;
             char text[100];
 
-            // take first event for current window out of event queue and process it,
-            // early-out if no event for current window is present
-            if (!XCheckWindowEvent(m_X11WindowData.display, m_X11WindowData.window, ~0, &event))
+            XNextEvent(m_X11WindowData.display, &event);
+            if (m_X11WindowData.window != event.xany.window)
             {
-                return;
+                continue;
             }
 
             switch (event.type)
@@ -583,6 +587,17 @@ namespace ramses_internal
                 }
                 break;
             }
+            case ClientMessage:
+                if (static_cast<Atom>(event.xclient.data.l[0]) == m_X11WindowData.delWindow)
+                {
+                    LOG_DEBUG(CONTEXT_RENDERER, "ClientMessage (close window)");
+                    m_eventHandler.onClose();
+                }
+                else
+                {
+                    LOG_INFO(CONTEXT_RENDERER, "Unknown X11 ClientMessage");
+                }
+                break;
             default:
                 LOG_DEBUG(CONTEXT_RENDERER, "Other X11 event received, type " << event.type);
                 break;

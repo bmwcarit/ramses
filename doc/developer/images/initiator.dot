@@ -1,0 +1,52 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+digraph Initiator {
+    {
+        unavailable [label="Unavailable"]
+        send_session [label="Init session" shape=diamond]
+        session_wait [label="Wait session\nreply"]
+        connected [label="Connected"]
+        normal_send [label="Normal send" shape=diamond]
+        update_timeout [label="Update timeout" shape=diamond]
+        send_keepalive_wait_session [label="Send keepalive\n(Same MID)" shape=diamond]
+        send_keepalive_connected [label="Send keepalive\n(Same MID)" shape=diamond]
+    }
+
+    unavailable -> send_session [label="Up"]
+    unavailable -> unavailable [label="Any message"]
+
+    send_session -> session_wait [label="Ok"]
+    send_session -> session_wait [label="Fail"]
+
+    session_wait -> unavailable [label="Down"]
+    session_wait -> session_wait [label="Unrealted SID"]
+    session_wait -> send_session [label="Timeout"]
+    session_wait -> send_session [label="MID Mismatch"]
+    session_wait -> send_session [label="Error valid SID"]
+    session_wait -> connected [label="Session confirm\n+CONNECT" color=green]
+    session_wait -> send_keepalive_wait_session [label="On timer"]
+
+    send_keepalive_wait_session -> session_wait [label="Ok/Fail"]
+
+    connected -> unavailable [label="Down\n+DISCONNECT" color=red]
+    connected -> update_timeout [label="Receive OK"]
+    connected -> connected [label="Unrealted SID"]  // really?
+    connected -> send_session [label="Timeout\n+DISCONNECT" color=red]
+    connected -> send_session [label="MID Mismatch\n+DISCONNECT" color=red]
+    connected -> send_session [label="Error valid SID\n+DISCONNECT" color=red]
+    connected -> normal_send [label="Send message"]
+    connected -> send_keepalive_connected [label="On timer"]
+
+    normal_send -> connected [label="Ok"]
+    normal_send -> send_session [label="Fail\n+DISCONNECT" color=red]
+
+    update_timeout -> connected
+
+    send_keepalive_connected -> connected [label="Ok/Fail"]
+}

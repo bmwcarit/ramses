@@ -136,6 +136,7 @@ namespace ramses_internal
             negativeMouseWheelEventTriggersMouseWheelDownEvent,
             mouseMoveEventTriggersMouseMoveEvent
             );
+    GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AWindowWaylandWithEventHandling);
 
     TYPED_TEST_SUITE_P(AWindowWayland);
 

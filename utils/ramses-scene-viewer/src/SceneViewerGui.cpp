@@ -130,49 +130,6 @@ namespace ramses_internal
             return name + 18;
         }
 
-        uint8_t getChannelColor(const std::array<uint8_t,4>& rgba, ramses::ETextureChannelColor channelColor)
-        {
-            switch (channelColor)
-            {
-            case ramses::ETextureChannelColor::Red:
-                return rgba[0];
-            case ramses::ETextureChannelColor::Green:
-                return rgba[1];
-            case ramses::ETextureChannelColor::Blue:
-                return rgba[2];
-            case ramses::ETextureChannelColor::Alpha:
-                return rgba[3];
-            case ramses::ETextureChannelColor::One:
-                return 255;
-            case ramses::ETextureChannelColor::Zero:
-                return 0;
-            }
-            return 0;
-        }
-
-        void applySwizzle(std::array<uint8_t, 4>& rgba, const ramses::TextureSwizzle& swizzle)
-        {
-            const auto r = getChannelColor(rgba, swizzle.channelRed);
-            const auto g = getChannelColor(rgba, swizzle.channelGreen);
-            const auto b = getChannelColor(rgba, swizzle.channelBlue);
-            const auto a = getChannelColor(rgba, swizzle.channelAlpha);
-            rgba         = {r, g, b, a};
-        }
-
-        template<class T>
-        void convertToRgba(std::vector<uint8_t>& rgbaData, const ramses_internal::ResourceBlob& blob, const ramses::TextureSwizzle& swizzle, const T& readPixel)
-        {
-            const auto* end = blob.data() + blob.size();
-            const auto* buf = blob.data();
-            while (buf < end)
-            {
-                std::array<uint8_t, 4> rgba = {0, 0, 0, 0};
-                buf = readPixel(buf, rgba);
-                applySwizzle(rgba, swizzle);
-                rgbaData.insert(rgbaData.end(), rgba.begin(), rgba.end());
-            }
-        }
-
     } // namespace
 
     template<class C>
@@ -260,10 +217,10 @@ namespace ramses_internal
     }
 
     SceneViewerGui::SceneViewerGui(ramses::Scene& scene, const std::string& filename, ImguiClientHelper& imguiHelper)
-        : m_imguiHelper(imguiHelper)
-        , m_scene(scene)
+        : m_scene(scene)
         , m_loadedSceneFile(filename)
         , m_filename(filename)
+        , m_imageCache(imguiHelper.getScene())
     {
         ramses_internal::StringOutputStream dummyStream;
         ramses::SceneDumper sceneDumper(scene.impl);
@@ -1434,40 +1391,13 @@ namespace ramses_internal
         if (resource)
         {
             const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
-            auto it = m_texturePreview.find(textureResource);
-            PreviewInfo preview = {nullptr, 0, 0};
-            if (it == m_texturePreview.end())
-            {
-                const auto& blob = textureResource->getResourceData();
-                ramses::MipLevelData mipLevelData(static_cast<uint32_t>(blob.size()), blob.data());
-                ramses::Texture2D* texture = m_imguiHelper.getScene()->createTexture2D(obj.getTextureFormat(), obj.getWidth(), obj.getHeight(), 1, &mipLevelData, false, swizzle);
-                preview.width = obj.getWidth();
-                preview.height = obj.getHeight();
-                preview.sampler = m_imguiHelper.getScene()->createTextureSampler(ramses::ETextureAddressMode_Clamp,
-                                                                   ramses::ETextureAddressMode_Clamp,
-                                                                   ramses::ETextureSamplingMethod_Linear_MipMapLinear,
-                                                                   ramses::ETextureSamplingMethod_Linear,
-                                                                   *texture);
-                m_texturePreview[textureResource] = preview;
-            }
-            else
-            {
-                preview = it->second;
-            }
-
-            if (preview.sampler != nullptr)
+            if (textureResource != nullptr)
             {
                 if (ImGui::Button("Save png"))
                 {
                     m_lastErrorMessage = saveTexture2D(obj);
                 }
-                if (ImGui::ImageButton(preview.sampler, ImVec2(128, 128)))
-                    ImGui::OpenPopup("image_full");
-                if (ImGui::BeginPopup("image_full", ImGuiWindowFlags_HorizontalScrollbar))
-                {
-                    ImGui::Image(preview.sampler, ImVec2(static_cast<float>(preview.width), static_cast<float>(preview.height)));
-                    ImGui::EndPopup();
-                }
+                imgui::PreviewImage(m_imageCache.get(textureResource), ImVec2(128, 128));
             }
         }
 
@@ -2347,52 +2277,8 @@ namespace ramses_internal
         if (resource)
         {
             const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
-            const auto& blob = textureResource->getResourceData();
             const auto filename = fmt::format("{:04}_{}.png", obj.getObjectRegistryHandle().asMemoryHandle(), obj.getName());
-            std::vector<uint8_t> imageData;
-            imageData.reserve(static_cast<size_t>(obj.getWidth()) * obj.getHeight() * 4u);
-            if (obj.getTextureFormat() == ramses::ETextureFormat::RGBA8)
-            {
-                // just copy the blob
-                imageData.insert(imageData.end(), blob.data(), blob.data() + blob.size());
-            }
-            else
-            {
-                // convert to rgba
-                const auto swizzle = obj.getTextureSwizzle();
-                switch (obj.getTextureFormat())
-                {
-                case ramses::ETextureFormat::R8:
-                    convertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
-                        rgba[0] = *ptr++;
-                        return ptr;
-                    });
-                    break;
-                case ramses::ETextureFormat::RG8:
-                    convertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
-                        rgba[0] = *ptr++;
-                        rgba[1] = *ptr++;
-                        return ptr;
-                    });
-                    break;
-                case ramses::ETextureFormat::RGB8:
-                    convertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
-                        rgba[0] = *ptr++;
-                        rgba[1] = *ptr++;
-                        rgba[2] = *ptr++;
-                        return ptr;
-                    });
-                    break;
-                default:
-                    errorMsg = fmt::format("Cannot save: {} (Image format is not supported: {}).", filename, ramses::getTextureFormatString(obj.getTextureFormat()));
-                    break;
-                }
-            }
-
-            if (errorMsg.empty() && !ramses::RamsesUtils::SaveImageBufferToPng(filename, imageData, obj.getWidth(), obj.getHeight()))
-            {
-                errorMsg = fmt::format("Cannot save: {}", filename);
-            }
+            errorMsg = imgui::SaveTextureToPng(textureResource, filename);
         }
         return errorMsg;
     }

@@ -12,6 +12,7 @@
 #include "TransportCommon/ISomeIPDcsmStack.h"
 #include "TransportCommon/ISomeIPRamsesStack.h"
 #include "DcsmGmockPrinter.h"
+#include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
 
 namespace ramses_internal
@@ -25,13 +26,6 @@ namespace ramses_internal
     inline void PrintTo(const RamsesInstanceId& id, ::std::ostream* os)
     {
         *os << "RamsesInstanceId:" << id.getValue();
-    }
-
-    inline void PrintTo(const SomeIPMsgHeader& hdr, ::std::ostream* os)
-    {
-        StringOutputStream sos;
-        sos << hdr;
-        *os << sos.release();
     }
 
     class SomeIPDcsmStackCallbacksMock : public ISomeIPDcsmStackCallbacks

@@ -37,9 +37,6 @@ namespace ramses_internal
 
         PlatformThread m_thread;
 
-        std::mutex& m_cmdMutex;
-        std::condition_variable& m_cmdCVar;
-
         // to avoid re-allocs
         RendererCommands m_tmpCommands;
     };

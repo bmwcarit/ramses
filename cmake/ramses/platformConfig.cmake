@@ -64,6 +64,11 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQ
     if (ramses-sdk_WARNINGS_AS_ERRORS)
         target_compile_options(ramses-build-options-base INTERFACE -Werror)
     endif()
+
+    if (ramses-sdk_USE_LINKER_OVERWRITE)
+        message(STATUS "+ Use linker '${ramses-sdk_USE_LINKER_OVERWRITE}'")
+        SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=${ramses-sdk_USE_LINKER_OVERWRITE}")
+    endif()
 ENDIF()
 
 # gcc specific

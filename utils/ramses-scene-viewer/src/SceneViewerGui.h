@@ -9,7 +9,8 @@
 #ifndef RAMSES_SCENE_VIEWER_SCENEVIEWERGUI_H
 #define RAMSES_SCENE_VIEWER_SCENEVIEWERGUI_H
 
-#include "Utils/ImguiClientHelper.h"
+#include "ImguiClientHelper.h"
+#include "ImguiImageCache.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "RamsesObjectVector.h"
@@ -152,7 +153,6 @@ namespace ramses_internal
 
         using SceneObjects = std::map<ramses::ERamsesObjectType, std::vector<const ramses::RamsesObject*>>;
 
-        ImguiClientHelper&        m_imguiHelper;
         ImGuiTextFilter           m_filter;
         ramses::Scene&            m_scene;
         ramses::SceneDumper::RamsesObjectImplSet m_usedObjects;
@@ -166,13 +166,7 @@ namespace ramses_internal
         bool                      m_alwaysOverwrite = false;
         bool                      m_hasSceneErrors = false;
 
-        struct PreviewInfo
-        {
-            ramses::TextureSampler* sampler;
-            uint32_t                width;
-            uint32_t                height;
-        };
-        std::unordered_map<const ramses_internal::TextureResource*, PreviewInfo> m_texturePreview;
+        ImguiImageCache m_imageCache;
 
         struct RefKey
         {

@@ -32,34 +32,34 @@ namespace ramses_internal
         {
         }
 
-        virtual bool createContext(const DisplayConfig& displayConfig) override final
+        virtual bool createContext(const DisplayConfig& displayConfig) override
         {
             m_context = createContextInternal(displayConfig, nullptr);
             return m_context != nullptr;
         }
 
-        virtual bool createContextUploading() override final
+        virtual bool createContextUploading() override
         {
             assert(m_context);
             m_contextUploading = createContextInternal(DisplayConfig{}, static_cast<Context_EGL*>(m_context.get()));
             return m_contextUploading != nullptr;
         }
 
-        virtual bool createDevice() override final
+        virtual bool createDevice() override
         {
             assert(m_context);
             m_device = createDeviceInternal(*m_context, m_deviceExtension.get());
             return m_device != nullptr;
         }
 
-        virtual bool createDeviceUploading() override final
+        virtual bool createDeviceUploading() override
         {
             assert(m_contextUploading);
             m_deviceUploading = createDeviceInternal(*m_contextUploading, nullptr);
             return m_deviceUploading != nullptr;
         }
 
-        bool createDeviceExtension(const DisplayConfig& displayConfig) override final
+        bool createDeviceExtension(const DisplayConfig& displayConfig) override
         {
             const auto& platformRenderNode = displayConfig.getPlatformRenderNode();
             if(platformRenderNode == "")

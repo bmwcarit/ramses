@@ -23,7 +23,7 @@ namespace ramses_internal
     class IDeviceExtension;
     struct GLTextureInfo;
 
-    class Device_GL final : public Device_Base
+    class Device_GL : public Device_Base
     {
     public:
         explicit Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded, IDeviceExtension* deviceExtension);

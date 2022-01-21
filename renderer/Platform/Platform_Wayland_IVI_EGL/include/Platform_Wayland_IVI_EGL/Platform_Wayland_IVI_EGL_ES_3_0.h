@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    class Platform_Wayland_IVI_EGL_ES_3_0 final : public Platform_Wayland_EGL
+    class Platform_Wayland_IVI_EGL_ES_3_0 : public Platform_Wayland_EGL
     {
     public:
         explicit Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfig& rendererConfig);

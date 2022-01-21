@@ -32,6 +32,7 @@ namespace ramses_internal
             : window(0)
             , display(nullptr)
             , screen(0)
+            , delWindow(0)
         {
         }
 
@@ -40,9 +41,10 @@ namespace ramses_internal
         long screen;
         XVisualInfo visual;
         Colormap colormap;
+        Atom delWindow;
     };
 
-    class Window_X11 final : public Window_Base
+    class Window_X11 : public Window_Base
     {
     public:
         Window_X11(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
@@ -50,12 +52,12 @@ namespace ramses_internal
 
         virtual bool init() override;
 
-        void handleEvents() override final;
+        void handleEvents() override;
 
         ::Display* getNativeDisplayHandle() const;
         ::Window getNativeWindowHandle() const;
 
-        bool hasTitle() const override final
+        bool hasTitle() const override
         {
             return !m_fullscreen;
         }
@@ -63,8 +65,8 @@ namespace ramses_internal
         // public as it is used by tests
         static EKeyCode convertKeySymbolIntoRamsesKeyCode(UInt32 virtualKeyCode);
     private:
-        Bool setFullscreen(Bool fullscreen) override final;
-        void setTitle(const String& title) override final;
+        Bool setFullscreen(Bool fullscreen) override;
+        void setTitle(const String& title) override;
 
         X11WindowData m_X11WindowData;
 

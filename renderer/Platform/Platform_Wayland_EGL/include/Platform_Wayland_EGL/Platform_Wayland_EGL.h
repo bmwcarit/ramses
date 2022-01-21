@@ -20,10 +20,10 @@ namespace ramses_internal
         explicit Platform_Wayland_EGL(const RendererConfig& rendererConfig);
         virtual ~Platform_Wayland_EGL() override;
 
-        virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig) override final;
-        virtual void createTextureUploadingAdapter(const DisplayConfig& displayConfig) override final;
+        virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig) override;
+        virtual void createTextureUploadingAdapter(const DisplayConfig& displayConfig) override;
 
-        virtual uint32_t getSwapInterval() const override final;
+        virtual uint32_t getSwapInterval() const override;
 
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         Bool isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const;

@@ -9,6 +9,7 @@
 #include "ramses-client.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include <unordered_set>
@@ -18,6 +19,23 @@
  * @example ramses-example-local-displays/src/main.cpp
  * @brief Example of a local client plus renderer and two displays
  */
+
+class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+{
+public:
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
+private:
+    bool m_windowClosed = false;
+};
 
 uint64_t nowMs()
 {
@@ -236,8 +254,10 @@ int main(int argc, char* argv[])
     renderer.flush();
     //ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display1);
     std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-    while (true)
+    RendererEventHandler eventHandler;
+    while (!eventHandler.isWindowClosed())
     {
+        renderer.dispatchEvents(eventHandler);
         ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display2);

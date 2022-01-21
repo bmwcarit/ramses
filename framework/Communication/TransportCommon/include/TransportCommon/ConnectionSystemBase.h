@@ -16,6 +16,7 @@
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "ConnectionSystemInitiatorResponder.h"
 #include <memory>
 #include <condition_variable>
 #include <random>
@@ -65,6 +66,8 @@ namespace ramses_internal
         // for testing only!
         const ParticipantState* getParticipantState(InstanceIdType iid) const;
         std::chrono::steady_clock::time_point doOneThreadLoop(std::chrono::milliseconds keepAliveInterval,std::chrono::milliseconds keepAliveTimeout);
+        ConnectionSystemInitiatorResponder<InstanceIdType>& getConnectionSystemIR();
+        bool isInstanceAvailable(InstanceIdType iid) const;
 
     protected:
         static bool CheckConstructorArguments(const std::shared_ptr<ISomeIPStackCommon<InstanceIdType>>& stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
@@ -76,7 +79,8 @@ namespace ramses_internal
                              UInt32 protocolVersion, PlatformLock& frameworkLock,
                              std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                              std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow,
-                             const LogContext& logContext, const String& serviceTypeName);
+                             const LogContext& logContext, const String& serviceTypeName,
+                             bool enableInitiatorResponder);
 
         template <typename F>
         bool sendUnicast(const char* callerMethod, const Guid& to, F&& sendFunc);
@@ -98,6 +102,8 @@ namespace ramses_internal
         const HashMap<InstanceIdType, ParticipantState*>& availableInstances();
         bool isParticipantConnected(ParticipantState* pstate) const;
         ParticipantState* processMessageHeaderGeneric(const SomeIPMsgHeader& header, const char* callerMethod);
+        uint32_t getMinorProtocolVersion() const;
+        void clearParticipantStateForReuse(ParticipantState& pstate, const char* reason);
 
         virtual void run() override;
 
@@ -131,6 +137,8 @@ namespace ramses_internal
 
         PlatformThread m_thread;
         std::condition_variable_any m_wakeupThread;
+
+        std::unique_ptr<ConnectionSystemInitiatorResponder<InstanceIdType>> m_connSysIR;
     };
 
 
@@ -188,7 +196,8 @@ namespace ramses_internal
                                                           std::chrono::milliseconds                                  keepAliveTimeout,
                                                           std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow,
                                                           const LogContext&                                          logContext,
-                                                          const String&                                              serviceTypeName)
+                                                          const String&                                              serviceTypeName,
+                                                          bool                                                       enableInitiatorResponder)
         : m_communicationUserID(communicationUserID)
         , m_protocolVersion(protocolVersion)
         , m_participantId(namedPid)
@@ -199,9 +208,21 @@ namespace ramses_internal
         , m_logContext(logContext)
         , m_serviceTypeName(serviceTypeName)
         , m_frameworkLock(frameworkLock)
-        , m_connectionStatusUpdateNotifier(fmt::to_string(m_communicationUserID), serviceTypeName.stdRef(), frameworkLock)
+        , m_connectionStatusUpdateNotifier(fmt::to_string(m_communicationUserID), logContext, serviceTypeName.stdRef(), frameworkLock)
         , m_stack(std::move(stack))
         , m_thread(String(fmt::format("R_CONN_{}", serviceTypeName)))
+        , m_connSysIR(enableInitiatorResponder ?
+                      std::make_unique<ConnectionSystemInitiatorResponder<InstanceIdType>>
+                      (m_stack,
+                       m_communicationUserID,
+                       m_participantId.getParticipantId(),
+                       static_cast<uint16_t>(m_protocolVersion),
+                       m_steadyClockNow,
+                       m_logContext,
+                       m_serviceTypeName.stdRef(),
+                       m_connectionStatusUpdateNotifier,
+                       [&]{ m_wakeupThread.notify_one(); }) :
+                      nullptr)
     {
         assert(CheckConstructorArguments(m_stack, m_communicationUserID, m_participantId, m_protocolVersion, m_keepAliveInterval, m_keepAliveTimeout, m_logContext, m_serviceTypeName));
     }
@@ -218,7 +239,7 @@ namespace ramses_internal
     bool ConnectionSystemBase<Callbacks>::connect()
     {
         LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::connect: keepAliveInterval " << m_keepAliveInterval.count()
-                 << "ms, keepAliveTimeout " << m_keepAliveTimeout.count() << "ms");
+                 << "ms, keepAliveTimeout " << m_keepAliveTimeout.count() << "ms, ConnectionSystemIR " << (m_connSysIR ? "enabled" : "disabled"));
 
         if (m_connected)
         {
@@ -226,8 +247,15 @@ namespace ramses_internal
             return false;
         }
 
+        if (m_connSysIR)
+            m_connSysIR->connect();
+
         if (!m_stack->connect())
+        {
+            if (m_connSysIR)
+                m_connSysIR->disconnect();
             return false;
+        }
 
         if (m_keepAliveInterval != std::chrono::milliseconds{0})
         {
@@ -270,6 +298,9 @@ namespace ramses_internal
         m_connectedParticipants.clear();
         m_availableInstances.clear();
         m_participantStates.clear();
+
+        if (m_connSysIR)
+            m_connSysIR->disconnect();
 
         m_connected = false;
         return true;
@@ -352,6 +383,9 @@ namespace ramses_internal
     template <typename F>
     bool ConnectionSystemBase<Callbacks>::sendUnicast(const char* callerMethod, const Guid& to, F&& sendFunc)
     {
+        if (m_connSysIR && m_connSysIR->isResponsibleForParticipant(to))
+            return m_connSysIR->sendUnicast(callerMethod, to, sendFunc);
+
         if (ParticipantState* pstate = getParticipantStateForSending(to, callerMethod))
             return handleSendResult(*pstate, callerMethod, sendFunc(pstate->iid, generateHeaderForParticipant(*pstate)));
         return false;
@@ -363,6 +397,10 @@ namespace ramses_internal
     {
         if (!checkConnected(callerMethod))
             return false;
+
+        // must pass to new and old code because there might be participants in both
+        if (m_connSysIR)
+            m_connSysIR->sendBroadcast(callerMethod, sendFunc);
 
         // prevent iter over connected because modified on send failure
         for (auto& p : availableInstances())
@@ -423,6 +461,14 @@ namespace ramses_internal
     template <typename Callbacks>
     Guid* ConnectionSystemBase<Callbacks>::processReceivedMessageHeader(const SomeIPMsgHeader& header, const char* callerMethod)
     {
+        if (m_connSysIR)
+        {
+            // if has value connSysIR is responsible
+            auto result = m_connSysIR->processReceivedMessageHeader(header, callerMethod);
+            if (result.has_value())
+                return *result;
+        }
+
         ParticipantState* pstate = processMessageHeaderGeneric(header, callerMethod);
         if (!pstate)
             return nullptr;
@@ -496,7 +542,7 @@ namespace ramses_internal
         assert(pstate.iid != InstanceIdType());
         assert(m_availableInstances.contains(pstate.iid));
 
-        const uint32_t minorProtocolVersion = SomeIPConstants::FallbackMinorProtocolVersion;
+        const uint32_t minorProtocolVersion = getMinorProtocolVersion();
         const SomeIPMsgHeader header = generateHeaderForParticipant(pstate);
         LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::sendParticipantInfo: to " << pstate.pid << ", protocolVersion " << m_protocolVersion << "/" << minorProtocolVersion
                  << ", senderInstanceId " << m_serviceIID << ", " << header);
@@ -550,6 +596,14 @@ namespace ramses_internal
 
         m_availableInstances.put(iid, pstate);
 
+        // always track availability but never send something when not responsible
+        if (m_connSysIR && m_connSysIR->handleServiceAvailable(iid))
+        {
+            assert(!m_connectedParticipants.contains(pstate->pid));
+            assert(!m_knownParticipants.contains(pstate->pid));
+            return;
+        }
+
         // try send participantInfo to inform other side we are up
         if (trySendParticipantInfo(*pstate))
         {
@@ -579,6 +633,13 @@ namespace ramses_internal
         // init new state to inform other side when up again that we want need reinit
         initNewSession(*pstate);
 
+        if (m_connSysIR && m_connSysIR->handleServiceUnavailable(iid))
+        {
+            assert(!m_connectedParticipants.contains(pstate->pid));
+            assert(!m_knownParticipants.contains(pstate->pid));
+            return;
+        }
+
         if (m_connectedParticipants.contains(pstate->pid))
         {
             LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleServiceUnavailable: Disconnect pid " << pstate->pid);
@@ -595,8 +656,7 @@ namespace ramses_internal
     template <typename Callbacks>
     void ConnectionSystemBase<Callbacks>::handleParticipantInfo(const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, InstanceIdType senderInstanceId, uint64_t /*expectedReceiverPid*/, uint8_t /*clockType*/, uint64_t /*timestampNow*/)
     {
-        (void)minorProtocolVersion; // TODO
-
+        // check compatibility
         Guid pid(header.participantId);
         if (protocolVersion != m_protocolVersion)
         {
@@ -605,6 +665,7 @@ namespace ramses_internal
             return;
         }
 
+        // shared basic sanity checks
         if (!pid.isValid())
         {
             LOG_ERROR(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: message from invalid pid with iid " << senderInstanceId);
@@ -635,6 +696,68 @@ namespace ramses_internal
             LOG_ERROR(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: received impossible messageId "
                       << header.messageId << " from " << pid);
             return;
+        }
+
+        if (m_connSysIR)
+        {
+            // if old code already sent message to participant pass this info to new code so it can check for valid session
+            // and continue sending with valid session and message id
+            uint64_t lastSentSessionId = 0;
+            uint64_t lastSentMessageId = 0;
+            std::chrono::steady_clock::time_point lastSentTime{};
+            if (ParticipantState** maybePstate = m_availableInstances.get(senderInstanceId))
+            {
+                assert(*maybePstate);
+                lastSentSessionId = (*maybePstate)->sendSessionId;
+                lastSentTime = (*maybePstate)->lastSent;
+                // old class stores next used mid, IR expects last sent. adjust and avoid underflow
+                if ((*maybePstate)->sendMessageId > 1)
+                    lastSentMessageId = (*maybePstate)->sendMessageId - 1;
+            }
+
+            // already check before if IR will take over to disconnect here when was known
+            if (m_connSysIR->isResponsibleForMinorProtocolVersion(minorProtocolVersion))
+            {
+                // must check if we have been responsible before to handle minor version upgrade.
+                if (ParticipantState** existingPstate = m_knownParticipants.get(Guid(header.participantId)))
+                {
+                    assert(*existingPstate);
+
+                    // remove from here and let IR handle it from now on
+                    LOG_WARN_P(m_logContext, "ConnectionSystemBase({}:{})::handleParticipantInfo: Protocol version change for participant with iid {}, pid {}. already known with iid {}, pid {}. Remove here and hand over.",
+                               m_communicationUserID, m_serviceTypeName, senderInstanceId, header.participantId, (*existingPstate)->iid, (*existingPstate)->pid);
+                    clearParticipantStateForReuse(**existingPstate, "minor protocol version upgrade");
+
+                    // ensure no handover when was known here
+                    lastSentSessionId = 0;
+                    lastSentMessageId = 0;
+                }
+            }
+
+            // must still always run IR to allow it to remove participant on minor version downgrade
+            const bool irWasResponsible = m_connSysIR->isResponsibleForInstance(senderInstanceId);
+            if (m_connSysIR->handleParticipantInfo(header, protocolVersion, minorProtocolVersion, senderInstanceId,
+                                                   lastSentSessionId, lastSentMessageId, lastSentTime))
+            {
+                // when getting here IR is responsible for this iid (until potential downgrade or end of LC).
+                // must return here to prevent making it known in old code (and trigger any sending).
+                return;
+            }
+
+            // check if we became responsible now
+            if (irWasResponsible)
+            {
+                // mimik behavior of service down+up: make new session and send pinfo when possible
+                assert(!m_connSysIR->isResponsibleForInstance(senderInstanceId));
+
+                auto pstateIt = std::find_if(m_participantStates.begin(), m_participantStates.end(), [&](auto& ps) { return ps->iid == senderInstanceId; });
+                assert(pstateIt != m_participantStates.end());
+                ParticipantState& pstate = **pstateIt;
+
+                initNewSession(pstate);
+                if (m_availableInstances.get(senderInstanceId))
+                    trySendParticipantInfo(pstate);
+            }
         }
 
         // try to find pstate by different ways
@@ -871,6 +994,10 @@ namespace ramses_internal
         // (never modified in this loop and only available might be connected and only available are interesting for sending keepalive)
         for (auto& p : m_availableInstances)
         {
+            // Do not process instance at all when already handled by connSysIR
+            if (m_connSysIR && m_connSysIR->isResponsibleForInstance(p.key))
+                continue;
+
             ParticipantState& pstate = *p.value;
             assert(pstate.iid != InstanceIdType());
 
@@ -932,10 +1059,44 @@ namespace ramses_internal
             nextWakeup = std::min(nextWakeup, pstate.lastSent + keepAliveInterval);
         }
 
+        if (m_connSysIR)
+            nextWakeup = std::min(nextWakeup, m_connSysIR->doOneThreadLoop(now, keepAliveInterval, keepAliveTimeout));
+
         LOG_TRACE(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::doOneThreadLoop: next wakeup at " << asMilliseconds(nextWakeup) << " (dt " <<
                  (std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(nextWakeup - now).count()) << ")");
 
         return nextWakeup;
+    }
+
+    template <typename Callbacks>
+    uint32_t ConnectionSystemBase<Callbacks>::getMinorProtocolVersion() const
+    {
+        return m_connSysIR ?
+            m_connSysIR->getSupportedMinorProtocolVersion() : SomeIPConstants::FallbackMinorProtocolVersion;
+    }
+
+    template <typename Callbacks>
+    void ConnectionSystemBase<Callbacks>::clearParticipantStateForReuse(ParticipantState& pstate, const char* reason)
+    {
+        assert(pstate.pid.isValid());
+        assert(pstate.iid.isValid());
+        assert(m_knownParticipants.get(pstate.pid));
+
+        LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::clearParticipantStateForReuse: "
+                 << "Invalidate participant with pid " << pstate.pid << ", iid " << pstate.iid << " because " << reason);
+
+        if (m_connectedParticipants.contains(pstate.pid))
+        {
+            m_connectionStatusUpdateNotifier.triggerNotification(pstate.pid, EConnectionStatus::EConnectionStatus_NotConnected);
+            m_connectedParticipants.remove(pstate.pid);
+        }
+
+        m_knownParticipants.remove(pstate.pid);
+
+        // create same state as from fresh handleServiceAvailable
+        std::uniform_int_distribution<uint64_t> dis(1);
+        const auto now = m_steadyClockNow();
+        pstate = ParticipantState{Guid(), pstate.iid, dis(m_randomGenerator), 1, now, 0, 1, now};
     }
 
     // test getters
@@ -955,11 +1116,13 @@ namespace ramses_internal
     {
         std::unique_lock<std::recursive_mutex> l(m_frameworkLock);
         sos << "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::logConnectionInfo:\n";
-        sos << "  ProtocolVersion: " << m_protocolVersion << "\n";
+        sos << "  ProtocolVersion: " << m_protocolVersion << "/" << getMinorProtocolVersion() << "\n";
         sos << "  ParticipantId: " << m_participantId.getParticipantId() << "/" << m_participantId.getParticipantName() << "\n";
         sos << "  Known participants:";
         if (m_connected)
         {
+            if (m_knownParticipants.size() == 0)
+                sos << " None";
             for (const auto& p : m_knownParticipants)
             {
                 const auto& pstate = *p.value;
@@ -973,10 +1136,13 @@ namespace ramses_internal
                 else
                     sos << ", Not connected";
             }
+            sos << "\n";
+
+            if (m_connSysIR)
+                m_connSysIR->writeConnectionInfo(sos);
         }
         else
-            sos << "  Not connected";
-        sos << "\n";
+            sos << "  Not connected\n";
         m_stack->logConnectionState(sos);
     }
 
@@ -1015,6 +1181,9 @@ namespace ramses_internal
                     else
                         sos << "unavail";
                 }
+
+                if (m_connSysIR)
+                    m_connSysIR->writePeriodicInfo(sos);
             }
             else
                 sos << "Not connected";
@@ -1025,6 +1194,9 @@ namespace ramses_internal
     template <typename Callbacks>
     void ConnectionSystemBase<Callbacks>::handleKeepAlive(const SomeIPMsgHeader& header, uint64_t /*timestampNow*/, bool usingPreviousMessageId)
     {
+        if (m_connSysIR && m_connSysIR->handleKeepAlive(header, usingPreviousMessageId))
+            return;
+
         ParticipantState* pstate = processMessageHeaderGeneric(header, "handleKeepAlive");
         if (!pstate)
             return;
@@ -1060,6 +1232,19 @@ namespace ramses_internal
 
         if (m_availableInstances.contains(pstate->iid))
             trySendParticipantInfo(*pstate);
+    }
+
+    template <typename Callbacks>
+    auto ConnectionSystemBase<Callbacks>::getConnectionSystemIR() -> ConnectionSystemInitiatorResponder<InstanceIdType>&
+    {
+        assert(m_connSysIR);
+        return *m_connSysIR;
+    }
+
+    template <typename Callbacks>
+    bool ConnectionSystemBase<Callbacks>::isInstanceAvailable(InstanceIdType iid) const
+    {
+        return m_availableInstances.contains(iid);
     }
 }
 

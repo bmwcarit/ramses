@@ -10,6 +10,7 @@
 #include "TransportCommon/RamsesConnectionSystem.h"
 #include "TransportCommon/DcsmConnectionSystem.h"
 #include "TransportCommon/SomeIPAdapter.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -117,7 +118,7 @@ namespace ramses_internal
         // Must return a valid IConnectionStatusUpdateNotifier even when created without RamsesConnectionSystem
         // TODO(tobias) rework interface to avoid
         static std::recursive_mutex fakePlatformLock;
-        static ConnectionStatusUpdateNotifier dummyNotifier("RamsesDummyNotifier", "", fakePlatformLock);
+        static ConnectionStatusUpdateNotifier dummyNotifier("RamsesDummyNotifier", CONTEXT_COMMUNICATION, "", fakePlatformLock);
         return dummyNotifier;
     }
 
@@ -129,7 +130,7 @@ namespace ramses_internal
         // Must return a valid IConnectionStatusUpdateNotifier even when created without DcsmConnectionSystem
         // TODO(tobias) rework interface to avoid
         static std::recursive_mutex fakePlatformLock;
-        static ConnectionStatusUpdateNotifier dummyNotifier("DcsmDummyNotifier", "", fakePlatformLock);
+        static ConnectionStatusUpdateNotifier dummyNotifier("DcsmDummyNotifier", CONTEXT_COMMUNICATION, "", fakePlatformLock);
         return dummyNotifier;
     }
 
@@ -247,7 +248,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendBroadcastOfferContent(content, category, technicalContentType, friendlyName, 0);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmBroadcastOfferContent: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmBroadcastOfferContent: dcsm not enabled");
         return false;
     }
 
@@ -255,7 +256,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendOfferContent(to, content, category, technicalContentType, friendlyName, 0);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmOfferContent: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmOfferContent: dcsm not enabled");
         return false;
     }
 
@@ -263,7 +264,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendContentDescription(to, contentID, technicalContentDescriptor);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentDescription: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentDescription: dcsm not enabled");
         return false;
     }
 
@@ -271,7 +272,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendContentReady(to, content);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentReady: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentReady: dcsm not enabled");
         return false;
     }
 
@@ -279,7 +280,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendContentEnableFocusRequest(to, content, focusRequest);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentEnableFocusRequest: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentEnableFocusRequest: dcsm not enabled");
         return false;
     }
 
@@ -287,7 +288,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendContentDisableFocusRequest(to, content, focusRequest);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentDisableFocusRequest: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentDisableFocusRequest: dcsm not enabled");
         return false;
     }
 
@@ -295,7 +296,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendBroadcastRequestStopOfferContent(content, false);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmBroadcastRequestStopOfferContent: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmBroadcastRequestStopOfferContent: dcsm not enabled");
         return false;
     }
 
@@ -303,7 +304,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendBroadcastRequestStopOfferContent(content, true);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmBroadcastForceStopOfferContent: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmBroadcastForceStopOfferContent: dcsm not enabled");
         return false;
     }
 
@@ -311,7 +312,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendUpdateContentMetadata(to, contentID, metadata);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmUpdateContentMetadata: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmUpdateContentMetadata: dcsm not enabled");
         return false;
     }
 
@@ -319,7 +320,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendCanvasSizeChange(to, contentID, ci, 0, ai);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmCanvasSizeChange: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmCanvasSizeChange: dcsm not enabled");
         return false;
     }
 
@@ -327,7 +328,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendContentStateChange(to, contentID, state, ci, ai);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentStateChange: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentStateChange: dcsm not enabled");
         return false;
     }
 
@@ -335,7 +336,7 @@ namespace ramses_internal
     {
         if (m_dcsmConnectionSystem)
             return m_dcsmConnectionSystem->sendContentStatus(to, contentID, messageID, message);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentStatus: dcsm not enabled");
+        LOG_ERROR(CONTEXT_DCSM, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentStatus: dcsm not enabled");
         return false;
     }
 

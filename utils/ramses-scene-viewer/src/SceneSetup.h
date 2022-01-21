@@ -9,7 +9,7 @@
 #ifndef RAMSES_SCENE_VIEWER_SCENESETUP_H
 #define RAMSES_SCENE_VIEWER_SCENESETUP_H
 
-#include "Utils/ImguiClientHelper.h"
+#include "ImguiClientHelper.h"
 
 #include "ramses-client.h"
 

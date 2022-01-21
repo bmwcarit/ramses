@@ -12,11 +12,13 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
+#include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-client-api/DataVector4f.h"
 #include "ramses-utils.h"
 #include <unordered_set>
 #include <cmath>
 #include <chrono>
+#include <memory>
 #include <thread>
 #include <unordered_set>
 
@@ -24,6 +26,23 @@
  * @example ramses-example-local-datalink/src/main.cpp
  * @brief Local Data Link Example
  */
+
+class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+{
+public:
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
+private:
+    bool m_windowClosed = false;
+};
 
 class SceneStateEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
 {
@@ -88,9 +107,9 @@ struct QuadSceneInfo
     ramses::Scene* scene;
 };
 
-TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
+std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
 {
-    TriangleSceneInfo* sceneInfo = new TriangleSceneInfo();
+    auto sceneInfo = std::make_unique<TriangleSceneInfo>();
 
     sceneInfo->scene = client.createScene(sceneId, ramses::SceneConfig(), "triangle scene");
 
@@ -157,9 +176,9 @@ TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, rams
     return sceneInfo;
 }
 
-QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
+std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
 {
-    QuadSceneInfo* sceneInfo = new QuadSceneInfo();
+    auto sceneInfo = std::make_unique<QuadSceneInfo>();
 
     sceneInfo->scene = client.createScene(sceneId, ramses::SceneConfig(), "quad scene");
 
@@ -259,9 +278,9 @@ int main(int argc, char* argv[])
     const ramses::sceneId_t triangleSceneId{1u};
     const ramses::sceneId_t quadSceneId{2u};
     const ramses::sceneId_t quadSceneId2{3u};
-    TriangleSceneInfo* triangleInfo = createTriangleSceneContent(client, triangleSceneId);
-    QuadSceneInfo* quadInfo = createQuadSceneContent(client, quadSceneId);
-    QuadSceneInfo* quadInfo2 = createQuadSceneContent(client, quadSceneId2);
+    std::unique_ptr<TriangleSceneInfo> triangleInfo = createTriangleSceneContent(client, triangleSceneId);
+    std::unique_ptr<QuadSceneInfo> quadInfo = createQuadSceneContent(client, quadSceneId);
+    std::unique_ptr<QuadSceneInfo> quadInfo2 = createQuadSceneContent(client, quadSceneId2);
 
     ramses::Scene* triangleScene = triangleInfo->scene;
     ramses::Scene* quadScene = quadInfo->scene;
@@ -344,8 +363,10 @@ int main(int argc, char* argv[])
     // run animation
     uint32_t textureId = 0;
     uint64_t timeStamp = 0u;
-    for (;;)
+    RendererEventHandler rendererEventHandler;
+    while (!rendererEventHandler.isWindowClosed())
     {
+        renderer.dispatchEvents(rendererEventHandler);
         if (timeStamp % 100 == 0)
         {
             textureId = (1 - textureId);

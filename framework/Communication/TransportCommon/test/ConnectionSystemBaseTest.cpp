@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Collections/StringOutputStream.h"
-#include "Utils/StatisticCollection.h"
 #include "ConnectionSystemTestCommon.h"
 #include "ScopedLogContextLevel.h"
 
@@ -28,7 +27,7 @@ namespace ramses_internal
 
             return std::make_unique<TestConnectionSystem>(stack, commUserId, namedPid, protocolVersion, lock,
                                                           std::chrono::milliseconds(keepAliveInterval), std::chrono::milliseconds(keepAliveTimeout),
-                                                          steadyClockNow);
+                                                          steadyClockNow, true);
         }
 
         PlatformLock lock;
@@ -107,6 +106,7 @@ namespace ramses_internal
             , stack(*stackPtr)
             , connsys(construct(3, TestInstanceId(5), ParticipantIdentifier(Guid(pid), "foobar"), 99, stackPtr, 0, 0, [this]() { return steadyClockNow(); }))
             , fromStack(*connsys)
+            , sentMinorProtocol(connsys->getConnectionSystemIR().getSupportedMinorProtocolVersion())
         {
         }
 
@@ -126,7 +126,7 @@ namespace ramses_internal
 
         void connectRemote(TestInstanceId remoteIid, const Guid& remotePid, uint64_t sessionId = 123)
         {
-            EXPECT_CALL(stack, sendParticipantInfo(remoteIid, ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+            EXPECT_CALL(stack, sendParticipantInfo(remoteIid, ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
             fromStack.handleServiceAvailable(remoteIid);
             EXPECT_CALL(connsys->connections, newParticipantHasConnected(remotePid));
             const auto tsBefore = connsys->getParticipantState(TestInstanceId(remoteIid))->lastRecv;
@@ -157,6 +157,7 @@ namespace ramses_internal
         Callbacks& fromStack;
         std::chrono::steady_clock::time_point timeCounter{std::chrono::seconds(0)};
         bool hasCounterTime = true;
+        uint32_t sentMinorProtocol;
     };
 
     class AConnectionSystemConnected : public AConnectionSystem
@@ -213,11 +214,11 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, sendParticipantInfoOnserviceAvailable)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(3), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(3), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(3));
 
         fromStack.handleServiceUnavailable(TestInstanceId(1));
@@ -225,7 +226,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, connectedAfterUpThenPinfo)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
@@ -236,7 +237,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, notConnectedAfterUpThenPinfoWhenPinfoSendFails)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
     }
@@ -247,7 +248,7 @@ namespace ramses_internal
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
         EXPECT_LT(recvTsBefore, connsys->getParticipantState(TestInstanceId(1))->lastRecv);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         const auto sentTsBefore = connsys->getParticipantState(TestInstanceId(1))->lastSent;
         fromStack.handleServiceAvailable(TestInstanceId(1));
@@ -260,7 +261,7 @@ namespace ramses_internal
     {
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(false));
         const auto sentTsBefore = connsys->getParticipantState(TestInstanceId(1))->lastSent;
         fromStack.handleServiceAvailable(TestInstanceId(1));
         // muste update lastSent anyway
@@ -269,56 +270,56 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, ignoreInvalidProtocol)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 98, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
     }
 
     TEST_F(AConnectionSystemConnected, ignoreRemoteIidIsSelf)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, 0, 0);
     }
 
     TEST_F(AConnectionSystemConnected, ignoreRemoteIidInvalid)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(), 0, 0, 0);
     }
 
     TEST_F(AConnectionSystemConnected, ignoreRemotePidIsSelf)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{pid, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
     }
 
     TEST_F(AConnectionSystemConnected, ignoreRemotePidInvalid)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{0, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
     }
 
     TEST_F(AConnectionSystemConnected, ignorePinfoSessionZero)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 0, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
         fromStack.handleServiceAvailable(TestInstanceId(1));
     }
 
     TEST_F(AConnectionSystemConnected, ignorePinfoMessageZero)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 0}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
         fromStack.handleServiceAvailable(TestInstanceId(1));
     }
 
     TEST_F(AConnectionSystemConnected, connectedAfterUpDownPinfoThenUp)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleServiceUnavailable(TestInstanceId(1));
 
@@ -326,7 +327,7 @@ namespace ramses_internal
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
         EXPECT_LT(tsBefore, connsys->getParticipantState(TestInstanceId(1))->lastRecv);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -335,7 +336,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, handlesValidPinfoAfterConnected)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         auto tsBefore = connsys->getParticipantState(TestInstanceId(1))->lastRecv;
@@ -351,12 +352,12 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, unconnectedInstanceCanChangePid)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), pid, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{2, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), pid, 0, 0);
 
@@ -368,7 +369,7 @@ namespace ramses_internal
         connectRemote(TestInstanceId(1), Guid(1));
 
         expectRemoteDisconnects({1});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{2, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), pid, 0, 0);
 
@@ -385,7 +386,7 @@ namespace ramses_internal
         connsys->handleTestMessage(SomeIPMsgHeader{1, 123, 2}, 44);
 
         expectRemoteDisconnects({1});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{2, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), pid, 0, 0);
 
@@ -397,12 +398,12 @@ namespace ramses_internal
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
         SomeIPMsgHeader firstHdr;
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(false)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(false)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleServiceUnavailable(TestInstanceId(1));
 
         SomeIPMsgHeader secondHdr;
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(true)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(true)));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -418,11 +419,11 @@ namespace ramses_internal
         fromStack.handleKeepAlive(SomeIPMsgHeader{1, 123, 3}, 0, false);
         fromStack.handleKeepAlive(SomeIPMsgHeader{1, 123, 4}, 0, false);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleServiceUnavailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -436,7 +437,7 @@ namespace ramses_internal
         fromStack.handleKeepAlive(SomeIPMsgHeader{1, 123, 3}, 0, false);
         fromStack.handleKeepAlive(SomeIPMsgHeader{1, 123, 4}, 0, false);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -544,7 +545,7 @@ namespace ramses_internal
         connectRemote(TestInstanceId(2), Guid(10));
 
         expectRemoteDisconnects({10});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(2), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(2), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         connsys->handleTestMessage(SomeIPMsgHeader{10, 124, 2}, 44);
 
         expectRemoteDisconnects({2});
@@ -556,7 +557,7 @@ namespace ramses_internal
         connectRemote(TestInstanceId(2), Guid(10));
 
         expectRemoteDisconnects({10});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(2), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(2), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         connsys->handleTestMessage(SomeIPMsgHeader{10, 123, 3}, 44);
 
         expectRemoteDisconnects({2});
@@ -568,7 +569,7 @@ namespace ramses_internal
         expectRemoteDisconnects({2});
         fromStack.handleServiceUnavailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
@@ -588,7 +589,7 @@ namespace ramses_internal
 
         fromStack.handleParticipantInfo(SomeIPMsgHeader{2, 125, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -603,7 +604,7 @@ namespace ramses_internal
         connectRemote(TestInstanceId(1), Guid(2));
 
         expectRemoteDisconnects({2});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{2, 125, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
@@ -621,7 +622,7 @@ namespace ramses_internal
         connsys->handleTestMessage(SomeIPMsgHeader{2, 123, 2}, 543);
 
         expectRemoteDisconnects({2});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         connsys->handleTestMessage(SomeIPMsgHeader{2, 123, 4}, 543);
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
@@ -638,7 +639,7 @@ namespace ramses_internal
         connectRemote(TestInstanceId(1), Guid(2));
 
         expectRemoteDisconnects({2});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{2, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
@@ -695,13 +696,13 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, canConnectAfterPinfoCounterMismatch)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleServiceUnavailable(TestInstanceId(1));
 
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 2}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
@@ -712,10 +713,10 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, notConnectedAfterHandlePinfoMismatchAndSendPinfoFails)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(false));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 2}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
     }
 
@@ -790,7 +791,7 @@ namespace ramses_internal
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
         EXPECT_LT(tsBefore, connsys->getParticipantState(TestInstanceId(1))->lastRecv);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -859,7 +860,7 @@ namespace ramses_internal
     {
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -871,7 +872,7 @@ namespace ramses_internal
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);
         fromStack.handleKeepAlive(SomeIPMsgHeader{10, 123, 2}, 0, false);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
@@ -886,13 +887,13 @@ namespace ramses_internal
         fromStack.handleKeepAlive(SomeIPMsgHeader{10, 123, 3}, 0, false);
 
         InSequence seq;
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         // can react on earlier mismatch only on next received message
         EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         fromStack.handleKeepAlive(SomeIPMsgHeader{10, 123, 4}, 0, false);
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
@@ -907,12 +908,12 @@ namespace ramses_internal
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);  // new session
 
         InSequence seq;
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         fromStack.handleKeepAlive(SomeIPMsgHeader{10, 124, 2}, 0, false);
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
@@ -923,7 +924,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, suppressSendingPinfoEverySecondTimeWhenContinuallyGetsNewSessions)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
@@ -932,7 +933,7 @@ namespace ramses_internal
 
         // disconnect+connect by counter mismatch due to new session -> sending pinfo
         EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);
 
@@ -943,7 +944,7 @@ namespace ramses_internal
 
         // disconnect+connect by counter mismatch due to new session -> sending pinfo
         EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);
 
@@ -957,7 +958,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, continuesSendingWithPreviousSessionWhenSkipSendingPinfo)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
@@ -967,7 +968,7 @@ namespace ramses_internal
         // disconnect+connect by counter mismatch due to new session -> sending pinfo
         SomeIPMsgHeader pinfoHdr;
         EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(DoAll(SaveArg<1>(&pinfoHdr), Return(true)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(DoAll(SaveArg<1>(&pinfoHdr), Return(true)));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);
 
@@ -985,7 +986,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, canHandleIncomingMessagesAfterSkippedSendingPinfo)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
@@ -994,7 +995,7 @@ namespace ramses_internal
 
         // disconnect+connect by counter mismatch due to new session -> sending pinfo
         EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);
 
@@ -1011,7 +1012,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionSystemConnected, canHandleKeepaliveAsFirstMesageFromUnknown)
     {
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleKeepAlive(SomeIPMsgHeader{10, 125, 2}, 0, false);
     }
@@ -1047,27 +1048,27 @@ namespace ramses_internal
     TEST_F(AConnectionSystemTimeMockConnected, repeatedlyTriesPinfoWithBackoffWhenFails)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         doLoop(Ms(2), Ms(3), Tp(1));
         doLoop(Ms(2), Ms(3), Tp(2));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         doLoop(Ms(2), Ms(3), Tp(3));
         doLoop(Ms(2), Ms(3), Tp(4));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         doLoop(Ms(2), Ms(3), Tp(5));
     }
 
     TEST_F(AConnectionSystemTimeMockConnected, canGetConnectedAfterPinfoRetryAndAnswer)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(3));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
@@ -1079,11 +1080,11 @@ namespace ramses_internal
     TEST_F(AConnectionSystemTimeMockConnected, canGetConnectedAfterPinfoRetryWhenAlreadyHasReceivedPinfo)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         doLoop(Ms(2), Ms(3), Tp(3));
 
@@ -1095,10 +1096,10 @@ namespace ramses_internal
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
         doLoop(Ms(2), Ms(3), Tp(3));
 
@@ -1114,7 +1115,7 @@ namespace ramses_internal
         expectRemoteDisconnects({2});
         EXPECT_FALSE(connsys->sendTestMessage(Guid(2), 44));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(3));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
@@ -1131,10 +1132,10 @@ namespace ramses_internal
         expectRemoteDisconnects({2});
         fromStack.handleServiceUnavailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(3));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
@@ -1146,13 +1147,13 @@ namespace ramses_internal
     TEST_F(AConnectionSystemTimeMockConnected, canConnectAfterReceivedPinfoMismatchAndSendPinfoFail)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(false));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 123, 2}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 0, 0, 0);
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 1, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(3));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
@@ -1164,10 +1165,10 @@ namespace ramses_internal
     TEST_F(AConnectionSystemTimeMockConnected, threadDoesNothingWhenServiceDown)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(false));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
         doLoop(Ms(2), Ms(3), Tp(3));
 
         fromStack.handleServiceUnavailable(TestInstanceId(1));
@@ -1178,7 +1179,7 @@ namespace ramses_internal
     TEST_F(AConnectionSystemTimeMockConnected, threadSendsKeepAliveAfterSuccessfulPinfo)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         doLoop(Ms(2), Ms(3), Tp(2));
@@ -1214,7 +1215,7 @@ namespace ramses_internal
     TEST_F(AConnectionSystemTimeMockConnected, threadStopsKeepAliveWhenServiceDown)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(stack, sendKeepAlive(TestInstanceId(1), ValidHdr(pid, 2u), _, false)).WillOnce(Return(true));
@@ -1261,7 +1262,7 @@ namespace ramses_internal
         doLoop(Ms(2), Ms(3), Tp(8));
 
         expectRemoteDisconnects({2});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, _, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, _, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(9)); // Tp >= 6+3
         Mock::VerifyAndClearExpectations(&connsys->connections);
     }
@@ -1287,7 +1288,7 @@ namespace ramses_internal
         doLoop(Ms(2), Ms(3), Tp(13));
 
         expectRemoteDisconnects({2});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(15));
         Mock::VerifyAndClearExpectations(&connsys->connections);
     }
@@ -1296,7 +1297,7 @@ namespace ramses_internal
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(6)));
         EXPECT_CALL(stack, sendKeepAlive(TestInstanceId(1), _, _, false)).WillRepeatedly(Return(true));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         doLoop(Ms(2), Ms(3), Tp(9));
@@ -1318,7 +1319,7 @@ namespace ramses_internal
         expectRemoteDisconnects({2});
         doLoop(Ms(2), Ms(3), Tp(10));
 
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(11));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
@@ -1336,7 +1337,7 @@ namespace ramses_internal
         doLoop(Ms(2), Ms(3), Tp(7));
 
         expectRemoteDisconnects({2});
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 2, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 2, _, _)).WillOnce(Return(true));
         doLoop(Ms(2), Ms(3), Tp(9));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(2)));
@@ -1393,7 +1394,7 @@ namespace ramses_internal
     TEST_F(AConnectionSystemTimeMockConnected, sendsKeepaliveAfterSkippedPinfoWithLastAnnouncedSession)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 0, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(true));
         fromStack.handleServiceAvailable(TestInstanceId(1));
 
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
@@ -1403,7 +1404,7 @@ namespace ramses_internal
         // disconnect+connect by counter mismatch due to new session -> sending pinfo
         SomeIPMsgHeader pinfoHdr;
         EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
-        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, iid, 10, _, _)).WillOnce(DoAll(SaveArg<1>(&pinfoHdr), Return(true)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 10, _, _)).WillOnce(DoAll(SaveArg<1>(&pinfoHdr), Return(true)));
         EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
         fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 10, 0, 0);
 

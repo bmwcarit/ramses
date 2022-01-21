@@ -6,10 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-# skip if doxygen not found
+# skip if doxygen or dot not found
 find_package(Doxygen QUIET)
-if (NOT DOXYGEN_FOUND)
-    message(STATUS "Doxygen was not found on this system. Documentation generation was disabled.")
+if (NOT TARGET Doxygen::doxygen OR NOT TARGET Doxygen::dot)
+    message(STATUS "Doxygen and/or dot were not found on this system. Documentation generation was disabled.")
     return()
 endif()
 
@@ -23,7 +23,7 @@ file(GLOB_RECURSE
     ../examples/ramses-example-*/*.cpp
     *.dox)
 
-# image dirs
+# image and dot dirs
 file(GLOB_RECURSE
     DOXYGEN_IMAGE_PATH_LIST
     LIST_DIRECTORIES TRUE

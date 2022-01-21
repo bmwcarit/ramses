@@ -19,10 +19,10 @@ namespace ramses_internal
     public:
         Platform_Windows_WGL_4_5(const RendererConfig& rendererConfig);
 
-        virtual bool createDevice() final;
-        virtual bool createDeviceUploading() final;
+        virtual bool createDevice();
+        virtual bool createDeviceUploading();
 
-        virtual const Int32*  getContextAttributes() final;
+        virtual const Int32*  getContextAttributes();
     };
 }
 

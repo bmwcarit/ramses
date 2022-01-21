@@ -30,6 +30,7 @@ EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo SomeIP DCSMProviderExam
 
 INPUT                  = @DOXYGEN_INPUT@
 IMAGE_PATH             = @DOXYGEN_IMAGE_PATH@
+DOTFILE_DIRS           = @DOXYGEN_IMAGE_PATH@
 
 INPUT_ENCODING         = ISO-8859-1
 

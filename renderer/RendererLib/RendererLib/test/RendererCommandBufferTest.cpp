@@ -283,27 +283,16 @@ TEST_F(ARendererCommandBuffer, notifiesAnotherThreadAboutNewCommands)
     {
         initialCommandsBarrier.wait();
 
-        std::mutex& newCommandsMutex = std::get<0>(buffer.getCVarForNewCommands());
-        std::condition_variable& newCommandsCvar = std::get<1>(buffer.getCVarForNewCommands());
-
-        while (true)
         {
-            // lock mutex first before notifying producer to continue to make sure this test thread gets to sleep on cvar before more commands pushed
-            std::unique_lock<std::mutex> l{ newCommandsMutex };
-            {
-                std::unique_lock<std::mutex> lk{ producerCanContinueLock };
-                producerCanContinue = true;
-                producerCanContinueCvar.notify_one();
-            }
-
-            // wait till new command comes and do something with it
-            newCommandsCvar.wait(l);
-            RendererCommands cmds;
-            buffer.swapCommands_unsafe(cmds);
-
-            if (!cmds.empty())
-                break;
+            std::unique_lock<std::mutex> lk{ producerCanContinueLock };
+            producerCanContinue = true;
+            producerCanContinueCvar.notify_one();
         }
+
+        // wait forever (20s) till new command comes and do something with it
+        RendererCommands cmds;
+        buffer.blockingSwapCommands(cmds, std::chrono::milliseconds{20000});
+        ASSERT_FALSE(cmds.empty());
 
         // any other commands will be pushed without notification
         otherCommandsBarrier.wait();
@@ -313,5 +302,25 @@ TEST_F(ARendererCommandBuffer, notifiesAnotherThreadAboutNewCommands)
 
     cmdProducer.join();
     cmdListener.join();
+}
+
+TEST_F(ARendererCommandBuffer, canInterruptBlockingSwapCommands)
+{
+    RendererCommandBuffer buffer;
+    ThreadBarrier initialCommandsBarrier{ 2 };
+
+    std::thread unblocker{ [&]()
+    {
+        initialCommandsBarrier.wait();
+        buffer.interruptBlockingSwapCommands();
+    } };
+
+    initialCommandsBarrier.wait();
+    RendererCommands cmds;
+    buffer.blockingSwapCommands(cmds, std::chrono::milliseconds{1000000000}); // wait forever
+
+    EXPECT_TRUE(cmds.empty());
+
+    unblocker.join();
 }
 }

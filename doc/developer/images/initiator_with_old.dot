@@ -1,0 +1,79 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+digraph Initiator {
+    {
+        unknown [label="Unknown" color=purple]
+        old_code [label="Old Code" color=purple]
+
+        unavailable [label="Unavailable"]
+        send_session [label="Init session" shape=diamond]
+        session_wait [label="Wait session\nreply"]
+        connected [label="Connected"]
+        normal_send [label="Normal send" shape=diamond]
+        update_timeout [label="Update timeout" shape=diamond]
+        send_keepalive_wait_session [label="Send keepalive\n(Same MID)" shape=diamond]
+        send_keepalive_connected [label="Send keepalive\n(Same MID)" shape=diamond]
+    }
+
+    unknown -> unavailable [label="New pinfo\n+Mark reponsible" color=purple]
+    unknown -> old_code [label="Up\n+Inform new" color=purple]
+    unknown -> unknown [label="Any other message" color=purple]
+    unknown -> unknown [label="Old pinfo" color=purple]
+
+    old_code ->unknown [label="Down\n+Inform new" color=purple]
+    old_code -> send_session [label="New pinfo (bad session)\n+Mark reponsible" color=purple]
+    old_code -> old_code [label="Old pinfo" color=purple]
+
+    // Must send incrementing MID in keepalive otherwise old code might get confused (We do not know remote yet)
+    // - Must inform new code of session to be able to match correct session replies
+    // - Must inform new code of last sent MID to pick up there (potentially incremented by pinfo+keepalives)
+    old_code -> old_code [label="Send pinfo\nSend keepalive (incr MID)\n+Inform session+MID" color=purple]
+
+    // this has 1:2^64 chance to match by accident (remote did not get our session (yet) and chose same by chance).
+    // will recover by:
+    // - remote getting our session (later) and then still replies again -> mismatch -> reinit
+    // - our pinfo got lost but keepalives get through eventually -> mismatch -> error -> reinit
+    old_code -> connected [label="New pinfo (good session)\n+Mark reponsible\n+CONNECT" color=purple]
+
+    unavailable -> send_session [label="Up"]
+    unavailable -> unavailable [label="Any message"]  // could go to unknown on old pinfo for live switch to old
+
+    send_session -> session_wait [label="Ok"]
+    send_session -> session_wait [label="Fail"]
+
+    session_wait -> unavailable [label="Down"]  // Could go to unknwon for live switch to old
+    session_wait -> session_wait [label="Unrealted SID"]
+    session_wait -> send_session [label="Timeout"]
+    session_wait -> send_session [label="MID Mismatch"]
+    session_wait -> send_session [label="Error valid SID"]
+    session_wait -> connected [label="Session confirm\n+CONNECT" color=green]
+    session_wait -> send_keepalive_wait_session [label="On timer"]
+
+    send_keepalive_wait_session -> session_wait [label="Ok/Fail"]
+
+    connected -> unavailable [label="Down\n+DISCONNECT" color=red]  // Could go to unknwon for live switch to old
+    connected -> update_timeout [label="Receive OK"]
+    connected -> connected [label="Unrealted SID"]  // really?
+    connected -> send_session [label="Timeout\n+DISCONNECT" color=red]
+    connected -> send_session [label="MID Mismatch\n+DISCONNECT" color=red]
+    connected -> send_session [label="Error valid SID\n+DISCONNECT" color=red]
+    connected -> normal_send [label="Send message"]
+    connected -> send_keepalive_connected [label="On timer"]
+
+    normal_send -> connected [label="Ok"]
+    normal_send -> send_session [label="Fail\n+DISCONNECT" color=red]
+
+    update_timeout -> connected
+
+    send_keepalive_connected -> connected [label="Ok/Fail"]
+
+    // Could be extended by falling back to old code on any old pinfo received in new -> extend compatibility when really needed
+    // (would fully remove/disconnect participant and now handle this pinfo, letting it through to old code. Might have issues
+    // with up/down tracking of old code when not very careful)
+}

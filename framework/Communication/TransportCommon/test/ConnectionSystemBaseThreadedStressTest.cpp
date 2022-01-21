@@ -318,11 +318,12 @@ namespace ramses_internal
             TestConnectionSystem(const std::shared_ptr<QueueForwardingStack>& _stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
                                  UInt32 protocolVersion, PlatformLock& lock,
                                  std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
-                                 EventQueue& eventQueue)
+                                 EventQueue& eventQueue, bool enableInitiatorResponder)
                 : ConnectionSystemBase(_stack, communicationUserID, namedPid, protocolVersion, lock,
                                        keepAliveInterval, keepAliveTimeout,
                                        []() { return std::chrono::steady_clock::now(); },
-                                       CONTEXT_COMMUNICATION, "TEST")
+                                       CONTEXT_COMMUNICATION, "TEST",
+                                       enableInitiatorResponder)
                 , m_stack(_stack)
                 , m_eventQueue(eventQueue)
             {
@@ -352,7 +353,7 @@ namespace ramses_internal
         {
         public:
             ThreadedQueuedConnectionSystem(StackQueue& inQueue, StackQueue& outQueue,
-                                           uint16_t id,
+                                           uint16_t id, bool enableInitiatorResponder,
                                            std::chrono::milliseconds keepaliveTimeout = std::chrono::milliseconds{2000})
                 : m_inQueue(inQueue)
                 , m_outQueue(outQueue)
@@ -364,7 +365,8 @@ namespace ramses_internal
                                                                    199,
                                                                    m_lock,
                                                                    std::chrono::milliseconds{10}, keepaliveTimeout,
-                                                                   eventQueue))
+                                                                   eventQueue,
+                                                                   enableInitiatorResponder))
                 , m_callbackRunner(std::make_unique<QueueCallbackRunner>(TestInstanceId(id), *m_connSys, m_inQueue, m_lock))
                 , listener(eventQueue)
             {
@@ -413,14 +415,7 @@ namespace ramses_internal
             EventQueue eventQueue;
             QueueConnectionStatusListener listener;
         };
-    }
 
-    using namespace ThreadedStressTestInternal;
-
-    class AConnectionSystemBaseThreadedStressTest : public ::testing::Test
-    {
-        ScopedConsoleLogDisable consoleDisabler;
-    public:
         bool LastEventIsConnectedToOther(const std::vector<Event::Type>& vec, uint16_t otherId)
         {
             for (auto it = std::make_reverse_iterator(vec.end()); it != std::make_reverse_iterator(vec.begin()); ++it)
@@ -437,41 +432,250 @@ namespace ramses_internal
             }
             return false;
         }
-    };
 
-    TEST_F(AConnectionSystemBaseThreadedStressTest, canCreateWithConnectedQueues)
-    {
-        StackQueue b2a;
-        StackQueue a2b;
-        ThreadedQueuedConnectionSystem a(b2a, a2b, 1);
-        ThreadedQueuedConnectionSystem b(a2b, b2a, 2);
+        struct TestConfig {
+            bool enableInitiatorResponder_a;
+            uint16_t id_a;
+
+            bool enableInitiatorResponder_b;
+            uint16_t id_b;
+
+            uint64_t keepaliveTimeoutMs;
+
+            const char* desc;
+
+            friend std::ostream& operator<<(std::ostream& os, const TestConfig& tc) { return os << tc.desc; } // avoid valgrind googletest byte print issue due to padding
+        };
     }
 
-    TEST_F(AConnectionSystemBaseThreadedStressTest, canConnectWithConnectedQueues)
+    using namespace ThreadedStressTestInternal;
+
+    class AConnectionSystemGenericThreadedStressTest : public ::testing::TestWithParam<TestConfig>
+    {
+        ScopedConsoleLogDisable consoleDisabler;
+    };
+
+    INSTANTIATE_TEST_SUITE_P(AConnectionSystemGenericThreadedStressTestP,
+                             AConnectionSystemGenericThreadedStressTest,
+                             ::testing::ValuesIn(std::vector<TestConfig>{
+                                 {true, 1, false, 2, 2000, "a_old"},
+                                 {false, 1, true, 2, 2000, "b_old"},
+                                 {true, 1, true, 2, 600, "both_new_a_client"},
+                                 {true, 2, true, 1, 600, "both_new_b_client"},
+                             }),
+                             [](const auto& arg) { return arg.param.desc; });
+
+    TEST_P(AConnectionSystemGenericThreadedStressTest, canCreateWithConnectedQueues)
     {
         StackQueue b2a;
         StackQueue a2b;
-        ThreadedQueuedConnectionSystem a(b2a, a2b, 1);
-        ThreadedQueuedConnectionSystem b(a2b, b2a, 2);
+        ThreadedQueuedConnectionSystem a(b2a, a2b, GetParam().id_a, GetParam().enableInitiatorResponder_a);
+        ThreadedQueuedConnectionSystem b(a2b, b2a, GetParam().id_b, GetParam().enableInitiatorResponder_b);
+    }
+
+    TEST_P(AConnectionSystemGenericThreadedStressTest, canConnectWithConnectedQueues)
+    {
+        StackQueue b2a;
+        StackQueue a2b;
+        ThreadedQueuedConnectionSystem a(b2a, a2b, GetParam().id_a, GetParam().enableInitiatorResponder_a);
+        ThreadedQueuedConnectionSystem b(a2b, b2a, GetParam().id_b, GetParam().enableInitiatorResponder_b);
 
         EXPECT_TRUE(a.connect());
         EXPECT_TRUE(b.connect());
 
-        EXPECT_TRUE(a.nextEvent(Event::NewParticipant{Guid(2)}));
-        EXPECT_TRUE(b.nextEvent(Event::NewParticipant{Guid(1)}));
+        EXPECT_TRUE(a.nextEvent(Event::NewParticipant{Guid(b.selfId)}));
+        EXPECT_TRUE(b.nextEvent(Event::NewParticipant{Guid(a.selfId)}));
 
         EXPECT_TRUE(a.disconnect());
 
+        EXPECT_TRUE(a.nextEvent(Event::ParticipantGone{Guid(b.selfId)}));
+        EXPECT_TRUE(b.nextEvent(Event::ParticipantGone{Guid(a.selfId)}));
+    }
+
+    TEST_P(AConnectionSystemGenericThreadedStressTest, multiConnectionSystemStressTest)
+    {
+        StackQueue aIn;
+        StackQueue aOut;
+        StackQueue bIn;
+        StackQueue bOut;
+        ThreadedQueuedConnectionSystem a(aIn, aOut, GetParam().id_a, GetParam().enableInitiatorResponder_a, std::chrono::milliseconds{GetParam().keepaliveTimeoutMs});
+        ThreadedQueuedConnectionSystem b(bIn, bOut, GetParam().id_b, GetParam().enableInitiatorResponder_b, std::chrono::milliseconds{GetParam().keepaliveTimeoutMs});
+
+        // set up randomness
+        std::random_device randomSource;
+        unsigned int seed = randomSource();
+        SCOPED_TRACE(seed);
+        std::mt19937 gen(seed);
+
+        auto rnd = [&]() {
+            std::uniform_int_distribution<uint32_t> dis(0, 100);
+            return dis(gen);
+        };
+        auto num = [&]() {
+            std::uniform_int_distribution<uint16_t> dis(0, 6);
+            return dis(gen);
+        };
+        const uint16_t proto_a = GetParam().enableInitiatorResponder_a ? 1 : 0;
+        const uint16_t proto_b = GetParam().enableInitiatorResponder_b ? 1 : 0;
+
+        EXPECT_TRUE(a.connect());
+        EXPECT_TRUE(b.connect());
+
+        // randomly inject or drop messages
+        for (int i = 0; i < 4000; ++i)
+        {
+            const bool direction = rnd() < 50;
+            StackQueue& dst = direction ? bIn  : aIn;
+            const uint16_t srcId = direction ? a.selfId : b.selfId;
+            const uint16_t dstId = direction ? b.selfId : a.selfId;
+            const uint16_t proto = direction ? proto_a : proto_b;
+
+            // inject messages
+            if (rnd() < 20)
+                dst.push(Message::Available{TestInstanceId(num())});
+            if (rnd() < 20)
+                dst.push(Message::Available{TestInstanceId(srcId)});
+            if (rnd() < 2)
+                dst.push(Message::Available{TestInstanceId()});
+
+            if (rnd() < 10)
+                dst.push(Message::Unavailable{TestInstanceId(num())});
+            if (rnd() < 10)
+                dst.push(Message::Unavailable{TestInstanceId(srcId)});
+            if (rnd() < 2)
+                dst.push(Message::Unavailable{TestInstanceId()});
+
+            if (rnd() < 5)
+                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), num()}, 0, false});
+            if (rnd() < 5)
+                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{num(), num(), num()}, 0, false});
+
+            if (rnd() < 10)
+                dst.push(Message::Test{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), num()}, num()});
+            if (rnd() < 5)
+                dst.push(Message::Test{TestInstanceId(dstId), SomeIPMsgHeader{num(), num(), num()}, num()});
+
+            if (rnd() < 10)
+                dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), 1},
+                                                  199, proto, TestInstanceId(srcId), dstId, 0, 0});
+            if (rnd() < 5)
+            {
+                // pid and senderInstanceId must be same, diff not supported yet
+                const auto senderId = num();
+                dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{senderId, num(), num()},
+                                                  199, proto, TestInstanceId(senderId), num(), 0, 0});
+            }
+            if (rnd() < 2)
+            {
+                // pid and senderInstanceId must be same, diff not supported yet
+                const auto senderId = num();
+                dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{senderId, num(), num()},
+                                                  num(), num(), TestInstanceId(senderId), num(), 0, 0});
+            }
+
+            // let connection systems catch up from time to time
+            if (i % 50 == 0 && i != 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+            // forward messages
+            auto randomizedForward = [&](auto& dstQueue, auto& srcQueue) {
+                auto v = srcQueue.popAll();
+                // drop random messages
+                if (rnd() < 20)
+                    v.erase(std::remove_if(v.begin(), v.end(), [&](auto) { return rnd() < 10; }), v.end());
+                // reorder
+                else if (rnd() < 20)
+                    std::shuffle(v.begin(), v.end(), gen);
+                // else: just forward
+
+                dstQueue.pushAll(v);
+            };
+            randomizedForward(aIn, bOut);
+            randomizedForward(bIn, aOut);
+        }
+
+        // ensure available
+        aIn.push(Message::Available{TestInstanceId(b.selfId)});
+        bIn.push(Message::Available{TestInstanceId(a.selfId)});
+
+        // process messages for limited time
+        // either limited by time (20s) or when only keepalive messages exchanged for "nothingNewLimit" cycles
+        // (system reached a stable state)
+        const uint64_t nothingNewLimit = (GetParam().enableInitiatorResponder_a && GetParam().enableInitiatorResponder_b) ?
+            20 : 100;           // when a and b new it converges reliably a lot faster than before
+        const auto startT = std::chrono::steady_clock::now();
+        uint64_t nothingNewCounter = 0;
+        while (startT + std::chrono::seconds(20) > std::chrono::steady_clock::now() &&
+               nothingNewCounter < nothingNewLimit)
+        {
+            // forward all
+            aOut.waitForData(std::chrono::milliseconds(10));
+            const auto toB = aOut.popAll();
+            const auto toA = bOut.popAll();
+            bIn.pushAll(toB);
+            aIn.pushAll(toA);
+
+            // check if still real communication happending (non-keepalive), early out if not
+            auto isKeepAlive = [](const auto msg) {
+                return absl::holds_alternative<Message::KeepAlive>(msg);
+            };
+            if (std::all_of(toB.begin(), toB.end(), isKeepAlive) &&
+                std::all_of(toA.begin(), toA.end(), isKeepAlive))
+                ++nothingNewCounter;
+            else
+                nothingNewCounter = 0;
+        }
+
+        // ensure gets to stable connected state: last event for otherId must be NewParticipant
+        EXPECT_TRUE(LastEventIsConnectedToOther(b.eventQueue.popAll(), a.selfId));
+        EXPECT_TRUE(LastEventIsConnectedToOther(a.eventQueue.popAll(), b.selfId));
+
+        // send and receive test message
+        {
+            std::lock_guard<std::recursive_mutex> la(a.m_lock);
+            a.m_connSys->sendTest(Guid(b.selfId), 456);
+        }
+        {
+            std::lock_guard<std::recursive_mutex> lb(b.m_lock);
+            b.m_connSys->sendTest(Guid(a.selfId), 765);
+        }
+
+        bIn.pushAll(aOut.popAll());
+        aIn.pushAll(bOut.popAll());
+
+        EXPECT_TRUE(a.nextEvent(Event::TestMsg{Guid(b.selfId), 765}));
+        EXPECT_TRUE(b.nextEvent(Event::TestMsg{Guid(a.selfId), 456}));
+    }
+
+
+    // ConnectionSystemBase specific test
+    class AConnectionSystemBaseThreadedStressTest : public ::testing::Test
+    {
+        ScopedConsoleLogDisable consoleDisabler;
+    };
+
+    // TODO: try to adapt to connsysIR
+    TEST_F(AConnectionSystemBaseThreadedStressTest, disconnectsWithoutKeepalive)
+    {
+        StackQueue to;
+        StackQueue from;
+        ThreadedQueuedConnectionSystem a(to, from, 1, false, std::chrono::milliseconds{100});
+
+        EXPECT_TRUE(a.connect());
+
+        to.push(Message::Available{TestInstanceId(2)});
+        to.push(Message::ParticipantInfo{TestInstanceId(1), SomeIPMsgHeader{2, 123, 1}, 199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(2), 1, 0, 0});
+
+        EXPECT_TRUE(a.nextEvent(Event::NewParticipant{Guid(2)}));
         EXPECT_TRUE(a.nextEvent(Event::ParticipantGone{Guid(2)}));
-        EXPECT_TRUE(b.nextEvent(Event::ParticipantGone{Guid(1)}));
     }
 
     TEST_F(AConnectionSystemBaseThreadedStressTest, simultaneousNewSessionDoesNotLeadToReconnectLoop)
     {
         StackQueue b2a;
         StackQueue a2b;
-        ThreadedQueuedConnectionSystem a(b2a, a2b, 1);
-        ThreadedQueuedConnectionSystem b(a2b, b2a, 2);
+        ThreadedQueuedConnectionSystem a(b2a, a2b, 1, false);
+        ThreadedQueuedConnectionSystem b(a2b, b2a, 2, false);
 
         EXPECT_TRUE(a.connect());
         EXPECT_TRUE(b.connect());
@@ -520,171 +724,6 @@ namespace ramses_internal
         // queue must be empty
         EXPECT_EQ(0u, a.eventQueue.popAll().size());
         EXPECT_EQ(0u, b.eventQueue.popAll().size());
-    }
-
-    TEST_F(AConnectionSystemBaseThreadedStressTest, disconnectsWithoutKeepalive)
-    {
-        StackQueue to;
-        StackQueue from;
-        ThreadedQueuedConnectionSystem a(to, from, 1, std::chrono::milliseconds{100});
-
-        EXPECT_TRUE(a.connect());
-
-        to.push(Message::Available{TestInstanceId(2)});
-        to.push(Message::ParticipantInfo{TestInstanceId(1), SomeIPMsgHeader{2, 123, 1}, 199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(2), 1, 0, 0});
-
-        EXPECT_TRUE(a.nextEvent(Event::NewParticipant{Guid(2)}));
-        EXPECT_TRUE(a.nextEvent(Event::ParticipantGone{Guid(2)}));
-    }
-
-    TEST_F(AConnectionSystemBaseThreadedStressTest, multiConnectionSystemStressTest)
-    {
-        StackQueue aIn;
-        StackQueue aOut;
-        StackQueue bIn;
-        StackQueue bOut;
-        ThreadedQueuedConnectionSystem a(aIn, aOut, 1);
-        ThreadedQueuedConnectionSystem b(bIn, bOut, 2);
-
-        // set up randomness
-        std::random_device randomSource;
-        unsigned int seed = randomSource();
-        SCOPED_TRACE(seed);
-        std::mt19937 gen(seed);
-
-        auto rnd = [&]() {
-            std::uniform_int_distribution<uint32_t> dis(0, 100);
-            return dis(gen);
-        };
-        auto num = [&]() {
-            std::uniform_int_distribution<uint16_t> dis(0, 6);
-            return dis(gen);
-        };
-
-        EXPECT_TRUE(a.connect());
-        EXPECT_TRUE(b.connect());
-
-        // randomly inject or drop messages
-        for (int i = 0; i < 4000; ++i)
-        {
-            const bool direction = rnd() < 50;
-            StackQueue& dst = direction ? bIn  : aIn;
-            const uint16_t srcId = direction ? a.selfId : b.selfId;
-            const uint16_t dstId = direction ? b.selfId : a.selfId;
-
-            // inject messages
-            if (rnd() < 20)
-                dst.push(Message::Available{TestInstanceId(num())});
-            if (rnd() < 20)
-                dst.push(Message::Available{TestInstanceId(srcId)});
-            if (rnd() < 2)
-                dst.push(Message::Available{TestInstanceId()});
-
-            if (rnd() < 10)
-                dst.push(Message::Unavailable{TestInstanceId(num())});
-            if (rnd() < 10)
-                dst.push(Message::Unavailable{TestInstanceId(srcId)});
-            if (rnd() < 2)
-                dst.push(Message::Unavailable{TestInstanceId()});
-
-            if (rnd() < 5)
-                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), num()}, 0, false});
-            if (rnd() < 5)
-                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{num(), num(), num()}, 0, false});
-
-            if (rnd() < 10)
-                dst.push(Message::Test{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), num()}, num()});
-            if (rnd() < 5)
-                dst.push(Message::Test{TestInstanceId(dstId), SomeIPMsgHeader{num(), num(), num()}, num()});
-
-            if (rnd() < 10)
-                dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), 1},
-                                                  199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(srcId), dstId, 0, 0});
-            if (rnd() < 5)
-            {
-                // pid and senderInstanceId must be same, diff not supported yet
-                const auto senderId = num();
-                dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{senderId, num(), num()},
-                                                  199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(senderId), num(), 0, 0});
-            }
-            if (rnd() < 2)
-            {
-                // pid and senderInstanceId must be same, diff not supported yet
-                const auto senderId = num();
-                dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{senderId, num(), num()},
-                                                  num(), SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(senderId), num(), 0, 0});
-            }
-
-            // let connection systems catch up from time to time
-            if (i % 50 == 0 && i != 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-            // forward messages
-            auto randomizedForward = [&](auto& dstQueue, auto& srcQueue) {
-                auto v = srcQueue.popAll();
-                // drop random messages
-                if (rnd() < 20)
-                    v.erase(std::remove_if(v.begin(), v.end(), [&](auto) { return rnd() < 10; }), v.end());
-                // reorder
-                else if (rnd() < 20)
-                    std::shuffle(v.begin(), v.end(), gen);
-                // else: just forward
-
-                dstQueue.pushAll(v);
-            };
-            randomizedForward(aIn, bOut);
-            randomizedForward(bIn, aOut);
-        }
-
-        // ensure available
-        aIn.push(Message::Available{TestInstanceId(b.selfId)});
-        bIn.push(Message::Available{TestInstanceId(a.selfId)});
-
-        // process messages for limited time
-        // either limited by time (20s) or when only keepalive messages exchanged for 100 cycles
-        // (system reached a stable state)
-        const auto startT = std::chrono::steady_clock::now();
-        uint64_t nothingNewCounter = 0;
-        while (startT + std::chrono::seconds(20) > std::chrono::steady_clock::now() &&
-               nothingNewCounter < 100)
-        {
-            // forward all
-            aOut.waitForData(std::chrono::milliseconds(10));
-            const auto toB = aOut.popAll();
-            const auto toA = bOut.popAll();
-            bIn.pushAll(toB);
-            aIn.pushAll(toA);
-
-            // check if still real communication happending (non-keepalive), early out if not
-            auto isKeepAlive = [](const auto msg) {
-                return absl::holds_alternative<Message::KeepAlive>(msg);
-            };
-            if (std::all_of(toB.begin(), toB.end(), isKeepAlive) &&
-                std::all_of(toA.begin(), toA.end(), isKeepAlive))
-                ++nothingNewCounter;
-            else
-                nothingNewCounter = 0;
-        }
-
-        // ensure gets to stable connected state: last event for otherId must be NewParticipant
-        EXPECT_TRUE(LastEventIsConnectedToOther(b.eventQueue.popAll(), a.selfId));
-        EXPECT_TRUE(LastEventIsConnectedToOther(a.eventQueue.popAll(), b.selfId));
-
-        // send and receive test message
-        {
-            std::lock_guard<std::recursive_mutex> la(a.m_lock);
-            a.m_connSys->sendTest(Guid(b.selfId), 456);
-        }
-        {
-            std::lock_guard<std::recursive_mutex> lb(b.m_lock);
-            b.m_connSys->sendTest(Guid(a.selfId), 765);
-        }
-
-        bIn.pushAll(aOut.popAll());
-        aIn.pushAll(bOut.popAll());
-
-        EXPECT_TRUE(a.nextEvent(Event::TestMsg{Guid(b.selfId), 765}));
-        EXPECT_TRUE(b.nextEvent(Event::TestMsg{Guid(a.selfId), 456}));
     }
 }
 

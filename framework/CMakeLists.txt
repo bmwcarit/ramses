@@ -185,7 +185,17 @@ ACME_MODULE(
     )
 
 IF (ramses-sdk_ENABLE_TCP_SUPPORT)
+  ACME_INFO("+ TCP communication system support enabled")
   TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_TCP_COMM=1")
+else()
+  ACME_INFO("- TCP communication system support disabled")
+ENDIF()
+
+IF (ramses-sdk_ENABLE_FALLBACK_FAKE_COMMUNICATION_SYSTEM)
+  ACME_INFO("+ Fallback fake communication system enabled")
+  TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_FALLBACK_FAKE_COMMUNICATION_SYSTEM=1")
+else()
+  ACME_INFO("- Fallback fake communication system disabled")
 ENDIF()
 
 IF (ramses-sdk_HAS_DLT)

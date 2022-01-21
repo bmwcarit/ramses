@@ -12,6 +12,7 @@
 #include "Components/OffsetFileInputStreamContainer.h"
 #include "FileDescriptorHelper.h"
 #include "gtest/gtest.h"
+#include <memory>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <array>
@@ -54,6 +55,7 @@ namespace ramses_internal
 
             EXPECT_FALSE(deleted);
         }
+        // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) gets confused by custom delter
         EXPECT_TRUE(deleted);
     }
 

@@ -88,12 +88,23 @@ public:
         }
     }
 
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
 private:
     ramses::RendererSceneControl& m_sceneControlApi;
     ramses::Appearance& m_appearanceA;
     ramses::Appearance& m_appearanceB;
     ramses::UniformInput& m_colorInput;
     std::mt19937 m_randomGenerator{std::random_device{}()};
+    bool m_windowClosed = false;
 };
 /** \endcond */
 
@@ -218,7 +229,7 @@ int main(int argc, char* argv[])
     sceneControlAPI.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
     sceneControlAPI.flush();
 
-    for (;;)
+    while (!eventHandler.isWindowClosed())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(15));
         renderer.dispatchEvents(eventHandler);

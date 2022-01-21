@@ -30,7 +30,7 @@ namespace ramses_internal
         void handleEvents() override;
         void setTitle(const String& title) override;
 
-        bool hasTitle() const override final
+        bool hasTitle() const override
         {
             return !m_fullscreen;
         }

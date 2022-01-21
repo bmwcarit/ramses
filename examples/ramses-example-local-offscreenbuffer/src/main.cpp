@@ -93,6 +93,16 @@ public:
         return conditionFunction();
     }
 
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
 private:
     struct SceneInfo
     {
@@ -121,6 +131,7 @@ private:
     OffscreenBufferSet m_createdOffscreenBuffers;
     DataConsumerSet m_dataConsumers;
     ramses::RamsesRenderer& m_renderer;
+    bool m_windowClosed = false;
 };
 /** \endcond */
 
@@ -427,8 +438,9 @@ int main(int argc, char* argv[])
     ramses::Node* rotationNode = ramses::RamsesUtils::TryConvert<ramses::Node>(*providerScene->findObjectByName("rotationNode"));
     ramses::Node* rotationNodeMS = ramses::RamsesUtils::TryConvert<ramses::Node>(*providerScene2->findObjectByName("rotationNodeMS"));
 
-    while (true)
+    while (!eventHandler.isWindowClosed())
     {
+        renderer.dispatchEvents(eventHandler);
         //Rotate the quads of the provider scenes
         rotationNode->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::ZYX);
         providerScene->flush();

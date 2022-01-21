@@ -36,7 +36,8 @@ namespace ramses_internal
                                keepAliveInterval, keepAliveTimeout,
                                std::move(steadyClockNow),
                                CONTEXT_DCSM,
-                               "DCSM")
+                               "DCSM",
+                               true)
         , m_stack(stack)
     {
     }

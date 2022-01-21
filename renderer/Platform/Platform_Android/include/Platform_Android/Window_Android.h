@@ -16,7 +16,7 @@
 
 namespace ramses_internal
 {
-    class Window_Android final : public Window_Base
+    class Window_Android : public Window_Base
     {
     public:
         Window_Android(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);

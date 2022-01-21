@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 114)
+SET(RAMSES_VERSION_PATCH 115)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -69,6 +69,7 @@ OPTION(ramses-sdk_BUILD_DOCS "Build documentation if Doxygen is found" ON)
 OPTION(ramses-sdk_ENABLE_WAYLAND_IVI "Build a version of ramses renderer which uses wayland ivi surfaces" ON)
 OPTION(ramses-sdk_ENABLE_WAYLAND_SHELL "Build a version of ramses renderer which uses wayland shell surfaces" ON)
 OPTION(ramses-sdk_ENABLE_TCP_SUPPORT "Enable use of TCP communication" ON)
+OPTION(ramses-sdk_ENABLE_FALLBACK_FAKE_COMMUNICATION_SYSTEM "Allow fake communication system as last resort" ON)
 OPTION(ramses-sdk_ENABLE_DLT "Enable dlt support" ON)
 OPTION(ramses-sdk_USE_LINUX_DEV_PTP "Enable support for synchronized ptp time on linux" OFF)
 OPTION(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization enabled (not supported on all platforms)" OFF)
@@ -81,6 +82,8 @@ SET(ramses-sdk_ENABLE_SANITIZER "" CACHE STRING "Enable build with a clang sanit
 SET_PROPERTY(CACHE ramses-sdk_ENABLE_SANITIZER PROPERTY STRINGS "" "ubsan" "tsan" "asan" "asan+ubsan")
 
 set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING "Set a custom prefix for target folders in Visual Studio. If not set, will be set based on project's relative path")
+
+set(ramses-sdk_USE_LINKER_OVERWRITE "" CACHE STRING "Specify used linker (gcc/clang only)")
 
 SET(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
 set(ramses-sdk_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}" CACHE STRING "Ramses version" FORCE)

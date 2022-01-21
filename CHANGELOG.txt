@@ -1,3 +1,15 @@
+27.0.115
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Add backward compatible improved SomeIP connection handling
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Make display creation performance on startup more consistent
+        - Fixed ungraceful Ramses shutdown if X11 window is closed
+          (e.g. terminal echo was missing).
+
 27.0.114
 -------------------
         General changes

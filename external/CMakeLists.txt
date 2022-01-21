@@ -5,6 +5,10 @@ endif(POLICY CMP0054)
 
 find_package(PkgConfig)
 
+# Ensure all external dependencies are built as static libs when not explicitly specified
+# otherwise using ramses will lead to issues when BUILD_SHARED_LIBS in ON
+set(BUILD_SHARED_LIBS OFF)
+
 # #### externals that are build with normal compiler flags ####
 
 #project specific setup for gtest/gmock
@@ -32,7 +36,7 @@ target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 
 
 # fmt string formatting library
-if (TARGET fmt)
+if (TARGET fmt::fmt)
     ACME_INFO("+ fmt (existing target)")
 else()
     add_subdirectory("fmt")

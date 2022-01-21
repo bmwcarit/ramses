@@ -14,5 +14,5 @@ RENDERER_MODULE_PER_CONFIG_STATIC(ramses-scene-viewer
 
     DEPENDENCIES            ramses-client
                             ramses-renderer-lib
-                            imgui
+                            ramses-imgui
 )

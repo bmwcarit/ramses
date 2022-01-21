@@ -181,7 +181,7 @@ protected:
         EXPECT_CALL(m_sceneGraphProviderComponent, sendUnpublishScene(m_sceneId, _));
     }
 
-    void expectResourceQueries(ManagedResourceVector const& newResources = {}, ManagedResourceVector allResources = {}, bool otherResChanges = false, bool previousSubscription = false)
+    void expectResourceQueries(ManagedResourceVector const& newResources = {}, ManagedResourceVector allResources = {}, bool otherResChanges = false, bool expectResolveAllResourcesForDirect = false, bool expectResolveAllResourcesForShadowCopy = true)
     {
         Mock::VerifyAndClearExpectations(&this->m_resourceComponent);
 
@@ -217,9 +217,9 @@ protected:
             }
         }
 
-        // shadow scene logic will do an additional resolve for all resources to keep them alive
+        // shadow scene logic will do an additional resolve for all resources when resources changed to keep them alive
         // direct scene logic will do an additional resolve if there was a subscriber since last flush
-        if (std::is_same<T, ClientSceneLogicShadowCopy>() || previousSubscription)
+        if ((expectResolveAllResourcesForShadowCopy && std::is_same<T, ClientSceneLogicShadowCopy>()) || (expectResolveAllResourcesForDirect && std::is_same<T, ClientSceneLogicDirect>()))
             EXPECT_CALL(this->m_resourceComponent, resolveResources(allHashes)).WillOnce(Return(allResources));
     }
 
@@ -1052,7 +1052,7 @@ TYPED_TEST(AClientSceneLogic_All, flushClearsListsOfChangedResources)
         EXPECT_EQ(0u, resourceChanges.m_resourcesRemoved.size());
         EXPECT_EQ(0u, resourceChanges.m_sceneResourceActions.size());
     });
-    this->expectResourceQueries({}, { this->m_arrayResource });
+    this->expectResourceQueries({}, { this->m_arrayResource }, false, false, false);
     this->m_sceneLogic.flushSceneActions({}, {});
 
     this->expectSceneUnpublish();
@@ -1634,9 +1634,9 @@ TYPED_TEST(AClientSceneLogic_All, resolvesClientResourcesWhenFlushingUnpublished
         });
 
     this->expectSceneSend();
-    this->expectResourceQueries({}, { this->m_arrayResource, this->m_textureResource });
+    this->expectResourceQueries({}, { this->m_arrayResource, this->m_textureResource }, false, false, true); // shadow copy resolved on addSubscriber
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
-    this->expectResourceQueries({}, { this->m_arrayResource, this->m_textureResource }, false, true);
+    this->expectResourceQueries({}, { this->m_arrayResource, this->m_textureResource }, false, true, false); // direct resolve on next flush
     this->flush();
     this->expectSceneUnpublish();
 }
@@ -1645,13 +1645,13 @@ TYPED_TEST(AClientSceneLogic_All, doesNotTryToResolveResourcesWhenNoSceneChanges
 {
     Mock::VerifyAndClearExpectations(&this->m_resourceComponent); // strict behavior for this test
     this->publish();
-    this->expectResourceQueries();
+    this->expectResourceQueries({},{}, false, false, false);
     this->flush({}, SceneVersionTag{ 823746 });
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _));
 
     this->expectSceneSend();
-    this->expectResourceQueries();
+    this->expectResourceQueries({},{}, false, false, false);
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
     this->expectSceneUnpublish();
@@ -1662,13 +1662,13 @@ TYPED_TEST(AClientSceneLogic_All, doesNotTryToResolveResourcesWhenNoResourceChan
     Mock::VerifyAndClearExpectations(&this->m_resourceComponent); // strict behavior for this test
     this->publish();
     this->m_scene.allocateNode();
-    this->expectResourceQueries();
+    this->expectResourceQueries({},{}, false, false, false);
     this->flush({}, SceneVersionTag{ 823746 });
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _));
 
     this->expectSceneSend();
-    this->expectResourceQueries();
+    this->expectResourceQueries({},{}, false, false, false);
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
     this->expectSceneUnpublish();
@@ -1679,19 +1679,19 @@ TYPED_TEST(AClientSceneLogic_All, resolvesOldResourcesForNewSubscriber)
     this->publish();
     this->m_scene.allocateNode();
     this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_textureResource->getHash());
-    this->expectResourceQueries({ this->m_textureResource });
+    this->expectResourceQueries({ this->m_textureResource }, {}, false, false, true);
     this->flush();
     this->m_scene.allocateNode();
-    this->expectResourceQueries({}, { this->m_textureResource });
+    this->expectResourceQueries({}, { this->m_textureResource }, false, false, false);
     this->flush();
 
     Mock::VerifyAndClearExpectations(&this->m_resourceComponent); // strict behavior for this test
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _));
 
     this->expectSceneSend();
-    this->expectResourceQueries({}, { this->m_textureResource });
+    this->expectResourceQueries({}, { this->m_textureResource }, false, false, true);
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
-    this->expectResourceQueries({}, { this->m_textureResource }, false, true);
+    this->expectResourceQueries({}, { this->m_textureResource }, false, true, false);
     this->flush();
     this->expectSceneUnpublish();
 }

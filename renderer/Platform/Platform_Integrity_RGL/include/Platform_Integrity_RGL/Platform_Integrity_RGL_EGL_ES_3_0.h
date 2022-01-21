@@ -20,7 +20,7 @@ namespace ramses_internal
         explicit Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
     protected:
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
         virtual uint32_t getSwapInterval() const override;
     };
 }

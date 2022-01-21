@@ -16,13 +16,14 @@
 #include "Collections/Guid.h"
 #include "Collections/Vector.h"
 #include "Collections/HashSet.h"
+#include "Utils/LogContext.h"
 
 namespace ramses_internal
 {
     class ConnectionStatusUpdateNotifier : public IConnectionStatusUpdateNotifier
     {
     public:
-        ConnectionStatusUpdateNotifier(const std::string& participantName, const std::string& usage, PlatformLock& frameworkLock);
+        ConnectionStatusUpdateNotifier(const std::string& participantName, const LogContext& logContext, const std::string& usage, PlatformLock& frameworkLock);
         virtual ~ConnectionStatusUpdateNotifier() override;
 
         virtual void registerForConnectionUpdates(IConnectionStatusListener* listener) override;
@@ -32,6 +33,7 @@ namespace ramses_internal
 
     private:
         const std::string m_participantName;
+        const LogContext& m_logContext;
         const std::string m_usage;
 
         PlatformLock& m_lock;

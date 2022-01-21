@@ -589,6 +589,24 @@ TEST_F(ARamsesRenderer, canRunRendererInItsOwnThreadAndCallAPIMethods)
     EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
 }
 
+TEST_F(ARamsesRenderer, createsThreadedDisplayIfThreadStartedRightAfterCreation)
+{
+    // Confidence test for a pre-existing race between starting threaded renderer and command dispatcher
+    // processing createDisplay command before display thread started - ending up in non-threaded display creation.
+    // 1. generate createDisplay cmd + flush
+    // 2. start 'general renderer' thread
+    //   a. threaded mode for displays is enabled
+    //   b. start dispatcher thread and process command
+    //   c. display is created in threaded mode
+    // If a) would come last then display would be created non-threaded and won't be updated (and dispatcher asserts).
+    // Current implementation makes sure this does not happen, this test is an attempt (cannot be reliably reproduced) to catch regression.
+
+    EXPECT_TRUE(renderer.createDisplay({}).isValid());
+    EXPECT_EQ(ramses::StatusOK, renderer.flush());
+    EXPECT_EQ(ramses::StatusOK, renderer.startThread());
+    EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
+}
+
 TEST(ARamsesRendererWithSeparateRendererThread, canNotifyPerWatchdog)
 {
     ramses_internal::PlatformLock expectLock;

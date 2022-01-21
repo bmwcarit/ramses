@@ -37,7 +37,8 @@ namespace ramses_internal
                                keepAliveInterval, keepAliveTimeout,
                                std::move(steadyClockNow),
                                CONTEXT_COMMUNICATION,
-                               "RAMSES")
+                               "RAMSES",
+                               true)
         , m_stack(std::move(stack))
     {
     }

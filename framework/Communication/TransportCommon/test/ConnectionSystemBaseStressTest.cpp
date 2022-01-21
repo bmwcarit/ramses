@@ -9,26 +9,35 @@
 #include "ConnectionSystemTestCommon.h"
 #include "PlatformAbstraction/PlatformLock.h"
 #include "ScopedConsoleLogDisable.h"
+#include <chrono>
 
 namespace ramses_internal
 {
     using namespace TestConnectionSystemBase;
 
-    class AConnectionSystemSynchronousStressTest : public Test
+    namespace {
+        enum class EMinorProtocolVersion
+        {
+            FallbackOnly,
+            FallbackAndNew
+        };
+    }
+
+    class AConnectionSystemSynchronousStressTest : public TestWithParam<EMinorProtocolVersion>
     {
     public:
         virtual void SetUp() override
         {
             auto stack = std::make_shared<StrictMock<StackMock>>();
 
-            EXPECT_CALL(*stack, getServiceInstanceId()).WillRepeatedly(Return(TestInstanceId(1)));
-            EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(std::chrono::steady_clock::time_point(std::chrono::milliseconds(1))));
+            EXPECT_CALL(*stack, getServiceInstanceId()).WillRepeatedly(Return(TestInstanceId(3)));
 
             connsys = std::make_unique<TestConnectionSystem>(stack,
                                                              123, ParticipantIdentifier(Guid(2), "foobar"), 4,
                                                              lock,
                                                              std::chrono::milliseconds(0), std::chrono::milliseconds(0),
-                                                             [&](){ return steadyClockNow(); });
+                                                             [&](){ return currentTime; },
+                                                             true);
 
             ASSERT_TRUE(connsys);
 
@@ -41,16 +50,19 @@ namespace ramses_internal
 
         }
 
-        MOCK_METHOD(std::chrono::steady_clock::time_point, steadyClockNow, ());
-
         PlatformLock lock;
         std::unique_ptr<TestConnectionSystem> connsys;
         std::random_device randomSource;
         Callbacks* fromStack;
+        std::chrono::steady_clock::time_point currentTime{std::chrono::milliseconds{1}};
         ScopedConsoleLogDisable consoleDisabler;
     };
 
-    TEST_F(AConnectionSystemSynchronousStressTest, synchronousStressTest)
+    INSTANTIATE_TEST_SUITE_P(AConnectionSystemSynchronousStressTestP,
+                             AConnectionSystemSynchronousStressTest,
+                             ::testing::Values(EMinorProtocolVersion::FallbackOnly, EMinorProtocolVersion::FallbackAndNew));
+
+    TEST_P(AConnectionSystemSynchronousStressTest, synchronousStressTest)
     {
         unsigned int seed = randomSource();
         SCOPED_TRACE(seed);
@@ -66,9 +78,11 @@ namespace ramses_internal
 
         for (int i = 0; i < 20000; ++i)
         {
-            EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(steadyClockNow() + std::chrono::milliseconds(num())));
+            currentTime += std::chrono::milliseconds{num()};
             EXPECT_CALL(*connsys->stack, connect()).WillRepeatedly(Return(rnd() > 20));
             EXPECT_CALL(*connsys->stack, disconnect()).WillRepeatedly(Return(rnd() > 20));
+            EXPECT_CALL(*connsys->stack, logConnectionState(_)).Times(AnyNumber());
+            ;
 
             EXPECT_CALL(*connsys->stack, sendParticipantInfo(_, _, _, _, _, _, _, _)).WillRepeatedly(Return(rnd() > 20));
             EXPECT_CALL(*connsys->stack, sendKeepAlive(_, _, _, _)).WillRepeatedly(Return(rnd() > 20));
@@ -91,7 +105,19 @@ namespace ramses_internal
             if (rnd() < 75)
                 connsys->sendTestMessage(Guid(num()), num());
             if (rnd() < 30)
-                fromStack->handleParticipantInfo(SomeIPMsgHeader{num(), num(), num()}, static_cast<uint16_t>(num()), SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(static_cast<uint16_t>(num())), num(), static_cast<uint8_t>(num()), num());
+            {
+                if (GetParam() == EMinorProtocolVersion::FallbackOnly)
+                {
+                    fromStack->handleParticipantInfo(SomeIPMsgHeader{num(), num(), num()}, static_cast<uint16_t>(num()), 0, TestInstanceId(static_cast<uint16_t>(num())), num(), static_cast<uint8_t>(num()), num());
+                }
+                else
+                {
+                    // use single random value as base for remotePid, remoteIid and minorProtocolVersion. Then unsupported cases
+                    // where iid jumps versions or changes pid cannot be generated.
+                    const uint32_t val = num();
+                    fromStack->handleParticipantInfo(SomeIPMsgHeader{val, num(), num()}, static_cast<uint16_t>(num()), val % 2, TestInstanceId(static_cast<uint16_t>(val)), num(), static_cast<uint8_t>(num()), num());
+                }
+            }
             if (rnd() < 40)
                 fromStack->handleKeepAlive(SomeIPMsgHeader{num(), num(), num()}, num(), false);
             if (rnd() < 40)
@@ -100,6 +126,11 @@ namespace ramses_internal
                 fromStack->handleServiceAvailable(TestInstanceId(static_cast<uint16_t>(num())));
             if (rnd() < 50)
                 fromStack->handleServiceUnavailable(TestInstanceId(static_cast<uint16_t>(num())));
+            if (rnd() < 5)
+            {
+                connsys->logPeriodicInfo();
+                connsys->logConnectionInfo();
+            }
         }
     }
 }

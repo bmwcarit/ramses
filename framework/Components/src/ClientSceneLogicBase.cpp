@@ -250,14 +250,15 @@ namespace ramses_internal
         }
     }
 
-    bool ClientSceneLogicBase::verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions)
+    ClientSceneLogicBase::ResourceChangeState ClientSceneLogicBase::verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions)
     {
         m_resourceChangesSinceLastFlush.clear();
 
         // optimization: early out if nothing changed in the scene
         if (!hasNewActions)
-            return true;
+            return ResourceChangeState::NoChange;
 
+        ResourceChangeState result = ResourceChangeState::NoChange;
         if (m_scene.haveResourcesChanged())
         {
             m_currentFlushResourcesInUse.clear();
@@ -268,16 +269,17 @@ namespace ramses_internal
             {
                 sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChangesSinceLastFlush.m_resourcesAdded);
                 if (sceneUpdate.resources.size() != m_resourceChangesSinceLastFlush.m_resourcesAdded.size())
-                    return false;
+                    return ResourceChangeState::MissingResource;
             }
 
             updateResourceStatistics();
 
             m_lastFlushResourcesInUse.swap(m_currentFlushResourcesInUse);
+            result = ResourceChangeState::HasChanges;
         }
 
         m_resourceChangesSinceLastFlush.m_sceneResourceActions = m_scene.getSceneResourceActions();
 
-        return true;
+        return result;
     }
 }

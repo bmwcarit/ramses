@@ -22,16 +22,16 @@ namespace ramses_internal
         Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id, std::chrono::microseconds frameCallbackMaxPollTime);
         ~Window_Wayland() override;
 
-        virtual bool init() override final;
+        virtual bool init() override;
 
-        Bool canRenderNewFrame() const override final;
-        void handleEvents() override final;
-        void frameRendered() override final;
+        Bool canRenderNewFrame() const override;
+        void handleEvents() override;
+        void frameRendered() override;
 
         wl_display* getNativeDisplayHandle() const;
         wl_egl_window* getNativeWindowHandle() const;
 
-        bool hasTitle() const override final
+        bool hasTitle() const override
         {
             return false;
         }
@@ -44,7 +44,7 @@ namespace ramses_internal
     private:
 
         void registerFrameRenderingDoneCallback();
-        Bool setFullscreen(Bool fullscreen) override final;
+        Bool setFullscreen(Bool fullscreen) override;
         void dispatchWaylandDisplayEvents(std::chrono::milliseconds pollTime) const;
 
         static void RegistryGlobalCreated(void* data, wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version);

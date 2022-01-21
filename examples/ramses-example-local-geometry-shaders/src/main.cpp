@@ -9,6 +9,7 @@
 #include "ramses-client.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include <unordered_set>
@@ -18,6 +19,23 @@
  * @example ramses-example-local-geometry-shaders/src/main.cpp
  * @brief Local Geometry Shaders Example
  */
+
+class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+{
+public:
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
+private:
+    bool m_windowClosed = false;
+};
 
 int main(int argc, char* argv[])
 {
@@ -127,8 +145,10 @@ int main(int argc, char* argv[])
     sceneControlAPI.flush();
 
     float xMultiplierValue = 0.0f;
-    for (;;)
+    RendererEventHandler eventHandler;
+    while (!eventHandler.isWindowClosed())
     {
+        renderer.dispatchEvents(eventHandler);
         appearance->setInputValueFloat(xMultiplierInput, xMultiplierValue);
         clientScene->flush();
         xMultiplierValue += 0.1f;

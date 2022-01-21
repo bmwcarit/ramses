@@ -21,7 +21,7 @@ namespace ramses_internal
     protected:
         explicit Platform_Android_EGL(const RendererConfig& rendererConfig);
 
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
         virtual uint32_t getSwapInterval() const override;
     };
 }

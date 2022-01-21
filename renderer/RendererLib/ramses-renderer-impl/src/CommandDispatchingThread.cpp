@@ -21,8 +21,6 @@ namespace ramses_internal
         , m_watchdog{ watchdog }
         , m_aliveIdentifier{ watchdog.registerThread() }
         , m_thread{ "R_RendererThrd" }
-        , m_cmdMutex{ std::get<0>(m_commandBuffer.getCVarForNewCommands()) }
-        , m_cmdCVar{ std::get<1>(m_commandBuffer.getCVarForNewCommands()) }
     {
         LOG_INFO(CONTEXT_RENDERER, "Main renderer thread starting");
         m_thread.start(*this);
@@ -33,7 +31,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "Main renderer thread stopping");
         m_thread.cancel();
-        m_cmdCVar.notify_one();
+        m_commandBuffer.interruptBlockingSwapCommands();
         m_thread.join();
         LOG_INFO(CONTEXT_RENDERER, "Main renderer thread stopped");
 
@@ -53,15 +51,9 @@ namespace ramses_internal
 
         while (!isCancelRequested())
         {
-            {
-                std::unique_lock<std::mutex> lock{ m_cmdMutex };
-                m_cmdCVar.wait_for(lock, std::chrono::milliseconds{ m_watchdog.calculateTimeout() });
-
-                m_watchdog.notifyAlive(m_aliveIdentifier);
-
-                m_tmpCommands.clear();
-                m_commandBuffer.swapCommands_unsafe(m_tmpCommands);
-            }
+            m_tmpCommands.clear();
+            m_commandBuffer.blockingSwapCommands(m_tmpCommands, std::chrono::milliseconds{ m_watchdog.calculateTimeout() });
+            m_watchdog.notifyAlive(m_aliveIdentifier);
 
             if (!m_tmpCommands.empty())
                 m_displayDispatcher.dispatchCommands(m_tmpCommands);
