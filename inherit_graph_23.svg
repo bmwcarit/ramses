@@ -9,31 +9,31 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 133)">
 <title>Graphical Class Hierarchy</title>
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-133 575,-133 575,4 -4,4"/>
-<!-- Node145 -->
-<g id="node1" class="node">
-<title>Node145</title>
-<g id="a_node1"><a xlink:href="classramses_1_1IDcsmContentControlEventHandler.html" target="_top" xlink:title="Callback handler interface for events emitted by ramses::DcsmContentControl.">
-<polygon fill="white" stroke="black" points="4.5,-98.5 4.5,-128.5 167.5,-128.5 167.5,-98.5 4.5,-98.5"/>
-<text text-anchor="start" x="12.5" y="-116.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IDcsmContentControl</text>
-<text text-anchor="middle" x="86" y="-105.5" font-family="Helvetica,sans-Serif" font-size="10.00">EventHandler</text>
-</a>
-</g>
-</g>
 <!-- Node146 -->
-<g id="node2" class="node">
+<g id="node1" class="node">
 <title>Node146</title>
-<g id="a_node2"><a xlink:href="classramses_1_1DcsmContentControlEventHandlerEmpty.html" target="_top" xlink:title="Convenience empty implementation of IDcsmContentControlEventHandler that can be used to derive from w...">
-<polygon fill="white" stroke="black" points="212.5,-98.5 212.5,-128.5 372.5,-128.5 372.5,-98.5 212.5,-98.5"/>
-<text text-anchor="start" x="220.5" y="-116.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::DcsmContentControl</text>
-<text text-anchor="middle" x="292.5" y="-105.5" font-family="Helvetica,sans-Serif" font-size="10.00">EventHandlerEmpty</text>
+<g id="a_node1"><a xlink:href="classramses_1_1IDcsmContentControlEventHandler.html" target="_top" xlink:title="Callback handler interface for events emitted by ramses::DcsmContentControl.">
+<polygon fill="white" stroke="black" points="4.5,-49.5 4.5,-79.5 167.5,-79.5 167.5,-49.5 4.5,-49.5"/>
+<text text-anchor="start" x="12.5" y="-67.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IDcsmContentControl</text>
+<text text-anchor="middle" x="86" y="-56.5" font-family="Helvetica,sans-Serif" font-size="10.00">EventHandler</text>
 </a>
 </g>
 </g>
-<!-- Node145&#45;&gt;Node146 -->
+<!-- Node147 -->
+<g id="node2" class="node">
+<title>Node147</title>
+<g id="a_node2"><a xlink:href="classramses_1_1DcsmContentControlEventHandlerEmpty.html" target="_top" xlink:title="Convenience empty implementation of IDcsmContentControlEventHandler that can be used to derive from w...">
+<polygon fill="white" stroke="black" points="212.5,-49.5 212.5,-79.5 372.5,-79.5 372.5,-49.5 212.5,-49.5"/>
+<text text-anchor="start" x="220.5" y="-67.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::DcsmContentControl</text>
+<text text-anchor="middle" x="292.5" y="-56.5" font-family="Helvetica,sans-Serif" font-size="10.00">EventHandlerEmpty</text>
+</a>
+</g>
+</g>
+<!-- Node146&#45;&gt;Node147 -->
 <g id="edge1" class="edge">
-<title>Node145&#45;&gt;Node146</title>
-<path fill="none" stroke="midnightblue" d="M177.64,-113.5C189.22,-113.5 201,-113.5 212.38,-113.5"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="177.53,-110 167.53,-113.5 177.53,-117 177.53,-110"/>
+<title>Node146&#45;&gt;Node147</title>
+<path fill="none" stroke="midnightblue" d="M177.64,-64.5C189.22,-64.5 201,-64.5 212.38,-64.5"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="177.53,-61 167.53,-64.5 177.53,-68 177.53,-61"/>
 </g>
 <!-- Node2 -->
 <g id="node3" class="node">
@@ -44,50 +44,50 @@
 </a>
 </g>
 </g>
-<!-- Node146&#45;&gt;Node2 -->
+<!-- Node147&#45;&gt;Node2 -->
 <g id="edge2" class="edge">
-<title>Node146&#45;&gt;Node2</title>
+<title>Node147&#45;&gt;Node2</title>
+<path fill="none" stroke="midnightblue" d="M383.02,-64.5C400.67,-64.5 418.71,-64.5 434.87,-64.5"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="382.69,-61 372.69,-64.5 382.69,-68 382.69,-61"/>
+</g>
+<!-- Node144 -->
+<g id="node4" class="node">
+<title>Node144</title>
+<g id="a_node4"><a xlink:href="classramses_1_1IDcsmProviderEventHandler.html" target="_top" xlink:title="An Interface for a class, whose functions are called as reaction to DcsmConsumer communication after ...">
+<polygon fill="white" stroke="black" points="213.5,-98.5 213.5,-128.5 371.5,-128.5 371.5,-98.5 213.5,-98.5"/>
+<text text-anchor="start" x="221.5" y="-116.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IDcsmProviderEvent</text>
+<text text-anchor="middle" x="292.5" y="-105.5" font-family="Helvetica,sans-Serif" font-size="10.00">Handler</text>
+</a>
+</g>
+</g>
+<!-- Node144&#45;&gt;Node2 -->
+<g id="edge3" class="edge">
+<title>Node144&#45;&gt;Node2</title>
 <path fill="none" stroke="midnightblue" d="M364.05,-96C393.89,-88.59 427.47,-80.26 452.6,-74.03"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="362.96,-92.66 354.1,-98.47 364.65,-99.45 362.96,-92.66"/>
 </g>
-<!-- Node143 -->
-<g id="node4" class="node">
-<title>Node143</title>
-<g id="a_node4"><a xlink:href="classramses_1_1IDcsmProviderEventHandler.html" target="_top" xlink:title="An Interface for a class, whose functions are called as reaction to DcsmConsumer communication after ...">
-<polygon fill="white" stroke="black" points="213.5,-0.5 213.5,-30.5 371.5,-30.5 371.5,-0.5 213.5,-0.5"/>
-<text text-anchor="start" x="221.5" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IDcsmProviderEvent</text>
-<text text-anchor="middle" x="292.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">Handler</text>
-</a>
-</g>
-</g>
-<!-- Node143&#45;&gt;Node2 -->
-<g id="edge3" class="edge">
-<title>Node143&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M364.05,-33C393.89,-40.41 427.47,-48.74 452.6,-54.97"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="364.65,-29.55 354.1,-30.53 362.96,-36.34 364.65,-29.55"/>
-</g>
-<!-- Node144 -->
+<!-- Node145 -->
 <g id="node5" class="node">
-<title>Node144</title>
+<title>Node145</title>
 <g id="a_node5"><a xlink:href="classramses_1_1IDcsmProviderEventHandlerExtended.html" target="_top" xlink:title="An Interface for a class, whose functions are called as reaction to a DcsmConsumer message after call...">
-<polygon fill="white" stroke="black" points="413,-0.5 413,-30.5 571,-30.5 571,-0.5 413,-0.5"/>
-<text text-anchor="start" x="421" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IDcsmProviderEvent</text>
-<text text-anchor="middle" x="492" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">HandlerExtended</text>
+<polygon fill="white" stroke="black" points="413,-98.5 413,-128.5 571,-128.5 571,-98.5 413,-98.5"/>
+<text text-anchor="start" x="421" y="-116.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IDcsmProviderEvent</text>
+<text text-anchor="middle" x="492" y="-105.5" font-family="Helvetica,sans-Serif" font-size="10.00">HandlerExtended</text>
 </a>
 </g>
 </g>
-<!-- Node143&#45;&gt;Node144 -->
+<!-- Node144&#45;&gt;Node145 -->
 <g id="edge4" class="edge">
-<title>Node143&#45;&gt;Node144</title>
-<path fill="none" stroke="midnightblue" d="M381.83,-15.5C392.17,-15.5 402.67,-15.5 412.86,-15.5"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="381.56,-12 371.56,-15.5 381.56,-19 381.56,-12"/>
+<title>Node144&#45;&gt;Node145</title>
+<path fill="none" stroke="midnightblue" d="M381.83,-113.5C392.17,-113.5 402.67,-113.5 412.86,-113.5"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="381.56,-110 371.56,-113.5 381.56,-117 381.56,-110"/>
 </g>
 <!-- Node0 -->
 <g id="node6" class="node">
 <title>Node0</title>
 <g id="a_node6"><a xlink:href="classramses_1_1IRendererEventHandler.html" target="_top" xlink:title="Provides an interface for handling the result of renderer events. Implementation of this interface mu...">
-<polygon fill="white" stroke="black" points="0,-55 0,-74 172,-74 172,-55 0,-55"/>
-<text text-anchor="middle" x="86" y="-62" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IRendererEventHandler</text>
+<polygon fill="white" stroke="black" points="0,-6 0,-25 172,-25 172,-6 0,-6"/>
+<text text-anchor="middle" x="86" y="-13" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::IRendererEventHandler</text>
 </a>
 </g>
 </g>
@@ -95,23 +95,38 @@
 <g id="node7" class="node">
 <title>Node1</title>
 <g id="a_node7"><a xlink:href="classramses_1_1RendererEventHandlerEmpty.html" target="_top" xlink:title="Convenience empty implementation of IRendererEventHandler that can be used to derive from when only s...">
-<polygon fill="white" stroke="black" points="208,-49.5 208,-79.5 377,-79.5 377,-49.5 208,-49.5"/>
-<text text-anchor="start" x="216" y="-67.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RendererEventHandler</text>
-<text text-anchor="middle" x="292.5" y="-56.5" font-family="Helvetica,sans-Serif" font-size="10.00">Empty</text>
+<polygon fill="white" stroke="black" points="208,-0.5 208,-30.5 377,-30.5 377,-0.5 208,-0.5"/>
+<text text-anchor="start" x="216" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RendererEventHandler</text>
+<text text-anchor="middle" x="292.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">Empty</text>
 </a>
 </g>
 </g>
 <!-- Node0&#45;&gt;Node1 -->
 <g id="edge5" class="edge">
 <title>Node0&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M182.48,-64.5C190.9,-64.5 199.39,-64.5 207.71,-64.5"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="182.25,-61 172.25,-64.5 182.25,-68 182.25,-61"/>
+<path fill="none" stroke="midnightblue" d="M182.48,-15.5C190.9,-15.5 199.39,-15.5 207.71,-15.5"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="182.25,-12 172.25,-15.5 182.25,-19 182.25,-12"/>
 </g>
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge6" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M387.34,-64.5C403.6,-64.5 420.03,-64.5 434.88,-64.5"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="387.26,-61 377.26,-64.5 387.26,-68 387.26,-61"/>
+<path fill="none" stroke="midnightblue" d="M364.05,-33C393.89,-40.41 427.47,-48.74 452.6,-54.97"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="364.65,-29.55 354.1,-30.53 362.96,-36.34 364.65,-29.55"/>
+</g>
+<!-- Node3 -->
+<g id="node8" class="node">
+<title>Node3</title>
+<g id="a_node8"><a xlink:href="classRendererEventHandler.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="black" points="428.5,-6 428.5,-25 555.5,-25 555.5,-6 428.5,-6"/>
+<text text-anchor="middle" x="492" y="-13" font-family="Helvetica,sans-Serif" font-size="10.00">RendererEventHandler</text>
+</a>
+</g>
+</g>
+<!-- Node1&#45;&gt;Node3 -->
+<g id="edge7" class="edge">
+<title>Node1&#45;&gt;Node3</title>
+<path fill="none" stroke="midnightblue" d="M387.35,-15.5C401.27,-15.5 415.32,-15.5 428.39,-15.5"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="387.26,-12 377.26,-15.5 387.26,-19 387.26,-12"/>
 </g>
 </g>
 </svg>

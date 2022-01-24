@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.114</span>
+   &#160;<span id="projectnumber">27.0.115</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -177,7 +177,7 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Control states of scenes. </p>
 <p>Where <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> is used to configure general rendering (create displays, control looping and other global rendering states), <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">RendererSceneControl</a> is used to configure which content should be rendered and where. Scenes can be assigned to display buffers, shown, hidden, data linked, etc. All the commands in this class are put to a queue and submitted only when <a class="el" href="classramses_1_1RendererSceneControl.html#afae8c8a433e1a29ea4912d1db4be7311" title="Submits scene control commands (API calls on RendererSceneControl) since previous flush to be execute...">flush</a> is called, they are then executed asynchronously in the renderer core, the order of execution is preserved. Most of the commands have a corresponding callback which reports the result back to the caller via <a class="el" href="classramses_1_1RendererSceneControl.html#a78bb4710634109f444c018149b54dd92" title="RendererSceneControl methods push commands to an internal queue which is submitted when calling flush...">dispatchEvents</a>. Some commands can fail immediately by returning a status with value other than StatusOK, in such case there will be no callback, because the command will not even be submitted. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#_a10">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#_a3">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#_a10">ramses-example-local-geometry-shaders/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a10">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a74">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#_a12">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#_a8">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#_a12">ramses-example-local-geometry-shaders/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a10">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a78">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a47395ff51c80461e50a4fe3eb449d924"></a>
@@ -260,7 +260,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a10">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp-example.html#a20">ramses-example-local-dma-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a14">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a9">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a15">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp-example.html#a21">ramses-example-local-dma-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a15">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a14">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -282,7 +282,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Submits scene control commands (API calls on <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">RendererSceneControl</a>) since previous flush to be executed in the next renderer update loop. This mechanism allows for 'atomic' changes that are applied within a single update loop, thus a single rendered frame. For example one scene can be hidden, another scene shown and data linked, all within single frame. Not all state changes can be executed within a single update loop, see <a class="el" href="classramses_1_1RendererSceneControl.html#a3a67e00fdc6770676e44f1bc254604a0" title="Request state change of a scene.">setSceneState</a> for details. </p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a85">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a88">ramses-example-local-geometry-shaders/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a76">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a81">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a83">ramses-example-local-geometry-shaders/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a80">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -563,7 +563,7 @@ PickCoordinates</h1>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a82">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a85">ramses-example-local-geometry-shaders/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a75">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a78">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a80">ramses-example-local-geometry-shaders/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a79">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -607,7 +607,7 @@ PickCoordinates</h1>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. StatusOK does not guarantee success, the result argument in dispatched event has its own status. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a83">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a86">ramses-example-local-geometry-shaders/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a80">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a79">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a81">ramses-example-local-geometry-shaders/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a84">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 
 </div>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.114</span>
+   &#160;<span id="projectnumber">27.0.115</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -153,12 +153,23 @@ $(function() {
 <div class="line">        }</div>
 <div class="line">    }</div>
 <div class="line"> </div>
+<div class="line">    <span class="keywordtype">void</span> windowClosed(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> <span class="comment">/*displayId*/</span>)<span class="keyword"> override</span></div>
+<div class="line"><span class="keyword">    </span>{</div>
+<div class="line">        m_windowClosed = <span class="keyword">true</span>;</div>
+<div class="line">    }</div>
+<div class="line"> </div>
+<div class="line">    <span class="keywordtype">bool</span> isWindowClosed()<span class="keyword"> const</span></div>
+<div class="line"><span class="keyword">    </span>{</div>
+<div class="line">        <span class="keywordflow">return</span> m_windowClosed;</div>
+<div class="line">    }</div>
+<div class="line"> </div>
 <div class="line"><span class="keyword">private</span>:</div>
 <div class="line">    <a class="code" href="classramses_1_1RendererSceneControl.html">ramses::RendererSceneControl</a>&amp; m_sceneControlApi;</div>
 <div class="line">    <a class="code" href="classramses_1_1Appearance.html">ramses::Appearance</a>&amp; m_appearanceA;</div>
 <div class="line">    <a class="code" href="classramses_1_1Appearance.html">ramses::Appearance</a>&amp; m_appearanceB;</div>
 <div class="line">    <a class="code" href="classramses_1_1UniformInput.html">ramses::UniformInput</a>&amp; m_colorInput;</div>
 <div class="line">    std::mt19937 m_randomGenerator{std::random_device{}()};</div>
+<div class="line">    <span class="keywordtype">bool</span> m_windowClosed = <span class="keyword">false</span>;</div>
 <div class="line">};</div>
 <div class="line"><span class="keywordtype">int</span> <a name="a19"></a><a class="code" href="ramses-example-basic-animation-realtime_2src_2main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97">main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[])</div>
 <div class="line">{</div>
@@ -280,7 +291,7 @@ $(function() {
 <div class="line">    sceneControlAPI.setSceneState(sceneId, <a name="a85"></a><a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a>);</div>
 <div class="line">    sceneControlAPI.flush();</div>
 <div class="line"> </div>
-<div class="line">    <span class="keywordflow">for</span> (;;)</div>
+<div class="line">    <span class="keywordflow">while</span> (!eventHandler.isWindowClosed())</div>
 <div class="line">    {</div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(15));</div>
 <div class="line">        renderer.dispatchEvents(eventHandler);</div>
@@ -310,7 +321,7 @@ $(function() {
 <div class="ttc" id="aclassramses_1_1RendererSceneControlEventHandlerEmpty_html"><div class="ttname"><a href="classramses_1_1RendererSceneControlEventHandlerEmpty.html">ramses::RendererSceneControlEventHandlerEmpty</a></div><div class="ttdoc">Convenience empty implementation of IRendererSceneControlEventHandler that can be used to derive from...</div><div class="ttdef"><b>Definition:</b> IRendererSceneControlEventHandler.h:200</div></div>
 <div class="ttc" id="anamespaceramses_html_a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547"><div class="ttname"><a href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a></div><div class="ttdeci">@ Rendered</div><div class="ttdoc">Scene is being rendered.</div></div>
 <div class="ttc" id="aclassramses_1_1MeshNode_html_a03307af9bb4e533eca06fd119f635481"><div class="ttname"><a href="classramses_1_1MeshNode.html#a03307af9bb4e533eca06fd119f635481">ramses::MeshNode::setAppearance</a></div><div class="ttdeci">status_t setAppearance(Appearance &amp;appearance)</div><div class="ttdoc">Sets the Appearance of the MeshNode.</div></div>
-<div class="ttc" id="aclassSceneStateEventHandler_html"><div class="ttname"><a href="classSceneStateEventHandler.html">SceneStateEventHandler</a></div><div class="ttdef"><b>Definition:</b> main.cpp:28</div></div>
+<div class="ttc" id="aclassSceneStateEventHandler_html"><div class="ttname"><a href="classSceneStateEventHandler.html">SceneStateEventHandler</a></div><div class="ttdef"><b>Definition:</b> main.cpp:47</div></div>
 <div class="ttc" id="aPerspectiveCamera_8h_html"><div class="ttname"><a href="PerspectiveCamera_8h.html">PerspectiveCamera.h</a></div></div>
 <div class="ttc" id="aclassramses_1_1Node_html_a02355c92b5aa8da8eb8d009f7a41fc71"><div class="ttname"><a href="classramses_1_1Node.html#a02355c92b5aa8da8eb8d009f7a41fc71">ramses::Node::setScaling</a></div><div class="ttdeci">status_t setScaling(float x, float y, float z)</div><div class="ttdoc">Sets the absolute scale in all three dimensions.</div></div>
 <div class="ttc" id="aclassramses_1_1RendererSceneControl_html_a6420e4d8b2754d6ac8831a3bda9233bb"><div class="ttname"><a href="classramses_1_1RendererSceneControl.html#a6420e4d8b2754d6ac8831a3bda9233bb">ramses::RendererSceneControl::handlePickEvent</a></div><div class="ttdeci">status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY)</div><div class="ttdoc">Trigger renderer to test if given pick event with coordinates intersects with any instances of ramses...</div></div>
@@ -355,7 +366,7 @@ $(function() {
 <div class="ttc" id="aclassramses_1_1GeometryBinding_html_a775b60f22ae9247c3145ddf16696eb46"><div class="ttname"><a href="classramses_1_1GeometryBinding.html#a775b60f22ae9247c3145ddf16696eb46">ramses::GeometryBinding::setInputBuffer</a></div><div class="ttdeci">status_t setInputBuffer(const AttributeInput &amp;attributeInput, const ArrayResource &amp;arrayResource, uint32_t instancingDivisor=0)</div><div class="ttdoc">Assign a data array resource to a given effect attribute input.</div></div>
 <div class="ttc" id="aclassramses_1_1RenderGroup_html"><div class="ttname"><a href="classramses_1_1RenderGroup.html">ramses::RenderGroup</a></div><div class="ttdoc">The RenderGroup is a container used to collect renderables which are supposed to be rendered together...</div><div class="ttdef"><b>Definition:</b> RenderGroup.h:30</div></div>
 <div class="ttc" id="anamespaceramses_html_a6de13d29afe1f37ca41caec5ae20532caf6cbc64b52c1e48eccf9b22c92a5d7cf"><div class="ttname"><a href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532caf6cbc64b52c1e48eccf9b22c92a5d7cf">ramses::EDataType::Vector3F</a></div><div class="ttdeci">@ Vector3F</div><div class="ttdoc">three components of type float per data element</div></div>
-<div class="ttc" id="aclassSceneStateEventHandler_html_a51121295648aa4416bd143ea99de5ed3"><div class="ttname"><a href="classSceneStateEventHandler.html#a51121295648aa4416bd143ea99de5ed3">SceneStateEventHandler::SceneStateEventHandler</a></div><div class="ttdeci">SceneStateEventHandler(ramses::RendererSceneControl &amp;sceneControlApi, ramses::RamsesRenderer &amp;renderer)</div><div class="ttdef"><b>Definition:</b> main.cpp:31</div></div>
+<div class="ttc" id="aclassSceneStateEventHandler_html_a51121295648aa4416bd143ea99de5ed3"><div class="ttname"><a href="classSceneStateEventHandler.html#a51121295648aa4416bd143ea99de5ed3">SceneStateEventHandler::SceneStateEventHandler</a></div><div class="ttdeci">SceneStateEventHandler(ramses::RendererSceneControl &amp;sceneControlApi, ramses::RamsesRenderer &amp;renderer)</div><div class="ttdef"><b>Definition:</b> main.cpp:50</div></div>
 <div class="ttc" id="aclassramses_1_1ArrayBuffer_html"><div class="ttname"><a href="classramses_1_1ArrayBuffer.html">ramses::ArrayBuffer</a></div><div class="ttdoc">The ArrayBuffer is a data object used to provide vertex or index data to ramses::GeometryBinding::set...</div><div class="ttdef"><b>Definition:</b> ArrayBuffer.h:26</div></div>
 <div class="ttc" id="aclassramses_1_1StronglyTypedValue_html"><div class="ttname"><a href="classramses_1_1StronglyTypedValue.html">ramses::StronglyTypedValue&lt; uint32_t, std::numeric_limits&lt; uint32_t &gt;::max(), struct DisplayIdTag &gt;</a></div></div>
 <div class="ttc" id="aclassramses_1_1RamsesFramework_html"><div class="ttname"><a href="classramses_1_1RamsesFramework.html">ramses::RamsesFramework</a></div><div class="ttdoc">Class representing ramses framework components that are needed to initialize an instance of ramses cl...</div><div class="ttdef"><b>Definition:</b> RamsesFramework.h:34</div></div>

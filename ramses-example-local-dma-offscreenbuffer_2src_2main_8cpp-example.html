@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.114</span>
+   &#160;<span id="projectnumber">27.0.115</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -165,13 +165,13 @@ $(function() {
 <div class="line">    {</div>
 <div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> framebufferPixelsRead(<span class="keyword">const</span> uint8_t* pixelData, <span class="keyword">const</span> uint32_t pixelDataSize, <a name="_a10"></a><a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a>, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a>, <a class="code" href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291">ramses::ERendererEventResult</a> result)<span class="keyword"> override</span></div>
+<div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> framebufferPixelsRead(<span class="keyword">const</span> uint8_t* pixelData, <span class="keyword">const</span> uint32_t pixelDataSize, <a name="_a10"></a><a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a>, <a name="_a11"></a><a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a>, <a class="code" href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291">ramses::ERendererEventResult</a> result)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">    </span>{</div>
-<div class="line">        <span class="keywordflow">if</span>(result == <a name="a11"></a><a class="code" href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291a3e52f9b666bd7107ea09183f09eaab7d">ramses::ERendererEventResult_OK</a>)</div>
+<div class="line">        <span class="keywordflow">if</span>(result == <a name="a12"></a><a class="code" href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291a3e52f9b666bd7107ea09183f09eaab7d">ramses::ERendererEventResult_OK</a>)</div>
 <div class="line">        {</div>
 <div class="line">            <span class="keyword">static</span> uint32_t filePostifx = 0u;</div>
 <div class="line">            <span class="keyword">const</span> std::string fileName = <span class="stringliteral">&quot;./dmaBufExampleScreenshot_&quot;</span> + std::to_string(filePostifx++) + <span class="stringliteral">&quot;.png&quot;</span>;</div>
-<div class="line">            <span class="keywordflow">if</span>(!<a name="a12"></a><a class="code" href="classramses_1_1RamsesUtils.html#ab516bb29af11563ab71ac9d796f5d893">ramses::RamsesUtils::SaveImageBufferToPng</a>(fileName, {pixelData, pixelData + pixelDataSize}, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#a35a82e0510832c0bf733425a21cc5e0b">DisplayWidth</a>, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#abcbae5a36fe389c52b8741b0ef94f4aa">DisplayHeight</a>))</div>
+<div class="line">            <span class="keywordflow">if</span>(!<a name="a13"></a><a class="code" href="classramses_1_1RamsesUtils.html#ab516bb29af11563ab71ac9d796f5d893">ramses::RamsesUtils::SaveImageBufferToPng</a>(fileName, {pixelData, pixelData + pixelDataSize}, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#a35a82e0510832c0bf733425a21cc5e0b">DisplayWidth</a>, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#abcbae5a36fe389c52b8741b0ef94f4aa">DisplayHeight</a>))</div>
 <div class="line">                printf(<span class="stringliteral">&quot;Error: Failed saving screenshot to %s !!\n&quot;</span>, fileName.c_str());</div>
 <div class="line">            <span class="keywordflow">else</span></div>
 <div class="line">                printf(<span class="stringliteral">&quot;Saved screenshot to %s\n&quot;</span>, fileName.c_str());</div>
@@ -180,14 +180,14 @@ $(function() {
 <div class="line">            printf(<span class="stringliteral">&quot;Error: Failed read pixels!!\n&quot;</span>);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a name="a13"></a><a class="code" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a89bbf910ecb31b0ec8ee9b4298c426c1">sceneStateChanged</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> sceneId, <a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82c">ramses::RendererSceneState</a> state)<span class="keyword"> override</span></div>
+<div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a name="a14"></a><a class="code" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a89bbf910ecb31b0ec8ee9b4298c426c1">sceneStateChanged</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> sceneId, <a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82c">ramses::RendererSceneState</a> state)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">    </span>{</div>
 <div class="line">        m_scenes[sceneId].state = state;</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> displayCreated(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> displayId, <a class="code" href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291">ramses::ERendererEventResult</a> result)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">    </span>{</div>
-<div class="line">        <span class="keywordflow">if</span> (<a name="a14"></a><a class="code" href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291a7ca1dbbe797dfea613fecff7f4e5aa45">ramses::ERendererEventResult_FAIL</a> != result)</div>
+<div class="line">        <span class="keywordflow">if</span> (<a name="a15"></a><a class="code" href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291a7ca1dbbe797dfea613fecff7f4e5aa45">ramses::ERendererEventResult_FAIL</a> != result)</div>
 <div class="line">        {</div>
 <div class="line">            m_createdDisplays.insert(displayId);</div>
 <div class="line">        }</div>
@@ -201,11 +201,11 @@ $(function() {
 <div class="line">        }</div>
 <div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a name="a15"></a><a class="code" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a53ade79e2fea4c8129ac9420e6fa7237">offscreenBufferLinked</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a>, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> consumerScene, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::dataConsumerId_t</a>, <span class="keywordtype">bool</span> success)<span class="keyword"> override</span></div>
+<div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a name="a16"></a><a class="code" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a53ade79e2fea4c8129ac9420e6fa7237">offscreenBufferLinked</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a>, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> consumerScene, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::dataConsumerId_t</a>, <span class="keywordtype">bool</span> success)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">    </span>{</div>
 <div class="line">        <span class="keywordflow">if</span> (success)</div>
 <div class="line">        {</div>
-<div class="line">            m_scenesConsumingOffscreenBuffer[consumerScene].state = <a name="a16"></a><a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82ca453e6aa38d87b28ccae545967c53004f">ramses::RendererSceneState::Unavailable</a>;</div>
+<div class="line">            m_scenesConsumingOffscreenBuffer[consumerScene].state = <a name="a17"></a><a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82ca453e6aa38d87b28ccae545967c53004f">ramses::RendererSceneState::Unavailable</a>;</div>
 <div class="line">        }</div>
 <div class="line">    }</div>
 <div class="line"> </div>
@@ -234,9 +234,9 @@ $(function() {
 <div class="line">        <span class="keyword">const</span> std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };</div>
 <div class="line">        <span class="keywordflow">while</span> (!conditionFunction() &amp;&amp; std::chrono::steady_clock::now() &lt; timeoutTS)</div>
 <div class="line">        {</div>
-<div class="line">            m_renderer.<a name="a17"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd">doOneLoop</a>();</div>
-<div class="line">            m_renderer.<a name="a18"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419">dispatchEvents</a>(*<span class="keyword">this</span>);</div>
-<div class="line">            m_renderer.<a name="a19"></a><a class="code" href="classramses_1_1RamsesRenderer.html#aca664b15215a8cb1f410db4da3c65296">getSceneControlAPI</a>()-&gt;<a name="a20"></a><a class="code" href="classramses_1_1RendererSceneControl.html#a78bb4710634109f444c018149b54dd92">dispatchEvents</a>(*<span class="keyword">this</span>);</div>
+<div class="line">            m_renderer.<a name="a18"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd">doOneLoop</a>();</div>
+<div class="line">            m_renderer.<a name="a19"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419">dispatchEvents</a>(*<span class="keyword">this</span>);</div>
+<div class="line">            m_renderer.<a name="a20"></a><a class="code" href="classramses_1_1RamsesRenderer.html#aca664b15215a8cb1f410db4da3c65296">getSceneControlAPI</a>()-&gt;<a name="a21"></a><a class="code" href="classramses_1_1RendererSceneControl.html#a78bb4710634109f444c018149b54dd92">dispatchEvents</a>(*<span class="keyword">this</span>);</div>
 <div class="line">        }</div>
 <div class="line"> </div>
 <div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span> result = conditionFunction();</div>
@@ -250,7 +250,7 @@ $(function() {
 <div class="line">    <span class="keyword">struct </span>SceneInfo</div>
 <div class="line">    {</div>
 <div class="line">        <a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82c">ramses::RendererSceneState</a> state = <a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82ca453e6aa38d87b28ccae545967c53004f">ramses::RendererSceneState::Unavailable</a>;</div>
-<div class="line">        <a class="code" href="namespaceramses.html#ab7aa6bed4d47d2bd0967fc1a5ed6e95b">ramses::sceneVersionTag_t</a> version = <a name="a21"></a><a class="code" href="namespaceramses.html#ad84175c539e82caecd43d2c696553d7a">ramses::InvalidSceneVersionTag</a>;</div>
+<div class="line">        <a class="code" href="namespaceramses.html#ab7aa6bed4d47d2bd0967fc1a5ed6e95b">ramses::sceneVersionTag_t</a> version = <a name="a22"></a><a class="code" href="namespaceramses.html#ad84175c539e82caecd43d2c696553d7a">ramses::InvalidSceneVersionTag</a>;</div>
 <div class="line">    };</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">using</span> SceneSet = std::unordered_map&lt;ramses::sceneId_t, SceneInfo&gt;;</div>
@@ -278,20 +278,20 @@ $(function() {
 <div class="line">    DataConsumerSet m_dataConsumers;</div>
 <div class="line">    <a class="code" href="classramses_1_1RamsesRenderer.html">ramses::RamsesRenderer</a>&amp; m_renderer;</div>
 <div class="line">};</div>
-<div class="line"><a name="_a22"></a><a class="code" href="classramses_1_1Effect.html">ramses::Effect</a>&amp; <a name="a23"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a9b593c73de7bb9c377386024790cb5de">createEffect</a>(<a name="_a24"></a><a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; scene, <span class="keyword">const</span> std::string&amp; effectName)</div>
+<div class="line"><a name="_a23"></a><a class="code" href="classramses_1_1Effect.html">ramses::Effect</a>&amp; <a name="a24"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a9b593c73de7bb9c377386024790cb5de">createEffect</a>(<a name="_a25"></a><a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; scene, <span class="keyword">const</span> std::string&amp; effectName)</div>
 <div class="line">{</div>
-<div class="line">    <a name="_a25"></a><a class="code" href="classramses_1_1EffectDescription.html">ramses::EffectDescription</a> effectDesc;</div>
-<div class="line">    effectDesc.<a name="a26"></a><a class="code" href="classramses_1_1EffectDescription.html#a62eeb5ca39d964be5c1bd017abe142b9">setVertexShader</a>(<a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a234f5d5e74a5885dd62280318390a375">vertexShader</a>);</div>
-<div class="line">    effectDesc.<a name="a27"></a><a class="code" href="classramses_1_1EffectDescription.html#a7ae7bc275a2f1df6df33ed1c84ead70f">setFragmentShader</a>(<a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ac22ced94f6cc850562cbf3090045e7e7">fragmentShader</a>);</div>
-<div class="line">    effectDesc.<a name="a28"></a><a class="code" href="classramses_1_1EffectDescription.html#aa6441d0d110fd4fb04f9e5d2a471c4da">setUniformSemantic</a>(<span class="stringliteral">&quot;mvpMatrix&quot;</span>, <a name="a29"></a><a class="code" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa45f966892aa9712b434b27ea5513b63a">ramses::EEffectUniformSemantic::ModelViewProjectionMatrix</a>);</div>
+<div class="line">    <a name="_a26"></a><a class="code" href="classramses_1_1EffectDescription.html">ramses::EffectDescription</a> effectDesc;</div>
+<div class="line">    effectDesc.<a name="a27"></a><a class="code" href="classramses_1_1EffectDescription.html#a62eeb5ca39d964be5c1bd017abe142b9">setVertexShader</a>(<a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a234f5d5e74a5885dd62280318390a375">vertexShader</a>);</div>
+<div class="line">    effectDesc.<a name="a28"></a><a class="code" href="classramses_1_1EffectDescription.html#a7ae7bc275a2f1df6df33ed1c84ead70f">setFragmentShader</a>(<a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ac22ced94f6cc850562cbf3090045e7e7">fragmentShader</a>);</div>
+<div class="line">    effectDesc.<a name="a29"></a><a class="code" href="classramses_1_1EffectDescription.html#aa6441d0d110fd4fb04f9e5d2a471c4da">setUniformSemantic</a>(<span class="stringliteral">&quot;mvpMatrix&quot;</span>, <a name="a30"></a><a class="code" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa45f966892aa9712b434b27ea5513b63a">ramses::EEffectUniformSemantic::ModelViewProjectionMatrix</a>);</div>
 <div class="line"> </div>
-<div class="line">    <span class="keywordflow">return</span> *scene.<a name="a30"></a><a class="code" href="classramses_1_1Scene.html#a1ffa83b481924a424590c6cae8a008e3">createEffect</a>(effectDesc, <a name="a31"></a><a class="code" href="namespaceramses.html#aa4f32a02a4d27b0759cf54915b6ce602">ramses::ResourceCacheFlag_DoNotCache</a>, effectName.c_str());</div>
+<div class="line">    <span class="keywordflow">return</span> *scene.<a name="a31"></a><a class="code" href="classramses_1_1Scene.html#a1ffa83b481924a424590c6cae8a008e3">createEffect</a>(effectDesc, <a name="a32"></a><a class="code" href="namespaceramses.html#aa4f32a02a4d27b0759cf54915b6ce602">ramses::ResourceCacheFlag_DoNotCache</a>, effectName.c_str());</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><a name="_a32"></a><a class="code" href="classramses_1_1MeshNode.html">ramses::MeshNode</a>&amp; <a name="a33"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2b96e693db12002879def6cae0eedecc">createQuadWithTexture</a>(<a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; scene, <a class="code" href="classramses_1_1Effect.html">ramses::Effect</a>&amp; effect, <a name="_a34"></a><a class="code" href="classramses_1_1TextureSampler.html">ramses::TextureSampler</a>&amp; textureSampler)</div>
+<div class="line"><a name="_a33"></a><a class="code" href="classramses_1_1MeshNode.html">ramses::MeshNode</a>&amp; <a name="a34"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2b96e693db12002879def6cae0eedecc">createQuadWithTexture</a>(<a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; scene, <a class="code" href="classramses_1_1Effect.html">ramses::Effect</a>&amp; effect, <a name="_a35"></a><a class="code" href="classramses_1_1TextureSampler.html">ramses::TextureSampler</a>&amp; textureSampler)</div>
 <div class="line">{</div>
 <div class="line">    <span class="keyword">const</span> uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };</div>
-<div class="line">    <span class="keyword">const</span> <a name="_a35"></a><a class="code" href="classramses_1_1ArrayResource.html">ramses::ArrayResource</a>* indices = scene.<a name="a36"></a><a class="code" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">createArrayResource</a>(<a name="a37"></a><a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca8bd950a9d7779b83f5c30046c9aaf1cf">ramses::EDataType::UInt16</a>, 6, indicesArray);</div>
+<div class="line">    <span class="keyword">const</span> <a name="_a36"></a><a class="code" href="classramses_1_1ArrayResource.html">ramses::ArrayResource</a>* indices = scene.<a name="a37"></a><a class="code" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">createArrayResource</a>(<a name="a38"></a><a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca8bd950a9d7779b83f5c30046c9aaf1cf">ramses::EDataType::UInt16</a>, 6, indicesArray);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">const</span> <span class="keywordtype">float</span> vertexPositionsArray[] =</div>
 <div class="line">    {</div>
@@ -300,65 +300,65 @@ $(function() {
 <div class="line">        -1.f, 1.f, 0.f,</div>
 <div class="line">        1.f, 1.f, 0.f</div>
 <div class="line">    };</div>
-<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1ArrayResource.html">ramses::ArrayResource</a>* vertexPositions = scene.<a class="code" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">createArrayResource</a>(<a name="a38"></a><a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532caf6cbc64b52c1e48eccf9b22c92a5d7cf">ramses::EDataType::Vector3F</a>, 4, vertexPositionsArray);</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1ArrayResource.html">ramses::ArrayResource</a>* vertexPositions = scene.<a class="code" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">createArrayResource</a>(<a name="a39"></a><a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532caf6cbc64b52c1e48eccf9b22c92a5d7cf">ramses::EDataType::Vector3F</a>, 4, vertexPositionsArray);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">const</span> <span class="keywordtype">float</span> textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f };</div>
-<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1ArrayResource.html">ramses::ArrayResource</a>* textureCoords = scene.<a class="code" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">createArrayResource</a>(<a name="a39"></a><a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca6484c4547d9328d44b0a83b2524dafc9">ramses::EDataType::Vector2F</a>, 4, textureCoordsArray);</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1ArrayResource.html">ramses::ArrayResource</a>* textureCoords = scene.<a class="code" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">createArrayResource</a>(<a name="a40"></a><a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca6484c4547d9328d44b0a83b2524dafc9">ramses::EDataType::Vector2F</a>, 4, textureCoordsArray);</div>
 <div class="line"> </div>
-<div class="line">    <a name="_a40"></a><a class="code" href="classramses_1_1Appearance.html">ramses::Appearance</a>* appearance = scene.<a name="a41"></a><a class="code" href="classramses_1_1Scene.html#a5980a75ccc0e21f175f6d75803fb9d2b">createAppearance</a>(effect, <span class="stringliteral">&quot;quad appearance&quot;</span>);</div>
-<div class="line">    <a name="_a42"></a><a class="code" href="classramses_1_1GeometryBinding.html">ramses::GeometryBinding</a>* geometry = scene.<a name="a43"></a><a class="code" href="classramses_1_1Scene.html#a45950bffee8db288152f030f8b95736b">createGeometryBinding</a>(effect, <span class="stringliteral">&quot;quad geometry&quot;</span>);</div>
+<div class="line">    <a name="_a41"></a><a class="code" href="classramses_1_1Appearance.html">ramses::Appearance</a>* appearance = scene.<a name="a42"></a><a class="code" href="classramses_1_1Scene.html#a5980a75ccc0e21f175f6d75803fb9d2b">createAppearance</a>(effect, <span class="stringliteral">&quot;quad appearance&quot;</span>);</div>
+<div class="line">    <a name="_a43"></a><a class="code" href="classramses_1_1GeometryBinding.html">ramses::GeometryBinding</a>* geometry = scene.<a name="a44"></a><a class="code" href="classramses_1_1Scene.html#a45950bffee8db288152f030f8b95736b">createGeometryBinding</a>(effect, <span class="stringliteral">&quot;quad geometry&quot;</span>);</div>
 <div class="line"> </div>
-<div class="line">    geometry-&gt;<a name="a44"></a><a class="code" href="classramses_1_1GeometryBinding.html#a3cdc6368939eee5b38e24c71e9964b76">setIndices</a>(*indices);</div>
-<div class="line">    <a name="_a45"></a><a class="code" href="classramses_1_1AttributeInput.html">ramses::AttributeInput</a> positionsInput;</div>
-<div class="line">    effect.<a name="a46"></a><a class="code" href="classramses_1_1Effect.html#af6e6133c71f080b725e1a985518fc35f">findAttributeInput</a>(<span class="stringliteral">&quot;a_position&quot;</span>, positionsInput);</div>
-<div class="line">    geometry-&gt;<a name="a47"></a><a class="code" href="classramses_1_1GeometryBinding.html#a775b60f22ae9247c3145ddf16696eb46">setInputBuffer</a>(positionsInput, *vertexPositions);</div>
+<div class="line">    geometry-&gt;<a name="a45"></a><a class="code" href="classramses_1_1GeometryBinding.html#a3cdc6368939eee5b38e24c71e9964b76">setIndices</a>(*indices);</div>
+<div class="line">    <a name="_a46"></a><a class="code" href="classramses_1_1AttributeInput.html">ramses::AttributeInput</a> positionsInput;</div>
+<div class="line">    effect.<a name="a47"></a><a class="code" href="classramses_1_1Effect.html#af6e6133c71f080b725e1a985518fc35f">findAttributeInput</a>(<span class="stringliteral">&quot;a_position&quot;</span>, positionsInput);</div>
+<div class="line">    geometry-&gt;<a name="a48"></a><a class="code" href="classramses_1_1GeometryBinding.html#a775b60f22ae9247c3145ddf16696eb46">setInputBuffer</a>(positionsInput, *vertexPositions);</div>
 <div class="line">    <a class="code" href="classramses_1_1AttributeInput.html">ramses::AttributeInput</a> texCoordsInput;</div>
 <div class="line">    effect.<a class="code" href="classramses_1_1Effect.html#af6e6133c71f080b725e1a985518fc35f">findAttributeInput</a>(<span class="stringliteral">&quot;a_texcoord&quot;</span>, texCoordsInput);</div>
 <div class="line">    geometry-&gt;<a class="code" href="classramses_1_1GeometryBinding.html#a775b60f22ae9247c3145ddf16696eb46">setInputBuffer</a>(texCoordsInput, *textureCoords);</div>
 <div class="line"> </div>
-<div class="line">    <a class="code" href="classramses_1_1MeshNode.html">ramses::MeshNode</a>* meshNode = scene.<a name="a48"></a><a class="code" href="classramses_1_1Scene.html#a0b73e5ae2f197bf8e814eea743566a53">createMeshNode</a>();</div>
-<div class="line">    meshNode-&gt;<a name="a49"></a><a class="code" href="classramses_1_1MeshNode.html#a03307af9bb4e533eca06fd119f635481">setAppearance</a>(*appearance);</div>
-<div class="line">    meshNode-&gt;<a name="a50"></a><a class="code" href="classramses_1_1MeshNode.html#abf97e76c45b196bc3ee0eea5fac8032e">setGeometryBinding</a>(*geometry);</div>
+<div class="line">    <a class="code" href="classramses_1_1MeshNode.html">ramses::MeshNode</a>* meshNode = scene.<a name="a49"></a><a class="code" href="classramses_1_1Scene.html#a0b73e5ae2f197bf8e814eea743566a53">createMeshNode</a>();</div>
+<div class="line">    meshNode-&gt;<a name="a50"></a><a class="code" href="classramses_1_1MeshNode.html#a03307af9bb4e533eca06fd119f635481">setAppearance</a>(*appearance);</div>
+<div class="line">    meshNode-&gt;<a name="a51"></a><a class="code" href="classramses_1_1MeshNode.html#abf97e76c45b196bc3ee0eea5fac8032e">setGeometryBinding</a>(*geometry);</div>
 <div class="line"> </div>
-<div class="line">    <a name="_a51"></a><a class="code" href="classramses_1_1UniformInput.html">ramses::UniformInput</a> textureInput;</div>
-<div class="line">    effect.<a name="a52"></a><a class="code" href="classramses_1_1Effect.html#a991b1b19203b657810f0c5917e213ad7">findUniformInput</a>(<span class="stringliteral">&quot;textureSampler&quot;</span>, textureInput);</div>
-<div class="line">    appearance-&gt;<a name="a53"></a><a class="code" href="classramses_1_1Appearance.html#ad4d48b8ec74600283ea5c1e414d249a3">setInputTexture</a>(textureInput, textureSampler);</div>
+<div class="line">    <a name="_a52"></a><a class="code" href="classramses_1_1UniformInput.html">ramses::UniformInput</a> textureInput;</div>
+<div class="line">    effect.<a name="a53"></a><a class="code" href="classramses_1_1Effect.html#a991b1b19203b657810f0c5917e213ad7">findUniformInput</a>(<span class="stringliteral">&quot;textureSampler&quot;</span>, textureInput);</div>
+<div class="line">    appearance-&gt;<a name="a54"></a><a class="code" href="classramses_1_1Appearance.html#ad4d48b8ec74600283ea5c1e414d249a3">setInputTexture</a>(textureInput, textureSampler);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">return</span> *meshNode;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; <a name="a54"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2e8bf0c07b2c4bc87919e03188d672d1">createMainScene</a>(<a name="_a55"></a><a class="code" href="classramses_1_1RamsesClient.html">ramses::RamsesClient</a>&amp; client, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> sceneId, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::waylandIviSurfaceId_t</a> streamId, <span class="keyword">const</span> std::string&amp; processingOutputSamplerName)</div>
+<div class="line"><a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; <a name="a55"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2e8bf0c07b2c4bc87919e03188d672d1">createMainScene</a>(<a name="_a56"></a><a class="code" href="classramses_1_1RamsesClient.html">ramses::RamsesClient</a>&amp; client, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> sceneId, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::waylandIviSurfaceId_t</a> streamId, <span class="keyword">const</span> std::string&amp; processingOutputSamplerName)</div>
 <div class="line">{</div>
 <div class="line">    <span class="comment">//scene consists of two quads with textures</span></div>
 <div class="line">    <span class="comment">//the left quad is stream tex input rendered as is</span></div>
 <div class="line">    <span class="comment">//the right quad is output result from processing input (from two frames ago)</span></div>
-<div class="line">    <a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>* clientScene = client.<a name="a56"></a><a class="code" href="classramses_1_1RamsesClient.html#a8a7c5d446961516bf4a81198194eb30d">createScene</a>(sceneId, <a name="_a57"></a><a class="code" href="classramses_1_1SceneConfig.html">ramses::SceneConfig</a>(), <span class="stringliteral">&quot;main scene&quot;</span>);</div>
+<div class="line">    <a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>* clientScene = client.<a name="a57"></a><a class="code" href="classramses_1_1RamsesClient.html#a8a7c5d446961516bf4a81198194eb30d">createScene</a>(sceneId, <a name="_a58"></a><a class="code" href="classramses_1_1SceneConfig.html">ramses::SceneConfig</a>(), <span class="stringliteral">&quot;main scene&quot;</span>);</div>
 <div class="line"> </div>
-<div class="line">    <a name="_a58"></a><a class="code" href="classramses_1_1OrthographicCamera.html">ramses::OrthographicCamera</a>* camera = clientScene-&gt;<a name="a59"></a><a class="code" href="classramses_1_1Scene.html#a019a4b6ddb6c323256b0106995256466">createOrthographicCamera</a>(<span class="stringliteral">&quot;main scene camera&quot;</span>);</div>
-<div class="line">    camera-&gt;<a name="a60"></a><a class="code" href="classramses_1_1Node.html#a8f8cb6996cd77f70f03ebc5a65fd37b4">setTranslation</a>(0.0f, 0.0f, 5.0f);</div>
-<div class="line">    camera-&gt;<a name="a61"></a><a class="code" href="classramses_1_1Camera.html#ad8554177baf34301003ebd150d450c65">setFrustum</a>(-2.f, 2.f, -2.f, 2.f, 0.1f, 100.f);</div>
-<div class="line">    camera-&gt;<a name="a62"></a><a class="code" href="classramses_1_1Camera.html#ab5cfb558e8e88e87cdfe0722a20c093a">setViewport</a>(0, 0u, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#a35a82e0510832c0bf733425a21cc5e0b">DisplayWidth</a>, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#abcbae5a36fe389c52b8741b0ef94f4aa">DisplayHeight</a>);</div>
-<div class="line">    <a name="_a63"></a><a class="code" href="classramses_1_1RenderPass.html">ramses::RenderPass</a>* renderPass = clientScene-&gt;<a name="a64"></a><a class="code" href="classramses_1_1Scene.html#a5655e6484fda44cc3e9cccab2a939616">createRenderPass</a>(<span class="stringliteral">&quot;main scene render pass&quot;</span>);</div>
+<div class="line">    <a name="_a59"></a><a class="code" href="classramses_1_1OrthographicCamera.html">ramses::OrthographicCamera</a>* camera = clientScene-&gt;<a name="a60"></a><a class="code" href="classramses_1_1Scene.html#a019a4b6ddb6c323256b0106995256466">createOrthographicCamera</a>(<span class="stringliteral">&quot;main scene camera&quot;</span>);</div>
+<div class="line">    camera-&gt;<a name="a61"></a><a class="code" href="classramses_1_1Node.html#a8f8cb6996cd77f70f03ebc5a65fd37b4">setTranslation</a>(0.0f, 0.0f, 5.0f);</div>
+<div class="line">    camera-&gt;<a name="a62"></a><a class="code" href="classramses_1_1Camera.html#ad8554177baf34301003ebd150d450c65">setFrustum</a>(-2.f, 2.f, -2.f, 2.f, 0.1f, 100.f);</div>
+<div class="line">    camera-&gt;<a name="a63"></a><a class="code" href="classramses_1_1Camera.html#ab5cfb558e8e88e87cdfe0722a20c093a">setViewport</a>(0, 0u, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#a35a82e0510832c0bf733425a21cc5e0b">DisplayWidth</a>, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#abcbae5a36fe389c52b8741b0ef94f4aa">DisplayHeight</a>);</div>
+<div class="line">    <a name="_a64"></a><a class="code" href="classramses_1_1RenderPass.html">ramses::RenderPass</a>* renderPass = clientScene-&gt;<a name="a65"></a><a class="code" href="classramses_1_1Scene.html#a5655e6484fda44cc3e9cccab2a939616">createRenderPass</a>(<span class="stringliteral">&quot;main scene render pass&quot;</span>);</div>
 <div class="line"> </div>
-<div class="line">    renderPass-&gt;<a name="a65"></a><a class="code" href="classramses_1_1RenderPass.html#a0a8ac513cd7bb87d08a8e96d1e678b6a">setCamera</a>(*camera);</div>
-<div class="line">    <a name="_a66"></a><a class="code" href="classramses_1_1RenderGroup.html">ramses::RenderGroup</a>* renderGroup = clientScene-&gt;<a name="a67"></a><a class="code" href="classramses_1_1Scene.html#a7d3e0b1a87cb6a18ac64cb227f36f5e8">createRenderGroup</a>();</div>
-<div class="line">    renderPass-&gt;<a name="a68"></a><a class="code" href="classramses_1_1RenderPass.html#a470ac8c21ca2b3157d9f006cbba946ac">addRenderGroup</a>(*renderGroup);</div>
+<div class="line">    renderPass-&gt;<a name="a66"></a><a class="code" href="classramses_1_1RenderPass.html#a0a8ac513cd7bb87d08a8e96d1e678b6a">setCamera</a>(*camera);</div>
+<div class="line">    <a name="_a67"></a><a class="code" href="classramses_1_1RenderGroup.html">ramses::RenderGroup</a>* renderGroup = clientScene-&gt;<a name="a68"></a><a class="code" href="classramses_1_1Scene.html#a7d3e0b1a87cb6a18ac64cb227f36f5e8">createRenderGroup</a>();</div>
+<div class="line">    renderPass-&gt;<a name="a69"></a><a class="code" href="classramses_1_1RenderPass.html#a470ac8c21ca2b3157d9f006cbba946ac">addRenderGroup</a>(*renderGroup);</div>
 <div class="line"> </div>
 <div class="line">    <a class="code" href="classramses_1_1Effect.html">ramses::Effect</a>&amp; effect = <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a9b593c73de7bb9c377386024790cb5de">createEffect</a>(*clientScene, <span class="stringliteral">&quot;quad effect main scene&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Create fallback texture to show when sampler not linked to an offscreen buffer</span></div>
-<div class="line">    <a name="_a69"></a><a class="code" href="classramses_1_1Texture2D.html">ramses::Texture2D</a>&amp; fallbackTexture = *<a name="a70"></a><a class="code" href="classramses_1_1RamsesUtils.html#abeb6bfe7a148a8ddfab574b3020be3c9">ramses::RamsesUtils::CreateTextureResourceFromPng</a>(<span class="stringliteral">&quot;res/ramses-example-dma-offscreenbuffer-fallback.png&quot;</span>, *clientScene);</div>
-<div class="line">    <a name="_a71"></a><a class="code" href="classramses_1_1StreamTexture.html">ramses::StreamTexture</a>&amp; streamTexture = *clientScene-&gt;<a name="a72"></a><a class="code" href="classramses_1_1Scene.html#a6787d55f4a7a98e888146614e51c0f0d">createStreamTexture</a>(fallbackTexture, streamId, <span class="stringliteral">&quot;main scene composited tex sampler&quot;</span>);</div>
-<div class="line">    <a class="code" href="classramses_1_1TextureSampler.html">ramses::TextureSampler</a>&amp; streamtextureSampler = *clientScene-&gt;<a name="a73"></a><a class="code" href="classramses_1_1Scene.html#af010635ec2c1838adbd0d4c8d3950b50">createTextureSampler</a>(<a name="a74"></a><a class="code" href="namespaceramses.html#a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223">ramses::ETextureAddressMode_Repeat</a>,</div>
+<div class="line">    <a name="_a70"></a><a class="code" href="classramses_1_1Texture2D.html">ramses::Texture2D</a>&amp; fallbackTexture = *<a name="a71"></a><a class="code" href="classramses_1_1RamsesUtils.html#abeb6bfe7a148a8ddfab574b3020be3c9">ramses::RamsesUtils::CreateTextureResourceFromPng</a>(<span class="stringliteral">&quot;res/ramses-example-dma-offscreenbuffer-fallback.png&quot;</span>, *clientScene);</div>
+<div class="line">    <a name="_a72"></a><a class="code" href="classramses_1_1StreamTexture.html">ramses::StreamTexture</a>&amp; streamTexture = *clientScene-&gt;<a name="a73"></a><a class="code" href="classramses_1_1Scene.html#a6787d55f4a7a98e888146614e51c0f0d">createStreamTexture</a>(fallbackTexture, streamId, <span class="stringliteral">&quot;main scene composited tex sampler&quot;</span>);</div>
+<div class="line">    <a class="code" href="classramses_1_1TextureSampler.html">ramses::TextureSampler</a>&amp; streamtextureSampler = *clientScene-&gt;<a name="a74"></a><a class="code" href="classramses_1_1Scene.html#af010635ec2c1838adbd0d4c8d3950b50">createTextureSampler</a>(<a name="a75"></a><a class="code" href="namespaceramses.html#a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223">ramses::ETextureAddressMode_Repeat</a>,</div>
 <div class="line">                                                                                <a class="code" href="namespaceramses.html#a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223">ramses::ETextureAddressMode_Repeat</a>,</div>
-<div class="line">                                                                                <a name="a75"></a><a class="code" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7a4827677681e64c42a3b39d73d8a6e501">ramses::ETextureSamplingMethod_Linear</a>,</div>
+<div class="line">                                                                                <a name="a76"></a><a class="code" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7a4827677681e64c42a3b39d73d8a6e501">ramses::ETextureSamplingMethod_Linear</a>,</div>
 <div class="line">                                                                                <a class="code" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7a4827677681e64c42a3b39d73d8a6e501">ramses::ETextureSamplingMethod_Linear</a>,</div>
 <div class="line">                                                                                streamTexture,</div>
 <div class="line">                                                                                <span class="stringliteral">&quot;mainSceneStreamTexSampler&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">auto</span>&amp; meshCompositedTexture = <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2b96e693db12002879def6cae0eedecc">createQuadWithTexture</a>(*clientScene, effect, streamtextureSampler);</div>
 <div class="line">    meshCompositedTexture.setTranslation(-1.f, 0.f, 0.f);</div>
-<div class="line">    renderGroup-&gt;<a name="a76"></a><a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(meshCompositedTexture);</div>
+<div class="line">    renderGroup-&gt;<a name="a77"></a><a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(meshCompositedTexture);</div>
 <div class="line"> </div>
 <div class="line">    <a class="code" href="classramses_1_1TextureSampler.html">ramses::TextureSampler</a>&amp; outputTextureSampler = *clientScene-&gt;<a class="code" href="classramses_1_1Scene.html#af010635ec2c1838adbd0d4c8d3950b50">createTextureSampler</a>(<a class="code" href="namespaceramses.html#a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223">ramses::ETextureAddressMode_Repeat</a>,</div>
 <div class="line">                                                                                <a class="code" href="namespaceramses.html#a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223">ramses::ETextureAddressMode_Repeat</a>,</div>
@@ -375,7 +375,7 @@ $(function() {
 <div class="line">    <span class="keywordflow">return</span> *clientScene;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; <a name="a77"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acef12d279f42bc8ffee1a2eeef5a12ff">createSourceScene</a>(<a class="code" href="classramses_1_1RamsesClient.html">ramses::RamsesClient</a>&amp; client, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> sceneId, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::waylandIviSurfaceId_t</a> streamId)</div>
+<div class="line"><a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; <a name="a78"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acef12d279f42bc8ffee1a2eeef5a12ff">createSourceScene</a>(<a class="code" href="classramses_1_1RamsesClient.html">ramses::RamsesClient</a>&amp; client, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> sceneId, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::waylandIviSurfaceId_t</a> streamId)</div>
 <div class="line">{</div>
 <div class="line">    <span class="comment">//scene consists of one quad with a the stream texture that fills whole OB where scene is rendered</span></div>
 <div class="line">    <a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>* clientScene = client.<a class="code" href="classramses_1_1RamsesClient.html#a8a7c5d446961516bf4a81198194eb30d">createScene</a>(sceneId, <a class="code" href="classramses_1_1SceneConfig.html">ramses::SceneConfig</a>(), <span class="stringliteral">&quot;source scene&quot;</span>);</div>
@@ -408,20 +408,20 @@ $(function() {
 <div class="line">    <span class="keywordflow">return</span> *clientScene;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">struct </span><a name="_a78"></a><a class="code" href="structBufferInfo.html">BufferInfo</a></div>
+<div class="line"><span class="keyword">struct </span><a name="_a79"></a><a class="code" href="structBufferInfo.html">BufferInfo</a></div>
 <div class="line">{</div>
-<div class="line">    <span class="keywordtype">int</span> <a name="a79"></a><a class="code" href="structBufferInfo.html#a10f273b84901ac5e3427b5436dbc72fd">fd</a> = -1;</div>
-<div class="line">    uint32_t <a name="a80"></a><a class="code" href="structBufferInfo.html#ad3af79063b9c0dbbf192b8c68ea44e99">stride</a> = 0u;</div>
-<div class="line">    std::size_t <a name="a81"></a><a class="code" href="structBufferInfo.html#aaafe8802b1722e28b6d3f9da763466d1">bufferSize</a> = 0u;</div>
-<div class="line">    <span class="keywordtype">void</span>* <a name="a82"></a><a class="code" href="structBufferInfo.html#ad34d8977ef48f950430eb5d6d89a15fa">mappedMem</a> = <span class="keyword">nullptr</span>;</div>
+<div class="line">    <span class="keywordtype">int</span> <a name="a80"></a><a class="code" href="structBufferInfo.html#a10f273b84901ac5e3427b5436dbc72fd">fd</a> = -1;</div>
+<div class="line">    uint32_t <a name="a81"></a><a class="code" href="structBufferInfo.html#ad3af79063b9c0dbbf192b8c68ea44e99">stride</a> = 0u;</div>
+<div class="line">    std::size_t <a name="a82"></a><a class="code" href="structBufferInfo.html#aaafe8802b1722e28b6d3f9da763466d1">bufferSize</a> = 0u;</div>
+<div class="line">    <span class="keywordtype">void</span>* <a name="a83"></a><a class="code" href="structBufferInfo.html#ad34d8977ef48f950430eb5d6d89a15fa">mappedMem</a> = <span class="keyword">nullptr</span>;</div>
 <div class="line">};</div>
-<div class="line">std::unordered_map&lt;ramses::displayBufferId_t, BufferInfo&gt; <a name="a83"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>;</div>
+<div class="line">std::unordered_map&lt;ramses::displayBufferId_t, BufferInfo&gt; <a name="a84"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>;</div>
 <div class="line"> </div>
-<div class="line"><a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> <a name="a84"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ada8f62db30b6a4e36ec495fa2001569c">createDmaOffscreenBuffer</a>(<a class="code" href="classramses_1_1RamsesRenderer.html">ramses::RamsesRenderer</a>&amp; renderer, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> display)</div>
+<div class="line"><a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> <a name="a85"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ada8f62db30b6a4e36ec495fa2001569c">createDmaOffscreenBuffer</a>(<a class="code" href="classramses_1_1RamsesRenderer.html">ramses::RamsesRenderer</a>&amp; renderer, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> display)</div>
 <div class="line">{</div>
 <div class="line">    constexpr uint32_t usageFlags = GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT;</div>
 <div class="line">    constexpr uint64_t modifier = DRM_FORMAT_MOD_INVALID;</div>
-<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> bufferId = renderer.<a name="a85"></a><a class="code" href="classramses_1_1RamsesRenderer.html#aa2325f5f74258cf4bd68b54b5403aae0">createDmaOffscreenBuffer</a>(display, OffscreenBufferWidth, OffscreenBufferHeight, DmaBufferFourccFormat, usageFlags, modifier);</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> bufferId = renderer.<a name="a86"></a><a class="code" href="classramses_1_1RamsesRenderer.html#aa2325f5f74258cf4bd68b54b5403aae0">createDmaOffscreenBuffer</a>(display, OffscreenBufferWidth, OffscreenBufferHeight, DmaBufferFourccFormat, usageFlags, modifier);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">if</span>(!bufferId.isValid())</div>
 <div class="line">        printf(<span class="stringliteral">&quot;Error: Failed creating offscreen buffer!\n&quot;</span>);</div>
@@ -429,7 +429,7 @@ $(function() {
 <div class="line">    <span class="keywordflow">return</span> bufferId;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordtype">bool</span> <a name="a86"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ab5006ffe534cd979e4063fa6ca83437f">mapDmaOffscreenBuffer</a>(<a class="code" href="classramses_1_1RamsesRenderer.html">ramses::RamsesRenderer</a>&amp; renderer, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> display, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> displayBuffer, <span class="keywordtype">bool</span> readyOnly)</div>
+<div class="line"><span class="keywordtype">bool</span> <a name="a87"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ab5006ffe534cd979e4063fa6ca83437f">mapDmaOffscreenBuffer</a>(<a class="code" href="classramses_1_1RamsesRenderer.html">ramses::RamsesRenderer</a>&amp; renderer, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> display, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> displayBuffer, <span class="keywordtype">bool</span> readyOnly)</div>
 <div class="line">{</div>
 <div class="line">    errno = 0;</div>
 <div class="line">    <span class="keywordflow">if</span>(<a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.find(displayBuffer) != <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.cend())</div>
@@ -440,7 +440,7 @@ $(function() {
 <div class="line"> </div>
 <div class="line">    <span class="keywordtype">int</span> bufferFD = -1;</div>
 <div class="line">    uint32_t bufferStride = 0;</div>
-<div class="line">    <span class="keywordflow">if</span>(renderer.<a name="a87"></a><a class="code" href="classramses_1_1RamsesRenderer.html#aab3f7a514085d2e6643d841bbb69b41d">getDmaOffscreenBufferFDAndStride</a>(display, displayBuffer, bufferFD, bufferStride) != <a name="a88"></a><a class="code" href="namespaceramses.html#a8b82a1cf11ee2e79301c033168129ed1">ramses::StatusOK</a>)</div>
+<div class="line">    <span class="keywordflow">if</span>(renderer.<a name="a88"></a><a class="code" href="classramses_1_1RamsesRenderer.html#aab3f7a514085d2e6643d841bbb69b41d">getDmaOffscreenBufferFDAndStride</a>(display, displayBuffer, bufferFD, bufferStride) != <a name="a89"></a><a class="code" href="namespaceramses.html#a8b82a1cf11ee2e79301c033168129ed1">ramses::StatusOK</a>)</div>
 <div class="line">    {</div>
 <div class="line">        printf(<span class="stringliteral">&quot;Error: Failed to get FD and stride!\n&quot;</span>);</div>
 <div class="line">        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
@@ -456,13 +456,13 @@ $(function() {
 <div class="line">        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">    printf(<span class="stringliteral">&quot;Mapped OB %u with FD %i successfully to %p\n&quot;</span>, displayBuffer.<a name="a89"></a><a class="code" href="classramses_1_1StronglyTypedValue.html#a5209ef0f47dbc53270e884ed178c75fc">getValue</a>(), bufferFD, mappedMemory);</div>
+<div class="line">    printf(<span class="stringliteral">&quot;Mapped OB %u with FD %i successfully to %p\n&quot;</span>, displayBuffer.<a name="a90"></a><a class="code" href="classramses_1_1StronglyTypedValue.html#a5209ef0f47dbc53270e884ed178c75fc">getValue</a>(), bufferFD, mappedMemory);</div>
 <div class="line"> </div>
 <div class="line">    <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>[displayBuffer] = {bufferFD, bufferStride, fileSize, mappedMemory};</div>
 <div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordtype">bool</span> <a name="a90"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a123480e4f1cfa658704ebab4080540eb">startBufferAccess</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> displayBuffer)</div>
+<div class="line"><span class="keywordtype">bool</span> <a name="a91"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a123480e4f1cfa658704ebab4080540eb">startBufferAccess</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> displayBuffer)</div>
 <div class="line">{</div>
 <div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> bufferInfoIt = <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.find(displayBuffer);</div>
 <div class="line">    <span class="keywordflow">if</span>(bufferInfoIt == <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.cend())</div>
@@ -484,7 +484,7 @@ $(function() {
 <div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordtype">bool</span> <a name="a91"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2844fb74201907ebe6e9e6b762497427">endBufferAccess</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> displayBuffer)</div>
+<div class="line"><span class="keywordtype">bool</span> <a name="a92"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2844fb74201907ebe6e9e6b762497427">endBufferAccess</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> displayBuffer)</div>
 <div class="line">{</div>
 <div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> bufferInfoIt = <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.find(displayBuffer);</div>
 <div class="line">    <span class="keywordflow">if</span>(bufferInfoIt == <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.cend())</div>
@@ -506,7 +506,7 @@ $(function() {
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line"> </div>
-<div class="line"><span class="keywordtype">bool</span> <a name="a92"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ad0b9cd4dd707a790ae2adf3ab08dd170">doProcessing</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> inputBuffer, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> outputBuffer)</div>
+<div class="line"><span class="keywordtype">bool</span> <a name="a93"></a><a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#ad0b9cd4dd707a790ae2adf3ab08dd170">doProcessing</a>(<a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> inputBuffer, <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayBufferId_t</a> outputBuffer)</div>
 <div class="line">{</div>
 <div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; inputBufferInfo = <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.find(inputBuffer)-&gt;second;</div>
 <div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; outputBufferInfo = <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#acc403a6548c95053a75f57003b3d15fc">bufferInfoMap</a>.find(outputBuffer)-&gt;second;</div>
@@ -553,13 +553,13 @@ $(function() {
 <div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordtype">int</span> <a name="a93"></a><a class="code" href="ramses-example-basic-animation-realtime_2src_2main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97">main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[])</div>
+<div class="line"><span class="keywordtype">int</span> <a name="a94"></a><a class="code" href="ramses-example-basic-animation-realtime_2src_2main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97">main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[])</div>
 <div class="line">{</div>
-<div class="line">    <a name="_a94"></a><a class="code" href="classramses_1_1RamsesFrameworkConfig.html">ramses::RamsesFrameworkConfig</a> config(argc, argv);</div>
-<div class="line">    <a name="_a95"></a><a class="code" href="classramses_1_1RamsesFramework.html">ramses::RamsesFramework</a> framework(config);</div>
+<div class="line">    <a name="_a95"></a><a class="code" href="classramses_1_1RamsesFrameworkConfig.html">ramses::RamsesFrameworkConfig</a> config(argc, argv);</div>
+<div class="line">    <a name="_a96"></a><a class="code" href="classramses_1_1RamsesFramework.html">ramses::RamsesFramework</a> framework(config);</div>
 <div class="line">    <a class="code" href="classramses_1_1RamsesClient.html">ramses::RamsesClient</a>&amp; client(*framework.createClient(<span class="stringliteral">&quot;ramses-example-local-dma-offscreenbuffer&quot;</span>));</div>
 <div class="line"> </div>
-<div class="line">    <a name="_a96"></a><a class="code" href="classramses_1_1RendererConfig.html">ramses::RendererConfig</a> rendererConfig(argc, argv);</div>
+<div class="line">    <a name="_a97"></a><a class="code" href="classramses_1_1RendererConfig.html">ramses::RendererConfig</a> rendererConfig(argc, argv);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">//Set big enough max frame poll time in order to wait for every frame to finish</span></div>
 <div class="line">    <span class="comment">//This is essential to avoid skipping any frames</span></div>
@@ -570,16 +570,16 @@ $(function() {
 <div class="line">    framework.connect();</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">//avoid skipping any frames</span></div>
-<div class="line">    renderer.<a name="a97"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a1077a8cd9283f6e313d646459815c931">setSkippingOfUnmodifiedBuffers</a>(<span class="keyword">false</span>);</div>
+<div class="line">    renderer.<a name="a98"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a1077a8cd9283f6e313d646459815c931">setSkippingOfUnmodifiedBuffers</a>(<span class="keyword">false</span>);</div>
 <div class="line"> </div>
 <div class="line">    <a class="code" href="classSceneStateEventHandler.html">SceneStateEventHandler</a> eventHandler(renderer);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">//Create display and OBs</span></div>
-<div class="line">    <a name="_a98"></a><a class="code" href="classramses_1_1DisplayConfig.html">ramses::DisplayConfig</a> displayConfig(argc, argv);</div>
+<div class="line">    <a name="_a99"></a><a class="code" href="classramses_1_1DisplayConfig.html">ramses::DisplayConfig</a> displayConfig(argc, argv);</div>
 <div class="line">    displayConfig.setWindowRectangle(0, 0, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#a35a82e0510832c0bf733425a21cc5e0b">DisplayWidth</a>, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#abcbae5a36fe389c52b8741b0ef94f4aa">DisplayHeight</a>);</div>
 <div class="line">    displayConfig.setPlatformRenderNode(<span class="stringliteral">&quot;/dev/dri/renderD128&quot;</span>);</div>
-<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> display = renderer.<a name="a99"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a5e8715c650b5617440220f6980f8cfbe">createDisplay</a>(displayConfig);</div>
-<div class="line">    renderer.<a name="a100"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253">flush</a>();</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::displayId_t</a> display = renderer.<a name="a100"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a5e8715c650b5617440220f6980f8cfbe">createDisplay</a>(displayConfig);</div>
+<div class="line">    renderer.<a name="a101"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253">flush</a>();</div>
 <div class="line">    eventHandler.waitForDisplayCreated(display);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">//to simulate double buffering using OBs for reading</span></div>
@@ -622,7 +622,7 @@ $(function() {
 <div class="line">    <span class="comment">//disable clearing for OBs in order to control when does content get overwritten</span></div>
 <div class="line">    <span class="comment">//for example, the content of the write OBs (final result after processing) is written to memory</span></div>
 <div class="line">    <span class="comment">//on CPU side, so GPU should not clear that content while rendering</span></div>
-<div class="line">    <a name="a101"></a><a class="code" href="classramses_1_1RamsesRenderer.html#ac70f64e98a833178ea7729015fb1e7fe">ramses::RamsesRenderer::setDisplayBufferClearFlags</a>(renderer, display, dmaOffscreenBufferRead1, <a name="a102"></a><a class="code" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aaaa3bf781f879d8c7bf83045abc831719">ramses::EClearFlags_None</a>);</div>
+<div class="line">    <a name="a102"></a><a class="code" href="classramses_1_1RamsesRenderer.html#ac70f64e98a833178ea7729015fb1e7fe">ramses::RamsesRenderer::setDisplayBufferClearFlags</a>(renderer, display, dmaOffscreenBufferRead1, <a name="a103"></a><a class="code" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aaaa3bf781f879d8c7bf83045abc831719">ramses::EClearFlags_None</a>);</div>
 <div class="line">    <a class="code" href="classramses_1_1RamsesRenderer.html#ac70f64e98a833178ea7729015fb1e7fe">ramses::RamsesRenderer::setDisplayBufferClearFlags</a>(renderer, display, dmaOffscreenBufferRead2, <a class="code" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aaaa3bf781f879d8c7bf83045abc831719">ramses::EClearFlags_None</a>);</div>
 <div class="line">    <a class="code" href="classramses_1_1RamsesRenderer.html#ac70f64e98a833178ea7729015fb1e7fe">ramses::RamsesRenderer::setDisplayBufferClearFlags</a>(renderer, display, dmaOffscreenBufferWrite1, <a class="code" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aaaa3bf781f879d8c7bf83045abc831719">ramses::EClearFlags_None</a>);</div>
 <div class="line">    <a class="code" href="classramses_1_1RamsesRenderer.html#ac70f64e98a833178ea7729015fb1e7fe">ramses::RamsesRenderer::setDisplayBufferClearFlags</a>(renderer, display, dmaOffscreenBufferWrite2, <a class="code" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aaaa3bf781f879d8c7bf83045abc831719">ramses::EClearFlags_None</a>);</div>
@@ -633,13 +633,13 @@ $(function() {
 <div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::sceneId_t</a> mainSceneId{1u};</div>
 <div class="line">    <span class="keyword">const</span> std::string&amp; processingOutputSamplerName = <span class="stringliteral">&quot;processingOutputTexSampler&quot;</span>;</div>
 <div class="line">    <a class="code" href="classramses_1_1Scene.html">ramses::Scene</a>&amp; mainScene = <a class="code" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp.html#a2e8bf0c07b2c4bc87919e03188d672d1">createMainScene</a>(client, mainSceneId, CompositingSurfaceId, processingOutputSamplerName);</div>
-<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1TextureSampler.html">ramses::TextureSampler</a>&amp; processingOutputSampler = *ramses::RamsesUtils::TryConvert&lt;ramses::TextureSampler&gt;(*mainScene.<a name="a103"></a><a class="code" href="classramses_1_1Scene.html#ab1cc70b998f11fa845dcb0f021e8b50b">findObjectByName</a>(processingOutputSamplerName.c_str()));</div>
-<div class="line">    mainScene.<a name="a104"></a><a class="code" href="classramses_1_1Scene.html#afcd023e6f43a8143b567cb2551860a5d">createTextureConsumer</a>(processingOutputSampler, samplerConsumerId);</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1TextureSampler.html">ramses::TextureSampler</a>&amp; processingOutputSampler = *ramses::RamsesUtils::TryConvert&lt;ramses::TextureSampler&gt;(*mainScene.<a name="a104"></a><a class="code" href="classramses_1_1Scene.html#ab1cc70b998f11fa845dcb0f021e8b50b">findObjectByName</a>(processingOutputSamplerName.c_str()));</div>
+<div class="line">    mainScene.<a name="a105"></a><a class="code" href="classramses_1_1Scene.html#afcd023e6f43a8143b567cb2551860a5d">createTextureConsumer</a>(processingOutputSampler, samplerConsumerId);</div>
 <div class="line"> </div>
-<div class="line">    mainScene.<a name="a105"></a><a class="code" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88">flush</a>();</div>
-<div class="line">    mainScene.<a name="a106"></a><a class="code" href="classramses_1_1Scene.html#a495b0efc631c28c15b818f5c765dbbba">publish</a>();</div>
+<div class="line">    mainScene.<a name="a106"></a><a class="code" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88">flush</a>();</div>
+<div class="line">    mainScene.<a name="a107"></a><a class="code" href="classramses_1_1Scene.html#a495b0efc631c28c15b818f5c765dbbba">publish</a>();</div>
 <div class="line">    sceneControlAPI.setSceneMapping(mainSceneId, display);</div>
-<div class="line">    sceneControlAPI.setSceneState(mainSceneId, <a name="a107"></a><a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a>);</div>
+<div class="line">    sceneControlAPI.setSceneState(mainSceneId, <a name="a108"></a><a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a>);</div>
 <div class="line">    sceneControlAPI.flush();</div>
 <div class="line">    eventHandler.waitForSceneState(mainSceneId, <a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a>);</div>
 <div class="line"> </div>
@@ -658,7 +658,7 @@ $(function() {
 <div class="line">    {</div>
 <div class="line">        <span class="keywordflow">if</span>(ExampleTakeScreenshots)</div>
 <div class="line">        {</div>
-<div class="line">            renderer.<a name="a108"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a88b8b49e394f9676224f6a55e6413862">readPixels</a>(display, renderer.<a name="a109"></a><a class="code" href="classramses_1_1RamsesRenderer.html#addff71feff4e101e665631b6b27363a6">getDisplayFramebuffer</a>(display), 0u, 0u, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#a35a82e0510832c0bf733425a21cc5e0b">DisplayWidth</a>, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#abcbae5a36fe389c52b8741b0ef94f4aa">DisplayHeight</a>);</div>
+<div class="line">            renderer.<a name="a109"></a><a class="code" href="classramses_1_1RamsesRenderer.html#a88b8b49e394f9676224f6a55e6413862">readPixels</a>(display, renderer.<a name="a110"></a><a class="code" href="classramses_1_1RamsesRenderer.html#addff71feff4e101e665631b6b27363a6">getDisplayFramebuffer</a>(display), 0u, 0u, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#a35a82e0510832c0bf733425a21cc5e0b">DisplayWidth</a>, <a class="code" href="ramses-example-local-pick-handling_2src_2main_8cpp.html#abcbae5a36fe389c52b8741b0ef94f4aa">DisplayHeight</a>);</div>
 <div class="line">            renderer.<a class="code" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253">flush</a>();</div>
 <div class="line">        }</div>
 <div class="line"> </div>
@@ -720,7 +720,7 @@ $(function() {
 <div class="ttc" id="aclassramses_1_1RendererSceneControlEventHandlerEmpty_html"><div class="ttname"><a href="classramses_1_1RendererSceneControlEventHandlerEmpty.html">ramses::RendererSceneControlEventHandlerEmpty</a></div><div class="ttdoc">Convenience empty implementation of IRendererSceneControlEventHandler that can be used to derive from...</div><div class="ttdef"><b>Definition:</b> IRendererSceneControlEventHandler.h:200</div></div>
 <div class="ttc" id="anamespaceramses_html_a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547"><div class="ttname"><a href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a></div><div class="ttdeci">@ Rendered</div><div class="ttdoc">Scene is being rendered.</div></div>
 <div class="ttc" id="aclassramses_1_1MeshNode_html_a03307af9bb4e533eca06fd119f635481"><div class="ttname"><a href="classramses_1_1MeshNode.html#a03307af9bb4e533eca06fd119f635481">ramses::MeshNode::setAppearance</a></div><div class="ttdeci">status_t setAppearance(Appearance &amp;appearance)</div><div class="ttdoc">Sets the Appearance of the MeshNode.</div></div>
-<div class="ttc" id="aclassSceneStateEventHandler_html"><div class="ttname"><a href="classSceneStateEventHandler.html">SceneStateEventHandler</a></div><div class="ttdef"><b>Definition:</b> main.cpp:28</div></div>
+<div class="ttc" id="aclassSceneStateEventHandler_html"><div class="ttname"><a href="classSceneStateEventHandler.html">SceneStateEventHandler</a></div><div class="ttdef"><b>Definition:</b> main.cpp:47</div></div>
 <div class="ttc" id="anamespaceramses_html_a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223"><div class="ttname"><a href="namespaceramses.html#a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223">ramses::ETextureAddressMode_Repeat</a></div><div class="ttdeci">@ ETextureAddressMode_Repeat</div><div class="ttdef"><b>Definition:</b> TextureEnums.h:33</div></div>
 <div class="ttc" id="astructBufferInfo_html_a10f273b84901ac5e3427b5436dbc72fd"><div class="ttname"><a href="structBufferInfo.html#a10f273b84901ac5e3427b5436dbc72fd">BufferInfo::fd</a></div><div class="ttdeci">int fd</div><div class="ttdef"><b>Definition:</b> main.cpp:351</div></div>
 <div class="ttc" id="anamespaceramses_html_ad324f6844b04dfee50601ea669dd3291"><div class="ttname"><a href="namespaceramses.html#ad324f6844b04dfee50601ea669dd3291">ramses::ERendererEventResult</a></div><div class="ttdeci">ERendererEventResult</div><div class="ttdoc">Specifies the result of the operation referred to by renderer event.</div><div class="ttdef"><b>Definition:</b> Types.h:93</div></div>
@@ -773,7 +773,7 @@ $(function() {
 <div class="ttc" id="aclassramses_1_1GeometryBinding_html_a775b60f22ae9247c3145ddf16696eb46"><div class="ttname"><a href="classramses_1_1GeometryBinding.html#a775b60f22ae9247c3145ddf16696eb46">ramses::GeometryBinding::setInputBuffer</a></div><div class="ttdeci">status_t setInputBuffer(const AttributeInput &amp;attributeInput, const ArrayResource &amp;arrayResource, uint32_t instancingDivisor=0)</div><div class="ttdoc">Assign a data array resource to a given effect attribute input.</div></div>
 <div class="ttc" id="aclassramses_1_1RenderGroup_html"><div class="ttname"><a href="classramses_1_1RenderGroup.html">ramses::RenderGroup</a></div><div class="ttdoc">The RenderGroup is a container used to collect renderables which are supposed to be rendered together...</div><div class="ttdef"><b>Definition:</b> RenderGroup.h:30</div></div>
 <div class="ttc" id="anamespaceramses_html_a6de13d29afe1f37ca41caec5ae20532caf6cbc64b52c1e48eccf9b22c92a5d7cf"><div class="ttname"><a href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532caf6cbc64b52c1e48eccf9b22c92a5d7cf">ramses::EDataType::Vector3F</a></div><div class="ttdeci">@ Vector3F</div><div class="ttdoc">three components of type float per data element</div></div>
-<div class="ttc" id="aclassSceneStateEventHandler_html_a51121295648aa4416bd143ea99de5ed3"><div class="ttname"><a href="classSceneStateEventHandler.html#a51121295648aa4416bd143ea99de5ed3">SceneStateEventHandler::SceneStateEventHandler</a></div><div class="ttdeci">SceneStateEventHandler(ramses::RendererSceneControl &amp;sceneControlApi, ramses::RamsesRenderer &amp;renderer)</div><div class="ttdef"><b>Definition:</b> main.cpp:31</div></div>
+<div class="ttc" id="aclassSceneStateEventHandler_html_a51121295648aa4416bd143ea99de5ed3"><div class="ttname"><a href="classSceneStateEventHandler.html#a51121295648aa4416bd143ea99de5ed3">SceneStateEventHandler::SceneStateEventHandler</a></div><div class="ttdeci">SceneStateEventHandler(ramses::RendererSceneControl &amp;sceneControlApi, ramses::RamsesRenderer &amp;renderer)</div><div class="ttdef"><b>Definition:</b> main.cpp:50</div></div>
 <div class="ttc" id="aclassramses_1_1RendererSceneControlEventHandlerEmpty_html_a53ade79e2fea4c8129ac9420e6fa7237"><div class="ttname"><a href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a53ade79e2fea4c8129ac9420e6fa7237">ramses::RendererSceneControlEventHandlerEmpty::offscreenBufferLinked</a></div><div class="ttdeci">virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override</div><div class="ttdoc">This method will be called when the data link between offscreen buffer and scene's data slot is estab...</div><div class="ttdef"><b>Definition:</b> IRendererSceneControlEventHandler.h:215</div></div>
 <div class="ttc" id="aclassramses_1_1RamsesRenderer_html_a6307f22a698040fc1f68f771a39ff253"><div class="ttname"><a href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253">ramses::RamsesRenderer::flush</a></div><div class="ttdeci">status_t flush()</div><div class="ttdoc">Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...</div></div>
 <div class="ttc" id="aclassramses_1_1StronglyTypedValue_html"><div class="ttname"><a href="classramses_1_1StronglyTypedValue.html">ramses::StronglyTypedValue</a></div><div class="ttdoc">Helper class to create strongly typed values out of various types.</div><div class="ttdef"><b>Definition:</b> StronglyTypedValue.h:22</div></div>

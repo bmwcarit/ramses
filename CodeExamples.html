@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.114</span>
+   &#160;<span id="projectnumber">27.0.115</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -1181,8 +1181,9 @@ Offscreen Buffer</h2>
 <div class="line">    <a class="code" href="classramses_1_1Node.html">ramses::Node</a>* rotationNode = ramses::RamsesUtils::TryConvert&lt;ramses::Node&gt;(*providerScene-&gt;findObjectByName(<span class="stringliteral">&quot;rotationNode&quot;</span>));</div>
 <div class="line">    <a class="code" href="classramses_1_1Node.html">ramses::Node</a>* rotationNodeMS = ramses::RamsesUtils::TryConvert&lt;ramses::Node&gt;(*providerScene2-&gt;findObjectByName(<span class="stringliteral">&quot;rotationNodeMS&quot;</span>));</div>
 <div class="line"> </div>
-<div class="line">    <span class="keywordflow">while</span> (<span class="keyword">true</span>)</div>
+<div class="line">    <span class="keywordflow">while</span> (!eventHandler.isWindowClosed())</div>
 <div class="line">    {</div>
+<div class="line">        renderer.dispatchEvents(eventHandler);</div>
 <div class="line">        <span class="comment">//Rotate the quads of the provider scenes</span></div>
 <div class="line">        rotationNode-&gt;<a class="code" href="classramses_1_1Node.html#acf1c0f0d1ddd4700b2516e87fd2a86d0">setRotation</a>(0.f, 0.f, rotationZ, <a class="code" href="namespaceramses.html#a0f43821d4d2a9da2e8228455dcc70cb4a6811254e01b3550bdb2dc46f204730dc">ramses::ERotationConvention::ZYX</a>);</div>
 <div class="line">        providerScene-&gt;flush();</div>
@@ -1237,7 +1238,7 @@ Pick Handling</h2>
 <div class="line">    sceneControlAPI.setSceneState(sceneId, <a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a>);</div>
 <div class="line">    sceneControlAPI.flush();</div>
 <div class="line"> </div>
-<div class="line">    <span class="keywordflow">for</span> (;;)</div>
+<div class="line">    <span class="keywordflow">while</span> (!eventHandler.isWindowClosed())</div>
 <div class="line">    {</div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(15));</div>
 <div class="line">        renderer.dispatchEvents(eventHandler);</div>
@@ -1437,7 +1438,7 @@ Scene referencing</h2>
 <div class="ttc" id="anamespaceramses_html_a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547"><div class="ttname"><a href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a></div><div class="ttdeci">@ Rendered</div><div class="ttdoc">Scene is being rendered.</div></div>
 <div class="ttc" id="anamespaceramses_html"><div class="ttname"><a href="namespaceramses.html">ramses</a></div><div class="ttdoc">The RAMSES namespace contains all client side objects and functions used to implement RAMSES applicat...</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:14</div></div>
 <div class="ttc" id="aclassramses_1_1MeshNode_html_a03307af9bb4e533eca06fd119f635481"><div class="ttname"><a href="classramses_1_1MeshNode.html#a03307af9bb4e533eca06fd119f635481">ramses::MeshNode::setAppearance</a></div><div class="ttdeci">status_t setAppearance(Appearance &amp;appearance)</div><div class="ttdoc">Sets the Appearance of the MeshNode.</div></div>
-<div class="ttc" id="aclassSceneStateEventHandler_html"><div class="ttname"><a href="classSceneStateEventHandler.html">SceneStateEventHandler</a></div><div class="ttdef"><b>Definition:</b> main.cpp:28</div></div>
+<div class="ttc" id="aclassSceneStateEventHandler_html"><div class="ttname"><a href="classSceneStateEventHandler.html">SceneStateEventHandler</a></div><div class="ttdef"><b>Definition:</b> main.cpp:47</div></div>
 <div class="ttc" id="aclassramses_1_1DcsmMetadataCreator_html_a9dae56508a812c004b2e12c5a22f8067"><div class="ttname"><a href="classramses_1_1DcsmMetadataCreator.html#a9dae56508a812c004b2e12c5a22f8067">ramses::DcsmMetadataCreator::setPreviewDescription</a></div><div class="ttdeci">status_t setPreviewDescription(std::u32string previewDescription)</div><div class="ttdoc">Set preview description metadata entry. Must be a valid utf32 string.</div></div>
 <div class="ttc" id="anamespaceramses_html_a295c99b91730bfeaaba46d74a8943378a97d975d54ffcc75085ae5c9f058518ac"><div class="ttname"><a href="namespaceramses.html#a295c99b91730bfeaaba46d74a8943378a97d975d54ffcc75085ae5c9f058518ac">ramses::EAnimatedPropertyComponent_Y</a></div><div class="ttdeci">@ EAnimatedPropertyComponent_Y</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:67</div></div>
 <div class="ttc" id="anamespaceramses_html_a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223"><div class="ttname"><a href="namespaceramses.html#a1fd1b9a27ae9cebb5c79e59794dc6c46a4a8af0047aff4ea71e7f35dd58f14223">ramses::ETextureAddressMode_Repeat</a></div><div class="ttdeci">@ ETextureAddressMode_Repeat</div><div class="ttdef"><b>Definition:</b> TextureEnums.h:33</div></div>

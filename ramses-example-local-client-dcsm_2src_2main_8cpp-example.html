@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.114</span>
+   &#160;<span id="projectnumber">27.0.115</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -235,12 +235,17 @@ $(function() {
 <div class="line">        }</div>
 <div class="line">    }</div>
 <div class="line"> </div>
+<div class="line">    <span class="keywordtype">void</span> windowClosed(<a class="code" href="classramses_1_1StronglyTypedValue.html">displayId_t</a> <span class="comment">/*displayId*/</span>)<span class="keyword"> override</span></div>
+<div class="line"><span class="keyword">    </span>{</div>
+<div class="line">        m_windowClosed = <span class="keyword">true</span>;</div>
+<div class="line">    }</div>
+<div class="line"> </div>
 <div class="line">    <span class="keywordtype">void</span> run()</div>
 <div class="line">    {</div>
 <div class="line">        <a name="a20"></a><a class="code" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp.html#a1bccf71e9f334a4ad4c386138ae0f701">createProviderScene</a>();</div>
 <div class="line">        createLocalConsumerScene();</div>
 <div class="line">        offerScenesViaDcsm();</div>
-<div class="line">        <span class="keywordflow">for</span> (;;)</div>
+<div class="line">        <span class="keywordflow">while</span> (!m_windowClosed)</div>
 <div class="line">        {</div>
 <div class="line">            dcsmControl-&gt;update(0, *<span class="keyword">this</span>);</div>
 <div class="line">            renderer-&gt;dispatchEvents(*<span class="keyword">this</span>);</div>
@@ -416,6 +421,7 @@ $(function() {
 <div class="line">    <span class="keywordtype">bool</span> m_providerSceneReady = <span class="keyword">false</span>;</div>
 <div class="line">    <span class="keywordtype">bool</span> m_consumerSceneReady = <span class="keyword">false</span>;</div>
 <div class="line">    <span class="keywordtype">bool</span> m_offscreenBufferCreated = <span class="keyword">false</span>;</div>
+<div class="line">    <span class="keywordtype">bool</span> m_windowClosed = <span class="keyword">false</span>;</div>
 <div class="line">};</div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span> <a name="a104"></a><a class="code" href="ramses-example-basic-animation-realtime_2src_2main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97">main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[])</div>
@@ -490,7 +496,7 @@ $(function() {
 <div class="ttc" id="aramses-client_8h_html"><div class="ttname"><a href="ramses-client_8h.html">ramses-client.h</a></div></div>
 <div class="ttc" id="aclassramses_1_1EffectDescription_html_aa6441d0d110fd4fb04f9e5d2a471c4da"><div class="ttname"><a href="classramses_1_1EffectDescription.html#aa6441d0d110fd4fb04f9e5d2a471c4da">ramses::EffectDescription::setUniformSemantic</a></div><div class="ttdeci">status_t setUniformSemantic(const char *inputName, EEffectUniformSemantic semanticType)</div><div class="ttdoc">Sets an uniform semantic. Used for uniforms which are not locally available on the client,...</div></div>
 <div class="ttc" id="anamespaceramses_html_a295c99b91730bfeaaba46d74a8943378a418a7273f9d24a83d713befac308d6ac"><div class="ttname"><a href="namespaceramses.html#a295c99b91730bfeaaba46d74a8943378a418a7273f9d24a83d713befac308d6ac">ramses::EAnimatedPropertyComponent_Z</a></div><div class="ttdeci">@ EAnimatedPropertyComponent_Z</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:68</div></div>
-<div class="ttc" id="aramses-example-local-offscreenbuffer_2src_2main_8cpp_html_a1bccf71e9f334a4ad4c386138ae0f701"><div class="ttname"><a href="ramses-example-local-offscreenbuffer_2src_2main_8cpp.html#a1bccf71e9f334a4ad4c386138ae0f701">createProviderScene</a></div><div class="ttdeci">ramses::Scene * createProviderScene(ramses::RamsesClient &amp;client, ramses::sceneId_t sceneId, const char *rotationNodeName)</div><div class="ttdef"><b>Definition:</b> main.cpp:265</div></div>
+<div class="ttc" id="aramses-example-local-offscreenbuffer_2src_2main_8cpp_html_a1bccf71e9f334a4ad4c386138ae0f701"><div class="ttname"><a href="ramses-example-local-offscreenbuffer_2src_2main_8cpp.html#a1bccf71e9f334a4ad4c386138ae0f701">createProviderScene</a></div><div class="ttdeci">ramses::Scene * createProviderScene(ramses::RamsesClient &amp;client, ramses::sceneId_t sceneId, const char *rotationNodeName)</div><div class="ttdef"><b>Definition:</b> main.cpp:276</div></div>
 <div class="ttc" id="aclassramses_1_1ArrayResource_html"><div class="ttname"><a href="classramses_1_1ArrayResource.html">ramses::ArrayResource</a></div><div class="ttdoc">The ArrayResource stores a data array of a given type. The data is immutable. The resource can be use...</div><div class="ttdef"><b>Definition:</b> ArrayResource.h:25</div></div>
 <div class="ttc" id="anamespaceramses_html_a13204af9843f00290458e63296b0fb05"><div class="ttname"><a href="namespaceramses.html#a13204af9843f00290458e63296b0fb05">ramses::DcsmContentControlEventResult</a></div><div class="ttdeci">DcsmContentControlEventResult</div><div class="ttdoc">ramses::DcsmContentControl event result used in some event handler callbacks</div><div class="ttdef"><b>Definition:</b> IDcsmContentControlEventHandler.h:20</div></div>
 <div class="ttc" id="aclassramses_1_1GeometryBinding_html"><div class="ttname"><a href="classramses_1_1GeometryBinding.html">ramses::GeometryBinding</a></div><div class="ttdoc">A geometry binding together with an appearance describe how an object will be rendered to the screen.</div><div class="ttdef"><b>Definition:</b> GeometryBinding.h:24</div></div>
