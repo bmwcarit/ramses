@@ -151,7 +151,7 @@ namespace ramses_internal
         if (m_sceneRendererHandler)
             m_sceneRendererHandler->handleNewSceneAvailable(info, m_myID);
 
-        if (mode != EScenePublicationMode_LocalOnly)
+        if (mode != EScenePublicationMode_LocalOnly && m_connected)
             m_communicationSystem.broadcastNewScenesAvailable({info});
 
         m_locallyPublishedScenes.put(sceneId, info);
@@ -168,7 +168,7 @@ namespace ramses_internal
         if (m_sceneRendererHandler)
             m_sceneRendererHandler->handleSceneBecameUnavailable(sceneId, m_myID);
 
-        if (mode != EScenePublicationMode_LocalOnly)
+        if (mode != EScenePublicationMode_LocalOnly && m_connected)
             m_communicationSystem.broadcastScenesBecameUnavailable({info});
     }
 
@@ -192,6 +192,13 @@ namespace ramses_internal
             handleUnsubscribeScene(sceneId, m_myID);
         else
             m_communicationSystem.sendUnsubscribeScene(to, sceneId);
+    }
+
+    void SceneGraphComponent::connectToNetwork()
+    {
+        PlatformGuard guard(m_frameworkLock);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::connectToNetwork");
+        m_connected = true;
     }
 
     void SceneGraphComponent::disconnectFromNetwork()
@@ -222,6 +229,8 @@ namespace ramses_internal
                 }
             }
         }
+
+        m_connected = false;
 
         LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::disconnectFromNetwork: done");
     }

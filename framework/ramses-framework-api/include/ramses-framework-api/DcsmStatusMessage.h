@@ -41,7 +41,7 @@ namespace ramses
 
         /**
          * @brief Convenience function to get the derived class of DcsmStatusMessage easily.
-         * @return Pointer to ActiveLayoutMessage class if type of this message is ActiveLayout, nullptr otherwise.
+         * @return Pointer to WidgetFocusStatusMessage class if type of this message is WidgetFocusStatus, nullptr otherwise.
          */
         class WidgetFocusStatusMessage const* getAsWidgetFocusStatus() const;
 

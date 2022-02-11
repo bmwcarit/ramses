@@ -89,6 +89,7 @@ namespace ramses_internal
         // IPeriodicLogSupplier
         virtual void triggerLogMessageForPeriodicLog() override;
 
+        void connectToNetwork();
         void disconnectFromNetwork();
 
         // for testing only
@@ -123,6 +124,8 @@ namespace ramses_internal
         };
 
         std::unordered_map<SceneId, ReceivedScene> m_remoteScenes;
+
+        bool m_connected = false;
     };
 }
 

@@ -1,3 +1,9 @@
+27.0.116
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Permit Scene::publish() if framework is not connected yet (RamsesFramework::connect())
+
 27.0.115
 -------------------
         General changes

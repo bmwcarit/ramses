@@ -103,7 +103,7 @@ bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, cons
     case RenderBuffer_MsaaSampleCount2Blit:
         return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_2_BLIT, "RenderBuffer_MsaaSampleCount2Blit", 0.33f);
     case RenderBuffer_MsaaSampleCount4Blit:
-        return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4_BLIT, "RenderBuffer_MsaaSampleCount4Blit");
+        return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4_BLIT, "RenderBuffer_MsaaSampleCount4Blit", 0.33f);
     case RenderBuffer_MsaaSampleCount4TexelFetch:
         return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4_TEXEL_FETCH, "RenderBuffer_MsaaSampleCount4TexelFetch");
 

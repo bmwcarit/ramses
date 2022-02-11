@@ -116,12 +116,30 @@ namespace ramses
         EXPECT_EQ(StatusOK, distributedScene->publish(EScenePublicationMode_LocalOnly));
     }
 
-    TEST(DistributedSceneTest, reportsErrorWhenPublishSceneIfNotConnected)
+    TEST(DistributedSceneTest, isPublishedAfterDisconnect)
     {
-        RamsesFramework framework;
+        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
+        RamsesClient& remoteClient(*framework.createClient(nullptr));
+        framework.connect();
+        SceneConfig config;
+        Scene* distributedScene = remoteClient.createScene(sceneId_t(1u), config);
+        EXPECT_EQ(StatusOK, distributedScene->publish(EScenePublicationMode_LocalAndRemote));
+        framework.disconnect();
+        EXPECT_TRUE(distributedScene->isPublished());
+        framework.connect();
+        EXPECT_TRUE(distributedScene->isPublished());
+        EXPECT_NE(StatusOK, distributedScene->publish(EScenePublicationMode_LocalAndRemote));
+    }
+
+    TEST(DistributedSceneTest, canPublishSceneIfNotConnected)
+    {
+        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
         RamsesClient& remoteClient(*framework.createClient(nullptr));
         Scene* distributedScene = remoteClient.createScene(sceneId_t(1u));
-        EXPECT_NE(StatusOK, distributedScene->publish());
+        EXPECT_EQ(StatusOK, distributedScene->publish());
+        EXPECT_TRUE(distributedScene->isPublished());
+        framework.connect();
+        EXPECT_TRUE(distributedScene->isPublished());
     }
 
     TEST_F(AScene, canValidate)

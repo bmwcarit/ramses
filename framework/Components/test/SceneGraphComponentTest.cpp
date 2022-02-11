@@ -22,10 +22,10 @@
 
 using namespace ramses_internal;
 
-class ASceneGraphComponent : public ::testing::Test
+class ASceneGraphComponentBase : public ::testing::Test
 {
 public:
-    ASceneGraphComponent()
+    ASceneGraphComponentBase()
         : localParticipantID(11)
         , remoteParticipantID(12)
         , sceneGraphComponent(localParticipantID, communicationSystem, connectionStatusUpdateNotifier, resourceComponent, frameworkLock)
@@ -90,6 +90,20 @@ protected:
     SceneGraphComponent sceneGraphComponent;
 };
 
+class ASceneGraphComponent : public ASceneGraphComponentBase
+{
+public:
+    ASceneGraphComponent()
+        : ASceneGraphComponentBase()
+    {
+        sceneGraphComponent.connectToNetwork();
+    }
+};
+
+class ASceneGraphComponentNotConnected : public ASceneGraphComponentBase
+{
+};
+
 
 TEST_F(ASceneGraphComponent, sendsSceneToLocalConsumer)
 {
@@ -119,6 +133,21 @@ TEST_F(ASceneGraphComponent, publishesSceneAtLocalConsumerInLocalAndRemoteMode)
     EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, _));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localAndRemoteSceneIdInfoVector));
     sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
+}
+
+TEST_F(ASceneGraphComponentNotConnected, publishesSceneAtLocalConsumerInLocalAndRemoteMode)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    {
+        EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, _));
+        EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(_)).Times(0);
+        sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
+    }
+    {
+        EXPECT_CALL(consumer, handleSceneBecameUnavailable(localAndRemoteSceneIdInfo.sceneID, _));
+        EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(_)).Times(0);
+        sceneGraphComponent.sendUnpublishScene(localSceneId, EScenePublicationMode_LocalAndRemote);
+    }
 }
 
 TEST_F(ASceneGraphComponent, publishesSceneAtLocalConsumerInLocalOnlyMode)
@@ -230,6 +259,16 @@ TEST_F(ASceneGraphComponent, sendsAvailableScenesToNewParticipant)
 {
     SceneInfoVector newScenes(1, SceneInfo(remoteSceneId, "sceneName"));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(newScenes));
+    sceneGraphComponent.sendPublishScene(remoteSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
+
+    Guid id(33);
+    EXPECT_CALL(communicationSystem, sendScenesAvailable(id, newScenes));
+    sceneGraphComponent.newParticipantHasConnected(id);
+}
+
+TEST_F(ASceneGraphComponentNotConnected, sendsAvailableScenesToNewParticipant)
+{
+    SceneInfoVector newScenes(1, SceneInfo(remoteSceneId, "sceneName"));
     sceneGraphComponent.sendPublishScene(remoteSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
 
     Guid id(33);
@@ -515,6 +554,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     EXPECT_TRUE(sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {}));
 
     // reconnect remote participant
+    sceneGraphComponent.connectToNetwork();
     EXPECT_CALL(communicationSystem, sendScenesAvailable(remoteParticipantID, SceneInfoVector{ sceneInfo }));
     sceneGraphComponent.newParticipantHasConnected(remoteParticipantID);
 

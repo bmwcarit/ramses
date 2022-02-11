@@ -141,9 +141,19 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
     def wait_on_surfaces_beeing_registered_in_scc(self):
         surfaceIdsList = list(self.expectedSurfaceIds)
         surfaceIdsList.sort(key=int)
-        surfaceIdSearchRegEx = "SystemCompositorController_Wayland_IVI::listIVISurfaces Known ivi-ids are: {0}\n".format(" (([0-9])* )*".join(surfaceIdsList))
+        surfaceIdRegEx = " (([0-9])* )*"
+        # search regex where:
+        # 1. all expected surface id exist
+        # 2. the last expected surface is followed by any space character, e.g., NL or space, to make sure it does not match match
+        #    another surface id which has it as a prefex, e.g., to make sure 10 does not match 10000
+        # 3. any other surface ids can exist before, between (or after) the expected surfaces
+        surfaceIdListRegEx = "{}{}\\s".format(surfaceIdRegEx, surfaceIdRegEx.join(surfaceIdsList))
+        surfaceIdSearchRegEx = "SystemCompositorController_Wayland_IVI::listIVISurfaces Known ivi-ids are:{}".format(surfaceIdListRegEx)
         log.info("waiting on surfaces beeing registered in scc " + surfaceIdSearchRegEx)
         for i in range(1, 30):
             if self.renderer.send_ramsh_command("scl", response_message=surfaceIdSearchRegEx, timeout=1):
                 return 1
+
+        # print current state to help identifying reason of failure/timeout
+        self.target.ivi_control.printCurrentState()
         return 0

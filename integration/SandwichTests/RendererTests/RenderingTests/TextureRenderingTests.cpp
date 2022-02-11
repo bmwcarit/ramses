@@ -178,7 +178,7 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
     case TextureTest_CubeMap_BGRA_Swizzled:
         return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_BGRA_Swizzled, "CubeTextureScene_CubeMapSwizzled");
     case TextureTest_CubeMap_Float:
-        return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_Float, "CubeTextureScene_CubeMapFloat");
+        return runBasicTest<CubeTextureScene>(testFramework, CubeTextureScene::EState_Float, "CubeTextureScene_CubeMapFloat", 0.28f);
     case TextureTest_TextureCube_AnisotropicFilter:
         return runBasicTest<TextureCubeAnisotropicTextureFilteringScene>(testFramework, TextureCubeAnisotropicTextureFilteringScene::EState_Anisotropic, "TextureCubeAnisotropicTextureFilteringScene_Anisotropic");
 

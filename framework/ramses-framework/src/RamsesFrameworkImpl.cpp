@@ -248,6 +248,7 @@ namespace ramses
             return addErrorEntry("Could not connect to daemon");
         }
 
+        m_scenegraphComponent.connectToNetwork();
         m_dcsmComponent.connect();
 
         m_connected = true;

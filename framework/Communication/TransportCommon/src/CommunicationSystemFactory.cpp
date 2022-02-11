@@ -117,8 +117,8 @@ namespace ramses_internal
         }
 #endif
         default:
-            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol());
-            assert(false && "Unable to construct connection system for given protocol");
+            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol() << ". Ensure that a SomeIP stack, TCP or the fake connection system is enabled.");
+            assert(false && "Unable to construct connection system for given protocol. Ensure that a SomeIP stack, TCP or the fake connection system is enabled.");
             return nullptr;
         }
     }
