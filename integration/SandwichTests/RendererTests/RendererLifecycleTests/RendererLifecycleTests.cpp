@@ -175,6 +175,38 @@ namespace ramses_internal
         testScenesAndRenderer.destroyRenderer();
     }
 
+    TEST_F(ARendererLifecycleTest, createDestroyDisplayMultipleTimesThreaded)
+    {
+        const ramses::sceneId_t sceneId(1234u);
+
+        testScenesAndRenderer.getScenesRegistry().createFileLoadingScene(sceneId, Vector3(0.0f, 0.0f, 5.0f), frameworkConfig, FileLoadingScene::CREATE_SAVE_DESTROY_LOAD_USING_SEPARATE_CLIENT, WindowWidth, WindowHeight);
+        const auto validateResult = testScenesAndRenderer.validateScene(sceneId);
+        ASSERT_EQ(ramses::StatusOK, validateResult) << testScenesAndRenderer.getValidationReport(sceneId);
+
+        testScenesAndRenderer.initializeRenderer();
+        testRenderer.startRendererThread();
+
+        for (uint32_t i = 0; i < 10; ++i)
+        {
+            const ramses::displayId_t display = createDisplayForWindow(i);
+
+            testScenesAndRenderer.publish(sceneId);
+            testRenderer.setSceneMapping(sceneId, display);
+            ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
+            testScenesAndRenderer.flush(sceneId, 1);
+            testRenderer.waitForFlush(sceneId, 1);
+
+            ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_AfterLoadSave"));
+
+            testScenesAndRenderer.unpublish(sceneId);
+            ASSERT_TRUE(testScenesAndRenderer.getTestRenderer().waitForSceneStateChange(sceneId, ramses::RendererSceneState::Unavailable));
+            testRenderer.destroyDisplay(display);
+        }
+
+        testRenderer.stopRendererThread();
+        testScenesAndRenderer.destroyRenderer();
+    }
+
     TEST_F(ARendererLifecycleTest, DestroyAndRecreateRenderer)
     {
         const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));

@@ -18,6 +18,7 @@ namespace ramses_internal
     public:
         static void SetPrefix(int prefixId);
         static int GetPrefix();
+        static int GetPrefixUnchecked();
     };
 }
 

@@ -29,4 +29,9 @@ namespace ramses_internal
         assert(TLSPrefix::ID != -1 && "Thread local log PrefixID must be set");
         return TLSPrefix::ID;
     }
+
+    int ThreadLocalLog::GetPrefixUnchecked()
+    {
+        return TLSPrefix::ID;
+    }
 }

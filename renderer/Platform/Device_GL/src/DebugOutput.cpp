@@ -45,6 +45,17 @@ namespace ramses_internal
     {
         assert(userParam);
 
+        // NOTE (tobias) work around case where callback is called from another thread
+        // despite requesting synchronous dispatch via GL_DEBUG_OUTPUT_SYNCHRONOUS. This
+        // can happen when the driver is bugger or does not support synchronous operation.
+        // Prevent assert on log by ensuring there is always a valig TLS log prefix but
+        // set it to a very clear invalid value.
+        if (ThreadLocalLog::GetPrefixUnchecked() == -1)
+        {
+            ThreadLocalLog::SetPrefix(-2);
+            LOG_WARN(CONTEXT_RENDERER, "Detected broken OpenGL driver ignoring GL_DEBUG_OUTPUT_SYNCHRONOUS!");
+        }
+
         switch (type)
         {
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:

@@ -78,16 +78,33 @@ namespace ramses_internal
 
             const bool isSharedContext = m_eglSurfaceData.eglSharedContext != nullptr;
 
+#ifdef __ANDROID__
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroySurface");
+            if (!eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface))
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: " << eglGetError());
+            }
+#else
             LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroySurface if !isSharedContext:" << isSharedContext);
             if (!isSharedContext && !eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: " << eglGetError());
             }
+#endif
+
             LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroyContext");
             if (!eglDestroyContext(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglContext))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroyContext failed. Error code: " << eglGetError());
             }
+
+#ifdef __ANDROID__
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglReleaseThread");
+            if (!eglReleaseThread())
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL: eglReleaseThread failed! Error code: " << eglGetError());
+            }
+#endif
 
             LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglTerminate");
             if (!isSharedContext && !eglTerminate(m_eglSurfaceData.eglDisplay))
@@ -173,6 +190,13 @@ namespace ramses_internal
 
     bool Context_EGL::initializeEgl()
     {
+#ifdef __ANDROID__
+        //eglInitialize() does not need to be called several times for same egl display, i.e., does not need to be called
+        //for shared context since it was already called while initializaing the "main" context
+        if(m_eglSurfaceData.eglSharedContext != nullptr)
+            return true;
+#endif
+
         EGLint iMajorVersion;
         EGLint iMinorVersion;
         if (!eglInitialize(m_eglSurfaceData.eglDisplay, &iMajorVersion, &iMinorVersion))

@@ -533,6 +533,9 @@ namespace ramses
                 auto sr = findSceneReference(sceneId_t{ rendererEvent.masterSceneId.getValue() }, sceneId_t{ rendererEvent.referencedScene.getValue() });
                 if (sr)
                 {
+                    LOG_INFO(CONTEXT_CLIENT, "RamsesClient::dispatchEvents master:reference scene state changed: "
+                        << rendererEvent.masterSceneId << ":" << rendererEvent.referencedScene << " " << EnumToString(rendererEvent.sceneState));
+
                     sr->impl.setReportedState(SceneReferenceImpl::GetSceneReferenceState(rendererEvent.sceneState));
                     clientEventHandler.sceneReferenceStateChanged(*sr, SceneReferenceImpl::GetSceneReferenceState(rendererEvent.sceneState));
                 }

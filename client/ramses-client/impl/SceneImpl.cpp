@@ -545,10 +545,13 @@ namespace ramses
         case ERamsesObjectType_Texture2DBuffer:
             returnStatus = destroyObject(object);
             break;
-        case ERamsesObjectType_SceneReference:
-            m_sceneReferences.remove(RamsesObjectTypeUtils::ConvertTo<SceneReference>(object).getReferencedSceneId());
+        case ERamsesObjectType_SceneReference: {
+            auto& sceneReference = RamsesObjectTypeUtils::ConvertTo<SceneReference>(object);
+            LOG_INFO_P(ramses_internal::CONTEXT_CLIENT, "Scene::destroySceneReference: (master {} / ref {})", getSceneId(), sceneReference.getReferencedSceneId());
+            m_sceneReferences.remove(sceneReference.getReferencedSceneId());
             returnStatus = destroyObject(object);
             break;
+        }
         case ERamsesObjectType_Texture2D:
         case ERamsesObjectType_Texture3D:
         case ERamsesObjectType_TextureCube:

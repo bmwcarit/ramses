@@ -1,3 +1,9 @@
+27.0.117
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Avoid memory leak on Android due to mismatched egl initialize and terminate calls
+
 27.0.116
 -------------------
         General changes

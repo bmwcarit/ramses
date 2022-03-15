@@ -228,7 +228,7 @@ namespace ramses
     {
         if (input.empty())
             return addErrorEntry("executeRamshCommand: command may not be empty");
-        LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::executeRamshCommand: '{}'", fmt::join(input, " "));
+        LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::executeRamshCommand: '{}'", input);
         if (!m_ramsh->execute(RamshTools::parseCommandString(input.c_str())))
             return addErrorEntry("executeRamshCommand: executing command failed");
         return StatusOK;

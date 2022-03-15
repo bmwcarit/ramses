@@ -58,6 +58,13 @@ namespace ramses_internal
                 displayBundle.pushAndConsumeCommands(pendingCmds);
         }
 
+        if (++m_cmdDispatchLoopsSinceLastEventDispatch > 300)
+        {
+            LOG_WARN_P(CONTEXT_RENDERER, "DisplayDispatcher: detected no renderer events dispatched in more than {} loops, this could result in wrong behavior!"
+                " Use RamsesRenderer::dispatchEvents regularly to avoid this problem.", m_cmdDispatchLoopsSinceLastEventDispatch);
+            m_cmdDispatchLoopsSinceLastEventDispatch = 0; // do not spam
+        }
+
         // TODO vaclav remove, for debugging if display thread stuck
         const auto estNumFramesWithinWatchdogTimeoutPeriod = std::chrono::seconds{ 1 } / m_generalMinFrameDuration;
         if (m_threadedDisplays && m_displayThreadsUpdating && m_loopCounter++ > estNumFramesWithinWatchdogTimeoutPeriod / 2)
@@ -271,6 +278,8 @@ namespace ramses_internal
 
             for (const auto& display : destroyedDisplays)
                 m_displays.erase(display);
+
+            m_cmdDispatchLoopsSinceLastEventDispatch = 0;
         }
 
         std::lock_guard<std::mutex> g{ m_injectedEventsLock };

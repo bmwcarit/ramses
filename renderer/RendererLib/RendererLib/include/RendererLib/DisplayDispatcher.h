@@ -107,6 +107,8 @@ namespace ramses_internal
         RendererCommands m_tmpCommands;
         RendererEventVector m_tmpEvents;
 
+        int m_cmdDispatchLoopsSinceLastEventDispatch = 0;
+
         // TODO vaclav remove, debug only
         int m_loopCounter = 0;
     };
