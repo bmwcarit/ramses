@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.117</span>
+   &#160;<span id="projectnumber">27.0.119</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -176,6 +176,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ac21802eaa841f50639fbb959795337b0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesFramework.html#ac21802eaa841f50639fbb959795337b0">SetConsoleLogLevel</a> (<a class="el" href="namespaceramses.html#a008e0f42527d1851e6a3c5f640acd9be">ELogLevel</a> logLevel)</td></tr>
 <tr class="memdesc:ac21802eaa841f50639fbb959795337b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the log level for all console log messages and apply it immediately.  <a href="classramses_1_1RamsesFramework.html#ac21802eaa841f50639fbb959795337b0">More...</a><br /></td></tr>
 <tr class="separator:ac21802eaa841f50639fbb959795337b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f4d2e73488d881e7257488414ae2912"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesFramework.html#a4f4d2e73488d881e7257488414ae2912">SetLogHandler</a> (const <a class="el" href="namespaceramses.html#a02f463e756790ff5992870ff9ac9a951">LogHandlerFunc</a> &amp;logHandlerFunc)</td></tr>
+<tr class="separator:a4f4d2e73488d881e7257488414ae2912"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -757,6 +759,40 @@ Additional Inherited Members</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a4f4d2e73488d881e7257488414ae2912"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f4d2e73488d881e7257488414ae2912">&#9670;&nbsp;</a></span>SetLogHandler()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void ramses::RamsesFramework::SetLogHandler </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceramses.html#a02f463e756790ff5992870ff9ac9a951">LogHandlerFunc</a> &amp;&#160;</td>
+          <td class="paramname"><em>logHandlerFunc</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Sets a custom log handler function, which is called each time a log message occurs. All messages will still be logged to the regular sinks (dlt, console)</p>
+<p>@ param logHandlerFunc function which is called for each log message Set to nullptr to delete the handler</p>
+<p>Note: the logHandlerFunc will be called from inside ramses internal code, and it must return quickly and not block, otherwise it will break the ramses internal rendering or distribution logic.</p>
+<p>Additional restrictions:</p><ol type="1">
+<li>logHandlerFunc will be called from multiple threads and has to be thread safe</li>
+<li>logHandlerFunc may never call back into ramses code</li>
+<li>this method should not be used in target code, it is only for testing and tooling </li>
+</ol>
 
 </div>
 </div>

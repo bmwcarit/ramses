@@ -11,11 +11,12 @@ var searchData=
   ['loadscenefromfile_1219',['loadSceneFromFile',['../classramses_1_1RamsesClient.html#a4d20aea10f20a4852521a25d69539c0c',1,'ramses::RamsesClient']]],
   ['loadscenefromfileasync_1220',['loadSceneFromFileAsync',['../classramses_1_1RamsesClient.html#a8e9afdc0997597d6c14dfc0562478cbc',1,'ramses::RamsesClient']]],
   ['loadscenefromfiledescriptor_1221',['loadSceneFromFileDescriptor',['../classramses_1_1RamsesClient.html#a8866a963116fdbea2a3db5808ca12485',1,'ramses::RamsesClient']]],
-  ['loadscenefrommemory_1222',['loadSceneFromMemory',['../classramses_1_1RamsesClient.html#af50725b54bda2d49f6516de9933d177a',1,'ramses::RamsesClient::loadSceneFromMemory()'],['../classramses_1_1RamsesUtils.html#a6a3f874ecfb883354b54e55c16873364',1,'ramses::RamsesUtils::LoadSceneFromMemory()']]],
+  ['loadscenefrommemory_1222',['LoadSceneFromMemory',['../classramses_1_1RamsesUtils.html#a6a3f874ecfb883354b54e55c16873364',1,'ramses::RamsesUtils::LoadSceneFromMemory()'],['../classramses_1_1RamsesClient.html#af50725b54bda2d49f6516de9933d177a',1,'ramses::RamsesClient::loadSceneFromMemory()']]],
   ['localandremote_1223',['LocalAndRemote',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a12b19f250930ff2f9899dff1a263bc8a',1,'ramses']]],
   ['localcategory_1224',['localCategory',['../ramses-example-local-client-dcsm_2src_2main_8cpp.html#ada80832f94faa9b119f48d7191905364',1,'main.cpp']]],
   ['localdcsmexample_1225',['LocalDCSMExample',['../classLocalDCSMExample.html',1,'LocalDCSMExample'],['../classLocalDCSMExample.html#aa0a32b69dfbd6892da1b67fdcf63ea96',1,'LocalDCSMExample::LocalDCSMExample()']]],
   ['localonly_1226',['LocalOnly',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a4750cc207381749aa40657c50f76f3e0',1,'ramses']]],
-  ['logrendererinfo_1227',['logRendererInfo',['../classramses_1_1RamsesRenderer.html#a8e1cdc22128187b688f9c236b0109004',1,'ramses::RamsesRenderer']]],
-  ['lowpart_1228',['lowPart',['../structramses_1_1resourceId__t.html#a56be8b8feb1f140a26f33153691abfe3',1,'ramses::resourceId_t::lowPart()'],['../structramses_1_1rendererResourceId__t.html#abc6cf45f4b8055a8e4f3ad9aa626f632',1,'ramses::rendererResourceId_t::lowPart()']]]
+  ['loghandlerfunc_1227',['LogHandlerFunc',['../namespaceramses.html#a02f463e756790ff5992870ff9ac9a951',1,'ramses']]],
+  ['logrendererinfo_1228',['logRendererInfo',['../classramses_1_1RamsesRenderer.html#a8e1cdc22128187b688f9c236b0109004',1,'ramses::RamsesRenderer']]],
+  ['lowpart_1229',['lowPart',['../structramses_1_1resourceId__t.html#a56be8b8feb1f140a26f33153691abfe3',1,'ramses::resourceId_t::lowPart()'],['../structramses_1_1rendererResourceId__t.html#abc6cf45f4b8055a8e4f3ad9aa626f632',1,'ramses::rendererResourceId_t::lowPart()']]]
 ];

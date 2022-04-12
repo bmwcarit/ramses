@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.117</span>
+   &#160;<span id="projectnumber">27.0.119</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -642,6 +642,8 @@ Typedefs</h2></td></tr>
 <tr class="memitem:ac4cc31ffbc7fd7afcb6c60375a2281a9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceramses.html#ac4cc31ffbc7fd7afcb6c60375a2281a9">nodeId_t</a> = <a class="el" href="classramses_1_1StronglyTypedValue.html">StronglyTypedValue</a>&lt; uint32_t, std::numeric_limits&lt; uint32_t &gt;::max(), <a class="el" href="structramses_1_1nodeIdTag.html">nodeIdTag</a> &gt;</td></tr>
 <tr class="memdesc:ac4cc31ffbc7fd7afcb6c60375a2281a9"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a> identifier used to refer to a node.  <a href="namespaceramses.html#ac4cc31ffbc7fd7afcb6c60375a2281a9">More...</a><br /></td></tr>
 <tr class="separator:ac4cc31ffbc7fd7afcb6c60375a2281a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02f463e756790ff5992870ff9ac9a951"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceramses.html#a02f463e756790ff5992870ff9ac9a951">LogHandlerFunc</a> = std::function&lt; void(<a class="el" href="namespaceramses.html#a008e0f42527d1851e6a3c5f640acd9be">ELogLevel</a>, const std::string &amp;, const std::string &amp;)&gt;</td></tr>
+<tr class="separator:a02f463e756790ff5992870ff9ac9a951"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad235ad0adbf1a441d1339ab3a09159ac"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceramses.html#ad235ad0adbf1a441d1339ab3a09159ac">resourceCacheFlag_t</a> = <a class="el" href="classramses_1_1StronglyTypedValue.html">StronglyTypedValue</a>&lt; uint32_t, std::numeric_limits&lt; uint32_t &gt;::max(), <a class="el" href="structramses_1_1resourceCacheFlagTag.html">resourceCacheFlagTag</a> &gt;</td></tr>
 <tr class="memdesc:ad235ad0adbf1a441d1339ab3a09159ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cache flag value used for passing a strong-typed flag value to a renderer.  <a href="namespaceramses.html#ad235ad0adbf1a441d1339ab3a09159ac">More...</a><br /></td></tr>
 <tr class="separator:ad235ad0adbf1a441d1339ab3a09159ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1787,6 +1789,23 @@ Variables</h2></td></tr>
 
 <p>Vector of <a class="el" href="structramses_1_1GlyphMetrics.html" title="GlyphMetrics describes a glyph&#39;s position and dimensions in the rasterized glyph bitmap space.">GlyphMetrics</a> elements. </p>
 
+</div>
+</div>
+<a id="a02f463e756790ff5992870ff9ac9a951"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02f463e756790ff5992870ff9ac9a951">&#9670;&nbsp;</a></span>LogHandlerFunc</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceramses.html#a02f463e756790ff5992870ff9ac9a951">ramses::LogHandlerFunc</a> = typedef std::function&lt;void(<a class="el" href="namespaceramses.html#a008e0f42527d1851e6a3c5f640acd9be">ELogLevel</a>, const std::string&amp;, const std::string&amp;)&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The <a class="el" href="namespaceramses.html#a02f463e756790ff5992870ff9ac9a951">LogHandlerFunc</a> can be used to implement a custom log handler. The function is called for each log message separately. Example </p><div class="fragment"><div class="line"><a class="code" href="classramses_1_1RamsesFramework.html#a4f4d2e73488d881e7257488414ae2912">ramses::RamsesFramework::SetLogHandler</a>([](<a class="code" href="namespaceramses.html#a008e0f42527d1851e6a3c5f640acd9be">ELogLevel</a> logLevel, <span class="keyword">const</span> std::string&amp; context, <span class="keyword">const</span> std::string&amp; message){</div>
+<div class="line">    std::cout &lt;&lt; message &lt;&lt; std::endl;</div>
+<div class="line">});</div>
+</div><!-- fragment --> 
 </div>
 </div>
 <a id="ac4cc31ffbc7fd7afcb6c60375a2281a9"></a>
@@ -4265,6 +4284,8 @@ Variables</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<div class="ttc" id="anamespaceramses_html_a008e0f42527d1851e6a3c5f640acd9be"><div class="ttname"><a href="namespaceramses.html#a008e0f42527d1851e6a3c5f640acd9be">ramses::ELogLevel</a></div><div class="ttdeci">ELogLevel</div><div class="ttdoc">Type of Ramses Log Level.</div><div class="ttdef"><b>Definition:</b> RamsesFrameworkTypes.h:173</div></div>
+<div class="ttc" id="aclassramses_1_1RamsesFramework_html_a4f4d2e73488d881e7257488414ae2912"><div class="ttname"><a href="classramses_1_1RamsesFramework.html#a4f4d2e73488d881e7257488414ae2912">ramses::RamsesFramework::SetLogHandler</a></div><div class="ttdeci">static void SetLogHandler(const LogHandlerFunc &amp;logHandlerFunc)</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">
