@@ -92,6 +92,13 @@ public:
         EXPECT_CALL(*resUploader, unloadResource(Ref(platform.renderBackendMock), type, hash , deviceHandle));
     }
 
+    void expectDeviceFlushOnWindows()
+    {
+#if defined(_WIN32)
+        EXPECT_CALL(platform.resourceUploadRenderBackendMock.deviceMock, flush());
+#endif
+    }
+
     void uploadShader(const ResourceContentHash& hash, bool expectSuccess = true)
     {
         EXPECT_CALL(*resUploader, uploadResource(Ref(platform.renderBackendMock), _, _)).WillOnce(Invoke([hash](auto&, const auto& rd, auto&) {
@@ -104,12 +111,14 @@ public:
         if(expectSuccess)
         {
             EXPECT_CALL(platform.resourceUploadRenderBackendMock.deviceMock, uploadShader(_));
+            expectDeviceFlushOnWindows();
             EXPECT_CALL(platform.renderBackendMock.deviceMock, registerShader(_));
             EXPECT_CALL(*resUploader, storeShaderInBinaryShaderCache(Ref(platform.renderBackendMock), _, _, _));
         }
         else
         {
             EXPECT_CALL(platform.resourceUploadRenderBackendMock.deviceMock, uploadShader(_)).WillRepeatedly(Invoke([](const auto&) {return std::move(std::unique_ptr<const GPUResource>{}); }));
+            expectDeviceFlushOnWindows();
             EXPECT_CALL(platform.renderBackendMock.deviceMock, registerShader(_)).Times(0);
             EXPECT_CALL(*resUploader, storeShaderInBinaryShaderCache(Ref(platform.renderBackendMock), _, _, _)).Times(0);
         }
@@ -993,6 +1002,7 @@ TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasScheduledForUpl
         }));
 
     EXPECT_CALL(platform.resourceUploadRenderBackendMock.deviceMock, uploadShader(_));
+    expectDeviceFlushOnWindows();
     EXPECT_CALL(platform.renderBackendMock.deviceMock, registerShader(_));
     EXPECT_CALL(*resUploader, storeShaderInBinaryShaderCache(Ref(platform.renderBackendMock), _, _, _));
     resourceManager.uploadAndUnloadPendingResources();
@@ -1038,6 +1048,7 @@ TEST_F(ARendererResourceManager, CanUploadAndUnloadEffectOwnedBySceneThatGetsDes
         future.get();
         return std::make_unique<const GPUResource>(1u, 2u);
         }));
+    expectDeviceFlushOnWindows();
     EXPECT_CALL(platform.renderBackendMock.deviceMock, registerShader(_));
     EXPECT_CALL(*resUploader, storeShaderInBinaryShaderCache(_, _, _, _));
 
@@ -1085,6 +1096,7 @@ TEST_F(ARendererResourceManager, DoesNotUnloadEffectThatGetsUnreferencedAndReRef
         barrier.get_future().get();
         return std::make_unique<const GPUResource>(1u, 2u);
         }));
+    expectDeviceFlushOnWindows();
     EXPECT_CALL(platform.renderBackendMock.deviceMock, registerShader(_));
     EXPECT_CALL(*resUploader, storeShaderInBinaryShaderCache(_, _, _, _));
 

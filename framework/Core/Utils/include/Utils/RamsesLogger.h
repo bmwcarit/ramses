@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2017 BMW Car IT GmbH
+//  Copyright (C) 2022 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include "Utils/LogContext.h"
 #include "Utils/ConsoleLogAppender.h"
 #include "Utils/LogAppenderBase.h"
+#include "Utils/UserLogAppender.h"
 #include "Collections/Vector.h"
 #include "Collections/String.h"
 #include <mutex>
@@ -61,6 +62,8 @@ namespace ramses_internal
 
         static const char* GetLogLevelText(ELogLevel logLevel);
 
+        void setLogHandler(const ramses::LogHandlerFunc& logHandlerFunc);
+
     private:
         static const ELogLevel LogLevelDefault_Contexts = ELogLevel::Info;
         static const ELogLevel LogLevelDefault_Console = ELogLevel::Info;
@@ -78,6 +81,7 @@ namespace ramses_internal
         ConsoleLogAppender m_consoleLogAppender;
         std::unique_ptr<DltLogAppender> m_dltLogAppender;
         std::unique_ptr<LogAppenderBase> m_platformLogAppender;
+        std::unique_ptr<UserLogAppender> m_userLogAppender;
         std::vector<LogContext*> m_logContexts;
         std::vector<LogAppenderBase*> m_logAppenders;
         LogContext& m_fileTransferContext;

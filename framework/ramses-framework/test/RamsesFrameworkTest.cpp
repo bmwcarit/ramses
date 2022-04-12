@@ -12,6 +12,7 @@
 #include "RamsesFrameworkImpl.h"
 #include "ApiRamshCommandMock.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "Utils/LogMacros.h"
 
 using namespace ramses;
 using namespace testing;
@@ -121,4 +122,40 @@ TEST(ARamsesFramework, failsToAddInvalidRamshCommands)
     EXPECT_NE(StatusOK, fw.addRamshCommand(std::make_shared<testing::StrictMock<PartialApiRamshCommandMock>>("a b")));
     EXPECT_NE(StatusOK, fw.addRamshCommand(std::make_shared<testing::StrictMock<PartialApiRamshCommandMock>>("a\"b")));
     EXPECT_NE(StatusOK, fw.addRamshCommand(std::make_shared<testing::StrictMock<PartialApiRamshCommandMock>>("help")));
+}
+
+TEST(ARamsesFramework, SetLogHandler)
+{
+    bool loggerCalled {false};
+
+    RamsesFramework::SetLogHandler([&loggerCalled](auto level, auto& context, auto& message)
+        {
+            if (level == ELogLevel::Warn && context == "RFRA" && message == "SetLogHandlerTest")
+            {
+                loggerCalled = true;
+            }
+        }
+    );
+
+    LOG_WARN(CONTEXT_FRAMEWORK, "SetLogHandlerTest");
+    EXPECT_TRUE(loggerCalled);
+    RamsesFramework::SetLogHandler(nullptr);
+
+    loggerCalled = false;
+    LOG_WARN(CONTEXT_FRAMEWORK, "SetLogHandlerTest");
+    EXPECT_FALSE(loggerCalled);
+}
+
+TEST(ARamsesFramework, CanSetAndResetLogHandlerMultipleTimes)
+{
+    RamsesFramework::SetLogHandler([](auto /*level*/, auto& /*context*/, auto& /*message*/) {});
+    RamsesFramework::SetLogHandler(nullptr);
+
+    RamsesFramework::SetLogHandler([](auto /*level*/, auto& /*context*/, auto& /*message*/) {});
+    RamsesFramework::SetLogHandler(nullptr);
+
+    RamsesFramework::SetLogHandler([](auto /*level*/, auto& /*context*/, auto& /*message*/) {});
+    RamsesFramework::SetLogHandler([](auto /*level*/, auto& /*context*/, auto& /*message*/) {});
+    RamsesFramework::SetLogHandler(nullptr);
+    RamsesFramework::SetLogHandler(nullptr);
 }

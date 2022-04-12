@@ -1057,6 +1057,24 @@ TEST_F(ARendererSceneUpdater, failsToDestroyStreamBufferOnUnknownDisplay)
     EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 }
 
+TEST_F(ARendererSceneUpdater, emitsStreamBufferEnabledDisabledEvents)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
+
+    EXPECT_TRUE(rendererSceneUpdater->setStreamBufferState(buffer, true));
+    expectStreamBufferEvent(buffer, true);
+
+    EXPECT_TRUE(rendererSceneUpdater->setStreamBufferState(buffer, false));
+    expectStreamBufferEvent(buffer, false);
+
+    destroyDisplay();
+}
+
 ///////////////////////////
 // Data linking tests
 ///////////////////////////

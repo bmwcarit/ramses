@@ -1269,11 +1269,11 @@ namespace ramses_internal
         return true;
     }
 
-    bool RendererSceneUpdater::setStreamBufferState(StreamBufferHandle buffer, bool /*newState*/)
+    bool RendererSceneUpdater::setStreamBufferState(StreamBufferHandle buffer, bool newState)
     {
         LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::setStreamBufferState not implemented yet ");
         // TODO (vaclav, jonathan) implement stream hiding
-        m_rendererEventCollector.addBufferEvent(ERendererEventType::StreamBufferEnabled, buffer, {}, {});
+        m_rendererEventCollector.addBufferEvent(newState ? ERendererEventType::StreamBufferEnabled: ERendererEventType::StreamBufferDisabled, buffer, {}, {});
         return true;
     }
 

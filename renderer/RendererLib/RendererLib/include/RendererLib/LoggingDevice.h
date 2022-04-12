@@ -110,7 +110,7 @@ namespace ramses_internal
         virtual Bool isDeviceStatusHealthy() const override;
         virtual void getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const override;
 
-        virtual void finish() override;
+        virtual void flush() override;
 
         virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const override;
 

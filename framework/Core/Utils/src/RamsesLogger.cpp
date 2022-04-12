@@ -187,6 +187,11 @@ namespace ramses_internal
             }
         }
 
+        if (m_userLogAppender)
+        {
+            LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: a user logger was added");
+        }
+
         ArgumentBool enableSmokeTestContext(parser, "estc", "enableSmokeTestContext", "");
         if (!enableSmokeTestContext.wasDefined())
         {
@@ -356,6 +361,30 @@ namespace ramses_internal
         default:
             assert(false);
             return "<UNKNOWN>";
+        }
+    }
+
+    void RamsesLogger::setLogHandler(const ramses::LogHandlerFunc& logHandlerFunc)
+    {
+        if (logHandlerFunc)
+        {
+            LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::setLogHandler: adding a user logger");
+        }
+        else
+        {
+            LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::setLogHandler: deleting a user logger");
+        }
+
+        std::lock_guard<std::mutex> guard(m_appenderLock);
+        if (m_userLogAppender)
+        {
+            m_logAppenders.erase(std::find(m_logAppenders.begin(), m_logAppenders.end(), m_userLogAppender.get()));
+            m_userLogAppender = nullptr;
+        }
+        if (logHandlerFunc)
+        {
+            m_userLogAppender = std::make_unique<UserLogAppender>(logHandlerFunc);
+            m_logAppenders.push_back(m_userLogAppender.get());
         }
     }
 }

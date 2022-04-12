@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 117)
+SET(RAMSES_VERSION_PATCH 119)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -127,7 +127,7 @@ ACME2_PROJECT(
     VERSION_PATCH               ${RAMSES_VERSION_PATCH}
     VERSION_STRING              ${RAMSES_VERSION}
     DESCRIPTION                 "RAMSES - Rendering Architecture for Multi-Screen EnvironmentS"
-    URL                         "https://github.com/COVESA/ramses"
+    URL                         "https://github.com/bmwcarit/ramses"
     ENABLE_INSTALL              OFF
 
     #==========================================================================

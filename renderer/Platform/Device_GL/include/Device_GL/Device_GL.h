@@ -125,7 +125,7 @@ namespace ramses_internal
 
         virtual UInt32                  getTotalGpuMemoryUsageInKB() const override;
 
-        virtual void                    finish() override;
+        virtual void                    flush() override;
 
     private:
         DeviceResourceHandle        m_framebufferRenderTarget;

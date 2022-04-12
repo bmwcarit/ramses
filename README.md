@@ -15,14 +15,14 @@ For a broader overview and introduction to the ecosystem and tools, visit our
 Have a look at our showcase video: [![RAMSES Distributed Rendering Engine Showcase Video](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
 
 You can find additional resources here:
-* [The Github wiki pages](https://github.com/COVESA/ramses/wiki)
-* [The doxygen API docs](https://covesa.github.io/ramses)
+* [The Github wiki pages](https://github.com/bmwcarit/ramses/wiki)
+* [The doxygen API docs](https://bmwcarit.github.io/ramses)
 
 ## Obtaining the source code
-RAMSES can be cloned from its COVESA repository using git:
+RAMSES can be cloned from its BMW Car IT repository using git:
 
 ```
-git clone --recurse-submodules https://github.com/COVESA/ramses <ramses-sdk>
+git clone --recurse-submodules https://github.com/bmwcarit/ramses <ramses-sdk>
 ```
 
 ## Building and testing
@@ -93,7 +93,7 @@ RAMSES original code is copyright BMW Car IT or BMW AG
 ```Copyright (C) 20xx BMW Car IT GmbH``` or ```Copyright (C) 20xx BMW AG```
 
 The source code is licensed under the Mozilla Public License 2.0, please find a
-copy of that license in the [LICENSE.txt](https://github.com/COVESA/ramses/blob/master/LICENSE.txt) file.
+copy of that license in the [LICENSE.txt](https://github.com/bmwcarit/ramses/blob/master/LICENSE.txt) file.
 
 RAMSES makes use of several open source libraries which can be found in the folder 'external'.
 Some of these are shipped directly with the sourcecode, others are included as git submodule references.

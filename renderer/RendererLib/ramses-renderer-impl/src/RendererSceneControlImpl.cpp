@@ -220,6 +220,9 @@ namespace ramses
             case ramses_internal::ERendererEventType::StreamBufferEnabled:
                 m_waylandEvents.push_back(event);
                 break;
+            case ramses_internal::ERendererEventType::StreamBufferDisabled:
+                m_waylandEvents.push_back(event);
+                break;
             default:
                 assert(false);
                 break;
@@ -243,6 +246,9 @@ namespace ramses
                     break;
                 case ramses_internal::ERendererEventType::StreamBufferEnabled:
                     eventHandler.streamBufferEnabled(streamBufferId_t(event.streamBuffer.asMemoryHandle()), true);
+                    break;
+                case ramses_internal::ERendererEventType::StreamBufferDisabled:
+                    eventHandler.streamBufferEnabled(streamBufferId_t(event.streamBuffer.asMemoryHandle()), false);
                     break;
                 default:
                     LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlImpl::dispatchSpecialEvents: skipping unknown type" );

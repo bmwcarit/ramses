@@ -456,6 +456,11 @@ namespace ramses
         GetRamsesLogger().setConsoleLogLevelProgrammatically(GetELogLevelInternal(logLevel));
     }
 
+    void RamsesFrameworkImpl::SetLogHandler(const LogHandlerFunc& logHandlerFunc)
+    {
+        GetRamsesLogger().setLogHandler(logHandlerFunc);
+    }
+
     ramses_internal::ELogLevel RamsesFrameworkImpl::GetELogLevelInternal(ELogLevel logLevel)
     {
         switch (logLevel)

@@ -1,3 +1,19 @@
+27.0.119
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Works around a crash on AMD drivers on Windows by calling extra glFlush after shader uploads
+
+        API changes
+        ------------------------------------------------------------------------
+        - Added a new method RamsesFramework::SetLogHandler, read the class docs for more details
+
+27.0.118
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Emit correct event from renderer to DcsmContentControl concerning streamBufferEnabled state
+
 27.0.117
 -------------------
         Bugfixes
@@ -556,7 +572,7 @@
 
         Documentation
         ------------------------------------------------------------------------
-        - Published doxygen API docs at https://covesa.github.io/ramses (currently showing
+        - Published doxygen API docs at https://bmwcarit.github.io/ramses (currently showing
             only the RAMSES version released latest)
 
 25.0.5

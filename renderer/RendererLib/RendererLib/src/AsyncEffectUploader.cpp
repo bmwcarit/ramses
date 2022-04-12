@@ -124,9 +124,18 @@ namespace ramses_internal
         }
 
         if (!effectsToUpload.empty())
+        {
             LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader " << effectsToUpload.size() << " uploaded in "
                 << totalShaderUploadTime.count() << " us ("
                 << "Max: " << maxShaderUploadTime.count() << " us " << effectWithMaxUploadTime << ")");
+
+#if defined(_WIN32)
+            // Workaround for bug https://github.com/COVESA/ramses/issues/61
+            // Only perform this flush on Windows, unclear if required/mandatory on other platforms
+            // See bug comments for more info
+            resourceUploadRenderBackend.getDevice().flush();
+#endif
+        }
 
         LOG_TRACE(CONTEXT_RENDERER, "AsyncEffectUploader::uploadEffectsOrWait: finished");
     }

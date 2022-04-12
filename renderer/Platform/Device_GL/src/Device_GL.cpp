@@ -1520,8 +1520,8 @@ namespace ramses_internal
         std::transform(m_supportedBinaryProgramFormats.cbegin(), m_supportedBinaryProgramFormats.cend(), formats.begin(), [](GLint id) { return BinaryShaderFormatID{ uint32_t(id) }; });
     }
 
-    void Device_GL::finish()
+    void Device_GL::flush()
     {
-        glFinish();
+        glFlush();
     }
 }

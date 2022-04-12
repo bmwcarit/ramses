@@ -105,6 +105,13 @@ public:
         EXPECT_FALSE(resourceRegistry.containsResource(hash));
     }
 
+    void expectDeviceFlushOnWindows()
+    {
+#if defined(_WIN32)
+        EXPECT_CALL(platformMock.resourceUploadRenderBackendMock.deviceMock, flush());
+#endif
+    }
+
     void uploadShader(const  ResourceContentHash& hash, bool expectSuccess = true)
     {
         const absl::optional<DeviceResourceHandle> unsetDeviceHandle;
@@ -113,12 +120,14 @@ public:
         if (expectSuccess)
         {
             EXPECT_CALL(platformMock.resourceUploadRenderBackendMock.deviceMock, uploadShader(_));
+            expectDeviceFlushOnWindows();
             EXPECT_CALL(platformMock.renderBackendMock.deviceMock, registerShader(_));
             EXPECT_CALL(*uploader, storeShaderInBinaryShaderCache(Ref(platformMock.renderBackendMock), DeviceMock::FakeShaderDeviceHandle, hash, sceneId));
         }
         else
         {
             EXPECT_CALL(platformMock.resourceUploadRenderBackendMock.deviceMock, uploadShader(_)).WillOnce(Invoke([](const auto&) {return std::move(std::unique_ptr<const GPUResource>{}); }));
+            expectDeviceFlushOnWindows();
             EXPECT_CALL(platformMock.renderBackendMock.deviceMock, registerShader(_)).Times(0);
             EXPECT_CALL(*uploader, storeShaderInBinaryShaderCache(_, _, _, _)).Times(0);
         }

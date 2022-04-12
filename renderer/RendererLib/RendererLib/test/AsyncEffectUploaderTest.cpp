@@ -83,12 +83,22 @@ namespace ramses_internal
             return result;
         }
 
+        void expectDeviceFlushOnWindows()
+        {
+
+#if defined(_WIN32)
+            EXPECT_CALL(platformMock.resourceUploadRenderBackendMock.deviceMock, flush()).RetiresOnSaturation();
+#endif
+        }
+
         EffectsRawResources createUniqueEffectsAndExpectUploadToDevice(uint32_t count)
         {
             EffectsRawResources result = createUniqueEffects(count);
 
             for(const auto& effect : result)
                 EXPECT_CALL(platformMock.resourceUploadRenderBackendMock.deviceMock, uploadShader(Ref(*effect)));
+
+            expectDeviceFlushOnWindows();
 
             return result;
         }
@@ -222,6 +232,7 @@ namespace ramses_internal
 
             return std::make_unique<const GPUResource>(1u, 2u);
             }));
+        expectDeviceFlushOnWindows();
 
         submitForUploadAndExpectNoShaderWereUploaded(effectToUploadAndBlock);
         //block main thread till it is confirmed that upload thread is busy uploading the submitted shader
@@ -234,6 +245,7 @@ namespace ramses_internal
             barrierRestShadersCanBeUploaded.get_future().get();
             return std::make_unique<const GPUResource>(1u, 2u);
             })).RetiresOnSaturation();
+        expectDeviceFlushOnWindows();
 
         submitForUploadAndExpectNoShaderWereUploaded({ effectsToUploadWhileBusy[0], effectsToUploadWhileBusy[1] });
         submitForUploadAndExpectNoShaderWereUploaded({ effectsToUploadWhileBusy[2], effectsToUploadWhileBusy[3] });
@@ -296,6 +308,7 @@ namespace ramses_internal
 
             return std::make_unique<const GPUResource>(1u, 2u);
             })).RetiresOnSaturation();
+        expectDeviceFlushOnWindows();
 
         submitForUploadAndExpectNoShaderWereUploaded(effects);
 

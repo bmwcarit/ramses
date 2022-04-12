@@ -316,6 +316,10 @@ TEST_F(ARendererCommandExecutor, setsStreamBufferState)
     m_commandBuffer.enqueueCommand(RendererCommand::SetStreamBufferState{ display, buffer, true });
     EXPECT_CALL(m_sceneUpdater, setStreamBufferState(buffer, true));
     doCommandExecutorLoop();
+
+    m_commandBuffer.enqueueCommand(RendererCommand::SetStreamBufferState{ display, buffer, false });
+    EXPECT_CALL(m_sceneUpdater, setStreamBufferState(buffer, false));
+    doCommandExecutorLoop();
 }
 
 TEST_F(ARendererCommandExecutor, createsAndDestroysDisplay)

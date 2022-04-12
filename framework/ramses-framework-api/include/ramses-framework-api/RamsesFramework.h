@@ -205,6 +205,23 @@ namespace ramses
         static void SetConsoleLogLevel(ELogLevel logLevel);
 
         /**
+        * Sets a custom log handler function, which is called each time a log message occurs.
+        * All messages will still be logged to the regular sinks (dlt, console)
+        *
+        * @ param logHandlerFunc function which is called for each log message
+        * Set to nullptr to delete the handler
+        *
+        * Note: the logHandlerFunc will be called from inside ramses internal code, and it must return quickly and
+        * not block, otherwise it will break the ramses internal rendering or distribution  logic.
+        *
+        * Additional restrictions:
+        *  -# logHandlerFunc will be called from multiple threads and has to be thread safe
+        *  -# logHandlerFunc may never call back into ramses code
+        *  -# this method should not be used in target code, it is only for testing and tooling
+        */
+        static void SetLogHandler(const LogHandlerFunc& logHandlerFunc);
+
+        /**
         * @brief Register a ramsh command that can be invoked via console and DLT injection
         *
         * This is for testing and debugging purpose only. Command injection is not guaranteed to work in production.

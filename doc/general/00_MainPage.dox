@@ -14,8 +14,8 @@
 
 Ramses is a framework for distributed rendering of 3D content.
 It was initially created to visualize 3D scenes across different devices in the car which are reachable over a network.
-Ramses was developed by the BMW Group and published as an open source software under the MPL 2.0 license under the
-GENIVI Alliance umbrella (Now COVESA).
+Ramses was initially developed by the BMW Group and is currently hosted on The
+[BMW Car IT Github organisation](https://github.com/bmwcarit/) as a free and open source software under the MPL 2.0 license.
 
 # Components
 

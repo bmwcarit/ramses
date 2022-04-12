@@ -86,6 +86,7 @@ namespace ramses_internal
         StreamSurfaceAvailable,
         StreamSurfaceUnavailable,
         StreamBufferEnabled,
+        StreamBufferDisabled,
         ObjectsPicked,
         FrameTimingReport,
         NUMBER_OF_ELEMENTS
@@ -148,6 +149,7 @@ namespace ramses_internal
         "StreamSurfaceAvailable",
         "StreamSurfaceUnavailable",
         "StreamBufferEnabled",
+        "StreamBufferDisabled",
         "ObjectsPicked",
         "FrameTimingReport",
     };

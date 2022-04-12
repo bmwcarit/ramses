@@ -59,7 +59,7 @@ namespace ramses_internal
         virtual void clear               (UInt32 clearFlags) = 0;
         virtual void drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) = 0;
         virtual void drawTriangles       (Int32 startOffset, Int32 elementCount, UInt32 instanceCount) = 0;
-        virtual void finish              () = 0;
+        virtual void flush              () = 0;
 
         //states
         virtual void colorMask           (Bool r, Bool g, Bool b, Bool a) = 0;

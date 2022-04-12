@@ -85,6 +85,7 @@ namespace ramses
         ramses_internal::PeriodicLogger& getPeriodicLogger();
         ramses_internal::StatisticCollectionFramework& getStatisticCollection();
         static void SetConsoleLogLevel(ELogLevel logLevel);
+        static void SetLogHandler(const LogHandlerFunc& logHandlerFunc);
         status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
         status_t executeRamshCommand(const std::string& input);
 

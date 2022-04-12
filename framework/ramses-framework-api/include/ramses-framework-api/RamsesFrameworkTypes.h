@@ -12,6 +12,7 @@
 #include "ramses-framework-api/StronglyTypedValue.h"
 #include "stdint.h"
 #include <limits>
+#include <string>
 
 namespace ramses
 {
@@ -179,6 +180,18 @@ namespace ramses
         Debug,
         Trace
     };
+
+    /**
+    * The #LogHandlerFunc can be used to implement a custom log handler. The
+    * function is called for each log message separately.
+    * Example
+    * \code{.cpp}
+    *   ramses::RamsesFramework::SetLogHandler([](ELogLevel logLevel, const std::string& context, const std::string& message){
+    *       std::cout << message << std::endl;
+    *   });
+    * \endcode
+    */
+    using LogHandlerFunc = std::function<void(ELogLevel, const std::string&, const std::string&)>;
 
     /**
     * @brief Struct used as unique id for the strongly-typed cache flag.

@@ -343,7 +343,7 @@ namespace ramses
 
             const auto& streamBuffer = streamBufferIt->second;
 
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:linkContentToTextureConsumer: linking streambuffer " << streamBuffer.getValue() << " to consumerScenet " << consumerSceneId << " consumerId " << consumerId);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:linkContentToTextureConsumer: linking streambuffer " << streamBuffer.getValue() << " to consumerScene " << consumerSceneId << " consumerId " << consumerId);
             return m_sceneControl.linkStreamBuffer(streamBuffer, consumerSceneId, consumerId);
         }
 

@@ -118,7 +118,7 @@ namespace ramses_internal
         MOCK_METHOD(Bool, isDeviceStatusHealthy, (), (const, override));
         MOCK_METHOD(void, getSupportedBinaryProgramFormats, (std::vector<BinaryShaderFormatID>&), (const, override));
 
-        MOCK_METHOD(void, finish, (), (override));
+        MOCK_METHOD(void, flush, (), (override));
 
         MOCK_METHOD(int, getTextureAddress, (DeviceResourceHandle), (const, override));
         MOCK_METHOD(uint32_t, getGPUHandle, (DeviceResourceHandle), (const, override));

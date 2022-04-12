@@ -483,7 +483,7 @@ namespace ramses_internal
         return 0;
     }
 
-    void LoggingDevice::finish()
+    void LoggingDevice::flush()
     {
     }
 
