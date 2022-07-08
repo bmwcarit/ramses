@@ -37,13 +37,22 @@ namespace ramses_internal
                 static_cast<ramses::ETextureChannelColor>(swizzle[2]),
                 static_cast<ramses::ETextureChannelColor>(swizzle[3]),
             };
-            ramses::MipLevelData mipLevelData(static_cast<uint32_t>(blob.size()), blob.data());
-            const auto           mipMapCount = static_cast<uint32_t>(res->getMipDataSizes().size());
+
+            std::vector<ramses::MipLevelData> mipLevelData;
+            mipLevelData.reserve(res->getMipDataSizes().size());
+            const auto* data = blob.data();
+            for (const auto& mipSize : res->getMipDataSizes())
+            {
+                assert(data + mipSize <= blob.data() + blob.size());
+                mipLevelData.push_back(ramses::MipLevelData(mipSize, data));
+                data += mipSize;
+            }
+
             ramses::Texture2D*   texture     = m_scene->createTexture2D(ramses::TextureUtils::GetTextureFormatFromInternal(res->getTextureFormat()),
                                                                   res->getWidth(),
                                                                   res->getHeight(),
-                                                                  mipMapCount,
-                                                                  &mipLevelData,
+                                                                  static_cast<uint32_t>(mipLevelData.size()),
+                                                                  &mipLevelData[0],
                                                                   false,
                                                                   textureSwizzle);
 

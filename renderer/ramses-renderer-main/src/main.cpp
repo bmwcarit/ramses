@@ -43,6 +43,31 @@ struct CategoryData
     ramses::displayId_t display{ 0u };
 };
 
+class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+{
+public:
+    void displayCreated(ramses::displayId_t /*displayId*/, ramses::ERendererEventResult result) override
+    {
+        if (result == ramses::ERendererEventResult_FAIL)
+        {
+            m_running = false;
+        }
+    }
+
+    void windowClosed(ramses::displayId_t /*displayId*/) override
+    {
+        m_running = false;
+    }
+
+    bool isRunning() const
+    {
+        return m_running;
+    }
+
+private:
+    bool m_running = true;
+};
+
 class Handler : public ramses::DcsmContentControlEventHandlerEmpty
 {
 public:
@@ -179,8 +204,10 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
         Handler handler(dcsmContentControl);
         handler.makeContentExclusive(ramses::ContentID(contentIDToFilter));
-        while (!commandExit->exitRequested())
+        RendererEventHandler rendererEventHandler;
+        while (!commandExit->exitRequested() && rendererEventHandler.isRunning())
         {
+            renderer.dispatchEvents(rendererEventHandler);
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
             dcsmContentControl.update(0, handler);
 

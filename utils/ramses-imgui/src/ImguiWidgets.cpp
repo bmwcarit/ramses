@@ -58,7 +58,7 @@ namespace ramses_internal
                 const auto* buf = blob.data();
                 while (buf < end)
                 {
-                    std::array<uint8_t, 4> rgba = {0, 0, 0, 0};
+                    std::array<uint8_t, 4> rgba = {0, 0, 0, 255};
                     buf                         = readPixel(buf, rgba);
                     ApplySwizzle(rgba, swizzle);
                     rgbaData.insert(rgbaData.end(), rgba.begin(), rgba.end());
@@ -207,10 +207,15 @@ namespace ramses_internal
             std::string errorMsg;
             if (resource)
             {
+                if (resource->isCompressedAvailable() && !resource->isDeCompressedAvailable())
+                {
+                    resource->decompress();
+                }
                 const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
                 const auto&                             blob            = textureResource->getResourceData();
                 std::vector<uint8_t>                    imageData;
-                imageData.reserve(static_cast<size_t>(resource->getWidth()) * resource->getHeight() * 4u);
+                const auto byteSize = static_cast<size_t>(resource->getWidth()) * resource->getHeight() * 4u;
+                imageData.reserve(byteSize);
                 if (resource->getTextureFormat() == ETextureFormat::RGBA8)
                 {
                     // just copy the blob
@@ -247,6 +252,12 @@ namespace ramses_internal
                         errorMsg = fmt::format("Cannot save: {} (Image format is not supported: {}).", filename, EnumToString(resource->getTextureFormat()));
                         break;
                     }
+                }
+
+                if (imageData.size() > byteSize)
+                {
+                    // only save the first miplevel
+                    imageData.resize(byteSize);
                 }
 
                 if (errorMsg.empty() && !ramses::RamsesUtils::SaveImageBufferToPng(filename, imageData, resource->getWidth(), resource->getHeight()))

@@ -227,6 +227,7 @@ namespace ramses_internal
             const ImDrawList* cmd_list = draw_data->CmdLists[n];
             const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;
             auto ramsesind = m_imguiscene->createArrayResource(ramses::EDataType::UInt16, cmd_list->IdxBuffer.Size, idx_buffer);
+            todeleteRes.push_back(ramsesind);
             unsigned int idx = 0U;
             std::vector <float> positions;
             std::vector <float> uv;
@@ -318,6 +319,30 @@ namespace ramses_internal
         if (success)
         {
             m_scenesConsumingOffscreenBuffer[consumerScene].state = ramses::RendererSceneState::Unavailable;
+        }
+    }
+
+    void ImguiClientHelper::displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
+    {
+        if (ramses::ERendererEventResult_FAIL != result)
+        {
+            m_displays.insert(displayId);
+        }
+        else
+        {
+            m_isRunning = false;
+        }
+    }
+
+    void ImguiClientHelper::displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result)
+    {
+        if (ramses::ERendererEventResult_FAIL != result)
+        {
+            m_displays.erase(displayId);
+        }
+        else
+        {
+            m_isRunning = false;
         }
     }
 
@@ -465,6 +490,11 @@ namespace ramses_internal
         return false;
     }
 
+    bool ImguiClientHelper::waitForDisplay(ramses::displayId_t displayId)
+    {
+        return waitUntil([&] { return m_displays.find(displayId) != m_displays.end(); });
+    }
+
     bool ImguiClientHelper:: waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
     {
         return waitUntil([&] { return m_scenes[sceneId].state == state; });
@@ -494,7 +524,7 @@ namespace ramses_internal
     bool ImguiClientHelper::waitUntil(const std::function<bool()>& conditionFunction)
     {
         const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{5};
-        while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
+        while (m_isRunning && !conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds{5}); // will give the renderer time to process changes
             m_renderer->dispatchEvents(*this);

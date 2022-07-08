@@ -10,6 +10,7 @@
 #include "ramses-framework-api/CategoryInfoUpdate.h"
 #include "Components/CategoryInfo.h"
 #include "CategoryInfoUpdateImpl.h"
+#include "ramses-framework-api/DcsmApiTypes.h"
 
 namespace ramses
 {
@@ -26,7 +27,7 @@ namespace ramses
         EXPECT_FALSE(constructorZero == constructorWithDefaultForSafeRect);
         EXPECT_TRUE(defaultConstructed == setAfterward);
 
-        EXPECT_TRUE(constructorWithDefaultForSafeRect == constructorSafeRectSetToZero);
+        EXPECT_FALSE(constructorWithDefaultForSafeRect == constructorSafeRectSetToZero);
 
         EXPECT_FALSE(constructorAllSizes == defaultConstructed);
         EXPECT_FALSE(constructorAllSizes == constructorWithDefaultForSafeRect);
@@ -58,6 +59,55 @@ namespace ramses
         EXPECT_EQ(0u, update.getSafeRect().width);
         EXPECT_EQ(0u, update.getSafeRect().height);
         EXPECT_EQ(CategoryInfoUpdate::Layout::Drive, update.getActiveLayout());
+    }
+
+    TEST(ACategoryInfoUpdate, constructorOnlySetsUserProvidedValues)
+    {
+        const SizeInfo renderSize(1, 2);
+        const Rect categoryRect(1, 2, 3, 4);
+        const Rect safeRect(5, 6, 7, 8);
+        const CategoryInfoUpdate::Layout layout = CategoryInfoUpdate::Layout::Gallery;
+
+        {
+            CategoryInfoUpdate ciu;
+            EXPECT_FALSE(ciu.hasRenderSizeUpdate());
+            EXPECT_FALSE(ciu.hasCategoryRectUpdate());
+            EXPECT_FALSE(ciu.hasSafeRectUpdate());
+            EXPECT_FALSE(ciu.hasActiveLayoutUpdate());
+        }
+        {
+            CategoryInfoUpdate ciu(renderSize, categoryRect);
+            EXPECT_TRUE(ciu.hasRenderSizeUpdate());
+            EXPECT_TRUE(ciu.hasCategoryRectUpdate());
+            EXPECT_FALSE(ciu.hasSafeRectUpdate());
+            EXPECT_FALSE(ciu.hasActiveLayoutUpdate());
+
+            EXPECT_EQ(renderSize, ciu.getRenderSize());
+            EXPECT_EQ(categoryRect, ciu.getCategoryRect());
+        }
+        {
+            CategoryInfoUpdate ciu(renderSize, categoryRect, safeRect);
+            EXPECT_TRUE(ciu.hasRenderSizeUpdate());
+            EXPECT_TRUE(ciu.hasCategoryRectUpdate());
+            EXPECT_TRUE(ciu.hasSafeRectUpdate());
+            EXPECT_FALSE(ciu.hasActiveLayoutUpdate());
+
+            EXPECT_EQ(renderSize, ciu.getRenderSize());
+            EXPECT_EQ(categoryRect, ciu.getCategoryRect());
+            EXPECT_EQ(safeRect, ciu.getSafeRect());
+        }
+        {
+            CategoryInfoUpdate ciu(renderSize, categoryRect, safeRect, layout);
+            EXPECT_TRUE(ciu.hasRenderSizeUpdate());
+            EXPECT_TRUE(ciu.hasCategoryRectUpdate());
+            EXPECT_TRUE(ciu.hasSafeRectUpdate());
+            EXPECT_TRUE(ciu.hasActiveLayoutUpdate());
+
+            EXPECT_EQ(renderSize, ciu.getRenderSize());
+            EXPECT_EQ(categoryRect, ciu.getCategoryRect());
+            EXPECT_EQ(safeRect, ciu.getSafeRect());
+            EXPECT_EQ(layout, ciu.getActiveLayout());
+        }
     }
 
     TEST(ACategoryInfoUpdate, setCategoryRect)

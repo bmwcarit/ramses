@@ -45,6 +45,17 @@ else()
     ACME_INFO("+ fmt")
 endif()
 
+
+# CLI11 command line parsing library
+if (TARGET CLI11::CLI11)
+    ACME_INFO("+ CLI11 (existing target)")
+else()
+    add_subdirectory(cli11)
+    ACME_FOLDERIZE_TARGET(CLI11)
+    ACME_INFO("+ CLI11")
+endif()
+
+
 # abseil library
 function(add_abseil_scope)
     set(BUILD_TESTING OFF)

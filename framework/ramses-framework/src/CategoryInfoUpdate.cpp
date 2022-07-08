@@ -66,6 +66,21 @@ namespace ramses
         setActiveLayout(layout);
     }
 
+    CategoryInfoUpdate::CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect)
+        : CategoryInfoUpdate()
+    {
+        setRenderSize(renderSize);
+        setCategoryRect(categoryRect);
+        setSafeRect(safeRect);
+    }
+
+    CategoryInfoUpdate::CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect)
+        : CategoryInfoUpdate()
+    {
+        setRenderSize(renderSize);
+        setCategoryRect(categoryRect);
+    }
+
     bool CategoryInfoUpdate::operator!=(const CategoryInfoUpdate& rhs) const
     {
         return !(*this == rhs);

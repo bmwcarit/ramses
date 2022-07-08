@@ -167,7 +167,7 @@ namespace ramses_internal
         case WL_POINTER_AXIS_VERTICAL_SCROLL:
         {
             const double delta = wl_fixed_to_double(value);
-            const EMouseEventType event = (delta > 0) ? EMouseEventType_WheelUp : EMouseEventType_WheelDown;
+            const EMouseEventType event = (delta < 0) ? EMouseEventType_WheelUp : EMouseEventType_WheelDown;
             inputHandling.m_windowEventHandler.onMouseEvent(event, inputHandling.m_cursorPosX, inputHandling.m_cursorPosY);
         }
         break;

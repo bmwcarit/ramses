@@ -124,6 +124,15 @@ namespace ramses
         }
     }
 
+    void RendererMate::displayCreated(displayId_t displayId, ERendererEventResult result)
+    {
+        UNUSED(displayId);
+        if (result == ERendererEventResult_FAIL)
+        {
+            m_isRunning = false;
+        }
+    }
+
     void RendererMate::keyEvent(displayId_t displayId, EKeyEvent keyEvent, uint32_t keyModifiers, EKeyCode keyCode)
     {
         if (!m_keysHandling)

@@ -55,8 +55,7 @@ namespace ramses
         void assignContentToConsumer(ContentID id_, const CategoryInfoUpdate& categoryInfo_, AnimationInformation anim_, sceneId_t sceneId_)
         {
             EXPECT_CALL(provHandler, contentSizeChange(id_, _, anim_)).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
-                ramses::CategoryInfoUpdate update{categoryInfo_.getRenderSize(), categoryInfo_.getCategoryRect(), categoryInfo_.getSafeRect()};
-                EXPECT_EQ(update, infoupdate);
+                EXPECT_EQ(categoryInfo_, infoupdate);
                 });
             EXPECT_CALL(consHandler, contentDescription(id_, TechnicalContentDescriptor{ sceneId_.getValue() }));
             EXPECT_EQ(consumer.assignContentToConsumer(id_, categoryInfo_), StatusOK);
@@ -230,8 +229,7 @@ namespace ramses
         {
             unassignConsumer(id, AnimationInformation{ 200, 300 });
             EXPECT_CALL(provHandler, contentSizeChange(id, _, _)).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
-                ramses::CategoryInfoUpdate update{categoryInfo.getRenderSize(), categoryInfo.getCategoryRect(), categoryInfo.getSafeRect()};
-                EXPECT_EQ(update, infoupdate);
+                EXPECT_EQ(categoryInfo, infoupdate);
                 });
             EXPECT_CALL(consHandler, contentDescription(id, TechnicalContentDescriptor{ 18 }));
             EXPECT_EQ(consumer.assignContentToConsumer(id, categoryInfo), StatusOK);
@@ -266,8 +264,7 @@ namespace ramses
         dispatch();
 
         EXPECT_CALL(provHandler, contentSizeChange(id, _, _)).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
-            ramses::CategoryInfoUpdate update{categoryInfo.getRenderSize(), categoryInfo.getCategoryRect(), categoryInfo.getSafeRect()};
-            EXPECT_EQ(update, infoupdate);
+            EXPECT_EQ(categoryInfo, infoupdate);
         });
         EXPECT_CALL(consHandler, contentDescription(id, TechnicalContentDescriptor{5432}));
         EXPECT_EQ(consumer.assignContentToConsumer(id, categoryInfo), StatusOK);

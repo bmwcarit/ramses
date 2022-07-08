@@ -53,6 +53,7 @@ namespace ramses_internal
 
         /**
          * Transmit a file via DLT
+         * The file may not be completely transmitted when the function returns
          * @param uri the path to the file
          * @param deleteFile delete file afterwards
          */

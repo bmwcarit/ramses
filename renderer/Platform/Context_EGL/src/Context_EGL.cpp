@@ -9,6 +9,61 @@
 #include "Context_EGL/Context_EGL.h"
 #include "Utils/ThreadLocalLogForced.h"
 
+namespace
+{
+    const char* surfaceAttributeName(EGLint surfaceAttribute)
+    {
+        switch (surfaceAttribute)
+        {
+        case EGL_SURFACE_TYPE:
+            return "EGL_SURFACE_TYPE";
+        case EGL_RENDERABLE_TYPE:
+            return "EGL_RENDERABLE_TYPE";
+        case EGL_BUFFER_SIZE:
+            return "EGL_BUFFER_SIZE";
+        case EGL_RED_SIZE:
+            return "EGL_RED_SIZE";
+        case EGL_GREEN_SIZE:
+            return "EGL_GREEN_SIZE";
+        case EGL_BLUE_SIZE:
+            return "EGL_BLUE_SIZE";
+        case EGL_ALPHA_SIZE:
+            return "EGL_ALPHA_SIZE";
+        case EGL_DEPTH_SIZE:
+            return "EGL_DEPTH_SIZE";
+        case EGL_STENCIL_SIZE:
+            return "EGL_STENCIL_SIZE";
+        case EGL_SAMPLE_BUFFERS:
+            return "EGL_SAMPLE_BUFFERS";
+        case EGL_SAMPLES:
+            return "EGL_SAMPLES";
+        default:
+            break;
+        }
+        return nullptr;
+    }
+
+    const char* renderableTypeName(EGLint value)
+    {
+        switch(value)
+        {
+        case  EGL_OPENGL_ES_BIT:
+            return "EGL_OPENGL_ES_BIT";
+        case  EGL_OPENVG_BIT:
+            return "EGL_OPENVG_BIT";
+        case  EGL_OPENGL_ES2_BIT:
+            return "EGL_OPENGL_ES2_BIT";
+        case  EGL_OPENGL_ES3_BIT:
+            return "EGL_OPENGL_ES3_BIT";
+        case  EGL_OPENGL_BIT:
+            return "EGL_OPENGL_BIT";
+        default:
+            break;
+        }
+        return nullptr;
+    }
+}
+
 namespace ramses_internal
 {
     Context_EGL::Context_EGL(Generic_EGLNativeDisplayType eglDisplay, Generic_EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext /*= 0*/)
@@ -288,6 +343,52 @@ namespace ramses_internal
         }
     }
 
+    void Context_EGL::logErrorHints(const EGLint *surfaceAttributes) const
+    {
+        constexpr std::size_t maxConfigCount = 32u;
+        EGLConfig configsResult[maxConfigCount];
+
+        EGLint configCountResult = 0;
+
+        if (EGL_TRUE != eglChooseConfig(m_eglSurfaceData.eglDisplay, nullptr, configsResult, maxConfigCount, &configCountResult))
+        {
+            return;
+        }
+
+        EGLint allRenderableTypes = 0;
+
+        for (EGLint i = 0; i < configCountResult; ++i)
+        {
+            EGLint renderableType = 0;
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_RENDERABLE_TYPE, &renderableType);
+            allRenderableTypes |= renderableType;
+        }
+
+        auto* iter = surfaceAttributes;
+        while(EGL_NONE != *iter)
+        {
+            const auto value = *(iter + 1);
+            if (*iter == EGL_RENDERABLE_TYPE)
+            {
+                // explicit message for common problem in VM: no support for GLES3.1
+                if ((allRenderableTypes & value) == 0)
+                {
+                    const auto name = renderableTypeName(value);
+                    if (name != nullptr)
+                    {
+                        LOG_ERROR_P(CONTEXT_RENDERER, "There is no EGL configuration that supports EGL_RENDERABLE_TYPE: {} (0x{:x})", name, value);
+                    }
+                    else
+                    {
+                        LOG_ERROR_P(CONTEXT_RENDERER, "There is no EGL configuration that supports EGL_RENDERABLE_TYPE: 0x{:x}", value);
+                    }
+                }
+                break;
+            }
+            iter += 2;
+        }
+    }
+
     bool Context_EGL::chooseEglConfig()
     {
         const EGLint* surfaceAttributes = m_surfaceAttributes;
@@ -313,16 +414,28 @@ namespace ramses_internal
         int iConfigs;
         if (!eglChooseConfig(m_eglSurfaceData.eglDisplay, surfaceAttributes, &m_eglSurfaceData.eglConfig, 1, &iConfigs) || (iConfigs == 0))
         {
-            if(0 == iConfigs)
+            if (0 == iConfigs)
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglChooseConfig(). No configs available for the requested surface attributes:");
 
-                UInt32 i = 0;
-                while(EGL_NONE != *m_surfaceAttributes)
+                while (EGL_NONE != *m_surfaceAttributes)
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "" << i++ << ": " << *m_surfaceAttributes);
-                    ++m_surfaceAttributes;
+                    const auto key = *(m_surfaceAttributes );
+                    const auto value = *(m_surfaceAttributes + 1);
+                    const auto* name = surfaceAttributeName(key);
+                    if (name != nullptr)
+                    {
+                        LOG_ERROR_P(CONTEXT_RENDERER, "{}(0x{:x}): {}", name, key, value);
+                    }
+                    else
+                    {
+                        LOG_ERROR_P(CONTEXT_RENDERER, "0x{:x}: {}", key, value);
+                    }
+                    m_surfaceAttributes += 2;
                 }
+#ifndef __ANDROID__
+                logErrorHints(surfaceAttributes);
+#endif
             }
             else
             {
@@ -363,40 +476,14 @@ namespace ramses_internal
             switch(*configParamToQuery)
             {
             case EGL_SURFACE_TYPE:
-                logOnFailure((configParamRequestedValue & configParamActualValue) != 0, "EGL_SURFACE_TYPE");
-                break;
             case EGL_RENDERABLE_TYPE:
-                logOnFailure((configParamRequestedValue & configParamActualValue) != 0, "EGL_RENDERABLE_TYPE");
-                break;
-            case  EGL_BUFFER_SIZE:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_BUFFER_SIZE");
-                break;
-            case EGL_RED_SIZE:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_RED_SIZE");
-                break;
-            case EGL_GREEN_SIZE:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_GREEN_SIZE");
-                break;
-            case EGL_BLUE_SIZE:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_BLUE_SIZE");
-                break;
-            case EGL_ALPHA_SIZE:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_ALPHA_SIZE");
-                break;
-            case EGL_DEPTH_SIZE:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_DEPTH_SIZE");
-                break;
-            case EGL_STENCIL_SIZE:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_STENCIL_SIZE");
-                break;
-            case EGL_SAMPLE_BUFFERS:
-                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_SAMPLE_BUFFERS");
+                logOnFailure((configParamRequestedValue & configParamActualValue) != 0, surfaceAttributeName(*configParamToQuery));
                 break;
             case EGL_SAMPLES:
-                logOnFailure(configParamRequestedValue <= configParamActualValue, "EGL_SAMPLES");
+                logOnFailure(configParamRequestedValue <= configParamActualValue, surfaceAttributeName(*configParamToQuery));
                 break;
             default:
-                logOnFailure(configParamRequestedValue == configParamActualValue, nullptr);
+                logOnFailure(configParamRequestedValue == configParamActualValue, surfaceAttributeName(*configParamToQuery));
                 break;
             }
 

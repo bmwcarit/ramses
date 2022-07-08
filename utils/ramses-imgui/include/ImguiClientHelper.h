@@ -64,6 +64,7 @@ namespace ramses_internal
         bool saveScreenshot(const std::string& filename);
         bool saveScreenshot(const std::string& filename, ramses::displayBufferId_t screenshotBuf, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
+        bool waitForDisplay(ramses::displayId_t displayId);
         bool waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state);
         bool waitForSceneVersion(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t version);
         bool waitForOffscreenBufferCreated(const ramses::displayBufferId_t offscreenBufferId);
@@ -77,6 +78,8 @@ namespace ramses_internal
         void offscreenBufferLinked(ramses::displayBufferId_t offscreenBufferId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId, bool success) override;
 
         // Renderer events
+        void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override;
+        void displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result) override;
         void mouseEvent(ramses::displayId_t displayId, ramses::EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) override;
         void keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent eventType, uint32_t keyModifiers, ramses::EKeyCode keyCode) override;
         void windowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height) override;
@@ -98,10 +101,12 @@ namespace ramses_internal
 
         using SceneSet = std::unordered_map<ramses::sceneId_t, SceneInfo>;
         using OffscreenBufferSet = std::unordered_set<ramses::displayBufferId_t>;
+        using DisplaySet = std::unordered_set<ramses::displayId_t>;
 
         SceneSet m_scenes;
         SceneSet m_scenesAssignedToOffscreenBuffer;
         SceneSet m_scenesConsumingOffscreenBuffer;
+        DisplaySet m_displays;
         OffscreenBufferSet m_offscreenBuffers;
         ramses::RamsesRenderer* m_renderer = nullptr;
         ramses::displayId_t m_displayId;

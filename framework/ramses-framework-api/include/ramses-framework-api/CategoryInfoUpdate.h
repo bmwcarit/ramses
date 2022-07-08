@@ -53,7 +53,24 @@ namespace ramses
          * @param safeRect the new safe rect
          * @param layout the new active layout
          */
-        CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect = {0,0,0,0}, Layout layout = Layout::Drive);
+        CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect, Layout layout);
+
+        /**
+         * @brief constructor for CategoryInfoUpdate
+         *
+         * @param renderSize the new render size
+         * @param categoryRect the new category rect
+         * @param safeRect the new safe rect
+         */
+        CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect);
+
+        /**
+         * @brief constructor for CategoryInfoUpdate
+         *
+         * @param renderSize the new render size
+         * @param categoryRect the new category rect
+         */
+        CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect);
 
         /// Destructor
         ~CategoryInfoUpdate();

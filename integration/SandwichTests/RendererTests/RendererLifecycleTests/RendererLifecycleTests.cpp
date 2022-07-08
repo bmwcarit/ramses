@@ -1514,16 +1514,16 @@ namespace ramses_internal
         testRenderer.doOneLoop();
 
         // set expiration of content that will be rendered
-        testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(2000));
+        testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(5000));
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
 
         // send flushes within limit and render
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < 3; ++i)
         {
             // make modifications to scene
             testScenesAndRenderer.getScenesRegistry().setSceneState<MultipleTrianglesScene>(sceneId, MultipleTrianglesScene::TRIANGLES_REORDERED);
-            testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(2000)); // these will not expire
+            testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(5000)); // these will not expire
             testScenesAndRenderer.flush(sceneId);
             testRenderer.doOneLoop();
         }
@@ -1537,7 +1537,7 @@ namespace ramses_internal
         // send few more flushes within limit and no changes
         for (int i = 0; i < 3; ++i)
         {
-            testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(1000)); // these will not expire
+            testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::Clock::now() + std::chrono::milliseconds(5000)); // these will not expire
             testScenesAndRenderer.flush(sceneId);
             testRenderer.doOneLoop();
         }
@@ -1558,7 +1558,7 @@ namespace ramses_internal
         for (int i = 0; i < 5; ++i)
         {
             testRenderer.doOneLoop();
-            std::this_thread::sleep_for(std::chrono::milliseconds(300));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
         testRenderer.dispatchEvents(dummy, expirationCounter);
         ASSERT_TRUE(expirationCounter.numExpirationEvents == 0u);

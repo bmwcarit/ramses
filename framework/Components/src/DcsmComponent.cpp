@@ -1944,6 +1944,7 @@ namespace ramses_internal
                     }
                     else
                         fmt::format_to(out, ",-");
+                    fmt::format_to(out, ";");
                 }
                 fmt::format_to(out, "]");
             }));

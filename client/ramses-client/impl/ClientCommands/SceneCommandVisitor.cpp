@@ -98,7 +98,7 @@ namespace ramses_internal
     {
         if (GetRamsesLogger().transmitFile(sceneDumpFileName, false))
         {
-            LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::sendSceneAndResourceFilesViaDLT: scene file successfully send via dlt: " << sceneDumpFileName);
+            LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::sendSceneAndResourceFilesViaDLT: started dlt file transfer: " << sceneDumpFileName);
         }
         else
         {

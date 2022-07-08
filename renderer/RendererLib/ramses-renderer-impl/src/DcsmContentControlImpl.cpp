@@ -31,12 +31,7 @@ namespace ramses
 
     status_t DcsmContentControlImpl::addContentCategory(Category category, displayId_t display, const CategoryInfoUpdate& categoryInformation)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl::addContentCategory: category:" << category << " display: " << display
-            << " renderSize: " << categoryInformation.getRenderSize().width << "x" << categoryInformation.getRenderSize().height
-            << " categoryRect: " << categoryInformation.getCategoryRect().x << "x" << categoryInformation.getCategoryRect().y
-            << "x" << categoryInformation.getCategoryRect().width << "x" << categoryInformation.getCategoryRect().height
-            << " safeRect: " << categoryInformation.getSafeRect().x << "x" << categoryInformation.getSafeRect().y
-            << "x" << categoryInformation.getSafeRect().width << "x" << categoryInformation.getSafeRect().height);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl::addContentCategory: category:" << category << " display: " << display << " " << categoryInformation);
 
         if (m_categories.find(category) != m_categories.end())
             return addErrorEntry(fmt::format("{}{}{}", "DcsmContentControl::addContentCategory: cannot add category that has already been added before (category: ", category, ")"));
@@ -111,8 +106,7 @@ namespace ramses
             handleContentStateChange(contentID, currState);
             break;
         case ContentState::Ready:
-            contentInfo.readyRequestTimeOut = (timeOut > 0 ? m_timeStampNow + timeOut : std::numeric_limits<uint64_t>::max());
-            break;
+            return addErrorEntry("DcsmContentControl:requestContentReady: content is ready already, cannot request ready again");
         case ContentState::Shown:
             return addErrorEntry("DcsmContentControl:requestContentReady: content is shown already, cannot request ready");
         case ContentState::Invalid:

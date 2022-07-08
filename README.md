@@ -117,6 +117,7 @@ Submodule reference:
 - {fmt} (Licensed under MIT License)
 - ImGui (Licensed under MIT License)
 - Abseil (Licensed under Apache 2.0; see also external/abseil/LICENSE for more details)
+- CLI11 (Licensed under BSD-3)
 
 Included Assets:
 - Roboto Font (Licensed under Apache 2.0)

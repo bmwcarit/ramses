@@ -253,7 +253,32 @@ namespace ramses_internal
 
     bool DltAdapterImpl::transmitFile(LogContext& ctx, const String& uri, bool deleteFile)
     {
-        if(!m_initialized || uri.size() == 0 || ctx.getUserData() == nullptr)
+        if (!m_initialized)
+        {
+            return false;
+        }
+        return m_fileTransfer.transmitFile(ctx, uri, deleteFile);
+    }
+
+    bool DltAdapterImpl::isInitialized()
+    {
+        return m_initialized;
+    }
+
+    DltAdapterImpl::FileTransferWorker::FileTransferWorker()
+        : m_thread("R_FileTransfer")
+    {
+    }
+
+    DltAdapterImpl::FileTransferWorker::~FileTransferWorker()
+    {
+        m_thread.cancel();
+        m_thread.join();
+    }
+
+    bool DltAdapterImpl::FileTransferWorker::transmitFile(LogContext& ctx, const String& uri, bool deleteFile)
+    {
+        if (uri.size() == 0 || ctx.getUserData() == nullptr)
         {
             return false;
         }
@@ -261,25 +286,96 @@ namespace ramses_internal
         UNUSED(deleteFile);
         return false;
 #else
+        DltContext* fileContext = static_cast<DltContext*>(ctx.getUserData());
+
+        // send header to catch early errors
+        // if a file is modified during transfer it will be incomplete
+        // (dlt-filetransfer will assign a new serial)
+        if (dlt_user_log_file_header(fileContext, uri.c_str()) != 0)
+        {
+            return false;
+        }
+
+        FileTransfer ft;
+        ft.filename = uri;
+        ft.ctx = fileContext;
+        ft.deleteFlag = deleteFile ? 1 : 0;
+        bool startThread = false;
+        {
+            PlatformGuard guard(m_lock);
+            startThread = m_files.empty();
+            if (!m_files.empty() && m_files.front().filename == uri)
+            {
+                // file is resent  -> cancel running transfer
+                WARNINGS_PUSH
+                WARNING_DISABLE_LINUX(-Wold-style-cast)
+                DLT_LOG2((*fileContext), DLT_LOG_WARN, DLT_STRING("file is resent -> cancel running transfer:"), DLT_STRING(uri.c_str()));
+                WARNINGS_POP
+                m_thread.cancel();
+                startThread = true;
+            }
+            m_files.push_back(ft);
+        }
+
+        if (startThread)
+        {
+            m_thread.join();
+            resetCancel();
+            m_thread.start(*this);
+        }
+        return true;
+#endif
+    }
+
+    void DltAdapterImpl::FileTransferWorker::get(DltAdapterImpl::FileTransferWorker::FileTransfer& ft)
+    {
+        PlatformGuard guard(m_lock);
+        assert(!m_files.empty());
+        ft = m_files.front();
+    }
+
+    bool DltAdapterImpl::FileTransferWorker::pop(DltAdapterImpl::FileTransferWorker::FileTransfer& ft)
+    {
+        PlatformGuard guard(m_lock);
+        assert(!m_files.empty());
+        m_files.pop_front();
+        if (m_files.empty())
+        {
+            return false;
+        }
+        ft = m_files.front();
+        return true;
+    }
+
+    void DltAdapterImpl::FileTransferWorker::run()
+    {
+#ifdef DLT_HAS_FILETRANSFER
         // Sending files per dlt is done by chunking the binary file data in very small chunks (~1024 bytes) and send these per regular DLT_LOG(..)
         // after each chunk will sleep for the timeout so the FIFO of dlt will not be flooded with to many messages in a short period of time.
         // The dlt implementation recommends a timeout of 20 ms, unfortunately due the very small chunk size a huge number of messages has to be sent and
         // this will cause a transfer time of ~30 seconds for a file of 1.5 MB.
         // To prevent these long delays we simply use a smaller timeout which did not cause any troubles in our tests.
         const int timeoutInMS = 1;
-        const int deleteFileAsInt = deleteFile ? 1 : 0;
-
-        DltContext* fileContext = static_cast<DltContext*>(ctx.getUserData());
-        if (dlt_user_log_file_complete(fileContext, uri.c_str(), deleteFileAsInt, timeoutInMS) < 0)
+        FileTransfer ft;
+        get(ft);
+        do
         {
-            return false;
-        }
-        return true;
+            const auto filename = ft.filename.c_str();
+            const auto total = dlt_user_log_file_packagesCount(ft.ctx, filename);
+            int i = 1;
+            for (; ((i <= total) && !isCancelRequested()); ++i)
+            {
+                if (dlt_user_log_file_data(ft.ctx, filename, i, timeoutInMS) != 0)
+                {
+                    // usually this means the file was modified during transfer
+                    break;
+                }
+            }
+            if (i > total)
+            {
+                dlt_user_log_file_end(ft.ctx, filename, ft.deleteFlag);
+            }
+        } while(pop(ft) && !isCancelRequested());
 #endif
-    }
-
-    bool DltAdapterImpl::isInitialized()
-    {
-        return m_initialized;
     }
 }

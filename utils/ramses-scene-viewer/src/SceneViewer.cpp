@@ -40,6 +40,7 @@ namespace ramses_internal
         const int ErrorRenderer   = 3;
         const int ErrorScene      = 4;
         const int ErrorScreenshot = 5;
+        const int ErrorDisplay    = 6;
 
         void setPreferredSize(ramses::DisplayConfig& cfg, const ramses::Scene& scene, const std::vector<const char*>& args)
         {
@@ -209,6 +210,11 @@ namespace ramses_internal
         ImguiClientHelper imguiHelper(*client, winWidth, winHeight, imguiSceneId);
         imguiHelper.setDisplayId(displayId);
         imguiHelper.setRenderer(renderer);
+
+        if (!imguiHelper.waitForDisplay(displayId))
+        {
+            return ErrorDisplay;
+        }
 
         std::unique_ptr<ISceneSetup> sceneSetup;
         if (guiMode == GuiMode::On)

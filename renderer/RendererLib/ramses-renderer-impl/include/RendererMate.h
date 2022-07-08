@@ -47,6 +47,7 @@ namespace ramses
         virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override;
 
         // IRendererEventHandler
+        virtual void displayCreated(displayId_t displayId, ERendererEventResult result) override;
         virtual void keyEvent(displayId_t displayId, EKeyEvent keyEvent, uint32_t keyModifiers, EKeyCode keyCode) override;
         virtual void windowClosed(displayId_t displayId) override;
 

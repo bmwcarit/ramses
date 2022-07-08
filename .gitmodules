@@ -25,3 +25,6 @@
 [submodule "external/imgui"]
 	url = https://github.com/ocornut/imgui.git
 	path = external/imgui
+[submodule "external/cli11"]
+	url = https://github.com/CLIUtils/CLI11.git
+	path = external/cli11

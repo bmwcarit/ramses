@@ -1,3 +1,25 @@
+27.0.121
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Improved error logs if EGL intialization fails
+        - Terminate ramses tools (ramses-scene-viewer, ramses-renderer)
+          if display creation fails
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Use extra thread for dlt file transfer to avoid watchdog timeouts
+        - Fixed mousewheel direction on wayland platform
+        - Fix memory leak in ramses tools with imgui (e.g. ramses-scene-viewer)
+        - Fixed unexpected DCSM timeout, if DcsmContentControl::requestContentReady(..., timeout)
+          is called and the content is already in DCSM::Ready state.
+
+27.0.120
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix wrong default value behavior in CategoryInfoUpdate constructor
+
 27.0.119
 -------------------
         Bugfixes

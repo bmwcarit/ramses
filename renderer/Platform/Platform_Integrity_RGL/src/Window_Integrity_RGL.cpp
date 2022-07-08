@@ -87,6 +87,7 @@ namespace ramses_internal
             return false;
         }
 
+        memset(&m_rglWindow, 0, sizeof(m_rglWindow));
         m_rglWindow.ColorFmt         = m_colorFormat;
         m_rglWindow.PosX             = getPosX();
         m_rglWindow.PosY             = getPosY();

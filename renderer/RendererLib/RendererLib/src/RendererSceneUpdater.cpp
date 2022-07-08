@@ -1793,7 +1793,7 @@ namespace ramses_internal
                 {
                     if (GetRamsesLogger().transmitFile(screenshot.filename, false))
                     {
-                        LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file successfully send via dlt: " << screenshot.filename);
+                        LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: started dlt file transfer: " << screenshot.filename);
                     }
                     else
                     {

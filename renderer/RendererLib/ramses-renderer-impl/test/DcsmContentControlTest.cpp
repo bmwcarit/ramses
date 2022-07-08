@@ -20,6 +20,8 @@
 #include "ramses-framework-api/CategoryInfoUpdate.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "RamsesFrameworkTypesImpl.h"
+#include "DcsmGmockPrinter.h"
 
 using namespace ramses;
 using namespace testing;
@@ -821,6 +823,23 @@ TEST_P(ADcsmContentControlP, requestsContentReady)
     }
     EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
     update();
+}
+
+TEST_P(ADcsmContentControlP, requestContentReadyAgain)
+{
+    offerAndMakeDcsmContentReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+
+    WAYLAND_expectStreamBufferCreated();
+    // handle scene ready
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    signalTechnicalContentReady();
+    update();
+
+    // requestContentReady has no effect - nothing happens on timeout
+    m_dcsmContentControl.requestContentReady(m_contentID1, 10);
+    update(5);
+    update(10);
+    update(15);
 }
 
 TEST_P(ADcsmContentControlP, canAlreadyRequestReadyBeforeDescriptionComes)
@@ -1678,20 +1697,21 @@ TEST_P(ADcsmContentControlP, sendsLatestCategoryRectToNewContentOfferedForItEven
         return StatusOK;
         });
     EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategoryInfo(m_categoryID1, categoryInfo, AnimationInformation{ 500, 1000 }));
+    CategoryInfoUpdate mergedCiu{categoryInfo.getRenderSize(), categoryInfo.getCategoryRect(), m_CategoryInfoUpdate1.getSafeRect(), m_CategoryInfoUpdate1.getActiveLayout()};
 
     // before start time
     update(10);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(categoryInfo, infoupdate);
+        EXPECT_EQ(mergedCiu, infoupdate);
         return StatusOK;
-        });
+    });
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, GetParam());
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
 
     // between start and end time
     update(700);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(categoryInfo, infoupdate);
+        EXPECT_EQ(mergedCiu, infoupdate);
         return StatusOK;
         });
     m_dcsmHandler.contentOffered(m_contentID3, m_categoryID1, GetParam());
@@ -1701,7 +1721,7 @@ TEST_P(ADcsmContentControlP, sendsLatestCategoryRectToNewContentOfferedForItEven
     const ContentID contentID4{ m_contentID3.getValue() + 1 };
     update(1100);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(contentID4, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(categoryInfo, infoupdate);
+        EXPECT_EQ(mergedCiu, infoupdate);
         return StatusOK;
         });
     m_dcsmHandler.contentOffered(contentID4, m_categoryID1, GetParam());
