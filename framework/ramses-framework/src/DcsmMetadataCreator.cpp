@@ -121,4 +121,11 @@ namespace ramses
         LOG_HL_CLIENT_API1(status, flags);
         return status;
     }
+
+    status_t DcsmMetadataCreator::setConfiguratorPriority(uint8_t priority)
+    {
+        const auto status = impl.setConfiguratorPriority(priority);
+        LOG_HL_CLIENT_API1(status, priority);
+        return status;
+    }
 }

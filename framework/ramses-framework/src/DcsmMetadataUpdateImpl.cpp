@@ -159,6 +159,16 @@ namespace ramses
         return m_metadata.getLayoutAvailability();
     }
 
+    bool DcsmMetadataUpdateImpl::hasConfiguratorPriority() const
+    {
+        return m_metadata.hasConfiguratorPriority();
+    }
+
+    uint8_t DcsmMetadataUpdateImpl::getConfiguratorPriority() const
+    {
+        return m_metadata.getConfiguratorPriority();
+    }
+
     void DcsmMetadataUpdateImpl::setMetadata(ramses_internal::DcsmMetadata metadata)
     {
         m_metadata = std::move(metadata);

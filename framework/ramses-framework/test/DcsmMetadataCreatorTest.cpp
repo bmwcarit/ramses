@@ -171,4 +171,14 @@ namespace ramses
         dm.setLayoutAvailability(0x31);
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
+
+    TEST_F(ADcsmMetadataCreator, canSetConfiguratorPriority)
+    {
+        DcsmMetadataCreator dmf;
+        EXPECT_EQ(StatusOK, dmf.setConfiguratorPriority(0x32));
+
+        ramses_internal::DcsmMetadata dm;
+        dm.setConfiguratorPriority(0x32);
+        EXPECT_EQ(dm, dmf.impl.getMetadata());
+    }
 }

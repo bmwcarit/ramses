@@ -489,6 +489,15 @@ TEST_F(ARendererCommandExecutor, setClearColor)
     doCommandExecutorLoop();
 }
 
+TEST_F(ARendererCommandExecutor, resizeDisplayWindowExterally)
+{
+    constexpr DisplayHandle display{ 1 };
+
+    m_commandBuffer.enqueueCommand(RendererCommand::SetExterallyOwnedWindowSize{ display, 1u, 2u });
+    EXPECT_CALL(m_sceneUpdater, handleSetExternallyOwnedWindowSize(1u, 2u));
+    doCommandExecutorLoop();
+}
+
 TEST_F(ARendererCommandExecutor, setFrameTimerLimits)
 {
     //default values

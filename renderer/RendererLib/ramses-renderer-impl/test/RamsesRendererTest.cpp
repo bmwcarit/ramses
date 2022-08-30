@@ -839,6 +839,18 @@ TEST_F(ARamsesRendererWithDisplay, reportsErrorIfSettingClearColorForUnknownDisp
     EXPECT_NE(ramses::StatusOK, renderer.setDisplayBufferClearColor(ramses::displayId_t{ 999u }, {}, 1, 2, 3, 4));
 }
 
+TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingExternallyOwnedWindowSize)
+{
+    EXPECT_EQ(ramses::StatusOK, renderer.setExternallyOwnedWindowSize(displayId, 123u, 456u));
+    EXPECT_CALL(cmdVisitor, handleSetExternallyOwnedWindowSize(ramses_internal::DisplayHandle{ displayId.getValue() }, 123u, 456u));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, reportsErrorIfSettingExternallyOwnedWindowSizeForUnknownDisplay)
+{
+    EXPECT_NE(ramses::StatusOK, renderer.setExternallyOwnedWindowSize({}, 123u, 456u));
+}
+
 TEST(ARamsesFrameworkInARendererLib, canCreateARenderer)
 {
     ramses::RamsesFramework fw;

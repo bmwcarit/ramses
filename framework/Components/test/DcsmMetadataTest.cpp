@@ -41,6 +41,7 @@ namespace ramses_internal
             EXPECT_TRUE(filledDm.setDisplayedDataFlags(22));
             EXPECT_TRUE(filledDm.setContentFlippedVertically(true));
             EXPECT_TRUE(filledDm.setLayoutAvailability(3));
+            EXPECT_TRUE(filledDm.setConfiguratorPriority(6));
         }
 
         DcsmMetadata serializeDeserialize(const DcsmMetadata& ref)
@@ -102,6 +103,7 @@ namespace ramses_internal
         EXPECT_FALSE(dm.hasDisplayedDataFlags());
         EXPECT_FALSE(dm.hasContentFlippedVertically());
         EXPECT_FALSE(dm.hasLayoutAvailability());
+        EXPECT_FALSE(dm.hasConfiguratorPriority());
     }
 
     TEST_F(ADcsmMetadata, canSetGetPreviewImagePngHeader)
@@ -291,6 +293,14 @@ namespace ramses_internal
         EXPECT_EQ(6u, dm.getLayoutAvailability());
     }
 
+    TEST_F(ADcsmMetadata, canSetGetConfiguratorPriority)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setConfiguratorPriority(7u));
+        EXPECT_TRUE(dm.hasConfiguratorPriority());
+        EXPECT_EQ(7u, dm.getConfiguratorPriority());
+    }
+
     TEST_F(ADcsmMetadata, canCompare)
     {
         EXPECT_TRUE(emptyDm == emptyDm);
@@ -426,6 +436,9 @@ namespace ramses_internal
 
         EXPECT_TRUE(dm.setLayoutAvailability(0));
         EXPECT_TRUE(dm.hasLayoutAvailability());
+
+        EXPECT_TRUE(dm.setConfiguratorPriority(0));
+        EXPECT_TRUE(dm.hasConfiguratorPriority());
     }
 
     TEST_F(ADcsmMetadata, canSetWidgetHUDlineIDToNewValue)
@@ -670,6 +683,19 @@ namespace ramses_internal
         EXPECT_EQ(14u, dm.getLayoutAvailability());
     }
 
+    TEST_F(ADcsmMetadata, canUpdateConfiguratorPriorityFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setConfiguratorPriority(24u));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setConfiguratorPriority(15u));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasConfiguratorPriority());
+        EXPECT_EQ(15u, dm.getConfiguratorPriority());
+    }
+
     TEST_F(ADcsmMetadata, canUpdateEmptyWithValues)
     {
         DcsmMetadata otherDm;
@@ -687,6 +713,7 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setDisplayedDataFlags(22));
         EXPECT_TRUE(otherDm.setContentFlippedVertically(true));
         EXPECT_TRUE(otherDm.setLayoutAvailability(15));
+        EXPECT_TRUE(otherDm.setConfiguratorPriority(16));
 
         DcsmMetadata dm;
         dm.updateFromOther(otherDm);
@@ -719,6 +746,8 @@ namespace ramses_internal
         EXPECT_TRUE(dm.getContentFlippedVertically());
         EXPECT_TRUE(dm.hasLayoutAvailability());
         EXPECT_EQ(15u, dm.getLayoutAvailability());
+        EXPECT_TRUE(dm.hasConfiguratorPriority());
+        EXPECT_EQ(16u, dm.getConfiguratorPriority());
     }
 
     TEST_F(ADcsmMetadata, canSkipDeserializeUnknownTypes)
@@ -786,6 +815,11 @@ namespace ramses_internal
         EXPECT_NE(fmt::to_string(filledDm).find("layoutAvailability:3"), std::string::npos);
     }
 
+    TEST_F(ADcsmMetadata, containsConfiguratorPriorityWhenLogged)
+    {
+        EXPECT_NE(fmt::to_string(filledDm).find("configuratorPriority:6"), std::string::npos);
+    }
+
     TEST_F(ADcsmMetadata, containsFullSetOfCarviewWhenLogged)
     {
         // ensure log contains expected values
@@ -805,5 +839,13 @@ namespace ramses_internal
     {
         const std::string s = fmt::to_string(filledDm);
         EXPECT_NE(s.find("carViewExt:r:11,t(12,13.2,14)"), std::string::npos);
+    }
+
+    TEST_F(ADcsmMetadata, canLogPreviewDescription)
+    {
+        DcsmMetadata dm;
+        dm.setPreviewDescription(U"asd");
+        const std::string s = fmt::to_string(dm);
+        EXPECT_NE(s.find("desc:3[61;73;64;]"), std::string::npos);
     }
 }

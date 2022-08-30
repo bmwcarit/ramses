@@ -823,6 +823,22 @@ TEST_F(ARendererSceneUpdater, doesNotSetClearColorIfDisplayInvalid)
     rendererSceneUpdater->handleSetClearColor({}, { 1, 2, 3, 4 });
 }
 
+TEST_F(ARendererSceneUpdater, resizesExternallyOwnedDisplayWindow)
+{
+    createDisplayAndExpectSuccess();
+
+    EXPECT_CALL(renderer.m_platform.renderBackendMock.windowMock, setExternallyOwnedWindowSize(123u, 456u)).WillOnce(Return(true));
+    rendererSceneUpdater->handleSetExternallyOwnedWindowSize(123u, 456u);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, doesNotResizeExternallyOwnedDisplayWindowIfDisplayInvalid)
+{
+    EXPECT_CALL(renderer.m_platform.renderBackendMock.windowMock, setExternallyOwnedWindowSize(_, _)).Times(0);
+    rendererSceneUpdater->handleSetExternallyOwnedWindowSize(123u, 456u);
+}
+
 TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFramebuffer)
 {
     createDisplayAndExpectSuccess();

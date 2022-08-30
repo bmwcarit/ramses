@@ -35,7 +35,7 @@ namespace ramses
         /// Mesh node that represents the text
         MeshNode*                meshNode = nullptr;
         /// Index to the atlas page containing the glyphs
-        size_t                   atlasPage = std::numeric_limits<size_t>::max();
+        std::size_t                   atlasPage = std::numeric_limits<std::size_t>::max();
         /// Glyph metrics of the original string characters
         GlyphMetricsVector       glyphs;
         /// Stores vertex data for the text line quads

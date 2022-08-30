@@ -78,6 +78,7 @@ namespace ramses_internal
         virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) override;
         virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
         virtual void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) override;
+        virtual void handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
         virtual void handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
         virtual void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) override;
         virtual void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;

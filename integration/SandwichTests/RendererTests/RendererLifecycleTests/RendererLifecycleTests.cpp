@@ -6,11 +6,10 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "RendererLifecycleTests.h"
+
 // These includes are needed by the tests
-#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
-#include "TestScenesAndRenderer.h"
-#include "RendererTestsFramework.h"
 #include "ReadPixelCallbackHandler.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "TestScenes/TextureBufferScene.h"
@@ -21,7 +20,6 @@
 #include "TestScenes/TextureSamplerScene.h"
 #include "TestScenes/TransformationLinkScene.h"
 #include "TestScenes/VisibilityScene.h"
-#include "RendererTestUtils.h"
 
 // These includes are needed because of ramses API usage
 #include "ramses-renderer-api/IRendererEventHandler.h"
@@ -31,58 +29,11 @@
 #include "ramses-client-api/SceneReference.h"
 #include "RamsesObjectTypeUtils.h"
 
-#include "gtest/gtest.h"
 #include <thread>
 #include <unordered_map>
 
 namespace ramses_internal
 {
-    class ARendererLifecycleTest : public ::testing::Test
-    {
-    public:
-        ARendererLifecycleTest()
-            : frameworkConfig()
-            , testScenesAndRenderer(frameworkConfig)
-            , testRenderer(testScenesAndRenderer.getTestRenderer())
-        {}
-
-    protected:
-        ramses::displayId_t createDisplayForWindow(uint32_t iviSurfaceIdOffset = 0u, bool iviWindowStartVisible = true)
-        {
-            ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset, iviWindowStartVisible);
-            displayConfig.setWindowRectangle(WindowX, WindowY, WindowWidth, WindowHeight);
-            return testRenderer.createDisplay(displayConfig);
-        }
-
-        testing::AssertionResult checkScreenshot(ramses::displayId_t display, const char* screenshotFile)
-        {
-            if (testRenderer.performScreenshotCheck(display, {}, 0u, 0u, WindowWidth, WindowHeight, screenshotFile))
-                return testing::AssertionSuccess();
-
-            return testing::AssertionFailure() << "Screenshot failed " << screenshotFile;
-        }
-
-        template <typename INTEGRATION_SCENE>
-        ramses::sceneId_t createScene(uint32_t state, const Vector3& cameraPosition = { 0.f, 0.f, 0.f }, uint32_t vpWidth = WindowWidth, uint32_t vpHeight = WindowHeight)
-        {
-            return testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, cameraPosition, vpWidth, vpHeight);
-        }
-        template <typename INTEGRATION_SCENE>
-        void createScene(uint32_t state, ramses::sceneId_t sceneId, const Vector3& cameraPosition = { 0.f, 0.f, 0.f })
-        {
-            testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, WindowWidth, WindowHeight);
-        }
-
-        static const uint32_t WindowX = 0u;
-        static const uint32_t WindowY = 0u;
-        static const uint32_t WindowWidth = 128u;
-        static const uint32_t WindowHeight = 64u;
-
-        ramses::RamsesFrameworkConfig frameworkConfig;
-        TestScenesAndRenderer testScenesAndRenderer;
-        TestRenderer& testRenderer;
-    };
-
     TEST_F(ARendererLifecycleTest, RenderScene)
     {
         const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));

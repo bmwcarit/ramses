@@ -294,7 +294,7 @@ namespace ramses_internal
         ASSERT_EQ(10u, pool.getTotalCount());
 
         std::vector<typename TypeParam::handle_type> handles;
-        for (const auto it : pool)
+        for (const auto& it : pool)
         {
             handles.push_back(it.first);
         }
@@ -402,7 +402,7 @@ namespace ramses_internal
             it.second->integer = c++;
         }
 
-        for (const auto it : pool)
+        for (const auto& it : pool)
         {
             static UInt32 c = 0u;
             EXPECT_EQ(it.second->integer, c++);

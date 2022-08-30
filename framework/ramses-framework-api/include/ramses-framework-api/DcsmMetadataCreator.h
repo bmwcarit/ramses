@@ -171,6 +171,16 @@ namespace ramses
         status_t setLayoutAvailability(uint8_t flags);
 
         /**
+         * @brief   Set the widget configurator priority for this dcsm content
+         * @details Defines the widget configurator behaviour when it gets opened and this dcsm content is in shown state
+         *
+         * @param priority the widget configurator priority
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setConfiguratorPriority(uint8_t priority);
+
+        /**
          * @brief Deleted move constructor
          * @param other unused
          */

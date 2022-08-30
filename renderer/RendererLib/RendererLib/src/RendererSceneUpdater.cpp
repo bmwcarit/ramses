@@ -1361,6 +1361,20 @@ namespace ramses_internal
         m_renderer.setClearColor(bufferDeviceHandle, clearColor);
     }
 
+    void RendererSceneUpdater::handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height)
+    {
+        if (!m_renderer.hasDisplayController())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetExternallyOwnedWindowSize cannot set window size on invalid display.");
+            return;
+        }
+
+        if(!m_renderer.setExternallyOwnedWindowSize(width, height))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetExternallyOwnedWindowSize failed, platform does not support external window ownership or window not externally owned!");
+        }
+    }
+
     void RendererSceneUpdater::handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo)
     {
         bool readPixelsFailed = false;

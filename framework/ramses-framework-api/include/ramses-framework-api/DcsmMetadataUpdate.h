@@ -255,6 +255,21 @@ namespace ramses
         uint8_t getLayoutAvailability() const;
 
         /**
+        * @brief Check if object contains configuratorPriority metadata entry.
+        *
+        * @return true if has configuratorPriority metadata, false if not
+        */
+        bool hasConfiguratorPriority() const;
+
+        /**
+        * @brief Get the widget configurator priority for this dcsm content
+        *        Value is undefined if not #hasConfiguratorPriority().
+        *
+        * @return the widget configurator priority
+        */
+        uint8_t getConfiguratorPriority() const;
+
+        /**
          * @brief Deleted default constructor
          */
         DcsmMetadataUpdate() = delete;

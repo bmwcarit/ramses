@@ -102,7 +102,11 @@ namespace ramses
         virtual void mouseEvent(displayId_t displayId, EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) = 0;
 
         /**
-        * @brief This method will be called when a display's window has been resized
+        * @brief    This method will be called when a display's window has been resized.
+        *
+        * @details  This applies specifically to windows that are created and maintained by the renderer during display creation, which is
+        *           the default behavior of the renderer.
+        *
         * @param displayId The ramses display whose corresponding window was resized
         * @param width The new width of the window
         * @param height The new height of the window

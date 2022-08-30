@@ -119,6 +119,13 @@ namespace ramses
         return status;
     }
 
+    status_t RamsesRenderer::setExternallyOwnedWindowSize(displayId_t display, uint32_t width, uint32_t height)
+    {
+        const status_t status = impl.setExternallyOwnedWindowSize(display, width, height);
+        LOG_HL_RENDERER_API3(status, display, width, height);
+        return status;
+    }
+
     displayBufferId_t RamsesRenderer::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount)
     {
         const displayBufferId_t bufferId = impl.createOffscreenBuffer(display, width, height, sampleCount, false, EDepthBufferType_DepthStencil);

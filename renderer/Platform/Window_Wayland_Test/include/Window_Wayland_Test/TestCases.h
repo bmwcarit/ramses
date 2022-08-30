@@ -185,13 +185,20 @@ namespace ramses_internal
         EXPECT_TRUE(this->m_window->init());
     }
 
+    TYPED_TEST_P(AWindowWayland, doesNotSupportExternallyOwnedWindowResizing)
+    {
+        ASSERT_TRUE(this->m_window->init());
+        EXPECT_FALSE(this->m_window->setExternallyOwnedWindowSize(10u, 10u));
+    }
+
     REGISTER_TYPED_TEST_SUITE_P(AWindowWayland,
             canInitAWindow,
             IfXdgRuntimeDirIsNotSetInitWillFail,
             IfXdgRuntimeDirIsNotCorrectInitWillFail,
             IfXdgRuntimeDirIsNotSetButWaylandSocketInitWillSucceed,
             IfWaylandDisplayIsNotCorrectInitWillFail,
-            IfXdgRuntimeDirIsSetAndWaylandSocketIsSetInitWillSucceed
+            IfXdgRuntimeDirIsSetAndWaylandSocketIsSetInitWillSucceed,
+            doesNotSupportExternallyOwnedWindowResizing
             );
 }
 

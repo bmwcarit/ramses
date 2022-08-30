@@ -168,4 +168,14 @@ namespace ramses
     {
         return impl.getLayoutAvailability();
     }
+
+    bool DcsmMetadataUpdate::hasConfiguratorPriority() const
+    {
+        return impl.hasConfiguratorPriority();
+    }
+
+    uint8_t DcsmMetadataUpdate::getConfiguratorPriority() const
+    {
+        return impl.getConfiguratorPriority();
+    }
 }

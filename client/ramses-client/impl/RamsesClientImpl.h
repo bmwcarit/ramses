@@ -103,6 +103,7 @@ namespace ramses
         Scene* loadSceneFromFile(const char* fileName, bool localOnly);
         Scene* loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly);
         Scene* loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly);
+        Scene* loadSceneFromFileDescriptor(sceneId_t sceneId, int fd, size_t offset, size_t length, bool localOnly);
 
         status_t loadSceneFromFileAsync(const char* fileName, bool localOnly);
 
@@ -152,6 +153,7 @@ namespace ramses
             ramses_internal::InputStreamContainerSPtr streamContainer;
             bool prefetchData;
             bool localOnly;
+            sceneId_t sceneId;
         };
 
         class LoadSceneRunnable : public ramses_internal::ITask
@@ -191,7 +193,8 @@ namespace ramses
         Scene* loadSceneObjectFromStream(const std::string& caller,
                                          std::string const& filename,
                                          ramses_internal::IInputStream& inputStream,
-                                         bool localOnly);
+                                         bool localOnly,
+                                         sceneId_t sceneId);
         void finalizeLoadedScene(Scene* scene);
 
         status_t validateScenes() const;

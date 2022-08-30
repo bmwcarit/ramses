@@ -78,6 +78,7 @@ namespace ramses_internal
 
         virtual void                setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
         virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
+        virtual bool                setExternallyOwnedWindowSize(uint32_t width, uint32_t height);
         void                        scheduleScreenshot(DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
         std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots();
 

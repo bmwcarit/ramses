@@ -51,7 +51,13 @@ if (TARGET CLI11::CLI11)
     ACME_INFO("+ CLI11 (existing target)")
 else()
     add_subdirectory(cli11)
-    ACME_FOLDERIZE_TARGET(CLI11)
+
+    # show CLI11 INTERFACE library in VS
+    file(GLOB CLI11_HEADER
+        ${CMAKE_CURRENT_SOURCE_DIR}/cli11/include/CLI/*.hpp
+        )
+    add_custom_target(cli11 SOURCES ${CLI11_HEADER})
+    ACME_FOLDERIZE_TARGET(cli11)
     ACME_INFO("+ CLI11")
 endif()
 

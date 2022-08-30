@@ -573,6 +573,19 @@ namespace ramses_internal
         m_displayBuffersSetup.setClearColor(bufferDeviceHandle, clearColor);
     }
 
+    bool Renderer::setExternallyOwnedWindowSize(uint32_t width, uint32_t height)
+    {
+        assert(hasDisplayController());
+        IRenderBackend& renderBackend = m_displayController->getRenderBackend();
+        IWindow& window = renderBackend.getWindow();
+
+        const bool result = window.setExternallyOwnedWindowSize(width, height);
+        if(result)
+            m_displayBuffersSetup.setDisplayBufferSize(m_displayController->getDisplayBuffer(), width, height);
+
+        return result;
+    }
+
     void Renderer::scheduleScreenshot(DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot)
     {
         assert(hasDisplayController());

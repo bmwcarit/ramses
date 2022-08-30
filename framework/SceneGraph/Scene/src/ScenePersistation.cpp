@@ -25,7 +25,7 @@ namespace ramses_internal
 
     void ScenePersistation::ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo)
     {
-        SceneId::BaseType sceneIdBaseType;
+        SceneId::BaseType sceneIdBaseType{};
         inStream >> sceneIdBaseType;
         createInfo.m_id = SceneId(sceneIdBaseType);
 

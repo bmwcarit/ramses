@@ -29,6 +29,7 @@ namespace ramses_internal
         Bool setFullscreen(Bool fullscreen) override;
         void handleEvents() override;
         void setTitle(const String& title) override;
+        bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
         bool hasTitle() const override
         {

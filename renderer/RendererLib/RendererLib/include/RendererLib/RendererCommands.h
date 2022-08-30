@@ -176,6 +176,13 @@ namespace ramses_internal
             Vector4 clearColor;
         };
 
+        struct SetExterallyOwnedWindowSize
+        {
+            DisplayHandle display;
+            uint32_t width;
+            uint32_t height;
+        };
+
         struct UpdateWarpingData
         {
             DisplayHandle display;
@@ -333,6 +340,7 @@ namespace ramses_internal
             SetStreamBufferState,
             SetClearFlags,
             SetClearColor,
+            SetExterallyOwnedWindowSize,
             UpdateWarpingData,
             ReadPixels,
             SetSkippingOfUnmodifiedBuffers,

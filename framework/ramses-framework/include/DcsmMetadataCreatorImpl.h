@@ -35,6 +35,7 @@ namespace ramses
         status_t setDisplayedDataFlags(uint32_t flags);
         status_t setContentFlippedVertically(bool state);
         status_t setLayoutAvailability(uint8_t flags);
+        status_t setConfiguratorPriority(uint8_t priority);
 
         ramses_internal::DcsmMetadata getMetadata() const;
 

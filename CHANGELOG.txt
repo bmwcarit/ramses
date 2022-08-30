@@ -1,3 +1,20 @@
+27.0.122
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added a new method RamsesClient::loadSceneFromFileDescriptor(sceneId_t, ...), that overrides
+          the sceneId stored in the file.
+        - Added configuratorPriority field to DCSM metadata
+          (configures widget configurator behaviour when it opens over an existing DCSM content)
+
+        General changes
+        ------------------------------------------------------------------------
+        - Removed obsolete log messages for nodes which have nontrivial scaling and rotation set
+            - The scaling and rotation order has been fixed, logs no longer necessary
+        - Added RamsesRenderer::setExternallyOwnedWindowSize to notify RAMSES of window resize
+          for windows not owned by renderer
+        - Added --skub command line argument to ramses standalone renderer
+
 27.0.121
 -------------------
         General changes

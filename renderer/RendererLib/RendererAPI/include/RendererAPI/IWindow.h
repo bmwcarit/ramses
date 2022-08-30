@@ -21,6 +21,7 @@ namespace ramses_internal
 
         virtual bool init() = 0;
         virtual Bool setFullscreen(Bool fullscreen) = 0;
+        virtual bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) = 0;
         virtual Bool canRenderNewFrame() const = 0;
         virtual void handleEvents() = 0;
         virtual void frameRendered() = 0;

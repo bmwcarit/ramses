@@ -106,6 +106,7 @@ namespace ramses
         status_t setLoopMode(ELoopMode loopMode);
         ELoopMode getLoopMode() const;
         status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
+        status_t setExternallyOwnedWindowSize(displayId_t display, uint32_t width, uint32_t height);
 
         status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
         status_t setSkippingOfUnmodifiedBuffers(bool enable);

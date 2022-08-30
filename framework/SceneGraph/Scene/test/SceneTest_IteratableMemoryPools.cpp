@@ -63,7 +63,7 @@ namespace ramses_internal
             ASSERT_EQ(HandleT{ 0u }, handle8);
 
             std::vector<HandleT> handles;
-            for (const auto it : memPool)
+            for (const auto& it : memPool)
             {
                 handles.push_back(it.first);
             }

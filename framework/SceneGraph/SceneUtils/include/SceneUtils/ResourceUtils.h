@@ -34,7 +34,7 @@ namespace ramses_internal
             };
 
             assert(resources.empty());
-            for (const auto rendIt : scene.getRenderables())
+            for (const auto& rendIt : scene.getRenderables())
             {
                 const auto& renderable = *rendIt.second;
                 if (renderable.visibilityMode == EVisibilityMode::Off)
@@ -68,10 +68,10 @@ namespace ramses_internal
                 }
             }
 
-            for (const auto streamTexIt : scene.getStreamTextures())
+            for (const auto& streamTexIt : scene.getStreamTextures())
                 pushBackIfValid(resources, streamTexIt.second->fallbackTexture);
 
-            for (const auto dataSlotIt : scene.getDataSlots())
+            for (const auto& dataSlotIt : scene.getDataSlots())
                 pushBackIfValid(resources, dataSlotIt.second->attachedTexture);
 
             std::sort(resources.begin(), resources.end());

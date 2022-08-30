@@ -11,6 +11,8 @@
 
 #include "RendererLib/DisplayConfig.h"
 #include "RendererAPI/IWindowEventHandler.h"
+#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
@@ -63,6 +65,12 @@ namespace ramses_internal
     WaylandIviSurfaceId Window_Base::getWaylandIviSurfaceID() const
     {
         return m_waylandIviSurfaceID;
+    }
+
+    bool Window_Base::setExternallyOwnedWindowSize(uint32_t, uint32_t)
+    {
+        LOG_ERROR(CONTEXT_RENDERER, "Window_Base::setExternallyOwnedWindowSize: platform does not support externally owned windows!");
+        return false;
     }
 
     UInt32 Window_Base::getWidth() const

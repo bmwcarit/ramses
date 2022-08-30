@@ -27,7 +27,7 @@ namespace ramses
         /// Font instance to use starting at this offset
         FontInstanceId fontInstance;
         /// Offset into string where to start
-        size_t beginOffset;
+        std::size_t beginOffset;
     };
 
     /// Vector of FontInstanceOffset elements

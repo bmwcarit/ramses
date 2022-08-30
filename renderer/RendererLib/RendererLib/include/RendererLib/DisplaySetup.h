@@ -54,6 +54,7 @@ namespace ramses_internal
         void                 setSceneShown(SceneId sceneId, Bool show);
         void                 setClearFlags(DeviceResourceHandle displayBuffer, uint32_t clearFlags);
         void                 setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor);
+        void                 setDisplayBufferSize(DeviceResourceHandle displayBuffer, uint32_t width, uint32_t height);
 
         const DeviceHandleVector& getNonInterruptibleOffscreenBuffersToRender() const;
         const DeviceHandleVector& getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle interruptedDisplayBuffer) const;

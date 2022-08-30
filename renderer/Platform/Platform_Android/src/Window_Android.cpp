@@ -48,6 +48,13 @@ namespace ramses_internal
         return true;
     }
 
+    bool Window_Android::setExternallyOwnedWindowSize(uint32_t width, uint32_t height)
+    {
+        m_width = width;
+        m_height = height;
+        return true;
+    }
+
     void Window_Android::handleEvents()
     {
     }

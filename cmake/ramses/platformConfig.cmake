@@ -95,6 +95,12 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(ramses-build-options-base INTERFACE -Wno-cast-function-type)
     ENDIF()
 
+    # disable stringop overflow from gcc 11 - needed for lodepnd
+    IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
+        target_compile_options(ramses-build-options-base INTERFACE -Wno-stringop-overflow)
+    ENDIF()
+
+
     # handle enable coverage
     if (ramses-sdk_ENABLE_COVERAGE)
         message(STATUS "+ gcov coverage enabled")

@@ -51,6 +51,7 @@ namespace ramses_internal
         bool setContentFlippedVertically(bool state);
         bool setDisplayedDataFlags(uint32_t flags);
         bool setLayoutAvailability(uint8_t flags);
+        bool setConfiguratorPriority(uint8_t priority);
 
         bool hasPreviewImagePng() const;
         bool hasPreviewDescription() const;
@@ -66,6 +67,7 @@ namespace ramses_internal
         bool hasContentFlippedVertically() const;
         bool hasDisplayedDataFlags() const;
         bool hasLayoutAvailability() const;
+        bool hasConfiguratorPriority() const;
 
         std::vector<unsigned char> getPreviewImagePng() const;
         std::u32string getPreviewDescription() const;
@@ -82,6 +84,7 @@ namespace ramses_internal
         bool getContentFlippedVertically() const;
         uint32_t getDisplayedDataFlags() const;
         uint8_t getLayoutAvailability() const;
+        uint8_t getConfiguratorPriority() const;
 
         bool operator==(const DcsmMetadata& other) const;
         bool operator!=(const DcsmMetadata& other) const;
@@ -110,6 +113,7 @@ namespace ramses_internal
         bool m_contentFlippedVertically = false;
         uint32_t m_displayedDataFlags = 0;
         uint8_t m_layoutAvailability = 0;
+        uint8_t m_configuratorPriority = 0;
 
         bool m_hasCarModelView = false;
         bool m_hasCarModelViewExtended = false;
@@ -125,6 +129,7 @@ namespace ramses_internal
         bool m_hasContentFlippedVertically = false;
         bool m_hasDisplayedDataFlags = false;
         bool m_hasLayoutAvailability = false;
+        bool m_hasConfiguratorPriority = false;
     };
 
     ASSERT_MOVABLE(DcsmMetadata)
@@ -155,7 +160,12 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
         if (dm.hasPreviewImagePng())
             fmt::format_to(ctx.out(), "png:{}; ",  dm.m_previewImagePng.size());
         if (dm.hasPreviewDescription())
-            fmt::format_to(ctx.out(), "desc:{}; ", dm.m_previewDescription.size());
+        {
+            fmt::format_to(ctx.out(), "desc:{}[", dm.m_previewDescription.size());
+            for (const auto& e : dm.m_previewDescription)
+                fmt::format_to(ctx.out(), "{:X};", static_cast<uint32_t>(e));
+            fmt::format_to(ctx.out(), "]");
+        }
         if (dm.hasWidgetOrder())
             fmt::format_to(ctx.out(), "order:{}; ", dm.m_widgetOrder);
         if (dm.hasWidgetBackgroundID())
@@ -191,6 +201,8 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
             fmt::format_to(ctx.out(), "displayedDataFlags:{}; ", dm.m_displayedDataFlags);
         if (dm.hasLayoutAvailability())
             fmt::format_to(ctx.out(), "layoutAvailability:{}; ", dm.m_layoutAvailability);
+        if (dm.hasConfiguratorPriority())
+            fmt::format_to(ctx.out(), "configuratorPriority:{}; ", dm.m_configuratorPriority);
         return fmt::format_to(ctx.out(), "]");
     }
 };

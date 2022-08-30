@@ -107,6 +107,33 @@ namespace ramses
         Scene* loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly = false);
 
         /**
+        * @brief Loads scene contents and resources from an open file descriptor.
+        * This overload overrides the sceneId stored in the file.
+        *
+        * The file format has to match current Ramses SDK version in major and minor version number.
+        * This method is not back compatible and will fail
+        * if trying to load scene files saved using older Ramses SDK version.
+        *
+        * The ramses scene must be in the already opened filedescriptor at absolute position offset within
+        * the file. The filedescriptor must be opened for read access and may not be modified anymore after
+        * this call. The filedescriptor must support seeking.
+        * Ramses takes ownership of the filedescriptor and will close it when not needed anymore.
+        *
+        * The behavior is undefined if the filedescriptor does not contain a complete serialized ramses scene
+        * at offset.
+        *
+        * @param[in] sceneId The sceneId to use for the returned scene.
+        * @param[in] fd Open and readable filedescriptor.
+        * @param[in] offset Absolute starting position of ramses scenen within fd.
+        * @param[in] length Size of the scene data within fd.
+        * @param[in] localOnly Marks the scene to be loaded as valid for local only
+        *                      optimization. This has the same effect as calling
+        *                      SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
+        * @return New instance of scene with contents loaded from a file.
+        */
+        Scene* loadSceneFromFileDescriptor(sceneId_t sceneId, int fd, size_t offset, size_t length, bool localOnly = false);
+
+        /**
         * @brief Loads scene contents and resources asynchronously from a file.
         *        The file format has to match current Ramses SDK version in major and minor version number.
         *        This method is not backwards compatible and will fail

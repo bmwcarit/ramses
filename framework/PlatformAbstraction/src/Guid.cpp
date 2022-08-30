@@ -11,7 +11,7 @@
 
 namespace ramses_internal
 {
-    uint64_t Guid::getFromString(const char* guid, size_t len) const
+    uint64_t Guid::GetFromString(const char* guid, size_t len)
     {
         if (len == 36)
         {

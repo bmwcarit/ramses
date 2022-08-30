@@ -79,9 +79,9 @@ namespace ramses
                 return createTextureCubeData();
             case ERamsesObjectType_Effect:
                 return createEffectData();
+            default:
+                return {};
             }
-
-            return {};
         }
 
         resourceId_t createArrayResourceData()

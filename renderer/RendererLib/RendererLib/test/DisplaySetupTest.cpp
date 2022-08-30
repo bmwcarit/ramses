@@ -418,10 +418,44 @@ TEST_F(ADisplaySetup, triggersRerenderForBufferWithChangedClearColor)
     displaySetup.setDisplayBufferToBeRerendered(bufferHandleOB, false);
     displaySetup.setDisplayBufferToBeRerendered(bufferHandleOBint, false);
 
-    // trigger re-render by setting clear color
-    displaySetup.setClearColor(bufferHandleFB, clearColor);
+    // trigger re-render of all buffers by setting clear color for a single buffer
     displaySetup.setClearColor(bufferHandleOB, clearColor);
-    displaySetup.setClearColor(bufferHandleOBint, clearColor);
+    EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleFB).needsRerender);
+    EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOB).needsRerender);
+    EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOBint).needsRerender);
+    EXPECT_EQ(DeviceHandleVector{ bufferHandleOB }, displaySetup.getNonInterruptibleOffscreenBuffersToRender());
+    EXPECT_EQ(DeviceHandleVector{ bufferHandleOBint }, displaySetup.getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle::Invalid()));
+}
+
+TEST_F(ADisplaySetup, canResizeDisplayBuffer)
+{
+    const DeviceResourceHandle bufferHandleFB(33u);
+    displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
+
+    EXPECT_EQ(viewport.width, displaySetup.getDisplayBuffer(bufferHandleFB).viewport.width);
+    EXPECT_EQ(viewport.height, displaySetup.getDisplayBuffer(bufferHandleFB).viewport.height);
+
+    displaySetup.setDisplayBufferSize(bufferHandleFB, 100u, 999u);
+    EXPECT_EQ(100u, displaySetup.getDisplayBuffer(bufferHandleFB).viewport.width);
+    EXPECT_EQ(999u, displaySetup.getDisplayBuffer(bufferHandleFB).viewport.height);
+}
+
+TEST_F(ADisplaySetup, triggersRerenderForBufferWithResizedDisplayBuffer)
+{
+    const DeviceResourceHandle bufferHandleFB(33u);
+    const DeviceResourceHandle bufferHandleOB(34u);
+    const DeviceResourceHandle bufferHandleOBint(35u);
+    displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
+    displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
+    displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+
+    // reset re-render state
+    displaySetup.setDisplayBufferToBeRerendered(bufferHandleFB, false);
+    displaySetup.setDisplayBufferToBeRerendered(bufferHandleOB, false);
+    displaySetup.setDisplayBufferToBeRerendered(bufferHandleOBint, false);
+
+    // trigger re-render of all buffers by resizing any display buffer
+    displaySetup.setDisplayBufferSize(bufferHandleOB, 1u, 2u);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleFB).needsRerender);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOB).needsRerender);
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOBint).needsRerender);

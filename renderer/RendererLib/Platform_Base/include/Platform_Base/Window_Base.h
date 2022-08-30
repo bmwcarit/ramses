@@ -38,6 +38,8 @@ namespace ramses_internal
         virtual IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const final;
         virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
 
+        virtual bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
+
     protected:
         String m_windowName;
         IWindowEventHandler& m_eventHandler;

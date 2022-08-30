@@ -277,4 +277,19 @@ namespace ramses_internal
         EXPECT_CALL(eventHandlerMock, onMouseEvent(EMouseEventType_WindowEnter, 10, 20)).Times(1);
         proceseAllEvents();
     }
+
+    TEST_F(WindowX11, canSetExternallyOwnedWindowSize)
+    {
+        DisplayConfig otherConfig;
+        otherConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});
+        Window_X11 externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
+        ASSERT_TRUE(externallyOwnedWindow.init());
+
+        EXPECT_TRUE(externallyOwnedWindow.setExternallyOwnedWindowSize(10u, 10u));
+    }
+
+    TEST_F(WindowX11, canNotSetExternallyOwnedWindowSizeForNonExternalWindows)
+    {
+        EXPECT_FALSE(window.setExternallyOwnedWindowSize(10u, 10u));
+    }
 }

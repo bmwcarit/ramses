@@ -66,6 +66,9 @@ namespace ramses
         bool hasLayoutAvailability() const;
         uint8_t getLayoutAvailability() const;
 
+        bool hasConfiguratorPriority() const;
+        uint8_t getConfiguratorPriority() const;
+
         void setMetadata(ramses_internal::DcsmMetadata metadata);
         ramses_internal::DcsmMetadata getMetadata() const;
 

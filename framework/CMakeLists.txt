@@ -367,3 +367,14 @@ ACME_MODULE(
                             FrameworkTestUtils
                             ramses-gmock-main
 )
+
+if (TARGET ramses-framework-test)
+
+    # disable maybe uninitialized
+    IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
+            target_compile_options(ramses-framework-test PRIVATE -Wno-maybe-uninitialized)
+        ENDIF()
+    ENDIF()
+ENDIF()
+

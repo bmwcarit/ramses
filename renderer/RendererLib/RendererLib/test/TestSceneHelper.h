@@ -168,6 +168,7 @@ namespace ramses_internal
             bool hasDataSlot = false;
             for (DataSlotHandle d(0u); d < m_scene.getDataSlotCount(); ++d)
                 hasDataSlot |= (m_scene.isDataSlotAllocated(d) && m_scene.getDataSlot(d).attachedTextureSampler == handle);
+            UNUSED(hasDataSlot);
             assert(!hasDataSlot && "Recreating sampler that had data slot assigned, data slot must be recreated as well");
         }
 

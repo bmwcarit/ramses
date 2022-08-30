@@ -79,6 +79,7 @@ namespace ramses_internal
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetStreamBufferState{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearFlags{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearColor{ cmdDisplay, {}, {} }));
+        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetExterallyOwnedWindowSize{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::UpdateWarpingData{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::ReadPixels{ cmdDisplay, {}, {}, {}, {}, {}, {}, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::ConfirmationEcho{ cmdDisplay, {} }));

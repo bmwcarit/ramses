@@ -39,6 +39,7 @@ namespace ramses_internal
             ContentFlippedVertically = 1001,
             LayoutAvailability = 1002,
             WidgetCarModelViewExtended = 1003,
+            ConfiguratorPriority = 1004,
         };
 
         constexpr const uint32_t CurrentMetadataVersion = 1;
@@ -64,7 +65,8 @@ namespace ramses_internal
             !m_hasStreamID &&
             !m_hasDisplayedDataFlags &&
             !m_hasContentFlippedVertically &&
-            !m_hasLayoutAvailability;
+            !m_hasLayoutAvailability &&
+            !m_hasConfiguratorPriority;
     }
 
     std::vector<Byte> DcsmMetadata::toBinary() const
@@ -84,7 +86,8 @@ namespace ramses_internal
             (m_hasStreamID ? 1 : 0) +
             (m_hasDisplayedDataFlags ? 1 : 0) +
             (m_hasContentFlippedVertically ? 1 : 0) +
-            (m_hasLayoutAvailability ? 1 : 0);
+            (m_hasLayoutAvailability ? 1 : 0) +
+            (m_hasConfiguratorPriority ? 1 : 0);
         os << CurrentMetadataVersion
            << numEntries;
 
@@ -206,6 +209,12 @@ namespace ramses_internal
             os << DcsmMetadataType::LayoutAvailability
                 << static_cast<uint32_t>(sizeof(m_layoutAvailability))
                 << m_layoutAvailability;
+        }
+        if (m_hasConfiguratorPriority)
+        {
+            os << DcsmMetadataType::ConfiguratorPriority
+                << static_cast<uint32_t>(sizeof(m_configuratorPriority))
+                << m_configuratorPriority;
         }
 
         return os.release();
@@ -334,6 +343,12 @@ namespace ramses_internal
                 is >> m_layoutAvailability;
                 break;
             }
+            case DcsmMetadataType::ConfiguratorPriority:
+            {
+                m_hasConfiguratorPriority = true;
+                is >> m_configuratorPriority;
+                break;
+            }
             default:
                 LOG_WARN(CONTEXT_DCSM, "DcsmMetadata::fromBinary: skip unknown type " << static_cast<uint32_t>(type) << ", size " << size);
                 is.skip(size);
@@ -416,6 +431,11 @@ namespace ramses_internal
         {
             m_hasLayoutAvailability = true;
             m_layoutAvailability = other.m_layoutAvailability;
+        }
+        if (other.m_hasConfiguratorPriority)
+        {
+            m_hasConfiguratorPriority = true;
+            m_configuratorPriority = other.m_configuratorPriority;
         }
     }
 
@@ -578,6 +598,15 @@ namespace ramses_internal
         return true;
     }
 
+    bool DcsmMetadata::setConfiguratorPriority(uint8_t priority)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setConfiguratorPriority: " << priority);
+
+        m_configuratorPriority    = priority;
+        m_hasConfiguratorPriority = true;
+        return true;
+    }
+
     bool DcsmMetadata::hasPreviewImagePng() const
     {
         return m_hasPreviewImagePng;
@@ -646,6 +675,11 @@ namespace ramses_internal
     bool DcsmMetadata::hasLayoutAvailability() const
     {
         return m_hasLayoutAvailability;
+    }
+
+    bool DcsmMetadata::hasConfiguratorPriority() const
+    {
+        return m_hasConfiguratorPriority;
     }
 
     std::vector<unsigned char> DcsmMetadata::getPreviewImagePng() const
@@ -723,6 +757,11 @@ namespace ramses_internal
         return m_layoutAvailability;
     }
 
+    uint8_t DcsmMetadata::getConfiguratorPriority() const
+    {
+        return m_configuratorPriority;
+    }
+
     bool DcsmMetadata::operator==(const DcsmMetadata& other) const
     {
         return m_hasPreviewImagePng == other.m_hasPreviewImagePng &&
@@ -753,7 +792,9 @@ namespace ramses_internal
             m_hasContentFlippedVertically == other.m_hasContentFlippedVertically &&
             m_contentFlippedVertically == other.m_contentFlippedVertically &&
             m_hasLayoutAvailability == other.m_hasLayoutAvailability &&
-            m_layoutAvailability == other.m_layoutAvailability;
+            m_layoutAvailability == other.m_layoutAvailability &&
+            m_hasConfiguratorPriority == other.m_hasConfiguratorPriority &&
+            m_configuratorPriority == other.m_configuratorPriority;
     }
 
     bool DcsmMetadata::operator!=(const DcsmMetadata& other) const

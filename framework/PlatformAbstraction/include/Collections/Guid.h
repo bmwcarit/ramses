@@ -50,18 +50,18 @@ namespace ramses_internal
         RNODISCARD constexpr bool operator!=(const Guid& other) const;
 
     private:
-        uint64_t getFromString(const char* guid, size_t len) const;
+        static uint64_t GetFromString(const char* guid, size_t len);
 
         uint64_t m_value = 0;
     };
 
     inline Guid::Guid(const char* guid)
-        : m_value(getFromString(guid, std::strlen(guid)))
+        : m_value(GetFromString(guid, std::strlen(guid)))
     {
     }
 
     inline Guid::Guid(const String& guid)
-        : m_value(getFromString(guid.c_str(), guid.size()))
+        : m_value(GetFromString(guid.c_str(), guid.size()))
     {
     }
 

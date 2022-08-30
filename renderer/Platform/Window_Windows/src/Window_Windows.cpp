@@ -595,6 +595,19 @@ namespace ramses_internal
         SetWindowText(m_windowHandle, m_windowName.c_str());
     }
 
+    bool Window_Windows::setExternallyOwnedWindowSize(uint32_t width, uint32_t height)
+    {
+        if(m_userProvidedWindowHandle)
+        {
+            m_width = width;
+            m_height = height;
+            return true;
+        }
+
+        LOG_ERROR(CONTEXT_RENDERER, "Window_Windows::setExternallyOwnedWindowSize: Windows window is not externally owned!");
+        return false;
+    }
+
     HWND Window_Windows::WindowsWindowHandleToHWND(WindowsWindowHandle handle)
     {
         static_assert(sizeof(HWND) == sizeof(WindowsWindowHandle::BaseType), "WindowsWindowHandle size mismatch");

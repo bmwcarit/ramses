@@ -40,7 +40,8 @@ RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
     FILES_PRIVATE_HEADER    RendererLifecycleTests/*.h
                             RendererTestFramework/*.h
 
-    FILES_SOURCE            RendererLifecycleTests/*.cpp
+    FILES_SOURCE            RendererLifecycleTests/main.cpp
+                            RendererLifecycleTests/RendererLifecycleTests.cpp
                             RendererTestFramework/*.cpp
 
     ${RendererTests-resources_MIXIN}
@@ -48,6 +49,26 @@ RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
     DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
                             ramses-gmock-main
 )
+
+if(TARGET RendererLifecycleTests-windows-wgl-4-2-core)
+    target_sources(RendererLifecycleTests-windows-wgl-4-2-core PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
+    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-windows-wgl-4-2-core)
+endif()
+
+if(TARGET RendererLifecycleTests-windows-wgl-4-5)
+    target_sources(RendererLifecycleTests-windows-wgl-4-5 PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
+    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-windows-wgl-4-5)
+endif()
+
+if(TARGET RendererLifecycleTests-windows-wgl-es-3-0)
+    target_sources(RendererLifecycleTests-windows-wgl-es-3-0 PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
+    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-windows-wgl-es-3-0)
+endif()
+
+if(TARGET RendererLifecycleTests-x11-egl-es-3-0)
+    target_sources(RendererLifecycleTests-x11-egl-es-3-0 PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
+    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-x11-egl-es-3-0)
+endif()
 
 # TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
 ACME_MODULE(

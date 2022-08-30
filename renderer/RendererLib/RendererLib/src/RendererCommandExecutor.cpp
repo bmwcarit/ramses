@@ -182,6 +182,12 @@ namespace ramses_internal
         m_sceneUpdater.handleSetClearColor(cmd.offscreenBuffer, cmd.clearColor);
     }
 
+    void RendererCommandExecutor::operator()(const RendererCommand::SetExterallyOwnedWindowSize& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleSetExternallyOwnedWindowSize(cmd.width, cmd.height);
+    }
+
     void RendererCommandExecutor::operator()(RendererCommand::UpdateWarpingData& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));

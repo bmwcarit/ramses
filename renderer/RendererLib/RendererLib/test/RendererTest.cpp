@@ -1346,6 +1346,70 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     unassignScene(sceneId);
 }
 
+TEST_P(ARenderer, clearAndRerenderBuffersIfExternallyOwnedWindowResized)
+{
+    createDisplayController();
+
+    const SceneId sceneId(12u);
+    createScene(sceneId);
+    assignSceneToDisplayBuffer(sceneId, 0);
+    showScene(sceneId);
+
+    expectSceneRendered(sceneId);
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    // no change
+    expectFrameBufferRendered(false);
+    doOneRendererLoop();
+
+    // external resizing causes clear/render
+    EXPECT_CALL(renderer.m_platform.renderBackendMock.windowMock, setExternallyOwnedWindowSize(1u, 2u)).WillOnce(Return(true));
+    renderer.setExternallyOwnedWindowSize(1u, 2u);
+    expectSceneRendered(sceneId);
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    // no change
+    expectFrameBufferRendered(false);
+    doOneRendererLoop();
+
+    hideScene(sceneId);
+    unassignScene(sceneId);
+}
+
+TEST_P(ARenderer, doesNotClearAndRerenderBuffersIfExternallyOwnedWindowResizeFails)
+{
+    createDisplayController();
+
+    const SceneId sceneId(12u);
+    createScene(sceneId);
+    assignSceneToDisplayBuffer(sceneId, 0);
+    showScene(sceneId);
+
+    expectSceneRendered(sceneId);
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    // no change
+    expectFrameBufferRendered(false);
+    doOneRendererLoop();
+
+    // failed external resizing causes clear/render
+    EXPECT_CALL(renderer.m_platform.renderBackendMock.windowMock, setExternallyOwnedWindowSize(1u, 2u)).WillOnce(Return(false));
+    renderer.setExternallyOwnedWindowSize(1u, 2u);
+
+    // no change
+    expectFrameBufferRendered(false);
+    doOneRendererLoop();
+
+    hideScene(sceneId);
+    unassignScene(sceneId);
+}
+
 TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
 {
     createDisplayController();

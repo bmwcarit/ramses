@@ -53,6 +53,7 @@ namespace ramses_internal
         virtual bool init() override;
 
         void handleEvents() override;
+        bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
         ::Display* getNativeDisplayHandle() const;
         ::Window getNativeWindowHandle() const;

@@ -43,6 +43,7 @@ namespace ramses
         EXPECT_FALSE(dmp.hasDisplayedDataFlags());
         EXPECT_FALSE(dmp.hasContentFlippedVertically());
         EXPECT_FALSE(dmp.hasLayoutAvailability());
+        EXPECT_FALSE(dmp.hasConfiguratorPriority());
     }
 
     TEST_F(ADcsmMetadataUpdate, returnsPreviewImagePng)
@@ -165,5 +166,13 @@ namespace ramses
         dmp.impl.setMetadata(md);
         EXPECT_TRUE(dmp.hasLayoutAvailability());
         EXPECT_EQ(5u, dmp.getLayoutAvailability());
+    }
+
+    TEST_F(ADcsmMetadataUpdate, returnsConfiguratorPriority)
+    {
+        EXPECT_TRUE(md.setConfiguratorPriority(6));
+        dmp.impl.setMetadata(md);
+        EXPECT_TRUE(dmp.hasConfiguratorPriority());
+        EXPECT_EQ(6u, dmp.getConfiguratorPriority());
     }
 }

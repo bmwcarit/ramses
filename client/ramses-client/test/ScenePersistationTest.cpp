@@ -158,7 +158,56 @@ namespace ramses
         }
 
         const int fd = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary ("someTemporaryFileWithOffset.ram");
-        EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromFileDescriptor(fd, 4, fileSize, false));
+        auto scene = m_clientForLoading.loadSceneFromFileDescriptor(fd, 4, fileSize, false);
+        ASSERT_NE(nullptr, scene);
+        EXPECT_EQ(123u, scene->getSceneId().getValue());
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadSceneFromFileDescriptorCustomSceneId)
+    {
+        const char* filename = "someTemporaryFile.ram";
+        EXPECT_EQ(StatusOK, m_scene.saveToFile(filename, false));
+        size_t fileSize = 0;
+        {
+            ramses_internal::File inFile(filename);
+            EXPECT_TRUE(inFile.getSizeInBytes(fileSize));
+        }
+        {
+            const int fdA = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary(filename);
+            auto sceneA = m_clientForLoading.loadSceneFromFileDescriptor(ramses::sceneId_t(335), fdA, 0, fileSize, false);
+            ASSERT_TRUE(sceneA);
+            EXPECT_EQ(335u, sceneA->getSceneId().getValue());
+        }
+        {
+            const int fdB = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary (filename);
+            auto sceneB = m_clientForLoading.loadSceneFromFileDescriptor(ramses::sceneId_t(339), fdB, 0, fileSize, false);
+            ASSERT_TRUE(sceneB);
+            EXPECT_EQ(339u, sceneB->getSceneId().getValue());
+        }
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, errorsReadingSceneFromFileDescriptorCustomSceneId)
+    {
+        const char* filename = "someTemporaryFile.ram";
+        EXPECT_EQ(StatusOK, m_scene.saveToFile(filename, false));
+        size_t fileSize = 0;
+        {
+            ramses_internal::File inFile(filename);
+            EXPECT_TRUE(inFile.getSizeInBytes(fileSize));
+        }
+
+        const int fd  = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary(filename);
+
+        static_cast<void>(m_clientForLoading.createScene(m_scene.getSceneId()));
+        const auto duplicateSceneId = m_clientForLoading.loadSceneFromFileDescriptor(m_scene.getSceneId(), fd, 0, fileSize, false);
+        const auto invalidSceneId = m_clientForLoading.loadSceneFromFileDescriptor(ramses::sceneId_t(), fd, 0, fileSize, false);
+        const auto invalidFileDescriptor = m_clientForLoading.loadSceneFromFileDescriptor(ramses::sceneId_t(340), 0, 0, fileSize, false);
+        const auto invalidFileSize = m_clientForLoading.loadSceneFromFileDescriptor(ramses::sceneId_t(341), fd, 0, 0, false);
+
+        EXPECT_TRUE(duplicateSceneId == nullptr);
+        EXPECT_TRUE(invalidSceneId == nullptr);
+        EXPECT_TRUE(invalidFileDescriptor == nullptr);
+        EXPECT_TRUE(invalidFileSize == nullptr);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAScene)

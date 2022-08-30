@@ -37,6 +37,7 @@ namespace ramses_internal
         MOCK_METHOD(bool, setStreamBufferState, (StreamBufferHandle buffer, bool newState), (override));
         MOCK_METHOD(void, handleSetClearFlags, (OffscreenBufferHandle buffer, uint32_t), (override));
         MOCK_METHOD(void, handleSetClearColor, (OffscreenBufferHandle buffer, const Vector4& clearColor), (override));
+        MOCK_METHOD(void, handleSetExternallyOwnedWindowSize, (uint32_t, uint32_t), (override));
         MOCK_METHOD(void, handleReadPixels, (OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coordsNormalizedToBufferSize), (override));
         MOCK_METHOD(void, handleSceneDataLinkRequest, (SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId), (override));

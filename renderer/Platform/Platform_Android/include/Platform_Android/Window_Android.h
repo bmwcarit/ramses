@@ -35,6 +35,7 @@ namespace ramses_internal
         }
 
         Bool setFullscreen(Bool fullscreen) override;
+        bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
     private:
         ANativeWindow* m_nativeWindow;

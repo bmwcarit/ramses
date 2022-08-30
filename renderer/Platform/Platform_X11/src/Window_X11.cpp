@@ -605,6 +605,19 @@ namespace ramses_internal
         }
     }
 
+    bool Window_X11::setExternallyOwnedWindowSize(uint32_t width, uint32_t height)
+    {
+        if(m_userProvidedWindowHandle.isValid())
+        {
+            m_width = width;
+            m_height = height;
+            return true;
+        }
+
+        LOG_ERROR(CONTEXT_RENDERER, "Window_X11::setExternallyOwnedWindowSize: X11 window is not externally owned!");
+        return false;
+    }
+
     void Window_X11::setTitle(const String& title)
     {
         Window_Base::setTitle(title);

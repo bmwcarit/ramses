@@ -138,6 +138,11 @@ namespace ramses_internal
             handleSetClearColor(cmd.display, cmd.offscreenBuffer, cmd.clearColor);
         }
 
+        void operator()(const RendererCommand::SetExterallyOwnedWindowSize& cmd)
+        {
+            handleSetExternallyOwnedWindowSize(cmd.display, cmd.width, cmd.height);
+        }
+
         void operator()(const RendererCommand::PickEvent& cmd)
         {
             handlePick(cmd.scene, cmd.coordsNormalizedToBufferSize);
@@ -237,6 +242,7 @@ namespace ramses_internal
         MOCK_METHOD(void, handleDataUnlinkRequest, (SceneId, DataSlotId));
         MOCK_METHOD(void, handleSetClearFlags, (DisplayHandle, OffscreenBufferHandle, uint32_t));
         MOCK_METHOD(void, handleSetClearColor, (DisplayHandle, OffscreenBufferHandle, const Vector4&));
+        MOCK_METHOD(void, handleSetExternallyOwnedWindowSize, (DisplayHandle, uint32_t, uint32_t));
         MOCK_METHOD(void, handlePick, (SceneId, const Vector2&));
         MOCK_METHOD(void, handleBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, uint32_t, bool, ERenderBufferType));
         MOCK_METHOD(void, handleDmaBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, DmaBufferFourccFormat, DmaBufferUsageFlags, DmaBufferModifiers));

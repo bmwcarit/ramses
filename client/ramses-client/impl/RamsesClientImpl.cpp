@@ -240,12 +240,19 @@ namespace ramses
     Scene* RamsesClientImpl::loadSceneObjectFromStream(const std::string& caller,
                                                        std::string const& filename,
                                                        ramses_internal::IInputStream& inputStream,
-                                                       bool localOnly)
+                                                       bool localOnly,
+                                                       sceneId_t sceneId)
     {
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  start loading scene from input stream");
 
         ramses_internal::SceneCreationInformation createInfo;
         ramses_internal::ScenePersistation::ReadSceneMetadataFromStream(inputStream, createInfo);
+        if (sceneId.isValid())
+        {
+            const auto newSceneId = ramses_internal::SceneId(sceneId.getValue());
+            LOG_INFO_P(ramses_internal::CONTEXT_CLIENT, "RamsesClient::{}: Override stored scene id: {} with user provided scene id: {}", caller, createInfo.m_id, newSceneId);
+            createInfo.m_id = newSceneId;
+        }
         const ramses_internal::SceneSizeInformation& sizeInformation = createInfo.m_sizeInfo;
         const ramses_internal::SceneInfo sceneInfo(createInfo.m_id, createInfo.m_name);
 
@@ -329,12 +336,12 @@ namespace ramses
             }
 
             ramses_internal::BinaryInputStream sceneDataStream(sceneData.data());
-            scene = loadSceneObjectFromStream(cconfig.caller, cconfig.dataSource, sceneDataStream, cconfig.localOnly);
+            scene = loadSceneObjectFromStream(cconfig.caller, cconfig.dataSource, sceneDataStream, cconfig.localOnly, cconfig.sceneId);
         }
         else
         {
             // this path will be used in the future when creating scene from user provided stream
-            scene = loadSceneObjectFromStream(cconfig.caller, cconfig.dataSource, inputStream, cconfig.localOnly);
+            scene = loadSceneObjectFromStream(cconfig.caller, cconfig.dataSource, inputStream, cconfig.localOnly, cconfig.sceneId);
         }
         if (!scene)
         {
@@ -369,6 +376,7 @@ namespace ramses
                 std::make_shared<ramses_internal::FileInputStreamContainer>(ramses_internal::String(std::move(stdFilename))),
                 true,
                 localOnly,
+                sceneId_t(),
             });
     }
 
@@ -390,7 +398,8 @@ namespace ramses
                 fmt::format("<memorybuffer size:{}>", size),
                 std::make_shared<ramses_internal::MemoryInputStreamContainer>(std::move(data)),
                 false,
-                localOnly
+                localOnly,
+                sceneId_t(),
             });
     }
 
@@ -413,6 +422,35 @@ namespace ramses
                 std::make_shared<ramses_internal::OffsetFileInputStreamContainer>(fd, offset, length),
                 true,
                 localOnly,
+                sceneId_t()
+            });
+    }
+
+    Scene* RamsesClientImpl::loadSceneFromFileDescriptor(sceneId_t sceneId, int fd, size_t offset, size_t length, bool localOnly)
+    {
+        if (fd <= 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: filedescriptor must be valid " << fd);
+            return nullptr;
+        }
+        if (length == 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: length may not be 0");
+            return nullptr;
+        }
+        if (!sceneId.isValid())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: invalid sceneId");
+            return nullptr;
+        }
+
+        return loadSceneSynchonousCommon(SceneCreationConfig{
+                fmt::format("loadSceneFromFileDescriptor<sceneId:{}>", sceneId),
+                fmt::format("<filedescriptor fd:{} offset:{} length:{}>", fd, offset, length),
+                std::make_shared<ramses_internal::OffsetFileInputStreamContainer>(fd, offset, length),
+                true,
+                localOnly,
+                sceneId,
             });
     }
 
@@ -476,7 +514,8 @@ namespace ramses
                     stdFilename,
                     std::make_shared<ramses_internal::FileInputStreamContainer>(ramses_internal::String(std::move(stdFilename))),
                     true,
-                    localOnly
+                    localOnly,
+                    sceneId_t()
                 });
         m_loadFromFileTaskQueue.enqueue(*task);
         task->release();

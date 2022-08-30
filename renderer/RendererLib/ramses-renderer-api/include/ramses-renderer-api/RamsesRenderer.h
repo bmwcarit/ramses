@@ -440,6 +440,29 @@ namespace ramses
         status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
 
         /**
+        * @brief   Updates display window size after a resize event on windows not owned by renderer.
+        * @details Sets the new display window size after a resize event is externally handled for the window.
+        *          RAMSES renderer handles window events within its render loop for windows that are created and owned by
+        *          the renderer. Typically this can not be performed for windows that are created externally by the user, and provided to RAMSES renderer during
+        *          display creation as a native handle, since the user handles window events explicitly.
+        *
+        *          This applies also to resize events, i.e., if an externally owned window gets resized RAMSES renderer does not
+        *          handle the resize event internally and does not get to know about it. In this case API users are expected to call this function to let
+        *          RAMSES update its information about display window size. The display window size can have visible effects, e.g., if the shaders
+        *          use #ramses::EEffectUniformSemantic::DisplayBufferResolution
+        *
+        *          This function will log an error if the platform does not support this feature, or if the display window was not explicitly
+        *          provided by the user as a native handle.
+        *
+        * @param[in] display Id of display that the resized window belongs to.
+        * @param[in] width New width of the resized window.
+        * @param[in] height New height of the resized window.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setExternallyOwnedWindowSize(displayId_t display, uint32_t width, uint32_t height);
+
+        /**
         * @brief Triggers an asynchronous read back of a display buffer memory from GPU to system memory.
         * @details The color data from the provided rectangle coordinates
         *          will be read back and stored as RGBA8. If the coordinates

@@ -16,23 +16,23 @@ namespace ramses_internal
 {
     // HashCombine and HashVal(ue) (modeled according to standard proposal n3876)
     template <typename T>
-    inline void HashCombine(size_t& seed, const T& value)
+    inline void HashCombine(std::size_t& seed, const T& value)
     {
         seed ^= std::hash<T>()(value)
             + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
     }
 
     template <typename T, typename... Types>
-    inline void HashCombine(size_t& seed, const T& value, const Types&... args)
+    inline void HashCombine(std::size_t& seed, const T& value, const Types&... args)
     {
         HashCombine(seed, value);
         HashCombine(seed, args...);
     }
 
     template <typename... Types>
-    inline size_t HashValue(const Types&... args)
+    inline std::size_t HashValue(const Types&... args)
     {
-        size_t seed = 0;
+        std::size_t seed = 0;
         HashCombine(seed, args...);
         return seed;
     }
@@ -45,14 +45,14 @@ namespace ramses_internal
         template <>
         struct FnvHash<uint32_t>
         {
-            uint32_t operator()(const void* key, const size_t len)
+            uint32_t operator()(const void* key, const std::size_t len)
             {
                 constexpr const uint32_t prime = 16777619UL;
                 constexpr const uint32_t offset_base = 2166136261UL;
 
                 const Byte* ptr = static_cast<const Byte*>(key);
                 uint32_t result = offset_base;
-                for (size_t i = 0; i < len; ++i)
+                for (std::size_t i = 0; i < len; ++i)
                     result = (result ^ ptr[i]) * prime;
                 return result;
             }
@@ -62,14 +62,14 @@ namespace ramses_internal
         template <>
         struct FnvHash<uint64_t>
         {
-            uint64_t operator()(const void* key, size_t len)
+            uint64_t operator()(const void* key, std::size_t len)
             {
                 constexpr const uint64_t prime = 1099511628211ULL;
                 constexpr const uint64_t offset_base = 14695981039346656037ULL;
 
                 const Byte* ptr = static_cast<const Byte*>(key);
                 uint64_t result = offset_base;
-                for (size_t i = 0; i < len; ++i)
+                for (std::size_t i = 0; i < len; ++i)
                     result = (result ^ ptr[i]) * prime;
                 return result;
             }
@@ -77,9 +77,9 @@ namespace ramses_internal
     }
 
     // HashMemoryRange for hashing arbitrary data blob
-    inline size_t HashMemoryRange(const void* ptr, const size_t size)
+    inline std::size_t HashMemoryRange(const void* ptr, const std::size_t size)
     {
-        return internal::FnvHash<size_t>()(ptr, size);
+        return internal::FnvHash<std::size_t>()(ptr, size);
     }
 }
 

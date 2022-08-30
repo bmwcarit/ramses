@@ -110,6 +110,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     ramses_internal::ArgumentBool      enabledcsm(parser, "dcsm", "enable-dcsm");
     ramses_internal::ArgumentString    categoriesToParse(parser, "c", "categories", "");
     ramses_internal::ArgumentUInt32    contentIDToFilter(parser, "con", "content", 0u);
+    ramses_internal::ArgumentBool      skub(parser, "skub", "skub");
 
     std::vector<MappingCommand> mappingCommands;
     {
@@ -165,6 +166,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             sos << "-dcsm    --enable-dcsm             enable DCSM mode where only DCSM content can be rendered\n";
             sos << "-c       --categories              list of categories to register: categoryID,renderWidth,renderHeight,categoryOffsetX,categoryOffsetY,categoryWidth,categoryHeight,displayIdx[,categoryID,renderWidth,renderHeight,categoryOffsetX,categoryOffsetY,categoryWidth,categoryHeight,displayIdx]*\n";
             sos << "-con     --content                 show content exclusively, ignore other contents offered for the category\n";
+            sos << "-skub    --skub                    Enable renderer optimization: skip unmodified buffers\n";
         }));
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
         return 0;
@@ -172,7 +174,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
     ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
-    renderer.setSkippingOfUnmodifiedBuffers(false);
+    renderer.setSkippingOfUnmodifiedBuffers(skub);
     framework.connect();
 
     for (uint32_t i = 0u; i < numDisplays; ++i)

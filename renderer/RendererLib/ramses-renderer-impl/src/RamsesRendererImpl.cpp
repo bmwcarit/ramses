@@ -696,6 +696,16 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t RamsesRendererImpl::setExternallyOwnedWindowSize(displayId_t display, uint32_t width, uint32_t height)
+    {
+        const auto it = m_displayFramebuffers.find(display);
+        if (it == m_displayFramebuffers.cend())
+            return addErrorEntry("RamsesRenderer::setExternallyOwnedWindowSize failed: display does not exist.");
+
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetExterallyOwnedWindowSize{ ramses_internal::DisplayHandle{ display.getValue() }, width, height });
+        return StatusOK;
+    }
+
     status_t RamsesRendererImpl::setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit)
     {
         m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetLimits_FlushesForceApply{ forceApplyFlushLimit });

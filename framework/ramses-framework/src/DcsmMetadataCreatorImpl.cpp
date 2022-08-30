@@ -112,6 +112,13 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DcsmMetadataCreatorImpl::setConfiguratorPriority(uint8_t priority)
+    {
+        if (!m_metadata.setConfiguratorPriority(priority))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setConfiguratorPriority: input not valid");
+        return StatusOK;
+    }
+
     ramses_internal::DcsmMetadata DcsmMetadataCreatorImpl::getMetadata() const
     {
         return m_metadata;

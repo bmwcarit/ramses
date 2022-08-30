@@ -111,6 +111,18 @@ namespace ramses_internal
             dispBufferInfo.second.needsRerender = true;
     }
 
+    void DisplaySetup::setDisplayBufferSize(DeviceResourceHandle displayBuffer, uint32_t width, uint32_t height)
+    {
+        auto& bufferInfo = getDisplayBufferInternal(displayBuffer);
+        bufferInfo.viewport.width = width;
+        bufferInfo.viewport.height = height;
+
+        // for simplicity trigger all buffers on display to re-render
+        // otherwise would have to resolve dependencies via OB links
+        for (auto& dispBufferInfo : m_displayBuffers)
+            dispBufferInfo.second.needsRerender = true;
+    }
+
     const DeviceHandleVector& DisplaySetup::getNonInterruptibleOffscreenBuffersToRender() const
     {
         m_buffersToRender.clear();
