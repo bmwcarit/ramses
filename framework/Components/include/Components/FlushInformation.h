@@ -88,13 +88,14 @@ struct fmt::formatter<ramses_internal::FlushInformation> : public ramses_interna
     constexpr auto format(const ramses_internal::FlushInformation& fi, FormatContext& ctx)
     {
         fmt::format_to(ctx.out(),
-            "FlushInformation:[valid:{};flushcounter:{};version:{};resChanges[+:{};-:{};resActions:{}];refActions:{};time[{};exp:{};int:{}];sizeInfo:",
+            "FlushInformation:[valid:{};flushcounter:{};version:{};resChanges[+:{};-:{};resActions:{}];refActions:{};time[{};sync:{};exp:{};int:{}];sizeInfo:",
             fi.containsValidInformation,
             fi.flushCounter,
             fi.versionTag,
             fi.resourceChanges.m_resourcesAdded.size(), fi.resourceChanges.m_resourcesRemoved.size(), fi.resourceChanges.m_sceneResourceActions.size(),
             fi.sceneReferences.size(),
             fi.flushTimeInfo.clock_type,
+            (fi.flushTimeInfo.isEffectTimeSync ? 1 : 0),
             static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(fi.flushTimeInfo.expirationTimestamp).time_since_epoch().count()),
             static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(fi.flushTimeInfo.internalTimestamp).time_since_epoch().count()));
         if (fi.hasSizeInfo)

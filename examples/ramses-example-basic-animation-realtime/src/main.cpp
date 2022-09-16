@@ -124,10 +124,8 @@ int main(int argc, char* argv[])
     animSequence->setPlaybackSpeed(5.f);
 
     // start animation sequence
-    // we use real time animation system, therefore we should provide system time
-    // because renderer will be using system time to update its animation system every frame
-    auto now = std::chrono::system_clock::now();
-    animSequence->startAt(std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count());
+    animationSystem->updateLocalTime();
+    animSequence->startAt(animationSystem->getTime());
 
     // signal the scene it is in a state that can be rendered
     scene->flush();

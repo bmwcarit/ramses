@@ -708,24 +708,37 @@ namespace ramses
 
         auto streamIt = std::find_if(m_streamBuffers.begin(), m_streamBuffers.end(), [streamBufferId](auto& s) { return s.second == streamBufferId; });
         const auto surfaceId = streamIt == m_streamBuffers.end() ? waylandIviSurfaceId_t::Invalid() : streamIt->first;
-        const auto providerContents = findContentsAssociatingSurfaceId(surfaceId);
+        auto providerContents = findContentsAssociatingSurfaceId(surfaceId);
         if (providerContents.empty())
+        {
             LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:streamBufferLinked: received stream buffer linked event but cannot find corresponding provider content for surfaceid {}, streambufferid {}"
                 " this can happen if content or its stream became unavailable after stream buffer linked processed."
                 " Event will still be emitted but with content ID set to invalid value.", surfaceId, streamBufferId);
+            providerContents.push_back(ContentID::Invalid());
+        }
 
-        const auto consumerContents = findContentsAssociatingSceneId(consumerSceneId);
+        auto consumerContents = findContentsAssociatingSceneId(consumerSceneId);
         if (consumerContents.empty())
+        {
             LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:streamBufferLinked: received stream buffer linked event but cannot find corresponding consumer content for sceneid {}"
                 " this can happen if content or its scene became unavailable after stream buffer linked processed."
                 " Event will still be emitted but with content ID set to invalid value.", consumerSceneId);
+            consumerContents.push_back(ContentID::Invalid());
+        }
 
-        Event evt{ EventType::ContentLinkedToTextureConsumer };
-        evt.providerContentID = providerContents.empty() ? ContentID::Invalid() : providerContents.front();
-        evt.consumerContentID = consumerContents.empty() ? ContentID::Invalid() : consumerContents.front();
-        evt.consumerID = consumerDataSlotId;
-        evt.result = success ? DcsmContentControlEventResult::OK : DcsmContentControlEventResult::TimedOut;
-        m_pendingEvents.push_back(evt);
+        // there might be multiple provider and consumer contens, ensure there is an event sent out for each combination of them
+        for (const auto& providerID : providerContents)
+        {
+            for (const auto& consumerID : consumerContents)
+            {
+                Event evt{ EventType::ContentLinkedToTextureConsumer };
+                evt.providerContentID = providerID;
+                evt.consumerContentID = consumerID;
+                evt.consumerID = consumerDataSlotId;
+                evt.result = success ? DcsmContentControlEventResult::OK : DcsmContentControlEventResult::TimedOut;
+                m_pendingEvents.push_back(evt);
+            }
+        }
     }
 
     void DcsmContentControlImpl::dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success)
@@ -1211,7 +1224,7 @@ namespace ramses
         auto& sharedState = m_techContents[techId].sharedState;
         const auto reportedState = sharedState.getReportedState();
         const auto consolidatedDesiredState = sharedState.getConsolidatedDesiredState();
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControlImpl::goToConsolidatedDesiredStreamState: wid:" << waylandId << "reported: "<<static_cast<int>(reportedState) << "consolidatedDesiredState"<< static_cast<int>(consolidatedDesiredState));
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControlImpl::goToConsolidatedDesiredStreamState: wid:" << waylandId << " reported: "<<static_cast<int>(reportedState) << " consolidatedDesiredState"<< static_cast<int>(consolidatedDesiredState));
         const bool mustRequest = reportedState != consolidatedDesiredState; // we want another state than the current one
 
         auto streamBufferIt = m_streamBuffers.find(waylandId);
@@ -1283,6 +1296,10 @@ namespace ramses
             LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:handleContentStateChange: content " << contentID << " state changed from " << ContentStateName(lastState) << " to " << ContentStateName(currState));
             m_pendingEvents.push_back({ EventType::ContentStateChanged, contentID, contentInfo.category, currState, lastState, DcsmContentControlEventResult::OK });
         }
+        else
+        {
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:handleContentStateChange: do nothing for content " << contentID << " because currState " << currState << " == lastState " << lastState);
+        }
     }
 
     void DcsmContentControlImpl::removeContent(ContentID contentID)
@@ -1323,6 +1340,9 @@ namespace ramses
 
         static_assert(ContentDcsmState::Assigned < ContentDcsmState::ReadyRequested && ContentDcsmState::ReadyRequested < ContentDcsmState::Ready && ContentDcsmState::Ready < ContentDcsmState::Shown, "update logic below");
         static_assert(RendererSceneState::Unavailable < RendererSceneState::Available && RendererSceneState::Available < RendererSceneState::Ready && RendererSceneState::Ready < RendererSceneState::Rendered, "update logic below");
+
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:determineCurrentContentState: content " << contentID << ", dcsmState " << dcsmState << ", reportedSceneState "
+                 << reportedSceneState << ", requestedSceneState " << requestedSceneState);
 
         // if any state is below ready, overall state is not ready
         if (dcsmState < ContentDcsmState::Ready || reportedSceneState < RendererSceneState::Ready || requestedSceneState < RendererSceneState::Ready)

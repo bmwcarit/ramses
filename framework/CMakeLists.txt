@@ -377,4 +377,3 @@ if (TARGET ramses-framework-test)
         ENDIF()
     ENDIF()
 ENDIF()
-

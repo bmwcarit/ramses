@@ -23,23 +23,31 @@ namespace ramses_internal
     struct FlushTimeInformation
     {
         FlushTimeInformation() = default;
-        FlushTimeInformation(FlushTime::Clock::time_point expirationTS, FlushTime::Clock::time_point internalTS, synchronized_clock_type clockType)
+        FlushTimeInformation(FlushTime::Clock::time_point expirationTS, FlushTime::Clock::time_point internalTS, synchronized_clock_type clockType, bool effectTimeSync)
             : expirationTimestamp(expirationTS)
             , internalTimestamp(internalTS)
             , clock_type(clockType)
+            , isEffectTimeSync(effectTimeSync)
         {
         }
 
         FlushTime::Clock::time_point expirationTimestamp = FlushTime::InvalidTimestamp;
         FlushTime::Clock::time_point internalTimestamp = FlushTime::InvalidTimestamp;
         synchronized_clock_type clock_type = synchronized_clock_type::SystemTime;
+
+        /**
+        * if set to true, the internalTimestamp is used to update the IScene's effect time
+        * #ramses_internal::IScene::setEffectTimeSync
+        */
+        bool isEffectTimeSync = false;
     };
 
     inline bool operator==(const FlushTimeInformation& a, const FlushTimeInformation& b)
     {
         return
             a.expirationTimestamp == b.expirationTimestamp &&
-            a.internalTimestamp == b.internalTimestamp;
+            a.internalTimestamp == b.internalTimestamp &&
+            a.isEffectTimeSync == b.isEffectTimeSync;
     }
 
     inline bool operator!=(const FlushTimeInformation& a, const FlushTimeInformation& b)

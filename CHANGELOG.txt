@@ -1,3 +1,17 @@
+27.0.123
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added configuration flag for Scene::createRealTimeAnimationSystem() to use synchronized_clock (ptp time).
+          This allows client and renderer to run on different ECUs.
+        - Added effect semantic uniform 'TimeMs' that holds the current value of the synchronized_clock in milliseconds
+        - Added ramses::Scene::resetUniformTimeMs() to reset the semantic uniform to 0
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix IDcsmContentControlEventHandler::contentLinkedToTextureConsumer in case of multiple contents
+          mapping to the same internal object
+
 27.0.122
 -------------------
         API changes

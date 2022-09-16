@@ -11,6 +11,7 @@
 #include "ClientTestUtils.h"
 #include "TestEffectCreator.h"
 #include "AnimationSystemImpl.h"
+#include "AnimationAPI/IAnimationSystem.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/AnimationSequence.h"
@@ -93,6 +94,32 @@ namespace ramses
     {
         EXPECT_EQ(StatusOK, this->animationSystem.setTime(333u));
         EXPECT_EQ(333u, this->animationSystem.getTime());
+    }
+
+    TEST_F(AnimationSystemTest, createRealTimeAnimationSystem)
+    {
+        AnimationSystemRealTime& rtAnimSystem = *m_scene.createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_ClientSideProcessing, "rt anim system");
+        EXPECT_EQ(StatusOK, rtAnimSystem.updateLocalTime());
+        EXPECT_NE(0u, rtAnimSystem.getTime());
+        EXPECT_TRUE(rtAnimSystem.impl.getIAnimationSystem().isRealTime());
+        EXPECT_FALSE(rtAnimSystem.impl.getIAnimationSystem().useSynchronizedClock());
+    }
+
+    TEST_F(AnimationSystemTest, createRealTimeAnimationSystemWithPtpTime)
+    {
+        AnimationSystemRealTime& rtAnimSystem = *m_scene.createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_SynchronizedClock, "rt anim system");
+        EXPECT_EQ(StatusOK, rtAnimSystem.updateLocalTime());
+        EXPECT_NE(0u, rtAnimSystem.getTime());
+        EXPECT_TRUE(rtAnimSystem.impl.getIAnimationSystem().isRealTime());
+        EXPECT_TRUE(rtAnimSystem.impl.getIAnimationSystem().useSynchronizedClock());
+    }
+
+    TEST_F(AnimationSystemTest, createAnimationSystemIgnoreSynchronizedClock)
+    {
+        AnimationSystem& animSystem = *m_scene.createAnimationSystem(ramses::EAnimationSystemFlags_SynchronizedClock, "anim system");
+        EXPECT_EQ(0u, animSystem.getTime());
+        EXPECT_FALSE(animSystem.impl.getIAnimationSystem().isRealTime());
+        EXPECT_FALSE(animSystem.impl.getIAnimationSystem().useSynchronizedClock());
     }
 
     TEST_F(AnimationSystemTest, realTimeAnimationSystemSetsLocalTime)

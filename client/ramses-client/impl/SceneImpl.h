@@ -241,6 +241,9 @@ namespace ramses
 
         status_t flush(sceneVersionTag_t sceneVersion);
 
+        status_t resetUniformTimeMs();
+        int32_t getUniformTimeMs() const;
+
         ArrayResource* createArrayResource(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
         Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
@@ -368,6 +371,8 @@ namespace ramses
         std::string m_effectErrorMessages;
 
         ramses_internal::SceneFileHandle m_sceneFileHandle;
+
+        bool m_sendEffectTimeSync = false;
     };
 
     // define here to allow inlining

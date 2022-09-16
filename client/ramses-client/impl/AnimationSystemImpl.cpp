@@ -171,7 +171,14 @@ namespace ramses
         ramses_internal::AnimationTime timeStamp = ramses_internal::AnimationTime(systemTime);
         if (systemTime == 0u)
         {
-            timeStamp = ramses_internal::PlatformTime::GetMillisecondsAbsolute();
+            if (m_animationSystem->useSynchronizedClock())
+            {
+                timeStamp = ramses_internal::PlatformTime::GetMillisecondsSynchronized();
+            }
+            else
+            {
+                timeStamp = ramses_internal::PlatformTime::GetMillisecondsAbsolute();
+            }
         }
 
         m_animationStateCollector.resetCollections();

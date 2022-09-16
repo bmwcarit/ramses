@@ -10,6 +10,7 @@
 #define RAMSES_PLATFORMTIME_H
 
 #include "PlatformTypes.h"
+#include "synchronized_clock.h"
 #include <chrono>
 
 namespace ramses_internal
@@ -21,6 +22,9 @@ namespace ramses_internal
 
         UInt64 GetMillisecondsMonotonic();
         UInt64 GetMicrosecondsMonotonic();
+
+        UInt64 GetMillisecondsSynchronized();
+        UInt64 GetMicrosecondsSynchronized();
 
         // Due to std::chrono not having overflow protection it is very prone to issues
         // whenever using min/max from chrono because these are likely to overflow when
@@ -62,6 +66,18 @@ namespace ramses_internal
     inline UInt64 PlatformTime::GetMicrosecondsAbsolute()
     {
         auto now = std::chrono::system_clock::now();
+        return std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count();
+    }
+
+    inline UInt64 PlatformTime::GetMillisecondsSynchronized()
+    {
+        auto now = synchronized_clock::now();
+        return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
+    }
+
+    inline UInt64 PlatformTime::GetMicrosecondsSynchronized()
+    {
+        auto now = synchronized_clock::now();
         return std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count();
     }
 

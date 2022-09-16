@@ -10,6 +10,7 @@
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererAPI/IDevice.h"
 #include "SceneAPI/BlitPass.h"
+#include "Components/EffectUniformTime.h"
 
 namespace ramses_internal
 {
@@ -515,6 +516,12 @@ namespace ramses_internal
         case EFixedSemantics::TextTexture:
             // used on client side only
             break;
+        case EFixedSemantics::TimeMs:
+        {
+            scene.setDataSingleInteger(dataInstHandle, dataFieldHandle, EffectUniformTime::GetMilliseconds(scene.getEffectTimeSync()));
+            scene.setActiveShaderAnimation(true); // override skub mode - will be reset on the next flush
+            break;
+        }
         default:
             assert(false && "Unsupported semantics");
             break;

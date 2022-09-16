@@ -28,6 +28,25 @@ namespace ramses_internal
         void retriggerAllRenderOncePasses();
         void markAllRenderOncePassesAsRendered() const;
 
+        /**
+         * The renderer sets this to true when it applies a semantic time uniform
+         * that is supposed to enable a shader based animation
+         *
+         * Workflow:
+         * - The flag will be reset to 0 when a new flush is applied
+         * - The flush will trigger rendering for the scene
+         * - If a semantic uniform is accessed during rendering the flag will be set to true
+         * - The scene will be re-rendered as long as the flag is true (i.e. until a new flush arrives)
+         */
+        void setActiveShaderAnimation(bool hasAnimation);
+
+        /**
+         * Indicates if there is an active shader animation (semantic time uniform is used)
+         * The renderer should disable skub when this flag is set, otherwise the scene will not be
+         * re-rendered
+         */
+        bool hasActiveShaderAnimation() const;
+
         virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visible) override;
 
         virtual void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;
@@ -69,7 +88,19 @@ namespace ramses_internal
 
         using RenderPasses = HashSet<RenderPassHandle>;
         mutable RenderPasses m_renderOncePassesToRender;
+
+        bool m_hasActiveShaderAnimation = false;
     };
+
+    inline void RendererCachedScene::setActiveShaderAnimation(bool hasAnimation)
+    {
+        m_hasActiveShaderAnimation = hasAnimation;
+    }
+
+    inline bool RendererCachedScene::hasActiveShaderAnimation() const
+    {
+        return m_hasActiveShaderAnimation;
+    }
 }
 
 #endif

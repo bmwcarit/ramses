@@ -27,6 +27,16 @@ namespace ramses_internal
         return m_scene.getSceneId();
     }
 
+    void ActionTestScene::setEffectTimeSync(FlushTime::Clock::time_point)
+    {
+        // not set by a scene action
+    }
+
+    FlushTime::Clock::time_point ActionTestScene::getEffectTimeSync() const
+    {
+        return m_scene.getEffectTimeSync();
+    }
+
     UInt32 ActionTestScene::getRenderableCount() const
     {
         return m_scene.getRenderableCount();

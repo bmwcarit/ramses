@@ -407,7 +407,7 @@ protected:
 
     void performFlushWithExpiration(UInt32 sceneIndex, UInt32 expirationTS)
     {
-        const FlushTimeInformation timeInfo{ FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS)), {}, FlushTime::Clock::getClockType() };
+        const FlushTimeInformation timeInfo{ FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS)), {}, FlushTime::Clock::getClockType(), false };
         performFlush(sceneIndex, {}, nullptr, timeInfo);
     }
 

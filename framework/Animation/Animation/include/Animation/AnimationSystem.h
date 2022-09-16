@@ -17,9 +17,10 @@ namespace ramses_internal
 {
     enum EAnimationSystemFlags : uint32_t
     {
-        EAnimationSystemFlags_Default        = 0,
-        EAnimationSystemFlags_FullProcessing = BIT(0u),  ///< Full processing of animations is used. If not set only animations are processed only when finished.
-        EAnimationSystemFlags_RealTime       = BIT(1u)   ///< Hints the renderer to use system time for every frame updates. If not set animation system is fully controlled via setTime calls from client.
+        EAnimationSystemFlags_Default           = 0,
+        EAnimationSystemFlags_FullProcessing    = BIT(0u), ///< Full processing of animations is used. If not set only animations are processed only when finished.
+        EAnimationSystemFlags_RealTime          = BIT(1u), ///< Hints the renderer to use system time for every frame updates. If not set animation system is fully controlled via setTime calls from client.
+        EAnimationSystemFlags_SynchronizedClock = BIT(2u)  ///< Hints the renderer to use synchronized_clock instead of system clock
     };
 
     class AnimationSystem : public IAnimationSystem
@@ -33,6 +34,7 @@ namespace ramses_internal
         virtual const AnimationTime&         getTime() const override;
         virtual UInt32                       getFlags() const override;
         virtual bool                         isRealTime() const override;
+        virtual bool                         useSynchronizedClock() const override;
 
         virtual SplineHandle                 allocateSpline(ESplineKeyType keyType, EDataTypeID dataTypeID, SplineHandle handleRequest = SplineHandle::Invalid()) override;
         virtual DataBindHandle               allocateDataBinding(IScene& scene, TDataBindID dataBindID, MemoryHandle handle1, MemoryHandle handle2, DataBindHandle handleRequest = DataBindHandle::Invalid()) override;

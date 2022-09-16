@@ -30,6 +30,9 @@ namespace ramses_internal
         virtual const String&               getName                         () const override;
         virtual SceneId                     getSceneId                      () const override;
 
+        virtual void   setEffectTimeSync(FlushTime::Clock::time_point t) override;
+        virtual FlushTime::Clock::time_point getEffectTimeSync() const override;
+
         // Renderable
         virtual RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable               (RenderableHandle renderableHandle) override;

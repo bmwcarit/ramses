@@ -676,7 +676,6 @@ namespace ramses_internal
             }
         }
 
-        context.unindent();
         EndSection("RENDERER QUEUE", context);
     }
 

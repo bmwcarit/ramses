@@ -28,7 +28,11 @@ namespace ramses
         NormalMatrix,                ///< Transposed and inversed MVP matrix for vertex normals
         DisplayBufferResolution,     ///< Resolution of currently set destination display buffer (either display framebuffer or offscreen buffer, does not give RenderTarget resolution)
 
-        TextTexture                  ///< Text specific
+        TextTexture,                 ///< Text specific
+
+        TimeMs,                     ///< synchronized clock in milliseconds, resets to 0 every ~24 days, i.e. value range is: 0 .. std::numeric_limits<int32_t>::max().
+                                    ///< In order to avoid handling the wrap in the shader code or potential overflow issues the value should be reset using #ramses::Scene::resetUniformTimeMs().
+                                    ///< The value is not reset automatically at startup, but contains the time elapsed since clock epoch.
     };
 
     /**

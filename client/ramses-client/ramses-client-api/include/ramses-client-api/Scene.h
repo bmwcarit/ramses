@@ -255,6 +255,28 @@ namespace ramses
         status_t flush(sceneVersionTag_t sceneVersionTag = InvalidSceneVersionTag);
 
         /**
+         * @brief resets the semantic uniform #ramses::EEffectUniformSemantic::TimeMs
+         * The uniform value will contain the time elapsed since this method was called for the last time.
+         * Use this method to avoid possible overflow issues.
+         * The reset will be applied to the rendered scene with the next flush.
+         *
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t resetUniformTimeMs();
+
+        /**
+        * @brief Gets the current value used for the semantic uniform #ramses::EEffectUniformSemantic::TimeMs
+        * Value wraps to 0 every ~24 days, measured from the beginning of synchronized clock epoch.
+        *
+        * In order to avoid handling the wrap in the shader code or potential overflow issues the value should be reset using #ramses::Scene::resetUniformTimeMs()
+        * The value is not reset automatically at startup.
+        *
+        * @return time in milliseconds, value range is 0 .. std::numeric_limits<int32_t>::max() (~24 days)
+        */
+        int32_t getUniformTimeMs() const;
+
+        /**
         * @brief Get an object from the scene by name
         *
         * @param[in] name The name of the object to get.

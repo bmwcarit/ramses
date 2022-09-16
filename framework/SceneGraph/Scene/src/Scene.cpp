@@ -37,7 +37,14 @@ namespace ramses_internal
     SceneT<MEMORYPOOL>::SceneT(const SceneInfo& sceneInfo)
         : m_name(sceneInfo.friendlyName)
         , m_sceneId(sceneInfo.sceneID)
+        , m_effectTimeSync(FlushTime::InvalidTimestamp)
     {
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setEffectTimeSync(FlushTime::Clock::time_point t)
+    {
+        m_effectTimeSync = t;
     }
 
     template <template<typename, typename> class MEMORYPOOL>

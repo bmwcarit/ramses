@@ -28,6 +28,7 @@
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
 #include "AnimationAPI/IAnimationSystem.h"
+#include "Components/FlushTimeInformation.h"
 
 namespace ramses_internal
 {
@@ -71,6 +72,9 @@ namespace ramses_internal
 
         virtual const String&               getName                         () const = 0;
         virtual SceneId                     getSceneId                      () const = 0;
+
+        virtual void setEffectTimeSync(FlushTime::Clock::time_point t) = 0;
+        virtual FlushTime::Clock::time_point getEffectTimeSync() const = 0;
 
         virtual void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) = 0;
 

@@ -290,6 +290,7 @@ void EffectConfig::initUniformSemanticNameTable()
     m_uniformSemanticNameTable.put("EEffectUniformSemantic_NormalMatrix", ramses::EEffectUniformSemantic::NormalMatrix);
     m_uniformSemanticNameTable.put("EEffectUniformSemantic_DisplayBufferResolution", ramses::EEffectUniformSemantic::DisplayBufferResolution);
     m_uniformSemanticNameTable.put("EEffectUniformSemantic_TextTexture", ramses::EEffectUniformSemantic::TextTexture);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_TimeMs", ramses::EEffectUniformSemantic::TimeMs);
 }
 
 void EffectConfig::initAttributeSemanticNameTable()

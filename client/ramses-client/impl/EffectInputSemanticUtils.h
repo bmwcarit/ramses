@@ -42,6 +42,8 @@ namespace ramses
                 return ramses_internal::EFixedSemantics::DisplayBufferResolution;
             case EEffectUniformSemantic::TextTexture:
                 return ramses_internal::EFixedSemantics::TextTexture;
+            case EEffectUniformSemantic::TimeMs:
+                return ramses_internal::EFixedSemantics::TimeMs;
             case EEffectUniformSemantic::Invalid:
                 return ramses_internal::EFixedSemantics::Invalid;
             }
@@ -74,6 +76,8 @@ namespace ramses
                 return EEffectUniformSemantic::NormalMatrix;
             case ramses_internal::EFixedSemantics::TextTexture:
                 return EEffectUniformSemantic::TextTexture;
+            case ramses_internal::EFixedSemantics::TimeMs:
+                return EEffectUniformSemantic::TimeMs;
             default:
                 return EEffectUniformSemantic::Invalid;
             }

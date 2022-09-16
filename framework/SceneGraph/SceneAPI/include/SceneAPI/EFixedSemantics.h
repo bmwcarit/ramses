@@ -35,7 +35,8 @@ namespace ramses_internal
         // Text specific (used on client side only)
         TextTexture,
         TextPositionsAttribute,
-        TextTextureCoordinatesAttribute
+        TextTextureCoordinatesAttribute,
+        TimeMs,
     };
 
     static constexpr const char* const EFixedSemanticsNames[] =
@@ -53,7 +54,8 @@ namespace ramses_internal
         "Indices",
         "TextTexture",
         "TextPositionsAttribute",
-        "TextTextureCoordinatesAttribute"
+        "TextTextureCoordinatesAttribute",
+        "TimeMs",
     };
 
     inline bool IsSemanticCompatibleWithDataType(EFixedSemantics semantics, EDataType dataType)
@@ -81,6 +83,8 @@ namespace ramses_internal
         case EFixedSemantics::TextPositionsAttribute:
         case EFixedSemantics::TextTextureCoordinatesAttribute:
             return dataType == EDataType::Vector2F;
+        case EFixedSemantics::TimeMs:
+            return dataType == EDataType::Int32;
         case EFixedSemantics::Invalid:
             return false;
         }
@@ -93,6 +97,6 @@ namespace ramses_internal
 MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EFixedSemantics,
                                         "EFixedSemantics",
                                         ramses_internal::EFixedSemanticsNames,
-                                        ramses_internal::EFixedSemantics::TextTextureCoordinatesAttribute);
+                                        ramses_internal::EFixedSemantics::TimeMs);
 
 #endif

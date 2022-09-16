@@ -79,6 +79,7 @@ namespace ramses_internal
         in.flushTimeInfo.clock_type = synchronized_clock_type::SystemTime;
         in.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
         in.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
+        in.flushTimeInfo.isEffectTimeSync = true;
         in.resourceChanges.m_resourcesAdded.push_back(ResourceContentHash(77, 66));
         in.resourceChanges.m_resourcesRemoved.push_back(ResourceContentHash(77, 66));
         SceneResourceAction action;
@@ -90,7 +91,7 @@ namespace ramses_internal
 
         EXPECT_EQ(fmt::to_string(in),
             "FlushInformation:[valid:true;flushcounter:14;version:2;"
-                "resChanges[+:1;-:1;resActions:1];refActions:1;time[0;exp:12345;int:54321];"
+                "resChanges[+:1;-:1;resActions:1];refActions:1;time[0;sync:1;exp:12345;int:54321];"
                 "sizeInfo:[node=1 camera=2 transform=3 renderable=4 state=5 datalayout=6 datainstance=7 renderGroup=8 renderPass=9 blitPass=10 renderTarget=11 renderBuffer=12 textureSampler=13 streamTexture=14 dataSlot=15 "
                 "dataBuffer=16 animationSystem=17 textureBuffer=18 pickableObjectCount=19 sceneReferenceCount=20]]");
     }

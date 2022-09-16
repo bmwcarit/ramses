@@ -262,9 +262,9 @@ namespace ramses_internal
 
         {
             m_renderer.m_traceId = 9;
-            LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes real-time animation systems");
+            LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update renderer animations");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateAnimations);
-            updateScenesRealTimeAnimationSystems();
+            updateScenesRendererAnimations();
         }
 
         {
@@ -588,6 +588,15 @@ namespace ramses_internal
         UInt numActionsApplied = 0u;
         for (auto& pendingFlush : pendingFlushes)
         {
+            // re-enable skub optimization
+            // skub will be disabled again if a semantic time uniform is applied during first rendering after flush
+            rendererScene.setActiveShaderAnimation(false);
+            if (pendingFlush.timeInfo.isEffectTimeSync)
+            {
+                LOG_INFO_P(CONTEXT_RENDERER, "EffectTimeSync: {}",
+                    std::chrono::time_point_cast<std::chrono::milliseconds>(pendingFlush.timeInfo.internalTimestamp).time_since_epoch().count());
+                rendererScene.setEffectTimeSync(pendingFlush.timeInfo.internalTimestamp);
+            }
             applySceneActions(rendererScene, pendingFlush);
 
             numActionsApplied += pendingFlush.sceneActions.numberOfActions();
@@ -603,7 +612,7 @@ namespace ramses_internal
             m_renderer.getStatistics().flushApplied(sceneID);
 
             // mark scene as modified only if it received scene actions other than flush
-            const bool isFlushWithChanges = !pendingFlush.sceneActions.empty();
+            const bool isFlushWithChanges = !pendingFlush.sceneActions.empty() || pendingFlush.timeInfo.isEffectTimeSync;
             if (isFlushWithChanges)
                 // there are changes to scene -> mark it as modified to be re-rendered
                 m_modifiedScenesToRerender.put(sceneID);
@@ -1586,9 +1595,10 @@ namespace ramses_internal
         return true;
     }
 
-    void RendererSceneUpdater::updateScenesRealTimeAnimationSystems()
+    void RendererSceneUpdater::updateScenesRendererAnimations()
     {
         const UInt64 systemTime = PlatformTime::GetMillisecondsAbsolute();
+        const UInt64 ptpTime    = PlatformTime::GetMillisecondsSynchronized();
 
         for (const auto& scene : m_rendererScenes)
         {
@@ -1603,12 +1613,23 @@ namespace ramses_internal
                         IAnimationSystem* animationSystem = renderScene.getAnimationSystem(handle);
                         if (animationSystem->isRealTime())
                         {
-                            animationSystem->setTime(systemTime);
+                            if (animationSystem->useSynchronizedClock())
+                            {
+                                animationSystem->setTime(ptpTime);
+                            }
+                            else
+                            {
+                                animationSystem->setTime(systemTime);
+                            }
 
                             if (animationSystem->hasActiveAnimations())
                                 m_modifiedScenesToRerender.put(sceneID);
                         }
                     }
+                }
+                if (renderScene.hasActiveShaderAnimation())
+                {
+                    m_modifiedScenesToRerender.put(sceneID);
                 }
             }
         }

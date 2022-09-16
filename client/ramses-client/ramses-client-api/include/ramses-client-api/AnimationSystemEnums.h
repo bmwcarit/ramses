@@ -17,7 +17,8 @@ namespace ramses
     enum EAnimationSystemFlags
     {
         EAnimationSystemFlags_Default = 0,
-        EAnimationSystemFlags_ClientSideProcessing
+        EAnimationSystemFlags_ClientSideProcessing,
+        EAnimationSystemFlags_SynchronizedClock     ///< uses a synchronized time source for realtime animations (for renderer and client running on different machines)
     };
 
 }

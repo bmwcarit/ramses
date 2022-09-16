@@ -89,7 +89,12 @@ namespace ramses_internal
 
     namespace FlushInformationSerialization
     {
-        constexpr uint8_t FlushBits_HasSizeInfo = 1u;
+        enum class FlushBits : uint8_t
+        {
+            HasSizeInfo = 1u,
+            HasEffectTimeSync = 2u
+        };
+
         absl::Span<const Byte> SerializeInfos(const FlushInformation& flushInfos, std::vector<Byte>& workingMemory)
         {
             const UInt estimatedDataSize =
@@ -104,7 +109,15 @@ namespace ramses_internal
             workingMemory.reserve(workingMemory.size() + estimatedDataSize);
 
             VectorBinaryOutputStream os(workingMemory);
-            const uint8_t flushFlags = flushInfos.hasSizeInfo ? FlushBits_HasSizeInfo : 0u;
+            uint8_t flushFlags = 0u;
+            if (flushInfos.hasSizeInfo)
+            {
+                flushFlags |= static_cast<uint8_t>(FlushBits::HasSizeInfo);
+            }
+            if (flushInfos.flushTimeInfo.isEffectTimeSync)
+            {
+                flushFlags |= static_cast<uint8_t>(FlushBits::HasEffectTimeSync);
+            }
 
             os << flushInfos.containsValidInformation;
             os << flushInfos.flushCounter;
@@ -165,7 +178,8 @@ namespace ramses_internal
             is >> infos.flushCounter;
             uint8_t flushFlags = 0u;
             is >> flushFlags;
-            infos.hasSizeInfo = (flushFlags & FlushBits_HasSizeInfo) != 0;
+            infos.hasSizeInfo = (flushFlags & static_cast<uint8_t>(FlushBits::HasSizeInfo)) != 0;
+            const bool hasEffectTimeSync = (flushFlags & static_cast<uint8_t>(FlushBits::HasEffectTimeSync)) != 0;
             if (infos.hasSizeInfo)
             {
                 is >> infos.sizeInfo.nodeCount;
@@ -210,6 +224,7 @@ namespace ramses_internal
             infos.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
             is >> tsVal;
             infos.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
+            infos.flushTimeInfo.isEffectTimeSync = hasEffectTimeSync;
             uint32_t clockTypeAsUInt = 0;
             is >> clockTypeAsUInt;
             infos.flushTimeInfo.clock_type = static_cast<synchronized_clock_type>(clockTypeAsUInt);

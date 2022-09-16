@@ -28,6 +28,7 @@ namespace ramses_internal
 
         SceneWithExplicitMemory m_sceneShadowCopy;
         FlushTimeInformation m_flushTimeInfoOfLastFlush;
+        FlushTime::Clock::time_point m_effectTimeSync{FlushTime::InvalidTimestamp};
         SceneVersionTag m_lastVersionTag;
         ManagedResourceVector m_lastFlushUsedResources;
         ramses_internal::FlushTime::Clock::time_point m_lastFlushedExpirationTimestamp{ ramses_internal::FlushTime::InvalidTimestamp };

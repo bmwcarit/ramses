@@ -140,7 +140,7 @@ namespace ramses_internal
         void handleECStreamAvailabilityChanges();
         void uploadAndUnloadVertexArrays();
         void updateScenesResourceCache();
-        void updateScenesRealTimeAnimationSystems();
+        void updateScenesRendererAnimations();
         void updateScenesTransformationCache();
         void updateScenesDataLinks();
         void updateScenesStates();

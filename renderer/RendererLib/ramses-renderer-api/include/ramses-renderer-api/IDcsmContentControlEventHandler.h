@@ -125,7 +125,8 @@ namespace ramses
         /** @brief Content and consumer were linked (or failed to be linked) as result of calling #ramses::DcsmContentControl::linkContentToTextureConsumer.
         * @details Note that there is a possibility that given consumerContent ID is different from the one passed when calling
         *          #ramses::DcsmContentControl::linkContentToTextureConsumer. This can happen if the underlying type involved in this data linking is used
-        *          by multiple contents, in that case simply one of the contents will be given here.
+        *          by multiple contents, in that case an event is generated for each of the contents. Same applies for multiple provider content IDs mapping
+        *          to the same internal object.
         *          Also note that given consumerContent ID will be invalid if the consumer content or its scene became unavailable
         *          before this callback is emitted.
         *

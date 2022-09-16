@@ -71,6 +71,7 @@ namespace ramses_internal
 
         const bool skipSceneActionSend =
             m_flushCounter != 0 &&      // never skip first flush (might block renderer side transition subscription pending -> subscibed)
+            !flushTimeInfo.isEffectTimeSync &&      // no effect time synchronization
             m_resourceChangesSinceLastFlush.empty() &&   // no resource changes (client+scene)
             sceneUpdate.actions.empty() &&  // no other sceneactions yet
             m_scene.getSceneReferenceActions().empty() &&  // no scenereference updates
@@ -114,6 +115,10 @@ namespace ramses_internal
 
         // store flush time info and version for async new subscribers, scene validity must also be guaranteed for them
         m_flushTimeInfoOfLastFlush = flushTimeInfo;
+        if (flushTimeInfo.isEffectTimeSync)
+        {
+            m_effectTimeSync = flushTimeInfo.internalTimestamp;
+        }
         if (versionTag.isValid())
             m_lastVersionTag = versionTag;
 
@@ -131,6 +136,12 @@ namespace ramses_internal
             LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogic::sendShadowCopySceneToWaitingSubscribers: delay sending of scene " << m_sceneId << " (numWaiting " <<
                 m_subscribersWaitingForScene.size() << ", flushCnt " << m_flushCounter << ", published " << isPublished() << ")");
             return;
+        }
+
+        if (m_effectTimeSync != FlushTime::InvalidTimestamp)
+        {
+            m_flushTimeInfoOfLastFlush.internalTimestamp = m_effectTimeSync;
+            m_flushTimeInfoOfLastFlush.isEffectTimeSync = true;
         }
 
         sendSceneToWaitingSubscribers(m_sceneShadowCopy, m_flushTimeInfoOfLastFlush, m_lastVersionTag);

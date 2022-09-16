@@ -16,6 +16,7 @@
 #include "Utils/LogMacros.h"
 #include "Utils/BinaryOutputStream.h"
 #include <memory>
+#include <array>
 
 namespace ramses_internal
 {

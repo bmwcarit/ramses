@@ -409,7 +409,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, unskippableEmptyFlushesGeneratesSceneAction
 
     // has expiration
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _, _));
-    this->m_sceneLogic.flushSceneActions({FlushTime::Clock::time_point{std::chrono::milliseconds{1}}, FlushTime::Clock::time_point{}, {}}, {});
+    this->m_sceneLogic.flushSceneActions({FlushTime::Clock::time_point{std::chrono::milliseconds{1}}, FlushTime::Clock::time_point{}, {}, false}, {});
 
     this->expectSceneUnpublish();
 }
@@ -421,7 +421,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, fluhsNotSkippedIfEmptyWithExpirationEnabled
 
     this->m_scene.allocateNode();
 
-    FlushTimeInformation flushTimeInfo = { FlushTime::InvalidTimestamp, {}, {} };
+    FlushTimeInformation flushTimeInfo = { FlushTime::InvalidTimestamp, {}, {} , false};
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _));
     // flush with change
@@ -863,7 +863,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, appendsDefaultFlushInfoWhenSendingSceneToNe
 
     this->m_scene.allocateNode(0u, NodeHandle(1));
 
-    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
+    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType(), false };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiIn, versionTagIn);
 
@@ -888,13 +888,13 @@ TEST_F(AClientSceneLogic_Direct, appendsDefaultFlushInfoWhenSendingSceneToNewSub
 
     this->m_scene.allocateNode(0u, NodeHandle(1));
 
-    const FlushTimeInformation ftiInIgnored{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
+    const FlushTimeInformation ftiInIgnored{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType(), false };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiInIgnored, versionTagIn);
 
     this->expectSceneSend();
 
-    const FlushTimeInformation ftiInUsed{ FlushTime::Clock::time_point(std::chrono::milliseconds(5)), FlushTime::Clock::time_point(std::chrono::milliseconds(6)), FlushTime::Clock::getClockType() };
+    const FlushTimeInformation ftiInUsed{ FlushTime::Clock::time_point(std::chrono::milliseconds(5)), FlushTime::Clock::time_point(std::chrono::milliseconds(6)), FlushTime::Clock::getClockType(), false };
     const SceneVersionTag versionTagUsed{ 666 };
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& updateFromSendScene, auto, auto, auto&)
     {
@@ -1179,7 +1179,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithVali
     // add some active subscriber so actions are queued
     this->publish();
 
-    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
+    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType(), false };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiIn, versionTagIn);
 
@@ -1201,11 +1201,11 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithLast
     // add some active subscriber so actions are queued
     this->publish();
 
-    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
+    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType(), false };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiIn, versionTagIn);
 
-    const FlushTimeInformation ftiIn2{ FlushTime::Clock::time_point(std::chrono::milliseconds(22)), FlushTime::Clock::time_point(std::chrono::milliseconds(33)), FlushTime::Clock::getClockType() };
+    const FlushTimeInformation ftiIn2{ FlushTime::Clock::time_point(std::chrono::milliseconds(22)), FlushTime::Clock::time_point(std::chrono::milliseconds(33)), FlushTime::Clock::getClockType(), false };
     const SceneVersionTag versionTagIn2{ 123 };
     this->m_sceneLogic.flushSceneActions(ftiIn2, versionTagIn2);
 

@@ -10,6 +10,7 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include <wayland-client.h>
 #include <wayland-server.h>
+#include <array>
 
 namespace ramses_internal
 {

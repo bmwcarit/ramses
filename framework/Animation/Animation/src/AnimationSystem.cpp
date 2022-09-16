@@ -78,6 +78,11 @@ namespace ramses_internal
         return (m_flags & EAnimationSystemFlags_RealTime) != 0;
     }
 
+    bool AnimationSystem::useSynchronizedClock() const
+    {
+        return (m_flags & EAnimationSystemFlags_SynchronizedClock) != 0;
+    }
+
     SplineHandle AnimationSystem::allocateSpline(ESplineKeyType keyType, EDataTypeID dataTypeID, SplineHandle handleRequest)
     {
         switch (keyType)

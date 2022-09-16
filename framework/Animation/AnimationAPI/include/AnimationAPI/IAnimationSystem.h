@@ -40,6 +40,7 @@ namespace ramses_internal
         virtual const AnimationTime&         getTime() const = 0;
         virtual UInt32                       getFlags() const = 0;
         virtual bool                         isRealTime() const = 0;
+        virtual bool                         useSynchronizedClock() const = 0;
 
         virtual SplineHandle                 allocateSpline(ESplineKeyType keyType, EDataTypeID dataTypeID, SplineHandle handleRequest = SplineHandle::Invalid()) = 0;
         virtual DataBindHandle               allocateDataBinding(IScene& scene, TDataBindID dataBindID, MemoryHandle handle1, MemoryHandle handle2, DataBindHandle handleRequest = DataBindHandle::Invalid()) = 0;

@@ -541,7 +541,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     EXPECT_CALL(consumer, handleInitializeScene(sceneInfo, _));
     EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(1), _,  _));
 
-    FlushTimeInformation flushTimesWithExpirationToPreventFlushOptimizazion {FlushTime::Clock::time_point {std::chrono::milliseconds{1}}, FlushTime::Clock::time_point {}, FlushTime::Clock::getClockType() };
+    FlushTimeInformation flushTimesWithExpirationToPreventFlushOptimizazion {FlushTime::Clock::time_point {std::chrono::milliseconds{1}}, FlushTime::Clock::time_point {}, FlushTime::Clock::getClockType(), false };
     EXPECT_TRUE(sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {}));
 
     // disconnect

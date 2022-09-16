@@ -3509,6 +3509,34 @@ TEST_F(ADcsmContentControl, linkContentWithWaylandSurfaceLinksStreamBufferIntern
     update();
 }
 
+TEST_F(ADcsmContentControl, linkingContentsWithSameWaylandSurfaceSharedByMultipleContentsAndExpectEventForAllOfThem)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+    auto& consumerContentID = m_contentID3;
+
+    //make content and consumer ready
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_wayland(m_contentID2, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_ramses(consumerContentID, m_categoryID1, SceneId2);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillRepeatedly(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+
+    // calls streambuffer linking internally - succeeds
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID1, consumerContentID, consumerId, true));
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID2, consumerContentID, consumerId, true));
+    update();
+}
+
+
 TEST_F(ADcsmContentControl, mustReassignToDisplayBufferAfterReleaseForlinkContent_ramsesContentType)
 {
     constexpr displayBufferId_t obId{ 12 };

@@ -168,6 +168,18 @@ namespace ramses
         return status;
     }
 
+    status_t Scene::resetUniformTimeMs()
+    {
+        const auto status = impl.resetUniformTimeMs();
+        LOG_HL_CLIENT_API_NOARG(status);
+        return status;
+    }
+
+    int32_t Scene::getUniformTimeMs() const
+    {
+        return impl.getUniformTimeMs();
+    }
+
     AnimationSystem* Scene::createAnimationSystem(uint32_t flags, const char* name)
     {
         AnimationSystem* animationSystem = impl.createAnimationSystem(flags, name);

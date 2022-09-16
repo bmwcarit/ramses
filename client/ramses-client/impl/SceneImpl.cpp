@@ -110,9 +110,11 @@
 #include "Resource/EffectResource.h"
 
 #include "Components/FlushTimeInformation.h"
+#include "Components/EffectUniformTime.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/TextureMathUtils.h"
 #include "ResourceDataPoolImpl.h"
+#include "Components/FlushTimeInformation.h"
 
 #include <array>
 
@@ -1404,7 +1406,7 @@ namespace ramses
 
     status_t SceneImpl::flush(sceneVersionTag_t sceneVersion)
     {
-        const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
+        const auto timestampOfFlushCall = m_sendEffectTimeSync ? getIScene().getEffectTimeSync() :  ramses_internal::FlushTime::Clock::now();
 
         LOG_DEBUG_P(CONTEXT_CLIENT, "Scene::flush: sceneVersion {}, prevSceneVersion {}, syncFlushTime {}", sceneVersion, m_nextSceneVersion, ramses_internal::asMilliseconds(timestampOfFlushCall));
 
@@ -1419,7 +1421,8 @@ namespace ramses
         m_commandBuffer.execute(ramses_internal::SceneCommandVisitor(*this));
         applyHierarchicalVisibility();
 
-        const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall, ramses_internal::FlushTime::Clock::getClockType() };
+        const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall, ramses_internal::FlushTime::Clock::getClockType(), m_sendEffectTimeSync };
+        m_sendEffectTimeSync          = false;
 
         if (!getClientImpl().getClientApplication().flush(m_scene.getSceneId(), flushTimeInfo, sceneVersionInternal))
             return addErrorEntry("Scene::flush: Flushing scene failed, consult logs for more details.");
@@ -1428,12 +1431,31 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t SceneImpl::resetUniformTimeMs()
+    {
+        const auto now   = ramses_internal::FlushTime::Clock::now();
+        const auto nowMs = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+        LOG_INFO_P(CONTEXT_CLIENT, "Scene::resetUniformTimeMs: {}", nowMs.time_since_epoch().count());
+        m_sendEffectTimeSync = true;
+        getIScene().setEffectTimeSync(now);
+        return StatusOK;
+    }
+
+    int32_t SceneImpl::getUniformTimeMs() const
+    {
+        return ramses_internal::EffectUniformTime::GetMilliseconds(getIScene().getEffectTimeSync());
+    }
+
     AnimationSystem* SceneImpl::createAnimationSystem(uint32_t flags, const char* name)
     {
         uint32_t creationFlags = ramses_internal::EAnimationSystemFlags_Default;
         if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
         {
             creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
+        }
+        if ((flags & EAnimationSystemFlags_SynchronizedClock) != 0)
+        {
+            LOG_WARN(CONTEXT_CLIENT, "Scene::createAnimationSystem: flag EAnimationSystemFlags_SynchronizedClock is relevant only for real-time animation system, it will be ignored");
         }
 
         AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystem, name);
@@ -1448,6 +1470,10 @@ namespace ramses
         if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
         {
             creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
+        }
+        if ((flags & EAnimationSystemFlags_SynchronizedClock) != 0)
+        {
+            creationFlags |= ramses_internal::EAnimationSystemFlags_SynchronizedClock;
         }
 
         AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystemRealTime, name);

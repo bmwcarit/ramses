@@ -76,6 +76,9 @@ namespace ramses_internal
         virtual SceneId                     getSceneId                      () const final override;
         virtual const String&               getName                         () const final override;
 
+        virtual void setEffectTimeSync(FlushTime::Clock::time_point t) override;
+        virtual FlushTime::Clock::time_point getEffectTimeSync() const override;
+
         // Renderables
         virtual RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable               (RenderableHandle renderableHandle) override;
@@ -385,6 +388,8 @@ namespace ramses_internal
 
         const String                m_name;
         const SceneId               m_sceneId;
+
+        FlushTime::Clock::time_point m_effectTimeSync;
     };
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -546,6 +551,12 @@ namespace ramses_internal
     inline SceneId SceneT<MEMORYPOOL>::getSceneId() const
     {
         return m_sceneId;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline FlushTime::Clock::time_point SceneT<MEMORYPOOL>::getEffectTimeSync() const
+    {
+        return m_effectTimeSync;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
