@@ -18,6 +18,7 @@
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
 #include "PlatformAbstraction/PlatformMath.h"
+#include "Components/EffectUniformTime.h"
 #include "MockResourceHash.h"
 
 namespace ramses_internal {
@@ -75,10 +76,32 @@ MATCHER_P(PermissiveMatrixEq, other, "")
     return true;
 }
 
+static int32_t GetElapsed(int32_t start, int32_t end)
+{
+    if (start == end)
+        return 0;
+    if (start < end)
+    {
+        return end - start;
+    }
+    else
+    {
+        constexpr auto limit = std::numeric_limits<int32_t>::max();
+        return (limit - start) + end + 1;
+    }
+}
+
+MATCHER_P(TimeEq, expectedTime, "")
+{
+    UNUSED(result_listener);
+    const int32_t tolerance = 10000; // tolerate stuck during test execution
+    return GetElapsed(expectedTime, arg) < tolerance;
+}
+
 class FakeEffectInputs
 {
 public:
-    FakeEffectInputs()
+    explicit FakeEffectInputs(bool withTimeMs)
     {
         uniformInputs.push_back(EffectInputInformation("dataRefField1", 1, EDataType::Float, EFixedSemantics::Invalid));
         dataRefField1 = DataFieldHandle(0);
@@ -96,6 +119,11 @@ public:
         dataRefField2  = DataFieldHandle(6);
         uniformInputs.push_back(EffectInputInformation("dataRefFieldMatrix22f", 1, EDataType::Matrix22F, EFixedSemantics::Invalid));
         dataRefFieldMatrix22f  = DataFieldHandle(7);
+        if (withTimeMs)
+        {
+            uniformInputs.push_back(EffectInputInformation("timeMs", 1, EDataType::Int32, EFixedSemantics::TimeMs));
+            dataRefTimeMs  = DataFieldHandle(8);
+        }
 
         attributeInputs.push_back(EffectInputInformation("vertPosField", 1, EDataType::Vector3Buffer, EFixedSemantics::Invalid));
         vertPosField = DataFieldHandle(0);
@@ -111,6 +139,7 @@ public:
     DataFieldHandle dataRefField1;
     DataFieldHandle dataRefField2;
     DataFieldHandle dataRefFieldMatrix22f;
+    DataFieldHandle dataRefTimeMs;
     DataFieldHandle textureField;
     DataFieldHandle textureFieldMS;
     DataFieldHandle fieldModelMatrix;
@@ -119,15 +148,16 @@ public:
 };
 
 
-class ARenderExecutor: public ::testing::Test
+class ARenderExecutorBase: public ::testing::Test
 {
 public:
-    ARenderExecutor()
+    explicit ARenderExecutorBase(bool withTimeMs)
         : device(renderer.deviceMock)
         , renderContext{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, fakeViewportWidth, fakeViewportHeight, {}, EClearFlags_All, Vector4{0.f}, false }
         , rendererScenes(rendererEventCollector)
         , scene(rendererScenes.createScene(SceneInfo()))
         , sceneAllocator(scene)
+        , fakeEffectInputs(withTimeMs)
         , indicesField(0u)
         , vertPosField(1u)
         , vertTexcoordField(2u)
@@ -364,7 +394,8 @@ protected:
         bool expectShaderActivation = true,
         EExpectedRenderStateChange expectRenderStateChanges = EExpectedRenderStateChange::All,
         UInt32 instanceCount = 1u,
-        bool expectIndexedRendering = true)
+        bool expectIndexedRendering = true,
+        Int32 expectedUniformTimeMs = 0)
     {
         // TODO violin this is not entirely needed, only need to check that draw call is at the end of the commands
         InSequence seq;
@@ -411,6 +442,10 @@ protected:
         EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureFieldMS))                                                                         .InSequence(deviceSequence);
         EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField2, 1, Matcher<const Float*>(Pointee(Eq(-666.f)))))                                     .InSequence(deviceSequence);
         EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldMatrix22f, 1, Matcher<const Matrix22f*>(Pointee(Eq(Matrix22f(1,2,3,4))))))             .InSequence(deviceSequence);
+        if (fakeEffectInputs.dataRefTimeMs.isValid())
+        {
+            EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefTimeMs, 1, Matcher<const Int32*>(Pointee(TimeEq(expectedUniformTimeMs)))))             .InSequence(deviceSequence);
+        }
         if (expectIndexedRendering)
         {
             EXPECT_CALL(device, drawIndexedTriangles(startIndex, indexCount, instanceCount)).InSequence(deviceSequence);
@@ -484,6 +519,24 @@ protected:
     {
         RenderExecutor executor(device, renderContext, frameTimer);
         return executor.executeScene(scene);
+    }
+};
+
+class ARenderExecutor : public ARenderExecutorBase
+{
+public:
+    ARenderExecutor()
+        : ARenderExecutorBase(false)
+    {
+    }
+};
+
+class ARenderExecutorTimeMs : public ARenderExecutorBase
+{
+public:
+    ARenderExecutorTimeMs()
+        : ARenderExecutorBase(true)
+    {
     }
 };
 
@@ -1628,6 +1681,68 @@ TEST_F(ARenderExecutor, doesNotDiscardDepthStencilIfUpcomingPassUsesItAsBlitPass
     expectActivateRenderTarget(renderTargetDeviceHandle, false);
     expectClearRenderTarget();
     expectDepthStencilDiscard();
+
+    executeScene();
+}
+
+TEST_F(ARenderExecutorTimeMs, SetsActiveShaderAnimationFlagOnRenderedScene)
+{
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass = createRenderPassWithCamera(projParams);
+    const RenderableHandle renderable = createTestRenderable(createTestDataInstance(true, false), createRenderGroup(pass));
+    scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+
+    updateScenes({ renderable });
+
+    {
+        InSequence seq;
+
+        expectActivateFramebufferRenderTarget();
+        expectClearRenderTarget();
+        expectFrameRenderCommands(renderable,
+                                  Matrix44f::Identity,
+                                  Matrix44f::Identity,
+                                  expectedProjectionMatrix,
+                                  true,
+                                  EExpectedRenderStateChange::All,
+                                  1,
+                                  false,
+                                  EffectUniformTime::GetMilliseconds({}));
+    }
+
+    EXPECT_FALSE(scene.hasActiveShaderAnimation());
+    executeScene();
+    EXPECT_TRUE(scene.hasActiveShaderAnimation());
+}
+
+TEST_F(ARenderExecutorTimeMs, UniformTimeMsStartsAtZeroAfterEffectTimeSync)
+{
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass = createRenderPassWithCamera(projParams);
+    const RenderableHandle renderable = createTestRenderable(createTestDataInstance(true, false), createRenderGroup(pass));
+    scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+
+    scene.setEffectTimeSync(FlushTime::Clock::now());
+
+    updateScenes({ renderable });
+
+    {
+        InSequence seq;
+
+        expectActivateFramebufferRenderTarget();
+        expectClearRenderTarget();
+        expectFrameRenderCommands(renderable,
+                                  Matrix44f::Identity,
+                                  Matrix44f::Identity,
+                                  expectedProjectionMatrix,
+                                  true,
+                                  EExpectedRenderStateChange::All,
+                                  1,
+                                  false,
+                                  0);
+    }
 
     executeScene();
 }

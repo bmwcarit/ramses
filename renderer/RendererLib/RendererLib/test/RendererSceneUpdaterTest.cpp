@@ -2953,6 +2953,106 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfRealTimeAnimationIsActive)
     destroyDisplay();
 }
 
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfShaderAnimationIsActive)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+
+    createRenderable();
+    setRenderableResources();
+
+    expectModifiedScenesReportedToRenderer();
+    expectVertexArrayUploaded();
+    update();
+    expectRenderableResourcesClean();
+
+    // simulate rendering
+    auto& rendererScene = rendererScenes.getScene(stagingScene[0]->getSceneId());
+    EXPECT_FALSE(rendererScene.hasActiveShaderAnimation());
+    rendererScene.setActiveShaderAnimation(true);
+
+    expectModifiedScenesReportedToRenderer();
+    update();
+
+    // flush resets shader animation
+    EXPECT_TRUE(rendererScene.hasActiveShaderAnimation());
+    performFlush();
+    update();
+    EXPECT_FALSE(rendererScene.hasActiveShaderAnimation());
+
+    hideScene();
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfOtherSceneHasShaderAnimation)
+{
+    createDisplayAndExpectSuccess();
+
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+
+    mapScene(0);
+    mapScene(1);
+
+    showScene(0);
+    showScene(1);
+
+    // simulate rendering
+    auto& rendererScene1 = rendererScenes.getScene(getSceneId(0));
+    auto& rendererScene2 = rendererScenes.getScene(getSceneId(1));
+
+    EXPECT_FALSE(rendererScene1.hasActiveShaderAnimation());
+    EXPECT_FALSE(rendererScene2.hasActiveShaderAnimation());
+    rendererScene2.setActiveShaderAnimation(true);
+
+    expectModifiedScenesReportedToRenderer({1});
+    update();
+
+    EXPECT_FALSE(rendererScene1.hasActiveShaderAnimation());
+    EXPECT_TRUE(rendererScene2.hasActiveShaderAnimation());
+
+    hideScene(0);
+    hideScene(1);
+    unmapScene(0);
+    unmapScene(1);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfEffectTimeIsSynced)
+{
+    createDisplayAndExpectSuccess();
+    const auto scene = createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+
+    createRenderable();
+    setRenderableResources();
+
+    expectModifiedScenesReportedToRenderer();
+    expectVertexArrayUploaded();
+    update();
+    expectRenderableResourcesClean();
+
+    const auto& rendererScene = rendererScenes.getScene(stagingScene[0]->getSceneId());
+    EXPECT_EQ(FlushTime::InvalidTimestamp, rendererScene.getEffectTimeSync());
+    performFlushWithUniformTimeSync(scene, 1000u);
+
+    expectModifiedScenesReportedToRenderer();
+    update();
+    EXPECT_EQ(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u)), rendererScene.getEffectTimeSync());
+
+    hideScene();
+    unmapScene();
+    destroyDisplay();
+}
+
 TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScene)
 {
     createDisplayAndExpectSuccess();

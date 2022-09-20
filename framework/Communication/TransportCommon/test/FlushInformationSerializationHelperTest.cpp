@@ -71,6 +71,25 @@ namespace ramses_internal
         EXPECT_EQ(in, SerializeDeserialize(in));
     }
 
+    TEST_F(AFlushInformationSerialization, canSerializeDeserializeFlushInformationWithEffectTimeSync)
+    {
+        in.containsValidInformation = true;
+        in.hasSizeInfo = false;
+        in.flushCounter = 14;
+        in.flushTimeInfo.clock_type = synchronized_clock_type::PTP;
+        in.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
+        in.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
+        in.flushTimeInfo.isEffectTimeSync = true;
+        in.resourceChanges.m_resourcesAdded.push_back(ResourceContentHash(77, 66));
+        in.resourceChanges.m_resourcesRemoved.push_back(ResourceContentHash(77, 66));
+        SceneResourceAction action;
+        in.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
+        in.versionTag = SceneVersionTag(2);
+        const auto out = SerializeDeserialize(in);
+        EXPECT_TRUE(out.flushTimeInfo.isEffectTimeSync);
+        EXPECT_EQ(in, out);
+    }
+
     TEST_F(AFlushInformationSerialization, canPrintFlushInformation)
     {
         in.containsValidInformation = true;

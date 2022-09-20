@@ -33,6 +33,8 @@
 #include "StreamTextureImpl.h"
 #include "ClientTestUtils.h"
 #include "SimpleSceneTopology.h"
+#include "Components/FlushTimeInformation.h"
+#include "PlatformAbstraction/PlatformTime.h"
 
 using namespace testing;
 
@@ -72,6 +74,31 @@ namespace ramses
     class ASceneWithContent : public SimpleSceneTopology
     {
     };
+
+    static int32_t GetElapsed(int32_t start, int32_t end)
+    {
+        if (start == end)
+            return 0;
+        if (start < end)
+        {
+            return end - start;
+        }
+        else
+        {
+            constexpr auto limit = std::numeric_limits<int32_t>::max();
+            return (limit - start) + end + 1;
+        }
+    }
+
+    TEST(GetElapsedSelfTest, overflow)
+    {
+        EXPECT_EQ(0, GetElapsed(0, 0));
+        EXPECT_EQ(1000, GetElapsed(0, 1000));
+        EXPECT_EQ(1, GetElapsed(0x7fffffff, 0));
+        EXPECT_EQ(1000, GetElapsed(0x7fffffff, 999));
+        EXPECT_EQ(1000, GetElapsed(0x7fffffff - 999, 0));
+    }
+
 
     TEST(DistributedSceneTest, givesErrorWhenRemotePublishingAfterEnablingLocalOnlyOptmisations)
     {
@@ -1532,5 +1559,49 @@ namespace ramses
         m_creationHelper.createObjectOfType<StreamTexture>("meh2");
         m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("fallbackTex")));
         EXPECT_NE(StatusOK, m_scene.flush()); // test scene with resource missing => flush failed
+    }
+
+    TEST_F(AScene, uniformTimeMatchesSyncClockInitiallyAndCanBeReset)
+    {
+        const int32_t tolerance = 10000; // 10 seconds to tolerate stucks during test execution
+        const auto now = ramses_internal::PlatformTime::GetMillisecondsSynchronized();
+        const auto s32now = static_cast<int32_t>(now % std::numeric_limits<int32_t>::max());
+        EXPECT_GE(tolerance, GetElapsed(s32now, m_scene.getUniformTimeMs()));
+        EXPECT_EQ(StatusOK, m_scene.resetUniformTimeMs());
+        EXPECT_GE(tolerance, GetElapsed(0, m_scene.getUniformTimeMs()));
+    }
+
+    TEST_F(AScene, resetUniformTimeMs)
+    {
+        EXPECT_EQ(ramses_internal::FlushTime::InvalidTimestamp, m_scene.impl.getIScene().getEffectTimeSync());
+        EXPECT_EQ(StatusOK, m_scene.resetUniformTimeMs());
+        const auto timeSync = m_scene.impl.getIScene().getEffectTimeSync();
+        EXPECT_NE(0, timeSync.time_since_epoch().count());
+
+        EXPECT_EQ(StatusOK, m_scene.flush());
+
+        EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(_, _));
+        EXPECT_CALL(sceneActionsCollector, handleInitializeScene(_, _));
+
+        // internal timestamp contains sync time
+        EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(123u), _, _)).WillOnce([&](auto, const auto& update, auto) {
+            const ramses_internal::FlushTimeInformation& timeInfo = update.flushInfos.flushTimeInfo;
+            EXPECT_TRUE(timeInfo.isEffectTimeSync);
+            EXPECT_EQ(timeSync, timeInfo.internalTimestamp);
+            });
+
+        EXPECT_EQ(StatusOK, m_scene.publish(ramses::EScenePublicationMode_LocalOnly));
+        Mock::VerifyAndClearExpectations(&sceneActionsCollector);
+
+        // internal timestamp contains flush time
+        ramses_internal::PlatformThread::Sleep(10);
+        EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(123u), _, _)).WillOnce([&](auto, const auto& update, auto) {
+            const ramses_internal::FlushTimeInformation& timeInfo = update.flushInfos.flushTimeInfo;
+            EXPECT_FALSE(timeInfo.isEffectTimeSync);
+            EXPECT_NE(timeSync, timeInfo.internalTimestamp);
+            });
+        EXPECT_EQ(StatusOK, m_scene.flush(42u));
+
+        EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(_, _));
     }
 }

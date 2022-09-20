@@ -447,6 +447,26 @@ TEST_F(AClientSceneLogic_ShadowCopy, fluhsNotSkippedIfEmptyWithExpirationEnabled
     this->expectSceneUnpublish();
 }
 
+TEST_F(AClientSceneLogic_ShadowCopy, flushNotSkippedIfEmptyWithEffectTimeSyncEnabled)
+{
+    this->publishAndAddSubscriberWithoutPendingActions();
+
+    FlushTimeInformation flushTimeInfo;
+    flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point{std::chrono::milliseconds(1000)};
+
+    // empty -> nothing sent
+    this->m_sceneLogic.flushSceneActions(flushTimeInfo, {});
+    Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
+
+    // send effect time sync
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _, _));
+    flushTimeInfo.isEffectTimeSync = true;
+    this->m_sceneLogic.flushSceneActions(flushTimeInfo, {});
+    Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
+
+    this->expectSceneUnpublish();
+}
+
 TEST_F(AClientSceneLogic_ShadowCopy, skippedFlushesAreCounted)
 {
     this->publish();
@@ -876,6 +896,37 @@ TEST_F(AClientSceneLogic_ShadowCopy, appendsDefaultFlushInfoWhenSendingSceneToNe
         EXPECT_TRUE(updateFromSendScene.flushInfos.hasSizeInfo);
         EXPECT_EQ(ftiIn, updateFromSendScene.flushInfos.flushTimeInfo);
         EXPECT_EQ(versionTagIn, updateFromSendScene.flushInfos.versionTag);
+    });
+    this->addSubscriber();
+    this->expectSceneUnpublish();
+}
+
+TEST_F(AClientSceneLogic_ShadowCopy, appendsTimeSyncInfoWhenSendingSceneToNewSubscriber)
+{
+    this->publish();
+
+    const auto syncTime = FlushTime::Clock::time_point(std::chrono::milliseconds(4));
+    const auto flushTime = FlushTime::Clock::time_point(std::chrono::milliseconds(5));
+    const auto expirationTime = FlushTime::Clock::time_point(std::chrono::milliseconds(11));
+    const auto clockType      = FlushTime::Clock::getClockType();
+
+    this->m_sceneLogic.flushSceneActions({FlushTime::InvalidTimestamp, syncTime, clockType, true}, {});
+    this->m_scene.allocateNode(0u, NodeHandle(1));
+    this->m_sceneLogic.flushSceneActions({expirationTime, flushTime, clockType, false}, {});
+
+    this->expectSceneSend();
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& updateFromSendScene, auto, auto, auto&)
+    {
+        ASSERT_EQ(1u, updateFromSendScene.actions.numberOfActions());
+        EXPECT_EQ(ESceneActionId::AllocateNode, updateFromSendScene.actions[0].type());
+
+        EXPECT_TRUE(updateFromSendScene.flushInfos.hasSizeInfo);
+        const FlushTimeInformation& flushTimeInfo = updateFromSendScene.flushInfos.flushTimeInfo;
+        // flushTime is not transmitted
+        EXPECT_EQ(syncTime, flushTimeInfo.internalTimestamp);
+        EXPECT_EQ(expirationTime, flushTimeInfo.expirationTimestamp);
+        EXPECT_EQ(clockType, flushTimeInfo.clock_type);
+        EXPECT_TRUE(flushTimeInfo.isEffectTimeSync);
     });
     this->addSubscriber();
     this->expectSceneUnpublish();

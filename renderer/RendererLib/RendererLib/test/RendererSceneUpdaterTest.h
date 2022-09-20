@@ -405,6 +405,12 @@ protected:
         rendererSceneUpdater->handleSceneUpdate(stagingScene[sceneIndex]->getSceneId(), std::move(update));
     }
 
+    void performFlushWithUniformTimeSync(UInt32 sceneIndex, UInt32 internalTS)
+    {
+        const FlushTimeInformation timeInfo{ {}, FlushTime::Clock::time_point(std::chrono::milliseconds(internalTS)), FlushTime::Clock::getClockType(), true };
+        performFlush(sceneIndex, {}, nullptr, timeInfo);
+    }
+
     void performFlushWithExpiration(UInt32 sceneIndex, UInt32 expirationTS)
     {
         const FlushTimeInformation timeInfo{ FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS)), {}, FlushTime::Clock::getClockType(), false };
