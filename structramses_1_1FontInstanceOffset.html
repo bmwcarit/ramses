@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.121</span>
+   &#160;<span id="projectnumber">27.0.123</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -92,22 +92,22 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ab0e6bc316c3520e5ed84ecaa64c26657"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a7a1f3ed855229ca4ac9a0729ecb5e54d">FontInstanceId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structramses_1_1FontInstanceOffset.html#ab0e6bc316c3520e5ed84ecaa64c26657">fontInstance</a></td></tr>
 <tr class="memdesc:ab0e6bc316c3520e5ed84ecaa64c26657"><td class="mdescLeft">&#160;</td><td class="mdescRight">Font instance to use starting at this offset.  <a href="structramses_1_1FontInstanceOffset.html#ab0e6bc316c3520e5ed84ecaa64c26657">More...</a><br /></td></tr>
 <tr class="separator:ab0e6bc316c3520e5ed84ecaa64c26657"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae643093b583d318e1ca2d2c3818e43b1"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structramses_1_1FontInstanceOffset.html#ae643093b583d318e1ca2d2c3818e43b1">beginOffset</a></td></tr>
-<tr class="memdesc:ae643093b583d318e1ca2d2c3818e43b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Offset into string where to start.  <a href="structramses_1_1FontInstanceOffset.html#ae643093b583d318e1ca2d2c3818e43b1">More...</a><br /></td></tr>
-<tr class="separator:ae643093b583d318e1ca2d2c3818e43b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0445c8376dbfbad749a49c27c52e3b94"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structramses_1_1FontInstanceOffset.html#a0445c8376dbfbad749a49c27c52e3b94">beginOffset</a></td></tr>
+<tr class="memdesc:a0445c8376dbfbad749a49c27c52e3b94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Offset into string where to start.  <a href="structramses_1_1FontInstanceOffset.html#a0445c8376dbfbad749a49c27c52e3b94">More...</a><br /></td></tr>
+<tr class="separator:a0445c8376dbfbad749a49c27c52e3b94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A list of tuples from font instances and offsets into a string. </p>
 <p>Used to tell the text API which font should be used for which substring when creating glyphs for a string. The list is used as this: take entry N of the list, start at string offset 'N:beginOffset' and use font 'N:fontInstance' until offset 'N+1:beginOffset'. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="ae643093b583d318e1ca2d2c3818e43b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae643093b583d318e1ca2d2c3818e43b1">&#9670;&nbsp;</a></span>beginOffset</h2>
+<a id="a0445c8376dbfbad749a49c27c52e3b94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0445c8376dbfbad749a49c27c52e3b94">&#9670;&nbsp;</a></span>beginOffset</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">size_t ramses::FontInstanceOffset::beginOffset</td>
+          <td class="memname">std::size_t ramses::FontInstanceOffset::beginOffset</td>
         </tr>
       </table>
 </div><div class="memdoc">

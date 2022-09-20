@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.121</span>
+   &#160;<span id="projectnumber">27.0.123</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -186,6 +186,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3a7b034878e0e29d925f880a45fb01a3"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a3a7b034878e0e29d925f880a45fb01a3">getLayoutAvailability</a> () const</td></tr>
 <tr class="memdesc:a3a7b034878e0e29d925f880a45fb01a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get layout availability metadata entry. Value is undefined when not <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#af9c31dfb153ff432b188c96d989b96d9" title="Check if object contains layoutAvailability metadata entry.">hasLayoutAvailability()</a>.  <a href="classramses_1_1DcsmMetadataUpdate.html#a3a7b034878e0e29d925f880a45fb01a3">More...</a><br /></td></tr>
 <tr class="separator:a3a7b034878e0e29d925f880a45fb01a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75d8140c7758245108dc3af24b12c77b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a75d8140c7758245108dc3af24b12c77b">hasConfiguratorPriority</a> () const</td></tr>
+<tr class="memdesc:a75d8140c7758245108dc3af24b12c77b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if object contains configuratorPriority metadata entry.  <a href="classramses_1_1DcsmMetadataUpdate.html#a75d8140c7758245108dc3af24b12c77b">More...</a><br /></td></tr>
+<tr class="separator:a75d8140c7758245108dc3af24b12c77b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e8fae0d12574d515739d9a03e8ceeab"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a9e8fae0d12574d515739d9a03e8ceeab">getConfiguratorPriority</a> () const</td></tr>
+<tr class="memdesc:a9e8fae0d12574d515739d9a03e8ceeab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the widget configurator priority for this dcsm content Value is undefined if not <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a75d8140c7758245108dc3af24b12c77b" title="Check if object contains configuratorPriority metadata entry.">hasConfiguratorPriority()</a>.  <a href="classramses_1_1DcsmMetadataUpdate.html#a9e8fae0d12574d515739d9a03e8ceeab">More...</a><br /></td></tr>
+<tr class="separator:a9e8fae0d12574d515739d9a03e8ceeab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad620f2b6094e6d267548813086deb11"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#aad620f2b6094e6d267548813086deb11">DcsmMetadataUpdate</a> ()=delete</td></tr>
 <tr class="memdesc:aad620f2b6094e6d267548813086deb11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted default constructor.  <a href="classramses_1_1DcsmMetadataUpdate.html#aad620f2b6094e6d267548813086deb11">More...</a><br /></td></tr>
 <tr class="separator:aad620f2b6094e6d267548813086deb11"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -492,6 +498,26 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="a9e8fae0d12574d515739d9a03e8ceeab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e8fae0d12574d515739d9a03e8ceeab">&#9670;&nbsp;</a></span>getConfiguratorPriority()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t ramses::DcsmMetadataUpdate::getConfiguratorPriority </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the widget configurator priority for this dcsm content Value is undefined if not <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a75d8140c7758245108dc3af24b12c77b" title="Check if object contains configuratorPriority metadata entry.">hasConfiguratorPriority()</a>. </p>
+<dl class="section return"><dt>Returns</dt><dd>the widget configurator priority </dd></dl>
+
+</div>
+</div>
 <a id="a8fe396a61236d59c9f26d05cf9cea307"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8fe396a61236d59c9f26d05cf9cea307">&#9670;&nbsp;</a></span>getContentFlippedVertically()</h2>
 
@@ -770,6 +796,26 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Check if object contains car model visibility metadata entry. </p>
 <dl class="section return"><dt>Returns</dt><dd>true when has car model visibility metadata, false when not </dd></dl>
+
+</div>
+</div>
+<a id="a75d8140c7758245108dc3af24b12c77b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75d8140c7758245108dc3af24b12c77b">&#9670;&nbsp;</a></span>hasConfiguratorPriority()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ramses::DcsmMetadataUpdate::hasConfiguratorPriority </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if object contains configuratorPriority metadata entry. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if has configuratorPriority metadata, false if not </dd></dl>
 
 </div>
 </div>

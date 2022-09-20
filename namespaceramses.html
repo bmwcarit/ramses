@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.121</span>
+   &#160;<span id="projectnumber">27.0.123</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -686,7 +686,8 @@ Enumerations</h2></td></tr>
 <tr class="memdesc:a4c834e5dd2cf8179a34a50f6da43d3b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Property to animate for objects that have more than one property that can be animated.  <a href="namespaceramses.html#a4c834e5dd2cf8179a34a50f6da43d3b0">More...</a><br /></td></tr>
 <tr class="separator:a4c834e5dd2cf8179a34a50f6da43d3b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5def0f60a48cd70bbc4ebbe5b4ea59a1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1">EAnimationSystemFlags</a> { <a class="el" href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1a735aee6e6f2778d3413917d6542d5916">EAnimationSystemFlags_Default</a> = 0, 
-<a class="el" href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1ad5d4765c285461af8267645e7ef6965a">EAnimationSystemFlags_ClientSideProcessing</a>
+<a class="el" href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1ad5d4765c285461af8267645e7ef6965a">EAnimationSystemFlags_ClientSideProcessing</a>, 
+<a class="el" href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1af481f07e7a0cc8725128da600401dfd6">EAnimationSystemFlags_SynchronizedClock</a>
  }</td></tr>
 <tr class="memdesc:a5def0f60a48cd70bbc4ebbe5b4ea59a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">AnimationSystem creation flags.  <a href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1">More...</a><br /></td></tr>
 <tr class="separator:a5def0f60a48cd70bbc4ebbe5b4ea59a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -923,7 +924,8 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<a class="el" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa4cacf27ea3646fe15951348bd7170d2a">EEffectUniformSemantic::NormalMatrix</a>, 
 <a class="el" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa2f0394354fcd6b3d77b7cb21446b64b5">EEffectUniformSemantic::DisplayBufferResolution</a>, 
-<a class="el" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa3e73310ee12c338ad477262c33cc2ffa">EEffectUniformSemantic::TextTexture</a>
+<a class="el" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa3e73310ee12c338ad477262c33cc2ffa">EEffectUniformSemantic::TextTexture</a>, 
+<a class="el" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fafca1e9617ac05dac5dbcd50970bf79c6">EEffectUniformSemantic::TimeMs</a>
 <br />
  }</td></tr>
 <tr class="memdesc:a62ffd4eb754f4139d86eec8b4529529f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Effect uniform semantic type.  <a href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529f">More...</a><br /></td></tr>
@@ -2170,6 +2172,8 @@ Variables</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a5def0f60a48cd70bbc4ebbe5b4ea59a1a735aee6e6f2778d3413917d6542d5916"></a>EAnimationSystemFlags_Default&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a5def0f60a48cd70bbc4ebbe5b4ea59a1ad5d4765c285461af8267645e7ef6965a"></a>EAnimationSystemFlags_ClientSideProcessing&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a5def0f60a48cd70bbc4ebbe5b4ea59a1af481f07e7a0cc8725128da600401dfd6"></a>EAnimationSystemFlags_SynchronizedClock&#160;</td><td class="fielddoc"><p>uses a synchronized time source for realtime animations (for renderer and client running on different machines) </p>
+</td></tr>
 </table>
 
 </div>
@@ -2600,6 +2604,8 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a62ffd4eb754f4139d86eec8b4529529fa2f0394354fcd6b3d77b7cb21446b64b5"></a>DisplayBufferResolution&#160;</td><td class="fielddoc"><p>Resolution of currently set destination display buffer (either display framebuffer or offscreen buffer, does not give <a class="el" href="classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass.">RenderTarget</a> resolution) </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a62ffd4eb754f4139d86eec8b4529529fa3e73310ee12c338ad477262c33cc2ffa"></a>TextTexture&#160;</td><td class="fielddoc"><p>Text specific. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a62ffd4eb754f4139d86eec8b4529529fafca1e9617ac05dac5dbcd50970bf79c6"></a>TimeMs&#160;</td><td class="fielddoc"><p>synchronized clock in milliseconds, resets to 0 every ~24 days, i.e. value range is: 0 .. std::numeric_limits&lt;int32_t&gt;::max(). In order to avoid handling the wrap in the shader code or potential overflow issues the value should be reset using <a class="el" href="classramses_1_1Scene.html#aacb4459fd4a72a9c2477bd197bf5c790" title="resets the semantic uniform ramses::EEffectUniformSemantic::TimeMs The uniform value will contain the...">ramses::Scene::resetUniformTimeMs()</a>. The value is not reset automatically at startup, but contains the time elapsed since clock epoch. </p>
 </td></tr>
 </table>
 

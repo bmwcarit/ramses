@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.121</span>
+   &#160;<span id="projectnumber">27.0.123</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -189,16 +189,14 @@ $(function() {
 <div class="line">    animSequence-&gt;<a name="a60"></a><a class="code" href="classramses_1_1AnimationSequence.html#a6d670be16d593f7cd85d2e18560c739e">setPlaybackSpeed</a>(5.f);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// start animation sequence</span></div>
-<div class="line">    <span class="comment">// we use real time animation system, therefore we should provide system time</span></div>
-<div class="line">    <span class="comment">// because renderer will be using system time to update its animation system every frame</span></div>
-<div class="line">    <span class="keyword">auto</span> now = std::chrono::system_clock::now();</div>
-<div class="line">    animSequence-&gt;<a name="a61"></a><a class="code" href="classramses_1_1AnimationSequence.html#ae28d87d1fe6d544ef8e6d0ae40b067e9">startAt</a>(std::chrono::time_point_cast&lt;std::chrono::milliseconds&gt;(now).time_since_epoch().count());</div>
+<div class="line">    animationSystem-&gt;<a name="a61"></a><a class="code" href="classramses_1_1AnimationSystemRealTime.html#a1fd7204f0f05a523d56ffec11be04417">updateLocalTime</a>();</div>
+<div class="line">    animSequence-&gt;<a name="a62"></a><a class="code" href="classramses_1_1AnimationSequence.html#ae28d87d1fe6d544ef8e6d0ae40b067e9">startAt</a>(animationSystem-&gt;<a name="a63"></a><a class="code" href="classramses_1_1AnimationSystem.html#a5546b2bf992db477c895a689003e24c9">getTime</a>());</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// signal the scene it is in a state that can be rendered</span></div>
-<div class="line">    scene-&gt;<a name="a62"></a><a class="code" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88">flush</a>();</div>
+<div class="line">    scene-&gt;<a name="a64"></a><a class="code" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88">flush</a>();</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// distribute the scene to RAMSES</span></div>
-<div class="line">    scene-&gt;<a name="a63"></a><a class="code" href="classramses_1_1Scene.html#a495b0efc631c28c15b818f5c765dbbba">publish</a>();</div>
+<div class="line">    scene-&gt;<a name="a65"></a><a class="code" href="classramses_1_1Scene.html#a495b0efc631c28c15b818f5c765dbbba">publish</a>();</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// no application logic is needed here</span></div>
 <div class="line">    <span class="comment">// real time animation system is updated automatically on renderer every frame using system time</span></div>
@@ -211,10 +209,10 @@ $(function() {
 <div class="line">    {</div>
 <div class="line">        <span class="comment">// with RealTimeAnimationSystem, updateLocalTime() has to be called</span></div>
 <div class="line">        <span class="comment">// to get up-to-date animated values</span></div>
-<div class="line">        animationSystem-&gt;<a name="a64"></a><a class="code" href="classramses_1_1AnimationSystemRealTime.html#a1fd7204f0f05a523d56ffec11be04417">updateLocalTime</a>();</div>
+<div class="line">        animationSystem-&gt;<a class="code" href="classramses_1_1AnimationSystemRealTime.html#a1fd7204f0f05a523d56ffec11be04417">updateLocalTime</a>();</div>
 <div class="line"> </div>
 <div class="line">        <span class="comment">// print current value of animated property</span></div>
-<div class="line">        meshNode1-&gt;<a name="a65"></a><a class="code" href="classramses_1_1Node.html#a55078a6e98746d4fd30910dad1ec7367">getTranslation</a>(x, y, z);</div>
+<div class="line">        meshNode1-&gt;<a name="a66"></a><a class="code" href="classramses_1_1Node.html#a55078a6e98746d4fd30910dad1ec7367">getTranslation</a>(x, y, z);</div>
 <div class="line"> </div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(10));</div>
 <div class="line">    }</div>
@@ -236,12 +234,12 @@ $(function() {
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// shutdown: stop distribution, free resources, unregister</span></div>
-<div class="line">    scene-&gt;<a name="a66"></a><a class="code" href="classramses_1_1Scene.html#a74ef9145ecc409eed0f043ea4d58aa85">destroy</a>(*animationSystem);</div>
-<div class="line">    scene-&gt;<a name="a67"></a><a class="code" href="classramses_1_1Scene.html#a32cd8f7a7f1be370ba15b485489824f0">unpublish</a>();</div>
+<div class="line">    scene-&gt;<a name="a67"></a><a class="code" href="classramses_1_1Scene.html#a74ef9145ecc409eed0f043ea4d58aa85">destroy</a>(*animationSystem);</div>
+<div class="line">    scene-&gt;<a name="a68"></a><a class="code" href="classramses_1_1Scene.html#a32cd8f7a7f1be370ba15b485489824f0">unpublish</a>();</div>
 <div class="line">    scene-&gt;<a class="code" href="classramses_1_1Scene.html#a74ef9145ecc409eed0f043ea4d58aa85">destroy</a>(*vertexPositions);</div>
 <div class="line">    scene-&gt;<a class="code" href="classramses_1_1Scene.html#a74ef9145ecc409eed0f043ea4d58aa85">destroy</a>(*indices);</div>
 <div class="line">    <a class="code" href="namespaceramses.html">ramses</a>.destroy(*scene);</div>
-<div class="line">    framework.<a name="a68"></a><a class="code" href="classramses_1_1RamsesFramework.html#afa5a88532049f0638e2fcc60c56acfaa">disconnect</a>();</div>
+<div class="line">    framework.<a name="a69"></a><a class="code" href="classramses_1_1RamsesFramework.html#afa5a88532049f0638e2fcc60c56acfaa">disconnect</a>();</div>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
@@ -314,6 +312,7 @@ $(function() {
 <div class="ttc" id="aclassramses_1_1AnimationSystem_html_a0979e50f1d6244067d15961c1e50a6b0"><div class="ttname"><a href="classramses_1_1AnimationSystem.html#a0979e50f1d6244067d15961c1e50a6b0">ramses::AnimationSystem::createAnimationSequence</a></div><div class="ttdeci">AnimationSequence * createAnimationSequence(const char *name=nullptr)</div><div class="ttdoc">Creates AnimationSequence that can hold references to multiple animations and control them together.</div></div>
 <div class="ttc" id="aclassramses_1_1Effect_html_af6e6133c71f080b725e1a985518fc35f"><div class="ttname"><a href="classramses_1_1Effect.html#af6e6133c71f080b725e1a985518fc35f">ramses::Effect::findAttributeInput</a></div><div class="ttdeci">status_t findAttributeInput(const char *inputName, AttributeInput &amp;attributeInput) const</div><div class="ttdoc">Finds attribute input by input name.</div></div>
 <div class="ttc" id="aclassramses_1_1MeshNode_html_abf97e76c45b196bc3ee0eea5fac8032e"><div class="ttname"><a href="classramses_1_1MeshNode.html#abf97e76c45b196bc3ee0eea5fac8032e">ramses::MeshNode::setGeometryBinding</a></div><div class="ttdeci">status_t setGeometryBinding(GeometryBinding &amp;geometry)</div><div class="ttdoc">Sets the GeometryBinding of the MeshNode.</div></div>
+<div class="ttc" id="aclassramses_1_1AnimationSystem_html_a5546b2bf992db477c895a689003e24c9"><div class="ttname"><a href="classramses_1_1AnimationSystem.html#a5546b2bf992db477c895a689003e24c9">ramses::AnimationSystem::getTime</a></div><div class="ttdeci">globalTimeStamp_t getTime() const</div><div class="ttdoc">Gets the current animation system time. The time stamp retrieved is the time stamp that was previousl...</div></div>
 <div class="ttc" id="aclassramses_1_1EffectDescription_html_aeb8695b36a1d62720b26bc5e32ee3702"><div class="ttname"><a href="classramses_1_1EffectDescription.html#aeb8695b36a1d62720b26bc5e32ee3702">ramses::EffectDescription::setFragmentShaderFromFile</a></div><div class="ttdeci">status_t setFragmentShaderFromFile(const char *shaderSourceFileName)</div><div class="ttdoc">Reads and sets fragment shader source from file.</div></div>
 <div class="ttc" id="aclassramses_1_1Scene_html_a0b73e5ae2f197bf8e814eea743566a53"><div class="ttname"><a href="classramses_1_1Scene.html#a0b73e5ae2f197bf8e814eea743566a53">ramses::Scene::createMeshNode</a></div><div class="ttdeci">MeshNode * createMeshNode(const char *name=nullptr)</div><div class="ttdoc">Creates a scene graph MeshNode. MeshNode is a Node with additional properties and bindings that repre...</div></div>
 <div class="ttc" id="aclassramses_1_1Scene_html_a495b0efc631c28c15b818f5c765dbbba"><div class="ttname"><a href="classramses_1_1Scene.html#a495b0efc631c28c15b818f5c765dbbba">ramses::Scene::publish</a></div><div class="ttdeci">status_t publish(EScenePublicationMode publicationMode=EScenePublicationMode_LocalAndRemote)</div><div class="ttdoc">Publishes the scene to the ramses system.</div></div>

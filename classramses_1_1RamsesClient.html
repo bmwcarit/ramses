@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.121</span>
+   &#160;<span id="projectnumber">27.0.123</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -109,6 +109,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8866a963116fdbea2a3db5808ca12485"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1Scene.html">Scene</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesClient.html#a8866a963116fdbea2a3db5808ca12485">loadSceneFromFileDescriptor</a> (int fd, size_t offset, size_t length, bool localOnly=false)</td></tr>
 <tr class="memdesc:a8866a963116fdbea2a3db5808ca12485"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources from an open file descriptor.  <a href="classramses_1_1RamsesClient.html#a8866a963116fdbea2a3db5808ca12485">More...</a><br /></td></tr>
 <tr class="separator:a8866a963116fdbea2a3db5808ca12485"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac097fbc90ffef4620b02b70935b5a9ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1Scene.html">Scene</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesClient.html#ac097fbc90ffef4620b02b70935b5a9ff">loadSceneFromFileDescriptor</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId, int fd, size_t offset, size_t length, bool localOnly=false)</td></tr>
+<tr class="memdesc:ac097fbc90ffef4620b02b70935b5a9ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources from an open file descriptor. This overload overrides the sceneId stored in the file.  <a href="classramses_1_1RamsesClient.html#ac097fbc90ffef4620b02b70935b5a9ff">More...</a><br /></td></tr>
+<tr class="separator:ac097fbc90ffef4620b02b70935b5a9ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e9afdc0997597d6c14dfc0562478cbc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesClient.html#a8e9afdc0997597d6c14dfc0562478cbc">loadSceneFromFileAsync</a> (const char *fileName, bool localOnly=false)</td></tr>
 <tr class="memdesc:a8e9afdc0997597d6c14dfc0562478cbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources asynchronously from a file. The file format has to match current Ramses SDK version in major and minor version number. This method is not backwards compatible and will fail if trying to load scene files saved using older Ramses SDK version.  <a href="classramses_1_1RamsesClient.html#a8e9afdc0997597d6c14dfc0562478cbc">More...</a><br /></td></tr>
 <tr class="separator:a8e9afdc0997597d6c14dfc0562478cbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -591,7 +594,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <a id="a8866a963116fdbea2a3db5808ca12485"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8866a963116fdbea2a3db5808ca12485">&#9670;&nbsp;</a></span>loadSceneFromFileDescriptor()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8866a963116fdbea2a3db5808ca12485">&#9670;&nbsp;</a></span>loadSceneFromFileDescriptor() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -634,6 +637,68 @@ Additional Inherited Members</h2></td></tr>
 <p>The behavior is undefined if the filedescriptor does not contain a complete serialized ramses scene at offset.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fd</td><td>Open and readable filedescriptor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>Absolute starting position of ramses scenen within fd. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Size of the scene data within fd. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">localOnly</td><td>Marks the scene to be loaded as valid for local only optimization. This has the same effect as calling SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>New instance of scene with contents loaded from a file. </dd></dl>
+
+</div>
+</div>
+<a id="ac097fbc90ffef4620b02b70935b5a9ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac097fbc90ffef4620b02b70935b5a9ff">&#9670;&nbsp;</a></span>loadSceneFromFileDescriptor() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classramses_1_1Scene.html">Scene</a>* ramses::RamsesClient::loadSceneFromFileDescriptor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a>&#160;</td>
+          <td class="paramname"><em>sceneId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>localOnly</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Loads scene contents and resources from an open file descriptor. This overload overrides the sceneId stored in the file. </p>
+<p>The file format has to match current Ramses SDK version in major and minor version number. This method is not back compatible and will fail if trying to load scene files saved using older Ramses SDK version.</p>
+<p>The ramses scene must be in the already opened filedescriptor at absolute position offset within the file. The filedescriptor must be opened for read access and may not be modified anymore after this call. The filedescriptor must support seeking. Ramses takes ownership of the filedescriptor and will close it when not needed anymore.</p>
+<p>The behavior is undefined if the filedescriptor does not contain a complete serialized ramses scene at offset.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">sceneId</td><td>The sceneId to use for the returned scene. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">fd</td><td>Open and readable filedescriptor. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>Absolute starting position of ramses scenen within fd. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Size of the scene data within fd. </td></tr>

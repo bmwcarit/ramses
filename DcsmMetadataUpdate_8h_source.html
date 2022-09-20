@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.121</span>
+   &#160;<span id="projectnumber">27.0.123</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -156,30 +156,34 @@ $(function() {
 <div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160; </div>
 <div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;        uint8_t getLayoutAvailability() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160; </div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>() = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160; </div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;        <span class="keyword">explicit</span> <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>(DcsmMetadataUpdateImpl&amp; impl_);</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160; </div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>(<a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160; </div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; operator=(<a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160; </div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160; </div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
-<div class="line"><a name="l00297"></a><span class="lineno"><a class="line" href="classramses_1_1DcsmMetadataUpdate.html#ab6ba67155a39a8c125380176d3004d81">  297</a></span>&#160;        DcsmMetadataUpdateImpl&amp; <a class="code" href="classramses_1_1DcsmMetadataUpdate.html#ab6ba67155a39a8c125380176d3004d81">impl</a>;</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    };</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;}</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160; </div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;        <span class="keywordtype">bool</span> hasConfiguratorPriority() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160; </div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;        uint8_t getConfiguratorPriority() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160; </div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>() = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160; </div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;        <span class="keyword">explicit</span> <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>(DcsmMetadataUpdateImpl&amp; impl_);</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160; </div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>(<a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; </div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; operator=(<a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160; </div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160; </div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataUpdate.html">DcsmMetadataUpdate</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160; </div>
+<div class="line"><a name="l00312"></a><span class="lineno"><a class="line" href="classramses_1_1DcsmMetadataUpdate.html#ab6ba67155a39a8c125380176d3004d81">  312</a></span>&#160;        DcsmMetadataUpdateImpl&amp; <a class="code" href="classramses_1_1DcsmMetadataUpdate.html#ab6ba67155a39a8c125380176d3004d81">impl</a>;</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    };</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;}</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160; </div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1StatusObject_html"><div class="ttname"><a href="classramses_1_1StatusObject.html">ramses::StatusObject</a></div><div class="ttdoc">The StatusObject provides status message handling.</div><div class="ttdef"><b>Definition:</b> StatusObject.h:21</div></div>
 <div class="ttc" id="astructramses_1_1AnimationInformation_html"><div class="ttname"><a href="structramses_1_1AnimationInformation.html">ramses::AnimationInformation</a></div><div class="ttdef"><b>Definition:</b> DcsmApiTypes.h:151</div></div>
 <div class="ttc" id="astructramses_1_1CarModelViewMetadata_html"><div class="ttname"><a href="structramses_1_1CarModelViewMetadata.html">ramses::CarModelViewMetadata</a></div><div class="ttdoc">Struct containing metadata about car model views.</div><div class="ttdef"><b>Definition:</b> CarModelViewMetadata.h:19</div></div>
 <div class="ttc" id="anamespaceramses_html"><div class="ttname"><a href="namespaceramses.html">ramses</a></div><div class="ttdoc">The RAMSES namespace contains all client side objects and functions used to implement RAMSES applicat...</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:14</div></div>
 <div class="ttc" id="aAPIExport_8h_html_a721d93a66de17b98189db7bd091cf29f"><div class="ttname"><a href="APIExport_8h.html#a721d93a66de17b98189db7bd091cf29f">RAMSES_API</a></div><div class="ttdeci">#define RAMSES_API</div><div class="ttdef"><b>Definition:</b> APIExport.h:35</div></div>
-<div class="ttc" id="aclassramses_1_1DcsmMetadataUpdate_html_ab6ba67155a39a8c125380176d3004d81"><div class="ttname"><a href="classramses_1_1DcsmMetadataUpdate.html#ab6ba67155a39a8c125380176d3004d81">ramses::DcsmMetadataUpdate::impl</a></div><div class="ttdeci">DcsmMetadataUpdateImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DcsmMetadataUpdate.h:297</div></div>
+<div class="ttc" id="aclassramses_1_1DcsmMetadataUpdate_html_ab6ba67155a39a8c125380176d3004d81"><div class="ttname"><a href="classramses_1_1DcsmMetadataUpdate.html#ab6ba67155a39a8c125380176d3004d81">ramses::DcsmMetadataUpdate::impl</a></div><div class="ttdeci">DcsmMetadataUpdateImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DcsmMetadataUpdate.h:312</div></div>
 <div class="ttc" id="astructramses_1_1CarModelViewMetadataExtended_html"><div class="ttname"><a href="structramses_1_1CarModelViewMetadataExtended.html">ramses::CarModelViewMetadataExtended</a></div><div class="ttdoc">Struct containing extended metadata about car model views It's an extension for CarModelViewMetadata.</div><div class="ttdef"><b>Definition:</b> CarModelViewMetadata.h:74</div></div>
 <div class="ttc" id="aclassramses_1_1DcsmMetadataUpdate_html"><div class="ttname"><a href="classramses_1_1DcsmMetadataUpdate.html">ramses::DcsmMetadataUpdate</a></div><div class="ttdoc">Class to extract DCSM metadata entries from. Objects of this type will be provided by ramses callback...</div><div class="ttdef"><b>Definition:</b> DcsmMetadataUpdate.h:30</div></div>
 <div class="ttc" id="aRamsesFrameworkTypes_8h_html"><div class="ttname"><a href="RamsesFrameworkTypes_8h.html">RamsesFrameworkTypes.h</a></div></div>

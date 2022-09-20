@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.121</span>
+   &#160;<span id="projectnumber">27.0.123</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -158,6 +158,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a615fece250e98bdfde5fae979b55b24e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a615fece250e98bdfde5fae979b55b24e">setDisplayBufferClearColor</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a> displayBuffer, float r, float g, float b, float a)</td></tr>
 <tr class="memdesc:a615fece250e98bdfde5fae979b55b24e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets clear color of a display buffer (display's framebuffer or offscreen buffer).  <a href="classramses_1_1RamsesRenderer.html#a615fece250e98bdfde5fae979b55b24e">More...</a><br /></td></tr>
 <tr class="separator:a615fece250e98bdfde5fae979b55b24e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a483e3f16e2eb6b5fd2ac06dc9d701f4e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a483e3f16e2eb6b5fd2ac06dc9d701f4e">setExternallyOwnedWindowSize</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, uint32_t width, uint32_t height)</td></tr>
+<tr class="memdesc:a483e3f16e2eb6b5fd2ac06dc9d701f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates display window size after a resize event on windows not owned by renderer.  <a href="classramses_1_1RamsesRenderer.html#a483e3f16e2eb6b5fd2ac06dc9d701f4e">More...</a><br /></td></tr>
+<tr class="separator:a483e3f16e2eb6b5fd2ac06dc9d701f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88b8b49e394f9676224f6a55e6413862"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a88b8b49e394f9676224f6a55e6413862">readPixels</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> displayId, <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a> displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height)</td></tr>
 <tr class="memdesc:a88b8b49e394f9676224f6a55e6413862"><td class="mdescLeft">&#160;</td><td class="mdescRight">Triggers an asynchronous read back of a display buffer memory from GPU to system memory.  <a href="classramses_1_1RamsesRenderer.html#a88b8b49e394f9676224f6a55e6413862">More...</a><br /></td></tr>
 <tr class="separator:a88b8b49e394f9676224f6a55e6413862"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1293,6 +1296,54 @@ Additional Inherited Members</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp-example.html#a102">ramses-example-local-dma-offscreenbuffer/src/main.cpp</a>.</dd>
 </dl>
+
+</div>
+</div>
+<a id="a483e3f16e2eb6b5fd2ac06dc9d701f4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a483e3f16e2eb6b5fd2ac06dc9d701f4e">&#9670;&nbsp;</a></span>setExternallyOwnedWindowSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::RamsesRenderer::setExternallyOwnedWindowSize </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>display</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>height</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Updates display window size after a resize event on windows not owned by renderer. </p>
+<p>Sets the new display window size after a resize event is externally handled for the window. RAMSES renderer handles window events within its render loop for windows that are created and owned by the renderer. Typically this can not be performed for windows that are created externally by the user, and provided to RAMSES renderer during display creation as a native handle, since the user handles window events explicitly.</p>
+<p>This applies also to resize events, i.e., if an externally owned window gets resized RAMSES renderer does not handle the resize event internally and does not get to know about it. In this case API users are expected to call this function to let RAMSES update its information about display window size. The display window size can have visible effects, e.g., if the shaders use <a class="el" href="namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa2f0394354fcd6b3d77b7cb21446b64b5" title="Resolution of currently set destination display buffer (either display framebuffer or offscreen buffe...">ramses::EEffectUniformSemantic::DisplayBufferResolution</a></p>
+<p>This function will log an error if the platform does not support this feature, or if the display window was not explicitly provided by the user as a native handle.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>Id of display that the resized window belongs to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>New width of the resized window. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>New height of the resized window. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 
 </div>
 </div>
