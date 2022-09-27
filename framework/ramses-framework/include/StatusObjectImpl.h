@@ -56,7 +56,6 @@ namespace ramses
         };
         using ValidationMessages = std::vector<ValidationMessage>;
 
-        mutable bool                    m_hasErrorMessages = false;
         mutable ValidationMessages      m_validationMessages;
         mutable ramses_internal::String m_validationReport;
         mutable std::vector<const StatusObjectImpl*> m_dependentObjects;

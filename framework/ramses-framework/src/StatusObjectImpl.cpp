@@ -19,7 +19,6 @@ namespace ramses
     {
         LOG_ERROR(ramses_internal::CONTEXT_CLIENT, message);
         std::lock_guard<std::recursive_mutex> g(m_statusCacheLock);
-        m_hasErrorMessages = true;
         return m_statusCache.addMessage(message);
     }
 
@@ -42,11 +41,6 @@ namespace ramses
 
         std::lock_guard<std::recursive_mutex> g(m_statusCacheLock);
         m_validationMessages.clear();
-        if (m_hasErrorMessages)
-        {
-            status = addValidationMessage(EValidationSeverity_Warning, "Object has error status entries signaling wrong API usage, please check your error logs:");
-            m_hasErrorMessages = false;
-        }
 
         return status;
     }

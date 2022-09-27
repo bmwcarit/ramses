@@ -1,3 +1,10 @@
+27.0.125
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - API usage errors are no longer reported in validation report, these do not represent validity of objects
+        and should always be checked directly after calling any Ramses API instead
+
 27.0.124
 -------------------
         General changes

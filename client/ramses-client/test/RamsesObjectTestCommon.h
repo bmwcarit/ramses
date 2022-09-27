@@ -109,26 +109,19 @@ namespace ramses
         EXPECT_THAT(validationReport.stdRef(), ::testing::HasSubstr(obj.getName()));
     }
 
-    TYPED_TEST_P(RamsesObjectTest, validationFailsIfThereWasAnyWrongAPIUsage)
+    TYPED_TEST_P(RamsesObjectTest, validationIgnoresWrongAPIUsage)
     {
         RamsesObject& obj = this->template createObject<TypeParam>("object");
 
+        // simulate some API usage error
         EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy error msg"));
-        EXPECT_NE(StatusOK, obj.validate());
-    }
 
-    TYPED_TEST_P(RamsesObjectTest, failedValidationAfterWrongAPIUsageResetAfterValidatedAgain)
-    {
-        RamsesObject& obj = this->template createObject<TypeParam>("object");
+        obj.validate();
+        EXPECT_THAT(obj.getValidationReport(EValidationSeverity::EValidationSeverity_Warning), ::testing::Not(::testing::HasSubstr("dummy error msg")));
 
-        // some objects are not valid initially
-        const bool originalStatusOK = (obj.validate() == StatusOK);
-
-        EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy error msg"));
-        EXPECT_NE(StatusOK, obj.validate());
-
-        // subsequent validation expected to return to original state
-        EXPECT_EQ(originalStatusOK, obj.validate() == StatusOK);
+        // will not appear in validation of scene either
+        this->m_scene.validate();
+        EXPECT_THAT(this->m_scene.getValidationReport(EValidationSeverity::EValidationSeverity_Warning), ::testing::Not(::testing::HasSubstr("dummy error msg")));
     }
 
     TYPED_TEST_P(RamsesObjectTest, convertToWrongType)
@@ -158,8 +151,7 @@ namespace ramses
                                getRamsesObjectFromImpl,
                                validationStringIsNonEmptyAfterCall,
                                validationStringContainsObjectTypeAndName,
-                               validationFailsIfThereWasAnyWrongAPIUsage,
-                               failedValidationAfterWrongAPIUsageResetAfterValidatedAgain);
+                               validationIgnoresWrongAPIUsage);
 }
 
 #endif
