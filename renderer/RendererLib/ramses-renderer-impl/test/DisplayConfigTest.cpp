@@ -247,3 +247,10 @@ TEST_F(ADisplayConfig, canSetPlatformRenderNode)
     config.setPlatformRenderNode("abcd");
     EXPECT_STREQ("abcd", config.impl.getPlatformRenderNode());
 }
+
+TEST_F(ADisplayConfig, canSetSwapInterval)
+{
+    EXPECT_EQ(-1, config.impl.getSwapInterval());
+    EXPECT_EQ(ramses::StatusOK, config.setSwapInterval(0));
+    EXPECT_EQ(0, config.impl.getSwapInterval());
+}

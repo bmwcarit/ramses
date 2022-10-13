@@ -8,6 +8,7 @@
 
 #include "ramses-framework-api/RamsesFramework.h"
 #include "RamsesFrameworkImpl.h"
+#include "PlatformAbstraction/PlatformTime.h"
 
 #include "APILoggingHelper.h"
 
@@ -122,6 +123,11 @@ namespace ramses
     void RamsesFramework::SetLogHandler(const LogHandlerFunc& logHandlerFunc)
     {
         RamsesFrameworkImpl::SetLogHandler(logHandlerFunc);
+    }
+
+    uint64_t RamsesFramework::GetSynchronizedClockMilliseconds()
+    {
+        return ramses_internal::PlatformTime::GetMillisecondsSynchronized();
     }
 
     status_t RamsesFramework::addRamshCommand(const std::shared_ptr<IRamshCommand>& command)

@@ -588,6 +588,7 @@ namespace ramses_internal
         UInt numActionsApplied = 0u;
         for (auto& pendingFlush : pendingFlushes)
         {
+            const auto hadActiveShaderAnimation = rendererScene.hasActiveShaderAnimation();
             // re-enable skub optimization
             // skub will be disabled again if a semantic time uniform is applied during first rendering after flush
             rendererScene.setActiveShaderAnimation(false);
@@ -612,7 +613,8 @@ namespace ramses_internal
             m_renderer.getStatistics().flushApplied(sceneID);
 
             // mark scene as modified only if it received scene actions other than flush
-            const bool isFlushWithChanges = !pendingFlush.sceneActions.empty() || pendingFlush.timeInfo.isEffectTimeSync;
+            // also mark scene as modified if it had an active shader animation before (to not stop the animation with an empty flush)
+            const bool isFlushWithChanges = !pendingFlush.sceneActions.empty() || pendingFlush.timeInfo.isEffectTimeSync || hadActiveShaderAnimation;
             if (isFlushWithChanges)
                 // there are changes to scene -> mark it as modified to be re-rendered
                 m_modifiedScenesToRerender.put(sceneID);

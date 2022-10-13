@@ -244,4 +244,9 @@ namespace ramses
     {
         return impl.setPlatformRenderNode(renderNode);
     }
+
+    status_t DisplayConfig::setSwapInterval(int32_t interval)
+    {
+        return impl.setSwapInterval(interval);
+    }
 }

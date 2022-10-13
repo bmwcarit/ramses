@@ -67,6 +67,9 @@ namespace ramses
         status_t setPlatformRenderNode(const char* renderNode);
         const char* getPlatformRenderNode() const;
 
+        status_t setSwapInterval(int32_t interval);
+        int32_t  getSwapInterval() const;
+
         virtual status_t validate() const override;
 
         //impl methods

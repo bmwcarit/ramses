@@ -1286,6 +1286,48 @@ TEST_P(ADcsmContentControlP, forcedStopOfferIsPropagatedAsEventAndMakesContentIn
     EXPECT_NE(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
 }
 
+TEST_F(ADcsmContentControl, afterOneRampUp_streambecomesAvailableBeforeNextRampup_waylandContentType)
+{
+    // show content
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillOnce(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setStreamBufferState(_, streamBufferId_t{ static_cast<uint32_t>(WaylandSurfaceID.getValue()) }, true));
+    update();
+    m_sceneControlHandlerWayland.streamBufferEnabled(streamBufferId_t{ static_cast<uint32_t>(WaylandSurfaceID.getValue()) }, true);
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    update();
+
+    // tech content goes away abruptly
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+    });
+
+    EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(WaylandSurfaceID, false));
+    m_sceneControlHandler.streamAvailabilityChanged(WaylandSurfaceID, false);
+
+    update();
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    m_dcsmHandler.forceContentOfferStopped(m_contentID1);
+    update();
+
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+
+    // offer again and start new cycle
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+
+    update();
+}
+
 TEST_P(ADcsmContentControlP, forcedStopOfferedContentCanBecomeOfferedAgain)
 {
     offerAndMakeDcsmContentReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{ SceneId1.getValue() });

@@ -2981,8 +2981,13 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfShaderAnimationIsActive)
     // flush resets shader animation
     EXPECT_TRUE(rendererScene.hasActiveShaderAnimation());
     performFlush();
+    // empty flush marks scene modified if shader animation was active before
+    expectModifiedScenesReportedToRenderer();
     update();
     EXPECT_FALSE(rendererScene.hasActiveShaderAnimation());
+
+    performFlush();
+    update();
 
     hideScene();
     unmapScene();

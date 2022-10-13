@@ -18,6 +18,7 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Resource/EffectResource.h"
 #include "absl/algorithm/container.h"
+#include <chrono>
 
 namespace ramses_internal
 {
@@ -146,11 +147,13 @@ namespace ramses_internal
             sizeUploaded += resourceSize;
 
             const Bool checkTimeLimit = (i % NumResourcesToUploadInBetweenTimeBudgetChecks == 0) || resourceSize > LargeResourceByteSizeThreshold;
-            if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ResourcesUpload))
+            std::chrono::milliseconds sectionDuration{};
+            if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ResourcesUpload, &sectionDuration))
             {
                 const auto numUploaded = i + 1;
                 const auto numRemaining = resourcesToUpload.size() - numUploaded;
-                LOG_INFO(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResources: Interrupt: Exceeded time for resource upload (uploaded " << numUploaded << " resources of size " << sizeUploaded << " B, remaining " << numRemaining << " resources to upload)");
+                LOG_INFO(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResources: Interrupt: Exceeded time for resource upload (uploaded " << numUploaded << " resources of size " << sizeUploaded
+                         << " B, remaining " << numRemaining << " resources to upload). dt " << sectionDuration.count() << "ms");
                 LOG_INFO_F(CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& logger)
                 {
                     logger << "Remaining resources in queue to upload:";

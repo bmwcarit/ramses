@@ -1,3 +1,15 @@
+27.0.126
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added ramses::RamsesFramework::GetSynchronizedClockMilliseconds()
+        - Added ramses::DisplayConfig::setSwapInterval()
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix content never becomes ready if was once ready/rendered before and later re-requested but referenced
+          stream is already available at that time
+
 27.0.125
 -------------------
         General changes

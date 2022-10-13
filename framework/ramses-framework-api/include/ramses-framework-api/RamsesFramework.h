@@ -222,6 +222,20 @@ namespace ramses
         static void SetLogHandler(const LogHandlerFunc& logHandlerFunc);
 
         /**
+        * Gets the current value of the synchronized clock in milliseconds
+        *
+        * The synchronized clock is a common time source shared between ramses client and renderer.
+        * Its implementation is system dependent. In the simplest case it refers to the system clock.
+        * On systems with different ECUs it may refer to an external time source (ptp time).
+        * Both renderer and client ECUs need to be built with the same type of synchronized clock.
+        *
+        * The synchronized clock is used for the scene expiration mechanism (#ramses::Scene::setExpirationTimestamp)
+        *
+        * @return current time point of synchronized clock in milliseconds
+        */
+        static uint64_t GetSynchronizedClockMilliseconds();
+
+        /**
         * @brief Register a ramsh command that can be invoked via console and DLT injection
         *
         * This is for testing and debugging purpose only. Command injection is not guaranteed to work in production.

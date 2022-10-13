@@ -285,6 +285,16 @@ namespace ramses_internal
         return m_platformRenderNode;
     }
 
+    void DisplayConfig::setSwapInterval(int32_t interval)
+    {
+        m_swapInterval = interval;
+    }
+
+    int32_t DisplayConfig::getSwapInterval() const
+    {
+        return m_swapInterval;
+    }
+
     Bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
         return
@@ -311,7 +321,8 @@ namespace ramses_internal
             m_waylandSocketEmbeddedGroupName    == other.m_waylandSocketEmbeddedGroupName &&
             m_waylandSocketEmbeddedPermissions  == other.m_waylandSocketEmbeddedPermissions &&
             m_waylandSocketEmbeddedFD    == other.m_waylandSocketEmbeddedFD &&
-            m_platformRenderNode         == other.m_platformRenderNode;
+            m_platformRenderNode         == other.m_platformRenderNode &&
+            m_swapInterval               == other.m_swapInterval;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const

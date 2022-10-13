@@ -102,6 +102,9 @@ namespace ramses_internal
         void setPlatformRenderNode(const String& renderNode);
         const String& getPlatformRenderNode() const;
 
+        void setSwapInterval(int32_t interval);
+        int32_t getSwapInterval() const;
+
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -138,6 +141,8 @@ namespace ramses_internal
         uint32_t m_waylandSocketEmbeddedPermissions = 0;
         int m_waylandSocketEmbeddedFD = -1;
         String m_platformRenderNode;
+
+        int32_t m_swapInterval = -1;
     };
 }
 

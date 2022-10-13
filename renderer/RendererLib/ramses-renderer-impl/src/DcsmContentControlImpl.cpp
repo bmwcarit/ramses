@@ -503,10 +503,14 @@ namespace ramses
             }
 
             const waylandIviSurfaceId_t waylandId = waylandIviSurfaceId_t(static_cast<uint32_t>(contentInfo.descriptor.getValue()));
-            if (m_streamBuffers.count(waylandId) == 0 && m_availableStreams.count(waylandId) != 0)
+            if (m_availableStreams.count(waylandId) != 0)
             {
-                createStreamBuffer(displayId, waylandId);
-                techContentInfo.sharedState.setReportedState(RendererSceneState::Ready);
+                // lazy create streambuffer if not there yet
+                if (m_streamBuffers.count(waylandId) == 0)
+                    createStreamBuffer(displayId, waylandId);
+                // if stream available => technical state is ready
+                if (techContentInfo.sharedState.getReportedState() < RendererSceneState::Ready)
+                    techContentInfo.sharedState.setReportedState(RendererSceneState::Ready);
             }
 
             if (techContentInfo.sharedState.getRequestedState() < RendererSceneState::Ready)

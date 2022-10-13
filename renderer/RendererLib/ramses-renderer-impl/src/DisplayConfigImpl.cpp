@@ -275,6 +275,17 @@ namespace ramses
         return m_internalConfig.getPlatformRenderNode().c_str();
     }
 
+    status_t DisplayConfigImpl::setSwapInterval(int32_t interval)
+    {
+        m_internalConfig.setSwapInterval(interval);
+        return StatusOK;
+    }
+
+    int32_t  DisplayConfigImpl::getSwapInterval() const
+    {
+        return m_internalConfig.getSwapInterval();
+    }
+
     status_t DisplayConfigImpl::validate() const
     {
         status_t status = StatusObjectImpl::validate();

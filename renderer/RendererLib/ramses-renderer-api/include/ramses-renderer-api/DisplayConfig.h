@@ -503,6 +503,19 @@ namespace ramses
         status_t setPlatformRenderNode(const char* renderNode);
 
         /**
+        * @brief Specifies the minimum number of video frames that are displayed before a buffer swap will occur
+        *
+        * If interval is set to 0, buffer swaps are not synchronized to a video frame.
+        * Interval is silently clamped to a platform specific minimum and maximum value.
+        * Default value is platform dependent.
+        *
+        * @param[in] interval Minimum number of video frames that are displayed before a buffer swap will occur
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setSwapInterval(int32_t interval);
+
+        /**
         * Stores internal data for implementation specifics of DisplayConfig.
         */
         class DisplayConfigImpl& impl;

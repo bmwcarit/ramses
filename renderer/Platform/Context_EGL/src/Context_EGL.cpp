@@ -115,10 +115,9 @@ namespace ramses_internal
         if (!enable())
            return false;
 
-        LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::init(): Setting egl swap interval to: " << m_swapInterval);
         eglSwapInterval(m_eglSurfaceData.eglDisplay, m_swapInterval);
 
-        LOG_INFO(CONTEXT_RENDERER, "Context_EGL::init(): EGL context creation succeeded");
+        LOG_INFO_P(CONTEXT_RENDERER, "Context_EGL::init(): EGL context creation succeeded (swap interval:{})", m_swapInterval);
         return true;
     }
 

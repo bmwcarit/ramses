@@ -10,6 +10,7 @@
 #define RAMSES_FRAMETIMER_H
 
 #include "PlatformAbstraction/PlatformTime.h"
+#include <chrono>
 #include <limits>
 #include <array>
 
@@ -47,9 +48,11 @@ namespace ramses_internal
             m_sectionBudgets[static_cast<size_t>(section)] = Duration(timeBudgetInMicrosecs);
         }
 
-        Bool isTimeBudgetExceededForSection(EFrameTimerSectionBudget section) const
+        Bool isTimeBudgetExceededForSection(EFrameTimerSectionBudget section, std::chrono::milliseconds* duration = nullptr) const
         {
             const auto sectionDuration = Clock::now() - m_frameStartTimeStamp;
+            if (duration)
+                *duration = std::chrono::duration_cast<std::chrono::milliseconds>(sectionDuration);
             return sectionDuration >= m_sectionBudgets[static_cast<size_t>(section)];
         }
 

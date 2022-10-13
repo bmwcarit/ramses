@@ -75,6 +75,9 @@ namespace ramses_internal
             return m_deviceExtension != nullptr;
         }
 
+        /**
+         * gets the platform specific default swap interval
+         */
         virtual uint32_t getSwapInterval() const = 0;
 
     private:
@@ -83,7 +86,11 @@ namespace ramses_internal
             assert(m_window);
             WindowT* platformWindow = static_cast<WindowT*>(m_window.get());
 
-            const auto swapInterval = getSwapInterval();
+            EGLint swapInterval = displayConfig.getSwapInterval();
+            if (swapInterval < 0)
+            {
+                swapInterval = getSwapInterval();
+            }
             const std::vector<EGLint> contextAttributes = GetContextAttributes();
             const std::vector<EGLint> surfaceAttributes = GetSurfaceAttributes(platformWindow->getMSAASampleCount(), displayConfig.getDepthStencilBufferType());
 
