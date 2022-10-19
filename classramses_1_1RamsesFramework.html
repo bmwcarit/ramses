@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.125</span>
+   &#160;<span id="projectnumber">27.0.126</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -178,6 +178,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:ac21802eaa841f50639fbb959795337b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f4d2e73488d881e7257488414ae2912"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesFramework.html#a4f4d2e73488d881e7257488414ae2912">SetLogHandler</a> (const <a class="el" href="namespaceramses.html#a02f463e756790ff5992870ff9ac9a951">LogHandlerFunc</a> &amp;logHandlerFunc)</td></tr>
 <tr class="separator:a4f4d2e73488d881e7257488414ae2912"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa35093de9afc88ba073317094dc9118"><td class="memItemLeft" align="right" valign="top">static uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesFramework.html#afa35093de9afc88ba073317094dc9118">GetSynchronizedClockMilliseconds</a> ()</td></tr>
+<tr class="separator:afa35093de9afc88ba073317094dc9118"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -669,6 +671,35 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
+<a id="afa35093de9afc88ba073317094dc9118"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa35093de9afc88ba073317094dc9118">&#9670;&nbsp;</a></span>GetSynchronizedClockMilliseconds()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static uint64_t ramses::RamsesFramework::GetSynchronizedClockMilliseconds </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Gets the current value of the synchronized clock in milliseconds</p>
+<p>The synchronized clock is a common time source shared between ramses client and renderer. Its implementation is system dependent. In the simplest case it refers to the system clock. On systems with different ECUs it may refer to an external time source (ptp time). Both renderer and client ECUs need to be built with the same type of synchronized clock.</p>
+<p>The synchronized clock is used for the scene expiration mechanism (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date.">ramses::Scene::setExpirationTimestamp</a>)</p>
+<dl class="section return"><dt>Returns</dt><dd>current time point of synchronized clock in milliseconds </dd></dl>
 
 </div>
 </div>

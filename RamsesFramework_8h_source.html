@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.125</span>
+   &#160;<span id="projectnumber">27.0.126</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -136,21 +136,23 @@ $(function() {
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
 <div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">void</span> SetLogHandler(<span class="keyword">const</span> <a class="code" href="namespaceramses.html#a02f463e756790ff5992870ff9ac9a951">LogHandlerFunc</a>&amp; logHandlerFunc);</div>
 <div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160; </div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> addRamshCommand(<span class="keyword">const</span> std::shared_ptr&lt;IRamshCommand&gt;&amp; command);</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160; </div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> executeRamshCommand(<span class="keyword">const</span> std::string&amp; input);</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160; </div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;        ~<a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>() <span class="keyword">override</span>;</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160; </div>
-<div class="line"><a name="l00269"></a><span class="lineno"><a class="line" href="classramses_1_1RamsesFramework.html#aee8af40ea04adeb55dae970c2c97cbe3">  269</a></span>&#160;        <span class="keyword">class </span>RamsesFrameworkImpl&amp; <a class="code" href="classramses_1_1RamsesFramework.html#aee8af40ea04adeb55dae970c2c97cbe3">impl</a>;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160; </div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160; </div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    };</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;}</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160; </div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        <span class="keyword">static</span> uint64_t GetSynchronizedClockMilliseconds();</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160; </div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> addRamshCommand(<span class="keyword">const</span> std::shared_ptr&lt;IRamshCommand&gt;&amp; command);</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160; </div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> executeRamshCommand(<span class="keyword">const</span> std::string&amp; input);</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160; </div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        ~<a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160; </div>
+<div class="line"><a name="l00283"></a><span class="lineno"><a class="line" href="classramses_1_1RamsesFramework.html#aee8af40ea04adeb55dae970c2c97cbe3">  283</a></span>&#160;        <span class="keyword">class </span>RamsesFrameworkImpl&amp; <a class="code" href="classramses_1_1RamsesFramework.html#aee8af40ea04adeb55dae970c2c97cbe3">impl</a>;</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160; </div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160; </div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1RamsesFramework.html">RamsesFramework</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;    };</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;}</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160; </div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1DcsmProvider_html"><div class="ttname"><a href="classramses_1_1DcsmProvider.html">ramses::DcsmProvider</a></div><div class="ttdoc">Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...</div><div class="ttdef"><b>Definition:</b> DcsmProvider.h:27</div></div>
 <div class="ttc" id="aclassramses_1_1StatusObject_html"><div class="ttname"><a href="classramses_1_1StatusObject.html">ramses::StatusObject</a></div><div class="ttdoc">The StatusObject provides status message handling.</div><div class="ttdef"><b>Definition:</b> StatusObject.h:21</div></div>
@@ -162,7 +164,7 @@ $(function() {
 <div class="ttc" id="anamespaceramses_html_a008e0f42527d1851e6a3c5f640acd9be"><div class="ttname"><a href="namespaceramses.html#a008e0f42527d1851e6a3c5f640acd9be">ramses::ELogLevel</a></div><div class="ttdeci">ELogLevel</div><div class="ttdoc">Type of Ramses Log Level.</div><div class="ttdef"><b>Definition:</b> RamsesFrameworkTypes.h:173</div></div>
 <div class="ttc" id="aAPIExport_8h_html_a721d93a66de17b98189db7bd091cf29f"><div class="ttname"><a href="APIExport_8h.html#a721d93a66de17b98189db7bd091cf29f">RAMSES_API</a></div><div class="ttdeci">#define RAMSES_API</div><div class="ttdef"><b>Definition:</b> APIExport.h:35</div></div>
 <div class="ttc" id="aclassramses_1_1RendererConfig_html"><div class="ttname"><a href="classramses_1_1RendererConfig.html">ramses::RendererConfig</a></div><div class="ttdoc">The RendererConfig holds a set of parameters to be used to initialize a renderer.</div><div class="ttdef"><b>Definition:</b> RendererConfig.h:25</div></div>
-<div class="ttc" id="aclassramses_1_1RamsesFramework_html_aee8af40ea04adeb55dae970c2c97cbe3"><div class="ttname"><a href="classramses_1_1RamsesFramework.html#aee8af40ea04adeb55dae970c2c97cbe3">ramses::RamsesFramework::impl</a></div><div class="ttdeci">class RamsesFrameworkImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> RamsesFramework.h:269</div></div>
+<div class="ttc" id="aclassramses_1_1RamsesFramework_html_aee8af40ea04adeb55dae970c2c97cbe3"><div class="ttname"><a href="classramses_1_1RamsesFramework.html#aee8af40ea04adeb55dae970c2c97cbe3">ramses::RamsesFramework::impl</a></div><div class="ttdeci">class RamsesFrameworkImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> RamsesFramework.h:283</div></div>
 <div class="ttc" id="aclassramses_1_1DcsmConsumer_html"><div class="ttname"><a href="classramses_1_1DcsmConsumer.html">ramses::DcsmConsumer</a></div><div class="ttdoc">Class representing DCSM consumer side.</div><div class="ttdef"><b>Definition:</b> DcsmConsumer.h:26</div></div>
 <div class="ttc" id="aAPIExport_8h_html"><div class="ttname"><a href="APIExport_8h.html">APIExport.h</a></div></div>
 <div class="ttc" id="aclassramses_1_1RamsesFramework_html"><div class="ttname"><a href="classramses_1_1RamsesFramework.html">ramses::RamsesFramework</a></div><div class="ttdoc">Class representing ramses framework components that are needed to initialize an instance of ramses cl...</div><div class="ttdef"><b>Definition:</b> RamsesFramework.h:34</div></div>

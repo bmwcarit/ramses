@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.125</span>
+   &#160;<span id="projectnumber">27.0.126</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -211,6 +211,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2fdd1941110449823b85e4c779371021"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a2fdd1941110449823b85e4c779371021">setPlatformRenderNode</a> (const char *renderNode)</td></tr>
 <tr class="memdesc:a2fdd1941110449823b85e4c779371021"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the render node to use for creating GBM buffer objects used for creating DMA Offscreen buffers on platforms that support creation of DMA buffers.  <a href="classramses_1_1DisplayConfig.html#a2fdd1941110449823b85e4c779371021">More...</a><br /></td></tr>
 <tr class="separator:a2fdd1941110449823b85e4c779371021"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20467637b570e389470e8c6a07497634"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a20467637b570e389470e8c6a07497634">setSwapInterval</a> (int32_t interval)</td></tr>
+<tr class="memdesc:a20467637b570e389470e8c6a07497634"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the minimum number of video frames that are displayed before a buffer swap will occur.  <a href="classramses_1_1DisplayConfig.html#a20467637b570e389470e8c6a07497634">More...</a><br /></td></tr>
+<tr class="separator:a20467637b570e389470e8c6a07497634"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a3135bfe0e1df7923ea8f42f1e964b37c">operator=</a> (const <a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;other)=delete</td></tr>
 <tr class="memdesc:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted copy assignment.  <a href="classramses_1_1DisplayConfig.html#a3135bfe0e1df7923ea8f42f1e964b37c">More...</a><br /></td></tr>
 <tr class="separator:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1027,6 +1030,34 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a> </dd></dl>
+
+</div>
+</div>
+<a id="a20467637b570e389470e8c6a07497634"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20467637b570e389470e8c6a07497634">&#9670;&nbsp;</a></span>setSwapInterval()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DisplayConfig::setSwapInterval </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>interval</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Specifies the minimum number of video frames that are displayed before a buffer swap will occur. </p>
+<p>If interval is set to 0, buffer swaps are not synchronized to a video frame. Interval is silently clamped to a platform specific minimum and maximum value. Default value is platform dependent.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">interval</td><td>Minimum number of video frames that are displayed before a buffer swap will occur </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 
 </div>
 </div>
