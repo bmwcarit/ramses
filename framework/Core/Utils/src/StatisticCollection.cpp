@@ -93,6 +93,8 @@ namespace ramses_internal
         statSceneActionsGeneratedSize.reset();
         statSceneUpdatesGeneratedPackets.reset();
         statSceneUpdatesGeneratedSize.reset();
+        statMaximumSizeSingleSceneUpdate.reset();
+
         for (size_t type = 0; type < EResourceStatisticIndex_NumIndices; type++)
         {
             statResourceCount[type].reset();
@@ -115,6 +117,7 @@ namespace ramses_internal
         statSceneActionsGeneratedSize.getSummary().reset();
         statSceneUpdatesGeneratedPackets.getSummary().reset();
         statSceneUpdatesGeneratedSize.getSummary().reset();
+        statMaximumSizeSingleSceneUpdate.getSummary().reset();
         for (size_t type = 0; type < EResourceStatisticIndex_NumIndices; type++)
         {
             statResourceCount[type].getSummary().reset();
@@ -138,6 +141,8 @@ namespace ramses_internal
         statSceneActionsGeneratedSize.updateSummaryAndResetCounter();
         statSceneUpdatesGeneratedPackets.updateSummaryAndResetCounter();
         statSceneUpdatesGeneratedSize.updateSummaryAndResetCounter();
+
+        statMaximumSizeSingleSceneUpdate.updateSummaryAndResetCounter();
 
         statObjectsCount.incCounter(objectsCreated);
         statObjectsCount.decCounter(objectsDestroyed);

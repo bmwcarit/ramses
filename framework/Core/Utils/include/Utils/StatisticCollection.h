@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include <limits>
 #include <array>
+#include <vector>
 #include <atomic>
 
 namespace ramses_internal
@@ -57,83 +58,95 @@ namespace ramses_internal
         sum += value;
     }
 
-    template<typename DataType>
+    template<typename DataType, std::size_t N>
+    struct FirstNElementsSummaryEntry final
+    {
+        std::vector<DataType> array;
+
+        void reset()
+        {
+            array.clear();
+        }
+
+        void update(DataType value)
+        {
+            if (array.size() < N)
+            {
+                array.push_back(value);
+            }
+        }
+
+        constexpr size_t maxSize() const noexcept
+        {
+            return N;
+        }
+    };
+
+    template<typename DataType, template<typename> class SummaryTypeTemplate>
     struct StatisticEntry final
     {
-        StatisticEntry();
+        using ValueType   = DataType;
+        using SummaryType = SummaryTypeTemplate<DataType>;
 
-        void incCounter(DataType increment);
-        void decCounter(DataType decrement);
-        void setCounterValue(DataType newValue);
-        DataType getCounterValue() const;
-        void reset();
-        void updateSummary();
-        DataType updateSummaryAndResetCounter();
-        SummaryEntry<DataType>& getSummary();
+        StatisticEntry()
+            : m_counter(0)
+        {
+        }
+
+        void incCounter(DataType increment)
+        {
+            m_counter += increment;
+        }
+
+        void decCounter(DataType decrement)
+        {
+            m_counter -= decrement;
+        }
+
+        void setCounterValue(DataType newValue)
+        {
+            m_counter = newValue;
+        }
+
+        template<typename Cmp>
+        void setCounterValueIfCurrent(DataType newValue)
+        {
+            if (Cmp{}(m_counter, newValue))
+                m_counter = newValue;
+        }
+
+        DataType getCounterValue() const
+        {
+            return m_counter.load();
+        }
+
+        void reset()
+        {
+            m_counter = 0;
+            m_summary.reset();
+        }
+
+        void updateSummary()
+        {
+            m_summary.update(m_counter.load());
+        }
+
+        DataType updateSummaryAndResetCounter()
+        {
+            const DataType val = m_counter.exchange(0);
+            m_summary.update(val);
+            return val;
+        }
+
+        SummaryType& getSummary()
+        {
+            return m_summary;
+        }
 
     private:
         std::atomic<DataType> m_counter;
-        SummaryEntry<DataType> m_summary;
+        SummaryType           m_summary;
     };
-
-    template<typename DataType>
-    ramses_internal::StatisticEntry<DataType>::StatisticEntry()
-        : m_counter(0)
-    {
-    }
-
-    template<typename DataType>
-    DataType ramses_internal::StatisticEntry<DataType>::getCounterValue() const
-    {
-        return m_counter.load();
-    }
-
-    template<typename DataType>
-    void ramses_internal::StatisticEntry<DataType>::reset()
-    {
-        m_counter = 0;
-        m_summary.reset();
-    }
-
-
-    template<typename DataType>
-    void ramses_internal::StatisticEntry<DataType>::updateSummary()
-    {
-        m_summary.update(m_counter.load());
-    }
-
-
-    template<typename DataType>
-    DataType StatisticEntry<DataType>::updateSummaryAndResetCounter()
-    {
-        const DataType val = m_counter.exchange(0);
-        m_summary.update(val);
-        return val;
-    }
-
-    template<typename DataType>
-    void ramses_internal::StatisticEntry<DataType>::incCounter(DataType increment)
-    {
-        m_counter += increment;
-    }
-
-    template<typename DataType>
-    void ramses_internal::StatisticEntry<DataType>::decCounter(DataType decrement)
-    {
-        m_counter -= decrement;
-    }
-
-    template<typename DataType>
-    void ramses_internal::StatisticEntry<DataType>::setCounterValue(DataType newValue)
-    {
-        m_counter = newValue;
-    }
-
-    template<typename DataType>
-    SummaryEntry<DataType>& ramses_internal::StatisticEntry<DataType>::getSummary()
-    {
-        return m_summary;
-    }
 
     class StatisticCollection
     {
@@ -160,13 +173,13 @@ namespace ramses_internal
         virtual void resetSummaries() override;
         virtual void nextTimeInterval() override;
 
-        StatisticEntry<UInt32> statMessagesSent;
-        StatisticEntry<UInt32> statMessagesReceived;
-        StatisticEntry<UInt32> statResourcesCreated;
-        StatisticEntry<UInt32> statResourcesDestroyed;
-        StatisticEntry<UInt32> statResourcesNumber; //updated by values of statResourcesCreated and statResourcesDestroyed
-        StatisticEntry<UInt32> statResourcesLoadedFromFileNumber;
-        StatisticEntry<UInt32> statResourcesLoadedFromFileSize;
+        StatisticEntry<UInt32, SummaryEntry> statMessagesSent;
+        StatisticEntry<UInt32, SummaryEntry> statMessagesReceived;
+        StatisticEntry<UInt32, SummaryEntry> statResourcesCreated;
+        StatisticEntry<UInt32, SummaryEntry> statResourcesDestroyed;
+        StatisticEntry<UInt32, SummaryEntry> statResourcesNumber; //updated by values of statResourcesCreated and statResourcesDestroyed
+        StatisticEntry<UInt32, SummaryEntry> statResourcesLoadedFromFileNumber;
+        StatisticEntry<UInt32, SummaryEntry> statResourcesLoadedFromFileSize;
     };
 
     enum EResourceStatisticIndex : std::size_t // deliberately not enum class, supposed to be implicitly convertible
@@ -178,6 +191,9 @@ namespace ramses_internal
         EResourceStatisticIndex_NumIndices
     };
 
+    template <typename DataType>
+    using FirstFiveElements = FirstNElementsSummaryEntry<DataType, 5>;
+
     class StatisticCollectionScene : public StatisticCollection
     {
     public:
@@ -185,20 +201,21 @@ namespace ramses_internal
         virtual void resetSummaries() override;
         virtual void nextTimeInterval() override;
 
-        StatisticEntry<UInt32> statFlushesTriggered;
-        StatisticEntry<UInt32> statObjectsCreated;
-        StatisticEntry<UInt32> statObjectsDestroyed;
-        StatisticEntry<UInt32> statObjectsCount; //updated by values of statObjectsCreated and statObjectsDestroyed
-        StatisticEntry<UInt32> statSceneActionsSent;
-        StatisticEntry<UInt32> statSceneActionsSentSkipped;
-        StatisticEntry<UInt32> statSceneActionsGenerated;
-        StatisticEntry<UInt32> statSceneActionsGeneratedSize;
-        StatisticEntry<UInt32> statSceneUpdatesGeneratedPackets;
-        StatisticEntry<UInt32> statSceneUpdatesGeneratedSize;
+        StatisticEntry<UInt32, SummaryEntry> statFlushesTriggered;
+        StatisticEntry<UInt32, SummaryEntry> statObjectsCreated;
+        StatisticEntry<UInt32, SummaryEntry> statObjectsDestroyed;
+        StatisticEntry<UInt32, SummaryEntry> statObjectsCount; //updated by values of statObjectsCreated and statObjectsDestroyed
+        StatisticEntry<UInt32, SummaryEntry> statSceneActionsSent;
+        StatisticEntry<UInt32, SummaryEntry> statSceneActionsSentSkipped;
+        StatisticEntry<UInt32, SummaryEntry> statSceneActionsGenerated;
+        StatisticEntry<UInt32, SummaryEntry> statSceneActionsGeneratedSize;
+        StatisticEntry<UInt32, SummaryEntry> statSceneUpdatesGeneratedPackets;
+        StatisticEntry<UInt32, SummaryEntry> statSceneUpdatesGeneratedSize;
+        StatisticEntry<UInt64, FirstFiveElements> statMaximumSizeSingleSceneUpdate;
 
-        std::array<StatisticEntry<UInt64>, EResourceStatisticIndex_NumIndices> statResourceCount;
-        std::array<StatisticEntry<UInt64>, EResourceStatisticIndex_NumIndices> statResourceAvgSize;
-        std::array<StatisticEntry<UInt64>, EResourceStatisticIndex_NumIndices> statResourceMaxSize;
+        std::array<StatisticEntry<UInt64, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceCount;
+        std::array<StatisticEntry<UInt64, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceAvgSize;
+        std::array<StatisticEntry<UInt64, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceMaxSize;
     };
 }
 

@@ -11,6 +11,8 @@
 #include "Utils/StatisticCollection.h"
 #include "Utils/LogMacros.h"
 
+#include <functional>
+
 namespace ramses_internal
 {
     SingleSceneUpdateWriter::SingleSceneUpdateWriter(const SceneUpdate& update, absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc, StatisticCollectionScene& sceneStatistics)
@@ -75,6 +77,8 @@ namespace ramses_internal
             if (!finalizePacket(false))
                 return false;
         }
+
+        m_sceneStatistics.statMaximumSizeSingleSceneUpdate.setCounterValueIfCurrent<std::less<>>(m_overallSize);
 
         return true;
     }
@@ -179,8 +183,11 @@ namespace ramses_internal
             LOG_ERROR_P(CONTEXT_COMMUNICATION, "SingleSceneUpdateWriter::finalizePacket: Packet write failed (size {})", m_packetWriter.getBytesWritten());
             return false;
         }
-        m_sceneStatistics.statSceneUpdatesGeneratedSize.incCounter(static_cast<uint32_t>(m_packetWriter.getBytesWritten()));
+        const auto bytesWritten{m_packetWriter.getBytesWritten()};
+        m_sceneStatistics.statSceneUpdatesGeneratedSize.incCounter(static_cast<decltype(m_sceneStatistics.statSceneUpdatesGeneratedSize)::ValueType>(bytesWritten));
         m_sceneStatistics.statSceneUpdatesGeneratedPackets.incCounter(1);
+
+        m_overallSize += bytesWritten;
 
         ++m_packetNum;
         return true;

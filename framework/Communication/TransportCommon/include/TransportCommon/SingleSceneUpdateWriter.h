@@ -52,6 +52,7 @@ namespace ramses_internal
         uint32_t                           m_packetNum = 1;
         std::vector<Byte>                  m_temporaryMemToSerializeDescription;  // optimization to avoid allocations
         StatisticCollectionScene&          m_sceneStatistics;
+        uint64_t                           m_overallSize{0};
     };
 }
 

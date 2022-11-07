@@ -77,6 +77,18 @@ namespace ramses_internal
             }
         }
 
+        ramses::EVisibilityMode getEffectiveVisibility(const ramses::NodeImpl& obj)
+        {
+            auto visibility = obj.getVisibility();
+            for (auto parent = obj.getParentImpl(); parent != nullptr; parent = parent->getParentImpl())
+            {
+                visibility = std::min(visibility, parent->getVisibility());
+                if (visibility == ramses::EVisibilityMode::Off)
+                    break;
+            }
+            return visibility;
+        }
+
         int32_t getRenderOrder(const ramses::RenderGroupImpl& rg, const ramses::RamsesObjectImpl& child)
         {
             int32_t order = 0;
@@ -115,6 +127,20 @@ namespace ramses_internal
                 return "ByteBlob";
             }
             return nullptr;
+        }
+
+        const char* EnumToString(ramses::EVisibilityMode v)
+        {
+            switch (v)
+            {
+            case ramses::EVisibilityMode::Off:
+                return "Off";
+            case ramses::EVisibilityMode::Visible:
+                return "Visible";
+            case ramses::EVisibilityMode::Invisible:
+                return "Invisible";
+            }
+            return "n.a.";
         }
 
         const char* shortName(ramses_internal::EDataType t) {
@@ -605,13 +631,21 @@ namespace ramses_internal
     {
         int vis = static_cast<int>(obj.getVisibility());
         if (ImGui::RadioButton("Visible", &vis, static_cast<int>(ramses::EVisibilityMode::Visible)))
-            obj.setVisibility(ramses::EVisibilityMode::Visible);
+            setVisibility(obj, ramses::EVisibilityMode::Visible);
         ImGui::SameLine();
         if (ImGui::RadioButton("Invisible", &vis, static_cast<int>(ramses::EVisibilityMode::Invisible)))
-            obj.setVisibility(ramses::EVisibilityMode::Invisible);
+            setVisibility(obj, ramses::EVisibilityMode::Invisible);
         ImGui::SameLine();
         if (ImGui::RadioButton("Off", &vis, static_cast<int>(ramses::EVisibilityMode::Off)))
-            obj.setVisibility(ramses::EVisibilityMode::Off);
+            setVisibility(obj, ramses::EVisibilityMode::Off);
+        const auto effectiveVisibility = getEffectiveVisibility(obj);
+        if (obj.getVisibility() != effectiveVisibility)
+        {
+            ImGui::SameLine();
+            ImGui::Text("(-> %s)", EnumToString(effectiveVisibility));
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Parent(s) limit visibility");
+        }
         const auto* slot = findDataSlot(obj.getNodeHandle());
         if (slot)
             ImGui::Text("DataSlot: %u %s", slot->id.getValue(), EnumToString(slot->type));
@@ -1821,7 +1855,9 @@ namespace ramses_internal
             ImGui::Text("%lu resources", m_resourceInfo.objects.size());
             ImGui::Text("Size: %u kB (compressed: %u kB)", m_resourceInfo.decompressedSize / 1024U, m_resourceInfo.compressedSize / 1024U);
             ImGui::Text("Not loaded: %u", m_resourceInfo.unavailable);
-            ImGui::Text("Size of displayed resources: %u kB", m_resourceInfo.displayedSize / 1024U);
+            ImGui::Separator();
+            const auto displayedResources = std::min(static_cast<int>(m_resourceInfo.objects.size()), m_resourceInfo.displayLimit);
+            ImGui::Text("Size of %d biggest resources: %u kB", displayedResources, m_resourceInfo.displayedSize / 1024U);
             if (ImGui::InputInt("Display limit", &m_resourceInfo.displayLimit))
             {
                 m_resourceInfo.displayedSize = 0U;
@@ -2082,6 +2118,13 @@ namespace ramses_internal
 
         drawSceneTexture();
         drawInspectionWindow();
+
+        if (m_nodeVisibilityChanged)
+        {
+            // refresh resource information in next interation
+            m_nodeVisibilityChanged = false;
+            m_resourceInfo = {};
+        }
     }
 
     void SceneViewerGui::setSceneTexture(ramses::TextureSampler* sampler, uint32_t width, uint32_t height)
@@ -2281,6 +2324,13 @@ namespace ramses_internal
             errorMsg = imgui::SaveTextureToPng(textureResource, filename);
         }
         return errorMsg;
+    }
+
+    void SceneViewerGui::setVisibility(ramses::NodeImpl& node, ramses::EVisibilityMode visibility)
+    {
+        node.setVisibility(visibility);
+        // can't clear the resource cache immediately, because it might be currently iterated
+        m_nodeVisibilityChanged = true;
     }
 
     void SceneViewerGui::logRamsesObject(ramses::RamsesObjectImpl& obj)

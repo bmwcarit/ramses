@@ -1,3 +1,19 @@
+27.0.127
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed unexpected rendered scene after disconnect
+        - ramses-scene-viewer: update resource view if node visibility changed
+
+        General changes
+        ------------------------------------------------------------------------
+        - ramses-scene-viewer: show effective node visibility (limited by parent)
+        - Periodic log statistics updated
+          - new information: maximum scene update transfer within 1 second
+          - DLT log context: RPER
+          - format: suX (N1[/N2[/N3[/N4[/N5[/...]]]]]) or suX(n.a) in case of errors
+          - N1...N5 numbers represent maximum transfered scene update in bytes during one second within the measured period
+
 27.0.126
 -------------------
         API changes

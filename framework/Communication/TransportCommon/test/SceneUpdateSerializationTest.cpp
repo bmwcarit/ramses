@@ -17,6 +17,8 @@
 #include "Utils/StatisticCollection.h"
 #include "gmock/gmock.h"
 
+#include <algorithm>
+
 namespace ramses_internal
 {
     class ASceneUpdateSerialization : public ::testing::Test
@@ -167,20 +169,26 @@ namespace ramses_internal
         EXPECT_TRUE(serialize(100));
         EXPECT_EQ(1u, sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
         size_t curSize = data.front().size();
+        auto maxSize = curSize;
         data.clear();
         EXPECT_EQ(curSize, sceneStatistics.statSceneUpdatesGeneratedSize.getCounterValue());
+        EXPECT_EQ(maxSize, sceneStatistics.statMaximumSizeSingleSceneUpdate.getCounterValue());
 
         EXPECT_TRUE(serialize(100));
         EXPECT_EQ(2u, sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
         curSize += data.front().size();
+        maxSize = std::max(maxSize, data.front().size());
         data.clear();
         EXPECT_EQ(curSize, sceneStatistics.statSceneUpdatesGeneratedSize.getCounterValue());
+        EXPECT_EQ(maxSize, sceneStatistics.statMaximumSizeSingleSceneUpdate.getCounterValue());
 
         addTestActions();
         EXPECT_TRUE(serialize(100));
         EXPECT_EQ(3u, sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
         curSize += data.front().size();
+        maxSize = std::max(maxSize, data.front().size());
         EXPECT_EQ(curSize, sceneStatistics.statSceneUpdatesGeneratedSize.getCounterValue());
+        EXPECT_EQ(maxSize, sceneStatistics.statMaximumSizeSingleSceneUpdate.getCounterValue());
     }
 
     TEST_F(ASceneUpdateSerialization, updatesStatisticsForMultiplePackets)
@@ -189,6 +197,10 @@ namespace ramses_internal
             addTestActions();
         EXPECT_TRUE(serialize(100));
         EXPECT_EQ(data.size(), sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
+        size_t overallSize{0};
+        for (auto& el: data)
+            overallSize += el.size();
+        EXPECT_EQ(overallSize, sceneStatistics.statMaximumSizeSingleSceneUpdate.getCounterValue());
     }
 
     TEST_F(ASceneUpdateSerialization, failsSerializeWhenWriteFunctionFailsOnFirstPacket)

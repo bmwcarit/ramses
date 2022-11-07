@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Utils/PeriodicLogger.h"
+#include "Utils/PeriodicLoggerHelper.h"
 #include "Utils/LogMacros.h"
 #include "ramses-sdk-build-config.h"
 #include "PlatformAbstraction/PlatformLock.h"
@@ -187,6 +188,8 @@ namespace ramses_internal
                             logStatisticSummaryEntry(output, entry.value->statSceneUpdatesGeneratedPackets.getSummary(), numberTimeIntervals);
                             output << " suGS ";
                             logStatisticSummaryEntry(output, entry.value->statSceneUpdatesGeneratedSize.getSummary(), numberTimeIntervals);
+                            output << " suX ";
+                            logStatisticSummaryEntry(output, entry.value->statMaximumSizeSingleSceneUpdate.getSummary(), numberTimeIntervals);
                             output << " ar# ";
                             logStatisticSummaryEntry(output, entry.value->statResourceCount[EResourceStatisticIndex_ArrayResource].getSummary(), numberTimeIntervals);
                             output << " aras ";

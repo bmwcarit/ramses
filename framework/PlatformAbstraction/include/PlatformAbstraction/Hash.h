@@ -39,11 +39,11 @@ namespace ramses_internal
 
     namespace internal
     {
-        template <typename T>
+        template <std::size_t N>
         struct FnvHash;
 
         template <>
-        struct FnvHash<uint32_t>
+        struct FnvHash<4>
         {
             uint32_t operator()(const void* key, const std::size_t len)
             {
@@ -60,7 +60,7 @@ namespace ramses_internal
 
 
         template <>
-        struct FnvHash<uint64_t>
+        struct FnvHash<8>
         {
             uint64_t operator()(const void* key, std::size_t len)
             {
@@ -79,7 +79,7 @@ namespace ramses_internal
     // HashMemoryRange for hashing arbitrary data blob
     inline std::size_t HashMemoryRange(const void* ptr, const std::size_t size)
     {
-        return internal::FnvHash<std::size_t>()(ptr, size);
+        return internal::FnvHash<sizeof(std::size_t)>()(ptr, size);
     }
 }
 

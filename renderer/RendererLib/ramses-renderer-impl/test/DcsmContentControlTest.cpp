@@ -4088,3 +4088,26 @@ TEST_F(ADcsmContentControl, simplyPipesThroughSendWidgetFocusStatusCallToConsume
     EXPECT_EQ(status_t{ 43 }, m_dcsmContentControl.sendContentStatus(m_contentID1, msg));
 }
 
+TEST_P(ADcsmContentControlP, ignorePendingShowAfterForceStopOffer)
+{
+    offerAndMakeDcsmContentReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+
+    // handle scene ready
+    WAYLAND_expectStreamBufferCreated();
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    signalTechnicalContentReady();
+    update();
+
+    // show content (will be pending)
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    m_dcsmContentControl.showContent(m_contentID1, {0, 0});
+
+    // force stop offer
+    expectRequestToReleaseTechnicalContentFromReady();
+    m_dcsmHandler.forceContentOfferStopped(m_contentID1);
+
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    update();
+
+    signalTechnicalContentReleased();
+}

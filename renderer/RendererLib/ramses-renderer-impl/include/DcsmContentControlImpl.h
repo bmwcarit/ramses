@@ -109,6 +109,8 @@ namespace ramses
 
         void createStreamBuffer(displayId_t displayId, waylandIviSurfaceId_t surfaceId);
 
+        void removePendingShow(ContentID contentID);
+
         IRendererSceneControl& m_sceneControl;
         IDcsmConsumerImpl& m_dcsmConsumer;
 

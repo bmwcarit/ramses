@@ -132,6 +132,8 @@ namespace ramses_internal
         void saveSceneToFile();
         std::string saveTexture2D(const ramses::Texture2DImpl& obj) const;
 
+        void setVisibility(ramses::NodeImpl& node, ramses::EVisibilityMode visibility);
+
         struct ResourceInfo
         {
             ramses::RamsesObjectVector objects;
@@ -165,6 +167,7 @@ namespace ramses_internal
         bool                      m_compressFile = false;
         bool                      m_alwaysOverwrite = false;
         bool                      m_hasSceneErrors = false;
+        bool                      m_nodeVisibilityChanged = false;
 
         ImguiImageCache m_imageCache;
 

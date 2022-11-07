@@ -42,9 +42,6 @@ namespace ramses_internal
         void printVersion();
         void printStatistic();
 
-        template<typename DataType>
-        void logStatisticSummaryEntry(StringOutputStream& stream, const SummaryEntry<DataType>& summary, UInt32 numberTimeIntervals);
-
         bool           m_isRunning;
         PlatformEvent  m_event;
         UInt32         m_periodicLogTimeoutSeconds;
@@ -63,23 +60,6 @@ namespace ramses_internal
         static std::atomic<UInt32> m_numberOfRamsesInstancesCurrentlyActive;
         static std::atomic<UInt32> m_numberOfRamsesInstancesStartedInProcess;
     };
-
-    template<typename DataType>
-    void PeriodicLogger::logStatisticSummaryEntry(StringOutputStream& stream, const SummaryEntry<DataType>& summary, UInt32 numberTimeIntervals)
-    {
-        if (numberTimeIntervals > 0)
-        {
-            if (summary.minValue == summary.maxValue)
-                stream << "(" << summary.minValue << ")";
-            else
-                stream << "(" << summary.minValue << "/" << summary.maxValue << "/" << summary.sum / numberTimeIntervals << ")";
-        }
-        else
-        {
-            stream << "(n.a.)";
-        }
-    }
-
 }
 
 #endif

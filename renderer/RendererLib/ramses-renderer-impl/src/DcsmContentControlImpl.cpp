@@ -579,6 +579,7 @@ namespace ramses
         }
         else
         {
+            removePendingShow(contentID);
             requestSceneState(contentID, RendererSceneState::Available);
             removeContent(contentID);
             m_pendingEvents.push_back({ EventType::ContentNotAvailable, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
@@ -1082,6 +1083,22 @@ namespace ramses
                 goToConsolidatedDesiredState(cmd.technicalId);
                 handleContentStateChange(contentId, lastState);
                 it = m_pendingSceneStateChangeCommands.erase(it);
+            }
+        }
+    }
+
+    void DcsmContentControlImpl::removePendingShow(ContentID contentID)
+    {
+        for (auto it = m_pendingSceneStateChangeCommands.begin(); it != m_pendingSceneStateChangeCommands.end();)
+        {
+            if (it->first.contentId == contentID && it->second.sceneState == RendererSceneState::Rendered)
+            {
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl::removePendingShow " << it->first.contentId);
+                it = m_pendingSceneStateChangeCommands.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }
