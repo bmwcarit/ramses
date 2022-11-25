@@ -33,7 +33,7 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        CC=gcc-11 CXX=/usr/bin/g++-11 cmake \
+        CC=gcc-12 CXX=/usr/bin/g++-12 cmake \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
             -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64.toolchain \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
