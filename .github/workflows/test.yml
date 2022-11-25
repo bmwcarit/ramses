@@ -15,48 +15,21 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: 'recursive'
-
-    - name: Install GL/X11 packages for rendering (Linux only)
+    - name: List compilers
       run: |
-        sudo apt-get install libgles2-mesa-dev libx11-dev
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+        dpkg --list | grep compiler
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
-
-    - name: Configure CMake (Windows)
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        cmake $GITHUB_WORKSPACE \
-            -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-      if: ${{ matrix.os == 'windows-latest' }}
 
     - name: Configure CMake (Linux)
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        cmake $GITHUB_WORKSPACE \
+        CC=gcc-11 CXX=/usr/bin/g++-11 cmake $GITHUB_WORKSPACE \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-            -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64_llvm.toolchain \
+            -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64.toolchain \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-      if: ${{ matrix.os == 'ubuntu-latest' }}
 
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config $BUILD_TYPE
-
-    - name: Test
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: ctest -C $BUILD_TYPE --exclude-regex '.*RNDSANDWICHTEST'
