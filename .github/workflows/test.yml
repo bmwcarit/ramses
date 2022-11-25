@@ -17,6 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    steps:
     - name: List compilers
       run: |
         dpkg --list | grep compiler
