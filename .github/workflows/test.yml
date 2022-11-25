@@ -18,6 +18,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
     - name: List compilers
       run: |
         dpkg --list | grep compiler
@@ -29,8 +33,9 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        CC=gcc-11 CXX=/usr/bin/g++-11 cmake $GITHUB_WORKSPACE \
+        CC=gcc-11 CXX=/usr/bin/g++-11 cmake \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
             -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64.toolchain \
-            -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            $GITHUB_WORKSPACE
 
