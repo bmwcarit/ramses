@@ -39,3 +39,12 @@ jobs:
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
             $GITHUB_WORKSPACE
 
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ctest -C $BUILD_TYPE --exclude-regex '.*RNDSANDWICHTEST'
