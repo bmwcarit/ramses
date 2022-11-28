@@ -1,0 +1,72 @@
+name: Test
+
+# This is derived from the standard CMake template for github actions.
+# For more details on the settings used, have a look at the template in the marketplace
+
+# Only pushes and PRs against the master branch are built
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    # To save resources, Windows is only built and tested in Release, Linux - in debug
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install GL/X11 packages for rendering (Linux only)
+      run: |
+        sudo apt-get install libgles2-mesa-dev libx11-dev
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake (Windows Release)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        cmake $GITHUB_WORKSPACE \
+            -DCMAKE_CONFIGURATION_TYPES=Release \
+            -DCMAKE_BUILD_TYPE=Release
+      if: ${{ matrix.os == 'windows-latest' }}
+
+    - name: Configure CMake (Linux Debug)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Debug
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Build (Windows Release)
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config Release
+      if: ${{ matrix.os == 'windows-latest' }}
+
+    - name: Build (Linux Debug)
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config Debug
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Test (Linux Debug)
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ctest -C Debug --exclude-regex '.*RNDSANDWICHTEST'
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Test (Windows Release)
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ctest -C Release --exclude-regex '.*RNDSANDWICHTEST'
+      if: ${{ matrix.os == 'windows-latest' }}
