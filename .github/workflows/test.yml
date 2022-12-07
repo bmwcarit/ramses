@@ -18,7 +18,7 @@ jobs:
     # Newest -> so that we can test with latest tools (clang-tidy) and use recent drivers/packages
     strategy:
       matrix:
-        os: [ubuntu-20.04,  windows-2022]
+        os: [ubuntu-20.04, ubuntu-latest, windows-2022]
         type: [Debug, Release]
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
@@ -62,7 +62,6 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
             -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64_llvm.toolchain \
             -DCMAKE_BUILD_TYPE=${{ matrix.type }}
       if: ${{ matrix.os == 'ubuntu-latest' }}
