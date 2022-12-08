@@ -24,6 +24,10 @@ jobs:
         exclude:
           - os: windows-2022
             type: Debug
+        # Add a gcc12 job
+        include:
+          - os: ubuntu-latest
+            compiler: gcc12
 
     steps:
     - uses: actions/checkout@v3
@@ -57,12 +61,20 @@ jobs:
             -DCMAKE_CONFIGURATION_TYPES=${{ matrix.type }}
       if: ${{ contains(matrix.os, 'windows') }}
 
-    - name: Configure CMake (Latest Ubuntu + Clang)
+    - name: Configure CMake (Latest Ubuntu)
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
+        if [[ "${{ matrix.compiler }}" == "gcc-12" ]]; then
+            export CC=gcc-12
+            export CXX=/usr/bin/g++-12
+            TOOLCHAIN=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64.toolchain
+        else
+            TOOLCHAIN=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64_llvm.toolchain
+        fi
+
         cmake $GITHUB_WORKSPACE \
-            -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64_llvm.toolchain \
+            -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
             -DCMAKE_BUILD_TYPE=${{ matrix.type }}
       if: ${{ matrix.os == 'ubuntu-latest' }}
 
