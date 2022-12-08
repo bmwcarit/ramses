@@ -27,6 +27,7 @@ jobs:
         # Add a gcc12 job
         include:
           - os: ubuntu-latest
+            type: Debug
             compiler: gcc12
 
     steps:
