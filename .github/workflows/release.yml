@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Build and package (Linux)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        sudo apt-get install libgles2-mesa-dev libx11-dev
+        cmake $GITHUB_WORKSPACE \
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -Dramses_CPACK_GENERATOR=DEB \
+            -Dramses-sdk_BUILD_TESTS=OFF \
+            -Dramses-sdk_BUILD_EXAMPLES=OFF \
+            -Dramses-sdk_BUILD_SMOKE_TESTS=OFF \
+            -Dramses-sdk_BUILD_DEMOS=OFF \
+            -Dramses-sdk_BUILD_DOCS=OFF \
+            -Dramses-sdk_ENABLE_WAYLAND_IVI=OFF
+
+        cmake --build . --target package --config $BUILD_TYPE
+      if: ${{ matrix.os == 'ubuntu-20.04' }}
+
+    - name: Build and package (Windows)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        # This is needed because on the Windows Server 2019 build nodes of Github, the Perl installation
+        # exposes its libraries on the path and messes up CMake builds
+        restore_path=$PATH
+        echo "Path before: $PATH"
+        export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/c\/bin//')
+        export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/site\/bin//')
+        export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/bin//')
+        echo "Path after: $PATH"
+
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -Dramses_CPACK_GENERATOR=ZIP \
+            -DCMAKE_CONFIGURATION_TYPES=$BUILD_TYPE \
+            -Dramses-sdk_BUILD_TESTS=OFF \
+            -Dramses-sdk_BUILD_EXAMPLES=OFF \
+            -Dramses-sdk_BUILD_SMOKE_TESTS=OFF \
+            -Dramses-sdk_BUILD_DEMOS=OFF \
+            -Dramses-sdk_BUILD_DOCS=OFF \
+            -Dramses-sdk_ENABLE_WAYLAND_IVI=OFF
+
+        cmake --build . --target package --config $BUILD_TYPE
+      if: ${{ matrix.os == 'windows-2019' }}
+
+    - name: Publish release
+      uses: softprops/action-gh-release@v0.1.13
+      with:
+        fail_on_unmatched_files: true
+        files: |
+          ${{runner.workspace}}/build/ramses-sdk*.zip
+      if: ${{ matrix.os == 'windows-2019' }}
+
+    - name: Publish release
+      uses: softprops/action-gh-release@v0.1.13
+      with:
+        fail_on_unmatched_files: true
+        files: |
+          ${{runner.workspace}}/build/ramses-sdk*.deb
+      if: ${{ matrix.os == 'ubuntu-20.04' }}

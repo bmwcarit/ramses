@@ -75,6 +75,8 @@ OPTION(ramses-sdk_USE_LINUX_DEV_PTP "Enable support for synchronized ptp time on
 OPTION(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization enabled (not supported on all platforms)" OFF)
 option(ramses-sdk_ENABLE_COVERAGE "Build withcode coverage enabled (gcc: gcov, clang: source based coverage)" OFF)
 
+set(ramses_CPACK_GENERATOR "TGZ" CACHE STRING "Passed to CPack to determine the type of package to be created. Default is TGZ.")
+
 SET(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
 SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
 
