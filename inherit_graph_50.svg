@@ -216,39 +216,39 @@
 <!-- Node89 -->
 <g id="node90" class="node">
 <title>Node89</title>
-<g id="a_node90"><a xlink:href="classramses_1_1RendererConfig.html" target="_top" xlink:title="The RendererConfig holds a set of parameters to be used to initialize a renderer.">
-<polygon fill="white" stroke="black" points="181.5,-247.5 181.5,-266.5 315.5,-266.5 315.5,-247.5 181.5,-247.5"/>
-<text text-anchor="middle" x="248.5" y="-254.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RendererConfig</text>
+<g id="a_node90"><a xlink:href="classramses_1_1RenderTargetDescription.html" target="_top" xlink:title="RenderTargetDescription holds all necessary information for a RenderTarget to be created.">
+<polygon fill="white" stroke="black" points="159,-247.5 159,-266.5 338,-266.5 338,-247.5 159,-247.5"/>
+<text text-anchor="middle" x="248.5" y="-254.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RenderTargetDescription</text>
 </a>
 </g>
 </g>
 <!-- Node0&#45;&gt;Node89 -->
 <g id="edge89" class="edge">
 <title>Node0&#45;&gt;Node89</title>
-<path fill="none" stroke="midnightblue" d="M68,-408.49C80.02,-375.6 108.98,-309.45 157,-276 164.25,-270.95 172.56,-267.2 181.14,-264.41"/>
+<path fill="none" stroke="midnightblue" d="M68,-408.49C80.02,-375.6 108.98,-309.45 157,-276 162.53,-272.15 168.69,-269.05 175.11,-266.55"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="64.58,-407.68 64.57,-418.28 71.18,-410 64.58,-407.68"/>
 </g>
 <!-- Node90 -->
 <g id="node91" class="node">
 <title>Node90</title>
-<g id="a_node91"><a xlink:href="classramses_1_1RendererSceneControl.html" target="_top" xlink:title="Control states of scenes.">
-<polygon fill="white" stroke="black" points="165,-209.5 165,-228.5 332,-228.5 332,-209.5 165,-209.5"/>
-<text text-anchor="middle" x="248.5" y="-216.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RendererSceneControl</text>
+<g id="a_node91"><a xlink:href="classramses_1_1RendererConfig.html" target="_top" xlink:title="The RendererConfig holds a set of parameters to be used to initialize a renderer.">
+<polygon fill="white" stroke="black" points="181.5,-209.5 181.5,-228.5 315.5,-228.5 315.5,-209.5 181.5,-209.5"/>
+<text text-anchor="middle" x="248.5" y="-216.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RendererConfig</text>
 </a>
 </g>
 </g>
 <!-- Node0&#45;&gt;Node90 -->
 <g id="edge90" class="edge">
 <title>Node0&#45;&gt;Node90</title>
-<path fill="none" stroke="midnightblue" d="M65.44,-408.37C74.35,-369.34 99.9,-281.95 157,-238 161.96,-234.18 167.51,-231.08 173.36,-228.58"/>
+<path fill="none" stroke="midnightblue" d="M65.44,-408.37C74.35,-369.34 99.9,-281.95 157,-238 164.12,-232.52 172.46,-228.52 181.14,-225.63"/>
 <polygon fill="midnightblue" stroke="midnightblue" points="62,-407.71 63.31,-418.23 68.84,-409.19 62,-407.71"/>
 </g>
 <!-- Node91 -->
 <g id="node92" class="node">
 <title>Node91</title>
-<g id="a_node92"><a xlink:href="classramses_1_1RenderTargetDescription.html" target="_top" xlink:title="RenderTargetDescription holds all necessary information for a RenderTarget to be created.">
-<polygon fill="white" stroke="black" points="159,-171.5 159,-190.5 338,-190.5 338,-171.5 159,-171.5"/>
-<text text-anchor="middle" x="248.5" y="-178.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RenderTargetDescription</text>
+<g id="a_node92"><a xlink:href="classramses_1_1RendererSceneControl.html" target="_top" xlink:title="Control states of scenes.">
+<polygon fill="white" stroke="black" points="165,-171.5 165,-190.5 332,-190.5 332,-171.5 165,-171.5"/>
+<text text-anchor="middle" x="248.5" y="-178.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::RendererSceneControl</text>
 </a>
 </g>
 </g>

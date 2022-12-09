@@ -31,8 +31,38 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M86,-46.29C86,-36.86 86,-26.65 86,-19.66"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="82.5,-46.4 86,-56.4 89.5,-46.4 82.5,-46.4"/>
+<path fill="none" stroke="midnightblue" d="M52.9,-46.9C50.85,-37.3 53.66,-26.81 61.35,-19.66"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="49.76,-48.48 56.8,-56.4 56.24,-45.82 49.76,-48.48"/>
+</g>
+<!-- Node2&#45;&gt;Node1 -->
+<g id="edge3" class="edge">
+<title>Node2&#45;&gt;Node1</title>
+<path fill="none" stroke="midnightblue" d="M66.1,-46.59C64.94,-37.08 66.65,-26.73 71.21,-19.66"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="62.72,-47.51 68.48,-56.4 69.52,-45.86 62.72,-47.51"/>
+</g>
+<!-- Node2&#45;&gt;Node1 -->
+<g id="edge4" class="edge">
+<title>Node2&#45;&gt;Node1</title>
+<path fill="none" stroke="midnightblue" d="M79.36,-46.29C78.99,-36.86 79.57,-26.65 81.07,-19.66"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="75.88,-46.71 80.16,-56.4 82.86,-46.15 75.88,-46.71"/>
+</g>
+<!-- Node2&#45;&gt;Node1 -->
+<g id="edge5" class="edge">
+<title>Node2&#45;&gt;Node1</title>
+<path fill="none" stroke="midnightblue" d="M92.64,-46.29C93.01,-36.86 92.43,-26.65 90.93,-19.66"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="89.14,-46.15 91.84,-56.4 96.12,-46.71 89.14,-46.15"/>
+</g>
+<!-- Node2&#45;&gt;Node1 -->
+<g id="edge6" class="edge">
+<title>Node2&#45;&gt;Node1</title>
+<path fill="none" stroke="midnightblue" d="M105.9,-46.59C107.06,-37.08 105.35,-26.73 100.79,-19.66"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="102.48,-45.86 103.52,-56.4 109.28,-47.51 102.48,-45.86"/>
+</g>
+<!-- Node2&#45;&gt;Node1 -->
+<g id="edge7" class="edge">
+<title>Node2&#45;&gt;Node1</title>
+<path fill="none" stroke="midnightblue" d="M119.1,-46.9C121.15,-37.3 118.34,-26.81 110.65,-19.66"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="115.76,-45.82 115.2,-56.4 122.24,-48.48 115.76,-45.82"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">

@@ -13,9 +13,9 @@
 <area shape="rect" id="node14" href="$classramses_1_1RamsesFrameworkConfig.html" title="The RamsesFrameworkConfig holds a set of parameters to be used to initialize ramses." alt="" coords="215,1221,459,1248"/>
 <area shape="rect" id="node15" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="251,1272,423,1299"/>
 <area shape="rect" id="node89" href="$classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con..." alt="" coords="242,1323,431,1349"/>
-<area shape="rect" id="node90" href="$classramses_1_1RendererConfig.html" title="The RendererConfig holds a set of parameters to be used to initialize a renderer." alt="" coords="247,1373,426,1400"/>
-<area shape="rect" id="node91" href="$classramses_1_1RendererSceneControl.html" title="Control states of scenes." alt="" coords="225,1424,448,1451"/>
-<area shape="rect" id="node92" href="$classramses_1_1RenderTargetDescription.html" title="RenderTargetDescription holds all necessary information for a RenderTarget to be created." alt="" coords="217,1475,456,1501"/>
+<area shape="rect" id="node90" href="$classramses_1_1RenderTargetDescription.html" title="RenderTargetDescription holds all necessary information for a RenderTarget to be created." alt="" coords="217,1373,456,1400"/>
+<area shape="rect" id="node91" href="$classramses_1_1RendererConfig.html" title="The RendererConfig holds a set of parameters to be used to initialize a renderer." alt="" coords="247,1424,426,1451"/>
+<area shape="rect" id="node92" href="$classramses_1_1RendererSceneControl.html" title="Control states of scenes." alt="" coords="225,1475,448,1501"/>
 <area shape="rect" id="node93" href="$classramses_1_1SceneConfig.html" title="The SceneConfig holds a set of parameters to be used when creating a scene." alt="" coords="257,1525,416,1552"/>
 <area shape="rect" id="node94" href="$classramses_1_1WarpingMeshData.html" title="The WarpingMeshData holds the vertices and indices needed to create the mesh for display warping." alt="" coords="238,1576,435,1603"/>
 <area shape="rect" id="node11" href="$classramses_1_1AttributeInput.html" title="The AttributeInput is a description of an attribute effect input." alt="" coords="507,1095,675,1121"/>
