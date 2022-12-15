@@ -82,12 +82,10 @@ namespace ramses_internal
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdaterFacade::createResourceManager(
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        bool keepEffectsUploaded,
-        uint64_t gpuCacheSize,
-        bool asyncEffectUploadEnabled,
+        const DisplayConfig& displayConfig,
         IBinaryShaderCache* binaryShaderCache)
     {
-        RendererSceneUpdaterPartialMock::createResourceManager(renderBackend, embeddedCompositingManager, keepEffectsUploaded, gpuCacheSize, asyncEffectUploadEnabled, binaryShaderCache);
+        RendererSceneUpdaterPartialMock::createResourceManager(renderBackend, embeddedCompositingManager, displayConfig, binaryShaderCache);
         testing::StrictMock<RendererResourceManagerRefCountMock>* resMgrMock = new testing::StrictMock<RendererResourceManagerRefCountMock>;
         assert(m_resourceManagerMock == nullptr);
         m_resourceManagerMock = resMgrMock;

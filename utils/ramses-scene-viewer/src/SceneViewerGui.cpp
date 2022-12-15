@@ -218,9 +218,9 @@ namespace ramses_internal
             ImGui::Text("Unused or duplicate resource");
             if (ImGui::TreeNode("Duplicates (same hash):"))
             {
-                updateResourceInfo();
+                m_resourceInfo->reloadIfEmpty();
                 auto& hlResource = static_cast<ramses::ResourceImpl&>(obj);
-                auto range = m_resourceInfo.hashLookup.equal_range(hlResource.getLowlevelResourceHash());
+                auto range = m_resourceInfo->equal_range(hlResource.getLowlevelResourceHash());
                 for (auto it = range.first; it != range.second; ++it)
                 {
                     draw(it->second->impl);
@@ -252,6 +252,7 @@ namespace ramses_internal
         ramses::SceneDumper sceneDumper(scene.impl);
         sceneDumper.dumpUnrequiredObjects(dummyStream);
         m_usedObjects = sceneDumper.getRequiredObjects();
+        m_resourceInfo = std::make_unique<ResourceList>(scene, m_usedObjects);
         const char* report = m_scene.getValidationReport(ramses::EValidationSeverity_Warning);
         m_hasSceneErrors = ((report != nullptr) && (report[0] != 0));
         ImGuiIO& io = ImGui::GetIO();
@@ -798,11 +799,24 @@ namespace ramses_internal
     {
         const auto hash = obj.getLowlevelResourceHash();
         auto resource = m_scene.getRamsesClient().impl.getResource(hash);
-        ImGui::Text("Hash: %" PRIX64 ":%" PRIX64, hash.highPart, hash.lowPart);
+        const auto hashString = fmt::format("{}", hash);
+        ImGui::Text("Hash: %s", hashString.c_str());
+        if (ImGui::BeginPopupContextItem(hashString.c_str()))
+        {
+            if (ImGui::MenuItem("Copy hash"))
+            {
+                ImGui::LogToClipboard();
+                ImGui::LogText("%s", hashString.c_str());
+                ImGui::LogFinish();
+            }
+            ImGui::EndPopup();
+        }
+
         if (resource)
         {
             double      size       = resource->getDecompressedDataSize();
-            double      compressed = resource->getCompressedDataSize();
+            const auto  compressedSize = resource->getCompressedDataSize();
+            double      compressed     = compressedSize;
             const char* unit       = "Bytes";
             if (size > 1024)
             {
@@ -810,7 +824,14 @@ namespace ramses_internal
                 size /= 1024.0;
                 compressed /= 1024.0;
             }
-            ImGui::Text("Resource size (%s): %.1f (compressed %.1f)", unit, size, compressed);
+            if (compressedSize != 0)
+            {
+                ImGui::Text("Resource size (%s): %.1f (compressed %.1f)", unit, size, compressed);
+            }
+            else
+            {
+                ImGui::Text("Resource size (%s): %.1f (uncompressed)", unit, size);
+            }
         }
         else
         {
@@ -825,16 +846,45 @@ namespace ramses_internal
         if (resource)
         {
             if (ImGui::Button("Shader Sources..."))
+            {
                 ImGui::OpenPopup("shader_src");
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Save to file(s)"))
+            {
+                m_lastErrorMessage = saveShaderSources(obj);
+            }
             if (ImGui::BeginPopup("shader_src"))
             {
                 const auto effectRes = resource->convertTo<ramses_internal::EffectResource>();
+                if (ImGui::BeginPopupContextWindow())
+                {
+                    if (ImGui::MenuItem("Copy vertex shader"))
+                    {
+                        ImGui::LogToClipboard();
+                        ImGui::LogText("%s", effectRes->getVertexShader());
+                        ImGui::LogFinish();
+                    }
+                    if (ImGui::MenuItem("Copy fragment shader"))
+                    {
+                        ImGui::LogToClipboard();
+                        ImGui::LogText("%s", effectRes->getFragmentShader());
+                        ImGui::LogFinish();
+                    }
+                    if (ImGui::MenuItem("Copy geometry shader"))
+                    {
+                        ImGui::LogToClipboard();
+                        ImGui::LogText("%s", effectRes->getGeometryShader());
+                        ImGui::LogFinish();
+                    }
+                    ImGui::EndPopup();
+                }
                 if (ImGui::CollapsingHeader("Vertex Shader", ImGuiTreeNodeFlags_DefaultOpen))
-                    ImGui::Text("%s", effectRes->getVertexShader());
+                    ImGui::TextUnformatted(effectRes->getVertexShader());
                 if (ImGui::CollapsingHeader("Fragment Shader", ImGuiTreeNodeFlags_DefaultOpen))
-                    ImGui::Text("%s", effectRes->getFragmentShader());
+                    ImGui::TextUnformatted(effectRes->getFragmentShader());
                 if (ImGui::CollapsingHeader("Geometry Shader", ImGuiTreeNodeFlags_DefaultOpen))
-                    ImGui::Text("%s", effectRes->getGeometryShader());
+                    ImGui::TextUnformatted(effectRes->getGeometryShader());
                 ImGui::EndPopup();
             }
         }
@@ -1759,39 +1809,82 @@ namespace ramses_internal
         }
     }
 
+    void SceneViewerGui::drawSceneObjectsFilter()
+    {
+        ImGui::Text("Name filter:");
+        bool filterModified = m_filter.Draw();
+        if (ImGui::TreeNode("More filters..."))
+        {
+            ImGui::Text("Show nodes with visibility:");
+            filterModified = ImGui::Checkbox("Off", &m_nodeFilter.showOff) || filterModified;
+            filterModified = ImGui::Checkbox("Invisible", &m_nodeFilter.showInvisible) || filterModified;
+            filterModified = ImGui::Checkbox("Visible", &m_nodeFilter.showVisible) || filterModified;
+            ImGui::TreePop();
+        }
+
+        if (filterModified || m_sceneObjects.empty())
+        {
+            const auto& reg = m_scene.impl.getObjectRegistry();
+            for (uint32_t i = 0u; i < ramses::ERamsesObjectType_NUMBER_OF_TYPES; ++i)
+            {
+                const auto type = static_cast<ramses::ERamsesObjectType>(i);
+
+                if (ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_SceneObject)
+                    && !ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_AnimationObject)
+                    && ramses::RamsesObjectTypeUtils::IsConcreteType(type))
+                {
+                    auto& objects = m_sceneObjects[type];
+                    const auto numberOfObjects = reg.getNumberOfObjects(type);
+                    objects.reserve(numberOfObjects);
+                    objects.clear();
+                    if (numberOfObjects > 0u)
+                    {
+                        ramses::RamsesObjectRegistryIterator iter(reg, ramses::ERamsesObjectType(i));
+                        while (const auto* obj = iter.getNext())
+                        {
+                            if (passFilter(obj->impl))
+                                objects.push_back(obj);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bool SceneViewerGui::passFilter(const ramses::RamsesObjectImpl& obj) const
+    {
+        bool pass = true;
+        if (ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(obj.getType(), ramses::ERamsesObjectType_Resource))
+        {
+            auto resource = static_cast<const ramses::ResourceImpl&>(obj);
+            const auto hashString = fmt::format("{}", resource.getLowlevelResourceHash());
+            return m_filter.PassFilter(hashString.c_str()) || m_filter.PassFilter(obj.getName().c_str());
+        }
+        else if (ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(obj.getType(), ramses::ERamsesObjectType_Node))
+        {
+            auto node = static_cast<const ramses::NodeImpl&>(obj);
+            switch (node.getVisibility())
+            {
+            case ramses::EVisibilityMode::Off:
+                pass = m_nodeFilter.showOff;
+                break;
+            case ramses::EVisibilityMode::Invisible:
+                pass = m_nodeFilter.showInvisible;
+                break;
+            case ramses::EVisibilityMode::Visible:
+                pass = m_nodeFilter.showVisible;
+                break;
+            }
+        }
+        return pass && m_filter.PassFilter(obj.getName().c_str());
+    }
+
     void SceneViewerGui::drawSceneObjects()
     {
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         if (ImGui::CollapsingHeader("Scene objects"))
         {
-            ImGui::Text("Name filter:");
-            if (m_filter.Draw() || m_sceneObjects.empty())
-            {
-                const auto& reg = m_scene.impl.getObjectRegistry();
-                for (uint32_t i = 0u; i < ramses::ERamsesObjectType_NUMBER_OF_TYPES; ++i)
-                {
-                    const auto type = static_cast<ramses::ERamsesObjectType>(i);
-
-                    if (ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_SceneObject)
-                        && !ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_AnimationObject)
-                        && ramses::RamsesObjectTypeUtils::IsConcreteType(type))
-                    {
-                        auto& objects = m_sceneObjects[type];
-                        const auto numberOfObjects = reg.getNumberOfObjects(type);
-                        objects.reserve(numberOfObjects);
-                        objects.clear();
-                        if (numberOfObjects > 0u)
-                        {
-                            ramses::RamsesObjectRegistryIterator iter(reg, ramses::ERamsesObjectType(i));
-                            while (const auto* obj = iter.getNext())
-                            {
-                                if (m_filter.PassFilter(obj->getName()))
-                                    objects.push_back(obj);
-                            }
-                        }
-                    }
-                }
-            }
+            drawSceneObjectsFilter();
 
             for (const auto& it : m_sceneObjects)
             {
@@ -1846,79 +1939,34 @@ namespace ramses_internal
         {
             drawMenuItemCopyTexture2D();
             drawMenuItemStorePng();
+            drawMenuItemExportShaderSources();
             ImGui::EndPopup();
         }
 
         if (isOpen)
         {
-            updateResourceInfo();
-            ImGui::Text("%lu resources", m_resourceInfo.objects.size());
-            ImGui::Text("Size: %u kB (compressed: %u kB)", m_resourceInfo.decompressedSize / 1024U, m_resourceInfo.compressedSize / 1024U);
-            ImGui::Text("Not loaded: %u", m_resourceInfo.unavailable);
+            m_resourceInfo->reloadIfEmpty();
+            ImGui::Text("Total: %lu resources", m_resourceInfo->totalResources());
+            const auto used = m_resourceInfo->totalResources() - m_resourceInfo->unavailable();
+            ImGui::Text("In use: %lu resources with %u kB (compressed: %u kB)", used, m_resourceInfo->decompressedSize() / 1024U, m_resourceInfo->compressedSize() / 1024U);
+            ImGui::Text("Not loaded: %u resources", m_resourceInfo->unavailable());
             ImGui::Separator();
-            const auto displayedResources = std::min(static_cast<int>(m_resourceInfo.objects.size()), m_resourceInfo.displayLimit);
-            ImGui::Text("Size of %d biggest resources: %u kB", displayedResources, m_resourceInfo.displayedSize / 1024U);
-            if (ImGui::InputInt("Display limit", &m_resourceInfo.displayLimit))
+            auto displayLimit = m_resourceInfo->getDisplayLimit();
+            ImGui::Text("Size of %d biggest resources: %u kB", displayLimit, m_resourceInfo->getDisplayedSize() / 1024U);
+
+            auto orderCriteria = m_resourceInfo->getOrderCriteriaIndex();
+            if (ImGui::Combo("Order Criteria", &orderCriteria, m_resourceInfo->orderCriteriaItems.data(), static_cast<int>(m_resourceInfo->orderCriteriaItems.size())))
             {
-                m_resourceInfo.displayedSize = 0U;
+                m_resourceInfo->setOrderCriteriaIndex(orderCriteria);
             }
-            ImGui::Text("Resources sorted by size (decending):");
-            int count = 0;
-            const bool updateDisplayedSize = (m_resourceInfo.displayedSize == 0U);
-            for (auto it : m_resourceInfo.objects)
+            if (ImGui::InputInt("Display limit", &displayLimit))
             {
-                ++count;
-                if (count > m_resourceInfo.displayLimit)
-                {
-                    break;
-                }
-                if (updateDisplayedSize)
-                {
-                    auto hlResource = static_cast<ramses::Resource*>(it);
-                    auto resource = m_scene.getRamsesClient().impl.getResource(hlResource->impl.getLowlevelResourceHash());
-                    if (resource && m_usedObjects.contains(&hlResource->impl))
-                    {
-                        // don't count duplicates
-                        m_resourceInfo.displayedSize += resource->getDecompressedDataSize();
-                    }
-                }
+                m_resourceInfo->setDisplayLimit(displayLimit);
+            }
+            ImGui::Text("Resources sorted by %s (decending):", m_resourceInfo->orderCriteriaItems[m_resourceInfo->getOrderCriteriaIndex()]);
+            for (auto it : *m_resourceInfo)
+            {
                 draw(it->impl);
-            }
-        }
-    }
-
-    void SceneViewerGui::updateResourceInfo()
-    {
-        if (m_resourceInfo.objects.empty())
-        {
-            const auto& reg = m_scene.impl.getObjectRegistry();
-            reg.getObjectsOfType(m_resourceInfo.objects, ramses::ERamsesObjectType_Resource);
-
-            auto compareSize = [&](ramses::RamsesObject* a, ramses::RamsesObject* b) {
-                ManagedResource resourceA = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(a)->impl.getLowlevelResourceHash());
-                ManagedResource resourceB = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(b)->impl.getLowlevelResourceHash());
-                const uint32_t  sizeA     = resourceA ? resourceA->getDecompressedDataSize() : 0u;
-                const uint32_t  sizeB     = resourceB ? resourceB->getDecompressedDataSize() : 0u;
-                return sizeA > sizeB;
-            };
-            std::sort(m_resourceInfo.objects.begin(), m_resourceInfo.objects.end(), compareSize);
-
-            for (auto it : m_resourceInfo.objects)
-            {
-                auto hlResource = static_cast<ramses::Resource*>(it);
-                auto resource   = m_scene.getRamsesClient().impl.getResource(hlResource->impl.getLowlevelResourceHash());
-                m_resourceInfo.hashLookup.insert({hlResource->impl.getLowlevelResourceHash(), hlResource});
-                if (resource)
-                {
-                    if (m_usedObjects.contains(&hlResource->impl))
-                    {
-                        // don't count duplicates
-                        m_resourceInfo.compressedSize += resource->getCompressedDataSize();
-                        m_resourceInfo.decompressedSize += resource->getDecompressedDataSize();
-                    }
-                }
-                else
-                    ++m_resourceInfo.unavailable;
             }
         }
     }
@@ -2060,6 +2108,7 @@ namespace ramses_internal
             ImGui::Separator();
             drawMenuItemCopyTexture2D();
             drawMenuItemStorePng();
+            drawMenuItemExportShaderSources();
             ImGui::EndPopup();
         }
 
@@ -2123,7 +2172,7 @@ namespace ramses_internal
         {
             // refresh resource information in next interation
             m_nodeVisibilityChanged = false;
-            m_resourceInfo = {};
+            m_resourceInfo->clear();
         }
     }
 
@@ -2222,6 +2271,7 @@ namespace ramses_internal
             {
                 drawMenuItemCopyTexture2D();
                 drawMenuItemStorePng();
+                drawMenuItemExportShaderSources();
                 ImGui::EndMenu();
             }
 
@@ -2263,6 +2313,30 @@ namespace ramses_internal
         }
     }
 
+    template <class F>
+    void SceneViewerGui::processObjectsAsync(F&& func, ramses::ERamsesObjectType objType, const char* message)
+    {
+        ramses::RamsesObjectVector objects;
+        m_scene.impl.getObjectRegistry().getObjectsOfType(objects, objType);
+        m_progress.stop();
+        ProgressMonitor::FutureList futures;
+        const size_t tasks     = objects.size() > 16u ? 4u : 1u;
+        const auto   chunkSize = objects.size() / tasks;
+        for (size_t i = 0; i < tasks; ++i)
+        {
+            const auto begin = objects.begin() + i * chunkSize;
+            if (i + 1 == tasks)
+            {
+                futures.push_back(std::async(std::launch::async, func, ramses::RamsesObjectVector(begin, objects.end())));
+            }
+            else
+            {
+                futures.push_back(std::async(std::launch::async, func, ramses::RamsesObjectVector(begin, begin + chunkSize)));
+            }
+        }
+        m_progress.start(std::move(futures), static_cast<uint32_t>(objects.size()), message);
+    }
+
     void SceneViewerGui::drawMenuItemStorePng()
     {
         if (ImGui::MenuItem("Export all 2D textures to png"))
@@ -2282,25 +2356,30 @@ namespace ramses_internal
                 return errorList;
             };
 
-            ramses::RamsesObjectVector objects;
-            m_scene.impl.getObjectRegistry().getObjectsOfType(objects, ramses::ERamsesObjectType_Texture2D);
-            m_progress.stop();
-            ProgressMonitor::FutureList futures;
-            const size_t tasks     = objects.size() > 16u ? 4u : 1u;
-            const auto   chunkSize = objects.size() / tasks;
-            for (size_t i = 0; i < tasks; ++i)
-            {
-                const auto begin = objects.begin() + i * chunkSize;
-                if (i + 1 == tasks)
+            processObjectsAsync(storeAllTextures, ramses::ERamsesObjectType_Texture2D, "Saving Texture2D to png");
+        }
+    }
+
+    void SceneViewerGui::drawMenuItemExportShaderSources()
+    {
+        if (ImGui::MenuItem("Export all shader sources"))
+        {
+            auto exportShaders = [&](ramses::RamsesObjectVector objects) {
+                std::vector<std::string> errorList;
+                for (auto it = objects.begin(); it != objects.end() && !m_progress.canceled; ++it)
                 {
-                    futures.push_back(std::async(std::launch::async, storeAllTextures, ramses::RamsesObjectVector(begin, objects.end())));
+                    const ramses::Effect* obj = static_cast<ramses::Effect*>(*it);
+                    ++m_progress.current;
+                    const auto error = saveShaderSources(obj->impl);
+                    if (!error.empty())
+                    {
+                        errorList.push_back(error);
+                    }
                 }
-                else
-                {
-                    futures.push_back(std::async(std::launch::async, storeAllTextures, ramses::RamsesObjectVector(begin, begin + chunkSize)));
-                }
-            }
-            m_progress.start(std::move(futures), static_cast<uint32_t>(objects.size()), "Saving Texture2D to png");
+                return errorList;
+            };
+
+            processObjectsAsync(exportShaders, ramses::ERamsesObjectType_Effect, "Exporting shader sources");
         }
     }
 
@@ -2326,6 +2405,48 @@ namespace ramses_internal
         return errorMsg;
     }
 
+    std::string SceneViewerGui::saveShaderSources(const ramses::EffectImpl& obj) const
+    {
+        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        std::string errorMsg;
+        if (resource)
+        {
+            auto save = [&obj, &errorMsg](const char* const format, const char* text) {
+                std::string strText = text != nullptr ? text : "";
+                if (!strText.empty())
+                {
+                    const auto fileName = fmt::format(format, obj.getLowlevelResourceHash());
+
+                    ramses_internal::File outputFile(fileName.c_str());
+
+                    if (!outputFile.open(File::Mode::WriteNewBinary))
+                    {
+                        errorMsg = fmt::format("Could not open file for writing: {}", fileName);
+                        return false;
+                    }
+                    if (!outputFile.write(strText.c_str(), strText.size()))
+                    {
+                        errorMsg = fmt::format("Write to file failed: {}", fileName);
+                        return false;
+                    }
+                    if (!outputFile.close())
+                    {
+                        errorMsg = fmt::format("Close file failed: {}", fileName);
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            const auto effectRes = resource->convertTo<ramses_internal::EffectResource>();
+
+            save("{}.frag", effectRes->getFragmentShader())
+                && save("{}.vert", effectRes->getVertexShader())
+                && save("{}.geom", effectRes->getGeometryShader());
+        }
+        return errorMsg;
+    }
+
     void SceneViewerGui::setVisibility(ramses::NodeImpl& node, ramses::EVisibilityMode visibility)
     {
         node.setVisibility(visibility);
@@ -2343,7 +2464,7 @@ namespace ramses_internal
         logRamsesObject(obj);
         const auto hash = obj.getLowlevelResourceHash();
         auto resource = m_scene.getRamsesClient().impl.getResource(hash);
-        ImGui::LogText("%" PRIX64 ":%" PRIX64 ",", hash.highPart, hash.lowPart);
+        ImGui::LogText("%s", fmt::format("Hash: {}", hash).c_str());
         if (resource)
         {
             ImGui::LogText("true, %u, %u,", resource->getDecompressedDataSize(), resource->getCompressedDataSize());

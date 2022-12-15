@@ -70,6 +70,9 @@ namespace ramses
         status_t setSwapInterval(int32_t interval);
         int32_t  getSwapInterval() const;
 
+        status_t setScenePriority(sceneId_t sceneId, int32_t priority);
+        int32_t getScenePriority(sceneId_t) const;
+
         virtual status_t validate() const override;
 
         //impl methods

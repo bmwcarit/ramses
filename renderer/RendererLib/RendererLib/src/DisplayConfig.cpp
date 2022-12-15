@@ -295,6 +295,26 @@ namespace ramses_internal
         return m_swapInterval;
     }
 
+    void DisplayConfig::setScenePriority(SceneId sceneId, int32_t priority)
+    {
+        m_scenePriorities[sceneId] = priority;
+    }
+
+    int32_t DisplayConfig::getScenePriority(SceneId sceneId) const
+    {
+        const auto it = m_scenePriorities.find(sceneId);
+        if (it != m_scenePriorities.end())
+        {
+            return it->second;
+        }
+        return 0;
+    }
+
+    const std::unordered_map<SceneId, int32_t>& DisplayConfig::getScenePriorities() const
+    {
+        return m_scenePriorities;
+    }
+
     Bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
         return
@@ -322,7 +342,8 @@ namespace ramses_internal
             m_waylandSocketEmbeddedPermissions  == other.m_waylandSocketEmbeddedPermissions &&
             m_waylandSocketEmbeddedFD    == other.m_waylandSocketEmbeddedFD &&
             m_platformRenderNode         == other.m_platformRenderNode &&
-            m_swapInterval               == other.m_swapInterval;
+            m_swapInterval               == other.m_swapInterval &&
+            m_scenePriorities            == other.m_scenePriorities;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const

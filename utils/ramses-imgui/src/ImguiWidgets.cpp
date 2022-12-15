@@ -52,10 +52,10 @@ namespace ramses_internal
                 rgba         = {r, g, b, a};
             }
 
-            template <class T> void ConvertToRgba(std::vector<uint8_t>& rgbaData, const ResourceBlob& blob, const TextureSwizzleArray& swizzle, const T& readPixel)
+            template <class T> void ConvertToRgba(std::vector<uint8_t>& rgbaData, const Byte* data, const size_t size, const TextureSwizzleArray& swizzle, const T& readPixel)
             {
-                const auto* end = blob.data() + blob.size();
-                const auto* buf = blob.data();
+                const auto* end = data + size;
+                const auto* buf = data;
                 while (buf < end)
                 {
                     std::array<uint8_t, 4> rgba = {0, 0, 0, 255};
@@ -202,6 +202,63 @@ namespace ramses_internal
             }
         }
 
+        std::string SaveToPng(const Byte* data, UInt size, ETextureFormat fmt, uint32_t width, uint32_t height, const std::string& filename, const TextureSwizzleArray& swizzle)
+        {
+            std::string errorMsg;
+            std::vector<uint8_t> imageData;
+            const auto byteSize = width * height * 4u;
+            imageData.reserve(byteSize);
+            if (fmt == ETextureFormat::RGBA8)
+            {
+                // just copy the blob
+                imageData.insert(imageData.end(), data, data + size);
+            }
+            else
+            {
+                // convert to rgba
+                switch (fmt)
+                {
+                case ETextureFormat::R8:
+                    ConvertToRgba(imageData, data, size, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
+                        rgba[0] = *ptr++;
+                        return ptr;
+                    });
+                    break;
+                case ETextureFormat::RG8:
+                    ConvertToRgba(imageData, data, size, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
+                        rgba[0] = *ptr++;
+                        rgba[1] = *ptr++;
+                        return ptr;
+                    });
+                    break;
+                case ETextureFormat::RGB8:
+                    ConvertToRgba(imageData, data, size, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
+                        rgba[0] = *ptr++;
+                        rgba[1] = *ptr++;
+                        rgba[2] = *ptr++;
+                        return ptr;
+                    });
+                    break;
+                default:
+                    errorMsg = fmt::format("Cannot save: {} (Image format is not supported: {}).", filename, EnumToString(fmt));
+                    break;
+                }
+            }
+
+            if (imageData.size() > byteSize)
+            {
+                // only save the first miplevel
+                imageData.resize(byteSize);
+            }
+
+            if (errorMsg.empty() && !ramses::RamsesUtils::SaveImageBufferToPng(filename, imageData, width, height))
+            {
+                errorMsg = fmt::format("Cannot save: {}", filename);
+            }
+
+            return errorMsg;
+        }
+
         std::string SaveTextureToPng(const TextureResource* resource, const std::string& filename)
         {
             std::string errorMsg;
@@ -212,58 +269,8 @@ namespace ramses_internal
                     resource->decompress();
                 }
                 const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
-                const auto&                             blob            = textureResource->getResourceData();
-                std::vector<uint8_t>                    imageData;
-                const auto byteSize = static_cast<size_t>(resource->getWidth()) * resource->getHeight() * 4u;
-                imageData.reserve(byteSize);
-                if (resource->getTextureFormat() == ETextureFormat::RGBA8)
-                {
-                    // just copy the blob
-                    imageData.insert(imageData.end(), blob.data(), blob.data() + blob.size());
-                }
-                else
-                {
-                    // convert to rgba
-                    const auto swizzle = resource->getTextureSwizzle();
-                    switch (resource->getTextureFormat())
-                    {
-                    case ETextureFormat::R8:
-                        ConvertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
-                            rgba[0] = *ptr++;
-                            return ptr;
-                        });
-                        break;
-                    case ETextureFormat::RG8:
-                        ConvertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
-                            rgba[0] = *ptr++;
-                            rgba[1] = *ptr++;
-                            return ptr;
-                        });
-                        break;
-                    case ETextureFormat::RGB8:
-                        ConvertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
-                            rgba[0] = *ptr++;
-                            rgba[1] = *ptr++;
-                            rgba[2] = *ptr++;
-                            return ptr;
-                        });
-                        break;
-                    default:
-                        errorMsg = fmt::format("Cannot save: {} (Image format is not supported: {}).", filename, EnumToString(resource->getTextureFormat()));
-                        break;
-                    }
-                }
-
-                if (imageData.size() > byteSize)
-                {
-                    // only save the first miplevel
-                    imageData.resize(byteSize);
-                }
-
-                if (errorMsg.empty() && !ramses::RamsesUtils::SaveImageBufferToPng(filename, imageData, resource->getWidth(), resource->getHeight()))
-                {
-                    errorMsg = fmt::format("Cannot save: {}", filename);
-                }
+                const auto& blob = textureResource->getResourceData();
+                errorMsg = SaveToPng(blob.data(), blob.size(), resource->getTextureFormat(), resource->getWidth(), resource->getHeight(), filename, resource->getTextureSwizzle());
             }
             return errorMsg;
         }

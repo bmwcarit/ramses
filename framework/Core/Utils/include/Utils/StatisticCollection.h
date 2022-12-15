@@ -14,6 +14,7 @@
 #include <array>
 #include <vector>
 #include <atomic>
+#include <cstddef>
 
 namespace ramses_internal
 {

@@ -7,10 +7,28 @@
 //  -------------------------------------------------------------------------
 
 /**
-@page ToolsAndDebugging Tools and debugging
+@page ToolsAndDebugging Profiling, debugging, and tools
 
-In addition to the core libraries, Ramses offers binary utilities for resource and shader
-baking, as well as runtime logging based on DLT.
+Ramses provides logs and various tools to help find issues in your application.
+In the sections below you will find hints where to find those and how to use them.
+
+# Debugging your scene
+
+The easiest way to find problems in your content/scene is to use the validation layer of the
+Ramses client. The validation is an optional layer of Ramses which shows hints of possible
+undefined behavior, performance problems, or missing data which can cause your content to render
+not as expected. This is similar to how Vulkan works - you can enable the validation to find issues,
+and disable it for production to save resources.
+
+Each ramses::StatusObject derived class has a validate() method. Call it to find issues in that object.
+You can do this for an entire scene by calling validate() on a ramses::Scene, ramses::RamsesRenderer or any
+other object. Validation works recursively, i.e. a RamsesClient will validate all its scenes, a ramses::Scene will
+validate all its scene objects, and so on.
+
+# Profiling and performance
+
+For a detailed overview of the various ways to profile your content and optimize performance, refer to the @ref Profiling
+section.
 
 # Resource and shader tools
 

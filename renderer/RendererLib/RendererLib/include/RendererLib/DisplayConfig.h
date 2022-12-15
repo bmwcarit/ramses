@@ -10,9 +10,11 @@
 #define RAMSES_DISPLAYCONFIG_H
 
 #include "RendererAPI/Types.h"
+#include "SceneAPI/SceneId.h"
 #include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector4.h"
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -105,6 +107,10 @@ namespace ramses_internal
         void setSwapInterval(int32_t interval);
         int32_t getSwapInterval() const;
 
+        void setScenePriority(SceneId sceneId, int32_t priority);
+        int32_t getScenePriority(SceneId sceneId) const;
+        const std::unordered_map<SceneId, int32_t>& getScenePriorities() const;
+
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -143,6 +149,7 @@ namespace ramses_internal
         String m_platformRenderNode;
 
         int32_t m_swapInterval = -1;
+        std::unordered_map<SceneId, int32_t> m_scenePriorities;
     };
 }
 

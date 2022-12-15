@@ -26,7 +26,7 @@ namespace ramses_internal
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coords), (override));
-        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IRenderBackend&, IEmbeddedCompositingManager&, bool, uint64_t, bool, IBinaryShaderCache*), (override));
+        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IRenderBackend&, IEmbeddedCompositingManager&, const DisplayConfig&, IBinaryShaderCache*), (override));
         MOCK_METHOD(void, destroyResourceManager, (), (override));
     };
 
@@ -48,9 +48,7 @@ namespace ramses_internal
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            bool keepEffectsUploaded,
-            uint64_t gpuCacheSize,
-            bool asyncEffectUploadEnabled,
+            const DisplayConfig& displayConfig,
             IBinaryShaderCache* binaryShaderCache) override;
 
         virtual void destroyResourceManager() override;

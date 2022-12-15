@@ -11,6 +11,7 @@
 #include "RendererLib/RendererResourceRegistry.h"
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/RendererStatistics.h"
+#include "RendererLib/DisplayConfig.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/EffectResource.h"
 #include "ResourceUploaderMock.h"
@@ -23,19 +24,39 @@
 #include "Utils/ThreadLocalLog.h"
 
 
-namespace ramses_internal{
+namespace ramses_internal
+{
+
+namespace
+{
+    DisplayConfig makeConfig(bool keepEffects, UInt64 resourceCacheSize, SceneId preferredScene, SceneId deprivedScene)
+    {
+        DisplayConfig cfg;
+        cfg.setKeepEffectsUploaded(keepEffects);
+        cfg.setGPUMemoryCacheSize(resourceCacheSize);
+        if (preferredScene.isValid())
+        {
+            cfg.setScenePriority(preferredScene, -1);
+        }
+        if (deprivedScene.isValid())
+        {
+            cfg.setScenePriority(deprivedScene, 12);
+        }
+        return cfg;
+    }
+}
 
 class AResourceUploadingManager : public ::testing::Test
 {
 public:
-    explicit AResourceUploadingManager(bool keepEffects = false, UInt64 ResourceCacheSize = 0u)
+    explicit AResourceUploadingManager(const DisplayConfig& cfg = DisplayConfig())
         : dummyResource(EResourceType_IndexArray, 5, EDataType::UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, String())
         , dummyEffectResource("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
         , dummyManagedResourceCallback(managedResourceDeleter)
         , sceneId(66u)
         , uploader{ new StrictMock<ResourceUploaderMock> }
         , asyncEffectUploader(platformMock, platformMock.renderBackendMock, notifier, 1)
-        , rendererResourceUploader(resourceRegistry, std::unique_ptr<IResourceUploader>{ uploader }, platformMock.renderBackendMock, asyncEffectUploader, keepEffects, frameTimer, stats, ResourceCacheSize)
+        , rendererResourceUploader(resourceRegistry, std::unique_ptr<IResourceUploader>{ uploader }, platformMock.renderBackendMock, asyncEffectUploader, cfg, frameTimer, stats)
     {
         // caller is expected to have a display prefix for logs
         ThreadLocalLog::SetPrefix(1);
@@ -54,10 +75,10 @@ public:
         asyncEffectUploader.destroyResourceUploadRenderBackendAndStopThread();
     }
 
-    void registerAndProvideResource(ResourceContentHash hash, bool effectResource = false, const IResource* resource = nullptr)
+    void registerAndProvideResource(ResourceContentHash hash, bool effectResource = false, const IResource* resource = nullptr, SceneId id = {})
     {
         resourceRegistry.registerResource(hash);
-        resourceRegistry.addResourceRef(hash, sceneId);
+        resourceRegistry.addResourceRef(hash, id.isValid() ? id : sceneId);
 
         if (!resource)
             resource = (effectResource ? static_cast<const IResource*>(&dummyEffectResource) : &dummyResource);
@@ -66,9 +87,9 @@ public:
         ASSERT_TRUE(contains_c(resourceRegistry.getAllProvidedResources(), hash));
     }
 
-    void makeResourceUnused(ResourceContentHash hash)
+    void makeResourceUnused(ResourceContentHash hash, SceneId id = {})
     {
-        resourceRegistry.removeResourceRef(hash, sceneId);
+        resourceRegistry.removeResourceRef(hash, id.isValid() ? id : sceneId);
         if (resourceRegistry.containsResource(hash))
         {
             ASSERT_TRUE(contains_c(resourceRegistry.getAllResourcesNotInUseByScenes(), hash));
@@ -172,7 +193,7 @@ class AResourceUploadingManager_KeepingEffects : public AResourceUploadingManage
 {
 public:
     AResourceUploadingManager_KeepingEffects()
-        : AResourceUploadingManager(true)
+        : AResourceUploadingManager(makeConfig(true, 0u, {}, {}))
     {
     }
 };
@@ -181,8 +202,27 @@ class AResourceUploadingManager_WithVRAMCache : public AResourceUploadingManager
 {
 public:
     AResourceUploadingManager_WithVRAMCache()
-        : AResourceUploadingManager(false, 30u)
+        : AResourceUploadingManager(makeConfig(false, 30u, {}, {}))
     {
+    }
+};
+
+class AResourceUploadingManager_ScenePriority : public AResourceUploadingManager
+{
+public:
+    AResourceUploadingManager_ScenePriority()
+        : AResourceUploadingManager(makeConfig(false, 0u, getPreferredScene(), getDeprivedScene()))
+    {
+    }
+
+    static SceneId getPreferredScene()
+    {
+        return SceneId{113114};
+    }
+
+    static SceneId getDeprivedScene()
+    {
+        return SceneId{551122};
     }
 };
 
@@ -789,4 +829,62 @@ TEST_F(AResourceUploadingManager_WithVRAMCache, willUnloadResourcesOfSameOrGreat
     // destructor will unload kept resources
     EXPECT_CALL(*uploader, unloadResource(_, _, _, _)).Times(3u);
 }
+
+TEST_F(AResourceUploadingManager_ScenePriority, uploadsPreferredResourcesFirst)
+{
+    const std::vector<UInt32> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
+    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
+
+    // using large resources so that time budget checks happen on every resource, not just once per batch
+    const ResourceContentHash res1(1234u, 0u);
+    const ResourceContentHash res2(1235u, 0u);
+    const ResourceContentHash res3(1236u, 0u);
+    const ResourceContentHash res4(1237u, 0u);
+
+    registerAndProvideResource(res1, false, &largeResource, getDeprivedScene());
+    registerAndProvideResource(res2, false, &largeResource, getDeprivedScene());
+    registerAndProvideResource(res3, false, &largeResource, getPreferredScene());
+    registerAndProvideResource(res4, false, &largeResource);
+
+    //set section time budget so the first resource upload will exceed it
+    const UInt32 sectionTimeBudgetMillis = 10u;
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, sectionTimeBudgetMillis * 1000u);
+
+    //make sure that only 1 resource will be uploaded
+    EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(1).WillRepeatedly(InvokeWithoutArgs([&]() {PlatformThread::Sleep(12); return ResourceUploaderMock::FakeResourceDeviceHandle; }));
+    frameTimer.startFrame();
+    rendererResourceUploader.uploadAndUnloadPendingResources();
+    // expect preferred resource uploaded
+    expectResourceUploaded(res3);
+    // expect others not uploaded
+    expectResourceStatus(res1, EResourceStatus::Provided);
+    expectResourceStatus(res2, EResourceStatus::Provided);
+    expectResourceStatus(res4, EResourceStatus::Provided);
+
+    //make sure that only 1 resource will be uploaded
+    EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(1).WillRepeatedly(InvokeWithoutArgs([&]() {PlatformThread::Sleep(12); return ResourceUploaderMock::FakeResourceDeviceHandle; }));
+    frameTimer.startFrame();
+    rendererResourceUploader.uploadAndUnloadPendingResources();
+    // expect preferred resource uploaded
+    expectResourceUploaded(res4);
+    // expect others not uploaded
+    expectResourceStatus(res1, EResourceStatus::Provided);
+    expectResourceStatus(res2, EResourceStatus::Provided);
+
+    // upload rest
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max());
+    EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(2).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
+    frameTimer.startFrame();
+    rendererResourceUploader.uploadAndUnloadPendingResources();
+    expectResourceUploaded(res1);
+    expectResourceUploaded(res2);
+
+    makeResourceUnused(res1, getDeprivedScene());
+    makeResourceUnused(res2, getDeprivedScene());
+    makeResourceUnused(res3, getPreferredScene());
+    makeResourceUnused(res4);
+
+    EXPECT_CALL(*uploader, unloadResource(_, _, _, _)).Times(4);
+}
+
 }

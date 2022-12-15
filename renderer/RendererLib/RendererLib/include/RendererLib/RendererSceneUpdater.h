@@ -109,9 +109,7 @@ namespace ramses_internal
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            bool keepEffectsUploaded,
-            uint64_t gpuCacheSize,
-            bool asyncEffectUploadEnabled,
+            const DisplayConfig& displayConfig,
             IBinaryShaderCache* binaryShaderCache);
 
         virtual void destroyResourceManager();

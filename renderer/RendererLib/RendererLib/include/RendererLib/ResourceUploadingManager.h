@@ -13,6 +13,7 @@
 #include "RendererLib/IResourceUploader.h"
 #include "RendererLib/AsyncEffectUploader.h"
 #include "Collections/HashMap.h"
+#include <map>
 
 namespace ramses_internal
 {
@@ -21,6 +22,7 @@ namespace ramses_internal
     struct RenderBuffer;
     class FrameTimer;
     class RendererStatistics;
+    class DisplayConfig;
 
     class ResourceUploadingManager
     {
@@ -30,10 +32,9 @@ namespace ramses_internal
             std::unique_ptr<IResourceUploader> uploader,
             IRenderBackend& renderBackend,
             AsyncEffectUploader& asyncEffectUploader,
-            Bool keepEffects,
+            const DisplayConfig& displayConfig,
             const FrameTimer& frameTimer,
-            RendererStatistics& stats,
-            UInt64 gpuCacheSize);
+            RendererStatistics& stats);
         ~ResourceUploadingManager();
 
         Bool hasAnythingToUpload() const;
@@ -50,6 +51,7 @@ namespace ramses_internal
         void unloadResource(const ResourceDescriptor& rd);
         void getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, Bool keepEffects, UInt64 sizeToBeFreed) const;
         void getAndPrepareResourcesToUploadNext(ResourceContentHashVector& resourcesToUpload, UInt64& totalSize) const;
+        Int32 getScenePriority(const ResourceDescriptor& rd) const;
         UInt64 getAmountOfMemoryToBeFreedForNewResources(UInt64 sizeToUpload) const;
 
         RendererResourceRegistry& m_resources;
@@ -68,6 +70,9 @@ namespace ramses_internal
         const UInt64  m_resourceCacheSize = 0u;
 
         RendererStatistics& m_stats;
+
+        std::unordered_map<SceneId, int32_t> m_scenePriorities;
+        mutable std::map<int32_t, ResourceContentHashVector> m_buckets;
     };
 }
 

@@ -116,6 +116,11 @@ namespace ramses_internal
             return false;
         }
 
+#if defined(__INTEGRITY)
+        // optimize fs access (default buffer size is 512)
+        setvbuf(handle, NULL, _IOFBF, 8192);
+#endif
+
         m_handle = handle;
         m_isOpen = true;
         return true;

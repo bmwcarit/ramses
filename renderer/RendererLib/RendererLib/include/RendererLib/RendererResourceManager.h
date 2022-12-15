@@ -28,6 +28,7 @@ namespace ramses_internal
     class RendererStatistics;
     class IBinaryShaderCache;
     class IResourceUploader;
+    class DisplayConfig;
 
     class RendererResourceManager : public IRendererResourceManager
     {
@@ -37,10 +38,9 @@ namespace ramses_internal
             std::unique_ptr<IResourceUploader> resourceUploader,
             AsyncEffectUploader& asyncEffectUploader,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            Bool keepEffects,
+            const DisplayConfig& displayConfig,
             const FrameTimer& frameTimer,
-            RendererStatistics& stats,
-            UInt64 gpuCacheSize = 0u);
+            RendererStatistics& stats);
         virtual ~RendererResourceManager() override;
 
         // Immutable resources

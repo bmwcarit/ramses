@@ -44,6 +44,8 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(-1, m_config.getWaylandSocketEmbeddedFD());
     EXPECT_EQ(ramses_internal::String(""), m_config.getPlatformRenderNode());
     EXPECT_EQ(-1, m_config.getSwapInterval());
+    EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId()));
+    EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId(15562)));
 
     // this value is used in HL API, so test that value does not change unnoticed
     EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
@@ -123,6 +125,12 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
 
     m_config.setSwapInterval(2);
     EXPECT_EQ(2, m_config.getSwapInterval());
+
+    m_config.setScenePriority(ramses_internal::SceneId(15562), -1);
+    EXPECT_EQ(-1, m_config.getScenePriority(ramses_internal::SceneId(15562)));
+    EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId(15562 + 1)));
+    EXPECT_EQ(1u, m_config.getScenePriorities().size());
+    EXPECT_EQ(-1, m_config.getScenePriorities().at(ramses_internal::SceneId(15562)));
 }
 
 TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)

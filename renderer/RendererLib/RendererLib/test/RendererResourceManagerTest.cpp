@@ -26,13 +26,23 @@
 namespace ramses_internal {
 using namespace testing;
 
+namespace
+{
+    DisplayConfig makeConfig(bool keepEffects)
+    {
+        DisplayConfig cfg;
+        cfg.setKeepEffectsUploaded(keepEffects);
+        return cfg;
+    }
+}
+
 class ARendererResourceManager : public ::testing::Test
 {
 public:
-    explicit ARendererResourceManager(bool disableEffectDeletion = false)
+    explicit ARendererResourceManager(bool keepEffects = false)
         : fakeSceneId(66u)
         , asyncEffectUploader(platform, platform.renderBackendMock, notifier, 1)
-        , resourceManager(platform.renderBackendMock, std::unique_ptr<IResourceUploader>{ resUploader }, asyncEffectUploader, embeddedCompositingManager, disableEffectDeletion, frameTimer, stats)
+        , resourceManager(platform.renderBackendMock, std::unique_ptr<IResourceUploader>{ resUploader }, asyncEffectUploader, embeddedCompositingManager, makeConfig(keepEffects), frameTimer, stats)
     {
         // caller is expected to have a display prefix for logs
         ThreadLocalLog::SetPrefix(1);

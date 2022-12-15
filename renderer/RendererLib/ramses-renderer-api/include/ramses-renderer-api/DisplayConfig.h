@@ -516,6 +516,24 @@ namespace ramses
         status_t setSwapInterval(int32_t interval);
 
         /**
+        * @brief Specifies the scene's priority on this display
+        *
+        * The renderer will apply scene updates according to scene priority so that there will be less latency between
+        * client scene flush and rendering for scenes with higher priority. This could result in more latency for scenes with less priority.
+        * This setting should be used in combination with time budgets for resource uploads (#ramses::RamsesRenderer::setFrameTimerLimits)
+        * to get the desired effect.
+        *
+        * Default priority is 0. Higher values mean less priority.
+        * (Use negative values to increase priority)
+        *
+        * @param[in] sceneId scene id of the preferred scene
+        * @param[in] priority scene priority. Higher value means less priority
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setScenePriority(sceneId_t sceneId, int32_t priority);
+
+        /**
         * Stores internal data for implementation specifics of DisplayConfig.
         */
         class DisplayConfigImpl& impl;

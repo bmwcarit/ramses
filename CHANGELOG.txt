@@ -1,3 +1,18 @@
+27.0.128
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - set file buffer size to 8kB for Integrity OS
+        - ramses-scene-viewer:
+          - added filter for node visibility
+          - filter resources by hash name
+          - fixed resource hash name formatting (use same format as in the logs)
+          - added option to sort by uncompressed size
+          - export shader sources to file or clipboard
+        - ramses-packet-player:
+          - added details for scene actions
+        - Added ramses::DisplayConfig::setScenePriority()
+
 27.0.127
 -------------------
         Bugfixes

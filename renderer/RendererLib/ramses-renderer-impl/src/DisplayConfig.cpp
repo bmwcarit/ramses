@@ -249,4 +249,9 @@ namespace ramses
     {
         return impl.setSwapInterval(interval);
     }
+
+    status_t DisplayConfig::setScenePriority(sceneId_t sceneId, int32_t priority)
+    {
+        return impl.setScenePriority(sceneId, priority);
+    }
 }

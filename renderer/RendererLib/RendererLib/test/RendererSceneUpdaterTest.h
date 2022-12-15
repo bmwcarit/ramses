@@ -425,7 +425,7 @@ protected:
     void createDisplayAndExpectSuccess(const DisplayConfig& displayConfig = DisplayConfig())
     {
         ASSERT_TRUE(rendererSceneUpdater->m_resourceManagerMock == nullptr);
-        EXPECT_CALL(*rendererSceneUpdater, createResourceManager(_, _, _, _, _, _));
+        EXPECT_CALL(*rendererSceneUpdater, createResourceManager(_, _, _, _));
         EXPECT_CALL(renderer.m_platform, createResourceUploadRenderBackend());
         rendererSceneUpdater->createDisplayContext(displayConfig, nullptr);
         EXPECT_TRUE(renderer.hasDisplayController());

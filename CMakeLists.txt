@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 127)
+SET(RAMSES_VERSION_PATCH 128)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -74,8 +74,6 @@ OPTION(ramses-sdk_ENABLE_DLT "Enable dlt support" ON)
 OPTION(ramses-sdk_USE_LINUX_DEV_PTP "Enable support for synchronized ptp time on linux" OFF)
 OPTION(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization enabled (not supported on all platforms)" OFF)
 option(ramses-sdk_ENABLE_COVERAGE "Build withcode coverage enabled (gcc: gcov, clang: source based coverage)" OFF)
-
-set(ramses_CPACK_GENERATOR "TGZ" CACHE STRING "Passed to CPack to determine the type of package to be created. Default is TGZ.")
 
 SET(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
 SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")

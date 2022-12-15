@@ -254,3 +254,10 @@ TEST_F(ADisplayConfig, canSetSwapInterval)
     EXPECT_EQ(ramses::StatusOK, config.setSwapInterval(0));
     EXPECT_EQ(0, config.impl.getSwapInterval());
 }
+
+TEST_F(ADisplayConfig, canSetScenePriority)
+{
+    EXPECT_EQ(0, config.impl.getScenePriority(ramses::sceneId_t(551)));
+    EXPECT_EQ(ramses::StatusOK, config.setScenePriority(ramses::sceneId_t(551), 4));
+    EXPECT_EQ(4, config.impl.getScenePriority(ramses::sceneId_t(551)));
+}

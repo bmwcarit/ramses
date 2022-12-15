@@ -128,9 +128,7 @@ namespace ramses_internal
             // ownership of uploadStrategy is transferred into RendererResourceManager
             m_displayResourceManager = createResourceManager(renderBackend,
                                                         embeddedCompositingManager,
-                                                        displayConfig.getKeepEffectsUploaded(),
-                                                        displayConfig.getGPUMemoryCacheSize(),
-                                                        displayConfig.isAsyncEffectUploadEnabled(),
+                                                        displayConfig,
                                                         binaryShaderCache);
 
             m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_display);
@@ -146,20 +144,17 @@ namespace ramses_internal
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdater::createResourceManager(
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        bool keepEffectsUploaded,
-        uint64_t gpuCacheSize,
-        bool asyncEffectUploadEnabled,
+        const DisplayConfig& displayConfig,
         IBinaryShaderCache* binaryShaderCache)
     {
         return std::make_unique<RendererResourceManager>(
             renderBackend,
-            std::make_unique<ResourceUploader>(asyncEffectUploadEnabled, binaryShaderCache),
+            std::make_unique<ResourceUploader>(displayConfig.isAsyncEffectUploadEnabled(), binaryShaderCache),
             *m_asyncEffectUploader,
             embeddedCompositingManager,
-            keepEffectsUploaded,
+            displayConfig,
             m_frameTimer,
-            m_renderer.getStatistics(),
-            gpuCacheSize);
+            m_renderer.getStatistics());
     }
 
     void RendererSceneUpdater::destroyResourceManager()

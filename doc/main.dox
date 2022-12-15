@@ -25,9 +25,9 @@ To understand the different Ramses concepts and general architecture, see @ref G
 <!-- TODO Violin we should improve our presentation of example snippets - that's 80% of what people see from the docs -->
 If you prefer to learn by example, have a look at the @ref CodeExamples "list of examples".
 
-# Debugging and tools
+# Profiling, debugging and tools
 
-For details on specific tools, debugging options and log analysis, visit the @ref ToolsAndDebugging "tools and debugging section".
+For details on specific tools, debugging options and log analysis, visit the @ref ToolsAndDebugging "profiling, debugging and tools section".
 
 # Developer section
 

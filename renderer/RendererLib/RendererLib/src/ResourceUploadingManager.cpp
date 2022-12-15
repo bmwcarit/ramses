@@ -11,6 +11,7 @@
 #include "RendererLib/IResourceUploader.h"
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/RendererStatistics.h"
+#include "RendererLib/DisplayConfig.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "RendererAPI/IDevice.h"
@@ -27,18 +28,18 @@ namespace ramses_internal
         std::unique_ptr<IResourceUploader> uploader,
         IRenderBackend& renderBackend,
         AsyncEffectUploader& asyncEffectUploader,
-        Bool keepEffects,
+        const DisplayConfig& displayConfig,
         const FrameTimer& frameTimer,
-        RendererStatistics& stats,
-        UInt64 gpuCacheSize)
+        RendererStatistics& stats)
         : m_resources(resources)
         , m_uploader{ std::move(uploader) }
         , m_renderBackend(renderBackend)
         , m_asyncEffectUploader(asyncEffectUploader)
-        , m_keepEffects(keepEffects)
+        , m_keepEffects(displayConfig.getKeepEffectsUploaded())
         , m_frameTimer(frameTimer)
-        , m_resourceCacheSize(gpuCacheSize)
+        , m_resourceCacheSize(displayConfig.getGPUMemoryCacheSize())
         , m_stats(stats)
+        , m_scenePriorities(displayConfig.getScenePriorities())
     {
         assert(m_uploader);
     }
@@ -266,15 +267,53 @@ namespace ramses_internal
 
         totalSize = 0u;
         const ResourceContentHashVector& providedResources = m_resources.getAllProvidedResources();
-        for(const auto& resource : providedResources)
+
+        for (auto& bucket : m_buckets)
+        {
+            bucket.second.clear();
+        }
+
+        if (m_scenePriorities.empty())
+        {
+            m_buckets[0].reserve(providedResources.size());
+        }
+
+        for (const auto& resource : providedResources)
         {
             const ResourceDescriptor& rd = m_resources.getResourceDescriptor(resource);
             assert(rd.status == EResourceStatus::Provided);
             assert(rd.resource);
             totalSize += rd.resource->getDecompressedDataSize();
-
-            resourcesToUpload.push_back(resource);
+            auto& bucket = m_buckets[getScenePriority(rd)];
+            bucket.push_back(resource);
         }
+
+        if (m_buckets.size() == 1u)
+        {
+            resourcesToUpload.swap(m_buckets.begin()->second);
+        }
+        else
+        {
+            resourcesToUpload.reserve(providedResources.size());
+            // relies on sorting by std::map
+            for (const auto& bucket : m_buckets)
+            {
+                resourcesToUpload.insert(resourcesToUpload.end(), bucket.second.begin(), bucket.second.end());
+            }
+        }
+    }
+
+    Int32 ResourceUploadingManager::getScenePriority(const ResourceDescriptor& rd) const
+    {
+        if (!m_scenePriorities.empty() && !rd.sceneUsage.empty())
+        {
+            auto it = m_scenePriorities.find(rd.sceneUsage.front());
+            if (it != m_scenePriorities.end())
+            {
+                return it->second;
+            }
+        }
+        return 0;
     }
 
     UInt64 ResourceUploadingManager::getAmountOfMemoryToBeFreedForNewResources(UInt64 sizeToUpload) const

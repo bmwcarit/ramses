@@ -32,13 +32,12 @@ namespace ramses_internal
         std::unique_ptr<IResourceUploader> resourceUploader,
         AsyncEffectUploader& asyncEffectUploader,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        Bool keepEffects,
+        const DisplayConfig& displayConfig,
         const FrameTimer& frameTimer,
-        RendererStatistics& stats,
-        UInt64 gpuCacheSize)
+        RendererStatistics& stats)
         : m_renderBackend(renderBackend)
         , m_embeddedCompositingManager(embeddedCompositingManager)
-        , m_resourceUploadingManager(m_resourceRegistry, std::move(resourceUploader), renderBackend, asyncEffectUploader, keepEffects, frameTimer, stats, gpuCacheSize)
+        , m_resourceUploadingManager(m_resourceRegistry, std::move(resourceUploader), renderBackend, asyncEffectUploader, displayConfig, frameTimer, stats)
         , m_stats(stats)
     {
     }

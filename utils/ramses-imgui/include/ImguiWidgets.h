@@ -21,6 +21,8 @@
 #endif
 
 #include "absl/types/span.h"
+#include "SceneAPI/TextureEnums.h"
+#include "Resource/TextureMetaInfo.h"
 #include <string>
 
 
@@ -55,6 +57,14 @@ namespace ramses_internal
         };
 
         void PreviewImage(const Image& img, const ImVec2& size);
+
+        std::string SaveToPng(const Byte*                data,
+                              UInt                       size,
+                              ETextureFormat             fmt,
+                              uint32_t                   width,
+                              uint32_t                   height,
+                              const std::string&         filename,
+                              const TextureSwizzleArray& swizzle = DefaultTextureSwizzleArray);
 
         std::string SaveTextureToPng(const TextureResource* resource, const std::string& filename);
     }

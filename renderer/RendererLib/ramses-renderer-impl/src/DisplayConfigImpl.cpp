@@ -286,6 +286,17 @@ namespace ramses
         return m_internalConfig.getSwapInterval();
     }
 
+    status_t DisplayConfigImpl::setScenePriority(sceneId_t sceneId, int32_t priority)
+    {
+        m_internalConfig.setScenePriority(ramses_internal::SceneId(sceneId.getValue()), priority);
+        return StatusOK;
+    }
+
+    int32_t DisplayConfigImpl::getScenePriority(sceneId_t sceneId) const
+    {
+        return m_internalConfig.getScenePriority(ramses_internal::SceneId(sceneId.getValue()));
+    }
+
     status_t DisplayConfigImpl::validate() const
     {
         status_t status = StatusObjectImpl::validate();

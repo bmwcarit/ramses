@@ -16,6 +16,7 @@
 #include "RamsesObjectVector.h"
 #include "SceneDumper.h"
 #include "ProgressMonitor.h"
+#include "ResourceList.h"
 #include <unordered_map>
 #include <map>
 #include <array>
@@ -74,6 +75,10 @@ namespace ramses_internal
         void drawMenuItemShowPreview();
         void drawMenuItemCopyTexture2D();
         void drawMenuItemStorePng();
+        void drawMenuItemExportShaderSources();
+
+        template <class F>
+        void processObjectsAsync(F&& func, ramses::ERamsesObjectType objType, const char* message);
 
         /**
          * Draws all objects of type T that own a link to the target object
@@ -111,12 +116,13 @@ namespace ramses_internal
 
         void drawFile();
         void drawSceneObjects();
+        void drawSceneObjectsFilter();
         void drawNodeHierarchy();
         void drawResources();
         void drawRenderHierarchy();
         void drawErrors();
 
-        void updateResourceInfo();
+        bool passFilter(const ramses::RamsesObjectImpl& obj) const;
 
         bool drawRamsesObject(ramses::RamsesObjectImpl& obj);
 
@@ -131,19 +137,9 @@ namespace ramses_internal
 
         void saveSceneToFile();
         std::string saveTexture2D(const ramses::Texture2DImpl& obj) const;
+        std::string saveShaderSources(const ramses::EffectImpl& obj) const;
 
         void setVisibility(ramses::NodeImpl& node, ramses::EVisibilityMode visibility);
-
-        struct ResourceInfo
-        {
-            ramses::RamsesObjectVector objects;
-            std::unordered_multimap<ramses_internal::ResourceContentHash, ramses::Resource*> hashLookup;
-            uint32_t compressedSize = 0U;
-            uint32_t decompressedSize = 0U;
-            uint32_t unavailable = 0U;
-            int displayLimit = 1000;
-            uint32_t displayedSize = 0U;
-        };
 
         // Stores RenderPasses, RenderGroups, MeshNodes in drawing order
         struct RenderInfo
@@ -153,16 +149,24 @@ namespace ramses_internal
             std::unordered_map<const ramses::RamsesObjectImpl*, std::vector<const ramses::RenderGroupImpl*>> renderGroupMap;
         };
 
+        struct NodeFilter
+        {
+            bool showOff = true;
+            bool showVisible = true;
+            bool showInvisible = true;
+        };
+
         using SceneObjects = std::map<ramses::ERamsesObjectType, std::vector<const ramses::RamsesObject*>>;
 
         ImGuiTextFilter           m_filter;
+        NodeFilter                m_nodeFilter;
         ramses::Scene&            m_scene;
         ramses::SceneDumper::RamsesObjectImplSet m_usedObjects;
         const std::string         m_loadedSceneFile;
         std::string               m_filename;
         std::string               m_lastErrorMessage;
         SceneObjects              m_sceneObjects;
-        ResourceInfo              m_resourceInfo;
+        std::unique_ptr<ResourceList> m_resourceInfo;
         RenderInfo                m_renderInfo;
         bool                      m_compressFile = false;
         bool                      m_alwaysOverwrite = false;

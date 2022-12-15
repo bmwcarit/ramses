@@ -184,7 +184,7 @@ namespace ramses_internal
             return false;
         }
         const auto bytesWritten{m_packetWriter.getBytesWritten()};
-        m_sceneStatistics.statSceneUpdatesGeneratedSize.incCounter(static_cast<decltype(m_sceneStatistics.statSceneUpdatesGeneratedSize)::ValueType>(bytesWritten));
+        m_sceneStatistics.statSceneUpdatesGeneratedSize.incCounter(static_cast<uint32_t>(bytesWritten));
         m_sceneStatistics.statSceneUpdatesGeneratedPackets.incCounter(1);
 
         m_overallSize += bytesWritten;
