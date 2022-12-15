@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.127</span>
+   &#160;<span id="projectnumber">27.0.128</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,15 +68,15 @@ $(function() {
 <div class="title">ramses-scene-viewer </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md224"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md233"></a>
 Synopsis</h1>
 <p><code>ramses-scene-viewer-PLATFORM [options] -s SCENE_FILE</code></p>
 <p>PLATFORM typically means "windows-wgl-4-2-core" on Windows and "x11-egl-es-3-0" on Linux desktop.</p>
-<h1><a class="anchor" id="autotoc_md225"></a>
+<h1><a class="anchor" id="autotoc_md234"></a>
 Description</h1>
 <p><code>ramses-scene-viewer</code> is a tool to display and inspect Ramses scene files (e.g. created by <a class="el" href="classramses_1_1Scene.html#a518965745ef1e9a460bab14747829089">ramses::Scene::saveToFile()</a>). It helps to find errors and unused objects. The inspection GUI visualizes the relations between the scene objects and allows to do simple modifications.</p>
 <p>The window size is auto-detected based on the first camera viewport in the scene. This can be overridden by the options <b>-w, &ndash;width</b> or <b>-h, &ndash;height</b></p>
-<h2><a class="anchor" id="autotoc_md226"></a>
+<h2><a class="anchor" id="autotoc_md235"></a>
 Inspection GUI</h2>
 <p>The inspection GUI provides different views on the scene objects (described in the sections below).</p>
 <p>These features are common to all object types:</p><ul>
@@ -91,29 +91,29 @@ Inspection GUI</h2>
 </li>
 <li><em>red</em> objects contain an error message (unless validation is switched off by command line)</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md227"></a>
+<h3><a class="anchor" id="autotoc_md236"></a>
 File</h3>
 <p>Allows to save the current scene to another file. This is mainly useful to store scene modifications done in the UI.</p>
-<h3><a class="anchor" id="autotoc_md228"></a>
+<h3><a class="anchor" id="autotoc_md237"></a>
 Scene objects</h3>
 <p>Provides a list of all scene objects grouped by type. For each type the number of instances is displayed. Types with zero instances are not listed.</p>
 <p>The objects can be filtered by name. It's also possible to apply negative filtering by a prefix "-".</p>
-<h3><a class="anchor" id="autotoc_md229"></a>
+<h3><a class="anchor" id="autotoc_md238"></a>
 Node hierarchy</h3>
 <p>Shows the node tree. The first layer only shows nodes without parent (root nodes). Children can be unfolded.</p>
-<h3><a class="anchor" id="autotoc_md230"></a>
+<h3><a class="anchor" id="autotoc_md239"></a>
 Resources</h3>
 <p>Shows the total number of resources and the amount of memory that they are consuming. "Not loaded" resources are currently not used by any render pass (possibly because some parent mesh node is switched off).</p>
 <p>Additionally all resource objects are listed in descending size order. The "Display limit" can be used to only show the largest x resources and their consumed memory.</p>
 <p>Grayed out resources are typically duplicates, i.e. they refer to the same underlying byte buffer identified by a hash value. If that's the case, the duplicates are listed in the details. This is not indicating a problem because the underlying data will only be stored once in memory.</p>
 <p>Texture2D objects can be exported to png (not all texture formats may be supported though). The list of all Texture2D objects can be copied to clipboard (CSV-format) for further external processing.</p>
-<h3><a class="anchor" id="autotoc_md231"></a>
+<h3><a class="anchor" id="autotoc_md240"></a>
 Render hierarchy</h3>
 <p>Shows the render order of RenderPasses, RenderGroups and MeshNodes. The order can be modified in the UI, but will not be applied immediately to the scene. Use the "refresh" button to apply changes. This will also reorder the lists.</p>
-<h3><a class="anchor" id="autotoc_md232"></a>
+<h3><a class="anchor" id="autotoc_md241"></a>
 Objects with errors/warnings</h3>
 <p>Contains a list of objects where the scene validation found an issue. If the scene validation did not run (see -nv option) or no error was found, this section will not be displayed.</p>
-<h1><a class="anchor" id="autotoc_md233"></a>
+<h1><a class="anchor" id="autotoc_md242"></a>
 Options</h1>
 <p><b> -s, &ndash;scene</b> SCENE_FILE</p>
 <p>The scene file that shall be loaded (required argument).</p>

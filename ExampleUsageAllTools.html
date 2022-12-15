@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.127</span>
+   &#160;<span id="projectnumber">27.0.128</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,16 +68,16 @@ $(function() {
 <div class="title">Full Example of how to use Shader Tools in RAMSES </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md219"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md228"></a>
 Summary</h1>
 <p>This example shows how to use the shader tools to get the most benefit.</p>
-<h1><a class="anchor" id="autotoc_md220"></a>
+<h1><a class="anchor" id="autotoc_md229"></a>
 Input</h1>
 <p>There are two different effects to be processed in this example:</p><ul>
 <li>A car (vertex and a fragment shader)</li>
 <li>A tree (vertex and a fragment shader)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md221"></a>
+<h1><a class="anchor" id="autotoc_md230"></a>
 Pipelines</h1>
 <p>The input gets processed in two different pipelines:</p><ul>
 <li>Client Pipeline: produces results for the ECU that contains the application with <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API.">ramses::RamsesClient</a></li>
@@ -88,7 +88,7 @@ Pipelines</h1>
 <img src="ShaderTools.png" alt=""/>
 <div class="caption">
 Guide: how to use shader tools and which ECUs use the results</div></div>
-<h1><a class="anchor" id="autotoc_md222"></a>
+<h1><a class="anchor" id="autotoc_md231"></a>
 Client Pipeline</h1>
 <p>For in advance known effects this pipeline saves the GLSL parsing in ramses::RamsesClient::createEffect() during runtime, by parsing it offline and storing the resulting resource file.</p>
 <p>The client pipeline includes following stages:</p><ul>
@@ -101,7 +101,7 @@ Client Pipeline</h1>
 <li>In order to use one of these effects in run-time (e.g. to create a <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. This includes GLSL uniform values,...">ramses::Appearance</a> or query a uniform) it can be retrieved<br  />
  using ramses::RamsesClient::findResourceById() with the <a class="el" href="structramses_1_1resourceId__t.html" title="Resource identifier used to refer to a resource.">ramses::resourceId_t</a> that was ouput by ramses-effect-from-glsl-shader and saved for the specific effect</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md223"></a>
+<h1><a class="anchor" id="autotoc_md232"></a>
 Renderer Pipeline</h1>
 <p>This pipeline saves the OpenGL compilation of an effect on the renderer during runtime, by compiling it offline and storing the binary result.</p>
 <p>The renderer pipeline includes following stages:</p><ul>

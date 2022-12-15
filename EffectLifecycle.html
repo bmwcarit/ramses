@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.127</span>
+   &#160;<span id="projectnumber">27.0.128</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,7 +68,7 @@ $(function() {
 <div class="title">Effect lifecycle in RAMSES </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md198"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md207"></a>
 General lifecycle</h1>
 <p>Effects in RAMSES are immutable client resources, and as such follow the same lifecycle as any other client resources:</p><ul>
 <li>they are created and destroyed by a <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API.">ramses::RamsesClient</a></li>
@@ -94,20 +94,20 @@ General lifecycle</h1>
 </ul>
 </li>
 </ul>
-<h1><a class="anchor" id="autotoc_md199"></a>
+<h1><a class="anchor" id="autotoc_md208"></a>
 Effect IDs</h1>
 <p>It is important to note that effects and binary shaders are two different objects, and their IDs, despite having relationship to each other, have different values. Client-side effects have resource type ID same as any other <a class="el" href="classramses_1_1Resource.html" title="The Resource is the base class of all resources, such as arrays and textures.">ramses::Resource</a> - <a class="el" href="structramses_1_1resourceId__t.html" title="Resource identifier used to refer to a resource.">ramses::resourceId_t</a>. The renderer, however, refers to the binary shaders for effects by their <a class="el" href="namespaceramses.html#a02b0ed7a56199abe6ea3a892b85a057e" title="Effect identifier used by the renderer to refer to an effect.">ramses::effectId_t</a>. Both are 128bit numbers, but their values are inherently different for the same effect. Tools which deal with effects reflect this behavior and offer the option to provide both types by providing a special command-line argument (&ndash;out-effect-id-type).</p>
 <p>The client-side resourceId can be used to identify effects on the client side (e.g. when loading from files) while the renderer-side resourceId can be used with <a class="el" href="classramses_1_1IBinaryShaderCache.html" title="An interface used to exchange Binary Shader Cache with the RamsesRenderer. The RamsesRenderer will no...">ramses::IBinaryShaderCache</a>, or when using the resource caching interface <a class="el" href="classramses_1_1IRendererResourceCache.html" title="An interface used to implement a caching mechanism for resources used on the RamsesRenderer....">ramses::IRendererResourceCache</a> which follows similar principles.</p>
-<h1><a class="anchor" id="autotoc_md200"></a>
+<h1><a class="anchor" id="autotoc_md209"></a>
 Why are effects slow to process</h1>
 <p>One essential difference between Effects and other resources is that effects are considerably more expensive to create during runtime for two reasons:</p><ol type="1">
 <li>Effects are being parsed by a GLSlang compiler in ramses::RamsesClient::createEffect(). This step is necessary in order for RAMSES to figure out which data is required by the effect, such as uniforms, vertex attributes and textures</li>
 <li>For each subscribed renderer, effects are being compiled for the concrete target device. This is necessary because RAMSES as a distributed system must make sure that the same effect can be used on different platforms. This would not be possible if RAMSES would store and distribute binary shaders instead of effects/GLSL code</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md201"></a>
+<h1><a class="anchor" id="autotoc_md210"></a>
 How to skip GLSlang compilation on client side</h1>
 <p>To skip the GLSlang compilation step in ramses::RamsesClient::createEffect(), the client application can simply do this step in a preprocessing step for all known in advance effects and store the result in resource files. For convenience, ramses provides a tool for exactly this purpose. See (<a class="el" href="GLSLToEffectResource.html">Storing effects in resource files</a>) for more info how to use it.</p>
-<h1><a class="anchor" id="autotoc_md202"></a>
+<h1><a class="anchor" id="autotoc_md211"></a>
 How to skip the OpenGL X.Y compilation step on the renderer</h1>
 <p>To skip the compilation on the renderer side, it is enough to provide a binary shader when asked for it in <a class="el" href="classramses_1_1IBinaryShaderCache.html#a5a7f3039ec6fbc9f375408a126772320" title="Used by RamsesRenderer to ask the application if it provides binary data for the Effect with the give...">ramses::IBinaryShaderCache::hasBinaryShader()</a>. In order for this to work, the binary shader must match exactly the source code of the original effect. In particular, this means:</p><ul>
 <li>identical source code</li>

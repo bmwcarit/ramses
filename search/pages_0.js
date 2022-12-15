@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['code_20style_20guide_20for_20ramses_20modules_3928',['Code Style Guide for RAMSES modules',['../CodeStyleGuide.html',1,'']]],
-  ['contributing_20code_20to_20ramses_3929',['Contributing Code to RAMSES',['../Contributing.html',1,'']]]
+  ['code_20style_20guide_20for_20ramses_20modules_3933',['Code Style Guide for RAMSES modules',['../CodeStyleGuide.html',1,'']]],
+  ['contributing_20code_20to_20ramses_3934',['Contributing Code to RAMSES',['../Contributing.html',1,'']]]
 ];

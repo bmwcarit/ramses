@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.127</span>
+   &#160;<span id="projectnumber">27.0.128</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -214,6 +214,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a20467637b570e389470e8c6a07497634"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a20467637b570e389470e8c6a07497634">setSwapInterval</a> (int32_t interval)</td></tr>
 <tr class="memdesc:a20467637b570e389470e8c6a07497634"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the minimum number of video frames that are displayed before a buffer swap will occur.  <a href="classramses_1_1DisplayConfig.html#a20467637b570e389470e8c6a07497634">More...</a><br /></td></tr>
 <tr class="separator:a20467637b570e389470e8c6a07497634"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40c2a2a95412755c649e2a6bd74f9c84"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a40c2a2a95412755c649e2a6bd74f9c84">setScenePriority</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId, int32_t priority)</td></tr>
+<tr class="memdesc:a40c2a2a95412755c649e2a6bd74f9c84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the scene's priority on this display.  <a href="classramses_1_1DisplayConfig.html#a40c2a2a95412755c649e2a6bd74f9c84">More...</a><br /></td></tr>
+<tr class="separator:a40c2a2a95412755c649e2a6bd74f9c84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a3135bfe0e1df7923ea8f42f1e964b37c">operator=</a> (const <a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;other)=delete</td></tr>
 <tr class="memdesc:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted copy assignment.  <a href="classramses_1_1DisplayConfig.html#a3135bfe0e1df7923ea8f42f1e964b37c">More...</a><br /></td></tr>
 <tr class="separator:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1030,6 +1033,46 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a> </dd></dl>
+
+</div>
+</div>
+<a id="a40c2a2a95412755c649e2a6bd74f9c84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40c2a2a95412755c649e2a6bd74f9c84">&#9670;&nbsp;</a></span>setScenePriority()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DisplayConfig::setScenePriority </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a>&#160;</td>
+          <td class="paramname"><em>sceneId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>priority</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Specifies the scene's priority on this display. </p>
+<p>The renderer will apply scene updates according to scene priority so that there will be less latency between client scene flush and rendering for scenes with higher priority. This could result in more latency for scenes with less priority. This setting should be used in combination with time budgets for resource uploads (<a class="el" href="classramses_1_1RamsesRenderer.html#ac371e5e8e6a581a8d16f39e9ece1ed99" title="Sets time limits for time-out of different sections of render and update loop.">ramses::RamsesRenderer::setFrameTimerLimits</a>) to get the desired effect.</p>
+<p>Default priority is 0. Higher values mean less priority. (Use negative values to increase priority)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">sceneId</td><td>scene id of the preferred scene </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">priority</td><td>scene priority. Higher value means less priority </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 
 </div>
 </div>
