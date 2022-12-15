@@ -38,6 +38,7 @@ jobs:
             -Dramses-sdk_ENABLE_WAYLAND_IVI=OFF
 
         cmake --build . --target package --config $BUILD_TYPE
+        find . -name '*tar.gz' -exec bash -c 'mv $0 ramses-linux.tar.gz' {} \;
       if: ${{ matrix.os == 'ubuntu-20.04' }}
 
     - name: Build and package (Windows)
@@ -64,6 +65,8 @@ jobs:
             -Dramses-sdk_ENABLE_WAYLAND_IVI=OFF
 
         cmake --build . --target package --config $BUILD_TYPE
+
+        find . -name '*tar.gz' -exec bash -c 'mv $0 ramses-windows.tar.gz' {} \;
       if: ${{ matrix.os == 'windows-2019' }}
 
     - name: Publish release
@@ -71,7 +74,7 @@ jobs:
       with:
         fail_on_unmatched_files: true
         files: |
-          ${{runner.workspace}}/build/ramses-sdk*.tar.gz
+          ${{runner.workspace}}/build/ramses-windows.tar.gz
       if: ${{ matrix.os == 'windows-2019' }}
 
     - name: Publish release
@@ -79,5 +82,5 @@ jobs:
       with:
         fail_on_unmatched_files: true
         files: |
-          ${{runner.workspace}}/build/ramses-sdk*.tar.gz
+          ${{runner.workspace}}/build/ramses-linux.tar.gz
       if: ${{ matrix.os == 'ubuntu-20.04' }}
