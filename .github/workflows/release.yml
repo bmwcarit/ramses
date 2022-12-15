@@ -30,7 +30,6 @@ jobs:
         sudo apt-get install libgles2-mesa-dev libx11-dev
         cmake $GITHUB_WORKSPACE \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-            -Dramses_CPACK_GENERATOR=DEB \
             -Dramses-sdk_BUILD_TESTS=OFF \
             -Dramses-sdk_BUILD_EXAMPLES=OFF \
             -Dramses-sdk_BUILD_SMOKE_TESTS=OFF \
@@ -72,7 +71,7 @@ jobs:
       with:
         fail_on_unmatched_files: true
         files: |
-          ${{runner.workspace}}/build/ramses-sdk*.zip
+          ${{runner.workspace}}/build/ramses-sdk*.tar.gz
       if: ${{ matrix.os == 'windows-2019' }}
 
     - name: Publish release
@@ -80,5 +79,5 @@ jobs:
       with:
         fail_on_unmatched_files: true
         files: |
-          ${{runner.workspace}}/build/ramses-sdk*.deb
+          ${{runner.workspace}}/build/ramses-sdk*.tar.gz
       if: ${{ matrix.os == 'ubuntu-20.04' }}
