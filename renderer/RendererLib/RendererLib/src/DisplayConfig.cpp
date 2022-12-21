@@ -46,14 +46,14 @@ namespace ramses_internal
         m_integrityRGLDeviceUnit = rglDeviceUnit;
     }
 
-    AndroidNativeWindowPtr DisplayConfig::getAndroidNativeWindow() const
+    MobilePlatformNativeWindowPtr DisplayConfig::getMobilePlatformNativeWindow() const
     {
-        return m_androidNativeWindowPtr;
+        return m_mobilePlatformNativeWindowPtr;
     }
 
-    void DisplayConfig::setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr)
+    void DisplayConfig::setMobilePlatformNativeWindow(MobilePlatformNativeWindowPtr nativeWindowPtr)
     {
-        m_androidNativeWindowPtr = nativeWindowPtr;
+        m_mobilePlatformNativeWindowPtr = nativeWindowPtr;
     }
 
     Bool DisplayConfig::getStartVisibleIvi() const

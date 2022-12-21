@@ -297,6 +297,10 @@ ENDIF()
 # LZ4 de-/compression library
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)
 
+IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")) 
+    SET(ramses-sdk_ALLOW_PLATFORM_LZ4 OFF)
+ENDIF()
+
 IF (ramses-sdk_ALLOW_PLATFORM_LZ4)
     pkg_check_modules(lz4 liblz4)
 ENDIF()

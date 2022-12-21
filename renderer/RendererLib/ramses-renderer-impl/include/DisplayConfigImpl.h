@@ -37,8 +37,8 @@ namespace ramses
         const char* getWaylandDisplay() const;
         status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
         uint32_t getIntegrityRGLDeviceUnit() const;
-        void* getAndroidNativeWindow() const;
-        status_t setAndroidNativeWindow(void * nativeWindowPtr);
+        void* getMobilePlatformNativeWindow() const;
+        status_t setMobilePlatformNativeWindow(void * nativeWindowPtr);
         status_t setWindowIviVisible(bool visible);
         status_t setResizable(bool resizable);
         status_t keepEffectsUploaded(bool enable);

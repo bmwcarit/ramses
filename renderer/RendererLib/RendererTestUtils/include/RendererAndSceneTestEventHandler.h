@@ -16,6 +16,9 @@
 #include "RamsesRendererUtils.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include <unordered_set>
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+#include <CoreFoundation/CFRunLoop.h>
+#endif
 
 namespace ramses
 {
@@ -26,8 +29,8 @@ namespace ramses
             : m_renderer(renderer)
             , m_timeout(timeout.count() > 0 ? timeout : std::chrono::hours{ 24 })
         {
-        }
-
+        }        
+        
         virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
         {
             m_scenes[sceneId].state = state;
@@ -146,8 +149,12 @@ namespace ramses
             {
                 if (!m_renderer.impl.isThreaded())
                     m_renderer.doOneLoop();
-
+                
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.005, true);
+#else
                 std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes
+#endif
 
                 m_renderer.dispatchEvents(*this);
                 m_renderer.getSceneControlAPI()->dispatchEvents(*this);

@@ -37,4 +37,49 @@ ELSEIF(TARGET_OS MATCHES "Linux" OR TARGET_OS MATCHES "Android")
         EGL_FOUND
     )
 
+ELSEIF((TARGET_OS MATCHES "Darwin"))
+    SET(EGL_INCLUDE_DIRS
+        ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
+    )   
+
+    FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
+     PATHS ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/MetalAngle.xcframework/macos-arm64_x86_64/
+        NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+
+    IF(EGL_LIBRARIES)
+        SET(EGL_FOUND TRUE)
+    ENDIF()
+
+    MARK_AS_ADVANCED(
+        EGL_INCLUDE_DIRS
+        EGL_LIBRARIES
+        EGL_FOUND
+    )
+
+ELSEIF((TARGET_OS MATCHES "iOS"))
+
+    SET(EGL_INCLUDE_DIRS
+        ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
+    )   
+   
+    IF(ramses-sdk_METALANGLE_IOS_SIMULATOR)
+        FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
+            PATHS ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/MetalAngle.xcframework/ios-arm64_x86_64-simulator/
+            NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+    ELSE()
+        FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
+            PATHS ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/MetalAngle.xcframework/ios-arm64/
+            NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+    ENDIF()
+
+    IF(EGL_LIBRARIES)
+        SET(EGL_FOUND TRUE)
+    ENDIF()
+    
+    MARK_AS_ADVANCED(
+        EGL_INCLUDE_DIRS
+        EGL_LIBRARIES
+        EGL_FOUND
+    )
+
 ENDIF()

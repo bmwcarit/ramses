@@ -33,7 +33,7 @@ RendererBundle::RendererBundle(ANativeWindow* nativeWindow, int width, int heigh
 
     ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(0, 0, width, height);
-    displayConfig.setAndroidNativeWindow(m_nativeWindow);
+    displayConfig.setMobilePlatformNativeWindow(m_nativeWindow);
     ramses::displayId_t displayId = m_renderer->createDisplay(displayConfig);
 
     m_autoShowHandler.reset(new SceneStateAutoShowEventHandler(*m_renderer, displayId));

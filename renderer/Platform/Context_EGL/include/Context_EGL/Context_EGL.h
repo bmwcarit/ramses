@@ -46,7 +46,7 @@ namespace ramses_internal
         //    format and we only treat it as an opque value.
         //    Try to remove this workaround in the future by e.g. refactoring Context usage or making Context templated.
         //    Additionally everone uses pointer types except rgl
-#ifdef __ghs__
+#if defined(__ghs__) || defined(__APPLE__)
         using Generic_EGLNativeDisplayType = int;
 #else
         using Generic_EGLNativeDisplayType = void*;

@@ -195,7 +195,7 @@ namespace ramses
         *
         * @return the current setting of Android native window, returns nullptr if no value has been set yet
         */
-        void* getAndroidNativeWindow() const;
+        void* getMobilePlatformNativeWindow() const;
 
         /**
         * @brief [Mandatory on Android] Set native window to use for rendering on Android.
@@ -207,7 +207,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setAndroidNativeWindow(void* nativeWindowPtr);
+        status_t setMobilePlatformNativeWindow(void* nativeWindowPtr);
 
         /**
         * @brief Set IVI window to be visible right after window creation

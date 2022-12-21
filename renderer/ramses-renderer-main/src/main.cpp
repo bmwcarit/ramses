@@ -27,6 +27,9 @@
 
 #include <unordered_set>
 #include <thread>
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+#include <CoreFoundation/CFRunLoop.h>
+#endif
 
 struct MappingCommand
 {
@@ -236,7 +239,11 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         while (!commandExit->exitRequested() && rendererMate.isRunning())
         {
             rendererMate.dispatchAndFlush(dmEventHandler);
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.02, true);
+#else
             ramses_internal::PlatformThread::Sleep(20u);
+#endif
         }
     }
 

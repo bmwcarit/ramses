@@ -74,8 +74,8 @@ namespace ramses_internal
     struct WindowsWindowHandleTag {};
     using WindowsWindowHandle = StronglyTypedValue<void *, nullptr, WindowsWindowHandleTag>;
 
-    struct AndroidNativeWindowPtrTag {};
-    using AndroidNativeWindowPtr = StronglyTypedValue<void *, nullptr, AndroidNativeWindowPtrTag>;
+    struct MobilePlatformNativeWindowPtrTag {};
+    using MobilePlatformNativeWindowPtr = StronglyTypedValue<void *, nullptr, MobilePlatformNativeWindowPtrTag>;
 
     struct ScreenshotInfo
     {
@@ -149,7 +149,7 @@ namespace ramses_internal
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviLayerId)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::IntegrityRGLDeviceUnit)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WindowsWindowHandle)
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::AndroidNativeWindowPtr)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::MobilePlatformNativeWindowPtr)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::BinaryShaderFormatID)
 MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::ERendererLogTopic, "ERendererLogTopic", ramses_internal::RendererLogTopicNames, ramses_internal::ERendererLogTopic::COUNT);
 

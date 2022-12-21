@@ -121,14 +121,14 @@ namespace ramses
         return m_internalConfig.getIntegrityRGLDeviceUnit().getValue();
     }
 
-    void* DisplayConfigImpl::getAndroidNativeWindow() const
+    void* DisplayConfigImpl::getMobilePlatformNativeWindow() const
     {
-        return m_internalConfig.getAndroidNativeWindow().getValue();
+        return m_internalConfig.getMobilePlatformNativeWindow().getValue();
     }
 
-    status_t DisplayConfigImpl::setAndroidNativeWindow(void * nativeWindowPtr)
+    status_t DisplayConfigImpl::setMobilePlatformNativeWindow(void * nativeWindowPtr)
     {
-        m_internalConfig.setAndroidNativeWindow(ramses_internal::AndroidNativeWindowPtr(nativeWindowPtr));
+        m_internalConfig.setMobilePlatformNativeWindow(ramses_internal::MobilePlatformNativeWindowPtr(nativeWindowPtr));
         return StatusOK;
     }
 

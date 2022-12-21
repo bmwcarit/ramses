@@ -19,6 +19,10 @@
 #include "PlatformAbstraction/internal/Thread_Posix.h"
 #endif
 
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+#include <CoreFoundation/CFRunLoop.h>
+#endif
+
 namespace ramses_internal
 {
     class PlatformThread final
@@ -98,15 +102,26 @@ namespace ramses_internal
 
     inline void PlatformThread::join()
     {
-        if (m_thread.joinable())
+        if (m_thread.joinable()) {
+            
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+            while(m_isRunning) {
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, true);
+            }
+#endif
             m_thread.join();
+        }
         m_runnable = nullptr;
     }
 
     inline
     void PlatformThread::Sleep(uint32_t msec)
     {
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, msec / 1000.0, true);
+#else
         std::this_thread::sleep_for(std::chrono::milliseconds{msec});
+#endif
     }
 }
 

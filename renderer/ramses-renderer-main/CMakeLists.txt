@@ -9,6 +9,6 @@
 RENDERER_MODULE_PER_CONFIG_STATIC(ramses-renderer
     TYPE           BINARY
     ENABLE_INSTALL ON
-    FILES_SOURCE   src/main.cpp
-    DEPENDENCIES   ramses-renderer-lib
+    FILES_SOURCE   src/main.cpp src/main.mm
+    DEPENDENCIES   ramses-renderer-lib Cocoa
 )

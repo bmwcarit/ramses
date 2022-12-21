@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     Window_Android::Window_Android(const DisplayConfig& displayConfig, IWindowEventHandler &windowEventHandler, UInt32 id)
         : Window_Base(displayConfig, windowEventHandler, id)
-        , m_nativeWindow(static_cast<ANativeWindow*>(displayConfig.getAndroidNativeWindow().getValue()))
+        , m_nativeWindow(static_cast<ANativeWindow*>(displayConfig.getMobilePlatformNativeWindow().getValue()))
     {
         LOG_INFO(CONTEXT_RENDERER, "Window_Android::Window_Android");
     }

@@ -62,8 +62,8 @@ namespace ramses_internal
         void setX11WindowHandle(X11WindowHandle x11WindowHandle);
         X11WindowHandle getX11WindowHandle() const;
 
-        AndroidNativeWindowPtr getAndroidNativeWindow() const;
-        void setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr);
+        MobilePlatformNativeWindowPtr getMobilePlatformNativeWindow() const;
+        void setMobilePlatformNativeWindow(MobilePlatformNativeWindowPtr nativeWindowPtr);
 
         Bool getStartVisibleIvi() const;
         void setStartVisibleIvi(bool startVisible);
@@ -130,7 +130,7 @@ namespace ramses_internal
         IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         WindowsWindowHandle m_windowsWindowHandle;
         X11WindowHandle m_x11WindowHandle;
-        AndroidNativeWindowPtr m_androidNativeWindowPtr;
+        MobilePlatformNativeWindowPtr m_mobilePlatformNativeWindowPtr;
         Bool m_startVisibleIvi = false;
         String m_waylandDisplay;
 
