@@ -201,7 +201,6 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Platform_Wayland_IVI_EGL
                                 AUTO renderer/Platform/Platform_Wayland_Shell_EGL
                                 AUTO renderer/Platform/Platform_X11
-                                AUTO renderer/Platform/Platform_MacOS_EGL
                                 AUTO renderer/Platform/Platform_Integrity_RGL
                                 AUTO renderer/Platform/Platform_Android
                                 AUTO renderer/Platform/Platform_iOS_EGL
