@@ -29,6 +29,7 @@ digraph Initiator {
     old_code ->unknown [label="Down\n+Inform new" color=purple]
     old_code -> send_session [label="New pinfo (bad session)\n+Mark reponsible" color=purple]
     old_code -> old_code [label="Old pinfo" color=purple]
+    old_code -> old_code [label="Error (MID==0)\nSend new pinfo" color=red]
 
     // Must send incrementing MID in keepalive otherwise old code might get confused (We do not know remote yet)
     // - Must inform new code of session to be able to match correct session replies

@@ -111,6 +111,9 @@ namespace ramses_internal
         int32_t getScenePriority(SceneId sceneId) const;
         const std::unordered_map<SceneId, int32_t>& getScenePriorities() const;
 
+        void setResourceUploadBatchSize(uint32_t batchSize);
+        uint32_t getResourceUploadBatchSize() const;
+
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -150,6 +153,7 @@ namespace ramses_internal
 
         int32_t m_swapInterval = -1;
         std::unordered_map<SceneId, int32_t> m_scenePriorities;
+        uint32_t m_resourceUploadBatchSize = 10u;
     };
 }
 

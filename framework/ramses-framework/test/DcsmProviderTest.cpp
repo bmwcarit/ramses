@@ -126,10 +126,6 @@ namespace ramses
     TEST_F(ADcsmProvider, canOfferContentWithWaylandSurfaceId)
     {
         EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), ramses_internal::ETechnicalContentType::WaylandIviSurfaceID, "", false)).WillOnce(Return(true));
-        EXPECT_CALL(
-            compMock,
-            sendContentDescription(ramses_internal::ContentID(123), ramses_internal::TechnicalContentDescriptor(5432)))
-            .WillOnce(Return(true));
         EXPECT_EQ(provider->offerContent(id, Category(567), waylandIviSurfaceId_t(5432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
     }
 
@@ -137,10 +133,6 @@ namespace ramses
     {
         InSequence seq;
         EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), ramses_internal::ETechnicalContentType::WaylandIviSurfaceID, "", false)).WillOnce(Return(true));
-        EXPECT_CALL(
-            compMock,
-            sendContentDescription(ramses_internal::ContentID(123), ramses_internal::TechnicalContentDescriptor(5432)))
-            .WillOnce(Return(true));
         EXPECT_CALL(compMock, sendUpdateContentMetadata(ramses_internal::ContentID(123), metadata)).WillOnce(Return(true));
         EXPECT_EQ(provider->offerContentWithMetadata(id, Category(567), waylandIviSurfaceId_t(5432), EDcsmOfferingMode::LocalAndRemote, metadataCreator), StatusOK);
     }
@@ -209,6 +201,18 @@ namespace ramses
         provider->impl.contentStateChange(id, ramses_internal::EDcsmState::Ready, categoryInfoDummy, AnimationInformation());
     }
 
+    TEST_F(ADcsmProvider, willSendContentDescriptionAndCallCallbackIfWaylandContentNotMarkedReady)
+    {
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), waylandIviSurfaceId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        EXPECT_CALL(handler, contentSizeChange(id, _, AnimationInformation()));
+        provider->impl.contentStateChange(id, ramses_internal::EDcsmState::Assigned, categoryInfo, AnimationInformation());
+
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
+        EXPECT_CALL(handler, contentReadyRequested(id));
+        provider->impl.contentStateChange(id, ramses_internal::EDcsmState::Ready, categoryInfoDummy, AnimationInformation());
+    }
+
     TEST_F(ADcsmProvider, willReplyContentReadyOnceContentIsMarkedReady)
     {
         EXPECT_CALL(compMock, sendOfferContent(_, _, _, _, _)).WillRepeatedly(Return(true));
@@ -217,6 +221,21 @@ namespace ramses
         EXPECT_CALL(handler, contentSizeChange(id, _, AnimationInformation()));
         provider->impl.contentStateChange(id, ramses_internal::EDcsmState::Assigned, categoryInfo, AnimationInformation());
 
+        EXPECT_CALL(handler, contentReadyRequested(_));
+        provider->impl.contentStateChange(id, ramses_internal::EDcsmState::Ready, categoryInfoDummy, AnimationInformation());
+
+        EXPECT_CALL(compMock, sendContentReady(ramses_internal::ContentID(123))).WillOnce(Return(true));
+        EXPECT_EQ(provider->markContentReady(id), StatusOK);
+    }
+
+    TEST_F(ADcsmProvider, willSendContentDescriptionAndReplyContentReadyOnceWaylandContentIsMarkedReady)
+    {
+        EXPECT_CALL(compMock, sendOfferContent(_, _, _, _, _)).WillRepeatedly(Return(true));
+        EXPECT_EQ(provider->offerContent(id, Category(567), waylandIviSurfaceId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        EXPECT_CALL(handler, contentSizeChange(id, _, AnimationInformation()));
+        provider->impl.contentStateChange(id, ramses_internal::EDcsmState::Assigned, categoryInfo, AnimationInformation());
+
+        EXPECT_CALL(compMock, sendContentDescription(ramses_internal::ContentID(123), ramses_internal::TechnicalContentDescriptor(432))).WillOnce(Return(true));
         EXPECT_CALL(handler, contentReadyRequested(_));
         provider->impl.contentStateChange(id, ramses_internal::EDcsmState::Ready, categoryInfoDummy, AnimationInformation());
 
