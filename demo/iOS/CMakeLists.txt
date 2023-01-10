@@ -1,3 +1,11 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2022 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "iOS") 
     enable_language(OBJC OBJCXX Swift)
 
@@ -9,7 +17,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
     set(MACOSX_BUNDLE_LONG_VERSION_STRING "1.0")
     set(MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0")
     set(MACOSX_BUNDLE_BUNDLE_VERSION "1.0")
-    set(MACOSX_BUNDLE_COPYRIGHT "Copyright (C) 2022 BMW Car IT GmbH")
+    set(MACOSX_BUNDLE_COPYRIGHT "Copyright (C) 2022 BMW AG")
     set(MACOSX_DEPLOYMENT_TARGET 14.0)
 
     SET(CMAKE_XCODE_GENERATE_SCHEME ON)
