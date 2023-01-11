@@ -71,6 +71,13 @@ jobs:
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
       if: ${{ matrix.os == 'ubuntu-20.04' }}
+      
+    - name: Configure CMake (macOS)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
+      if: ${{ matrix.os == 'macos-12' }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
