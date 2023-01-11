@@ -78,6 +78,8 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Android")
     )
 
 ELSEIF((CMAKE_SYSTEM_NAME MATCHES "Darwin"))
+    execute_process(COMMAND "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/FetchAndBuildMetalANGLE.sh"
+                    WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE")
 
     SET(OpenGL_INCLUDE_DIRS    
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
@@ -97,6 +99,8 @@ ELSEIF((CMAKE_SYSTEM_NAME MATCHES "Darwin"))
     )
 
 ELSEIF((CMAKE_SYSTEM_NAME MATCHES "iOS"))
+    execute_process(COMMAND "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/FetchAndBuildMetalANGLE.sh"
+        WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE")
 
     SET(OpenGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include

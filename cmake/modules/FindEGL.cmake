@@ -38,6 +38,9 @@ ELSEIF(TARGET_OS MATCHES "Linux" OR TARGET_OS MATCHES "Android")
     )
 
 ELSEIF((TARGET_OS MATCHES "Darwin"))
+    execute_process(COMMAND "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/FetchAndBuildMetalANGLE.sh"
+        WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE")
+
     SET(EGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
     )   
@@ -57,6 +60,8 @@ ELSEIF((TARGET_OS MATCHES "Darwin"))
     )
 
 ELSEIF((TARGET_OS MATCHES "iOS"))
+    execute_process(COMMAND "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/FetchAndBuildMetalANGLE.sh"
+        WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE")
 
     SET(EGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
