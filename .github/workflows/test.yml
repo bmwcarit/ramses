@@ -18,7 +18,7 @@ jobs:
     # Newest -> so that we can test with latest tools (clang-tidy) and use recent drivers/packages
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2022]
+        os: [ubuntu-20.04, windows-2022, macos-12]
         type: [Debug, Release]
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
