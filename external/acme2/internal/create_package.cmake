@@ -39,7 +39,7 @@ set(CPACK_PACKAGE_VENDOR                "ramses")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY   "A distributed 3D rendering framework for embedded systems")
 set(CPACK_PACKAGE_DESCRIPTION           "A packaged version of ramses. Generated using CPack.")
 
-if(ramses_CPACK_GENERATOR STREQUAL "DEB")
+if(ramses-sdk_CPACK_GENERATOR STREQUAL "DEB")
     # Enables CPack to add proper dependency info to the package, see docs for more info
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 endif()
