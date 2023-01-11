@@ -70,7 +70,7 @@ jobs:
 
         cmake --build . --target package --config $BUILD_TYPE
 
-        find . -name '*tar.gz' -exec bash -c 'mv $0 ramses-windows-x64.tar.gz' {} \;
+        find . -name '*zip' -exec bash -c 'mv $0 ramses-windows-x64.zip' {} \;
       if: ${{ matrix.os == 'windows-2019' }}
 
     - name: Publish release
@@ -78,7 +78,7 @@ jobs:
       with:
         fail_on_unmatched_files: true
         files: |
-          ${{runner.workspace}}/build/ramses-windows-x64.tar.gz
+          ${{runner.workspace}}/build/ramses-windows-x64.zip
       if: ${{ matrix.os == 'windows-2019' }}
 
     - name: Publish release
