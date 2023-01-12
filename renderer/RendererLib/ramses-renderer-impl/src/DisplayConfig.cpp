@@ -254,4 +254,9 @@ namespace ramses
     {
         return impl.setScenePriority(sceneId, priority);
     }
+
+    status_t DisplayConfig::setResourceUploadBatchSize(uint32_t batchSize)
+    {
+        return impl.setResourceUploadBatchSize(batchSize);
+    }
 }

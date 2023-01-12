@@ -1,3 +1,16 @@
+27.0.129
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added ramses::DisplayConfig::setResourceUploadBatchSize()
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix Wayland Dcsm content not getting ready because DcsmProvider was not
+          sending contentDescription for every ready request
+        - Fixed SomeIP connection recovery if the initial ParticipantInfo packets
+          are dropped on network level.
+
 27.0.128
 -------------------
         General changes
@@ -9,8 +22,6 @@
           - fixed resource hash name formatting (use same format as in the logs)
           - added option to sort by uncompressed size
           - export shader sources to file or clipboard
-        - ramses-packet-player:
-          - added details for scene actions
         - Added ramses::DisplayConfig::setScenePriority()
 
 27.0.127

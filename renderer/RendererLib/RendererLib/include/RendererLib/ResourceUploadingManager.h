@@ -40,7 +40,11 @@ namespace ramses_internal
         Bool hasAnythingToUpload() const;
         void uploadAndUnloadPendingResources();
 
-        static const UInt32 NumResourcesToUploadInBetweenTimeBudgetChecks = 10u;
+        UInt32 getResourceUploadBatchSize() const
+        {
+            return m_resourceUploadBatchSize;
+        }
+
         static const UInt32 LargeResourceByteSizeThreshold = 250000u;
 
     private:
@@ -68,6 +72,7 @@ namespace ramses_internal
         SizeMap       m_resourceSizes;
         UInt64        m_resourceTotalUploadedSize = 0u;
         const UInt64  m_resourceCacheSize = 0u;
+        const UInt32  m_resourceUploadBatchSize   = 10u;
 
         RendererStatistics& m_stats;
 
