@@ -301,6 +301,7 @@ ENDIF()
 # LZ4 de-/compression library
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)
 
+# TODO (MacOS) find out why linking against the platform LZ4 doesn't work on Darwin
 IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")) 
     SET(ramses-sdk_ALLOW_PLATFORM_LZ4 OFF)
 ENDIF()
