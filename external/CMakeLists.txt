@@ -144,6 +144,7 @@ IF("${TARGET_OS}" STREQUAL "Integrity")
     TARGET_COMPILE_DEFINITIONS(ramses-glslang PRIVATE "-D__inline=inline")
 ENDIF()
 
+# TODO (MacOS) find out why linking against the platform freetype doesn't work on Darwin
 IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")) 
     SET(ramses-sdk_ALLOW_PLATFORM_FREETYPE OFF)
 ENDIF()
