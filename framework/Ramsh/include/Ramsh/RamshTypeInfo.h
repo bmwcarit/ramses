@@ -175,6 +175,7 @@ namespace ramses_internal
         }
     };
 
+#ifdef __APPLE__
     template<>
     struct TypeName<Int>
     {
@@ -183,6 +184,7 @@ namespace ramses_internal
             return "int64";
         }
     };
+#endif
 
 }
 
