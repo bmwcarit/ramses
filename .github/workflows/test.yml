@@ -18,7 +18,7 @@ jobs:
     # Newest -> so that we can test with latest tools (clang-tidy) and use recent drivers/packages
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2022]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
         type: [Debug, Release]
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
@@ -32,7 +32,9 @@ jobs:
 
     - name: Install GL/X11 packages for rendering (Linux only)
       run: |
-        sudo apt-get install libgles2-mesa-dev libx11-dev
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install \
+          libgles2-mesa-dev \
+          libx11-dev
       if: ${{ contains(matrix.os, 'ubuntu') }}
 
     - name: Create Build Environment
@@ -57,14 +59,13 @@ jobs:
             -DCMAKE_CONFIGURATION_TYPES=${{ matrix.type }}
       if: ${{ contains(matrix.os, 'windows') }}
 
-    # TODO Fix the clang and gcc-14 builds
-    # - name: Configure CMake (Latest Ubuntu + Clang)
-    #   shell: bash
-    #   working-directory: ${{runner.workspace}}/build
-    #   run: |
-    #     CC=clang CXX=clang++ cmake $GITHUB_WORKSPACE \
-    #         -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-    #   if: ${{ matrix.os == 'ubuntu-22.04' }}
+    - name: Configure CMake (Ubuntu 22.04 + Clang)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        CC=clang CXX=clang++ cmake $GITHUB_WORKSPACE \
+            -DCMAKE_BUILD_TYPE=${{ matrix.type }}
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
 
     - name: Configure CMake (Oldest Ubuntu + GCC)
       shell: bash
@@ -72,6 +73,13 @@ jobs:
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
       if: ${{ matrix.os == 'ubuntu-20.04' }}
+      
+    - name: Configure CMake (macOS)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
+      if: ${{ matrix.os == 'macos-12' }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build

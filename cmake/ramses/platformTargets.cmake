@@ -22,6 +22,8 @@ IF (("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
 ELSEIF (NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Integrity")
     set(THREADS_PREFER_PTHREAD_FLAG ON)
+ELSEIF (NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Integrity")
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)        
     target_link_libraries(ramses-common-base INTERFACE Threads::Threads)
 endif()
