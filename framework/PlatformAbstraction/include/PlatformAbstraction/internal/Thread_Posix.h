@@ -88,6 +88,8 @@ namespace internal
                           {
 #ifdef __INTEGRITY
                               (void)name;
+#elif defined(__APPLE__)
+                              pthread_setname_np(name.c_str());
 #else
                               pthread_setname_np(pthread_self(), name.c_str());
 #endif

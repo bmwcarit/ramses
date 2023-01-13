@@ -175,6 +175,17 @@ namespace ramses_internal
         }
     };
 
+#ifdef __APPLE__
+    template<>
+    struct TypeName<Int>
+    {
+        inline explicit operator std::string() const
+        {
+            return "int64";
+        }
+    };
+#endif
+
 }
 
 #endif
