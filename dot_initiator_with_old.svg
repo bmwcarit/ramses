@@ -97,10 +97,10 @@ var viewHeight = 748;
 <!-- unknown&#45;&gt;unavailable -->
 <g id="edge1" class="edge">
 <title>unknown&#45;&gt;unavailable</title>
-<path fill="none" stroke="purple" d="M869.44,-709.87C917.42,-696.47 997.87,-671.3 1061.8,-637.74 1182.71,-574.27 1248.66,-579.34 1310.8,-457.74 1320.04,-439.66 1316.04,-416.74 1310.28,-399.26"/>
-<polygon fill="purple" stroke="purple" points="1313.5,-397.87 1306.77,-389.68 1306.93,-400.27 1313.5,-397.87"/>
-<text text-anchor="middle" x="1324.8" y="-556.04" font-family="Times,serif" font-size="14.00">New pinfo</text>
-<text text-anchor="middle" x="1324.8" y="-541.04" font-family="Times,serif" font-size="14.00">+Mark reponsible</text>
+<path fill="none" stroke="purple" d="M882.61,-721.18C959.82,-719.17 1101.85,-705.58 1197.8,-637.74 1274.92,-583.21 1284.67,-548.51 1310.8,-457.74 1316.26,-438.76 1312.85,-416.66 1308.3,-399.75"/>
+<polygon fill="purple" stroke="purple" points="1311.59,-398.55 1305.38,-389.97 1304.88,-400.55 1311.59,-398.55"/>
+<text text-anchor="middle" x="1351.8" y="-556.04" font-family="Times,serif" font-size="14.00">New pinfo</text>
+<text text-anchor="middle" x="1351.8" y="-541.04" font-family="Times,serif" font-size="14.00">+Mark reponsible</text>
 </g>
 <!-- old_code&#45;&gt;unknown -->
 <g id="edge5" class="edge">
@@ -113,18 +113,26 @@ var viewHeight = 748;
 <!-- old_code&#45;&gt;old_code -->
 <g id="edge7" class="edge">
 <title>old_code&#45;&gt;old_code</title>
-<path fill="none" stroke="purple" d="M762.07,-620.18C773.63,-619.73 782.09,-618.09 782.09,-615.24 782.09,-613.33 778.27,-611.96 772.26,-611.13"/>
-<polygon fill="purple" stroke="purple" points="772.32,-607.62 762.07,-610.3 771.75,-614.6 772.32,-607.62"/>
+<path fill="none" stroke="purple" d="M763.34,-618.5C774.25,-618.15 782.09,-617.07 782.09,-615.24 782.09,-614.07 778.87,-613.2 773.69,-612.64"/>
+<polygon fill="purple" stroke="purple" points="773.54,-609.12 763.34,-611.98 773.1,-616.11 773.54,-609.12"/>
 <text text-anchor="middle" x="815.09" y="-611.54" font-family="Times,serif" font-size="14.00">Old pinfo</text>
 </g>
 <!-- old_code&#45;&gt;old_code -->
 <g id="edge8" class="edge">
 <title>old_code&#45;&gt;old_code</title>
-<path fill="none" stroke="purple" d="M757.6,-624.09C798.7,-627.34 848.09,-624.39 848.09,-615.24 848.09,-606.84 806.47,-603.67 767.85,-605.72"/>
-<polygon fill="purple" stroke="purple" points="767.35,-602.24 757.6,-606.39 767.81,-609.23 767.35,-602.24"/>
-<text text-anchor="middle" x="941.59" y="-626.54" font-family="Times,serif" font-size="14.00">Send pinfo</text>
-<text text-anchor="middle" x="941.59" y="-611.54" font-family="Times,serif" font-size="14.00">Send keepalive (incr MID)</text>
-<text text-anchor="middle" x="941.59" y="-596.54" font-family="Times,serif" font-size="14.00">+Inform session+MID</text>
+<path fill="none" stroke="red" d="M761.17,-621.31C801.51,-623.19 848.09,-621.16 848.09,-615.24 848.09,-609.8 808.84,-607.65 771.2,-608.78"/>
+<polygon fill="red" stroke="red" points="771.03,-605.29 761.17,-609.17 771.3,-612.28 771.03,-605.29"/>
+<text text-anchor="middle" x="907.09" y="-619.04" font-family="Times,serif" font-size="14.00">Error (MID==0)</text>
+<text text-anchor="middle" x="907.09" y="-604.04" font-family="Times,serif" font-size="14.00">Send new pinfo</text>
+</g>
+<!-- old_code&#45;&gt;old_code -->
+<g id="edge9" class="edge">
+<title>old_code&#45;&gt;old_code</title>
+<path fill="none" stroke="purple" d="M759.87,-622.42C836.09,-628.02 966.09,-625.63 966.09,-615.24 966.09,-605.3 847.02,-602.68 769.98,-607.38"/>
+<polygon fill="purple" stroke="purple" points="769.62,-603.9 759.87,-608.06 770.08,-610.88 769.62,-603.9"/>
+<text text-anchor="middle" x="1059.59" y="-626.54" font-family="Times,serif" font-size="14.00">Send pinfo</text>
+<text text-anchor="middle" x="1059.59" y="-611.54" font-family="Times,serif" font-size="14.00">Send keepalive (incr MID)</text>
+<text text-anchor="middle" x="1059.59" y="-596.54" font-family="Times,serif" font-size="14.00">+Inform session+MID</text>
 </g>
 <!-- send_session -->
 <g id="node4" class="node">
@@ -147,7 +155,7 @@ var viewHeight = 748;
 <text text-anchor="middle" x="710.8" y="-490.04" font-family="Times,serif" font-size="14.00">Connected</text>
 </g>
 <!-- old_code&#45;&gt;connected -->
-<g id="edge9" class="edge">
+<g id="edge10" class="edge">
 <title>old_code&#45;&gt;connected</title>
 <path fill="none" stroke="purple" d="M710.8,-597.12C710.8,-577.51 710.8,-545.11 710.8,-522.02"/>
 <polygon fill="purple" stroke="purple" points="714.3,-521.83 710.8,-511.83 707.3,-521.83 714.3,-521.83"/>
@@ -156,14 +164,14 @@ var viewHeight = 748;
 <text text-anchor="middle" x="800.8" y="-533.54" font-family="Times,serif" font-size="14.00">+CONNECT</text>
 </g>
 <!-- unavailable&#45;&gt;unavailable -->
-<g id="edge11" class="edge">
+<g id="edge12" class="edge">
 <title>unavailable&#45;&gt;unavailable</title>
 <path fill="none" stroke="black" d="M1344.82,-384.68C1365.04,-385.83 1382.44,-381.52 1382.44,-371.74 1382.44,-363.64 1370.51,-359.29 1354.92,-358.69"/>
 <polygon fill="black" stroke="black" points="1354.78,-355.19 1344.82,-358.8 1354.86,-362.19 1354.78,-355.19"/>
 <text text-anchor="middle" x="1429.44" y="-368.04" font-family="Times,serif" font-size="14.00">Any message</text>
 </g>
 <!-- unavailable&#45;&gt;send_session -->
-<g id="edge10" class="edge">
+<g id="edge11" class="edge">
 <title>unavailable&#45;&gt;send_session</title>
 <path fill="none" stroke="black" d="M1266.89,-355.94C1252.25,-349.16 1234.65,-341.03 1218.8,-333.74 1172.18,-312.3 1162.52,-301.83 1113.8,-285.74 1079.17,-274.31 1039.19,-265.72 1007.26,-259.91"/>
 <polygon fill="black" stroke="black" points="1007.65,-256.42 997.19,-258.12 1006.42,-263.31 1007.65,-256.42"/>
@@ -177,56 +185,56 @@ var viewHeight = 748;
 <text text-anchor="middle" x="1131.8" y="-142.67" font-family="Times,serif" font-size="14.00">reply</text>
 </g>
 <!-- send_session&#45;&gt;session_wait -->
-<g id="edge12" class="edge">
+<g id="edge13" class="edge">
 <title>send_session&#45;&gt;session_wait</title>
 <path fill="none" stroke="black" d="M1016.94,-245.29C1098.82,-240.44 1227.11,-230.29 1241.8,-213.74 1259.12,-194.23 1235.78,-180.04 1206.22,-170.49"/>
 <polygon fill="black" stroke="black" points="1207.03,-167.08 1196.44,-167.55 1205.01,-173.78 1207.03,-167.08"/>
 <text text-anchor="middle" x="1256.8" y="-202.54" font-family="Times,serif" font-size="14.00">Ok</text>
 </g>
 <!-- send_session&#45;&gt;session_wait -->
-<g id="edge13" class="edge">
+<g id="edge14" class="edge">
 <title>send_session&#45;&gt;session_wait</title>
 <path fill="none" stroke="black" d="M911.12,-239.17C884.68,-230.65 856.57,-216.76 871.8,-198.74 894.04,-172.43 980.01,-161.89 1047.08,-157.68"/>
 <polygon fill="black" stroke="black" points="1047.48,-161.16 1057.25,-157.08 1047.06,-154.17 1047.48,-161.16"/>
 <text text-anchor="middle" x="885.3" y="-202.54" font-family="Times,serif" font-size="14.00">Fail</text>
 </g>
 <!-- session_wait&#45;&gt;unavailable -->
-<g id="edge14" class="edge">
+<g id="edge15" class="edge">
 <title>session_wait&#45;&gt;unavailable</title>
 <path fill="none" stroke="black" d="M1203.49,-162.12C1228.16,-168.18 1253.83,-179.12 1270.8,-198.74 1305.93,-239.35 1305.81,-306.32 1302.43,-343.58"/>
 <polygon fill="black" stroke="black" points="1298.93,-343.38 1301.36,-353.7 1305.89,-344.12 1298.93,-343.38"/>
 <text text-anchor="middle" x="1320.3" y="-246.04" font-family="Times,serif" font-size="14.00">Down</text>
 </g>
 <!-- session_wait&#45;&gt;send_session -->
-<g id="edge16" class="edge">
+<g id="edge17" class="edge">
 <title>session_wait&#45;&gt;send_session</title>
 <path fill="none" stroke="black" d="M1058.85,-160.46C1005.29,-166.26 939,-177.57 921.8,-198.74 914.87,-207.27 919.08,-217.84 926.05,-227.06"/>
 <polygon fill="black" stroke="black" points="923.49,-229.45 932.67,-234.73 928.79,-224.88 923.49,-229.45"/>
 <text text-anchor="middle" x="951.3" y="-202.54" font-family="Times,serif" font-size="14.00">Timeout</text>
 </g>
 <!-- session_wait&#45;&gt;send_session -->
-<g id="edge17" class="edge">
+<g id="edge18" class="edge">
 <title>session_wait&#45;&gt;send_session</title>
 <path fill="none" stroke="black" d="M1071.6,-169.95C1049.41,-176.92 1024.63,-186.42 1003.8,-198.74 991.18,-206.2 978.92,-216.89 969.2,-226.47"/>
 <polygon fill="black" stroke="black" points="966.48,-224.24 961.98,-233.83 971.48,-229.14 966.48,-224.24"/>
 <text text-anchor="middle" x="1056.8" y="-202.54" font-family="Times,serif" font-size="14.00">MID Mismatch</text>
 </g>
 <!-- session_wait&#45;&gt;send_session -->
-<g id="edge18" class="edge">
+<g id="edge19" class="edge">
 <title>session_wait&#45;&gt;send_session</title>
 <path fill="none" stroke="black" d="M1127.84,-181C1124.78,-192.59 1119.37,-205.46 1109.8,-213.74 1095.26,-226.33 1051.56,-235.35 1013.36,-241.08"/>
 <polygon fill="black" stroke="black" points="1012.67,-237.64 1003.27,-242.54 1013.67,-244.57 1012.67,-237.64"/>
 <text text-anchor="middle" x="1175.3" y="-202.54" font-family="Times,serif" font-size="14.00">Error valid SID</text>
 </g>
 <!-- session_wait&#45;&gt;session_wait -->
-<g id="edge15" class="edge">
+<g id="edge16" class="edge">
 <title>session_wait&#45;&gt;session_wait</title>
 <path fill="none" stroke="black" d="M1202.32,-163.12C1215.48,-161.98 1224.75,-158.9 1224.75,-153.87 1224.75,-150.26 1219.96,-147.65 1212.38,-146.04"/>
 <polygon fill="black" stroke="black" points="1212.72,-142.56 1202.32,-144.62 1211.74,-149.49 1212.72,-142.56"/>
 <text text-anchor="middle" x="1276.25" y="-150.17" font-family="Times,serif" font-size="14.00">Unrealted SID</text>
 </g>
 <!-- session_wait&#45;&gt;connected -->
-<g id="edge19" class="edge">
+<g id="edge20" class="edge">
 <title>session_wait&#45;&gt;connected</title>
 <path fill="none" stroke="green" d="M1195.41,-168.38C1224.78,-175.66 1259.72,-185.82 1289.8,-198.74 1407.41,-249.25 1563.42,-307.97 1485.8,-409.74 1436.89,-473.87 1390.38,-444.65 1310.8,-457.74 1121.09,-488.94 893.66,-493.36 781.07,-493.38"/>
 <polygon fill="green" stroke="green" points="780.87,-489.88 770.87,-493.38 780.86,-496.88 780.87,-489.88"/>
@@ -241,14 +249,14 @@ var viewHeight = 748;
 <text text-anchor="middle" x="1131.8" y="-26.8" font-family="Times,serif" font-size="14.00">(Same MID)</text>
 </g>
 <!-- session_wait&#45;&gt;send_keepalive_wait_session -->
-<g id="edge20" class="edge">
+<g id="edge21" class="edge">
 <title>session_wait&#45;&gt;send_keepalive_wait_session</title>
 <path fill="none" stroke="black" d="M1101.3,-129.19C1092.13,-119.1 1085.49,-106.73 1089.8,-94 1091.87,-87.88 1094.93,-81.9 1098.46,-76.27"/>
 <polygon fill="black" stroke="black" points="1101.54,-77.97 1104.34,-67.75 1095.78,-73.99 1101.54,-77.97"/>
 <text text-anchor="middle" x="1121.8" y="-97.8" font-family="Times,serif" font-size="14.00">On timer</text>
 </g>
 <!-- connected&#45;&gt;unavailable -->
-<g id="edge22" class="edge">
+<g id="edge23" class="edge">
 <title>connected&#45;&gt;unavailable</title>
 <path fill="none" stroke="red" d="M769.39,-490.11C865.03,-485.41 1050.39,-474.45 1113.8,-457.74 1168.55,-443.31 1227.21,-413.66 1263.46,-393.48"/>
 <polygon fill="red" stroke="red" points="1265.63,-396.28 1272.62,-388.32 1262.19,-390.18 1265.63,-396.28"/>
@@ -256,7 +264,7 @@ var viewHeight = 748;
 <text text-anchor="middle" x="1249.3" y="-431.54" font-family="Times,serif" font-size="14.00">+DISCONNECT</text>
 </g>
 <!-- connected&#45;&gt;send_session -->
-<g id="edge25" class="edge">
+<g id="edge26" class="edge">
 <title>connected&#45;&gt;send_session</title>
 <path fill="none" stroke="red" d="M743.92,-478.53C753.34,-473.17 762.9,-466.25 769.8,-457.74 806.43,-412.53 775.38,-379.12 811.8,-333.74 837.32,-301.94 878.55,-279.34 909.12,-265.83"/>
 <polygon fill="red" stroke="red" points="910.82,-268.91 918.64,-261.76 908.07,-262.47 910.82,-268.91"/>
@@ -264,7 +272,7 @@ var viewHeight = 748;
 <text text-anchor="middle" x="869.3" y="-360.54" font-family="Times,serif" font-size="14.00">+DISCONNECT</text>
 </g>
 <!-- connected&#45;&gt;send_session -->
-<g id="edge26" class="edge">
+<g id="edge27" class="edge">
 <title>connected&#45;&gt;send_session</title>
 <path fill="none" stroke="red" d="M766.58,-487.03C816.62,-478.79 887.97,-458.68 926.8,-409.74 956.96,-371.72 956.27,-311.85 952.74,-277.45"/>
 <polygon fill="red" stroke="red" points="956.18,-276.75 951.53,-267.23 949.23,-277.58 956.18,-276.75"/>
@@ -272,7 +280,7 @@ var viewHeight = 748;
 <text text-anchor="middle" x="1010.3" y="-360.54" font-family="Times,serif" font-size="14.00">+DISCONNECT</text>
 </g>
 <!-- connected&#45;&gt;send_session -->
-<g id="edge27" class="edge">
+<g id="edge28" class="edge">
 <title>connected&#45;&gt;send_session</title>
 <path fill="none" stroke="red" d="M768.15,-488.27C860.51,-479.73 1035.54,-457.5 1071.8,-409.74 1092.22,-382.84 1087.65,-363.57 1071.8,-333.74 1054.42,-301.04 1017.77,-278.89 988.98,-265.76"/>
 <polygon fill="red" stroke="red" points="990.12,-262.44 979.55,-261.65 987.32,-268.85 990.12,-262.44"/>
@@ -280,7 +288,7 @@ var viewHeight = 748;
 <text text-anchor="middle" x="1142.3" y="-360.54" font-family="Times,serif" font-size="14.00">+DISCONNECT</text>
 </g>
 <!-- connected&#45;&gt;connected -->
-<g id="edge24" class="edge">
+<g id="edge25" class="edge">
 <title>connected&#45;&gt;connected</title>
 <path fill="none" stroke="black" d="M762.05,-503.09C777.01,-502.76 788.59,-499.65 788.59,-493.74 788.59,-489.26 781.94,-486.39 772.21,-485.12"/>
 <polygon fill="black" stroke="black" points="772.27,-481.62 762.05,-484.39 771.77,-488.6 772.27,-481.62"/>
@@ -293,7 +301,7 @@ var viewHeight = 748;
 <text text-anchor="middle" x="138.8" y="-368.04" font-family="Times,serif" font-size="14.00">Normal send</text>
 </g>
 <!-- connected&#45;&gt;normal_send -->
-<g id="edge28" class="edge">
+<g id="edge29" class="edge">
 <title>connected&#45;&gt;normal_send</title>
 <path fill="none" stroke="black" d="M651.03,-493.12C575.48,-492.26 441.98,-486.28 331.8,-457.74 272.33,-442.34 207.91,-410.61 170.57,-390.58"/>
 <polygon fill="black" stroke="black" points="172.14,-387.45 161.68,-385.75 168.8,-393.6 172.14,-387.45"/>
@@ -306,7 +314,7 @@ var viewHeight = 748;
 <text text-anchor="middle" x="374.8" y="-368.04" font-family="Times,serif" font-size="14.00">Update timeout</text>
 </g>
 <!-- connected&#45;&gt;update_timeout -->
-<g id="edge23" class="edge">
+<g id="edge24" class="edge">
 <title>connected&#45;&gt;update_timeout</title>
 <path fill="none" stroke="black" d="M656.36,-486.28C622.11,-481.08 577.42,-472.19 539.8,-457.74 515.25,-448.31 511.99,-440.13 488.8,-427.74 463.7,-414.33 434.82,-400.41 412.41,-389.93"/>
 <polygon fill="black" stroke="black" points="413.77,-386.71 403.23,-385.67 410.82,-393.06 413.77,-386.71"/>
@@ -320,14 +328,14 @@ var viewHeight = 748;
 <text text-anchor="middle" x="636.8" y="-360.54" font-family="Times,serif" font-size="14.00">(Same MID)</text>
 </g>
 <!-- connected&#45;&gt;send_keepalive_connected -->
-<g id="edge29" class="edge">
+<g id="edge30" class="edge">
 <title>connected&#45;&gt;send_keepalive_connected</title>
 <path fill="none" stroke="black" d="M707.14,-475.58C703.74,-461.95 697.83,-442.74 688.8,-427.74 684.7,-420.93 679.64,-414.27 674.29,-408.07"/>
 <polygon fill="black" stroke="black" points="676.73,-405.55 667.43,-400.48 671.54,-410.24 676.73,-405.55"/>
 <text text-anchor="middle" x="733.8" y="-439.04" font-family="Times,serif" font-size="14.00">On timer</text>
 </g>
 <!-- normal_send&#45;&gt;send_session -->
-<g id="edge31" class="edge">
+<g id="edge32" class="edge">
 <title>normal_send&#45;&gt;send_session</title>
 <path fill="none" stroke="red" d="M167.65,-358.98C189.13,-350.69 219.36,-339.99 246.8,-333.74 469.03,-283.14 738.29,-262.27 869.37,-254.63"/>
 <polygon fill="red" stroke="red" points="869.93,-258.1 879.71,-254.04 869.53,-251.12 869.93,-258.1"/>
@@ -335,27 +343,27 @@ var viewHeight = 748;
 <text text-anchor="middle" x="572.3" y="-289.54" font-family="Times,serif" font-size="14.00">+DISCONNECT</text>
 </g>
 <!-- normal_send&#45;&gt;connected -->
-<g id="edge30" class="edge">
+<g id="edge31" class="edge">
 <title>normal_send&#45;&gt;connected</title>
 <path fill="none" stroke="black" d="M151.86,-387.6C171.71,-409.78 209.05,-449.81 226.8,-457.74 298.85,-489.93 524.66,-493.75 640.59,-493.48"/>
 <polygon fill="black" stroke="black" points="640.79,-496.98 650.78,-493.45 640.76,-489.98 640.79,-496.98"/>
 <text text-anchor="middle" x="236.8" y="-439.04" font-family="Times,serif" font-size="14.00">Ok</text>
 </g>
 <!-- update_timeout&#45;&gt;connected -->
-<g id="edge32" class="edge">
+<g id="edge33" class="edge">
 <title>update_timeout&#45;&gt;connected</title>
 <path fill="none" stroke="black" d="M389.51,-387.51C409.89,-407.03 448.75,-440.88 488.8,-457.74 537.17,-478.11 596.01,-486.74 640.95,-490.34"/>
 <polygon fill="black" stroke="black" points="640.96,-493.85 651.19,-491.09 641.47,-486.86 640.96,-493.85"/>
 </g>
 <!-- send_keepalive_wait_session&#45;&gt;session_wait -->
-<g id="edge21" class="edge">
+<g id="edge22" class="edge">
 <title>send_keepalive_wait_session&#45;&gt;session_wait</title>
 <path fill="none" stroke="black" d="M1149.35,-70.79C1153.91,-82.67 1156.79,-96.36 1153.8,-109 1153.09,-111.97 1152.16,-114.97 1151.06,-117.93"/>
 <polygon fill="black" stroke="black" points="1147.82,-116.61 1147.14,-127.18 1154.27,-119.34 1147.82,-116.61"/>
 <text text-anchor="middle" x="1180.3" y="-97.8" font-family="Times,serif" font-size="14.00">Ok/Fail</text>
 </g>
 <!-- send_keepalive_connected&#45;&gt;connected -->
-<g id="edge33" class="edge">
+<g id="edge34" class="edge">
 <title>send_keepalive_connected&#45;&gt;connected</title>
 <path fill="none" stroke="black" d="M626.97,-407.02C624.26,-423.56 624.28,-442.97 633.8,-457.74 639.22,-466.17 647.23,-472.59 656.05,-477.47"/>
 <polygon fill="black" stroke="black" points="654.56,-480.64 665.09,-481.87 657.62,-474.34 654.56,-480.64"/>

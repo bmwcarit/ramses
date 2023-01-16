@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.128</span>
+   &#160;<span id="projectnumber">27.0.129</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -217,6 +217,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a40c2a2a95412755c649e2a6bd74f9c84"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a40c2a2a95412755c649e2a6bd74f9c84">setScenePriority</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId, int32_t priority)</td></tr>
 <tr class="memdesc:a40c2a2a95412755c649e2a6bd74f9c84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the scene's priority on this display.  <a href="classramses_1_1DisplayConfig.html#a40c2a2a95412755c649e2a6bd74f9c84">More...</a><br /></td></tr>
 <tr class="separator:a40c2a2a95412755c649e2a6bd74f9c84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f79578ad0046fbe5e947ba00f5fc5fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a0f79578ad0046fbe5e947ba00f5fc5fc">setResourceUploadBatchSize</a> (uint32_t batchSize)</td></tr>
+<tr class="memdesc:a0f79578ad0046fbe5e947ba00f5fc5fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the batch size for resource uploads.  <a href="classramses_1_1DisplayConfig.html#a0f79578ad0046fbe5e947ba00f5fc5fc">More...</a><br /></td></tr>
+<tr class="separator:a0f79578ad0046fbe5e947ba00f5fc5fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a3135bfe0e1df7923ea8f42f1e964b37c">operator=</a> (const <a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;other)=delete</td></tr>
 <tr class="memdesc:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted copy assignment.  <a href="classramses_1_1DisplayConfig.html#a3135bfe0e1df7923ea8f42f1e964b37c">More...</a><br /></td></tr>
 <tr class="separator:a3135bfe0e1df7923ea8f42f1e964b37c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1033,6 +1036,34 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a> </dd></dl>
+
+</div>
+</div>
+<a id="a0f79578ad0046fbe5e947ba00f5fc5fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f79578ad0046fbe5e947ba00f5fc5fc">&#9670;&nbsp;</a></span>setResourceUploadBatchSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DisplayConfig::setResourceUploadBatchSize </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>batchSize</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the batch size for resource uploads. </p>
+<p>The resource upload batch size defines the number of resources that should be uploaded in a single step. Time budgets (<a class="el" href="classramses_1_1RamsesRenderer.html#ac371e5e8e6a581a8d16f39e9ece1ed99" title="Sets time limits for time-out of different sections of render and update loop.">ramses::RamsesRenderer::setFrameTimerLimits</a>) are checked at the latest when a batch was uploaded. It should be safe to configure a batch size of 1 unless time measurement has a significant performance impact on the target device. The batch size may not be 0.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchSize</td><td>the number of resources to upload in a single step (default: 10) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 
 </div>
 </div>
