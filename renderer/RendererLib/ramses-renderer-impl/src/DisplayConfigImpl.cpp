@@ -297,6 +297,21 @@ namespace ramses
         return m_internalConfig.getScenePriority(ramses_internal::SceneId(sceneId.getValue()));
     }
 
+    status_t DisplayConfigImpl::setResourceUploadBatchSize(uint32_t batchSize)
+    {
+        if (batchSize == 0)
+        {
+            return addErrorEntry("DisplayConfig::setResourceUploadBatchSize failed - batchSize cannot be 0!");
+        }
+        m_internalConfig.setResourceUploadBatchSize(batchSize);
+        return StatusOK;
+    }
+
+    uint32_t DisplayConfigImpl::getResourceUploadBatchSize() const
+    {
+        return m_internalConfig.getResourceUploadBatchSize();
+    }
+
     status_t DisplayConfigImpl::validate() const
     {
         status_t status = StatusObjectImpl::validate();

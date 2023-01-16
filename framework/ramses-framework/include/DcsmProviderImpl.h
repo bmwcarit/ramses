@@ -57,10 +57,12 @@ namespace ramses
     private:
         struct DcsmProviderMapContent
         {
-            Category                        category = Category(0);
-            ramses_internal::EDcsmState     status = ramses_internal::EDcsmState::Offered;
-            bool                            ready = false;
-            bool                            contentRequested = false;
+            Category                                    category;
+            ramses_internal::ETechnicalContentType      type;
+            ramses_internal::TechnicalContentDescriptor contentDescriptor;
+            ramses_internal::EDcsmState                 status = ramses_internal::EDcsmState::Offered;
+            bool                                        ready = false;
+            bool                                        contentRequested = false;
         };
 
         status_t commonOfferContent(const char* callerMethod, ContentID contentID, Category category, ramses_internal::ETechnicalContentType contentType,

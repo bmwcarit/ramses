@@ -1194,8 +1194,37 @@ namespace ramses_internal
     template <typename Callbacks>
     void ConnectionSystemBase<Callbacks>::handleKeepAlive(const SomeIPMsgHeader& header, uint64_t /*timestampNow*/, bool usingPreviousMessageId)
     {
-        if (m_connSysIR && m_connSysIR->handleKeepAlive(header, usingPreviousMessageId))
-            return;
+        if (m_connSysIR)
+        {
+            if (m_connSysIR->handleKeepAlive(header, usingPreviousMessageId))
+            {
+                return;
+            }
+            else if (header.messageId == 0)
+            {
+                // (header.messageId == 0) indicates an error message (response to an unexpected keepalive)
+                // see ConnectionSystemInitiatorResponder::responderSendErrorForInvalidSid()
+                // only reset the current session (ignore unknown sessions) to avoid reconnection loops
+                auto it = std::find_if(m_participantStates.begin(), m_participantStates.end(), [&](auto& up) { return up->sendSessionId == header.sessionId; });
+                if (it != m_participantStates.end())
+                {
+                    const auto iid = (*it)->iid;
+                    ParticipantState** maybePstate = m_availableInstances.get(iid);
+                    if (m_connSysIR->isInitiatorAndInvalid(iid) && maybePstate)
+                    {
+                        // resend participantInfo due to lost session response
+                        LOG_WARN_P(m_logContext, "ConnectionSystemBase({}:{})::handleKeepAlive: reset session for iid:{} and send pinfo",
+                               m_communicationUserID, m_serviceTypeName, iid);
+                        auto* pstate = *maybePstate;
+                        initNewSession(*pstate);
+                        trySendParticipantInfo(*pstate);
+                        return;
+                    }
+                }
+                // a legacy remote participant (i.e. not a Responder) will not send error messages
+                // legacy keep-alive handling will be continued instead (see below)
+            }
+        }
 
         ParticipantState* pstate = processMessageHeaderGeneric(header, "handleKeepAlive");
         if (!pstate)

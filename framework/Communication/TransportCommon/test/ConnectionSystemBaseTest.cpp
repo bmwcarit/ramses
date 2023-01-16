@@ -1045,6 +1045,77 @@ namespace ramses_internal
         }
     };
 
+    /**
+     * Verifies responder behaviour if initial pinfo is lost
+     */
+    TEST_F(AConnectionSystemTimeMockConnected, recoverDroppedPinfoResponder)
+    {
+        const auto remote_iid_initiator = TestInstanceId(7);
+        EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
+        // sending pinfo response to initiator fails
+        EXPECT_CALL(stack, sendParticipantInfo(remote_iid_initiator, ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(Return(false));
+        fromStack.handleServiceAvailable(remote_iid_initiator);
+
+        EXPECT_CALL(stack, sendParticipantInfo(remote_iid_initiator, ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 1, _, _)).WillOnce(Return(false));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{1, 1123, 1}, 99, sentMinorProtocol, remote_iid_initiator, 0, 0, 0);
+
+        doLoop(Ms(2), Ms(3), Tp(1));
+        doLoop(Ms(2), Ms(3), Tp(2));
+        doLoop(Ms(2), Ms(3), Tp(3));
+        doLoop(Ms(2), Ms(3), Tp(4));
+        doLoop(Ms(2), Ms(3), Tp(5));
+
+        // sends an error for received keepalives from initiator (due to missing session response)
+        EXPECT_CALL(stack, sendKeepAlive(remote_iid_initiator, ValidHdr(pid, 0u), 0, true)).WillOnce(Return(true)); // mid:0 indicates error
+        fromStack.handleKeepAlive(SomeIPMsgHeader{1, 1123, 2}, 0, false);
+    }
+
+    /**
+     * Verifies initiator recovery if initial pinfo is lost
+     */
+    TEST_F(AConnectionSystemTimeMockConnected, recoverDroppedPinfoInitiator)
+    {
+        uint64_t session1 = 0;
+        const auto remote_iid_responder = TestInstanceId(1);
+        EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
+        EXPECT_CALL(stack, sendParticipantInfo(remote_iid_responder, ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(StoreSessionAndReturn(&session1, true));
+        fromStack.handleServiceAvailable(remote_iid_responder);
+
+        doLoop(Ms(2), Ms(3), Tp(1));
+        doLoop(Ms(2), Ms(3), Tp(2));
+
+        EXPECT_CALL(stack, sendKeepAlive(remote_iid_responder, ValidHdr(pid, 2u), 0, false)).WillOnce(Return(true)); // regular keepalive
+        doLoop(Ms(2), Ms(3), Tp(3));
+        doLoop(Ms(2), Ms(3), Tp(4));
+
+        EXPECT_CALL(stack, sendKeepAlive(remote_iid_responder, ValidHdr(pid, 3u), 0, false)).WillOnce(Return(true)); // regular keepalive
+        doLoop(Ms(2), Ms(3), Tp(5));
+
+        // expect new session if an error message (msgid==0) for session1 is received
+        uint64_t session2 = 0;
+        EXPECT_CALL(stack, sendParticipantInfo(remote_iid_responder, ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(StoreSessionAndReturn(&session2, true));
+        fromStack.handleKeepAlive(SomeIPMsgHeader{1, session1, 0}, 0, false); // receive error for keepalive
+        fromStack.handleKeepAlive(SomeIPMsgHeader{1, session1, 0}, 0, false); // receive error for keepalive -> ignore old session id
+        EXPECT_NE(session1, session2);
+
+        doLoop(Ms(2), Ms(3), Tp(6));
+
+        EXPECT_CALL(stack, sendKeepAlive(remote_iid_responder, ValidHdr(pid, 2u), 0, false)).WillOnce(Return(true)); // regular keepalive
+        doLoop(Ms(2), Ms(3), Tp(7));
+
+        // again - expect new session if an error message (msgid==0) for session2 is received
+        uint64_t session3 = 0;
+        EXPECT_CALL(stack, sendParticipantInfo(remote_iid_responder, ValidHdr(pid, 1u), 99, sentMinorProtocol, iid, 0, _, _)).WillOnce(StoreSessionAndReturn(&session3, true));
+        fromStack.handleKeepAlive(SomeIPMsgHeader{1, session2, 0}, 0, false); // again receive error for keepalive (session2)
+        EXPECT_NE(session2, session3);
+
+        // finally get a session reply for session3
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(1)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{1, session3, 1}, 99, sentMinorProtocol, remote_iid_responder, 4, 0, 0);
+
+        expectRemoteDisconnects({1});
+    }
+
     TEST_F(AConnectionSystemTimeMockConnected, repeatedlyTriesPinfoWithBackoffWhenFails)
     {
         EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));

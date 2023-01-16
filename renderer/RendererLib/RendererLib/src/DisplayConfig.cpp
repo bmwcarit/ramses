@@ -315,6 +315,16 @@ namespace ramses_internal
         return m_scenePriorities;
     }
 
+    void DisplayConfig::setResourceUploadBatchSize(uint32_t batchSize)
+    {
+        m_resourceUploadBatchSize = batchSize;
+    }
+
+    uint32_t DisplayConfig::getResourceUploadBatchSize() const
+    {
+        return m_resourceUploadBatchSize;
+    }
+
     Bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
         return
@@ -343,7 +353,8 @@ namespace ramses_internal
             m_waylandSocketEmbeddedFD    == other.m_waylandSocketEmbeddedFD &&
             m_platformRenderNode         == other.m_platformRenderNode &&
             m_swapInterval               == other.m_swapInterval &&
-            m_scenePriorities            == other.m_scenePriorities;
+            m_scenePriorities            == other.m_scenePriorities &&
+            m_resourceUploadBatchSize    == other.m_resourceUploadBatchSize;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const
