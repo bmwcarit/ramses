@@ -17,7 +17,8 @@
 #
 ############################################################################
 
-SET(CPACK_GENERATOR "TGZ")
+set(CPACK_GENERATOR ${ramses-sdk_CPACK_GENERATOR})
+
 SET(CPACK_SOURCE_GENERATOR "TGZ")
 
 IF (NOT DEFINED GIT_COMMIT_COUNT OR NOT DEFINED GIT_COMMIT_HASH)
@@ -26,15 +27,22 @@ ENDIF()
 SET(SCM_VERSION "${GIT_COMMIT_COUNT}-${GIT_COMMIT_HASH}")
 
 IF("${CPACK_PACKAGE_NAME}" STREQUAL "")
-	SET(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+    SET(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 ENDIF()
 
-#SET(CPACK_RPM_COMPONENT_INSTALL         1)
-#SET(CPACK_ARCHIVE_COMPONENT_INSTALL     1)
 SET(CPACK_PACKAGE_VERSION                "${PROJECT_VERSION_STRING}-${SCM_VERSION}")
-SET(CPACK_PACKAGE_CONTACT                "${PROJECT_CONTACT}")
 SET(CPACK_SOURCE_STRIP_FILES             TRUE)
 SET(CPACK_STRIP_FILES                    FALSE)
+SET(CPACK_PACKAGE_CONTACT               "ramses-oss@list.bmw.com")
+set(CPACK_PACKAGE_VENDOR                "ramses")
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY   "A distributed 3D rendering framework for embedded systems")
+set(CPACK_PACKAGE_DESCRIPTION           "A packaged version of ramses. Generated using CPack.")
+
+if(ramses-sdk_CPACK_GENERATOR STREQUAL "DEB")
+    # Enables CPack to add proper dependency info to the package, see docs for more info
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+endif()
 
 # Allows providing custom package suffix, use "-<commitsha>" by default
 if(RAMSES_CUSTOM_PACKAGE_SUFFIX)

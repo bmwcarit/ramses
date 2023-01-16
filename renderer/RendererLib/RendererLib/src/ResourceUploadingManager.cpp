@@ -38,10 +38,12 @@ namespace ramses_internal
         , m_keepEffects(displayConfig.getKeepEffectsUploaded())
         , m_frameTimer(frameTimer)
         , m_resourceCacheSize(displayConfig.getGPUMemoryCacheSize())
+        , m_resourceUploadBatchSize(displayConfig.getResourceUploadBatchSize())
         , m_stats(stats)
         , m_scenePriorities(displayConfig.getScenePriorities())
     {
         assert(m_uploader);
+        assert(m_resourceUploadBatchSize > 0u);
     }
 
     ResourceUploadingManager::~ResourceUploadingManager()
@@ -138,8 +140,9 @@ namespace ramses_internal
 
     void ResourceUploadingManager::uploadResources(const ResourceContentHashVector& resourcesToUpload)
     {
+        assert(m_resourceUploadBatchSize > 0u);
         UInt32 sizeUploaded = 0u;
-        for (size_t i = 0; i < resourcesToUpload.size(); ++i)
+        for (size_t i = 0u; i < resourcesToUpload.size(); ++i)
         {
             const ResourceDescriptor& rd = m_resources.getResourceDescriptor(resourcesToUpload[i]);
             const UInt32 resourceSize = rd.resource->getDecompressedDataSize();
@@ -147,7 +150,7 @@ namespace ramses_internal
             m_stats.resourceUploaded(resourceSize);
             sizeUploaded += resourceSize;
 
-            const Bool checkTimeLimit = (i % NumResourcesToUploadInBetweenTimeBudgetChecks == 0) || resourceSize > LargeResourceByteSizeThreshold;
+            const Bool checkTimeLimit = (i % m_resourceUploadBatchSize == 0) || (resourceSize > LargeResourceByteSizeThreshold);
             std::chrono::milliseconds sectionDuration{};
             if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ResourcesUpload, &sectionDuration))
             {

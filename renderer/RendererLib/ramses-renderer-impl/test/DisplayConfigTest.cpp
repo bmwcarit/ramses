@@ -261,3 +261,12 @@ TEST_F(ADisplayConfig, canSetScenePriority)
     EXPECT_EQ(ramses::StatusOK, config.setScenePriority(ramses::sceneId_t(551), 4));
     EXPECT_EQ(4, config.impl.getScenePriority(ramses::sceneId_t(551)));
 }
+
+TEST_F(ADisplayConfig, canSetResourceUploadBatchSize)
+{
+    EXPECT_EQ(10u, config.impl.getResourceUploadBatchSize());
+    EXPECT_EQ(ramses::StatusOK, config.setResourceUploadBatchSize(1));
+    EXPECT_EQ(1u, config.impl.getResourceUploadBatchSize());
+    EXPECT_NE(ramses::StatusOK, config.setResourceUploadBatchSize(0));
+    EXPECT_EQ(1u, config.impl.getResourceUploadBatchSize());
+}
