@@ -355,3 +355,60 @@ if(ramses-sdk_BUILD_TOOLS)
                                 imgui/misc/cpp/*.cpp
         )
 endif()
+
+
+# MetalANGLE - Build for iOS and macOS Support only
+IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")) 
+    if(EXISTS "${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.xcframework")
+        ACME_INFO("MetalANGLE prebuild xcframework found.")
+    else()
+        ACME_INFO("MetalANGLE prebuild xcframework not found, building now...")
+        file(REMOVE_RECURSE "${ramses-sdk_SOURCE_DIR}/external/metalangle/build")
+        execute_process(COMMAND "./ios/xcode/fetchDependencies.sh"
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+        execute_process(COMMAND "xcodebuild archive \
+                                    -project ./iOS/xcode/OpenGLES.xcodeproj
+                                    -scheme MetalANGLE
+                                    -configuration Release
+                                    -destination 'generic/platform=iOS Simulator'
+                                    -archivePath './build/MetalANGLE.framework-iphonesimulator.xcarchive'
+                                    SKIP_INSTALL=NO
+                                    BUILD_LIBRARIES_FOR_DISTRIBUTION=YES"
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+        execute_process(COMMAND "xcodebuild archive
+                                    -project ./iOS/xcode/OpenGLES.xcodeproj
+                                    -scheme MetalANGLE
+                                    -configuration Release
+                                    -destination 'generic/platform=iOS'
+                                    -archivePath './build/MetalANGLE.framework-iphoneos.xcarchive'
+                                    SKIP_INSTALL=NO
+                                    BUILD_LIBRARIES_FOR_DISTRIBUTION=YES"
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+        execute_process(COMMAND "xcodebuild archive
+                                    -project ./iOS/xcode/OpenGLES.xcodeproj
+                                    -scheme MetalANGLE_mac
+                                    -configuration Release
+                                    -destination 'generic/platform=OS X'
+                                    -archivePath './build/MetalANGLE.framework-macos.xcarchive'
+                                    SKIP_INSTALL=NO
+                                    BUILD_LIBRARIES_FOR_DISTRIBUTION=YES"
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+        execute_process(COMMAND "xcodebuild archive
+                                    -project ./iOS/xcode/OpenGLES.xcodeproj
+                                    -scheme MetalANGLE
+                                    -configuration Release
+                                    -destination 'generic/platform=OS X'
+                                    -archivePath './build/MetalANGLE.framework-maccatalyst.xcarchive'
+                                    SKIP_INSTALL=NO
+                                    BUILD_LIBRARIES_FOR_DISTRIBUTION=YES"
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+        execute_process(COMMAND "xcodebuild -create-xcframework
+                                    -framework './build/MetalANGLE.framework-iphonesimulator.xcarchive/Products/Library/Frameworks/MetalANGLE.framework'
+                                    -framework './build/MetalANGLE.framework-iphoneos.xcarchive/Products/Library/Frameworks/MetalANGLE.framework'
+                                    -framework './build/MetalANGLE.framework-maccatalyst.xcarchive/Products/Library/Frameworks/MetalANGLE.framework'
+                                    -framework './build/MetalANGLE.framework-macos.xcarchive/Products/Library/Frameworks/MetalANGLE.framework'
+                                    -output './build/MetalAngle.xcframework'"
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+        ACME_INFO("MetalANGLE xcframework build.")
+    endif()
+endif()

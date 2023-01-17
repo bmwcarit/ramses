@@ -28,3 +28,6 @@
 [submodule "external/cli11"]
 	url = https://github.com/CLIUtils/CLI11.git
 	path = external/cli11
+[submodule "external/metalangle"]
+	path = external/metalangle
+	url = https://github.com/kakashidinho/metalangle.git

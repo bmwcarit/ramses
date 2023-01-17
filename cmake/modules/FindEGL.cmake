@@ -38,15 +38,13 @@ ELSEIF(TARGET_OS MATCHES "Linux" OR TARGET_OS MATCHES "Android")
     )
 
 ELSEIF((TARGET_OS MATCHES "Darwin"))
-    execute_process(COMMAND "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/FetchAndBuildMetalANGLE.sh"
-        WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE")
 
     SET(EGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
     )   
 
     FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
-     PATHS ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/MetalAngle.xcframework/macos-arm64_x86_64/
+     PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalAngle.xcframework/macos-arm64_x86_64/
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
 
     IF(EGL_LIBRARIES)
@@ -60,8 +58,6 @@ ELSEIF((TARGET_OS MATCHES "Darwin"))
     )
 
 ELSEIF((TARGET_OS MATCHES "iOS"))
-    execute_process(COMMAND "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/FetchAndBuildMetalANGLE.sh"
-        WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/MetalANGLE")
 
     SET(EGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
@@ -69,11 +65,11 @@ ELSEIF((TARGET_OS MATCHES "iOS"))
    
     IF(ramses-sdk_METALANGLE_IOS_SIMULATOR)
         FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
-            PATHS ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/MetalAngle.xcframework/ios-arm64_x86_64-simulator/
+            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalAngle.xcframework/ios-arm64_x86_64-simulator/
             NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
     ELSE()
         FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
-            PATHS ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/MetalAngle.xcframework/ios-arm64/
+            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalAngle.xcframework/ios-arm64/
             NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
     ENDIF()
 
