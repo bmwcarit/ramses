@@ -18,7 +18,7 @@ namespace ramses_internal
 {
     Window_iOS::Window_iOS(const DisplayConfig& displayConfig, IWindowEventHandler &windowEventHandler, UInt32 id)
         : Window_Base(displayConfig, windowEventHandler, id)
-        , mMetalLayer(static_cast<CAMetalLayer*>(displayConfig.getMobilePlatformNativeWindow().getValue()))
+        , mMetalLayer(static_cast<CAMetalLayer*>(displayConfig.getIOSNativeWindow().getValue()))
     {
         LOG_INFO(CONTEXT_RENDERER, "Window_iOS::Window_iOS");
     }

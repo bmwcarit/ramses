@@ -139,14 +139,24 @@ namespace ramses
         return impl.getIntegrityRGLDeviceUnit();
     }
 
-    void* DisplayConfig::getMobilePlatformNativeWindow() const
+    void* DisplayConfig::getAndroidNativeWindow() const
     {
-        return impl.getMobilePlatformNativeWindow();
+        return impl.getAndroidNativeWindow();
     }
 
-    status_t DisplayConfig::setMobilePlatformNativeWindow(void* nativeWindowPtr)
+    status_t DisplayConfig::setAndroidNativeWindow(void* nativeWindowPtr)
     {
-        return impl.setMobilePlatformNativeWindow(nativeWindowPtr);
+        return impl.setAndroidNativeWindow(nativeWindowPtr);
+    }
+
+    void* DisplayConfig::getIOSNativeWindow() const
+    {
+        return impl.getIOSNativeWindow();
+    }
+
+    status_t DisplayConfig::setIOSNativeWindow(void* nativeWindowPtr)
+    {
+        return impl.setIOSNativeWindow(nativeWindowPtr);
     }
 
     status_t DisplayConfig::setWindowIviVisible()

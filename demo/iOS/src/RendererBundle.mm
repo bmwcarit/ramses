@@ -70,7 +70,7 @@ void SceneStateAutoShowEventHandler::sceneStateChanged(ramses::sceneId_t sceneId
 
     ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(0, 0, width, height);
-    displayConfig.setMobilePlatformNativeWindow(m_nativeWindow);
+    displayConfig.setIOSNativeWindow(m_nativeWindow);
     ramses::displayId_t displayId = m_renderer->createDisplay(displayConfig);
 
     m_autoShowHandler.reset(new SceneStateAutoShowEventHandler(*m_renderer, displayId));
