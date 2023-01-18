@@ -60,16 +60,12 @@ OPTION(ramses-sdk_ALLOW_CUSTOM_FREETYPE "Allow usage of custom freetype and harf
 
 # build options
 if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
-    MESSAGE("Limited Build Support on iOS: Examples, Demos and Tools are not supported.")
-    SET(ramses-sdk_BUILD_EXAMPLES OFF)
-    SET(ramses-sdk_BUILD_TOOLS OFF)
-    SET(ramses-sdk_BUILD_SMOKE_TESTS OFF)
     OPTION(ramses-sdk_METALANGLE_IOS_SIMULATOR "Include MetalANGLE SDK for iOS Simulator instead of device" OFF)
-else()
-    OPTION(ramses-sdk_BUILD_EXAMPLES "Build Example targets: ON, OFF" ON)
-    OPTION(ramses-sdk_BUILD_TOOLS "Build tools: ON, OFF" ON)
-    OPTION(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke test targets: ON, OFF" ON)
 endif()
+
+OPTION(ramses-sdk_BUILD_EXAMPLES "Build Example targets: ON, OFF" ON)
+OPTION(ramses-sdk_BUILD_TOOLS "Build tools: ON, OFF" ON)
+OPTION(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke test targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_DEMOS "Build demo targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client only shared library" OFF)
 OPTION(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per renderer shared libraries" ON)
