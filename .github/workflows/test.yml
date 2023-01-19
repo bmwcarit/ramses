@@ -98,14 +98,14 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=ios -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
       if: ${{ matrix.os == 'macos-12' && matrix.target-platform == 'ios' }}
 
     - name: Configure CMake (iOS Simulator)
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=ios -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
       if: ${{ matrix.os == 'macos-12' && matrix.target-platform == 'ios-simulator' }}
 
     - name: Build
