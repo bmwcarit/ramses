@@ -95,7 +95,7 @@ namespace ramses_internal
                                    uint64_t lastSentSessionId, uint64_t lastSentMessageId,
                                    std::chrono::steady_clock::time_point lastSentTime);
         bool handleKeepAlive(const SomeIPMsgHeader& header, bool usingPreviousMessageId);
-
+        bool isInitiatorAndInvalid(InstanceIdType iid) const;
 
         // for sending
         bool isResponsibleForParticipant(const Guid& pid) const;
@@ -671,6 +671,19 @@ namespace ramses_internal
         m_wakeupKeepAliveThread();
 
         return true;
+    }
+
+    template <typename InstanceIdType>
+    bool ConnectionSystemInitiatorResponder<InstanceIdType>::isInitiatorAndInvalid(InstanceIdType iid) const
+    {
+        auto it = m_availableInstances.find(iid);
+        if (it != m_availableInstances.end())
+        {
+            ParticipantState* pstate = it->second;
+            assert(pstate);
+            return (pstate->selfIsInitiator && pstate->initiatorState == InitiatorState::Invalid);
+        }
+        return false;
     }
 
     template <typename InstanceIdType>

@@ -46,6 +46,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(-1, m_config.getSwapInterval());
     EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId()));
     EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId(15562)));
+    EXPECT_EQ(10u, m_config.getResourceUploadBatchSize());
 
     // this value is used in HL API, so test that value does not change unnoticed
     EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
@@ -125,6 +126,9 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
 
     m_config.setSwapInterval(2);
     EXPECT_EQ(2, m_config.getSwapInterval());
+
+    m_config.setResourceUploadBatchSize(3);
+    EXPECT_EQ(3u, m_config.getResourceUploadBatchSize());
 
     m_config.setScenePriority(ramses_internal::SceneId(15562), -1);
     EXPECT_EQ(-1, m_config.getScenePriority(ramses_internal::SceneId(15562)));

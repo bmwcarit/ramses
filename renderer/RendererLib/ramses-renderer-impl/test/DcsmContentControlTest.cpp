@@ -4111,3 +4111,62 @@ TEST_P(ADcsmContentControlP, ignorePendingShowAfterForceStopOffer)
 
     signalTechnicalContentReleased();
 }
+
+TEST_F(ADcsmContentControl, requestWaylandContentAgainWithoutNewContentDescription)
+{
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillOnce(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    // handle scene ready
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    signalTechnicalContentReady_wayland();
+    update();
+
+    // requestContentReady has no effect - nothing happens on timeout
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setStreamBufferState(_, streamBufferId_t{ static_cast<uint32_t>(WaylandSurfaceID.getValue())}, true));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    update(5);
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(_, streamBufferId_t{static_cast<uint32_t>(WaylandSurfaceID.getValue())}));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    update(10);
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update(15);
+    // will not get ready
+    m_dcsmHandler.contentReady(m_contentID1);
+    update(20);
+}
+
+TEST_F(ADcsmContentControl, requestWaylandContentAgainWithNewContentDescription)
+{
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillOnce(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    // handle scene ready
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    signalTechnicalContentReady_wayland();
+    update();
+
+    // requestContentReady has no effect - nothing happens on timeout
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setStreamBufferState(_, streamBufferId_t{ static_cast<uint32_t>(WaylandSurfaceID.getValue())}, true));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    update(5);
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(_, streamBufferId_t{static_cast<uint32_t>(WaylandSurfaceID.getValue())}));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    update(10);
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update(15);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillOnce(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    m_dcsmHandler.contentDescription(m_contentID1, ramses::TechnicalContentDescriptor{WaylandSurfaceID.getValue()});
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    m_dcsmHandler.contentReady(m_contentID1);
+    update(20);
+}
+

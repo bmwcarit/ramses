@@ -437,7 +437,7 @@ TEST_F(AResourceUploadingManager, uploadsAtLeastOneResourcePerUpdateIfOutOfTimeB
 TEST_F(AResourceUploadingManager, uploadsBatchOfResourceBeforeCheckingIfOutOfTimeBudget)
 {
     // first resource is always uploaded so batch is check frequency constant + 1
-    const size_t numResourcesInBatch = ResourceUploadingManager::NumResourcesToUploadInBetweenTimeBudgetChecks + 1;
+    const auto numResourcesInBatch = static_cast<int>(rendererResourceUploader.getResourceUploadBatchSize()) + 1;
     // create resources to fill one batch and extra resource in addition
     std::vector<ResourceContentHash> resList(numResourcesInBatch + 1);
     UInt64 hash = 1234u;
@@ -456,7 +456,7 @@ TEST_F(AResourceUploadingManager, uploadsBatchOfResourceBeforeCheckingIfOutOfTim
 
     frameTimer.startFrame();
     rendererResourceUploader.uploadAndUnloadPendingResources();
-    for (UInt32 i = 0u; i < numResourcesInBatch; ++i)
+    for (int i = 0; i < numResourcesInBatch; ++i)
         expectResourceUploaded(resList[i]);
 
     // last resource is outside of batch and was skipped for uploading

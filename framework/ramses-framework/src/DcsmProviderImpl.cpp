@@ -87,9 +87,11 @@ namespace ramses
         if (contentIt != m_contents.end() && contentIt->second.status != ramses_internal::EDcsmState::AcceptStopOffer)
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, ContentID is already registered.").c_str());
 
-        m_contents[contentID] = {category};
+        m_contents[contentID] = { category, contentType, contentDescriptor };
         if (!m_dcsm.sendOfferContent(ramses_internal::ContentID(contentID.getValue()), ramses_internal::Category(category.getValue()), contentType, "", mode == EDcsmOfferingMode::LocalOnly))
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, failure to send sendOfferContent message.").c_str());
+        else if (contentType == ramses_internal::ETechnicalContentType::WaylandIviSurfaceID) // skip content description sending for wayland contents
+            return StatusOK;
         else if (!m_dcsm.sendContentDescription(ramses_internal::ContentID(contentID.getValue()), contentDescriptor))
         {
             m_dcsm.sendRequestStopOfferContent(ramses_internal::ContentID(contentID.getValue()));
@@ -258,12 +260,25 @@ namespace ramses
 
             if (content.status == ramses_internal::EDcsmState::Shown)
                 m_handler->contentHide(contentID, anim);
-            else if (!content.ready)
-                m_handler->contentReadyRequested(contentID);
             else
             {
-                if (!m_dcsm.sendContentReady(ramses_internal::ContentID(contentID.getValue())))
-                    LOG_ERROR(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: failed, failure to send sendContentAvailable message.");
+                if (content.type == ramses_internal::ETechnicalContentType::WaylandIviSurfaceID)
+                {
+                    if (!m_dcsm.sendContentDescription(ramses_internal::ContentID(contentID.getValue()), content.contentDescriptor))
+                    {
+                        LOG_ERROR(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: failed, failure to send sendContentDescription message.");
+                        break;
+                    }
+                }
+                if (!content.ready)
+                {
+                    m_handler->contentReadyRequested(contentID);
+                }
+                else
+                {
+                    if (!m_dcsm.sendContentReady(ramses_internal::ContentID(contentID.getValue())))
+                        LOG_ERROR(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: failed, failure to send sendContentAvailable message.");
+                }
             }
             break;
 

@@ -534,6 +534,21 @@ namespace ramses
         status_t setScenePriority(sceneId_t sceneId, int32_t priority);
 
         /**
+        * @brief Sets the batch size for resource uploads
+        *
+        * The resource upload batch size defines the number of resources that should be uploaded in a single step.
+        * Time budgets (#ramses::RamsesRenderer::setFrameTimerLimits) are checked at the latest when a batch was uploaded.
+        * It should be safe to configure a batch size of 1 unless time measurement has a significant performance impact
+        * on the target device.
+        * The batch size may not be 0.
+        *
+        * @param[in] batchSize the number of resources to upload in a single step (default: 10)
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setResourceUploadBatchSize(uint32_t batchSize);
+
+        /**
         * Stores internal data for implementation specifics of DisplayConfig.
         */
         class DisplayConfigImpl& impl;
