@@ -20,16 +20,16 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
         type: [Debug, Release]
+        cross-compile-target: [none]
+        include:
+          - cross-compile-target: iOS
+            os: macos-12
+          - cross-compile-target: iOSSimulator
+            os: macos-12            
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
           - os: windows-2022
             type: Debug
-        include:
-          - os: macos-12
-            apple-target: iOS
-          - os: macos-12
-            apple-target: iOSSimulator
-
     steps:
     - uses: actions/checkout@v3
       with:
@@ -84,21 +84,21 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-      if: ${{ matrix.os == 'macos-12' && matrix.apple-target != 'iOS' && matrix.apple-target != 'iOSSimulator' }}
+      if: ${{ matrix.os == 'macos-12' && matrix.cross-compile-target != 'iOS' && matrix.cross-compile-target != 'iOSSimulator' }}
 
     - name: Configure CMake (iOS)
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
-      if: ${{ matrix.os == 'macos-12' && matrix.apple-target == 'iOS' }}
+      if: ${{ matrix.os == 'macos-12' && matrix.cross-compile-target == 'iOS' }}
 
     - name: Configure CMake (iOS Simulator)
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
-      if: ${{ matrix.os == 'macos-12' && matrix.apple-target == 'iOSSimulator' }}
+      if: ${{ matrix.os == 'macos-12' && matrix.cross-compile-target == 'iOSSimulator' }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -109,10 +109,10 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash 
       run: cmake --build . --config ${{ matrix.type }} -- -sdk iphonesimulator
-      if: ${{ matrix.os == 'macos-12' && matrix.apple-target == 'iOSSimulator' }}
+      if: ${{ matrix.os == 'macos-12' && matrix.cross-compile-target == 'iOSSimulator' }}
 
     - name: Run unit tests (exclude rendering tests)
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
-      if: ${{ matrix.os != 'macos-12' && matrix.apple-target != 'iOS' }}
+      if: ${{ matrix.os != 'macos-12' && matrix.cross-compile-target != 'iOS' }}
