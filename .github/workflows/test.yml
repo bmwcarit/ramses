@@ -18,20 +18,20 @@ jobs:
     # Newest -> so that we can test with latest tools (clang-tidy) and use recent drivers/packages
     strategy:
       matrix:
+        target-platform: [host-os]
         os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
         type: [Debug, Release]
-        target-platform: [host-os]
         include:
-          - target-platform: ios
+          - target-platform: iphoneos
             os: macos-12
             type: Debug
-          - target-platform: ios
+          - target-platform: iphoneos
             os: macos-12
             type: Debug
-          - target-platform: ios-simulator
+          - target-platform: iphonesimulator
             os: macos-12   
             type: Release  
-          - target-platform: ios-simulator
+          - target-platform: iphonesimulator
             os: macos-12
             type: Release           
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
@@ -92,36 +92,22 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-      if: ${{ matrix.os == 'macos-12' && matrix.target-platform != 'ios' && matrix.target-platform != 'ios-simulator' }}
+      if: ${{ matrix.os == 'macos-12' && matrix.target-platform != 'iphoneos' && matrix.target-platform != 'iphonesimulator' }}
 
     - name: Configure CMake (iOS)
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
-      if: ${{ matrix.os == 'macos-12' && matrix.target-platform == 'ios' }}
-
-    - name: Configure CMake (iOS Simulator)
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO 
-      if: ${{ matrix.os == 'macos-12' && matrix.target-platform == 'ios-simulator' }}
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -DCMAKE_OSX_SYSROOT=${{ matrix.target-platform }}
+      if: ${{ matrix.os == 'macos-12' && (matrix.target-platform == 'iphoneos' || && matrix.target-platform == 'iphonesimulator') }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: cmake --build . --config ${{ matrix.type }}
-      if: ${{ matrix.target-platform != 'ios-simulator' }}
-
-    - name: Build (iOS Simulator)
-      working-directory: ${{runner.workspace}}/build
-      shell: bash 
-      run: cmake --build . --config ${{ matrix.type }} -- -sdk iphonesimulator
-      if: ${{ matrix.os == 'macos-12' && matrix.target-platform == 'ios-simulator' }}
 
     - name: Run unit tests (exclude rendering tests)
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
-      if: ${{ matrix.os != 'macos-12' && matrix.target-platform != 'ios' }}
+      if: ${{ matrix.os != 'macos-12' && matrix.target-platform != 'iphoneos' }}
