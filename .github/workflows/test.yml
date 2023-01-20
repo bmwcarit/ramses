@@ -99,7 +99,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -DCMAKE_OSX_SYSROOT=${{ matrix.target-platform }}
-      if: ${{ matrix.os == 'macos-12' && (matrix.target-platform == 'iphoneos' || && matrix.target-platform == 'iphonesimulator') }}
+      if: ${{ matrix.os == 'macos-12' && (matrix.target-platform == 'iphoneos' || matrix.target-platform == 'iphonesimulator') }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
