@@ -25,7 +25,7 @@ jobs:
           - target-platform: iphoneos
             os: macos-12
             type: Debug
-          - target-platform: iphoneos
+          - target-platform: iphonesimulator
             os: macos-12
             type: Debug
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
@@ -104,4 +104,4 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
-      if: ${{ matrix.os != 'macos-12' && matrix.target-platform != 'iphoneos' }}
+      if: ${{ matrix.os != 'macos-12' && (matrix.target-platform == 'iphoneos' || matrix.target-platform == 'iphonesimulator') }}
