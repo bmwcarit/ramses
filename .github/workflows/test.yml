@@ -104,4 +104,4 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
-      if: ${{ matrix.os != 'macos-12' && (matrix.target-platform == 'iphoneos' || matrix.target-platform == 'iphonesimulator') }}
+      if: ${{ matrix.os != 'macos-12' && matrix.target-platform != 'iphoneos' && matrix.target-platform != 'iphonesimulator' }}
