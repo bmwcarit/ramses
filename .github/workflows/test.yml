@@ -28,12 +28,6 @@ jobs:
           - target-platform: iphoneos
             os: macos-12
             type: Debug
-          - target-platform: iphonesimulator
-            os: macos-12   
-            type: Release  
-          - target-platform: iphonesimulator
-            os: macos-12
-            type: Release           
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
           - os: windows-2022
