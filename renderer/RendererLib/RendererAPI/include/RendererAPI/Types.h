@@ -38,6 +38,8 @@ namespace ramses_internal
     using OffscreenBufferHandle = TypedMemoryHandle<OffscreenBufferHandleTag>;
     struct StreamBufferHandleTag {};
     using StreamBufferHandle = TypedMemoryHandle<StreamBufferHandleTag>;
+    struct ExternalTextureHandleTag {};
+    using ExternalBufferHandle = TypedMemoryHandle<ExternalTextureHandleTag>;
 
     struct DmaBufferFourccFormatTag{};
     using DmaBufferFourccFormat = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), DmaBufferFourccFormatTag>;

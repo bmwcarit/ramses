@@ -109,6 +109,12 @@ namespace ramses_internal
         m_sceneUpdater.handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
     }
 
+    void RendererCommandExecutor::operator()(const RendererCommand::LinkExternalBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
+    }
+
     void RendererCommandExecutor::operator()(const RendererCommand::UnlinkData& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
@@ -168,6 +174,18 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.setStreamBufferState(cmd.streamBuffer, cmd.newState);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::CreateExternalBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleExternalBufferCreateRequest(cmd.externalBuffer);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::DestroyExternalBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleExternalBufferDestroyRequest(cmd.externalBuffer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetClearFlags& cmd)

@@ -159,6 +159,27 @@ namespace ramses
         }
 #endif
 
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+        /**
+        * @brief This method will be called after an external buffer is created (or failed to be created) as a result of RamsesRenderer API \c createExternalBuffer call.
+        *
+        * @param displayId Display id of display that the callback refers to.
+        * @param externalBufferId The id of the external buffer that was created or failed to be created.
+        * @param textureGlId The OpenGL texture id of the external texture object used for the external buffer on the device in case creation was successful.
+        * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
+        */
+        virtual void externalBufferCreated(displayId_t displayId, externalBufferId_t externalBufferId, uint32_t textureGlId, ERendererEventResult result) = 0;
+
+        /**
+        * @brief This method will be called after an external buffer is destroyed (or failed to be destroyed) as a result of RamsesRenderer API \c destroyExternalBuffer call.
+        *
+        * @param displayId Display id of display that the callback refers to.
+        * @param externalBufferId The id of the external buffer that was destroyed or failed to be destroyed.
+        * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
+        */
+        virtual void externalBufferDestroyed(displayId_t displayId, externalBufferId_t externalBufferId, ERendererEventResult result) = 0;
+#endif
+
         /**
         * @brief Empty destructor
         */
@@ -289,6 +310,29 @@ namespace ramses
             (void)maximumLoopTime;
             (void)averageLooptime;
         }
+
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+        /**
+        * @copydoc ramses::IRendererEventHandler::externalBufferCreated
+        */
+        virtual void externalBufferCreated(displayId_t displayId, externalBufferId_t externalBufferId, uint32_t textureGlId, ERendererEventResult result) override
+        {
+            (void)displayId;
+            (void)externalBufferId;
+            (void)textureGlId;
+            (void)result;
+        }
+
+        /**
+        * @copydoc ramses::IRendererEventHandler::externalBufferDestroyed
+        */
+        virtual void externalBufferDestroyed(displayId_t displayId, externalBufferId_t externalBufferId, ERendererEventResult result) override
+        {
+            (void)displayId;
+            (void)externalBufferId;
+            (void)result;
+        }
+#endif
 
     };
 }

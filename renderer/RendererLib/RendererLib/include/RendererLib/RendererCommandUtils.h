@@ -27,6 +27,7 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::LinkData& cmd) { return fmt::format("LinkData (providerSceneId={} providerDataId={} consumerSceneId={} consumerDataId={})", cmd.providerScene, cmd.providerData, cmd.consumerScene, cmd.consumerData); }
         inline std::string ToString(const RendererCommand::LinkOffscreenBuffer& cmd) { return fmt::format("LinkOffscreenBuffer (providerOB={} consumerSceneId={} consumerDataId={})", cmd.providerBuffer, cmd.consumerScene, cmd.consumerData); }
         inline std::string ToString(const RendererCommand::LinkStreamBuffer& cmd) { return fmt::format("LinkStreamBuffer (providerSB={} consumerSceneId={} consumerDataId={})", cmd.providerBuffer, cmd.consumerScene, cmd.consumerData); }
+        inline std::string ToString(const RendererCommand::LinkExternalBuffer& cmd) { return fmt::format("LinkExternalBuffer (providerEB={} consumerSceneId={} consumerDataId={})", cmd.providerBuffer, cmd.consumerScene, cmd.consumerData); }
         inline std::string ToString(const RendererCommand::UnlinkData& cmd) { return fmt::format("UnlinkData (consumerSceneId={} consumerDataId={})", cmd.consumerScene, cmd.consumerData); }
         inline std::string ToString(const RendererCommand::PickEvent& cmd) { return fmt::format("PickEvent (sceneId={} coords={})", cmd.scene, cmd.coordsNormalizedToBufferSize); }
         inline std::string ToString(const RendererCommand::CreateDisplay& cmd) { return fmt::format("CreateDisplay (displayId={})", cmd.display); }
@@ -38,6 +39,8 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::CreateStreamBuffer& cmd) { return fmt::format("CreateStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
         inline std::string ToString(const RendererCommand::DestroyStreamBuffer& cmd) { return fmt::format("DestroyStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
         inline std::string ToString(const RendererCommand::SetStreamBufferState& cmd) { return fmt::format("SetStreamBufferState (displayId={} SB={} state={})", cmd.display, cmd.streamBuffer, cmd.newState); }
+        inline std::string ToString(const RendererCommand::CreateExternalBuffer& cmd) { return fmt::format("CreateExternalBuffer (displayId={} EB={})", cmd.display, cmd.externalBuffer); }
+        inline std::string ToString(const RendererCommand::DestroyExternalBuffer& cmd) { return fmt::format("DestroyExternalBuffer (displayId={} EB={})", cmd.display, cmd.externalBuffer); }
         inline std::string ToString(const RendererCommand::SetClearFlags& cmd) { return fmt::format("SetClearEnabled (displayId={} OB={} flags={})", cmd.display, cmd.offscreenBuffer, cmd.clearFlags); }
         inline std::string ToString(const RendererCommand::SetClearColor& cmd) { return fmt::format("SetClearColor (displayId={} OB={} color={})", cmd.display, cmd.offscreenBuffer, cmd.clearColor); }
         inline std::string ToString(const RendererCommand::SetExterallyOwnedWindowSize& cmd) { return fmt::format("SetExterallyOwnedWindowSize (displayId={} width={} height={})", cmd.display, cmd.width, cmd.height); }
@@ -107,6 +110,14 @@ namespace ramses_internal
             return evt;
         }
         template <>
+        inline RendererEvent GenerateFailEventForCommand<RendererCommand::CreateExternalBuffer>(const RendererCommand::CreateExternalBuffer& cmd)
+        {
+            RendererEvent evt{ ERendererEventType::ExternalBufferCreateFailed };
+            evt.displayHandle = cmd.display;
+            evt.externalBuffer = cmd.externalBuffer;
+            return evt;
+        }
+        template <>
         inline RendererEvent GenerateFailEventForCommand<RendererCommand::CreateDmaOffscreenBuffer>(const RendererCommand::CreateDmaOffscreenBuffer& cmd)
         {
             RendererEvent evt{ ERendererEventType::OffscreenBufferCreateFailed };
@@ -120,6 +131,14 @@ namespace ramses_internal
             RendererEvent evt{ ERendererEventType::OffscreenBufferDestroyFailed };
             evt.displayHandle = cmd.display;
             evt.offscreenBuffer = cmd.offscreenBuffer;
+            return evt;
+        }
+        template <>
+        inline RendererEvent GenerateFailEventForCommand<RendererCommand::DestroyExternalBuffer>(const RendererCommand::DestroyExternalBuffer& cmd)
+        {
+            RendererEvent evt{ ERendererEventType::ExternalBufferDestroyFailed };
+            evt.displayHandle = cmd.display;
+            evt.externalBuffer = cmd.externalBuffer;
             return evt;
         }
         template <>

@@ -13,6 +13,7 @@
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
@@ -296,6 +297,9 @@ namespace ramses
             case ERamsesObjectType_TextureSamplerMS:
                 status = createAndDeserializeObjectImpls<TextureSamplerMS, TextureSamplerImpl>(inStream, serializationContext, count);
                 break;
+            case ERamsesObjectType_TextureSamplerExternal:
+                status = createAndDeserializeObjectImpls<TextureSamplerExternal, TextureSamplerImpl>(inStream, serializationContext, count);
+                break;
             case ERamsesObjectType_DataFloat:
                 status = createAndDeserializeObjectImpls<DataFloat, DataObjectImpl>(inStream, serializationContext, count);
                 break;
@@ -536,6 +540,9 @@ namespace ramses
             break;
         case ERamsesObjectType_TextureSamplerMS:
             destroyTextureSampler(RamsesObjectTypeUtils::ConvertTo<TextureSamplerMS>(object));
+            break;
+        case ERamsesObjectType_TextureSamplerExternal:
+            destroyTextureSampler(RamsesObjectTypeUtils::ConvertTo<TextureSamplerExternal>(object));
             break;
         case ERamsesObjectType_Appearance:
         case ERamsesObjectType_GeometryBinding:
@@ -1062,6 +1069,47 @@ namespace ramses
         return sampler;
     }
 
+    ramses::TextureSamplerExternal* SceneImpl::createTextureSamplerExternal(ETextureSamplingMethod minSamplingMethod, ETextureSamplingMethod magSamplingMethod, const char *name)
+    {
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSamplerExternal failed, mag sampling method must be set to Nearest or Linear.");
+            return nullptr;
+        }
+
+        //Restrictions in spec section 3.7.14, https://registry.khronos.org/OpenGL/extensions/OES/OES_EGL_image_external.txt
+        //According to spec min filtering can only be linear or nearest
+        if (ETextureSamplingMethod_Nearest != minSamplingMethod && ETextureSamplingMethod_Linear != minSamplingMethod)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSamplerExternal failed, min sampling method must be set to Nearest or Linear for external textures.");
+            return nullptr;
+        }
+
+        //According to spec clamp to edge so the only allowed wrap mode
+        constexpr ETextureAddressMode wrapUMode = ETextureAddressMode_Clamp;
+        constexpr ETextureAddressMode wrapVMode = ETextureAddressMode_Clamp;
+
+        ramses_internal::TextureSamplerStates samplerStates(
+            TextureUtils::GetTextureAddressModeInternal(wrapUMode),
+            TextureUtils::GetTextureAddressModeInternal(wrapVMode),
+            ramses_internal::EWrapMethod::Clamp,
+            TextureUtils::GetTextureSamplingInternal(minSamplingMethod),
+            TextureUtils::GetTextureSamplingInternal(magSamplingMethod)
+            );
+
+        TextureSamplerImpl& samplerImpl = *new TextureSamplerImpl(*this, ERamsesObjectType_TextureSamplerExternal, name);
+        samplerImpl.initializeFrameworkData(
+            samplerStates,
+            ERamsesObjectType_TextureSamplerExternal,
+            ramses_internal::TextureSampler::ContentType::ExternalTexture,
+            ramses_internal::ResourceContentHash::Invalid(),
+            ramses_internal::InvalidMemoryHandle);
+
+        TextureSamplerExternal* sampler = new TextureSamplerExternal(samplerImpl);
+        registerCreatedObject(*sampler);
+        return sampler;
+    }
+
     ramses::TextureSampler* SceneImpl::createTextureSamplerImpl(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
@@ -1374,6 +1422,11 @@ namespace ramses
         return createTextureConsumerImpl(sampler, id);
     }
 
+    status_t SceneImpl::createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t id)
+    {
+        return createTextureConsumerImpl(sampler, id);
+    }
+
     template <typename SAMPLER>
     status_t SceneImpl::createTextureConsumerImpl(const SAMPLER& sampler, dataConsumerId_t id)
     {
@@ -1435,7 +1488,7 @@ namespace ramses
     {
         const auto now   = ramses_internal::FlushTime::Clock::now();
         const auto nowMs = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-        LOG_INFO_P(CONTEXT_CLIENT, "Scene::resetUniformTimeMs: {}", nowMs.time_since_epoch().count());
+        LOG_INFO_P(CONTEXT_CLIENT, "Scene({})::resetUniformTimeMs: {}", getSceneId(), nowMs.time_since_epoch().count());
         m_sendEffectTimeSync = true;
         getIScene().setEffectTimeSync(now);
         return StatusOK;

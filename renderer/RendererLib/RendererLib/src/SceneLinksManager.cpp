@@ -93,6 +93,11 @@ namespace ramses_internal
         createBufferLinkInternal(providerBuffer, consumerSceneId, consumerId);
     }
 
+    void SceneLinksManager::createBufferLink(ExternalBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId)
+    {
+        createBufferLinkInternal(providerBuffer, consumerSceneId, consumerId);
+    }
+
     template <typename BUFFERHANDLE>
     void SceneLinksManager::createBufferLinkInternal(BUFFERHANDLE providerBuffer, SceneId consumerSceneId, DataSlotId consumerId)
     {
@@ -247,7 +252,8 @@ namespace ramses_internal
         case EDataSlotType_TextureConsumer:
             if (m_textureLinkManager.getSceneLinks().hasLinkedProvider(sceneId, dataSlotHandle) ||
                 m_textureLinkManager.getOffscreenBufferLinks().hasLinkedProvider(sceneId, dataSlotHandle) ||
-                m_textureLinkManager.getStreamBufferLinks().hasLinkedProvider(sceneId, dataSlotHandle))
+                m_textureLinkManager.getStreamBufferLinks().hasLinkedProvider(sceneId, dataSlotHandle) ||
+                m_textureLinkManager.getExternalBufferLinks().hasLinkedProvider(sceneId, dataSlotHandle))
             {
                 if (m_textureLinkManager.removeDataLink(sceneId, dataSlotHandle))
                 {
@@ -278,6 +284,17 @@ namespace ramses_internal
     {
         StreamBufferLinkVector links;
         m_textureLinkManager.getStreamBufferLinks().getLinkedConsumers(providerBuffer, links);
+        for (const auto& link : links)
+        {
+            assert(link.providerBuffer == providerBuffer);
+            m_textureLinkManager.removeDataLink(link.consumerSceneId, link.consumerSlot);
+        }
+    }
+
+    void SceneLinksManager::handleBufferDestroyed(ExternalBufferHandle providerBuffer)
+    {
+        ExternalBufferLinkVector links;
+        m_textureLinkManager.getExternalBufferLinks().getLinkedConsumers(providerBuffer, links);
         for (const auto& link : links)
         {
             assert(link.providerBuffer == providerBuffer);

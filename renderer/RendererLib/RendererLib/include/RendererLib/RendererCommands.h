@@ -90,6 +90,13 @@ namespace ramses_internal
             DataSlotId consumerData;
         };
 
+        struct LinkExternalBuffer
+        {
+            ExternalBufferHandle providerBuffer;
+            SceneId consumerScene;
+            DataSlotId consumerData;
+        };
+
         struct UnlinkData
         {
             SceneId consumerScene;
@@ -160,6 +167,18 @@ namespace ramses_internal
             DisplayHandle display;
             StreamBufferHandle streamBuffer;
             bool newState;
+        };
+
+        struct CreateExternalBuffer
+        {
+            DisplayHandle display;
+            ExternalBufferHandle externalBuffer;
+        };
+
+        struct DestroyExternalBuffer
+        {
+            DisplayHandle display;
+            ExternalBufferHandle externalBuffer;
         };
 
         struct SetClearFlags
@@ -328,6 +347,7 @@ namespace ramses_internal
             LinkData,
             LinkOffscreenBuffer,
             LinkStreamBuffer,
+            LinkExternalBuffer,
             UnlinkData,
             PickEvent,
             CreateDisplay,
@@ -338,6 +358,8 @@ namespace ramses_internal
             CreateStreamBuffer,
             DestroyStreamBuffer,
             SetStreamBufferState,
+            CreateExternalBuffer,
+            DestroyExternalBuffer,
             SetClearFlags,
             SetClearColor,
             SetExterallyOwnedWindowSize,

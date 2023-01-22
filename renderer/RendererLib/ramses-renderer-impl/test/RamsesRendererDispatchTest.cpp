@@ -207,6 +207,51 @@ namespace ramses_internal
         m_handler.expectOffscreenBufferDestroyed(displayId, bufferId, ramses::ERendererEventResult_FAIL);
     }
 
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+    TEST_F(ARamsesRendererDispatch, generatesEventForExternalBufferCreation)
+    {
+        ramses::displayId_t displayId = addDisplay();
+        updateAndDispatch(m_handler);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
+
+        const ramses::externalBufferId_t bufferId = m_renderer.createExternalBuffer(displayId);
+        updateAndDispatch(m_handler);
+        m_handler.expectExternalBufferCreated(displayId, bufferId, DeviceMock::FakeExternalTextureGlId, ramses::ERendererEventResult_OK);
+    }
+
+    TEST_F(ARamsesRendererDispatch, generatesFAILEventForExternalBufferCreation)
+    {
+        ramses::displayId_t displayId(0u);
+        const ramses::externalBufferId_t bufferId = m_renderer.createExternalBuffer(displayId);
+        updateAndDispatch(m_handler);
+        m_handler.expectExternalBufferCreated(displayId, bufferId, 0u, ramses::ERendererEventResult_FAIL);
+    }
+
+    TEST_F(ARamsesRendererDispatch, generatesEventForExternalBufferDestruction)
+    {
+        ramses::displayId_t displayId = addDisplay();
+        updateAndDispatch(m_handler);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
+
+        const ramses::externalBufferId_t bufferId = m_renderer.createExternalBuffer(displayId);
+        updateAndDispatch(m_handler);
+        m_handler.expectExternalBufferCreated(displayId, bufferId, DeviceMock::FakeExternalTextureGlId, ramses::ERendererEventResult_OK);
+
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyExternalBuffer(displayId, bufferId));
+        updateAndDispatch(m_handler);
+        m_handler.expectExternalBufferDestroyed(displayId, bufferId, ramses::ERendererEventResult_OK);
+    }
+
+    TEST_F(ARamsesRendererDispatch, generatesFAILEventForExternalBufferDestruction)
+    {
+        ramses::displayId_t displayId(0u);
+        const ramses::externalBufferId_t bufferId(0u);
+        EXPECT_EQ(ramses::StatusOK, m_renderer.destroyExternalBuffer(displayId, bufferId));
+        updateAndDispatch(m_handler);
+        m_handler.expectExternalBufferDestroyed(displayId, bufferId, ramses::ERendererEventResult_FAIL);
+    }
+#endif
+
     TEST_F(ARamsesRendererDispatch, generatesEventForWindowClosed)
     {
         ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowClosed };

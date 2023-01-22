@@ -42,6 +42,7 @@
 #include "ramses-client-api/DataVector4i.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
@@ -1132,6 +1133,19 @@ namespace ramses
         ASSERT_TRUE(nullptr != loadedSampler);
 
         EXPECT_EQ(ERamsesObjectType_RenderBuffer, loadedSampler->impl.getTextureType());
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteATextureSamplerExternal)
+    {
+        TextureSamplerExternal* sampler = this->m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, "sampler");
+        ASSERT_TRUE(nullptr != sampler);
+
+        doWriteReadCycle();
+
+        TextureSamplerExternal* loadedSampler = getObjectForTesting<TextureSamplerExternal>("sampler");
+        ASSERT_TRUE(nullptr != loadedSampler);
+
+        EXPECT_EQ(ERamsesObjectType_TextureSamplerExternal, loadedSampler->impl.getTextureType());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteSceneId)

@@ -621,6 +621,7 @@ namespace ramses_internal
             case ramses::ERamsesObjectType_SplineBezierVector4i:
             case ramses::ERamsesObjectType_Resource:
             case ramses::ERamsesObjectType_DataObject:
+            case ramses::ERamsesObjectType_TextureSamplerExternal:
             case ramses::ERamsesObjectType_NUMBER_OF_TYPES:
                 ImGui::Text("tbd.");
             }
@@ -1391,6 +1392,7 @@ namespace ramses_internal
         case ramses::EEffectInputDataType_TextureSampler2DMS:
         case ramses::EEffectInputDataType_TextureSampler3D:
         case ramses::EEffectInputDataType_TextureSamplerCube:
+        case ramses::EEffectInputDataType_TextureSamplerExternal:
             status = obj.getInputTexture(uniform.impl, textureSampler);
             if (ramses::StatusOK == status)
             {
@@ -1610,6 +1612,7 @@ namespace ramses_internal
             break;
         case TextureSampler::ContentType::OffscreenBuffer:
         case TextureSampler::ContentType::StreamBuffer:
+        case TextureSampler::ContentType::ExternalTexture:
         case TextureSampler::ContentType::None:
             ImGui::Text("Type: %s (tbd.)", ramses::RamsesObjectTypeUtils::GetRamsesObjectTypeName(obj.getTextureType()));
         }

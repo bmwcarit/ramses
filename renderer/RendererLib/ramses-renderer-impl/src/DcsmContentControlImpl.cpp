@@ -706,6 +706,16 @@ namespace ramses
         }
     }
 
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+    void DcsmContentControlImpl::externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success)
+    {
+        (void)externalBufferId;
+        (void)consumerScene;
+        (void)consumerId;
+        (void)success;
+    }
+#endif
+
     void DcsmContentControlImpl::streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId, bool success)
     {
         LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControlImpl::streamBufferLinked: streambuffer {}, consumerScene {}, consumer {}, success {}",

@@ -451,6 +451,14 @@ namespace ramses_internal
             return GL_TEXTURE_2D_MULTISAMPLE;
         case EEffectInputTextureType_Texture3D:
             return GL_TEXTURE_3D;
+        case EEffectInputTextureType_TextureExternal:
+#ifdef GL_OES_EGL_image_external
+            return GL_TEXTURE_EXTERNAL_OES;
+#else
+            assert("Unsupported texture target!" && false);
+            return GL_TEXTURE_2D;
+#endif
+
         default:
             assert("Unsupported texture target!" && false);
             return GL_TEXTURE_2D;

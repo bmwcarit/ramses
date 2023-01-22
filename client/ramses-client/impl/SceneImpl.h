@@ -87,6 +87,7 @@ namespace ramses
     class PickableObject;
     class TextureSampler;
     class TextureSamplerMS;
+    class TextureSamplerExternal;
     class StreamTexture;
     class Texture2D;
     class Texture3D;
@@ -201,6 +202,11 @@ namespace ramses
 
         ramses::TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
 
+        ramses::TextureSamplerExternal* createTextureSamplerExternal(
+                ETextureSamplingMethod minSamplingMethod,
+                ETextureSamplingMethod magSamplingMethod,
+                const char* name);
+
         DataFloat*     createDataFloat(const char* name);
         DataVector2f*  createDataVector2f(const char* name);
         DataVector3f*  createDataVector3f(const char* name);
@@ -221,6 +227,7 @@ namespace ramses
         status_t updateTextureProvider(const Texture2D& texture, dataProviderId_t id);
         status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id);
         status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t id);
+        status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t id);
 
         AnimationSystem*         createAnimationSystem(uint32_t flags, const char* name);
         AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags, const char* name);

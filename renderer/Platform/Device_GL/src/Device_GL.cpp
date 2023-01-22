@@ -80,6 +80,7 @@ namespace ramses_internal
         , m_isEmbedded(isEmbedded)
         , m_debugOutput()
         , m_deviceExtension(deviceExtension)
+        , m_emptyExternalTextureResource(m_resourceMapper.registerResource(std::make_unique<GPUResource>(0u, 0u)))
     {
 #if defined _DEBUG
         m_debugOutput.enable(context);
@@ -568,6 +569,28 @@ namespace ramses_internal
         allocateTextureStorage(texInfo, mipLevelCount);
 
         return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, totalSizeInBytes));
+    }
+
+    DeviceResourceHandle Device_GL::allocateExternalTexture()
+    {
+#ifdef GL_OES_EGL_image_external
+        if (m_limits.isExternalTextureExtensionSupported())
+        {
+            const auto textureTarget = GL_TEXTURE_EXTERNAL_OES;
+            const GLHandle texID = generateAndBindTexture(textureTarget);
+            GLTextureInfo texInfo;
+            fillGLInternalTextureInfo(textureTarget, 0u, 0u, 1u, ETextureFormat::RGBA8, {}, texInfo);
+
+            return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, 0u));
+        }
+#endif
+        LOG_ERROR(CONTEXT_RENDERER, "Device_GL::allocateExternalTexture: feature not supported on platform");
+        return {};
+    }
+
+    DeviceResourceHandle Device_GL::getEmptyExternalTexture() const
+    {
+        return m_emptyExternalTextureResource;
     }
 
     void Device_GL::bindTexture(DeviceResourceHandle handle)
@@ -1480,6 +1503,16 @@ namespace ramses_internal
         GLint maxDrawBuffers{ 0 };
         glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
         m_limits.setMaximumDrawBuffers(maxDrawBuffers);
+
+#ifdef GL_OES_EGL_image_external
+        const auto extensionSupported = isApiExtensionAvailable("GL_OES_EGL_image_external") || isApiExtensionAvailable("GL_OES_EGL_image_external_essl3");
+        if (!extensionSupported)
+            LOG_WARN(CONTEXT_RENDERER, "Device_GL::queryDeviceDependentFeatures: External textures not supported!");
+
+        m_limits.setExternalTextureExtensionSupported(extensionSupported);
+#else
+        m_limits.setExternalTextureExtensionSupported(false);
+#endif
     }
 
     void Device_GL::readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
@@ -1518,6 +1551,11 @@ namespace ramses_internal
     {
         formats.resize(m_supportedBinaryProgramFormats.size());
         std::transform(m_supportedBinaryProgramFormats.cbegin(), m_supportedBinaryProgramFormats.cend(), formats.begin(), [](GLint id) { return BinaryShaderFormatID{ uint32_t(id) }; });
+    }
+
+    bool Device_GL::isExternalTextureExtensionSupported() const
+    {
+        return m_limits.isExternalTextureExtensionSupported();
     }
 
     void Device_GL::flush()

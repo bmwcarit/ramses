@@ -92,6 +92,7 @@ namespace ramses
         ERamsesObjectType_StreamTexture,
         ERamsesObjectType_SceneReference,
 
+        ERamsesObjectType_TextureSamplerExternal,
         // Whenever new type of object is added
         // its traits must be registered in RamsesObjectTypeTraits.h using helper macros
         // and added to appropriate test type list(s) in RamsesObjectTestTypes.h

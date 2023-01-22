@@ -442,6 +442,83 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForStreamBufferDestroy)
 }
 
 /*
+* External buffers
+*/
+TEST_F(ARamsesRendererWithDisplay, createsCommandForExternalBufferCreate)
+{
+    const ramses::externalBufferId_t externalBuffer = renderer.createExternalBuffer(displayId);
+    EXPECT_NE(ramses::externalBufferId_t::Invalid(), externalBuffer);
+    EXPECT_CALL(cmdVisitor, handleExternalBufferCreateRequest(ramses_internal::ExternalBufferHandle{ externalBuffer.getValue() }, ramses_internal::DisplayHandle{ displayId.getValue() }));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, failsToCreateExternalBufferIfRendererIsRunningInOwnThread)
+{
+    renderer.startThread();
+
+    EXPECT_FALSE(renderer.createExternalBuffer(displayId).isValid());
+    EXPECT_CALL(cmdVisitor, handleExternalBufferCreateRequest(_, _)).Times(0);
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForExternalBufferDestroy)
+{
+    ramses::externalBufferId_t externalBuffer{ 123u };
+    EXPECT_EQ(ramses::StatusOK, renderer.destroyExternalBuffer(displayId, externalBuffer));
+    EXPECT_CALL(cmdVisitor, handleExternalBufferDestroyRequest(ramses_internal::ExternalBufferHandle{ externalBuffer.getValue() }, ramses_internal::DisplayHandle{ displayId.getValue() }));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, canGetExternalBufferGlId)
+{
+    ramses_internal::RendererEvent event;
+    event.eventType = ramses_internal::ERendererEventType::ExternalBufferCreated;
+    event.displayHandle = ramses_internal::DisplayHandle{ displayId.getValue() };
+    event.externalBuffer = ramses_internal::ExternalBufferHandle{ 10u };
+    event.textureGlId = 20u;
+    renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(event));
+
+    ramses::RendererEventHandlerEmpty dummyHandler;
+    renderer.dispatchEvents(dummyHandler);
+    uint32_t resultGlId = 0;
+    EXPECT_TRUE(renderer.getExternalBufferGlId(displayId, ramses::externalBufferId_t{ 10u }, resultGlId));
+    EXPECT_EQ(20u, resultGlId);
+}
+
+TEST_F(ARamsesRendererWithDisplay, failsToGetGlIdForUnknownExternalBuffer)
+{
+    uint32_t resultGlId = 9999u;
+    EXPECT_FALSE(renderer.getExternalBufferGlId(displayId, ramses::externalBufferId_t{ 10u }, resultGlId));
+    EXPECT_EQ(9999u, resultGlId);
+}
+
+TEST_F(ARamsesRendererWithDisplay, failsToGetGlIdForDestroyedExternalBuffer)
+{
+    ramses_internal::RendererEvent createEvent;
+    createEvent.eventType = ramses_internal::ERendererEventType::ExternalBufferCreated;
+    createEvent.displayHandle = ramses_internal::DisplayHandle{ displayId.getValue() };
+    createEvent.externalBuffer = ramses_internal::ExternalBufferHandle{ 10u };
+    createEvent.textureGlId = 20u;
+    renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(createEvent));
+
+    ramses::RendererEventHandlerEmpty dummyHandler;
+    renderer.dispatchEvents(dummyHandler);
+
+    ramses_internal::RendererEvent destroyEvent;
+    destroyEvent.eventType = ramses_internal::ERendererEventType::ExternalBufferDestroyed;
+    destroyEvent.displayHandle = ramses_internal::DisplayHandle{ displayId.getValue() };
+    destroyEvent.externalBuffer = ramses_internal::ExternalBufferHandle{ 10u };
+    destroyEvent.textureGlId = 0u;
+    renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(destroyEvent));
+
+    renderer.dispatchEvents(dummyHandler);
+
+    uint32_t resultGlId = 9999u;
+    EXPECT_FALSE(renderer.getExternalBufferGlId(displayId, ramses::externalBufferId_t{ 10u }, resultGlId));
+    EXPECT_EQ(9999u, resultGlId);
+}
+
+/*
 * Read Pixels
 */
 TEST_F(ARamsesRendererWithDisplay, createsCommandForReadPixels)

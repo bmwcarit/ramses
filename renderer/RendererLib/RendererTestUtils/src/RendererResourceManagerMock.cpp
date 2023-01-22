@@ -53,6 +53,8 @@ RendererResourceManagerMock::RendererResourceManagerMock()
     ON_CALL(*this, getOffscreenBufferHandle(DeviceResourceHandle::Invalid())).WillByDefault(Return(OffscreenBufferHandle::Invalid()));
     ON_CALL(*this, getStreamBufferDeviceHandle(_)).WillByDefault(Return(DeviceMock::FakeRenderTargetDeviceHandle));
     ON_CALL(*this, getVertexArrayDeviceHandle(_, _)).WillByDefault(Return(DeviceMock::FakeVertexArrayDeviceHandle));
+    ON_CALL(*this, getExternalBufferDeviceHandle(Ne(ExternalBufferHandle::Invalid()))).WillByDefault(Return(DeviceMock::FakeExternalTextureDeviceHandle));
+    ON_CALL(*this, getEmptyExternalBufferDeviceHandle()).WillByDefault(Return(DeviceMock::FakeEmptyExternalTextureDeviceHandle));
 
     ON_CALL(*this, getBlitPassRenderTargetsDeviceHandle(_, _, _, _)).WillByDefault(DoAll(SetArgReferee<2>(DeviceMock::FakeBlitPassRenderTargetDeviceHandle), SetArgReferee<3>(DeviceMock::FakeBlitPassRenderTargetDeviceHandle)));
 
@@ -67,6 +69,8 @@ RendererResourceManagerMock::RendererResourceManagerMock()
     EXPECT_CALL(*this, getOffscreenBufferColorBufferDeviceHandle(_)).Times(AnyNumber());
     EXPECT_CALL(*this, getStreamBufferDeviceHandle(_)).Times(AnyNumber());
     EXPECT_CALL(*this, getResourcesInUseByScene(_)).Times(AnyNumber());
+    EXPECT_CALL(*this, getExternalBufferDeviceHandle(_)).Times(AnyNumber());
+    EXPECT_CALL(*this, getEmptyExternalBufferDeviceHandle()).Times(AnyNumber());
 }
 
 RendererResourceManagerRefCountMock::~RendererResourceManagerRefCountMock()

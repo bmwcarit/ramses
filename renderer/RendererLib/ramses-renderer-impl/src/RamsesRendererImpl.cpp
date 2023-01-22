@@ -401,6 +401,46 @@ namespace ramses
         return StatusOK;
     }
 
+    externalBufferId_t RamsesRendererImpl::createExternalBuffer(displayId_t display)
+    {
+        if (isThreaded())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RamsesRenderer::createExternalBuffer: can not create external buffers unless renderer is using doOneLoop");
+            return {};
+        }
+
+        ramses::externalBufferId_t bufferId{ m_nextExternalBufferId };
+        m_nextExternalBufferId.getReference() = m_nextExternalBufferId.getValue() + 1;
+
+        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
+        const ramses_internal::ExternalBufferHandle bufferHandle{ bufferId.getValue() };
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::CreateExternalBuffer{ displayHandle, bufferHandle });
+
+        return bufferId;
+    }
+
+    status_t RamsesRendererImpl::destroyExternalBuffer(displayId_t display, externalBufferId_t externalTexture)
+    {
+        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
+        const ramses_internal::ExternalBufferHandle bufferHandle{ externalTexture.getValue() };
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::DestroyExternalBuffer{ displayHandle, bufferHandle });
+
+        return StatusOK;
+    }
+
+    bool RamsesRendererImpl::getExternalBufferGlId(displayId_t display, externalBufferId_t externalTexture, uint32_t& textureGlId) const
+    {
+        const auto it = std::find_if(m_externalBufferInfos.cbegin(), m_externalBufferInfos.cend(), [&](const auto& e){return e.display == display && e.externalBuffer == externalTexture;});
+
+        if(it != m_externalBufferInfos.cend())
+        {
+            textureGlId = it->glId;
+            return true;
+        }
+
+        return false;
+    }
+
     status_t RamsesRendererImpl::readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
         if (width == 0u || height == 0u)
@@ -546,6 +586,35 @@ namespace ramses
             }
             case ramses_internal::ERendererEventType::OffscreenBufferDestroyFailed:
                 rendererEventHandler.offscreenBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, ERendererEventResult_FAIL);
+                break;
+            case ramses_internal::ERendererEventType::ExternalBufferCreated:
+            {
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+                rendererEventHandler.externalBufferCreated(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, event.textureGlId, ERendererEventResult_OK);
+#endif
+                m_externalBufferInfos.push_back(ExternalBufferInfo{ displayId_t{event.displayHandle.asMemoryHandle()}, externalBufferId_t{ event.externalBuffer.asMemoryHandle()}, event.textureGlId });
+                break;
+            }
+            case ramses_internal::ERendererEventType::ExternalBufferCreateFailed:
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+                rendererEventHandler.externalBufferCreated(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, 0u, ERendererEventResult_FAIL);
+#endif
+                break;
+            case ramses_internal::ERendererEventType::ExternalBufferDestroyed:
+            {
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+                rendererEventHandler.externalBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, ERendererEventResult_OK);
+#endif
+                auto it = std::find_if(m_externalBufferInfos.begin(), m_externalBufferInfos.end(), [&event](const auto& bufferInfo) {return bufferInfo.externalBuffer.getValue() == event.externalBuffer.asMemoryHandle(); });
+                assert(it != m_externalBufferInfos.end());
+                m_externalBufferInfos.erase(it);
+
+                break;
+            }
+            case ramses_internal::ERendererEventType::ExternalBufferDestroyFailed:
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+                rendererEventHandler.externalBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, ERendererEventResult_FAIL);
+#endif
                 break;
             case ramses_internal::ERendererEventType::WindowClosed:
                 rendererEventHandler.windowClosed(displayId_t{ event.displayHandle.asMemoryHandle() });

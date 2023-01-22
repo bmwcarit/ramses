@@ -463,7 +463,7 @@ namespace ramses
         const auto result = std::find(valueDataType.begin(), valueDataType.end(),input.getDataType());
         if (result == valueDataType.end())
         {
-            return addErrorEntry("Appearance::set failed, value type does not match input data type");
+            return addErrorEntry(::fmt::format("Appearance::set failed, value type does not match input data type {}", EnumToString(input.getDataType())));
         }
 
         if (input.getElementCount() != valueElementCount)

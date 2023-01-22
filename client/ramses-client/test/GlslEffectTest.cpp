@@ -436,6 +436,8 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
         "precision highp float;\n"
         "uniform sampler2D s2d;\n"
         "uniform samplerCube sc;\n"
+        "#extension GL_OES_EGL_image_external : require\n"
+        "uniform samplerExternalOES texExternal;\n"
         "void main(void)\n"
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
@@ -449,9 +451,10 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
 
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
-    ASSERT_EQ(2u, uniforms.size());
+    ASSERT_EQ(3u, uniforms.size());
     EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[0]);
     EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics::Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("texExternal", 1, EDataType::TextureSamplerExternal, EFixedSemantics::Invalid), uniforms[2]);
 }
 
 TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
@@ -469,6 +472,9 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
         "uniform sampler2D s2d;\n"
         "uniform highp sampler3D s3d;\n"
         "uniform samplerCube sc;\n"
+        "#extension GL_OES_EGL_image_external_essl3 : require\n"
+        "uniform samplerExternalOES texExternal;\n"
+
         "out vec4 color;\n"
         "void main(void)\n"
         "{\n"
@@ -483,10 +489,11 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
 
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
-    ASSERT_EQ(3u, uniforms.size());
+    ASSERT_EQ(4u, uniforms.size());
     EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[0]);
     EXPECT_EQ(EffectInputInformation("s3d", 1, EDataType::TextureSampler3D, EFixedSemantics::Invalid), uniforms[1]);
     EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics::Invalid), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("texExternal", 1, EDataType::TextureSamplerExternal, EFixedSemantics::Invalid), uniforms[3]);
 }
 
 TEST_F(AGlslEffect, canParseSamplerInputsGLSLES31)
@@ -505,6 +512,8 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES31)
         "uniform highp sampler2DMS s2dMS;"
         "uniform highp sampler3D s3d;\n"
         "uniform samplerCube sc;\n"
+        "#extension GL_OES_EGL_image_external_essl3 : require\n"
+        "uniform samplerExternalOES texExternal;\n"
         "out vec4 color;\n"
         "void main(void)\n"
         "{\n"
@@ -519,11 +528,12 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES31)
 
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
-    ASSERT_EQ(4u, uniforms.size());
+    ASSERT_EQ(5u, uniforms.size());
     EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[0]);
     EXPECT_EQ(EffectInputInformation("s2dMS", 1, EDataType::TextureSampler2DMS, EFixedSemantics::Invalid), uniforms[1]);
     EXPECT_EQ(EffectInputInformation("s3d", 1, EDataType::TextureSampler3D, EFixedSemantics::Invalid), uniforms[2]);
     EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics::Invalid), uniforms[3]);
+    EXPECT_EQ(EffectInputInformation("texExternal", 1, EDataType::TextureSamplerExternal, EFixedSemantics::Invalid), uniforms[4]);
 }
 
 
@@ -867,7 +877,7 @@ TEST_F(AGlslEffect, acceptsLoopsInShaders)
     EXPECT_TRUE(res);
 }
 
-TEST_F(AGlslEffect, doesNotSupportExternalTextureExtension)
+TEST_F(AGlslEffect, supportsExternalTextureExtension)
 {
     const char* vertexShader =
         "#version 100\n"
@@ -892,7 +902,7 @@ TEST_F(AGlslEffect, doesNotSupportExternalTextureExtension)
 
     GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    EXPECT_FALSE(res);
+    EXPECT_TRUE(res);
 }
 
 TEST_F(AGlslEffect, doesNotSupportFloatTextureExtension)

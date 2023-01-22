@@ -298,6 +298,8 @@ namespace ramses_internal
             case glslang::Esd2D:
                 if (type.getSampler().isMultiSample())
                     input.dataType = EDataType::TextureSampler2DMS;
+                else if(type.getSampler().isExternal())
+                    input.dataType = EDataType::TextureSamplerExternal;
                 else
                     input.dataType = EDataType::TextureSampler2D;
                 return true;

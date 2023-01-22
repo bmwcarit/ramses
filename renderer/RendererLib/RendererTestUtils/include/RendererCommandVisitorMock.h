@@ -83,6 +83,11 @@ namespace ramses_internal
             handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
         }
 
+        void operator()(const RendererCommand::LinkExternalBuffer& cmd)
+        {
+            handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
+        }
+
         void operator()(const RendererCommand::UnlinkData& cmd)
         {
             handleDataUnlinkRequest(cmd.consumerScene, cmd.consumerData);
@@ -126,6 +131,16 @@ namespace ramses_internal
         void operator()(const RendererCommand::SetStreamBufferState& cmd)
         {
             setStreamBufferState(cmd.streamBuffer, cmd.display, cmd.newState);
+        }
+
+        void operator()(const RendererCommand::CreateExternalBuffer& cmd)
+        {
+            handleExternalBufferCreateRequest(cmd.externalBuffer, cmd.display);
+        }
+
+        void operator()(const RendererCommand::DestroyExternalBuffer& cmd)
+        {
+            handleExternalBufferDestroyRequest(cmd.externalBuffer, cmd.display);
         }
 
         void operator()(const RendererCommand::SetClearFlags& cmd)
@@ -250,8 +265,11 @@ namespace ramses_internal
         MOCK_METHOD(void, handleBufferCreateRequest, (StreamBufferHandle, DisplayHandle, WaylandIviSurfaceId));
         MOCK_METHOD(void, handleBufferDestroyRequest, (StreamBufferHandle, DisplayHandle));
         MOCK_METHOD(void, setStreamBufferState, (StreamBufferHandle, DisplayHandle, bool));
+        MOCK_METHOD(void, handleExternalBufferCreateRequest, (ExternalBufferHandle, DisplayHandle));
+        MOCK_METHOD(void, handleExternalBufferDestroyRequest, (ExternalBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (OffscreenBufferHandle, SceneId, DataSlotId));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (StreamBufferHandle, SceneId, DataSlotId));
+        MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (ExternalBufferHandle, SceneId, DataSlotId));
         MOCK_METHOD(void, handleReadPixels, (DisplayHandle, OffscreenBufferHandle, uint32_t, uint32_t, uint32_t, uint32_t, bool, const String&));
         MOCK_METHOD(void, systemCompositorListIviSurfaces, ());
         MOCK_METHOD(void, systemCompositorSetIviSurfaceVisibility, (WaylandIviSurfaceId, bool));

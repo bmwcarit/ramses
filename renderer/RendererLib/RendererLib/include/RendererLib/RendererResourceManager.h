@@ -73,6 +73,9 @@ namespace ramses_internal
         virtual void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source) override;
         virtual void                 unloadStreamBuffer(StreamBufferHandle bufferHandle) override;
 
+        virtual void                 uploadExternalBuffer(ExternalBufferHandle bufferHandle) override;
+        virtual void                 unloadExternalBuffer(ExternalBufferHandle bufferHandle) override;
+
         virtual void                 uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) override;
         virtual void                 unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId) override;
 
@@ -104,6 +107,9 @@ namespace ramses_internal
         virtual UInt32 getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const override;
         virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const override;
         virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const override;
+        virtual DeviceResourceHandle getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const override;
+        virtual DeviceResourceHandle getEmptyExternalBufferDeviceHandle() const override;
+        virtual uint32_t getExternalBufferGlId(ExternalBufferHandle bufferHandle) const override;
 
         virtual const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const override;
 
@@ -126,12 +132,14 @@ namespace ramses_internal
         };
         using OffscreenBufferMap = MemoryPool<OffscreenBufferDescriptor, OffscreenBufferHandle>;
         using StreamBufferMap = MemoryPool<WaylandIviSurfaceId, StreamBufferHandle>;
+        using ExternalBufferMap = MemoryPool<DeviceResourceHandle, ExternalBufferHandle>;
 
         IRenderBackend&                m_renderBackend;
         IEmbeddedCompositingManager&   m_embeddedCompositingManager;
 
         OffscreenBufferMap             m_offscreenBuffers;
         StreamBufferMap                m_streamBuffers;
+        ExternalBufferMap              m_externalBuffers;
         RendererResourceRegistry       m_resourceRegistry;
         SceneResourceRegistryMap       m_sceneResourceRegistryMap;
         ResourceUploadingManager       m_resourceUploadingManager;

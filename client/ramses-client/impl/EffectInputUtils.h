@@ -38,6 +38,7 @@ namespace ramses
             case ramses_internal::EDataType::Matrix44F          : return EEffectInputDataType_Matrix44F;
             case ramses_internal::EDataType::TextureSampler2D   : return EEffectInputDataType_TextureSampler2D;
             case ramses_internal::EDataType::TextureSampler2DMS   : return EEffectInputDataType_TextureSampler2DMS;
+            case ramses_internal::EDataType::TextureSamplerExternal : return EEffectInputDataType_TextureSamplerExternal;
             case ramses_internal::EDataType::TextureSampler3D   : return EEffectInputDataType_TextureSampler3D;
             case ramses_internal::EDataType::TextureSamplerCube : return EEffectInputDataType_TextureSamplerCube;
             case ramses_internal::EDataType::Invalid            : return EEffectInputDataType_Invalid;

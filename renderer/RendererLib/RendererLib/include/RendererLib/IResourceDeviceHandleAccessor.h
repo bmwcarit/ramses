@@ -31,6 +31,9 @@ namespace ramses_internal
         virtual UInt32               getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const = 0;
         virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const = 0;
         virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const = 0;
+        virtual DeviceResourceHandle getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const = 0;
+        virtual DeviceResourceHandle getEmptyExternalBufferDeviceHandle() const = 0;
+        virtual uint32_t             getExternalBufferGlId(ExternalBufferHandle externalTexHandle) const = 0;
         virtual DeviceResourceHandle getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const = 0;
         virtual DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const = 0;
         virtual DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const = 0;

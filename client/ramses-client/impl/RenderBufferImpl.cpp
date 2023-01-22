@@ -102,9 +102,26 @@ namespace ramses
         bool usedAsTexture = false;
         for (ramses_internal::TextureSamplerHandle sampler(0u); sampler < iscene.getTextureSamplerCount() && !usedAsTexture; ++sampler)
         {
+            const auto isRenderBuffer = [](ramses_internal::TextureSampler::ContentType contentType) {
+                switch (contentType)
+                {
+                case ramses_internal::TextureSampler::ContentType::RenderBuffer:
+                case ramses_internal::TextureSampler::ContentType::RenderBufferMS:
+                    return true;
+                case ramses_internal::TextureSampler::ContentType::None:
+                case ramses_internal::TextureSampler::ContentType::ClientTexture:
+                case ramses_internal::TextureSampler::ContentType::TextureBuffer:
+                case ramses_internal::TextureSampler::ContentType::StreamTexture:
+                case ramses_internal::TextureSampler::ContentType::OffscreenBuffer:
+                case ramses_internal::TextureSampler::ContentType::StreamBuffer:
+                case ramses_internal::TextureSampler::ContentType::ExternalTexture:
+                    break;
+                }
+                return false;
+            };
             usedAsTexture =
                 iscene.isTextureSamplerAllocated(sampler) &&
-                iscene.getTextureSampler(sampler).contentType == ramses_internal::TextureSampler::ContentType::RenderBuffer &&
+                isRenderBuffer(iscene.getTextureSampler(sampler).contentType) &&
                 iscene.getTextureSampler(sampler).contentHandle == getRenderBufferHandle().asMemoryHandle();
         }
 

@@ -13,6 +13,8 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Node.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/Texture2D.h"
@@ -53,7 +55,6 @@
 #include "Utils/StringUtils.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "RamsesClientTypesImpl.h"
-#include "ramses-client-api/TextureSamplerMS.h"
 
 namespace ramses
 {
@@ -381,6 +382,13 @@ namespace ramses
         return texSampler;
     }
 
+    TextureSamplerExternal* Scene::createTextureSamplerExternal(ETextureSamplingMethod minSamplingMethod, ETextureSamplingMethod magSamplingMethod, const char *name)
+    {
+        TextureSamplerExternal* texSampler = impl.createTextureSamplerExternal(minSamplingMethod, magSamplingMethod, name);
+        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), minSamplingMethod, magSamplingMethod, name);
+        return texSampler;
+    }
+
     status_t Scene::createTransformationDataProvider(const Node& node, dataProviderId_t dataId)
     {
         status_t status = impl.createTransformationDataProvider(node, dataId);
@@ -431,6 +439,13 @@ namespace ramses
     }
 
     status_t Scene::createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t dataId)
+    {
+        status_t status = impl.createTextureConsumer(sampler, dataId);
+        LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(sampler), dataId);
+        return status;
+    }
+
+    status_t Scene::createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t dataId)
     {
         status_t status = impl.createTextureConsumer(sampler, dataId);
         LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(sampler), dataId);
