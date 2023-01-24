@@ -366,6 +366,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
             ACME_INFO("MetalANGLE.framework found.")
         ELSE()
             ACME_INFO("MetalANGLE.framework not found, building now...")
+            execute_process(COMMAND "./ios/xcode/fetchDependencies.sh"
+                WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
             execute_process(COMMAND xcodebuild archive
                                         -project ios/xcode/OpenGLES.xcodeproj
                                         -scheme MetalANGLE
@@ -384,6 +386,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
             ACME_INFO("MetalANGLE.framework found.")
         ELSE()
             ACME_INFO("MetalANGLE.framework not found, building now...")
+            execute_process(COMMAND "./ios/xcode/fetchDependencies.sh"
+                WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
             execute_process(COMMAND xcodebuild archive
                                         -project ios/xcode/OpenGLES.xcodeproj
                                         -scheme MetalANGLE
@@ -404,6 +408,8 @@ ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         ACME_INFO("MetalANGLE.framework found.")
     ELSE()
         ACME_INFO("MetalANGLE.framework not found, building now...")
+        execute_process(COMMAND "./ios/xcode/fetchDependencies.sh"
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
         execute_process(COMMAND xcodebuild archive
                                     -project ios/xcode/OpenGLES.xcodeproj
                                     -scheme MetalANGLE_mac
