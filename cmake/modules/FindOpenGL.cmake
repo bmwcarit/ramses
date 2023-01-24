@@ -79,13 +79,12 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Android")
 
 ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-
     SET(OpenGL_INCLUDE_DIRS    
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
     )   
 
     FIND_LIBRARY(OpenGL_LIBRARIES MetalANGLE
-        PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalAngle.xcframework/macos-arm64_x86_64/
+        PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-macos.xcarchive/Products/Library/Frameworks/
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
 
     IF(OpenGL_LIBRARIES)
@@ -101,15 +100,15 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "iOS")
 
     SET(OpenGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
-    )   
+    )
 
     IF(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
         FIND_LIBRARY(OpenGL_LIBRARIES MetalANGLE
-            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalAngle.xcframework/ios-arm64_x86_64-simulator/
+            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-iphonesimulator.xcarchive/Products/Library/Frameworks/
             NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
     ELSE()
         FIND_LIBRARY(OpenGL_LIBRARIES MetalANGLE
-            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalAngle.xcframework/ios-arm64/
+            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-iphoneos.xcarchive/Products/Library/Frameworks/
             NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
     ENDIF()
     IF(OpenGL_LIBRARIES)
