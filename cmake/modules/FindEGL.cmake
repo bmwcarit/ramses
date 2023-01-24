@@ -37,7 +37,7 @@ ELSEIF(TARGET_OS MATCHES "Linux" OR TARGET_OS MATCHES "Android")
         EGL_FOUND
     )
 
-ELSEIF((TARGET_OS MATCHES "Darwin"))
+ELSEIF(TARGET_OS MATCHES "Darwin")
 
     SET(EGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
@@ -57,13 +57,13 @@ ELSEIF((TARGET_OS MATCHES "Darwin"))
         EGL_FOUND
     )
 
-ELSEIF((TARGET_OS MATCHES "iOS"))
+ELSEIF(TARGET_OS MATCHES "iOS")
 
     SET(EGL_INCLUDE_DIRS
         ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
     )   
    
-    IF(ramses-sdk_METALANGLE_IOS_SIMULATOR)
+    IF(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
         FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
             PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalAngle.xcframework/ios-arm64_x86_64-simulator/
             NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

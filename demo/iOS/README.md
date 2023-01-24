@@ -9,7 +9,7 @@ To show content inside the RAMSES renderer app with the iOS simulator and a macO
 
 - Generate an Xcode project for iOS using cmake with the ramses repository root folder as input. You can add the ID of your development team using `-DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM=...` at the end of this command, otherwise Xcode might ask you to set a development team ID manually.
 ```
-cmake .. -DCMAKE_SYSTEM_NAME=iOS -GXcode -Dramses-sdk_METALANGLE_IOS_SIMULATOR=ON
+cmake .. -DCMAKE_SYSTEM_NAME=iOS -GXcode -DCMAKE_OSX_SYSROOT=iphonesimulator
 ```
 - Open the resulting Xcode project to build and run the ramses-renderer-ios-app on the iOS simulator.
 - Build RAMSES for the macOS host system with the standard cmake build (use the same version of the RAMSES repository as used to build the app)

@@ -59,10 +59,6 @@ OPTION(ramses-sdk_ALLOW_PLATFORM_FREETYPE "Enable to search for platform provide
 OPTION(ramses-sdk_ALLOW_CUSTOM_FREETYPE "Allow usage of custom freetype and harfbuzz if platform provided one  was not found" ON)
 
 # build options
-if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
-    OPTION(ramses-sdk_METALANGLE_IOS_SIMULATOR "Include MetalANGLE SDK for iOS Simulator instead of device" OFF)
-endif()
-
 OPTION(ramses-sdk_BUILD_EXAMPLES "Build Example targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_TOOLS "Build tools: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke test targets: ON, OFF" ON)
