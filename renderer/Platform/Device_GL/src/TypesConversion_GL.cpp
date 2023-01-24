@@ -10,6 +10,12 @@
 #include "Device_GL/TypesConversion_GL.h"
 #include "PlatformAbstraction/Macros.h"
 
+// TODO Violin fix OpenGL headers properly... This is so that the compositing feature works on desktop without crashes
+#if !defined(GL_OES_EGL_image_external)
+#define GL_OES_EGL_image_external
+#define GL_TEXTURE_EXTERNAL_OES 0x8D65
+#endif
+
 namespace ramses_internal
 {
     TextureUploadParams_GL TypesConversion_GL::GetTextureUploadParams(ETextureFormat format)
