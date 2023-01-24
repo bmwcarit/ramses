@@ -1082,7 +1082,11 @@ namespace ramses_internal
         });
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
-            return (sampler.contentType == TextureSampler::ContentType::RenderBuffer) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
+            return (sampler.isRenderBuffer()) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
+        });
+        drawRefs<ramses::TextureSamplerMS>("Used by TextureSamplerMS", obj, [&](const ramses::TextureSamplerMS* ref) {
+            const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            return (sampler.isRenderBuffer()) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
         });
         drawRefs<ramses::BlitPass>("Used by BlitPass", obj, [&](const ramses::BlitPass* ref) {
             const auto& bp = m_scene.impl.getIScene().getBlitPass(ref->impl.getBlitPassHandle());
@@ -1280,6 +1284,7 @@ namespace ramses_internal
         std::vector<ramses_internal::Vector2>  vec2;
         std::vector<float>                     vec1;
         const ramses::TextureSampler*          textureSampler;
+        const ramses::TextureSamplerMS*        textureSamplerMS;
         ramses::status_t                       status = ramses::StatusOK;
 
         switch (uniform.getDataType())
@@ -1389,7 +1394,6 @@ namespace ramses_internal
             }
             break;
         case ramses::EEffectInputDataType_TextureSampler2D:
-        case ramses::EEffectInputDataType_TextureSampler2DMS:
         case ramses::EEffectInputDataType_TextureSampler3D:
         case ramses::EEffectInputDataType_TextureSamplerCube:
         case ramses::EEffectInputDataType_TextureSamplerExternal:
@@ -1397,6 +1401,13 @@ namespace ramses_internal
             if (ramses::StatusOK == status)
             {
                 draw(textureSampler->impl);
+            }
+            break;
+        case ramses::EEffectInputDataType_TextureSampler2DMS:
+            status = obj.getInputTextureMS(uniform.impl, textureSamplerMS);
+            if (ramses::StatusOK == status)
+            {
+                draw(textureSamplerMS->impl);
             }
             break;
         case ramses::EEffectInputDataType_Invalid:
@@ -1624,14 +1635,19 @@ namespace ramses_internal
                 ramses::UniformInput uniform;
                 effect.getUniformInput(i, uniform);
                 const ramses::TextureSampler* textureSampler;
+                const ramses::TextureSamplerMS* textureSamplerMS;
                 switch (uniform.impl.getUniformInputDataType())
                 {
                     case ramses::EEffectInputDataType_TextureSampler2D:
-                    case ramses::EEffectInputDataType_TextureSampler2DMS:
                     case ramses::EEffectInputDataType_TextureSampler3D:
                     case ramses::EEffectInputDataType_TextureSamplerCube:
                         if (0 == ref->impl.getInputTexture(uniform.impl, textureSampler))
                             if (textureSampler == &obj.getRamsesObject())
+                                return true;
+                        break;
+                    case ramses::EEffectInputDataType_TextureSampler2DMS:
+                        if (0 == ref->impl.getInputTextureMS(uniform.impl, textureSamplerMS))
+                            if (textureSamplerMS == &obj.getRamsesObject())
                                 return true;
                         break;
                     default:

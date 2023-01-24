@@ -12,6 +12,7 @@
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/GeometryBinding.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/RenderTarget.h"
@@ -75,6 +76,12 @@ namespace ramses
     void SceneDumper::setupMap(ramses_internal::HashMap<HandleType, const ObjectImplType*>& map)
     {
         map.clear();
+        addToMap<ObjectType, ObjectImplType, HandleType>(map);
+    }
+
+    template <class ObjectType, class ObjectImplType, class HandleType>
+    void SceneDumper::addToMap(ramses_internal::HashMap<HandleType, const ObjectImplType*>& map)
+    {
         RamsesObjectRegistryIterator iterator(m_objectRegistry, TYPE_ID_OF_RAMSES_OBJECT<ObjectType>::ID);
         while (const ObjectType* object = iterator.getNext<ObjectType>())
         {
@@ -130,6 +137,7 @@ namespace ramses
     void SceneDumper::setupMaps()
     {
         setupMap<TextureSampler, TextureSamplerImpl, ramses_internal::TextureSamplerHandle>(m_textureSamplerHandleToObjectMap);
+        addToMap<TextureSamplerMS, TextureSamplerImpl, ramses_internal::TextureSamplerHandle>(m_textureSamplerHandleToObjectMap);
         setupMap<RenderBuffer, RenderBufferImpl, ramses_internal::RenderBufferHandle>(m_renderBufferHandleToObjectMap);
         setupMap<Texture2DBuffer, Texture2DBufferImpl, ramses_internal::TextureBufferHandle>(m_textureBufferHandleToObjectMap);
         setupMap<StreamTexture, StreamTextureImpl, ramses_internal::StreamTextureHandle>(m_streamTextureHandleToObjectMap);
@@ -523,7 +531,7 @@ namespace ramses
         for (auto textureSampler : requiredTextureSamplers)
         {
             const auto sampler = textureSampler->getIScene().getTextureSampler(textureSampler->getTextureSamplerHandle());
-            if (ramses_internal::TextureSampler::ContentType::RenderBuffer == sampler.contentType && ramses_internal::RenderBufferHandle::Invalid() != sampler.contentHandle)
+            if (sampler.isRenderBuffer() && ramses_internal::RenderBufferHandle::Invalid() != sampler.contentHandle)
             {
                 const ramses_internal::RenderBufferHandle renderBufferHandle(sampler.contentHandle);
                 const RenderBufferImpl** renderBuffer = m_renderBufferHandleToObjectMap.get(renderBufferHandle);

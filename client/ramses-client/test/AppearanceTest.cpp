@@ -25,6 +25,7 @@
 #include "EffectImpl.h"
 #include "DataObjectImpl.h"
 #include "TextureSamplerImpl.h"
+#include "AppearanceImpl.h"
 
 namespace ramses
 {
@@ -419,6 +420,16 @@ namespace ramses
         EXPECT_EQ(nullptr, actualSampler);
     }
 
+    TEST_F(AAppearanceTest, getsNullSamplerMSIfNoneSetToUniformInput)
+    {
+        UniformInput inputObject;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("texture2dMSInput", inputObject));
+
+        const TextureSamplerMS* actualSampler = nullptr;
+        EXPECT_EQ(StatusOK, appearance->impl.getInputTextureMS(inputObject.impl, actualSampler));
+        EXPECT_EQ(nullptr, actualSampler);
+    }
+
     TEST_F(AAppearanceTest, failsToGetSamplerSetToUniformIfInputHasWrongType)
     {
         UniformInput inputObject;
@@ -426,6 +437,16 @@ namespace ramses
 
         const TextureSampler* actualSampler = nullptr;
         EXPECT_NE(StatusOK, appearance->getInputTexture(inputObject, actualSampler));
+        EXPECT_EQ(nullptr, actualSampler);
+    }
+
+    TEST_F(AAppearanceTest, failsToGetSamplerMSIfInputHasWrongType)
+    {
+        UniformInput inputObject;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("texture2dInput", inputObject));
+
+        const TextureSamplerMS* actualSampler = nullptr;
+        EXPECT_NE(StatusOK, appearance->impl.getInputTextureMS(inputObject.impl, actualSampler));
         EXPECT_EQ(nullptr, actualSampler);
     }
 
@@ -878,6 +899,10 @@ namespace ramses
 
         EXPECT_EQ(textureSampler->impl.getTextureDataType(), ramses_internal::EDataType::TextureSampler2DMS);
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
+
+        const TextureSamplerMS* actualSampler = nullptr;
+        EXPECT_EQ(StatusOK, appearance->impl.getInputTextureMS(inputObject.impl, actualSampler));
+        EXPECT_EQ(textureSampler, actualSampler);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*textureSampler));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*renderBuffer));

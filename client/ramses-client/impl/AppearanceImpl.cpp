@@ -8,6 +8,7 @@
 
 // client API
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/DataObject.h"
 
@@ -599,6 +600,29 @@ namespace ramses
         {
             RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_TextureSampler);
             while (const TextureSampler* sampler = iter.getNext<TextureSampler>())
+            {
+                if (samplerHandle == sampler->impl.getTextureSamplerHandle())
+                {
+                    textureSampler = sampler;
+                    break;
+                }
+            }
+        }
+        return StatusOK;
+    }
+
+    status_t AppearanceImpl::getInputTextureMS(const EffectInputImpl& input, const TextureSamplerMS*& textureSampler)
+    {
+        textureSampler = nullptr;
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u,
+            {ramses_internal::EDataType::TextureSampler2DMS}));
+
+        const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
+        const auto samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, dataField);
+        if (samplerHandle.isValid())
+        {
+            RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_TextureSamplerMS);
+            while (const TextureSamplerMS* sampler = iter.getNext<TextureSamplerMS>())
             {
                 if (samplerHandle == sampler->impl.getTextureSamplerHandle())
                 {

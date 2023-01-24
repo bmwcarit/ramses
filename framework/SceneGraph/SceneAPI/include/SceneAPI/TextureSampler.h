@@ -64,6 +64,25 @@ namespace ramses_internal
         ContentType          contentType = ContentType::None;
         ResourceContentHash  textureResource;
         MemoryHandle         contentHandle = InvalidMemoryHandle;
+
+        bool isRenderBuffer() const
+        {
+            switch (contentType)
+            {
+            case ramses_internal::TextureSampler::ContentType::RenderBuffer:
+            case ramses_internal::TextureSampler::ContentType::RenderBufferMS:
+                return true;
+            case ramses_internal::TextureSampler::ContentType::None:
+            case ramses_internal::TextureSampler::ContentType::ClientTexture:
+            case ramses_internal::TextureSampler::ContentType::TextureBuffer:
+            case ramses_internal::TextureSampler::ContentType::StreamTexture:
+            case ramses_internal::TextureSampler::ContentType::OffscreenBuffer:
+            case ramses_internal::TextureSampler::ContentType::StreamBuffer:
+            case ramses_internal::TextureSampler::ContentType::ExternalTexture:
+                break;
+            }
+            return false;
+        }
     };
 }
 

@@ -86,6 +86,7 @@ namespace ramses
 
         status_t setInputTexture(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler);
         status_t getInputTexture(const EffectInputImpl& input, const TextureSampler*& textureSampler);
+        status_t getInputTextureMS(const EffectInputImpl& input, const TextureSamplerMS*& textureSampler);
 
         status_t bindInput(const EffectInputImpl& input, const DataObjectImpl& dataObject);
         status_t unbindInput(const EffectInputImpl& input);

@@ -39,6 +39,11 @@
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "PlatformAbstraction/Macros.h"
 
+// TODO Violin fix OpenGL headers properly... This is so that the compositing feature works on desktop without crashes
+#if !defined(GL_OES_EGL_image_external)
+#define GL_OES_EGL_image_external
+#define GL_TEXTURE_EXTERNAL_OES 0x8D65
+#endif
 
 namespace ramses_internal
 {
@@ -573,7 +578,6 @@ namespace ramses_internal
 
     DeviceResourceHandle Device_GL::allocateExternalTexture()
     {
-#ifdef GL_OES_EGL_image_external
         if (m_limits.isExternalTextureExtensionSupported())
         {
             const auto textureTarget = GL_TEXTURE_EXTERNAL_OES;
@@ -583,7 +587,6 @@ namespace ramses_internal
 
             return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, 0u));
         }
-#endif
         LOG_ERROR(CONTEXT_RENDERER, "Device_GL::allocateExternalTexture: feature not supported on platform");
         return {};
     }
@@ -1504,15 +1507,12 @@ namespace ramses_internal
         glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
         m_limits.setMaximumDrawBuffers(maxDrawBuffers);
 
-#ifdef GL_OES_EGL_image_external
+        // TODO Violin check if this should be an "||" or an "&&"
         const auto extensionSupported = isApiExtensionAvailable("GL_OES_EGL_image_external") || isApiExtensionAvailable("GL_OES_EGL_image_external_essl3");
         if (!extensionSupported)
             LOG_WARN(CONTEXT_RENDERER, "Device_GL::queryDeviceDependentFeatures: External textures not supported!");
 
         m_limits.setExternalTextureExtensionSupported(extensionSupported);
-#else
-        m_limits.setExternalTextureExtensionSupported(false);
-#endif
     }
 
     void Device_GL::readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
