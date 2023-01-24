@@ -18,13 +18,20 @@ jobs:
     # Newest -> so that we can test with latest tools (clang-tidy) and use recent drivers/packages
     strategy:
       matrix:
+        target-platform: [host-os]
         os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
         type: [Debug, Release]
+        include:
+          - target-platform: iphoneos
+            os: macos-12
+            type: Debug
+          - target-platform: iphonesimulator
+            os: macos-12
+            type: Debug
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
           - os: windows-2022
             type: Debug
-
     steps:
     - uses: actions/checkout@v3
       with:
@@ -79,7 +86,14 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-      if: ${{ matrix.os == 'macos-12' }}
+      if: ${{ matrix.os == 'macos-12' && matrix.target-platform != 'iphoneos' && matrix.target-platform != 'iphonesimulator' }}
+
+    - name: Configure CMake (iOS)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -DCMAKE_OSX_SYSROOT=${{ matrix.target-platform }}
+      if: ${{ matrix.os == 'macos-12' && (matrix.target-platform == 'iphoneos' || matrix.target-platform == 'iphonesimulator') }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -90,3 +104,4 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
+      if: ${{ matrix.os != 'macos-12' && matrix.target-platform != 'iphoneos' && matrix.target-platform != 'iphonesimulator' }}
