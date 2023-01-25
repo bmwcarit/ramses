@@ -86,7 +86,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-      if: ${{ matrix.os == 'macos-12' && matrix.target-platform != 'iphoneos' && matrix.target-platform != 'iphonesimulator' }}
+      if: ${{ matrix.os == 'macos-12' && matrix.target-platform == 'host-os' }}
 
     - name: Configure CMake (iOS)
       shell: bash
@@ -104,4 +104,5 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
-      if: ${{ matrix.os != 'macos-12' && matrix.target-platform != 'iphoneos' && matrix.target-platform != 'iphonesimulator' }}
+      # Tests cannot be executed on iOS, will only be executed if not cross-compiling for a different platform 
+      if: ${{ matrix.target-platform == 'host-os'  }}
