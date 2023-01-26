@@ -84,6 +84,9 @@ namespace ramses
         template <class ObjectType, class ObjectImplType, class HandleType>
         void setupMap(ramses_internal::HashMap<HandleType, const ObjectImplType*>& map);
 
+        template <class ObjectType, class ObjectImplType, class HandleType>
+        void addToMap(ramses_internal::HashMap<HandleType, const ObjectImplType*>& map);
+
         void setupRenderBufferSetMap();
         void setupRenderPassMap();
         void setupResourceMap();

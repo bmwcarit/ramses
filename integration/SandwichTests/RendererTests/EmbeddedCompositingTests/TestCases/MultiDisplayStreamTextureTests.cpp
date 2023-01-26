@@ -214,9 +214,6 @@ namespace ramses_internal
             assert(false);
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "MultiDisplayStreamTextureTests::runEmbeddedCompositingTestCase waiting until client test application has terminated ...");
-        testFramework.destroyDisplays();
-        testFramework.destroyRenderer();
 
         return testResultValue;
     }

@@ -16,6 +16,7 @@
 #include "ramses-client-api/DataFloat.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/StreamTexture.h"
@@ -912,6 +913,17 @@ namespace ramses
         client.destroy(anotherScene);
     }
 
+    TEST_F(AScene, reportsErrorWhenCreateTextureConsumerWithSamplerExternalFromAnotherScene)
+    {
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
+        const TextureSamplerExternal* sampler = anotherScene.createTextureSamplerExternal(ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear);
+        ASSERT_TRUE(nullptr != sampler);
+
+        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 1u }));
+
+        client.destroy(anotherScene);
+    }
+
     TEST_F(AScene, canCreateATextureProviderDataSlot)
     {
         EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
@@ -999,6 +1011,24 @@ namespace ramses
         EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
     }
 
+    TEST_F(AScene, canCreateATextureConsumerDataSlotWithTextureSamplerExternal)
+    {
+        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+
+        const TextureSamplerExternal* sampler = m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear);
+
+        ASSERT_TRUE(nullptr != sampler);
+
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 666u }));
+
+        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        ramses_internal::DataSlotHandle slotHandle(0u);
+        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(sampler->impl.getTextureSamplerHandle(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+    }
+
     TEST_F(AScene, canNotCreateATextureConsumerDataSlotIfOtherThan2DTextureAssigned)
     {
         EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
@@ -1055,6 +1085,15 @@ namespace ramses
         ASSERT_TRUE(nullptr != renderBuffer);
 
         const TextureSamplerMS* sampler = m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
+        ASSERT_TRUE(nullptr != sampler);
+
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 666u }));
+        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 667u }));
+    }
+
+    TEST_F(AScene, canNotCreateMoreThanOneConsumerForATextureSamplerExternal)
+    {
+        const TextureSamplerExternal* sampler = m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear);
         ASSERT_TRUE(nullptr != sampler);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 666u }));

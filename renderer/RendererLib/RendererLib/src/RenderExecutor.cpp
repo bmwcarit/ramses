@@ -334,6 +334,7 @@ namespace ramses_internal
         case EDataType::TextureSampler2D:
         case EDataType::TextureSampler3D:
         case EDataType::TextureSamplerCube:
+        case EDataType::TextureSamplerExternal:
         {
             const TextureSamplerHandle samplerHandle = renderScene.getDataTextureSamplerHandle(dataInstance, dataInstancefield);
             assert(samplerHandle.isValid());

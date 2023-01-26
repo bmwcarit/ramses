@@ -17,6 +17,8 @@ namespace ramses_internal
     const DeviceResourceHandle DeviceMock::FakeIndexBufferDeviceHandle(3333u);
     const DeviceResourceHandle DeviceMock::FakeVertexArrayDeviceHandle(3334u);
     const DeviceResourceHandle DeviceMock::FakeTextureDeviceHandle(4444u);
+    const DeviceResourceHandle DeviceMock::FakeExternalTextureDeviceHandle(4445u);
+    const DeviceResourceHandle DeviceMock::FakeEmptyExternalTextureDeviceHandle(4446u);
     const DeviceResourceHandle DeviceMock::FakeFrameBufferRenderTargetDeviceHandle(5555u);
     const DeviceResourceHandle DeviceMock::FakeRenderTargetDeviceHandle(6666u);
     const DeviceResourceHandle DeviceMock::FakeRenderBufferDeviceHandle(7777u);
@@ -58,5 +60,9 @@ namespace ramses_internal
 
         EXPECT_CALL(*this, getSupportedBinaryProgramFormats(_)).Times(AnyNumber());
         ON_CALL(*this, getSupportedBinaryProgramFormats(_)).WillByDefault(Invoke([](auto& formats) { formats = { FakeSupportedBinaryShaderFormat }; }));
+        ON_CALL(*this, isExternalTextureExtensionSupported()).WillByDefault(Return(true));
+        ON_CALL(*this, allocateExternalTexture()).WillByDefault(Return(FakeExternalTextureDeviceHandle));
+        ON_CALL(*this, getTextureAddress(FakeExternalTextureDeviceHandle)).WillByDefault(Return(FakeExternalTextureGlId));
+        ON_CALL(*this, getEmptyExternalTexture()).WillByDefault(Return(FakeEmptyExternalTextureDeviceHandle));
     }
 }

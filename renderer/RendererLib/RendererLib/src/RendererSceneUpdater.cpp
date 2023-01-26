@@ -589,8 +589,9 @@ namespace ramses_internal
             rendererScene.setActiveShaderAnimation(false);
             if (pendingFlush.timeInfo.isEffectTimeSync)
             {
-                LOG_INFO_P(CONTEXT_RENDERER, "EffectTimeSync: {}",
-                    std::chrono::time_point_cast<std::chrono::milliseconds>(pendingFlush.timeInfo.internalTimestamp).time_since_epoch().count());
+                LOG_INFO_P(CONTEXT_RENDERER, "EffectTimeSync: {} for scene: {}",
+                    std::chrono::time_point_cast<std::chrono::milliseconds>(pendingFlush.timeInfo.internalTimestamp).time_since_epoch().count(),
+                    rendererScene.getSceneId());
                 rendererScene.setEffectTimeSync(pendingFlush.timeInfo.internalTimestamp);
             }
             applySceneActions(rendererScene, pendingFlush);
@@ -1283,6 +1284,65 @@ namespace ramses_internal
         return true;
     }
 
+    bool RendererSceneUpdater::handleExternalBufferCreateRequest(ExternalBufferHandle buffer)
+    {
+        if (!m_renderer.hasDisplayController())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleExternalBufferCreateRequest cannot create external buffer on invalid display.");
+        }
+        else
+        {
+            assert(m_displayResourceManager);
+            IRendererResourceManager& resourceManager = *m_displayResourceManager;
+            resourceManager.uploadExternalBuffer(buffer);
+
+            const DeviceResourceHandle deviceHandle = resourceManager.getExternalBufferDeviceHandle(buffer);
+            if (deviceHandle.isValid())
+            {
+                const uint32_t glTexId = resourceManager.getExternalBufferGlId(buffer);
+                LOG_INFO_P(CONTEXT_RENDERER, "Created external buffer {} (device handle {}, GL id: {})", buffer, deviceHandle, glTexId);
+
+                m_rendererEventCollector.addExternalBufferEvent(ERendererEventType::ExternalBufferCreated, m_display, buffer, glTexId);
+                return true;
+            }
+        }
+
+        LOG_ERROR_P(CONTEXT_RENDERER, "Failed creating external buffer {}", buffer);
+
+        m_rendererEventCollector.addExternalBufferEvent(ERendererEventType::ExternalBufferCreateFailed, m_display, buffer, 0u);
+        return false;
+    }
+
+    bool RendererSceneUpdater::handleExternalBufferDestroyRequest(ExternalBufferHandle buffer)
+    {
+        if (!m_renderer.hasDisplayController())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleExternalBufferDestroyRequest cannot destroy an external buffer on invalid display.");
+        }
+        else
+        {
+            assert(m_displayResourceManager);
+            IRendererResourceManager& resourceManager = *m_displayResourceManager;
+            const auto bufferDeviceHandle = resourceManager.getExternalBufferDeviceHandle(buffer);
+            if (!bufferDeviceHandle.isValid())
+            {
+                LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneUpdater::handleExternalBufferDestroyRequest could not find external buffer {}", buffer);
+            }
+            else
+            {
+                m_rendererScenes.getSceneLinksManager().handleBufferDestroyed(buffer);
+
+                resourceManager.unloadExternalBuffer(buffer);
+
+                m_rendererEventCollector.addExternalBufferEvent(ERendererEventType::ExternalBufferDestroyed, m_display, buffer, 0u);
+                return true;
+            }
+        }
+
+        m_rendererEventCollector.addExternalBufferEvent(ERendererEventType::ExternalBufferDestroyFailed, m_display, buffer, 0u);
+        return false;
+    }
+
     bool RendererSceneUpdater::handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source)
     {
         if (!m_renderer.hasDisplayController())
@@ -1512,6 +1572,29 @@ namespace ramses_internal
         if (!resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer failed: stream buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            return;
+        }
+
+        m_rendererScenes.getSceneLinksManager().createBufferLink(buffer, consumerSceneId, consumerId);
+        m_modifiedScenesToRerender.put(consumerSceneId);
+        m_renderer.resetRenderInterruptState();
+    }
+
+    void RendererSceneUpdater::handleBufferToSceneDataLinkRequest(ExternalBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId)
+    {
+        if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(consumerSceneId))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "Link external buffer to consumer scene " << consumerSceneId << " failed, invalid display or scene not mapped.");
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            return;
+        }
+
+        assert(m_displayResourceManager);
+        const IRendererResourceManager& resourceManager = *m_displayResourceManager;
+        if (!resourceManager.getExternalBufferDeviceHandle(buffer).isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "Link external buffer failed: external buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }

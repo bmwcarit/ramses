@@ -10,6 +10,7 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/DataObject.h"
 
@@ -434,6 +435,11 @@ namespace ramses
         return status;
     }
 
+    status_t Appearance::getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler) const
+    {
+        return impl.getInputTexture(input.impl, textureSampler);
+    }
+
     status_t Appearance::setInputTexture(const UniformInput& input, const TextureSamplerMS& textureSampler)
     {
         const status_t status = impl.setInputTexture(input.impl, textureSampler.impl);
@@ -441,9 +447,21 @@ namespace ramses
         return status;
     }
 
-    status_t Appearance::getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler) const
+    status_t Appearance::getInputTextureMS(const UniformInput& input, const TextureSamplerMS*& textureSampler) const
     {
-        return impl.getInputTexture(input.impl, textureSampler);
+        return impl.getInputTextureMS(input.impl, textureSampler);
+    }
+
+    status_t Appearance::setInputTexture(const UniformInput& input, const TextureSamplerExternal& textureSampler)
+    {
+        const status_t status = impl.setInputTexture(input.impl, textureSampler.impl);
+        LOG_HL_CLIENT_API2(status, LOG_API_GENERIC_OBJECT_STRING(input), LOG_API_RAMSESOBJECT_STRING(textureSampler));
+        return status;
+    }
+
+    status_t Appearance::getInputTextureExternal(const UniformInput& input, const TextureSamplerExternal*& textureSampler) const
+    {
+        return impl.getInputTextureExternal(input.impl, textureSampler);
     }
 
     status_t Appearance::bindInput(const UniformInput& input, const DataObject& dataObject)

@@ -322,6 +322,37 @@ TEST_F(ARendererCommandExecutor, setsStreamBufferState)
     doCommandExecutorLoop();
 }
 
+TEST_F(ARendererCommandExecutor, createExternalBuffer)
+{
+    constexpr ExternalBufferHandle buffer{ 123u };
+    constexpr DisplayHandle display{ 1 };
+
+    m_commandBuffer.enqueueCommand(RendererCommand::CreateExternalBuffer{ display, buffer });
+    EXPECT_CALL(m_sceneUpdater, handleExternalBufferCreateRequest(buffer));
+    doCommandExecutorLoop();
+}
+
+TEST_F(ARendererCommandExecutor, destroysExternalBuffer)
+{
+    constexpr ExternalBufferHandle buffer{ 123u };
+    constexpr DisplayHandle display{ 1 };
+
+    m_commandBuffer.enqueueCommand(RendererCommand::DestroyExternalBuffer{ display, buffer });
+    EXPECT_CALL(m_sceneUpdater, handleExternalBufferDestroyRequest(buffer));
+    doCommandExecutorLoop();
+}
+
+TEST_F(ARendererCommandExecutor, linkExternalBufferToConsumer)
+{
+    constexpr ExternalBufferHandle buffer{ 1u };
+    constexpr SceneId consumerScene{ 2u };
+    constexpr DataSlotId consumerData{ 3u };
+    m_commandBuffer.enqueueCommand(RendererCommand::LinkExternalBuffer{ buffer, consumerScene, consumerData });
+
+    EXPECT_CALL(m_sceneUpdater, handleBufferToSceneDataLinkRequest(buffer, consumerScene, consumerData));
+    doCommandExecutorLoop();
+}
+
 TEST_F(ARendererCommandExecutor, createsAndDestroysDisplay)
 {
     const DisplayHandle displayHandle(33u);

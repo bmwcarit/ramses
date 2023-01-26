@@ -131,6 +131,7 @@ void RendererTestUtils::DestroyDisplayImmediate(ramses::RamsesRenderer& renderer
     renderer.destroyDisplay(displayId);
     renderer.flush();
     ramses::RendererAndSceneTestEventHandler eventHandler(renderer);
+    eventHandler.registerAlreadyCreatedDisplay(displayId);
     if (!eventHandler.waitForDisplayDestruction(displayId))
     {
         assert(false && "Display destruction failed or timed out!");

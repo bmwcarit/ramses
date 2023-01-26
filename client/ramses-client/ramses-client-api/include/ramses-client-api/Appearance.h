@@ -19,6 +19,7 @@ namespace ramses
     class DataObject;
     class TextureSampler;
     class TextureSamplerMS;
+    class TextureSamplerExternal;
     class Effect;
 
     /**
@@ -788,12 +789,22 @@ namespace ramses
         /**
         * @brief Sets multisampled texture sampler to the input
         *
-        * @param[in] input The effect multisampled shader uniform input to set the value to
+        * @param[in] input The multisampled texture sampler uniform input to set the value to
         * @param[in] textureSampler The multisampled texture sampler
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t setInputTexture(const UniformInput& input, const TextureSamplerMS& textureSampler);
+
+        /**
+        * @brief Sets external texture sampler to the input
+        *
+        * @param[in] input The external texture sampler uniform input to set the value to
+        * @param[in] textureSampler The external texture sampler
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setInputTexture(const UniformInput& input, const TextureSamplerExternal& textureSampler);
 
         /**
         * @brief Gets texture sampler currently set to the input
@@ -805,6 +816,28 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler) const;
+
+        /**
+        * @brief Gets texture sampler currently set to the input
+        *
+        * @param[in] input The effect uniform input
+        * @param[out] textureSampler Will set texture sampler pointer to the TextureSamplerMS object set to the uniform input,
+        *                            nullptr if none set or there was an error
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getInputTextureMS(const UniformInput& input, const TextureSamplerMS*& textureSampler) const;
+
+        /**
+        * @brief Gets texture sampler currently set to the input
+        *
+        * @param[in] input The effect uniform input
+        * @param[out] textureSampler Will set texture sampler pointer to the TextureSamplerExternal object set to the uniform input,
+        *                            nullptr if none set or there was an error
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getInputTextureExternal(const UniformInput& input, const TextureSamplerExternal*& textureSampler) const;
 
         /**
         * @brief Bind a DataObject to the Appearance's uniform input.

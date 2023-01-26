@@ -113,6 +113,27 @@ namespace ramses_internal
         pushToSceneControlEventQueue(std::move(event));
     }
 
+    void RendererEventCollector::addBufferEvent(ERendererEventType eventType, ExternalBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
+    {
+        LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " externalBufferHandle=" << providerBuffer);
+
+        RendererEvent event(eventType);
+        event.externalBuffer = providerBuffer;
+        event.consumerSceneId = consumerSceneId;
+        event.consumerdataId = consumerdataId;
+        pushToSceneControlEventQueue(std::move(event));
+    }
+
+    void RendererEventCollector::addExternalBufferEvent(ERendererEventType eventType, DisplayHandle display, ExternalBufferHandle externalBufferHandle, uint32_t glTexId)
+    {
+        RendererEvent event(eventType);
+        event.displayHandle = display;
+        event.externalBuffer = externalBufferHandle;
+        event.textureGlId = glTexId;
+
+        pushToRendererEventQueue(std::move(event));
+    }
+
     void RendererEventCollector::addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display, int dmaBufferFD, uint32_t dmaBufferStride)
     {
         LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << display << " bufferHandle=" << buffer << " dmaBufferFD=" << dmaBufferFD << " dmaBufferStride=" << dmaBufferStride);

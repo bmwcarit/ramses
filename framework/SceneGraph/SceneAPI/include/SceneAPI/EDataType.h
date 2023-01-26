@@ -59,6 +59,8 @@ WARNING_DISABLE_GCC(-Wshadow)
         Vector4Buffer,
         ByteBlob,
 
+        TextureSamplerExternal,
+
         NUMBER_OF_ELEMENTS // must be last, used for checking
     };
 
@@ -91,7 +93,8 @@ WARNINGS_POP
         "DATATYPE_VECTOR2BUFFER",
         "DATATYPE_VECTOR3BUFFER",
         "DATATYPE_VECTOR4BUFFER",
-        "DATATYPE_BYTE_BLOB"
+        "DATATYPE_BYTE_BLOB",
+        "DATATYPE_TEXTURESAMPLEREXTERNAL"
     };
 
     ENUM_TO_STRING(EDataType, DataTypeNames, EDataType::NUMBER_OF_ELEMENTS);
@@ -168,6 +171,7 @@ WARNINGS_POP
         case EDataType::TextureSampler2DMS : return sizeof(TextureSamplerHandle);
         case EDataType::TextureSampler3D : return sizeof(TextureSamplerHandle);
         case EDataType::TextureSamplerCube:return sizeof(TextureSamplerHandle);
+        case EDataType::TextureSamplerExternal: return sizeof(TextureSamplerHandle);
         case EDataType::Indices          : return sizeof(ResourceField);
         case EDataType::UInt16Buffer     : return sizeof(ResourceField);
         case EDataType::FloatBuffer      : return sizeof(ResourceField);
@@ -201,6 +205,7 @@ WARNINGS_POP
         case EDataType::DataReference    : return alignof(DataInstanceHandle);
         case EDataType::TextureSampler2D : return alignof(TextureSamplerHandle);
         case EDataType::TextureSampler2DMS : return alignof(TextureSamplerHandle);
+        case EDataType::TextureSamplerExternal:return alignof(TextureSamplerHandle);
         case EDataType::TextureSampler3D : return alignof(TextureSamplerHandle);
         case EDataType::TextureSamplerCube:return alignof(TextureSamplerHandle);
         case EDataType::Indices          : return alignof(ResourceField);
@@ -230,7 +235,8 @@ WARNINGS_POP
         return dataType == EDataType::TextureSampler2D
             || dataType == EDataType::TextureSampler2DMS
             || dataType == EDataType::TextureSampler3D
-            || dataType == EDataType::TextureSamplerCube;
+            || dataType == EDataType::TextureSamplerCube
+            || dataType == EDataType::TextureSamplerExternal;
     }
 
     class Vector2i;

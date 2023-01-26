@@ -7,11 +7,16 @@
 #  -------------------------------------------------------------------------
 
 # Only interpret if() arguments as variables or keywords when unquoted.
-IF (POLICY CMP0054)
-    CMAKE_POLICY(SET CMP0054 NEW)
-ENDIF()
+if (POLICY CMP0054)
+    cmake_policy(SET CMP0054 NEW)
+endif()
 
 # Support new TEST if() operator
-IF (POLICY CMP0064)
-    CMAKE_POLICY(SET CMP0064 NEW)
-ENDIF()
+if (POLICY CMP0064)
+    cmake_policy(SET CMP0064 NEW)
+endif()
+
+# Convert relative paths to absolute paths in target_sources
+if (POLICY CMP0076)
+    cmake_policy(SET CMP0076 NEW)
+endif()

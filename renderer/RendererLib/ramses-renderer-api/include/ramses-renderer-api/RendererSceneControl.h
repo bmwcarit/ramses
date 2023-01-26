@@ -138,6 +138,29 @@ namespace ramses
         status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
 
         /**
+        * @brief   Links external buffer to a data consumer in scene.
+        * @details This is a case of Ramses data linking where external buffer acts as texture data provider.
+        *          External buffer can be used as texture data in one or more scene's external texture sampler(s) (#ramses::Scene::createTextureConsumer).
+        *          For successful link, the consumer scene must be #RendererSceneState::Ready or #RendererSceneState::Rendered
+        *          and has to be mapped (#setSceneMapping) to the same display that the external buffer belongs to.
+        *          If the data consumer is already linked to a provider (data or external buffer), the old link will be discarded,
+        *          however if the new link fails it is undefined whether previous link was discarded or not.
+        *          Note: To unlink external buffer use #unlinkData as with any other type of data linking.
+        *
+        *          If target compile definition for enabling events for external buffers is explicitly defined, then
+        *          ramses::IRendererSceneControlEventHandler::externalBufferLinked will be emitted after external buffer linked to consumer.
+        *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.
+        *
+        * @param[in] externalBufferId ID of the external buffer to use as external texture provider.
+        * @param[in] consumerSceneId Scene which consumes the data.
+        * @param[in] consumerDataSlotId Data consumer within the consumer scene (#ramses::Scene::createTextureConsumer).
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
+        */
+        status_t linkExternalBuffer(externalBufferId_t externalBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
+
+        /**
         * @brief   Links a data provider from one scene to a data consumer in another scene.
         * @details Linking data means that the consumer's data property will be overridden by provider's data property.
         *          Consumer can be linked to only one provider, a provider can be linked to multiple consumers.

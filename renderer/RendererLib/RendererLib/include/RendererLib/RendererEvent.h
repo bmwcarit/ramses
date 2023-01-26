@@ -41,6 +41,10 @@ namespace ramses_internal
         OffscreenBufferCreateFailed,
         OffscreenBufferDestroyed,
         OffscreenBufferDestroyFailed,
+        ExternalBufferCreated,
+        ExternalBufferCreateFailed,
+        ExternalBufferDestroyed,
+        ExternalBufferDestroyFailed,
         ScenePublished,
         SceneStateChanged,
 
@@ -107,6 +111,10 @@ namespace ramses_internal
         "OffscreenBufferCreateFailed",
         "OffscreenBufferDestroyed",
         "OffscreenBufferDestroyFailed",
+        "ExternalBufferCreated",
+        "ExternalBufferCreateFailed",
+        "ExternalBufferDestroyed",
+        "ExternalBufferDestroyFailed",
         "ScenePublished",
         "SceneStateChanged",
         "SceneUnpublished",
@@ -205,6 +213,7 @@ namespace ramses_internal
         DataSlotId                  consumerdataId;
         OffscreenBufferHandle       offscreenBuffer;
         StreamBufferHandle          streamBuffer;
+        ExternalBufferHandle        externalBuffer;
         SceneVersionTag             sceneVersionTag;
         MouseEvent                  mouseEvent;
         ResizeEvent                 resizeEvent;
@@ -216,6 +225,7 @@ namespace ramses_internal
         bool                        isFirstDisplay;
         int                         dmaBufferFD = -1;
         uint32_t                    dmaBufferStride = 0u;
+        uint32_t                    textureGlId = 0u;
     };
     using RendererEventVector = std::vector<RendererEvent>;
 

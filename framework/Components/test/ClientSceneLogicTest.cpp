@@ -901,18 +901,19 @@ TEST_F(AClientSceneLogic_ShadowCopy, appendsDefaultFlushInfoWhenSendingSceneToNe
     this->expectSceneUnpublish();
 }
 
-TEST_F(AClientSceneLogic_ShadowCopy, appendsTimeSyncInfoWhenSendingSceneToNewSubscriber)
+TYPED_TEST(AClientSceneLogic_All, appendsTimeSyncInfoWhenSendingSceneToNewSubscriber)
 {
     this->publish();
 
     const auto syncTime = FlushTime::Clock::time_point(std::chrono::milliseconds(4));
     const auto flushTime = FlushTime::Clock::time_point(std::chrono::milliseconds(5));
+    const auto flushTime2 = FlushTime::Clock::time_point(std::chrono::milliseconds(6));
     const auto expirationTime = FlushTime::Clock::time_point(std::chrono::milliseconds(11));
     const auto clockType      = FlushTime::Clock::getClockType();
 
-    this->m_sceneLogic.flushSceneActions({FlushTime::InvalidTimestamp, syncTime, clockType, true}, {});
+    this->flush({FlushTime::InvalidTimestamp, syncTime, clockType, true}, {});
     this->m_scene.allocateNode(0u, NodeHandle(1));
-    this->m_sceneLogic.flushSceneActions({expirationTime, flushTime, clockType, false}, {});
+    this->flush({expirationTime, flushTime, clockType, false}, {});
 
     this->expectSceneSend();
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& updateFromSendScene, auto, auto, auto&)
@@ -929,6 +930,11 @@ TEST_F(AClientSceneLogic_ShadowCopy, appendsTimeSyncInfoWhenSendingSceneToNewSub
         EXPECT_TRUE(flushTimeInfo.isEffectTimeSync);
     });
     this->addSubscriber();
+    if (std::is_same<TypeParam, ClientSceneLogicDirect>::value)
+    {
+        // ClientSceneLogicShadowCopy sends scene when subscriber is added (no flush needed)
+        this->flush({expirationTime, flushTime2, clockType, false});
+    }
     this->expectSceneUnpublish();
 }
 

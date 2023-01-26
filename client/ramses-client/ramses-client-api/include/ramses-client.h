@@ -20,6 +20,7 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/RenderGroup.h"

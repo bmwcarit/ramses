@@ -287,6 +287,18 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
+    DeviceResourceHandle LoggingDevice::allocateExternalTexture()
+    {
+        m_logContext << "allocate external texture" << RendererLogContext::NewLine;
+        return {};
+    }
+
+    DeviceResourceHandle LoggingDevice::getEmptyExternalTexture() const
+    {
+        m_logContext << "get empty external texture" << RendererLogContext::NewLine;
+        return {};
+    }
+
     void LoggingDevice::bindTexture(DeviceResourceHandle handle)
     {
         m_logContext << "bind texture [handle:" << handle << "]" << RendererLogContext::NewLine;
@@ -476,6 +488,11 @@ namespace ramses_internal
 
     void LoggingDevice::getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>&) const
     {
+    }
+
+    bool LoggingDevice::isExternalTextureExtensionSupported() const
+    {
+        return false;
     }
 
     uint32_t LoggingDevice::getAndResetDrawCallCount()

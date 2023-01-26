@@ -94,6 +94,16 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t RendererSceneControlImpl::linkExternalBuffer(externalBufferId_t externalBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
+    {
+        const ramses_internal::ExternalBufferHandle externalTexHandle{externalBufferId.getValue()};
+        const ramses_internal::SceneId internalConsumerSceneId{ consumerSceneId.getValue() };
+        ramses_internal::RendererCommand::LinkExternalBuffer cmd{ externalTexHandle, internalConsumerSceneId, ramses_internal::DataSlotId{ consumerDataSlotId.getValue() } };
+        m_pendingRendererCommands.push_back(std::move(cmd));
+
+        return StatusOK;
+    }
+
     status_t RendererSceneControlImpl::linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId)
     {
         if (providerSceneId == consumerSceneId)
@@ -152,18 +162,34 @@ namespace ramses
                 break;
             }
             case ramses_internal::ERendererEventType::SceneDataBufferLinked:
-                assert(event.offscreenBuffer.isValid() != event.streamBuffer.isValid());
+                assert(event.offscreenBuffer.isValid()? (!event.streamBuffer.isValid() && !event.externalBuffer.isValid())
+                                                        : (event.streamBuffer.isValid() != event.externalBuffer.isValid()));
+
                 if (event.offscreenBuffer.isValid())
                     eventHandler.offscreenBufferLinked(displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
                 if (event.streamBuffer.isValid())
                     m_waylandEvents.push_back(event);
+
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+                if (event.externalBuffer.isValid())
+                    eventHandler.externalBufferLinked(externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
+#endif
+
                 break;
             case ramses_internal::ERendererEventType::SceneDataBufferLinkFailed:
-                assert(event.offscreenBuffer.isValid() != event.streamBuffer.isValid());
+                assert(event.offscreenBuffer.isValid() ? (!event.streamBuffer.isValid() && !event.externalBuffer.isValid())
+                    : (event.streamBuffer.isValid() != event.externalBuffer.isValid()));
+
                 if (event.offscreenBuffer.isValid())
                     eventHandler.offscreenBufferLinked(displayBufferId_t { event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
                 if (event.streamBuffer.isValid())
                     m_waylandEvents.push_back(event);
+
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+                if (event.externalBuffer.isValid())
+                    eventHandler.externalBufferLinked(externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
+#endif
+
                 break;
             case ramses_internal::ERendererEventType::SceneDataLinked:
                 eventHandler.dataLinked(sceneId_t(event.providerSceneId.getValue()), dataProviderId_t(event.providerdataId.getValue()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), true);

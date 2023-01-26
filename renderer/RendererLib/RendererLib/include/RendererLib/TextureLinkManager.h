@@ -27,6 +27,8 @@ namespace ramses_internal
         bool createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
         void createBufferLink(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
         void createBufferLink(StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+        void createBufferLink(ExternalBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+
         bool removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
 
         bool                hasLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
@@ -36,12 +38,15 @@ namespace ramses_internal
         OffscreenBufferHandle getLinkedOffscreenBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
         bool                  hasLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
         StreamBufferHandle    getLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        bool                  hasLinkedExternalBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        ExternalBufferHandle  getLinkedExternalBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
 
         using LinkManagerBase::getDependencyChecker;
         using LinkManagerBase::getSceneLinks;
 
         const OffscreenBufferLinks& getOffscreenBufferLinks() const;
         const StreamBufferLinks& getStreamBufferLinks() const;
+        const ExternalBufferLinks& getExternalBufferLinks() const;
 
         void setTextureToConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle, ResourceContentHash texture) const;
 
@@ -57,6 +62,7 @@ namespace ramses_internal
 
         OffscreenBufferLinks m_offscreenBufferLinks;
         StreamBufferLinks m_streamBufferLinks;
+        ExternalBufferLinks m_externalBufferLinks;
     };
 }
 

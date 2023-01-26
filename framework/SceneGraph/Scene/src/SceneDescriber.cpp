@@ -308,6 +308,7 @@ namespace ramses_internal
                     }
                     case EDataType::TextureSampler2D:
                     case EDataType::TextureSampler2DMS:
+                    case EDataType::TextureSamplerExternal:
                     case EDataType::TextureSampler3D:
                     case EDataType::TextureSamplerCube:
                     {

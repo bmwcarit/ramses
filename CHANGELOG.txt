@@ -1,3 +1,41 @@
+
+27.0.130
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - ramses-scene-viewer:
+          - fixed validation and "Used by" links for TextureSampler2DMS
+          - added "--gui only" command line parameter to only show the inspection gui, not the scene itself
+          - show GenerateMipChain flag for texture resources
+          - fixed CSV export for textures
+        - it is possible to assign the same ID to more than one texture consumer (check moved to validate())
+        - updated android demo projects to modern versions of the Android SDK and tools
+
+        API changes
+        ------------------------------------------------------------------------
+        - Implemented native compositing on Android
+            - Added type TextureSamplerExternal on client side
+                - For GLSL version 100, use extension "GL_OES_EGL_image_external"
+                - For GLSL version 300 and later, use extension "GL_OES_EGL_image_external_essl3"
+                - Both extensions enable a new type of texture sampler in effects: samplerExternalOES
+                - For more info, refer to the corresponding OpenGL extensions documentation
+            - Added type externalBuffer_t on renderer side, with corresponding functions for creation, destruction and
+              events in RamsesRenderer and IRendererEventHandler
+            - Added texture linking for external buffers and TextureSamplerExternal
+            - Added Appearance::getInputTextureExternal()
+            - WARNING! Using this feature makes your scene incompatible to Ramses versions prior this one
+                - Make sure remote renderers have this version or newer if you use the feature in a distributed setup
+        - Added Appearance::getInputTextureMS()
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed scene validation errors for TextureSamplerMS objects and related RenderBuffers.
+          RenderBuffers are no longer reported as unused when they are actually used by a TextureSamplerMS.
+        - Fixed Scene::resetUniformTimeMs() for local-only scenes.
+          Time reset was not applied to the shaders, if called before the scene was subscribed.
+        - X11: Fixed memory leak if DisplayConfig uses external X11-Window
+        - Fixed dlt buffer overflow for file transfer (e.g. scene dumps)
+
 27.0.129
 -------------------
         API changes

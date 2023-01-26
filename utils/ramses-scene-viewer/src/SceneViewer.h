@@ -40,6 +40,7 @@ namespace ramses_internal
             Off,
             On,       ///< Loaded scene rendered to offscreen buffer (configurable size and position)
             Overlay,  ///< Debugging gui overlaps the rendered scene (no offscreen buffer)
+            Only,     ///< Only shows the gui, not the scene itself
             Invalid
         };
 

@@ -657,7 +657,8 @@ namespace ramses_internal
         assert(sampler.contentType != TextureSampler::ContentType::None);
         assert(!(sampler.textureResource.isValid() && sampler.contentHandle != InvalidMemoryHandle)); // only one type of content valid
         assert(!(sampler.contentType == TextureSampler::ContentType::ClientTexture && !sampler.textureResource.isValid())); // client texture type must have resource hash valid
-        assert(!(sampler.contentType != TextureSampler::ContentType::ClientTexture && sampler.contentHandle == InvalidMemoryHandle)); // other than client texture type must have handle valid
+        assert(!((sampler.contentType != TextureSampler::ContentType::ClientTexture && sampler.contentType != TextureSampler::ContentType::ExternalTexture)
+                && sampler.contentHandle == InvalidMemoryHandle)); // other than client and external texture type must have handle valid
 
         const TextureSamplerHandle handleActual = m_textureSamplers.allocate(handle);
         *m_textureSamplers.getMemory(handleActual) = sampler;
@@ -978,6 +979,7 @@ namespace ramses_internal
             {
             case EDataType::TextureSampler2D:
             case EDataType::TextureSampler2DMS:
+            case EDataType::TextureSamplerExternal:
             case EDataType::TextureSampler3D:
             case EDataType::TextureSamplerCube:
             {

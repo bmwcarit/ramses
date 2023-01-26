@@ -123,5 +123,6 @@ namespace ramses_internal
 
     template class BufferLinks<OffscreenBufferHandle>;
     template class BufferLinks<StreamBufferHandle>;
+    template class BufferLinks<ExternalBufferHandle>;
 }
 

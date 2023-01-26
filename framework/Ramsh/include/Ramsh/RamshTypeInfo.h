@@ -181,7 +181,7 @@ namespace ramses_internal
     {
         inline explicit operator std::string() const
         {
-            return "int64";
+            return "int";
         }
     };
 #endif

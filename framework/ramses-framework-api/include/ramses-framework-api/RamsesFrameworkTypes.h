@@ -62,6 +62,9 @@ namespace ramses
     /// Stream buffer identifier referring to Wayland stream.
     using streamBufferId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), struct StreamBufferIdTag>;
 
+    /// External buffer identifier referring to external buffer.
+    using externalBufferId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), struct ExternalBufferIdTag>;
+
     /**
     * @brief Data identifier used to refer to data provider
     *        and then manage their linkage to data consumer using renderer API

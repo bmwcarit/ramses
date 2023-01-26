@@ -9,16 +9,18 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 32
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion 24
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
+        ndkVersion "25.1.8937393"
+
         ndk {
-            abiFilters 'x86'  //adopt to your needs, other options: 'x86_64', 'arm64-v8a', 'armeabi-v7a'
+            abiFilters 'x86_64'  //adopt to your needs, other options: 'x86_64', 'arm64-v8a', 'armeabi-v7a'
         }
 
         externalNativeBuild {
@@ -38,7 +40,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            version "3.10.2"
+            version "3.22.1"
             path "../../../CMakeLists.txt"
         }
     }

@@ -90,8 +90,21 @@ namespace ramses_internal
         m_scene.resetResourceChanges();
         m_scene.resetSceneReferenceActions();
 
+        if (flushTimeInfo.isEffectTimeSync)
+        {
+            m_effectTimeSync = flushTimeInfo.internalTimestamp;
+        }
+
         if (isPublished())
-            sendSceneToWaitingSubscribers(m_scene, flushTimeInfo, versionTag);
+        {
+            auto initialFlushTime = flushTimeInfo;
+            if (m_effectTimeSync != FlushTime::InvalidTimestamp)
+            {
+                initialFlushTime.internalTimestamp = m_effectTimeSync;
+                initialFlushTime.isEffectTimeSync = true;
+            }
+            sendSceneToWaitingSubscribers(m_scene, initialFlushTime, versionTag);
+        }
 
         return true;
     }
