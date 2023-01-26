@@ -1,0 +1,51 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.2"
+
+    defaultConfig {
+        applicationId "com.bmwgroup.ramsestests"
+        minSdkVersion 24
+        targetSdkVersion 29
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    aaptOptions {
+        noCompress "ramses", "rlogic"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+//preBuild.doFirst {
+//    copy {
+//        from "${ramsesLogicRootDir}/unittests/res"
+//
+//        into "${ramsesAARRootDir}/android/tests/src/androidTest/assets"
+//        include "**/*.ramses", "**/*.rlogic"
+//    }
+//}
+
+dependencies {
+    // needed to make mock tests app buildable
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    // Only the following test related dependencies are important
+    implementation project(":ramses-aar")
+    androidTestImplementation "androidx.test:runner:$test_runner_version"
+    androidTestImplementation "androidx.test:rules:$test_rules_version"
+    androidTestImplementation "junit:junit:$junit_version"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+}

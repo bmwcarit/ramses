@@ -119,6 +119,48 @@ set(ramses-shared-lib-renderer-MIXIN CACHE INTERNAL "")
 
 include(cmake/ramses/platformTargets.cmake)
 
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    SET(ENV{PKG_CONFIG_PATH} "")
+    SET(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/pkgconfig:${CMAKE_SYSROOT}/usr/share/pkgconfig")
+    SET(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
+ENDIF()
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/ramses/cmake/modules" ${CMAKE_MODULE_PATH})
+
+find_package(AndroidSDK)
+
+################################################
+################     Ramses   ##################
+################################################
+set(ramses-sdk_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_IVI_TEST_APPS OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_DEMO_ECM OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_SMOKE_TESTS OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_ENABLE_DLT OFF CACHE BOOL "" FORCE)
+set(ramses-sdk_FORCE_OFF_SOMEIP_HU ON CACHE BOOL "" FORCE)
+set(ramses-sdk_FORCE_OFF_SOMEIP_IC ON CACHE BOOL "" FORCE)
+set(ramses-sdk_ENABLE_TCP_SUPPORT OFF CACHE BOOL "" FORCE)
+
+# Disable some things which don't have a CMake option
+set(ramses-sdk_ramses-daemon OFF CACHE BOOL "" FORCE)
+
+set(RAMSES_TARGET "ramses-shared-lib-android-egl-es-3-0")
+set(ramses-sdk_BUILD_FULL_SHARED_LIB ON CACHE BOOL "" FORCE)
+set(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB OFF CACHE BOOL "" FORCE)
+
+################################################
+###############     Android   ##################
+################################################
+#add_subdirectory(android)
+
+
+
 ACME2_PROJECT(
     #==========================================================================
     # project metadata

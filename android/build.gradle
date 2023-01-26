@@ -1,0 +1,49 @@
+import java.nio.file.Paths
+
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+//apply plugin: 'io.codearte.nexus-staging'
+//
+//nexusStaging {
+//    serverUrl = "https://s01.oss.sonatype.org/service/local/" //required only for projects registered in Sonatype after 2021-02-24
+//    packageGroup = "io.github.bmwcarit" //optional if packageGroup == project.getGroup()
+//    username = findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+//    password = findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+//}
+
+buildscript {
+    apply from: "${project.rootDir}/repositories.gradle"
+    apply from: "${project.rootDir}/versions.gradle"
+
+    ext {
+        // 'projectDir' is gradle property for the directory containing the build script (gradle.build)
+        ramsesAARRootDir = Paths.get(project.projectDir.getParent())
+        ramsesRootDir = "${ramsesAARRootDir}"
+        //ramsesLogicRootDir = "${ramsesAARRootDir}/ramses-logic"
+    }
+
+    repositories globalRepositoryDefinition
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:$android_build_tools_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories globalRepositoryDefinition
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

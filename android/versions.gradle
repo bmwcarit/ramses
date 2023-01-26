@@ -1,0 +1,28 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+ext {
+    /*
+    build
+    The android_build_tools_version reflects the version of the android gradle plugin used by
+    Android Studio. This plugin uses a certain gradle version to build the library or app.
+    This means android gradle plugin and gradle version have to be compatible. Which versions
+    are compatible can be found here:
+    https://developer.android.com/studio/releases/gradle-plugin#updating-gradle
+     */
+    android_build_tools_version = '4.1.1'
+    kotlin_version = '1.6.10'
+
+    // app base
+    appcompat_version = '1.2.0'
+
+    // testing
+    junit_version = '4.+'
+    test_runner_version = '1.4.0'
+    test_rules_version = '1.4.0'
+}
