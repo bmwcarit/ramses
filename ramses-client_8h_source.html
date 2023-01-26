@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.129</span>
+   &#160;<span id="projectnumber">27.0.130</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -94,86 +94,87 @@ $(function() {
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Appearance_8h.html">ramses-client-api/Appearance.h</a>&quot;</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TextureSampler_8h.html">ramses-client-api/TextureSampler.h</a>&quot;</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TextureSamplerMS_8h.html">ramses-client-api/TextureSamplerMS.h</a>&quot;</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderPass_8h.html">ramses-client-api/RenderPass.h</a>&quot;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="BlitPass_8h.html">ramses-client-api/BlitPass.h</a>&quot;</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderGroup_8h.html">ramses-client-api/RenderGroup.h</a>&quot;</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GeometryBinding_8h.html">ramses-client-api/GeometryBinding.h</a>&quot;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="StreamTexture_8h.html">ramses-client-api/StreamTexture.h</a>&quot;</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderTarget_8h.html">ramses-client-api/RenderTarget.h</a>&quot;</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderTargetDescription_8h.html">ramses-client-api/RenderTargetDescription.h</a>&quot;</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderBuffer_8h.html">ramses-client-api/RenderBuffer.h</a>&quot;</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="IClientEventHandler_8h.html">ramses-client-api/IClientEventHandler.h</a>&quot;</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">// Data bindings</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataFloat_8h.html">ramses-client-api/DataFloat.h</a>&quot;</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataInt32_8h.html">ramses-client-api/DataInt32.h</a>&quot;</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector2f_8h.html">ramses-client-api/DataVector2f.h</a>&quot;</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector2i_8h.html">ramses-client-api/DataVector2i.h</a>&quot;</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector3f_8h.html">ramses-client-api/DataVector3f.h</a>&quot;</span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector3i_8h.html">ramses-client-api/DataVector3i.h</a>&quot;</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector4f_8h.html">ramses-client-api/DataVector4f.h</a>&quot;</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector4i_8h.html">ramses-client-api/DataVector4i.h</a>&quot;</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataMatrix22f_8h.html">ramses-client-api/DataMatrix22f.h</a>&quot;</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataMatrix33f_8h.html">ramses-client-api/DataMatrix33f.h</a>&quot;</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataMatrix44f_8h.html">ramses-client-api/DataMatrix44f.h</a>&quot;</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">// Effect</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="EffectDescription_8h.html">ramses-client-api/EffectDescription.h</a>&quot;</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Effect_8h.html">ramses-client-api/Effect.h</a>&quot;</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="UniformInput_8h.html">ramses-client-api/UniformInput.h</a>&quot;</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AttributeInput_8h.html">ramses-client-api/AttributeInput.h</a>&quot;</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">// Resources</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ArrayResource_8h.html">ramses-client-api/ArrayResource.h</a>&quot;</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Texture2D_8h.html">ramses-client-api/Texture2D.h</a>&quot;</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Texture3D_8h.html">ramses-client-api/Texture3D.h</a>&quot;</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TextureCube_8h.html">ramses-client-api/TextureCube.h</a>&quot;</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">// Data Buffers</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ArrayBuffer_8h.html">ramses-client-api/ArrayBuffer.h</a>&quot;</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Texture2DBuffer_8h.html">ramses-client-api/Texture2DBuffer.h</a>&quot;</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">// Animation</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimatedProperty_8h.html">ramses-client-api/AnimatedProperty.h</a>&quot;</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Animation_8h.html">ramses-client-api/Animation.h</a>&quot;</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSequence_8h.html">ramses-client-api/AnimationSequence.h</a>&quot;</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSystem_8h.html">ramses-client-api/AnimationSystem.h</a>&quot;</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSystemRealTime_8h.html">ramses-client-api/AnimationSystemRealTime.h</a>&quot;</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearFloat_8h.html">ramses-client-api/SplineLinearFloat.h</a>&quot;</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearInt32_8h.html">ramses-client-api/SplineLinearInt32.h</a>&quot;</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector2f_8h.html">ramses-client-api/SplineLinearVector2f.h</a>&quot;</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector2i_8h.html">ramses-client-api/SplineLinearVector2i.h</a>&quot;</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector3f_8h.html">ramses-client-api/SplineLinearVector3f.h</a>&quot;</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector3i_8h.html">ramses-client-api/SplineLinearVector3i.h</a>&quot;</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector4f_8h.html">ramses-client-api/SplineLinearVector4f.h</a>&quot;</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector4i_8h.html">ramses-client-api/SplineLinearVector4i.h</a>&quot;</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierFloat_8h.html">ramses-client-api/SplineBezierFloat.h</a>&quot;</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierInt32_8h.html">ramses-client-api/SplineBezierInt32.h</a>&quot;</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector2f_8h.html">ramses-client-api/SplineBezierVector2f.h</a>&quot;</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector2i_8h.html">ramses-client-api/SplineBezierVector2i.h</a>&quot;</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector3f_8h.html">ramses-client-api/SplineBezierVector3f.h</a>&quot;</span></div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector3i_8h.html">ramses-client-api/SplineBezierVector3i.h</a>&quot;</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector4f_8h.html">ramses-client-api/SplineBezierVector4f.h</a>&quot;</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector4i_8h.html">ramses-client-api/SplineBezierVector4i.h</a>&quot;</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepBool_8h.html">ramses-client-api/SplineStepBool.h</a>&quot;</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepFloat_8h.html">ramses-client-api/SplineStepFloat.h</a>&quot;</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepInt32_8h.html">ramses-client-api/SplineStepInt32.h</a>&quot;</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector2f_8h.html">ramses-client-api/SplineStepVector2f.h</a>&quot;</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector2i_8h.html">ramses-client-api/SplineStepVector2i.h</a>&quot;</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector3f_8h.html">ramses-client-api/SplineStepVector3f.h</a>&quot;</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector3i_8h.html">ramses-client-api/SplineStepVector3i.h</a>&quot;</span></div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector4f_8h.html">ramses-client-api/SplineStepVector4f.h</a>&quot;</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector4i_8h.html">ramses-client-api/SplineStepVector4i.h</a>&quot;</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">// Iterators</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SceneIterator_8h.html">ramses-client-api/SceneIterator.h</a>&quot;</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSystemObjectIterator_8h.html">ramses-client-api/AnimationSystemObjectIterator.h</a>&quot;</span></div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderPassGroupIterator_8h.html">ramses-client-api/RenderPassGroupIterator.h</a>&quot;</span></div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderGroupMeshIterator_8h.html">ramses-client-api/RenderGroupMeshIterator.h</a>&quot;</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SceneGraphIterator_8h.html">ramses-client-api/SceneGraphIterator.h</a>&quot;</span></div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SceneObjectIterator_8h.html">ramses-client-api/SceneObjectIterator.h</a>&quot;</span></div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TextureSamplerExternal_8h.html">ramses-client-api/TextureSamplerExternal.h</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderPass_8h.html">ramses-client-api/RenderPass.h</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="BlitPass_8h.html">ramses-client-api/BlitPass.h</a>&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderGroup_8h.html">ramses-client-api/RenderGroup.h</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GeometryBinding_8h.html">ramses-client-api/GeometryBinding.h</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="StreamTexture_8h.html">ramses-client-api/StreamTexture.h</a>&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderTarget_8h.html">ramses-client-api/RenderTarget.h</a>&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderTargetDescription_8h.html">ramses-client-api/RenderTargetDescription.h</a>&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderBuffer_8h.html">ramses-client-api/RenderBuffer.h</a>&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="IClientEventHandler_8h.html">ramses-client-api/IClientEventHandler.h</a>&quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">// Data bindings</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataFloat_8h.html">ramses-client-api/DataFloat.h</a>&quot;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataInt32_8h.html">ramses-client-api/DataInt32.h</a>&quot;</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector2f_8h.html">ramses-client-api/DataVector2f.h</a>&quot;</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector2i_8h.html">ramses-client-api/DataVector2i.h</a>&quot;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector3f_8h.html">ramses-client-api/DataVector3f.h</a>&quot;</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector3i_8h.html">ramses-client-api/DataVector3i.h</a>&quot;</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector4f_8h.html">ramses-client-api/DataVector4f.h</a>&quot;</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataVector4i_8h.html">ramses-client-api/DataVector4i.h</a>&quot;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataMatrix22f_8h.html">ramses-client-api/DataMatrix22f.h</a>&quot;</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataMatrix33f_8h.html">ramses-client-api/DataMatrix33f.h</a>&quot;</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataMatrix44f_8h.html">ramses-client-api/DataMatrix44f.h</a>&quot;</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">// Effect</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="EffectDescription_8h.html">ramses-client-api/EffectDescription.h</a>&quot;</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Effect_8h.html">ramses-client-api/Effect.h</a>&quot;</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="UniformInput_8h.html">ramses-client-api/UniformInput.h</a>&quot;</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AttributeInput_8h.html">ramses-client-api/AttributeInput.h</a>&quot;</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">// Resources</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ArrayResource_8h.html">ramses-client-api/ArrayResource.h</a>&quot;</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Texture2D_8h.html">ramses-client-api/Texture2D.h</a>&quot;</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Texture3D_8h.html">ramses-client-api/Texture3D.h</a>&quot;</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TextureCube_8h.html">ramses-client-api/TextureCube.h</a>&quot;</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">// Data Buffers</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ArrayBuffer_8h.html">ramses-client-api/ArrayBuffer.h</a>&quot;</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Texture2DBuffer_8h.html">ramses-client-api/Texture2DBuffer.h</a>&quot;</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">// Animation</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimatedProperty_8h.html">ramses-client-api/AnimatedProperty.h</a>&quot;</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Animation_8h.html">ramses-client-api/Animation.h</a>&quot;</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSequence_8h.html">ramses-client-api/AnimationSequence.h</a>&quot;</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSystem_8h.html">ramses-client-api/AnimationSystem.h</a>&quot;</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSystemRealTime_8h.html">ramses-client-api/AnimationSystemRealTime.h</a>&quot;</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearFloat_8h.html">ramses-client-api/SplineLinearFloat.h</a>&quot;</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearInt32_8h.html">ramses-client-api/SplineLinearInt32.h</a>&quot;</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector2f_8h.html">ramses-client-api/SplineLinearVector2f.h</a>&quot;</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector2i_8h.html">ramses-client-api/SplineLinearVector2i.h</a>&quot;</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector3f_8h.html">ramses-client-api/SplineLinearVector3f.h</a>&quot;</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector3i_8h.html">ramses-client-api/SplineLinearVector3i.h</a>&quot;</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector4f_8h.html">ramses-client-api/SplineLinearVector4f.h</a>&quot;</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineLinearVector4i_8h.html">ramses-client-api/SplineLinearVector4i.h</a>&quot;</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierFloat_8h.html">ramses-client-api/SplineBezierFloat.h</a>&quot;</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierInt32_8h.html">ramses-client-api/SplineBezierInt32.h</a>&quot;</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector2f_8h.html">ramses-client-api/SplineBezierVector2f.h</a>&quot;</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector2i_8h.html">ramses-client-api/SplineBezierVector2i.h</a>&quot;</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector3f_8h.html">ramses-client-api/SplineBezierVector3f.h</a>&quot;</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector3i_8h.html">ramses-client-api/SplineBezierVector3i.h</a>&quot;</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector4f_8h.html">ramses-client-api/SplineBezierVector4f.h</a>&quot;</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineBezierVector4i_8h.html">ramses-client-api/SplineBezierVector4i.h</a>&quot;</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepBool_8h.html">ramses-client-api/SplineStepBool.h</a>&quot;</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepFloat_8h.html">ramses-client-api/SplineStepFloat.h</a>&quot;</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepInt32_8h.html">ramses-client-api/SplineStepInt32.h</a>&quot;</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector2f_8h.html">ramses-client-api/SplineStepVector2f.h</a>&quot;</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector2i_8h.html">ramses-client-api/SplineStepVector2i.h</a>&quot;</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector3f_8h.html">ramses-client-api/SplineStepVector3f.h</a>&quot;</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector3i_8h.html">ramses-client-api/SplineStepVector3i.h</a>&quot;</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector4f_8h.html">ramses-client-api/SplineStepVector4f.h</a>&quot;</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SplineStepVector4i_8h.html">ramses-client-api/SplineStepVector4i.h</a>&quot;</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">// Iterators</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SceneIterator_8h.html">ramses-client-api/SceneIterator.h</a>&quot;</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="AnimationSystemObjectIterator_8h.html">ramses-client-api/AnimationSystemObjectIterator.h</a>&quot;</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderPassGroupIterator_8h.html">ramses-client-api/RenderPassGroupIterator.h</a>&quot;</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RenderGroupMeshIterator_8h.html">ramses-client-api/RenderGroupMeshIterator.h</a>&quot;</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SceneGraphIterator_8h.html">ramses-client-api/SceneGraphIterator.h</a>&quot;</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="SceneObjectIterator_8h.html">ramses-client-api/SceneObjectIterator.h</a>&quot;</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aAnimatedProperty_8h_html"><div class="ttname"><a href="AnimatedProperty_8h.html">AnimatedProperty.h</a></div></div>
 <div class="ttc" id="aAnimationSequence_8h_html"><div class="ttname"><a href="AnimationSequence_8h.html">AnimationSequence.h</a></div></div>
 <div class="ttc" id="aAnimationSystemObjectIterator_8h_html"><div class="ttname"><a href="AnimationSystemObjectIterator_8h.html">AnimationSystemObjectIterator.h</a></div></div>
@@ -246,6 +247,7 @@ $(function() {
 <div class="ttc" id="aTexture2D_8h_html"><div class="ttname"><a href="Texture2D_8h.html">Texture2D.h</a></div></div>
 <div class="ttc" id="aTexture3D_8h_html"><div class="ttname"><a href="Texture3D_8h.html">Texture3D.h</a></div></div>
 <div class="ttc" id="aTextureCube_8h_html"><div class="ttname"><a href="TextureCube_8h.html">TextureCube.h</a></div></div>
+<div class="ttc" id="aTextureSamplerExternal_8h_html"><div class="ttname"><a href="TextureSamplerExternal_8h.html">TextureSamplerExternal.h</a></div></div>
 <div class="ttc" id="aTextureSamplerMS_8h_html"><div class="ttname"><a href="TextureSamplerMS_8h.html">TextureSamplerMS.h</a></div></div>
 <div class="ttc" id="aTextureSampler_8h_html"><div class="ttname"><a href="TextureSampler_8h.html">TextureSampler.h</a></div></div>
 <div class="ttc" id="aUniformInput_8h_html"><div class="ttname"><a href="UniformInput_8h.html">UniformInput.h</a></div></div>

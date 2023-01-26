@@ -1,0 +1,7 @@
+<map id="ramses::TextureSamplerExternal" name="ramses::TextureSamplerExternal">
+<area shape="rect" id="node1" title="The ramses::TextureSamplerExternal is used to sample from external textures data when bound to a rams..." alt="" coords="5,304,240,331"/>
+<area shape="rect" id="node2" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene." alt="" coords="43,229,202,256"/>
+<area shape="rect" id="node3" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient." alt="" coords="43,155,202,181"/>
+<area shape="rect" id="node4" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="37,80,209,107"/>
+<area shape="rect" id="node5" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="42,5,203,32"/>
+</map>

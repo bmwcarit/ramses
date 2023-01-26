@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.129</span>
+   &#160;<span id="projectnumber">27.0.130</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -200,6 +200,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2e8f10515ff51c43364c1f28c870fe7b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1TextureSamplerMS.html">TextureSamplerMS</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Scene.html#a2e8f10515ff51c43364c1f28c870fe7b">createTextureSamplerMS</a> (const <a class="el" href="classramses_1_1RenderBuffer.html">RenderBuffer</a> &amp;renderBuffer, const char *name)</td></tr>
 <tr class="memdesc:a2e8f10515ff51c43364c1f28c870fe7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a multisampled texture sampler object.  <a href="classramses_1_1Scene.html#a2e8f10515ff51c43364c1f28c870fe7b">More...</a><br /></td></tr>
 <tr class="separator:a2e8f10515ff51c43364c1f28c870fe7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec6f8bad5efd13abfaabdaafb5d23aa2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1TextureSamplerExternal.html">TextureSamplerExternal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Scene.html#aec6f8bad5efd13abfaabdaafb5d23aa2">createTextureSamplerExternal</a> (<a class="el" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7">ETextureSamplingMethod</a> minSamplingMethod, <a class="el" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7">ETextureSamplingMethod</a> magSamplingMethod, const char *name=nullptr)</td></tr>
+<tr class="memdesc:aec6f8bad5efd13abfaabdaafb5d23aa2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a texture sampler object that can sample from external textures.  <a href="classramses_1_1Scene.html#aec6f8bad5efd13abfaabdaafb5d23aa2">More...</a><br /></td></tr>
+<tr class="separator:aec6f8bad5efd13abfaabdaafb5d23aa2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46f0d0ee91cf78632dce9a22585ece45"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1ArrayResource.html">ArrayResource</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">createArrayResource</a> (<a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532c">EDataType</a> type, uint32_t numElements, const void *arrayData, <a class="el" href="namespaceramses.html#ad235ad0adbf1a441d1339ab3a09159ac">resourceCacheFlag_t</a> cacheFlag=<a class="el" href="namespaceramses.html#aa4f32a02a4d27b0759cf54915b6ce602">ResourceCacheFlag_DoNotCache</a>, const char *name=nullptr)</td></tr>
 <tr class="memdesc:a46f0d0ee91cf78632dce9a22585ece45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classramses_1_1ArrayResource.html" title="The ArrayResource stores a data array of a given type. The data is immutable. The resource can be use...">ArrayResource</a>. It makes a copy of the given data of a certain type as a resource, an immutable data object. See <a class="el" href="classramses_1_1ArrayResource.html" title="The ArrayResource stores a data array of a given type. The data is immutable. The resource can be use...">ramses::ArrayResource</a> for more details.  <a href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">More...</a><br /></td></tr>
 <tr class="separator:a46f0d0ee91cf78632dce9a22585ece45"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -281,6 +284,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa7f2297a860a6666a899d17dda961f12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Scene.html#aa7f2297a860a6666a899d17dda961f12">createTextureConsumer</a> (const <a class="el" href="classramses_1_1TextureSamplerMS.html">TextureSamplerMS</a> &amp;sampler, <a class="el" href="namespaceramses.html#af0488b3b71ec902e1c07ab976043712b">dataConsumerId_t</a> dataId)</td></tr>
 <tr class="memdesc:aa7f2297a860a6666a899d17dda961f12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates a <a class="el" href="classramses_1_1TextureSamplerMS.html" title="The ramses::TextureSamplerMS is used to sample multisampled data when bound to a ramses::Appearance u...">ramses::TextureSamplerMS</a> as a content consumer. Texture provider and texture consumer can be linked on Ramses Renderer side. Linking textures means that the consumer's sampler will use provider's texture as content.  <a href="classramses_1_1Scene.html#aa7f2297a860a6666a899d17dda961f12">More...</a><br /></td></tr>
 <tr class="separator:aa7f2297a860a6666a899d17dda961f12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa84640e310ef4d0ddc5de3f4abe1ae01"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Scene.html#aa84640e310ef4d0ddc5de3f4abe1ae01">createTextureConsumer</a> (const <a class="el" href="classramses_1_1TextureSamplerExternal.html">TextureSamplerExternal</a> &amp;sampler, <a class="el" href="namespaceramses.html#af0488b3b71ec902e1c07ab976043712b">dataConsumerId_t</a> dataId)</td></tr>
+<tr class="memdesc:aa84640e310ef4d0ddc5de3f4abe1ae01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates a <a class="el" href="classramses_1_1TextureSamplerExternal.html" title="The ramses::TextureSamplerExternal is used to sample from external textures data when bound to a rams...">ramses::TextureSamplerExternal</a> as a content consumer. Texture provider and texture consumer can be linked on Ramses Renderer side. Linking textures means that the consumer's sampler will use provider's texture as content.  <a href="classramses_1_1Scene.html#aa84640e310ef4d0ddc5de3f4abe1ae01">More...</a><br /></td></tr>
+<tr class="separator:aa84640e310ef4d0ddc5de3f4abe1ae01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c8484b3946cee62613ed7819d84b3d0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1AnimationSystem.html">AnimationSystem</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Scene.html#a6c8484b3946cee62613ed7819d84b3d0">createAnimationSystem</a> (uint32_t flags=<a class="el" href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1a735aee6e6f2778d3413917d6542d5916">EAnimationSystemFlags_Default</a>, const char *name=nullptr)</td></tr>
 <tr class="memdesc:a6c8484b3946cee62613ed7819d84b3d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new animation system. The animation system will be updated on renderer side after calls to <a class="el" href="classramses_1_1AnimationSystem.html#acb47a27af5f5a904f338cb2c053d4b06" title="Sets the animation system to a given time. Any unsigned integral values that are used in an increment...">AnimationSystem::setTime()</a>. The animation system is not automatically updated on client side. If live updates of animated values are needed on client side, provide the creation flag EAnimationSystemFlags_ClientSideProcessing. Calls to <a class="el" href="classramses_1_1AnimationSystem.html#acb47a27af5f5a904f338cb2c053d4b06" title="Sets the animation system to a given time. Any unsigned integral values that are used in an increment...">AnimationSystem::setTime()</a> then also update the animation systems client side state.  <a href="classramses_1_1Scene.html#a6c8484b3946cee62613ed7819d84b3d0">More...</a><br /></td></tr>
 <tr class="separator:a6c8484b3946cee62613ed7819d84b3d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1901,7 +1907,7 @@ Friends</h2></td></tr>
 </div>
 </div>
 <a id="afcd023e6f43a8143b567cb2551860a5d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afcd023e6f43a8143b567cb2551860a5d">&#9670;&nbsp;</a></span>createTextureConsumer() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afcd023e6f43a8143b567cb2551860a5d">&#9670;&nbsp;</a></span>createTextureConsumer() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1940,8 +1946,47 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="aa84640e310ef4d0ddc5de3f4abe1ae01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa84640e310ef4d0ddc5de3f4abe1ae01">&#9670;&nbsp;</a></span>createTextureConsumer() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::Scene::createTextureConsumer </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classramses_1_1TextureSamplerExternal.html">TextureSamplerExternal</a> &amp;&#160;</td>
+          <td class="paramname"><em>sampler</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#af0488b3b71ec902e1c07ab976043712b">dataConsumerId_t</a>&#160;</td>
+          <td class="paramname"><em>dataId</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Annotates a <a class="el" href="classramses_1_1TextureSamplerExternal.html" title="The ramses::TextureSamplerExternal is used to sample from external textures data when bound to a rams...">ramses::TextureSamplerExternal</a> as a content consumer. Texture provider and texture consumer can be linked on Ramses Renderer side. Linking textures means that the consumer's sampler will use provider's texture as content. </p>
+<p>Sampler for external texture can only be linked to an external buffer on Ramses Renderer side (<a class="el" href="classramses_1_1RamsesRenderer.html#a265e5c4f28acea484fae9b5fbc0d9d30" title="Creates a buffer using OpenGL External textures for storage.">ramses::RamsesRenderer::createExternalBuffer</a>).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">sampler</td><td>which shall consume texture content from provider texture. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dataId</td><td>id to reference the consumer in this scene </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="aa7f2297a860a6666a899d17dda961f12"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7f2297a860a6666a899d17dda961f12">&#9670;&nbsp;</a></span>createTextureConsumer() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7f2297a860a6666a899d17dda961f12">&#9670;&nbsp;</a></span>createTextureConsumer() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2523,6 +2568,54 @@ Friends</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">magSamplingMethod</td><td>texture mag sampling method. Must be set to either Nearest or Linear. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">texture</td><td>Texture to be used with this sampler object. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">anisotropyLevel</td><td>Texture sampling anisotropy level. 1: isotropic sampling, &gt;1: anisotropic sampling usual values: 1, 2, 4, 8, 16 (dependent on graphics platform) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Optional name of the object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the created <a class="el" href="classramses_1_1TextureSampler.html" title="The TextureSampler holds a texture and its sampling parameters.">TextureSampler</a>, null on failure. </dd></dl>
+
+</div>
+</div>
+<a id="aec6f8bad5efd13abfaabdaafb5d23aa2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec6f8bad5efd13abfaabdaafb5d23aa2">&#9670;&nbsp;</a></span>createTextureSamplerExternal()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classramses_1_1TextureSamplerExternal.html">TextureSamplerExternal</a>* ramses::Scene::createTextureSamplerExternal </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7">ETextureSamplingMethod</a>&#160;</td>
+          <td class="paramname"><em>minSamplingMethod</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7">ETextureSamplingMethod</a>&#160;</td>
+          <td class="paramname"><em>magSamplingMethod</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em> = <code>nullptr</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a texture sampler object that can sample from external textures. </p>
+<p>Provides support for sampling from samplers represented by variables of type "samplerExternalOES" in GLSL shaders, according to OpenGL extension "OES_EGL_image_external". According to the spec, external texture samplers must have "clamp to edge" for the wrap mode, and are not allowed to have mip maps so minification filtering must be set to either linear or nearest.</p>
+<p>Since it is not possible to directly provide content to external textures similar to conventional 2D textures, external textures can get their content only through the platform specific mechanisms. This can be done by creating a texture consumer from the sampler object and linking it to an external buffer created on the renderer.</p>
+<p>Note: external texture sampler can only be used with external textures, i.e., it is not possible to use the same sampler variable in the shader to sample from conventional 2D textures as sort of fallback textures for example.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">minSamplingMethod</td><td>texture min sampling method. Must be set to either Nearest or Linear. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">magSamplingMethod</td><td>texture mag sampling method. Must be set to either Nearest or Linear. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Optional name of the object. </td></tr>
   </table>
   </dd>

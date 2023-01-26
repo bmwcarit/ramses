@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.129</span>
+   &#160;<span id="projectnumber">27.0.130</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -155,6 +155,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a92e4ab2cf1d3c87290c4eeac5cd207e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a92e4ab2cf1d3c87290c4eeac5cd207e8">destroyOffscreenBuffer</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a> offscreenBuffer)</td></tr>
 <tr class="memdesc:a92e4ab2cf1d3c87290c4eeac5cd207e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Will destroy a previously created offscreen buffer. If there are any consumer texture samplers linked to this buffer, these links will be removed. Offscreen buffer will fail to be destroyed if there are any scenes assigned to it, these scenes have to be first assigned to another buffer or framebuffer or unmapped from display.  <a href="classramses_1_1RamsesRenderer.html#a92e4ab2cf1d3c87290c4eeac5cd207e8">More...</a><br /></td></tr>
 <tr class="separator:a92e4ab2cf1d3c87290c4eeac5cd207e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a265e5c4f28acea484fae9b5fbc0d9d30"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a8e8ccc7a88948b73a292a12bc534d7ee">externalBufferId_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a265e5c4f28acea484fae9b5fbc0d9d30">createExternalBuffer</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display)</td></tr>
+<tr class="memdesc:a265e5c4f28acea484fae9b5fbc0d9d30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a buffer using OpenGL External textures for storage.  <a href="classramses_1_1RamsesRenderer.html#a265e5c4f28acea484fae9b5fbc0d9d30">More...</a><br /></td></tr>
+<tr class="separator:a265e5c4f28acea484fae9b5fbc0d9d30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeef53b0edce281855078cf437a51d719"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#aeef53b0edce281855078cf437a51d719">destroyExternalBuffer</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, <a class="el" href="namespaceramses.html#a8e8ccc7a88948b73a292a12bc534d7ee">externalBufferId_t</a> externalBuffer)</td></tr>
+<tr class="memdesc:aeef53b0edce281855078cf437a51d719"><td class="mdescLeft">&#160;</td><td class="mdescRight">Will destroy a previously created external buffer. If there are any consumer texture samplers linked to this buffer, these links will be removed.  <a href="classramses_1_1RamsesRenderer.html#aeef53b0edce281855078cf437a51d719">More...</a><br /></td></tr>
+<tr class="separator:aeef53b0edce281855078cf437a51d719"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f88ab94e506f1068ea6d4610f8cfae4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a5f88ab94e506f1068ea6d4610f8cfae4">getExternalBufferGlId</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, <a class="el" href="namespaceramses.html#a8e8ccc7a88948b73a292a12bc534d7ee">externalBufferId_t</a> externalBuffer, uint32_t &amp;textureGlId) const</td></tr>
+<tr class="memdesc:a5f88ab94e506f1068ea6d4610f8cfae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Will query the OpenGL texture Id for the external texture used for a created external buffer.  <a href="classramses_1_1RamsesRenderer.html#a5f88ab94e506f1068ea6d4610f8cfae4">More...</a><br /></td></tr>
+<tr class="separator:a5f88ab94e506f1068ea6d4610f8cfae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a615fece250e98bdfde5fae979b55b24e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a615fece250e98bdfde5fae979b55b24e">setDisplayBufferClearColor</a> (<a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a> displayBuffer, float r, float g, float b, float a)</td></tr>
 <tr class="memdesc:a615fece250e98bdfde5fae979b55b24e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets clear color of a display buffer (display's framebuffer or offscreen buffer).  <a href="classramses_1_1RamsesRenderer.html#a615fece250e98bdfde5fae979b55b24e">More...</a><br /></td></tr>
 <tr class="separator:a615fece250e98bdfde5fae979b55b24e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -488,6 +497,37 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="a265e5c4f28acea484fae9b5fbc0d9d30"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a265e5c4f28acea484fae9b5fbc0d9d30">&#9670;&nbsp;</a></span>createExternalBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a8e8ccc7a88948b73a292a12bc534d7ee">externalBufferId_t</a> ramses::RamsesRenderer::createExternalBuffer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>display</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a buffer using OpenGL External textures for storage. </p>
+<p>The created buffer uses OpenGL External textures according to the OpenGL extension OES_EGL_image_external. The created texture can be used for compositing platform dependent content from native processes and applications on the target platforms.</p>
+<p>In order to provide content to the created buffer, the callback for external buffer's creation should be handled in <a class="el" href="classramses_1_1IRendererEventHandler.html" title="Provides an interface for handling the result of renderer events. Implementation of this interface mu...">ramses::IRendererEventHandler</a>, where on creation success the buffer's OpenGL Id should be provided. This texture Id should be passed to the native platform mechanisms. On Android the texture Id should be passed to a SurfaceTexture object which connects the texture with other Android platform constructs.</p>
+<p>The created external buffer should be linked to a texture consumer created from <a class="el" href="classramses_1_1TextureSamplerExternal.html" title="The ramses::TextureSamplerExternal is used to sample from external textures data when bound to a rams...">ramses::TextureSamplerExternal</a>. This can be used only with GLSL shader sampler of type "samplerExternalOES".</p>
+<p>External buffers can be used with <a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame.">doOneLoop</a>, since the user is expected to make platform specific calls to update the content of the external texture. Using a render thread could lead to race conditions and to unexpected and undesirable behavior on target platform, so it is prohibited. Trying to call this function if the renderer is not using <a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame.">doOneLoop</a> will lead to failure, and an invalid external buffer id will be returned.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>Id of display that the buffer should be created on. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Identifier of the created external buffer. In case renderer is running in own thread <code><a class="el" href="classramses_1_1StronglyTypedValue.html#af3fe119eff10ba4ef87f1fe6ab02f4f4" title="Static Getter for Invalid.">externalBufferId_t::Invalid()</a></code> will be returned. </dd></dl>
+
+</div>
+</div>
 <a id="aba3e4d6c6573f9333034bc2d711101b0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aba3e4d6c6573f9333034bc2d711101b0">&#9670;&nbsp;</a></span>createInterruptibleOffscreenBuffer() <span class="overload">[1/2]</span></h2>
 
@@ -762,6 +802,44 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="aeef53b0edce281855078cf437a51d719"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeef53b0edce281855078cf437a51d719">&#9670;&nbsp;</a></span>destroyExternalBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::RamsesRenderer::destroyExternalBuffer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>display</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a8e8ccc7a88948b73a292a12bc534d7ee">externalBufferId_t</a>&#160;</td>
+          <td class="paramname"><em>externalBuffer</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Will destroy a previously created external buffer. If there are any consumer texture samplers linked to this buffer, these links will be removed. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>id of display which the buffer belongs to </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">externalBuffer</td><td>id of buffer to destroy </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="a92e4ab2cf1d3c87290c4eeac5cd207e8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a92e4ab2cf1d3c87290c4eeac5cd207e8">&#9670;&nbsp;</a></span>destroyOffscreenBuffer()</h2>
 
@@ -957,6 +1035,51 @@ Additional Inherited Members</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-dma-offscreenbuffer_2src_2main_8cpp-example.html#a88">ramses-example-local-dma-offscreenbuffer/src/main.cpp</a>.</dd>
 </dl>
+
+</div>
+</div>
+<a id="a5f88ab94e506f1068ea6d4610f8cfae4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f88ab94e506f1068ea6d4610f8cfae4">&#9670;&nbsp;</a></span>getExternalBufferGlId()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ramses::RamsesRenderer::getExternalBufferGlId </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>display</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a8e8ccc7a88948b73a292a12bc534d7ee">externalBufferId_t</a>&#160;</td>
+          <td class="paramname"><em>externalBuffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t &amp;&#160;</td>
+          <td class="paramname"><em>textureGlId</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Will query the OpenGL texture Id for the external texture used for a created external buffer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>id of display which the buffer belongs to </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">externalBuffer</td><td>id of buffer to query OpenGL texture ID for </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">textureGlId</td><td>On success the OpenGL texture ID of the underlying external texture is written to this variable. On failure the current value stored is not affected. The return value of the function must be checked for success before using this value. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true for success, false otherwise, e.g., if the buffer was not created yet, failed creation or was already destroyed. </dd></dl>
 
 </div>
 </div>
