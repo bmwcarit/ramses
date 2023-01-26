@@ -23,6 +23,7 @@ namespace ramses_internal
 
     private:
         SceneSizeInformation m_previousSceneSizes;
+        FlushTime::Clock::time_point m_effectTimeSync{FlushTime::InvalidTimestamp};
     };
 }
 

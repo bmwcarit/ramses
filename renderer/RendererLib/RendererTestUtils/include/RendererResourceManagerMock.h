@@ -25,7 +25,6 @@ class RendererResourceManagerMock : public IRendererResourceManager
 {
 public:
     RendererResourceManagerMock();
-
     // IResourceDeviceHandleAccessor
     MOCK_METHOD(DeviceResourceHandle, getResourceDeviceHandle, (const ResourceContentHash&), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getRenderTargetDeviceHandle, (RenderTargetHandle, SceneId), (const, override));
@@ -39,6 +38,9 @@ public:
     MOCK_METHOD(void, getBlitPassRenderTargetsDeviceHandle, (BlitPassHandle, SceneId, DeviceResourceHandle&, DeviceResourceHandle&), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getDataBufferDeviceHandle, (DataBufferHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getTextureBufferDeviceHandle, (TextureBufferHandle, SceneId), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getExternalBufferDeviceHandle, (ExternalBufferHandle), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getEmptyExternalBufferDeviceHandle, (), (const, override));
+    MOCK_METHOD(uint32_t, getExternalBufferGlId, (ExternalBufferHandle), (const, override));
     // IRendererResourceManager
     MOCK_METHOD(EResourceStatus, getResourceStatus, (const ResourceContentHash& hash), (const, override));
     MOCK_METHOD(EResourceType, getResourceType, (const ResourceContentHash& hash), (const, override));
@@ -74,6 +76,9 @@ public:
     MOCK_METHOD(void, uploadVertexArray, (RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadVertexArray, (RenderableHandle renderableHandle, SceneId sceneId), (override));
     MOCK_METHOD(DeviceResourceHandle, getVertexArrayDeviceHandle, (RenderableHandle renderableHandle, SceneId sceneId), (const, override));
+
+    MOCK_METHOD(void, uploadExternalBuffer, (ExternalBufferHandle), (override));
+    MOCK_METHOD(void, unloadExternalBuffer, (ExternalBufferHandle), (override));
 
     MOCK_METHOD(const StreamUsage&, getStreamUsage, (WaylandIviSurfaceId source), (const, override));
 };

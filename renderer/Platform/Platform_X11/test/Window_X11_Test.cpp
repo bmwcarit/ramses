@@ -278,6 +278,35 @@ namespace ramses_internal
         proceseAllEvents();
     }
 
+    TEST_F(WindowX11, canCreateDisplayWithExternallyOwnedWindow)
+    {
+        DisplayConfig otherConfig;
+        otherConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});
+        Window_X11 externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
+        ASSERT_TRUE(externallyOwnedWindow.init());
+    }
+
+    TEST_F(WindowX11, canReCreateDisplayWithSameExternallyOwnedWindowSeveralTimes)
+    {
+        DisplayConfig otherConfig;
+        otherConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});
+
+        {
+            Window_X11 externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
+            ASSERT_TRUE(externallyOwnedWindow.init());
+        }
+
+        {
+            Window_X11 externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
+            ASSERT_TRUE(externallyOwnedWindow.init());
+        }
+
+        {
+            Window_X11 externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
+            ASSERT_TRUE(externallyOwnedWindow.init());
+        }
+    }
+
     TEST_F(WindowX11, canSetExternallyOwnedWindowSize)
     {
         DisplayConfig otherConfig;

@@ -1092,6 +1092,67 @@ TEST_F(ARendererSceneUpdater, emitsStreamBufferEnabledDisabledEvents)
 }
 
 ///////////////////////////
+// External buffer tests
+///////////////////////////
+
+TEST_F(ARendererSceneUpdater, canCreateExternalBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr ExternalBufferHandle buffer{ 1u };
+    expectExternalBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleExternalBufferCreateRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferCreated);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, FailsToCreateExternalBufferIfResourceManagerFailsToUpload)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr ExternalBufferHandle buffer{ 1u };
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadExternalBuffer(buffer));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getExternalBufferDeviceHandle(buffer)).Times(1u).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getExternalBufferGlId(buffer)).Times(0);
+
+    EXPECT_FALSE(rendererSceneUpdater->handleExternalBufferCreateRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferCreateFailed);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateExternalBufferOnUnknownDisplay)
+{
+    constexpr ExternalBufferHandle buffer{ 1u };
+    EXPECT_FALSE(rendererSceneUpdater->handleExternalBufferCreateRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferCreateFailed);
+}
+
+TEST_F(ARendererSceneUpdater, canDestroyExternalBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr ExternalBufferHandle buffer{ 1u };
+    expectExternalBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleExternalBufferCreateRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferCreated);
+
+    expectExternalBufferDeleted(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleExternalBufferDestroyRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferDestroyed);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToDestroyExternalBufferOnUnknownDisplay)
+{
+    constexpr ExternalBufferHandle buffer{ 1u };
+    EXPECT_FALSE(rendererSceneUpdater->handleExternalBufferDestroyRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferDestroyFailed);
+}
+
+///////////////////////////
 // Data linking tests
 ///////////////////////////
 
@@ -1372,6 +1433,54 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_SB)
     destroyDisplay();
 }
 
+TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_EB)
+{
+    createDisplayAndExpectSuccess();
+
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+
+    mapScene(0u);
+    mapScene(1u);
+
+    showScene(0u);
+    showScene(1u);
+
+    const DataSlotId consumerId1 = createTextureConsumer(0u, TextureSampler::ContentType::ExternalTexture);
+    const DataSlotId consumerId2 = createTextureConsumer(1u, TextureSampler::ContentType::ExternalTexture);
+
+    constexpr ExternalBufferHandle buffer{ 1u };
+    expectExternalBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleExternalBufferCreateRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferCreated);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    createBufferLink(buffer, getSceneId(0u), consumerId1);
+    createBufferLink(buffer, getSceneId(1u), consumerId2);
+
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    expectExternalBufferDeleted(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleExternalBufferDestroyRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferDestroyed);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
+
+    destroyDisplay();
+}
+
 TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapped_keepsOtherConsumerLinked_OB)
 {
     createDisplayAndExpectSuccess();
@@ -1460,6 +1569,50 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapp
     destroyDisplay();
 }
 
+TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapped_keepsOtherConsumerLinked_EB)
+{
+    createDisplayAndExpectSuccess();
+
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+
+    mapScene(0u);
+    mapScene(1u);
+
+    showScene(0u);
+    showScene(1u);
+
+    const DataSlotId consumerId1 = createTextureConsumer(0u, TextureSampler::ContentType::ExternalTexture);
+    const DataSlotId consumerId2 = createTextureConsumer(1u, TextureSampler::ContentType::ExternalTexture);
+
+    constexpr ExternalBufferHandle buffer{ 1u };
+    expectExternalBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleExternalBufferCreateRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferCreated);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    createBufferLink(buffer, getSceneId(0u), consumerId1);
+    createBufferLink(buffer, getSceneId(1u), consumerId2);
+
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    hideScene(0u);
+    unmapScene(0u);
+
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    hideScene(1u);
+    unmapScene(1u);
+    destroyDisplay();
+}
+
 TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotOnDisplay_OB)
 {
     createDisplayAndExpectSuccess();
@@ -1488,6 +1641,22 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotOnDisplay
     createBufferLink(buffer, SceneId{ 666u }, DataSlotId{ 1u }, true);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotOnDisplay_EB)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr ExternalBufferHandle buffer{ 1u };
+    expectExternalBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleExternalBufferCreateRequest(buffer));
+    expectEvent(ERendererEventType::ExternalBufferCreated);
+
+    createBufferLink(buffer, SceneId{ 666u }, DataSlotId{ 1u }, true);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
 
     destroyDisplay();
 }
@@ -1525,6 +1694,22 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_SB)
     createBufferLink(buffer, getSceneId(), DataSlotId{ 1u }, true);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_EB)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    constexpr ExternalBufferHandle buffer{ 123u };
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getExternalBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    createBufferLink(buffer, getSceneId(), DataSlotId{ 1u }, true);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getExternalBufferLinks().hasAnyLinksToConsumer(buffer));
 
     unmapScene();
     destroyDisplay();

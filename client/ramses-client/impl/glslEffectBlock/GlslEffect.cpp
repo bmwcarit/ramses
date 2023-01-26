@@ -288,16 +288,11 @@ namespace ramses_internal
 
     bool GlslEffect::isSupportedExtension(const String& extension) const
     {
-        UNUSED(extension);
-
-        /*
-        No extension supported at the moment. Add them here:
-
-        if (String("GL_OES_{some_extension}") == extension)
+        if (String("GL_OES_EGL_image_external") == extension
+            || String("GL_OES_EGL_image_external_essl3") == extension)
         {
             return true;
         }
-        */
 
         return false;
     }

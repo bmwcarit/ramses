@@ -27,6 +27,7 @@ namespace ramses_internal
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, const ResourceContentHash& hash);
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, OffscreenBufferHandle offscreenBuffer);
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, StreamBufferHandle streamBuffer);
+        void setTextureSamplerContentSource(TextureSamplerHandle sampler, ExternalBufferHandle externalTexture);
         void restoreTextureSamplerFallbackValue(TextureSamplerHandle sampler);
 
     protected:

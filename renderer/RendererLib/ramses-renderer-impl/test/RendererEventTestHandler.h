@@ -30,6 +30,8 @@ enum ERendererEventTestType
     ERendererEventTestType_KeyEvent,
     ERendererEventTestType_MouseEvent,
     ERendererEventTestType_RenderThreadPeriodicLoopTimes,
+    ERendererEventTestType_ExternalBufferCreated,
+    ERendererEventTestType_ExternalBufferDestroyed,
 };
 
 struct RendererTestEvent
@@ -52,7 +54,9 @@ struct RendererTestEvent
             && mousePosX == other.mousePosX
             && mousePosY == other.mousePosY
             && windowWidth == other.windowWidth
-            && windowHeight == other.windowHeight;
+            && windowHeight == other.windowHeight
+            && externalBufferId == other.externalBufferId
+            && externalBufferTextureGlId == other.externalBufferTextureGlId;
     }
 
     ERendererEventTestType eventType            = ERendererEventTestType_Undefined;
@@ -76,6 +80,9 @@ struct RendererTestEvent
 
     std::chrono::microseconds renderthread_maximumLoopTime{0};
     std::chrono::microseconds renderthread_avg_looptime{0};
+
+    ramses::externalBufferId_t externalBufferId;
+    uint32_t externalBufferTextureGlId          { 0u };
 };
 
 class RendererEventTestHandler : public ramses::IRendererEventHandler
@@ -193,6 +200,29 @@ public:
         m_events.push_back(event);
     }
 
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+    virtual void externalBufferCreated(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, uint32_t textureGlId, ramses::ERendererEventResult result) override
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_ExternalBufferCreated;
+        event.displayId = displayId;
+        event.externalBufferId = externalBufferId;
+        event.externalBufferTextureGlId = textureGlId;
+        event.result = result;
+        m_events.push_back(event);
+    }
+
+    virtual void externalBufferDestroyed(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, ramses::ERendererEventResult result) override
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_ExternalBufferDestroyed;
+        event.displayId = displayId;
+        event.externalBufferId = externalBufferId;
+        event.result = result;
+        m_events.push_back(event);
+    }
+#endif
+
     void expectOffscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
         RendererTestEvent event;
@@ -209,6 +239,27 @@ public:
         event.eventType = ERendererEventTestType_OffscreenBufferDestroyed;
         event.displayId = displayId;
         event.bufferId = offscreenBufferId;
+        event.result = result;
+        expectEvent(event);
+    }
+
+    void expectExternalBufferCreated(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, uint32_t textureGlId, ramses::ERendererEventResult result)
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_ExternalBufferCreated;
+        event.displayId = displayId;
+        event.externalBufferId = externalBufferId;
+        event.externalBufferTextureGlId = textureGlId;
+        event.result = result;
+        expectEvent(event);
+    }
+
+    void expectExternalBufferDestroyed(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, ramses::ERendererEventResult result)
+    {
+        RendererTestEvent event;
+        event.eventType = ERendererEventTestType_ExternalBufferDestroyed;
+        event.displayId = displayId;
+        event.externalBufferId = externalBufferId;
         event.result = result;
         expectEvent(event);
     }

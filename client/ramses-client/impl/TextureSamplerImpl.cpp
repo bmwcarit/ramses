@@ -192,6 +192,7 @@ namespace ramses
             case ERamsesObjectType_Texture2DBuffer: return ramses_internal::EDataType::TextureSampler2D;
             case ERamsesObjectType_Texture3D: return ramses_internal::EDataType::TextureSampler3D;
             case ERamsesObjectType_TextureCube: return ramses_internal::EDataType::TextureSamplerCube;
+            case ERamsesObjectType_TextureSamplerExternal: return ramses_internal::EDataType::TextureSamplerExternal;
             default: break;
         }
         return ramses_internal::EDataType::Invalid;
@@ -237,6 +238,7 @@ namespace ramses
             contentStatus = validateResource(resource);
             break;
         case ramses_internal::TextureSampler::ContentType::RenderBuffer:
+        case ramses_internal::TextureSampler::ContentType::RenderBufferMS:
             contentStatus = validateRenderBuffer(ramses_internal::RenderBufferHandle(sampler.contentHandle));
             break;
         case ramses_internal::TextureSampler::ContentType::TextureBuffer:
@@ -245,7 +247,12 @@ namespace ramses
         case ramses_internal::TextureSampler::ContentType::StreamTexture:
             contentStatus = validateStreamTexture(ramses_internal::StreamTextureHandle(sampler.contentHandle));
             break;
-        default:
+        case ramses_internal::TextureSampler::ContentType::ExternalTexture:
+            contentStatus = StatusOK;
+            break;
+        case ramses_internal::TextureSampler::ContentType::OffscreenBuffer:
+        case ramses_internal::TextureSampler::ContentType::StreamBuffer:
+        case ramses_internal::TextureSampler::ContentType::None:
             return addValidationMessage(EValidationSeverity_Error, "There is no valid content source set in TextureSampler");
         }
 

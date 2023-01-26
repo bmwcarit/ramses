@@ -76,6 +76,8 @@ namespace ramses_internal
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) override;
         virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) override;
+        virtual bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) override;
+        virtual bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) override;
         virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
         virtual void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) override;
         virtual void handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
@@ -84,6 +86,7 @@ namespace ramses_internal
         virtual void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
         virtual void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
         virtual void handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
+        virtual void handleBufferToSceneDataLinkRequest(ExternalBufferHandle externalBuffer, SceneId consumerSceneId, DataSlotId consumerId) override;
         virtual void handleDataUnlinkRequest(SceneId consumerSceneId, DataSlotId consumerId) override;
         virtual void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply) override;
         virtual void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe) override;

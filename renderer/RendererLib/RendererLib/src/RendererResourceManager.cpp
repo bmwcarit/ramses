@@ -59,6 +59,13 @@ namespace ramses_internal
                 unloadStreamBuffer(handle);
         }
 
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager::~RendererResourceManager Destroying external buffers");
+        for (ExternalBufferHandle handle{ 0u }; handle < m_externalBuffers.getTotalCount(); ++handle)
+        {
+            if (m_externalBuffers.isAllocated(handle))
+                unloadExternalBuffer(handle);
+        }
+
         for (const auto& resDesc : m_resourceRegistry.getAllResourceDescriptors())
         {
             UNUSED(resDesc);
@@ -270,6 +277,28 @@ namespace ramses_internal
 
         const auto surfaceId = *m_streamBuffers.getMemory(bufferHandle);
         return m_embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(surfaceId);
+    }
+
+    DeviceResourceHandle RendererResourceManager::getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const
+    {
+        if(!m_externalBuffers.isAllocated(bufferHandle))
+            return {};
+
+        return *m_externalBuffers.getMemory(bufferHandle);
+    }
+
+    DeviceResourceHandle RendererResourceManager::getEmptyExternalBufferDeviceHandle() const
+    {
+        return m_renderBackend.getDevice().getEmptyExternalTexture();
+    }
+
+    uint32_t RendererResourceManager::getExternalBufferGlId(ExternalBufferHandle bufferHandle) const
+    {
+        if (!m_externalBuffers.isAllocated(bufferHandle))
+            return 0u;
+
+        const auto deviceHandle = *m_externalBuffers.getMemory(bufferHandle);
+        return m_renderBackend.getDevice().getTextureAddress(deviceHandle);
     }
 
     const StreamUsage& RendererResourceManager::getStreamUsage(WaylandIviSurfaceId source) const
@@ -493,6 +522,36 @@ namespace ramses_internal
         auto& streamUsage = m_streamUsages[source].streamBufferUsages;
         assert(contains_c(streamUsage, bufferHandle));
         streamUsage.erase(find_c(streamUsage, bufferHandle));
+    }
+
+
+    void RendererResourceManager::uploadExternalBuffer(ExternalBufferHandle bufferHandle)
+    {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadExternalBuffer handle={}", bufferHandle);
+
+        IDevice& device = m_renderBackend.getDevice();
+
+        if (!device.isExternalTextureExtensionSupported())
+        {
+            LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadExternalBuffer failed uploading handle={} because extension not supported on device", bufferHandle);
+            return;
+        }
+
+        auto deviceHandle = device.allocateExternalTexture();
+        assert(!m_externalBuffers.isAllocated(bufferHandle));
+        m_externalBuffers.allocate(bufferHandle);
+        *m_externalBuffers.getMemory(bufferHandle) = deviceHandle;
+    }
+
+    void RendererResourceManager::unloadExternalBuffer(ExternalBufferHandle bufferHandle)
+    {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadExternalBuffer handle={}", bufferHandle);
+
+        assert(m_externalBuffers.isAllocated(bufferHandle));
+        const auto deviceHandle = *m_externalBuffers.getMemory(bufferHandle);
+        m_externalBuffers.release(bufferHandle);
+
+        m_renderBackend.getDevice().deleteTexture(deviceHandle);
     }
 
     void RendererResourceManager::uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)

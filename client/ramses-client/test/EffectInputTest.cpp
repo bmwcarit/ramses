@@ -250,5 +250,7 @@ namespace ramses
         EXPECT_EQ(input.getDataType(), EEffectInputDataType_TextureSampler3D);
         input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::TextureSamplerCube, semantics, 1u, index);
         EXPECT_EQ(input.getDataType(), EEffectInputDataType_TextureSamplerCube);
+        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::TextureSamplerExternal, semantics, 1u, index);
+        EXPECT_EQ(input.getDataType(), EEffectInputDataType_TextureSamplerExternal);
     }
 }

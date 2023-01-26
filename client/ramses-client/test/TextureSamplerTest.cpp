@@ -12,6 +12,7 @@
 #include "CreationHelper.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/Texture2D.h"
@@ -150,6 +151,52 @@ namespace ramses
         EXPECT_EQ(renderBufferHandle.asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
     }
 
+    TEST_F(TextureSamplerTest, createSamplerForTextureExternal)
+    {
+        const TextureSamplerExternal* sampler = this->m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, "testSampler2DExternal");
+
+        ASSERT_NE(static_cast<TextureSamplerExternal*>(nullptr), sampler);
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        const auto& samplerInternal = m_internalScene.getTextureSampler(samplerHandle);
+
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ExternalTexture, samplerInternal.contentType);
+        EXPECT_EQ(ramses_internal::InvalidMemoryHandle, samplerInternal.contentHandle);
+        EXPECT_FALSE(samplerInternal.textureResource.isValid());
+
+        EXPECT_EQ(ramses_internal::EWrapMethod::Clamp, samplerInternal.states.m_addressModeU);
+        EXPECT_EQ(ramses_internal::EWrapMethod::Clamp, samplerInternal.states.m_addressModeV);
+        EXPECT_EQ(ramses_internal::EWrapMethod::Clamp, samplerInternal.states.m_addressModeR);
+        EXPECT_EQ(ramses_internal::ESamplingMethod::Linear, samplerInternal.states.m_minSamplingMode);
+        EXPECT_EQ(ramses_internal::ESamplingMethod::Linear, samplerInternal.states.m_magSamplingMode);
+        EXPECT_EQ(1u, samplerInternal.states.m_anisotropyLevel);
+    }
+
+    TEST_F(TextureSamplerTest, doesNotCreateSamplerForTextureExternalWithNotAllowedFilteringMethod)
+    {
+        EXPECT_EQ(nullptr, this->m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear_MipMapLinear, ETextureSamplingMethod_Linear, "testSampler2DExternal"));
+        EXPECT_EQ(nullptr, this->m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear_MipMapNearest, "testSampler2DExternal"));
+    }
+
+    TEST_F(TextureSamplerTest, canCreateSamplerConsumersWithSameConsumerIdButFailValidation)
+    {
+        auto sampler1 = m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear);
+        const dataConsumerId_t consumerId{ 123u };
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler1, consumerId));
+        EXPECT_EQ(StatusOK, m_scene.validate());
+
+        const auto sampler2 = m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear);
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler2, consumerId));
+        EXPECT_NE(StatusOK, m_scene.validate());
+        const std::string report = m_scene.getValidationReport(EValidationSeverity_Error);
+        EXPECT_THAT(report, HasSubstr("Duplicate texture consumer ID '123'"));
+
+        // validates fine again after duplicate removed
+        EXPECT_EQ(StatusOK, m_scene.destroy(*sampler1));
+        EXPECT_EQ(StatusOK, m_scene.validate());
+    }
+
     TEST_F(TextureSamplerTest, cannotCreateSamplerForRenderBufferWithSamples)
     {
         const RenderBuffer& renderBuffer = *m_scene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 4u);
@@ -242,6 +289,27 @@ namespace ramses
         EXPECT_NE(StatusOK, sampler->validate());
     }
 
+    TEST_F(TextureSamplerTest, reportsErrorWhenValidatedWithInvalidRenderBufferMS)
+    {
+        RenderBuffer& renderBuffer = createObject<RenderBuffer>();
+        RenderTargetDescription rtDesc;
+        rtDesc.addRenderBuffer(renderBuffer);
+        RenderTarget* rt = this->m_scene.createRenderTarget(rtDesc);
+        RenderPass& renderPass = createObject<RenderPass>();
+        OrthographicCamera* orthoCam = this->m_scene.createOrthographicCamera("camera");
+        orthoCam->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
+        orthoCam->setViewport(0, 0, 100, 200);
+        renderPass.setCamera(*orthoCam);
+        renderPass.setRenderTarget(rt);
+
+        TextureSamplerMS* sampler = this->m_scene.createTextureSamplerMS(renderBuffer, "textureSamplerMS");
+        ASSERT_TRUE(nullptr != sampler);
+        EXPECT_EQ(StatusOK, sampler->validate());
+
+        EXPECT_EQ(StatusOK, m_scene.destroy(renderBuffer));
+        EXPECT_NE(StatusOK, sampler->validate());
+    }
+
     TEST_F(TextureSamplerTest, reportsErrorWhenValidatedWithInvalidStreamTexture)
     {
         StreamTexture& streamTexture = createObject<StreamTexture>();
@@ -251,6 +319,13 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.destroy(streamTexture));
         EXPECT_NE(StatusOK, sampler->validate());
+    }
+
+    TEST_F(TextureSamplerTest, doesNotReportErrorWhenValidatedWithExternalTexture)
+    {
+        TextureSamplerExternal* sampler = this->m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear);
+        ASSERT_TRUE(nullptr != sampler);
+        EXPECT_EQ(StatusOK, sampler->validate());
     }
 
     TEST_F(TextureSamplerTest, setTextureDataToTexture2D)

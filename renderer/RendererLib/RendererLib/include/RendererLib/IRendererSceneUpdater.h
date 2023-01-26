@@ -38,6 +38,8 @@ namespace ramses_internal
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) = 0;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) = 0;
         virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) = 0;
+        virtual bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) = 0;
+        virtual bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) = 0;
         virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) = 0;
         virtual void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) = 0;
         virtual void handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height) = 0;
@@ -46,6 +48,7 @@ namespace ramses_internal
         virtual void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) = 0;
+        virtual void handleBufferToSceneDataLinkRequest(ExternalBufferHandle externalBuffer, SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void handleDataUnlinkRequest(SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply) = 0;
         virtual void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe) = 0;

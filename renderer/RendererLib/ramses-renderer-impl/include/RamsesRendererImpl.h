@@ -81,6 +81,10 @@ namespace ramses
         status_t destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer);
         status_t setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state);
 
+        externalBufferId_t createExternalBuffer(displayId_t display);
+        status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalTexture);
+        bool getExternalBufferGlId(displayId_t display, externalBufferId_t externalTexture, uint32_t& textureGlId) const;
+
         status_t readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
 
@@ -131,6 +135,7 @@ namespace ramses
         displayId_t                                                                 m_nextDisplayId{ 0u };
         displayBufferId_t                                                           m_nextDisplayBufferId{ 0u };
         streamBufferId_t                                                            m_nextStreamBufferId{ 0u };
+        externalBufferId_t                                                          m_nextExternalBufferId{ 0u };
         DisplayFrameBufferMap                                                       m_displayFramebuffers;
         bool                                                                        m_systemCompositorEnabled;
 
@@ -142,6 +147,14 @@ namespace ramses
             uint32_t stride;
         };
         std::vector<OffscreenDmaBufferInfo>                                         m_offscreenDmaBufferInfos;
+
+        struct ExternalBufferInfo
+        {
+            displayId_t display;
+            externalBufferId_t externalBuffer;
+            uint32_t glId;
+        };
+        std::vector<ExternalBufferInfo>                                             m_externalBufferInfos;
 
         ramses_internal::ELoopMode                                                  m_loopMode;
         std::unique_ptr<ramses_internal::CommandDispatchingThread>                  m_commandDispatchingThread;

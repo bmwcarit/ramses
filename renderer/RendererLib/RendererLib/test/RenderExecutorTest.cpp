@@ -39,6 +39,9 @@ namespace
     const UInt32 startIndex = 12u;
     const UInt32 indexCount = 13;
     const UInt32 startVertex = 14u;
+
+    const ExternalBufferHandle fakeExternalBuffer{ 1240u };
+    const DeviceResourceHandle fakeExternalTextureDeviceHandle{ 1050u };
 }
 
 using DataInstances = std::pair<DataInstanceHandle, DataInstanceHandle>;
@@ -119,10 +122,13 @@ public:
         dataRefField2  = DataFieldHandle(6);
         uniformInputs.push_back(EffectInputInformation("dataRefFieldMatrix22f", 1, EDataType::Matrix22F, EFixedSemantics::Invalid));
         dataRefFieldMatrix22f  = DataFieldHandle(7);
+        uniformInputs.push_back(EffectInputInformation("textureFieldExternal", 1, EDataType::TextureSamplerExternal, EFixedSemantics::Invalid));
+        textureFieldExternal = DataFieldHandle(8);
+
         if (withTimeMs)
         {
             uniformInputs.push_back(EffectInputInformation("timeMs", 1, EDataType::Int32, EFixedSemantics::TimeMs));
-            dataRefTimeMs  = DataFieldHandle(8);
+            dataRefTimeMs  = DataFieldHandle(9);
         }
 
         attributeInputs.push_back(EffectInputInformation("vertPosField", 1, EDataType::Vector3Buffer, EFixedSemantics::Invalid));
@@ -142,6 +148,7 @@ public:
     DataFieldHandle dataRefTimeMs;
     DataFieldHandle textureField;
     DataFieldHandle textureFieldMS;
+    DataFieldHandle textureFieldExternal;
     DataFieldHandle fieldModelMatrix;
     DataFieldHandle fieldViewMatrix;
     DataFieldHandle fieldProjMatrix;
@@ -163,6 +170,7 @@ public:
         , vertTexcoordField(2u)
         , textureField            (fakeEffectInputs.textureField           )
         , textureFieldMS          (fakeEffectInputs.textureFieldMS         )
+        , textureFieldExternal    (fakeEffectInputs.textureFieldExternal   )
         , fieldModelMatrix        (fakeEffectInputs.fieldModelMatrix       )
         , fieldViewMatrix         (fakeEffectInputs.fieldViewMatrix        )
         , fieldProjMatrix         (fakeEffectInputs.fieldProjMatrix        )
@@ -201,11 +209,13 @@ protected:
     FakeEffectInputs fakeEffectInputs;
     TextureSamplerHandle sampler;
     TextureSamplerHandle samplerMS;
+    TextureSamplerHandle samplerExternal;
     const DataFieldHandle indicesField;
     const DataFieldHandle vertPosField;
     const DataFieldHandle vertTexcoordField;
     const DataFieldHandle textureField;
     const DataFieldHandle textureFieldMS;
+    const DataFieldHandle textureFieldExternal;
     const DataFieldHandle fieldModelMatrix;
     const DataFieldHandle fieldViewMatrix;
     const DataFieldHandle fieldProjMatrix;
@@ -274,6 +284,7 @@ protected:
         //create samplers
         sampler = sceneAllocator.allocateTextureSampler({ { EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest_MipMapNearest, ESamplingMethod::Nearest, 2u }, MockResourceHash::TextureHash });
         samplerMS = sceneAllocator.allocateTextureSampler({ {}, MockResourceHash::TextureHash });
+        samplerExternal = sceneAllocator.allocateTextureSampler({ {EWrapMethod::Repeat, EWrapMethod::Clamp, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest_MipMapNearest, ESamplingMethod::Nearest, 1u }, TextureSampler::ContentType::ExternalTexture, ResourceContentHash::Invalid(), fakeExternalBuffer.asMemoryHandle() });
 
         // create data instance
         DataInstances dataInstances;
@@ -303,8 +314,10 @@ protected:
         if (setTextureSampler)
         {
             scene.setDataTextureSamplerHandle(dataInstances.first, textureField, sampler);
-            scene.setDataTextureSamplerHandle(dataInstances.first, textureFieldMS, sampler);
+            scene.setDataTextureSamplerHandle(dataInstances.first, textureFieldMS, samplerMS);
+            scene.setDataTextureSamplerHandle(dataInstances.first, textureFieldExternal, samplerExternal);
         }
+        ON_CALL(resourceManager, getExternalBufferDeviceHandle(fakeExternalBuffer)).WillByDefault(Return(fakeExternalTextureDeviceHandle));
 
         return dataInstances;
     }
@@ -440,8 +453,14 @@ protected:
         const TextureSamplerStates expectedSamplerStates(EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest_MipMapNearest, ESamplingMethod::Nearest, 2u);
         EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerStates.hash())), textureField)).InSequence(deviceSequence);
         EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureFieldMS))                                                                         .InSequence(deviceSequence);
+
         EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField2, 1, Matcher<const Float*>(Pointee(Eq(-666.f)))))                                     .InSequence(deviceSequence);
         EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldMatrix22f, 1, Matcher<const Matrix22f*>(Pointee(Eq(Matrix22f(1,2,3,4))))))             .InSequence(deviceSequence);
+
+        EXPECT_CALL(device, activateTexture(fakeExternalTextureDeviceHandle, textureFieldExternal)).InSequence(deviceSequence);
+        const TextureSamplerStates expectedSamplerExternalStates(EWrapMethod::Repeat, EWrapMethod::Clamp, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest_MipMapNearest, ESamplingMethod::Nearest, 1u);
+        EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerExternalStates.hash())), textureFieldExternal)).InSequence(deviceSequence);
+
         if (fakeEffectInputs.dataRefTimeMs.isValid())
         {
             EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefTimeMs, 1, Matcher<const Int32*>(Pointee(TimeEq(expectedUniformTimeMs)))))             .InSequence(deviceSequence);

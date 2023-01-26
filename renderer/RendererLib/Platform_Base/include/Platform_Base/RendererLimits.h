@@ -39,6 +39,9 @@ namespace ramses_internal
         bool isTextureFormatAvailable(ETextureFormat format) const;
         void addTextureFormat(ETextureFormat format);
 
+        bool isExternalTextureExtensionSupported() const;
+        void setExternalTextureExtensionSupported(bool supported);
+
         void logLimits() const;
 
     private:
@@ -48,6 +51,7 @@ namespace ramses_internal
         uint32_t m_maxViewportWidth = 16u;
         uint32_t m_maxViewportHeight = 16u;
         uint32_t m_maximumDrawBuffers = 4u;
+        bool m_externalTextureExtensionSupported = false;
         HashSet<ETextureFormat> m_availableTextureFormats;
     };
 }

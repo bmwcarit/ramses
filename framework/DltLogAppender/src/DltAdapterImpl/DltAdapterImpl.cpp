@@ -351,10 +351,10 @@ namespace ramses_internal
     {
 #ifdef DLT_HAS_FILETRANSFER
         // Sending files per dlt is done by chunking the binary file data in very small chunks (~1024 bytes) and send these per regular DLT_LOG(..)
-        // after each chunk will sleep for the timeout so the FIFO of dlt will not be flooded with to many messages in a short period of time.
+        // after each chunk dlt_user_log_file_data() should sleep for the timeoutInMs so the FIFO of dlt will not be flooded with to many messages in a short period of time.
         // The dlt implementation recommends a timeout of 20 ms, unfortunately due the very small chunk size a huge number of messages has to be sent and
         // this will cause a transfer time of ~30 seconds for a file of 1.5 MB.
-        // To prevent these long delays we simply use a smaller timeout which did not cause any troubles in our tests.
+        // To prevent these long delays we simply use a smaller timeout and check for dlt buffer overflows (dlt_user_check_buffer())
         const int timeoutInMS = 1;
         FileTransfer ft;
         get(ft);
@@ -365,6 +365,17 @@ namespace ramses_internal
             int i = 1;
             for (; ((i <= total) && !isCancelRequested()); ++i)
             {
+                auto canWriteToDLT = [](){
+                    int dltTotal = 0;
+                    int dltUsed = 0;
+                    // file transfer should not use more than 50% of the dlt buffer
+                    dlt_user_check_buffer(&dltTotal, &dltUsed);
+                    return ((dltTotal - dltUsed) > (dltTotal / 2));
+                };
+                while (!canWriteToDLT())
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(timeoutInMS));
+                }
                 if (dlt_user_log_file_data(ft.ctx, filename, i, timeoutInMS) != 0)
                 {
                     // usually this means the file was modified during transfer

@@ -13,6 +13,7 @@
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
@@ -115,6 +116,7 @@
 #include "Utils/TextureMathUtils.h"
 #include "ResourceDataPoolImpl.h"
 #include "Components/FlushTimeInformation.h"
+#include "fmt/format.h"
 
 #include <array>
 
@@ -296,6 +298,9 @@ namespace ramses
             case ERamsesObjectType_TextureSamplerMS:
                 status = createAndDeserializeObjectImpls<TextureSamplerMS, TextureSamplerImpl>(inStream, serializationContext, count);
                 break;
+            case ERamsesObjectType_TextureSamplerExternal:
+                status = createAndDeserializeObjectImpls<TextureSamplerExternal, TextureSamplerImpl>(inStream, serializationContext, count);
+                break;
             case ERamsesObjectType_DataFloat:
                 status = createAndDeserializeObjectImpls<DataFloat, DataObjectImpl>(inStream, serializationContext, count);
                 break;
@@ -408,6 +413,22 @@ namespace ramses
                 ramses_internal::StringOutputStream msg;
                 msg << "Number of " << RamsesObjectTypeUtils::GetRamsesObjectTypeName(type) << " instances: " << objectCount[i];
                 addValidationMessage(EValidationSeverity_Info, msg.c_str());
+            }
+        }
+
+        // special validation (see SceneImpl::createTextureConsumer(const TextureSamplerExternal&, dataConsumerId_t)),
+        // duplicate IDs are temporarily allowed but validation still reports them as errors
+        // TODO vaclav do this properly
+        std::unordered_set<ramses_internal::DataSlotId> texConsumerIds;
+        for (const auto& it : m_scene.getDataSlots())
+        {
+            if (it.second->type == ramses_internal::EDataSlotType_TextureConsumer)
+            {
+                const auto consumerId = it.second->id;
+                if (texConsumerIds.count(consumerId) > 0u)
+                    status = addValidationMessage(EValidationSeverity_Error,
+                        fmt::format("Duplicate texture consumer ID '{}' is not allowed and will result in unknown behavior when linking on renderer", consumerId.getValue()).c_str());
+                texConsumerIds.insert(consumerId);
             }
         }
 
@@ -536,6 +557,9 @@ namespace ramses
             break;
         case ERamsesObjectType_TextureSamplerMS:
             destroyTextureSampler(RamsesObjectTypeUtils::ConvertTo<TextureSamplerMS>(object));
+            break;
+        case ERamsesObjectType_TextureSamplerExternal:
+            destroyTextureSampler(RamsesObjectTypeUtils::ConvertTo<TextureSamplerExternal>(object));
             break;
         case ERamsesObjectType_Appearance:
         case ERamsesObjectType_GeometryBinding:
@@ -1062,6 +1086,47 @@ namespace ramses
         return sampler;
     }
 
+    ramses::TextureSamplerExternal* SceneImpl::createTextureSamplerExternal(ETextureSamplingMethod minSamplingMethod, ETextureSamplingMethod magSamplingMethod, const char *name)
+    {
+        if (ETextureSamplingMethod_Nearest != magSamplingMethod && ETextureSamplingMethod_Linear != magSamplingMethod)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSamplerExternal failed, mag sampling method must be set to Nearest or Linear.");
+            return nullptr;
+        }
+
+        //Restrictions in spec section 3.7.14, https://registry.khronos.org/OpenGL/extensions/OES/OES_EGL_image_external.txt
+        //According to spec min filtering can only be linear or nearest
+        if (ETextureSamplingMethod_Nearest != minSamplingMethod && ETextureSamplingMethod_Linear != minSamplingMethod)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSamplerExternal failed, min sampling method must be set to Nearest or Linear for external textures.");
+            return nullptr;
+        }
+
+        //According to spec clamp to edge so the only allowed wrap mode
+        constexpr ETextureAddressMode wrapUMode = ETextureAddressMode_Clamp;
+        constexpr ETextureAddressMode wrapVMode = ETextureAddressMode_Clamp;
+
+        ramses_internal::TextureSamplerStates samplerStates(
+            TextureUtils::GetTextureAddressModeInternal(wrapUMode),
+            TextureUtils::GetTextureAddressModeInternal(wrapVMode),
+            ramses_internal::EWrapMethod::Clamp,
+            TextureUtils::GetTextureSamplingInternal(minSamplingMethod),
+            TextureUtils::GetTextureSamplingInternal(magSamplingMethod)
+            );
+
+        TextureSamplerImpl& samplerImpl = *new TextureSamplerImpl(*this, ERamsesObjectType_TextureSamplerExternal, name);
+        samplerImpl.initializeFrameworkData(
+            samplerStates,
+            ERamsesObjectType_TextureSamplerExternal,
+            ramses_internal::TextureSampler::ContentType::ExternalTexture,
+            ramses_internal::ResourceContentHash::Invalid(),
+            ramses_internal::InvalidMemoryHandle);
+
+        TextureSamplerExternal* sampler = new TextureSamplerExternal(samplerImpl);
+        registerCreatedObject(*sampler);
+        return sampler;
+    }
+
     ramses::TextureSampler* SceneImpl::createTextureSamplerImpl(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
@@ -1374,8 +1439,18 @@ namespace ramses
         return createTextureConsumerImpl(sampler, id);
     }
 
+    status_t SceneImpl::createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t id)
+    {
+        // Allow duplicate consumer ID for external samplers (special need for ramses composer).
+        // This will NOT work properly if consumers with same ID get to renderer side and attempt to be linked
+        // (or if one is already linked and another one with same ID is created).
+        // TODO vaclav make this proper, allow it in general and handle duplicates on renderer side
+
+        return createTextureConsumerImpl(sampler, id, false);
+    }
+
     template <typename SAMPLER>
-    status_t SceneImpl::createTextureConsumerImpl(const SAMPLER& sampler, dataConsumerId_t id)
+    status_t SceneImpl::createTextureConsumerImpl(const SAMPLER& sampler, dataConsumerId_t id, bool checkDuplicate)
     {
         if (!containsSceneObject(sampler.impl))
         {
@@ -1383,9 +1458,10 @@ namespace ramses
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
-        if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
+        if (checkDuplicate)
         {
-            return addErrorEntry("Scene::createTextureConsumer failed, duplicate data slot id");
+            if (ramses_internal::DataSlotUtils::HasDataSlotId(m_scene, internalDataSlotId))
+                return addErrorEntry("Scene::createTextureConsumer failed, duplicate data slot id");
         }
 
         const ramses_internal::TextureSamplerHandle& samplerHandle = sampler.impl.getTextureSamplerHandle();
@@ -1435,7 +1511,7 @@ namespace ramses
     {
         const auto now   = ramses_internal::FlushTime::Clock::now();
         const auto nowMs = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-        LOG_INFO_P(CONTEXT_CLIENT, "Scene::resetUniformTimeMs: {}", nowMs.time_since_epoch().count());
+        LOG_INFO_P(CONTEXT_CLIENT, "Scene({})::resetUniformTimeMs: {}", getSceneId(), nowMs.time_since_epoch().count());
         m_sendEffectTimeSync = true;
         getIScene().setEffectTimeSync(now);
         return StatusOK;

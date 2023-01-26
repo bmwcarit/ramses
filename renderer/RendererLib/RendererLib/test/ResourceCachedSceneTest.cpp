@@ -63,13 +63,18 @@ namespace ramses_internal
 
                 const DataInstanceHandle uniformData = scene.getRenderable(renderable).dataInstances[ERenderableDataSlotType_Uniforms];
                 const TextureSamplerHandle textureSampler = scene.getDataTextureSamplerHandle(uniformData, sceneHelper.samplerField);
-                if (scene.getTextureSampler(textureSampler).contentType != TextureSampler::ContentType::RenderBuffer)
+                if (scene.getTextureSampler(textureSampler).contentType == TextureSampler::ContentType::ExternalTexture)
                 {
-                    EXPECT_EQ(FakeTextureDeviceHandle, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
+                    EXPECT_THAT(scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()],
+                        AnyOf(Eq(DeviceMock::FakeExternalTextureDeviceHandle), Eq(DeviceMock::FakeEmptyExternalTextureDeviceHandle)));
+                }
+                else if (scene.getTextureSampler(textureSampler).contentType == TextureSampler::ContentType::RenderBuffer)
+                {
+                    EXPECT_EQ(FakeRenderTargetTextureDeviceHandle, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
                 }
                 else
                 {
-                    EXPECT_EQ(FakeRenderTargetTextureDeviceHandle, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
+                    EXPECT_EQ(FakeTextureDeviceHandle, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
                 }
             }
         }
@@ -290,6 +295,37 @@ namespace ramses_internal
         sceneHelper.createAndAssignVertexDataInstance(renderable);
         sceneHelper.setResourcesToRenderable(renderable);
 
+        updateRenderableResourcesAndVertexArray({ renderable });
+        expectRenderableResourcesClean(renderable);
+    }
+
+    TEST_F(AResourceCachedScene, RenderableWithEmptyExternalTextureSamplerHandleMarkedAsClean)
+    {
+        constexpr ExternalBufferHandle invalidBuffer{ InvalidMemoryHandle };
+
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        const TextureSamplerHandle sampler = sceneAllocator.allocateTextureSampler({ {}, TextureSampler::ContentType::ExternalTexture, ResourceContentHash::Invalid(), invalidBuffer.asMemoryHandle() });
+        sceneHelper.createAndAssignUniformDataInstance(renderable, sampler);
+        sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+
+        EXPECT_CALL(sceneHelper.resourceManager, getExternalBufferDeviceHandle(_)).Times(0);
+        EXPECT_CALL(sceneHelper.resourceManager, getEmptyExternalBufferDeviceHandle()).Times(1);
+        updateRenderableResourcesAndVertexArray({ renderable });
+        expectRenderableResourcesClean(renderable);
+    }
+
+    TEST_F(AResourceCachedScene, RenderableWithExternalTextureSamplerHandleMarkedAsClean_ContentAvailable)
+    {
+        constexpr ExternalBufferHandle mockExternalBuffer{ 1142u };
+
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        const TextureSamplerHandle sampler = sceneAllocator.allocateTextureSampler({ {}, TextureSampler::ContentType::ExternalTexture, ResourceContentHash::Invalid(), mockExternalBuffer.asMemoryHandle() });
+        sceneHelper.createAndAssignUniformDataInstance(renderable, sampler);
+        sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+
+        EXPECT_CALL(sceneHelper.resourceManager, getExternalBufferDeviceHandle(mockExternalBuffer));
         updateRenderableResourcesAndVertexArray({ renderable });
         expectRenderableResourcesClean(renderable);
     }

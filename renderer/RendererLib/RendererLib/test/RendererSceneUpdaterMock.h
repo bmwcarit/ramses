@@ -35,6 +35,8 @@ namespace ramses_internal
         MOCK_METHOD(bool, handleBufferCreateRequest, (StreamBufferHandle buffer, WaylandIviSurfaceId source), (override));
         MOCK_METHOD(bool, handleBufferDestroyRequest, (StreamBufferHandle buffer), (override));
         MOCK_METHOD(bool, setStreamBufferState, (StreamBufferHandle buffer, bool newState), (override));
+        MOCK_METHOD(bool, handleExternalBufferCreateRequest, (ExternalBufferHandle), (override));
+        MOCK_METHOD(bool, handleExternalBufferDestroyRequest, (ExternalBufferHandle), (override));
         MOCK_METHOD(void, handleSetClearFlags, (OffscreenBufferHandle buffer, uint32_t), (override));
         MOCK_METHOD(void, handleSetClearColor, (OffscreenBufferHandle buffer, const Vector4& clearColor), (override));
         MOCK_METHOD(void, handleSetExternallyOwnedWindowSize, (uint32_t, uint32_t), (override));
@@ -43,6 +45,7 @@ namespace ramses_internal
         MOCK_METHOD(void, handleSceneDataLinkRequest, (SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId), (override));
+        MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (ExternalBufferHandle, SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, handleDataUnlinkRequest, (SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, setLimitFlushesForceApply, (UInt limitForPendingFlushesForceApply), (override));
         MOCK_METHOD(void, setLimitFlushesForceUnsubscribe, (UInt limitForPendingFlushesForceUnsubscribe), (override));

@@ -213,6 +213,20 @@ namespace ramses
         m_cmdVisitor.visit(m_pendingCommands);
     }
 
+    TEST_F(ARendererSceneControl, createsCommandForExternalBufferLink)
+    {
+        constexpr externalBufferId_t bufferId{ 1u };
+        constexpr sceneId_t consumerScene{ 2u };
+        constexpr dataConsumerId_t dataConsumer{ 3u };
+
+        EXPECT_EQ(StatusOK, m_sceneControlAPI.linkExternalBuffer(bufferId, consumerScene, dataConsumer));
+        EXPECT_CALL(m_cmdVisitor, handleBufferToSceneDataLinkRequest(
+            ramses_internal::ExternalBufferHandle{ bufferId.getValue() },
+            ramses_internal::SceneId{ consumerScene.getValue() },
+            ramses_internal::DataSlotId{ dataConsumer.getValue() }));
+        m_cmdVisitor.visit(m_pendingCommands);
+    }
+
     TEST_F(ARendererSceneControl, failsToMakeSceneReadyOrRenderedIfNoMappingSet)
     {
         const sceneId_t sceneWithNoMapping{ 1234 };
@@ -377,6 +391,29 @@ namespace ramses
         submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
+
+
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+    TEST_F(ARendererSceneControl, dispatchesExternalBufferLinkedEventFromRenderer)
+    {
+        constexpr sceneId_t consumerScene{ 3 };
+        constexpr ramses_internal::SceneId consumerSceneInternal{ consumerScene.getValue() };
+        constexpr dataConsumerId_t consumerId{ 4 };
+        constexpr ramses_internal::DataSlotId consumerIdInternal{ consumerId.getValue() };
+        constexpr externalBufferId_t bufferId{ 5 };
+        constexpr ramses_internal::ExternalBufferHandle ebInternal{ bufferId.getValue() };
+
+        InSequence seq;
+        EXPECT_CALL(m_eventHandler, externalBufferLinked(bufferId, consumerScene, consumerId, true));
+        m_eventsFromRenderer.addBufferEvent(ramses_internal::ERendererEventType::SceneDataBufferLinked, ebInternal, consumerSceneInternal, consumerIdInternal);
+
+        EXPECT_CALL(m_eventHandler, externalBufferLinked(bufferId, consumerScene, consumerId, false));
+        m_eventsFromRenderer.addBufferEvent(ramses_internal::ERendererEventType::SceneDataBufferLinkFailed, ebInternal, consumerSceneInternal, consumerIdInternal);
+
+        submitEventsFromRenderer();
+        dispatchSceneControlEvents();
+    }
+#endif
 
     TEST_F(ARendererSceneControl, dispatchesDataLinkedEventFromRenderer)
     {

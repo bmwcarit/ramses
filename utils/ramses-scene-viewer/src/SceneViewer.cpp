@@ -75,7 +75,7 @@ namespace ramses_internal
         , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
         , m_screenshotFile(m_parser, "x", "screenshot-file", {}, "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
         , m_noSkub(m_parser, "ns", "no-skub", "Disable skub, render also when no changes")
-        , m_guiModeArgument(m_parser, "gui", "gui", "on", "Inspection Gui display mode [off|on|overlay]")
+        , m_guiModeArgument(m_parser, "gui", "gui", "on", "Inspection Gui display mode [off|on|overlay|only]")
         , m_frameworkConfig(argc, argv)
         , m_rendererConfig(argc, argv)
         , m_displayConfig(argc, argv)
@@ -150,6 +150,8 @@ namespace ramses_internal
             retval = GuiMode::Overlay;
         else if (guiMode == "off")
             retval = GuiMode::Off;
+        else if (guiMode == "only")
+            retval = GuiMode::Only;
         else
             LOG_ERROR_P(CONTEXT_CLIENT, "Invalid Gui mode: {}", guiMode);
         return retval;
@@ -217,13 +219,19 @@ namespace ramses_internal
         }
 
         std::unique_ptr<ISceneSetup> sceneSetup;
-        if (guiMode == GuiMode::On)
+        switch (guiMode)
         {
+        case GuiMode::On:
             sceneSetup = std::make_unique<OffscreenSetup>(imguiHelper, renderer, loadedScene, displayId, winWidth, winHeight);
-        }
-        else
-        {
+            break;
+        case GuiMode::Only:
+            sceneSetup = std::make_unique<FramebufferSetup>(imguiHelper, renderer, nullptr, displayId);
+            break;
+        case GuiMode::Overlay:
+        case GuiMode::Off:
+        case GuiMode::Invalid:
             sceneSetup = std::make_unique<FramebufferSetup>(imguiHelper, renderer, loadedScene, displayId);
+            break;
         }
         sceneSetup->apply();
 

@@ -8,6 +8,8 @@
 
 // client API
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/DataObject.h"
 
@@ -463,7 +465,7 @@ namespace ramses
         const auto result = std::find(valueDataType.begin(), valueDataType.end(),input.getDataType());
         if (result == valueDataType.end())
         {
-            return addErrorEntry("Appearance::set failed, value type does not match input data type");
+            return addErrorEntry(::fmt::format("Appearance::set failed, value type does not match input data type {}", EnumToString(input.getDataType())));
         }
 
         if (input.getElementCount() != valueElementCount)
@@ -599,6 +601,52 @@ namespace ramses
         {
             RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_TextureSampler);
             while (const TextureSampler* sampler = iter.getNext<TextureSampler>())
+            {
+                if (samplerHandle == sampler->impl.getTextureSamplerHandle())
+                {
+                    textureSampler = sampler;
+                    break;
+                }
+            }
+        }
+        return StatusOK;
+    }
+
+    status_t AppearanceImpl::getInputTextureMS(const EffectInputImpl& input, const TextureSamplerMS*& textureSampler)
+    {
+        textureSampler = nullptr;
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u,
+            {ramses_internal::EDataType::TextureSampler2DMS}));
+
+        const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
+        const auto samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, dataField);
+        if (samplerHandle.isValid())
+        {
+            RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_TextureSamplerMS);
+            while (const TextureSamplerMS* sampler = iter.getNext<TextureSamplerMS>())
+            {
+                if (samplerHandle == sampler->impl.getTextureSamplerHandle())
+                {
+                    textureSampler = sampler;
+                    break;
+                }
+            }
+        }
+        return StatusOK;
+    }
+
+    status_t AppearanceImpl::getInputTextureExternal(const EffectInputImpl& input, const TextureSamplerExternal*& textureSampler)
+    {
+        textureSampler = nullptr;
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u,
+            {ramses_internal::EDataType::TextureSamplerExternal}));
+
+        const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
+        const auto samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, dataField);
+        if (samplerHandle.isValid())
+        {
+            RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_TextureSamplerExternal);
+            while (const TextureSamplerExternal* sampler = iter.getNext<TextureSamplerExternal>())
             {
                 if (samplerHandle == sampler->impl.getTextureSamplerHandle())
                 {

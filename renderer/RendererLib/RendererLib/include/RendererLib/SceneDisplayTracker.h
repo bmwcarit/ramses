@@ -39,6 +39,7 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::LinkData& cmd) const { return getSceneOwnership(cmd.consumerScene); }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::LinkOffscreenBuffer& cmd) const { return getSceneOwnership(cmd.consumerScene); }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::LinkStreamBuffer& cmd) const { return getSceneOwnership(cmd.consumerScene); }
+        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::LinkExternalBuffer& cmd) const { return getSceneOwnership(cmd.consumerScene); }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::UnlinkData& cmd) const { return getSceneOwnership(cmd.consumerScene); }
         // display commands
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetSceneMapping& cmd) const { return cmd.display; }
@@ -50,6 +51,8 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::CreateStreamBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::DestroyStreamBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetStreamBufferState& cmd) const { return cmd.display; }
+        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::CreateExternalBuffer& cmd) const { return cmd.display; }
+        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::DestroyExternalBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetClearFlags& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetClearColor& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetExterallyOwnedWindowSize& cmd) const { return cmd.display; }

@@ -188,19 +188,22 @@ namespace ramses_internal
         }
         else
         {
-            if (m_X11WindowData.window && m_X11WindowData.display)
+            if (m_X11WindowData.window)
             {
                 XDestroyWindow(m_X11WindowData.display, m_X11WindowData.window);
                 XSync(m_X11WindowData.display, static_cast<int>(true));
-
-                LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::~Window_X11: XCloseDisplay");
-                XCloseDisplay(m_X11WindowData.display);
-                m_X11WindowData.display = nullptr;
             }
             else
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Window_X11::~Window_X11: Error closing X11 window");
             }
+        }
+
+        if (m_X11WindowData.display)
+        {
+            LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::~Window_X11: XCloseDisplay");
+            XCloseDisplay(m_X11WindowData.display);
+            m_X11WindowData.display = nullptr;
         }
     }
 

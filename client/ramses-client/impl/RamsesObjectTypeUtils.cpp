@@ -87,7 +87,8 @@ namespace ramses
         "ERamsesObjectType_DataVector3i",
         "ERamsesObjectType_DataVector4i",
         "ERamsesObjectType_StreamTexture",
-        "ERamsesObjectType_SceneReference"
+        "ERamsesObjectType_SceneReference",
+        "ERamsesObjectType_TextureSamplerExternal"
     };
 
     ENUM_TO_STRING(ERamsesObjectType, RamsesObjectTypeNames, ERamsesObjectType_NUMBER_OF_TYPES);

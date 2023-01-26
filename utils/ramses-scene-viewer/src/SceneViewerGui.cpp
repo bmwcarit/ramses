@@ -547,6 +547,7 @@ namespace ramses_internal
                 break;
             case ramses::ERamsesObjectType_TextureSampler:
             case ramses::ERamsesObjectType_TextureSamplerMS:
+            case ramses::ERamsesObjectType_TextureSamplerExternal:
                 drawTextureSampler(static_cast<ramses::TextureSamplerImpl&>(obj));
                 break;
             case ramses::ERamsesObjectType_ArrayResource:
@@ -1081,7 +1082,11 @@ namespace ramses_internal
         });
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
-            return (sampler.contentType == TextureSampler::ContentType::RenderBuffer) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
+            return (sampler.isRenderBuffer()) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
+        });
+        drawRefs<ramses::TextureSamplerMS>("Used by TextureSamplerMS", obj, [&](const ramses::TextureSamplerMS* ref) {
+            const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            return (sampler.isRenderBuffer()) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
         });
         drawRefs<ramses::BlitPass>("Used by BlitPass", obj, [&](const ramses::BlitPass* ref) {
             const auto& bp = m_scene.impl.getIScene().getBlitPass(ref->impl.getBlitPassHandle());
@@ -1279,6 +1284,8 @@ namespace ramses_internal
         std::vector<ramses_internal::Vector2>  vec2;
         std::vector<float>                     vec1;
         const ramses::TextureSampler*          textureSampler;
+        const ramses::TextureSamplerMS*        textureSamplerMS;
+        const ramses::TextureSamplerExternal*  textureSamplerExternal;
         ramses::status_t                       status = ramses::StatusOK;
 
         switch (uniform.getDataType())
@@ -1388,13 +1395,26 @@ namespace ramses_internal
             }
             break;
         case ramses::EEffectInputDataType_TextureSampler2D:
-        case ramses::EEffectInputDataType_TextureSampler2DMS:
         case ramses::EEffectInputDataType_TextureSampler3D:
         case ramses::EEffectInputDataType_TextureSamplerCube:
             status = obj.getInputTexture(uniform.impl, textureSampler);
             if (ramses::StatusOK == status)
             {
                 draw(textureSampler->impl);
+            }
+            break;
+        case ramses::EEffectInputDataType_TextureSampler2DMS:
+            status = obj.getInputTextureMS(uniform.impl, textureSamplerMS);
+            if (ramses::StatusOK == status)
+            {
+                draw(textureSamplerMS->impl);
+            }
+            break;
+        case ramses::EEffectInputDataType_TextureSamplerExternal:
+            status = obj.getInputTextureExternal(uniform.impl, textureSamplerExternal);
+            if (ramses::StatusOK == status)
+            {
+                draw(textureSamplerExternal->impl);
             }
             break;
         case ramses::EEffectInputDataType_Invalid:
@@ -1477,6 +1497,8 @@ namespace ramses_internal
             const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
             if (textureResource != nullptr)
             {
+                ImGui::TextUnformatted(fmt::format("GenerateMipChain: {}", textureResource->getGenerateMipChainFlag()).c_str());
+
                 if (ImGui::Button("Save png"))
                 {
                     m_lastErrorMessage = saveTexture2D(obj);
@@ -1608,10 +1630,14 @@ namespace ramses_internal
             else
                 ImGui::Text("StreamTexture missing");
             break;
+        case TextureSampler::ContentType::ExternalTexture:
+            // no details
+            break;
         case TextureSampler::ContentType::OffscreenBuffer:
         case TextureSampler::ContentType::StreamBuffer:
         case TextureSampler::ContentType::None:
             ImGui::Text("Type: %s (tbd.)", ramses::RamsesObjectTypeUtils::GetRamsesObjectTypeName(obj.getTextureType()));
+            break;
         }
 
         drawRefs<ramses::Appearance>("Used by Appearance", obj, [&](const ramses::Appearance* ref) {
@@ -1621,14 +1647,25 @@ namespace ramses_internal
                 ramses::UniformInput uniform;
                 effect.getUniformInput(i, uniform);
                 const ramses::TextureSampler* textureSampler;
+                const ramses::TextureSamplerMS* textureSamplerMS;
+                const ramses::TextureSamplerExternal* textureSamplerExternal;
                 switch (uniform.impl.getUniformInputDataType())
                 {
                     case ramses::EEffectInputDataType_TextureSampler2D:
-                    case ramses::EEffectInputDataType_TextureSampler2DMS:
                     case ramses::EEffectInputDataType_TextureSampler3D:
                     case ramses::EEffectInputDataType_TextureSamplerCube:
                         if (0 == ref->impl.getInputTexture(uniform.impl, textureSampler))
                             if (textureSampler == &obj.getRamsesObject())
+                                return true;
+                        break;
+                    case ramses::EEffectInputDataType_TextureSampler2DMS:
+                        if (0 == ref->impl.getInputTextureMS(uniform.impl, textureSamplerMS))
+                            if (textureSamplerMS == &obj.getRamsesObject())
+                                return true;
+                        break;
+                    case ramses::EEffectInputDataType_TextureSamplerExternal:
+                        if (0 == ref->impl.getInputTextureExternal(uniform.impl, textureSamplerExternal))
+                            if (textureSamplerExternal == &obj.getRamsesObject())
                                 return true;
                         break;
                     default:
@@ -2304,7 +2341,7 @@ namespace ramses_internal
         {
             ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2D);
             ImGui::LogToClipboard();
-            ImGui::LogText("Id, Name, Type, Hash, Loaded, Size, CompressedSize, Size, Format, Swizzle\n");
+            ImGui::LogText("Id, Name, Type, Hash, Loaded, Size, CompressedSize, Width, Height, Format, Swizzle, GenerateMipChain\n");
             while (const auto* obj = iter.getNext<ramses::Texture2D>())
             {
                 logTexture2D(obj->impl);
@@ -2464,7 +2501,7 @@ namespace ramses_internal
         logRamsesObject(obj);
         const auto hash = obj.getLowlevelResourceHash();
         auto resource = m_scene.getRamsesClient().impl.getResource(hash);
-        ImGui::LogText("%s", fmt::format("Hash: {}", hash).c_str());
+        ImGui::LogText("%s", fmt::format("{},", hash).c_str());
         if (resource)
         {
             ImGui::LogText("true, %u, %u,", resource->getDecompressedDataSize(), resource->getCompressedDataSize());
@@ -2478,13 +2515,23 @@ namespace ramses_internal
     void SceneViewerGui::logTexture2D(ramses::Texture2DImpl& obj)
     {
         logResource(obj);
-        ImGui::LogText("w:%u h:%u,%s, ", obj.getWidth(), obj.getHeight(), ramses::getTextureFormatString(obj.getTextureFormat()));
+        ImGui::LogText("%u,%u,%s,", obj.getWidth(), obj.getHeight(), ramses::getTextureFormatString(obj.getTextureFormat()));
         const auto& swizzle = obj.getTextureSwizzle();
-        ImGui::LogText("r:%s g:%s b:%s a:%s, ",
+        ImGui::LogText("r:%s g:%s b:%s a:%s,",
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelRed)),
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelGreen)),
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelBlue)),
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelAlpha)));
+        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        if (resource)
+        {
+            const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
+            ImGui::LogText("%s,", textureResource->getGenerateMipChainFlag() ? "true" : "false");
+        }
+        else
+        {
+            ImGui::LogText(",");
+        }
         const auto* slot = findDataSlot(obj.getLowlevelResourceHash());
         if (slot)
             ImGui::LogText("DataSlot: %u %s,", slot->id.getValue(), EnumToString(slot->type));

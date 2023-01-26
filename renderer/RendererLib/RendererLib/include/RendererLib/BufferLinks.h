@@ -53,6 +53,9 @@ namespace ramses_internal
     using StreamBufferLink = BufferLink<StreamBufferHandle>;
     using StreamBufferLinkVector = BufferLinkVector<StreamBufferHandle>;
     using StreamBufferLinks = BufferLinks<StreamBufferHandle>;
+
+    using ExternalBufferLinks = BufferLinks<ExternalBufferHandle>;
+    using ExternalBufferLinkVector = BufferLinkVector<ExternalBufferHandle>;
 }
 
 #endif

@@ -658,6 +658,18 @@ protected:
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     }
 
+    void expectExternalBufferUploaded(ExternalBufferHandle buffer, DeviceResourceHandle deviceHandleToReturn = DeviceMock::FakeExternalTextureDeviceHandle)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadExternalBuffer(buffer));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getExternalBufferDeviceHandle(buffer)).Times(AnyNumber()).WillRepeatedly(Return(deviceHandleToReturn));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getExternalBufferGlId(buffer)).Times(AnyNumber());
+    }
+
+    void expectExternalBufferDeleted(ExternalBufferHandle buffer)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadExternalBuffer(buffer));
+    }
+
     void expectBlitPassUploaded()
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadRenderTargetBuffer(_, getSceneId(0u), _)).Times(2);
@@ -809,10 +821,10 @@ protected:
         linkProviderToConsumer(getSceneId(providerSceneIdx), providerConsumer.first, getSceneId(consumerSceneIdx), providerConsumer.second, expectSuccess);
     }
 
-    DataSlotId createTextureConsumer(UInt32 sceneIndex)
+    DataSlotId createTextureConsumer(UInt32 sceneIndex, TextureSampler::ContentType contentType = TextureSampler::ContentType::RenderBuffer)
     {
         IScene& scene = *stagingScene[sceneIndex];
-        const TextureSamplerHandle sampler = scene.allocateTextureSampler({ {}, RenderBufferHandle(999) });
+        const TextureSamplerHandle sampler = scene.allocateTextureSampler({ {}, contentType, {}, MemoryHandle{999u} });
         const DataSlotId consumerId(getNextFreeDataSlotIdForDataLinking());
         scene.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), sampler });
 

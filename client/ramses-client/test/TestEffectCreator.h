@@ -99,10 +99,12 @@ namespace ramses
                 "uniform lowp sampler2DMS texture2dMSInput;\n"
                 "uniform lowp sampler3D texture3dInput;\n"
                 "uniform samplerCube textureCubeInput;\n"
+                "#extension GL_OES_EGL_image_external_essl3 : require\n"
+                "uniform samplerExternalOES textureExternalInput;\n"
                 "out vec4 FragColor;"
                 "void main(void)\n"
                 "{\n"
-                "    FragColor = vec4(1.0) + texture(texture2dInput, vec2(0,0)) + texelFetch(texture2dMSInput, ivec2(0,0), 0) + texture(texture3dInput, vec3(0, 0, 0)) + texture(textureCubeInput, vec3(0,0,0));\n"
+                "    FragColor = vec4(1.0) + texture(texture2dInput, vec2(0,0)) + texelFetch(texture2dMSInput, ivec2(0,0), 0) + texture(texture3dInput, vec3(0, 0, 0)) + texture(textureCubeInput, vec3(0,0,0)) + texture(textureExternalInput, vec2(0,0));\n"
                 "}\n");
 
             ramses::EffectDescription effectDesc;

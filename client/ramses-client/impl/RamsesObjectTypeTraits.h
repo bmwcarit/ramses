@@ -144,6 +144,7 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(ArrayBuffer, ERamsesObjectType_DataBufferObject, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Texture2DBuffer, ERamsesObjectType_Texture2DBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(SceneReference, ERamsesObjectType_SceneReference, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerExternal, ERamsesObjectType_TextureSamplerExternal, ERamsesObjectType_SceneObject, true);
 
     struct RamsesObjectTraitsEntry
     {
@@ -240,6 +241,7 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_StreamTexture)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneReference)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerExternal)
         DATA_BIND_DEFINE_END()
 }
 

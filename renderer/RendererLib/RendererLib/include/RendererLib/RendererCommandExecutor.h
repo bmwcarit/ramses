@@ -38,6 +38,7 @@ namespace ramses_internal
         void operator()(const RendererCommand::LinkData& cmd);
         void operator()(const RendererCommand::LinkOffscreenBuffer& cmd);
         void operator()(const RendererCommand::LinkStreamBuffer& cmd);
+        void operator()(const RendererCommand::LinkExternalBuffer& cmd);
         void operator()(const RendererCommand::UnlinkData& cmd);
         void operator()(const RendererCommand::PickEvent& cmd);
         void operator()(const RendererCommand::CreateDisplay& cmd);
@@ -48,6 +49,8 @@ namespace ramses_internal
         void operator()(const RendererCommand::CreateStreamBuffer& cmd);
         void operator()(const RendererCommand::DestroyStreamBuffer& cmd);
         void operator()(const RendererCommand::SetStreamBufferState& cmd);
+        void operator()(const RendererCommand::CreateExternalBuffer& cmd);
+        void operator()(const RendererCommand::DestroyExternalBuffer& cmd);
         void operator()(const RendererCommand::SetClearFlags& cmd);
         void operator()(const RendererCommand::SetClearColor& cmd);
         void operator()(const RendererCommand::SetExterallyOwnedWindowSize& cmd);

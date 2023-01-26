@@ -93,11 +93,13 @@ namespace ramses
 
         bool waitForDisplayCreation(displayId_t displayId)
         {
+            assert(m_displays.count(displayId) == 0u);
             return waitUntilOrTimeout([&] { return m_displays.count(displayId) > 0; });
         }
 
         bool waitForDisplayDestruction(displayId_t displayId)
         {
+            assert(m_displays.count(displayId) != 0u);
             return waitUntilOrTimeout([&] { return m_displays.count(displayId) == 0; });
         }
 
@@ -136,6 +138,12 @@ namespace ramses
         bool waitForStreamSurfaceAvailabilityChange(waylandIviSurfaceId_t streamSource, bool available)
         {
             return waitUntilOrTimeout([&] { return (m_availableStreams.count(streamSource) > 0) == available; });
+        }
+
+        void registerAlreadyCreatedDisplay(displayId_t displayId)
+        {
+            assert(m_displays.count(displayId) == 0u);
+            m_displays.insert(displayId);
         }
 
     private:

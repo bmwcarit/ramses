@@ -45,4 +45,12 @@ namespace ramses_internal
     DECLARE_ALL_API_PROCS
 }
 
+// TODO Violin fix OpenGL headers properly...
+// This is so that the external texture sampler (not texture) can be used in scene also on platforms not actually supporting external texture
+// (e.g. desktop windows when creating assets to be used with external texture).
+#if !defined(GL_OES_EGL_image_external)
+#define GL_OES_EGL_image_external
+#define GL_TEXTURE_EXTERNAL_OES 0x8D65
+#endif
+
 #endif

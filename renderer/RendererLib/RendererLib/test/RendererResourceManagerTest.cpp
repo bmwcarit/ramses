@@ -959,6 +959,79 @@ TEST_F(ARendererResourceManager, returnsInvalidDeviceHandleForUnknownStreamBuffe
     EXPECT_FALSE(resourceManager.getStreamBufferDeviceHandle(StreamBufferHandle{ 9999u }).isValid());
 }
 
+TEST_F(ARendererResourceManager, UploadsAndUnloadsExternalBuffers)
+{
+    constexpr ExternalBufferHandle ebHandle1{ 1u };
+    constexpr ExternalBufferHandle ebHandle2{ 2u };
+
+    constexpr DeviceResourceHandle deviceHandle1{ 11111u };
+    constexpr DeviceResourceHandle deviceHandle2{ 22222u };
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, isExternalTextureExtensionSupported()).WillOnce(Return(true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateExternalTexture()).WillOnce(Return(deviceHandle1));
+    resourceManager.uploadExternalBuffer(ebHandle1);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, isExternalTextureExtensionSupported()).WillOnce(Return(true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateExternalTexture()).WillOnce(Return(deviceHandle2));
+    resourceManager.uploadExternalBuffer(ebHandle2);
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(deviceHandle1));
+    resourceManager.unloadExternalBuffer(ebHandle1);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(deviceHandle2));
+    resourceManager.unloadExternalBuffer(ebHandle2);
+}
+
+TEST_F(ARendererResourceManager, FailsUploadingExternalBuffersIfExtensionNotSupported)
+{
+    constexpr ExternalBufferHandle ebHandle{ 1u };
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, isExternalTextureExtensionSupported()).WillOnce(Return(false));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateExternalTexture()).Times(0);
+    resourceManager.uploadExternalBuffer(ebHandle);
+}
+
+TEST_F(ARendererResourceManager, CanGetDeviceHandleForExternalBuffer)
+{
+    constexpr ExternalBufferHandle ebHandle{ 1u };
+
+    constexpr DeviceResourceHandle deviceHandle{ 11111u };
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, isExternalTextureExtensionSupported()).WillOnce(Return(true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateExternalTexture()).WillOnce(Return(deviceHandle));
+    resourceManager.uploadExternalBuffer(ebHandle);
+
+    EXPECT_EQ(deviceHandle, resourceManager.getExternalBufferDeviceHandle(ebHandle));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(deviceHandle));
+    resourceManager.unloadExternalBuffer(ebHandle);
+}
+
+TEST_F(ARendererResourceManager, ReturnsInvalidDeviceHandleForUnknownExternalBuffer)
+{
+    constexpr ExternalBufferHandle ebHandle{ 1u };
+    EXPECT_FALSE(resourceManager.getExternalBufferDeviceHandle(ebHandle).isValid());
+}
+
+TEST_F(ARendererResourceManager, CanGetGlIdForExternalBuffer)
+{
+    constexpr ExternalBufferHandle ebHandle{ 1u };
+
+    constexpr DeviceResourceHandle deviceHandle{ 11111u };
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, isExternalTextureExtensionSupported()).WillOnce(Return(true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateExternalTexture()).WillOnce(Return(deviceHandle));
+    resourceManager.uploadExternalBuffer(ebHandle);
+
+    uint32_t glId{ 567u };
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, getTextureAddress(deviceHandle)).WillOnce(Return(glId));
+    EXPECT_EQ(glId, resourceManager.getExternalBufferGlId(ebHandle));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(deviceHandle));
+    resourceManager.unloadExternalBuffer(ebHandle);
+}
+
+TEST_F(ARendererResourceManager, ReturnsInvalidGlIdForUnknownExternalBuffer)
+{
+    constexpr ExternalBufferHandle ebHandle{ 1u };
+    EXPECT_EQ(0u, resourceManager.getExternalBufferGlId(ebHandle));
+}
+
 TEST_F(ARendererResourceManager, UploadAndDeleteValidShader)
 {
     auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);

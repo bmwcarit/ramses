@@ -54,7 +54,7 @@ namespace ramses
     TEST_F(AnEffect, hasProperNumberOfInputs)
     {
         const Effect* effect = sharedTestState->effect;
-        EXPECT_EQ(26u, effect->getUniformInputCount());
+        EXPECT_EQ(27u, effect->getUniformInputCount());
         EXPECT_EQ(4u, effect->getAttributeInputCount());
     }
 
@@ -223,6 +223,8 @@ namespace ramses
         EXPECT_EQ(StatusOK, effect->findUniformInput("texture3dInput", input3d));
         UniformInput inputcube;
         EXPECT_EQ(StatusOK, effect->findUniformInput("textureCubeInput", inputcube));
+        UniformInput inputExternalTexture;
+        EXPECT_EQ(StatusOK, effect->findUniformInput("textureExternalInput", inputExternalTexture));
 
         EXPECT_EQ(EEffectInputDataType_TextureSampler2D, input2d.getDataType());
         EXPECT_TRUE(input2d.isValid());
@@ -230,6 +232,8 @@ namespace ramses
         EXPECT_TRUE(input3d.isValid());
         EXPECT_EQ(EEffectInputDataType_TextureSamplerCube, inputcube.getDataType());
         EXPECT_TRUE(inputcube.isValid());
+        EXPECT_EQ(EEffectInputDataType_TextureSamplerExternal, inputExternalTexture.getDataType());
+        EXPECT_TRUE(inputExternalTexture.isValid());
     }
 
     TEST_F(AnEffect, findsAttributeInputByName)

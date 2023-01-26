@@ -43,6 +43,7 @@ namespace ramses
     class RenderTargetDescription;
     class TextureSampler;
     class TextureSamplerMS;
+    class TextureSamplerExternal;
     class AttributeInput;
     class DataObject;
     class DataFloat;
@@ -516,6 +517,32 @@ namespace ramses
         TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
 
         /**
+        * @brief Creates a texture sampler object that can sample from external textures.
+        *
+        * @details Provides support for sampling from samplers represented by variables of type "samplerExternalOES" in GLSL shaders,
+        *          according to OpenGL extension "OES_EGL_image_external".
+        *          According to the spec, external texture samplers must have "clamp to edge" for the wrap mode, and are not allowed
+        *          to have mip maps so minification filtering must be set to either linear or nearest.
+        *
+        *          Since it is not possible to directly provide content to external textures similar to conventional 2D textures, external
+        *          textures can get their content only through the platform specific mechanisms. This can be done by creating a texture
+        *          consumer from the sampler object and linking it to an external buffer created on the renderer.
+        *
+        *          Note: external texture sampler can only be used with external textures, i.e., it is not possible to use
+        *          the same sampler variable in the shader to sample from conventional 2D textures as sort of fallback textures
+        *          for example.
+        *
+        * @param[in] minSamplingMethod texture min sampling method. Must be set to either Nearest or Linear.
+        * @param[in] magSamplingMethod texture mag sampling method. Must be set to either Nearest or Linear.
+        * @param[in] name Optional name of the object.
+        * @return Pointer to the created TextureSampler, null on failure.
+        */
+        TextureSamplerExternal* createTextureSamplerExternal(
+            ETextureSamplingMethod minSamplingMethod,
+            ETextureSamplingMethod magSamplingMethod,
+            const char* name = nullptr);
+
+        /**
         * @brief Create a new ArrayResource. It makes a copy of the given data of a certain type as a resource, an immutable data object.
         *        See #ramses::ArrayResource for more details.
 
@@ -846,6 +873,21 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t dataId);
+
+        /**
+        * @brief Annotates a #ramses::TextureSamplerExternal as a content consumer.
+        *        Texture provider and texture consumer can be linked on Ramses Renderer side.
+        *        Linking textures means that the consumer's sampler will use provider's texture as content.
+        *
+        *        Sampler for external texture can only be linked to an external buffer on Ramses Renderer side
+        *        (#ramses::RamsesRenderer::createExternalBuffer).
+        *
+        * @param[in] sampler which shall consume texture content from provider texture.
+        * @param[in] dataId id to reference the consumer in this scene
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t dataId);
 
         /**
         * @brief Create a new animation system. The animation system will be
