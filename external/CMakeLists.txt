@@ -374,6 +374,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
                     -archivePath "${MetalANGLE_ARCHIVE}"
                     SKIP_INSTALL=NO
                     BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
+            COMMAND cp -R "${MetalANGLE_ARCHIVE}/Products/Library/Frameworks/MetalANGLE.framework" "${CMAKE_BINARY_DIR}/MetalANGLE.framework"
             WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
         add_custom_target(MetalANGLE ALL
             DEPENDS ${MetalANGLE_ARCHIVE})
@@ -391,6 +392,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
                     -archivePath "${MetalANGLE_ARCHIVE}"
                     SKIP_INSTALL=NO
                     BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
+            COMMAND cp -R "${MetalANGLE_ARCHIVE}/Products/Library/Frameworks/MetalANGLE.framework" "${CMAKE_BINARY_DIR}/MetalANGLE.framework"
             WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
         add_custom_target(MetalANGLE ALL
             DEPENDS ${MetalANGLE_ARCHIVE})      
@@ -409,6 +411,7 @@ ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
                 -archivePath "${MetalANGLE_ARCHIVE}"
                 SKIP_INSTALL=NO
                 BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
+        COMMAND cp -R "${MetalANGLE_ARCHIVE}/Products/Library/Frameworks/MetalANGLE.framework" "${CMAKE_BINARY_DIR}/MetalANGLE.framework"
         WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
     add_custom_target(MetalANGLE ALL
         DEPENDS ${MetalANGLE_ARCHIVE})

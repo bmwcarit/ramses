@@ -40,8 +40,7 @@ ELSEIF(TARGET_OS MATCHES "Linux" OR TARGET_OS MATCHES "Android")
 ELSEIF ((TARGET_OS MATCHES "Darwin") OR (TARGET_OS MATCHES "iOS"))
 
     SET(EGL_INCLUDE_DIRS "${ramses-sdk_SOURCE_DIR}/external/metalangle/include")   
-
-    SET(EGL_LIBRARIES "${CMAKE_BINARY_DIR}/MetalANGLE.xcarchive/Products/Library/Frameworks/MetalANGLE.framework")
+    SET(EGL_LIBRARIES "${CMAKE_BINARY_DIR}/MetalANGLE.framework")
     SET(EGL_FOUND TRUE)
 
     MARK_AS_ADVANCED(

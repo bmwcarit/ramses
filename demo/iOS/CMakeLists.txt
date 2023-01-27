@@ -50,7 +50,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
         ${RESOURCES}
     )
 
-    SET(EMBED_FRAMEWORKS ramses-shared-lib-ios-egl-es-3-0 "${OpenGL_LIBRARIES}")
+    SET(EMBED_FRAMEWORKS ramses-shared-lib-ios-egl-es-3-0 "${CMAKE_BINARY_DIR}/MetalANGLE.framework")
     set_target_properties(ramses-renderer-ios-app PROPERTIES
         MACOSX_FRAMEWORK_IDENTIFIER com.bmw.ramses-renderer-ios-app
         XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
