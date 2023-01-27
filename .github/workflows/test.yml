@@ -29,6 +29,10 @@ jobs:
           - target-platform: iphonesimulator
             os: macos-12
             type: Debug
+        # Test with latest Clang too
+          - os: ubuntu-22.04
+            type: Debug
+            compiler: clang
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
           - os: windows-2022
