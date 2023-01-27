@@ -217,8 +217,10 @@ ACME2_PROJECT(
 # iOS and macOS: Force MetalANGLE custom dependency build
 #==========================================================================
 
-add_dependencies(Context_EGL MetalANGLE)
-add_dependencies(Device_GL MetalANGLE)
+IF (("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin"))
+    add_dependencies(Context_EGL MetalANGLE)
+    add_dependencies(Device_GL MetalANGLE)
+ENDIF()
 
 #==========================================================================
 # target: code style checker
