@@ -49,6 +49,13 @@ namespace ramses
         return status;
     }
 
+    status_t RendererSceneControl::linkExternalBuffer(externalBufferId_t externalBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
+    {
+        const status_t status = impl.linkExternalBuffer(externalBufferId, consumerSceneId, consumerDataSlotId);
+        LOG_HL_RENDERER_API3(status, externalBufferId, consumerSceneId, consumerDataSlotId);
+        return status;
+    }
+
     status_t RendererSceneControl::linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId)
     {
         const status_t status = impl.linkData(providerSceneId, providerId, consumerSceneId, consumerId);

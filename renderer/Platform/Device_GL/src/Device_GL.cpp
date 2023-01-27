@@ -39,7 +39,6 @@
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "PlatformAbstraction/Macros.h"
 
-
 namespace ramses_internal
 {
     static constexpr GLboolean ToGLboolean(bool b)
@@ -80,6 +79,7 @@ namespace ramses_internal
         , m_isEmbedded(isEmbedded)
         , m_debugOutput()
         , m_deviceExtension(deviceExtension)
+        , m_emptyExternalTextureResource(m_resourceMapper.registerResource(std::make_unique<GPUResource>(0u, 0u)))
     {
 #if defined _DEBUG
         m_debugOutput.enable(context);
@@ -568,6 +568,26 @@ namespace ramses_internal
         allocateTextureStorage(texInfo, mipLevelCount);
 
         return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, totalSizeInBytes));
+    }
+
+    DeviceResourceHandle Device_GL::allocateExternalTexture()
+    {
+        if (m_limits.isExternalTextureExtensionSupported())
+        {
+            const auto textureTarget = GL_TEXTURE_EXTERNAL_OES;
+            const GLHandle texID = generateAndBindTexture(textureTarget);
+            GLTextureInfo texInfo;
+            fillGLInternalTextureInfo(textureTarget, 0u, 0u, 1u, ETextureFormat::RGBA8, {}, texInfo);
+
+            return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, 0u));
+        }
+        LOG_ERROR(CONTEXT_RENDERER, "Device_GL::allocateExternalTexture: feature not supported on platform");
+        return {};
+    }
+
+    DeviceResourceHandle Device_GL::getEmptyExternalTexture() const
+    {
+        return m_emptyExternalTextureResource;
     }
 
     void Device_GL::bindTexture(DeviceResourceHandle handle)
@@ -1474,12 +1494,19 @@ namespace ramses_internal
         }
         else
         {
-            LOG_WARN(CONTEXT_RENDERER, "Device_GL::queryDeviceDependentFeatures:  anisotropic filtering not available on this device");
+            LOG_WARN(CONTEXT_RENDERER, "Device_GL::queryDeviceDependentFeatures: anisotropic filtering not available on this device");
         }
 
         GLint maxDrawBuffers{ 0 };
         glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
         m_limits.setMaximumDrawBuffers(maxDrawBuffers);
+
+        // There are 2 extensions for external texture, one for using external texture sampler in ES2 shader and one for using it in ES3+ shader.
+        // Either of them can be used on client side and therefore we require both.
+        const bool externalTexturesSupported = isApiExtensionAvailable("GL_OES_EGL_image_external") && isApiExtensionAvailable("GL_OES_EGL_image_external_essl3");
+        LOG_INFO(CONTEXT_RENDERER, fmt::format("Device_GL::queryDeviceDependentFeatures: External textures support = {}", externalTexturesSupported));
+
+        m_limits.setExternalTextureExtensionSupported(externalTexturesSupported);
     }
 
     void Device_GL::readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
@@ -1518,6 +1545,11 @@ namespace ramses_internal
     {
         formats.resize(m_supportedBinaryProgramFormats.size());
         std::transform(m_supportedBinaryProgramFormats.cbegin(), m_supportedBinaryProgramFormats.cend(), formats.begin(), [](GLint id) { return BinaryShaderFormatID{ uint32_t(id) }; });
+    }
+
+    bool Device_GL::isExternalTextureExtensionSupported() const
+    {
+        return m_limits.isExternalTextureExtensionSupported();
     }
 
     void Device_GL::flush()

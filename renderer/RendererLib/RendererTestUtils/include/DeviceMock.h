@@ -85,6 +85,8 @@ namespace ramses_internal
         MOCK_METHOD(DeviceResourceHandle, allocateTexture2D, (UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes), (override));
         MOCK_METHOD(DeviceResourceHandle, allocateTexture3D, (UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes), (override));
         MOCK_METHOD(DeviceResourceHandle, allocateTextureCube, (UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes), (override));
+        MOCK_METHOD(DeviceResourceHandle, allocateExternalTexture, (), (override));
+        MOCK_METHOD(DeviceResourceHandle, getEmptyExternalTexture, (), (const, override));
         MOCK_METHOD(void, bindTexture, (DeviceResourceHandle handle), (override));
         MOCK_METHOD(void, generateMipmaps, (DeviceResourceHandle handle), (override));
         MOCK_METHOD(void, uploadTextureData, (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize), (override));
@@ -117,6 +119,7 @@ namespace ramses_internal
         MOCK_METHOD(void, validateDeviceStatusHealthy, (), (const, override));
         MOCK_METHOD(Bool, isDeviceStatusHealthy, (), (const, override));
         MOCK_METHOD(void, getSupportedBinaryProgramFormats, (std::vector<BinaryShaderFormatID>&), (const, override));
+        MOCK_METHOD(bool, isExternalTextureExtensionSupported, (), (const, override));
 
         MOCK_METHOD(void, flush, (), (override));
 
@@ -128,6 +131,8 @@ namespace ramses_internal
         static const DeviceResourceHandle FakeIndexBufferDeviceHandle            ;
         static const DeviceResourceHandle FakeVertexArrayDeviceHandle            ;
         static const DeviceResourceHandle FakeTextureDeviceHandle                ;
+        static const DeviceResourceHandle FakeExternalTextureDeviceHandle        ;
+        static const DeviceResourceHandle FakeEmptyExternalTextureDeviceHandle   ;
         static const DeviceResourceHandle FakeFrameBufferRenderTargetDeviceHandle;
         static const DeviceResourceHandle FakeRenderTargetDeviceHandle           ;
         static const DeviceResourceHandle FakeRenderBufferDeviceHandle           ;
@@ -135,6 +140,7 @@ namespace ramses_internal
         static const DeviceResourceHandle FakeTextureSamplerDeviceHandle         ;
         static const DeviceResourceHandle FakeBlitPassRenderTargetDeviceHandle   ;
         static constexpr BinaryShaderFormatID FakeSupportedBinaryShaderFormat{ 63666u };
+        static constexpr uint32_t FakeExternalTextureGlId{ 162023u };
 
     private:
         void createDefaultMockCalls();

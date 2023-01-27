@@ -67,6 +67,7 @@ namespace ramses_internal
         EXPECT_EQ(sceneDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::LinkData{ {}, {}, sceneId, {} }));
         EXPECT_EQ(sceneDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::LinkOffscreenBuffer{ {}, sceneId, {} }));
         EXPECT_EQ(sceneDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::LinkStreamBuffer{ {}, sceneId, {} }));
+        EXPECT_EQ(sceneDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::LinkExternalBuffer{ {}, sceneId, {} }));
         EXPECT_EQ(sceneDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::UnlinkData{ sceneId, {} }));
         EXPECT_EQ(sceneDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::PickEvent{ sceneId, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateDisplay{ cmdDisplay, {}, {} }));
@@ -77,6 +78,8 @@ namespace ramses_internal
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateStreamBuffer{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyStreamBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetStreamBufferState{ cmdDisplay, {}, {} }));
+        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateExternalBuffer{ cmdDisplay, {} }));
+        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyExternalBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearFlags{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearColor{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetExterallyOwnedWindowSize{ cmdDisplay, {}, {} }));

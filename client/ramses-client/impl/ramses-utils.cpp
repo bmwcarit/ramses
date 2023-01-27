@@ -423,6 +423,7 @@ namespace ramses
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
+#include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/ArrayResource.h"
@@ -487,6 +488,7 @@ INSTANTIATE_CONVERT_TEMPLATE(RenderPass)
 INSTANTIATE_CONVERT_TEMPLATE(BlitPass)
 INSTANTIATE_CONVERT_TEMPLATE(TextureSampler)
 INSTANTIATE_CONVERT_TEMPLATE(TextureSamplerMS)
+INSTANTIATE_CONVERT_TEMPLATE(TextureSamplerExternal)
 INSTANTIATE_CONVERT_TEMPLATE(RenderBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(RenderTarget)
 INSTANTIATE_CONVERT_TEMPLATE(DataObject)

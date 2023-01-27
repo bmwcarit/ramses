@@ -22,6 +22,7 @@ namespace ramses_internal
         EEffectInputTextureType_Texture2DMS,
         EEffectInputTextureType_Texture3D,
         EEffectInputTextureType_TextureCube,
+        EEffectInputTextureType_TextureExternal,
 
         EEffectInputTextureType_Invalid
     };
@@ -32,6 +33,7 @@ namespace ramses_internal
         {
             case EDataType::TextureSampler2D: return EEffectInputTextureType_Texture2D;
             case EDataType::TextureSampler2DMS: return EEffectInputTextureType_Texture2DMS;
+            case EDataType::TextureSamplerExternal: return EEffectInputTextureType_TextureExternal;
             case EDataType::TextureSampler3D: return EEffectInputTextureType_Texture3D;
             case EDataType::TextureSamplerCube: return EEffectInputTextureType_TextureCube;
             default: break;

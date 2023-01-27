@@ -77,6 +77,16 @@ namespace ramses_internal
         m_availableTextureFormats.put(format);
     }
 
+    bool RendererLimits::isExternalTextureExtensionSupported() const
+    {
+        return m_externalTextureExtensionSupported;
+    }
+
+    void RendererLimits::setExternalTextureExtensionSupported(bool supported)
+    {
+        m_externalTextureExtensionSupported = supported;
+    }
+
     void RendererLimits::logLimits() const
     {
         LOG_INFO(CONTEXT_RENDERER, "Rendering device features and limits:");
@@ -85,6 +95,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       " << m_maximumAnisotropy);
         LOG_INFO(CONTEXT_RENDERER, "  - maximum viewport size:                      " << m_maxViewportWidth << " x " << m_maxViewportHeight);
         LOG_INFO(CONTEXT_RENDERER, "  - maximum number of FBO draw buffers:         " << m_maximumDrawBuffers);
+        LOG_INFO(CONTEXT_RENDERER, "  - external textures supported:                " << m_externalTextureExtensionSupported);
 
         LOG_INFO(CONTEXT_RENDERER, "  - supported texture formats: " << m_availableTextureFormats.size());
         for(const auto& texture : m_availableTextureFormats)

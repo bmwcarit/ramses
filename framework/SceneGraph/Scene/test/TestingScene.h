@@ -79,7 +79,8 @@ namespace ramses_internal
                 DataFieldInfo(EDataType::Matrix33F, 1u, EFixedSemantics::ModelViewMatrix33),
                 DataFieldInfo(EDataType::Matrix44F),
                 DataFieldInfo(EDataType::TextureSampler2D),
-                DataFieldInfo(EDataType::DataReference)
+                DataFieldInfo(EDataType::DataReference),
+                DataFieldInfo(EDataType::TextureSamplerExternal)
             };
             scene.allocateDataLayout(uniformLayoutDataFields, effectHash, uniformLayout);
 
@@ -101,6 +102,7 @@ namespace ramses_internal
             scene.allocateTextureSampler({ samplerStates, renderBuffer }, samplerWithRenderBuffer);
             scene.allocateTextureSampler({ samplerStates, streamTexture }, samplerWithStreamTexture);
             scene.allocateTextureSampler({ samplerStates, texture2DBuffer }, samplerWithTextureBuffer);
+            scene.allocateTextureSampler({ samplerStates, TextureSampler::ContentType::ExternalTexture, ResourceContentHash::Invalid(), InvalidMemoryHandle }, samplerWithExternalTexture);
 
             scene.allocateDataInstance(uniformLayout, uniformData);
             scene.setDataSingleFloat(uniformData, DataFieldHandle(0u), 0.5f);
@@ -109,8 +111,8 @@ namespace ramses_internal
             scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::RotationEuler({ 5.0f, 4.0f, 3.0f }, ERotationConvention::Legacy_ZYX));
             scene.setDataSingleMatrix44f(uniformData, DataFieldHandle(3), Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }));
             scene.setDataTextureSamplerHandle(uniformData, DataFieldHandle(4), samplerWithTextureResource);
-
             scene.setDataReference(uniformData, DataFieldHandle(5), dataRef);
+            scene.setDataTextureSamplerHandle(uniformData, DataFieldHandle(6), samplerWithExternalTexture);
 
             scene.allocateDataInstance(vertexLayout, geometryData);
             scene.setDataResource(geometryData, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), indexArrayDivisor, 0u, 0u);
@@ -316,7 +318,7 @@ namespace ramses_internal
             // check counts
             EXPECT_TRUE(otherScene.isDataLayoutAllocated(uniformLayout));
             EXPECT_TRUE(otherScene.isDataLayoutAllocated(vertexLayout));
-            EXPECT_EQ(6u, otherScene.getDataLayout(uniformLayout).getFieldCount());
+            EXPECT_EQ(7u, otherScene.getDataLayout(uniformLayout).getFieldCount());
             EXPECT_EQ(4u, otherScene.getDataLayout(vertexLayout).getFieldCount());
             // check types
             EXPECT_EQ(EDataType::Float, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(0)).dataType);
@@ -325,6 +327,7 @@ namespace ramses_internal
             EXPECT_EQ(EDataType::Matrix44F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(3)).dataType);
             EXPECT_EQ(EDataType::TextureSampler2D, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(4)).dataType);
             EXPECT_EQ(EDataType::DataReference, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(5)).dataType);
+            EXPECT_EQ(EDataType::TextureSamplerExternal, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(6)).dataType);
             EXPECT_EQ(effectHash, otherScene.getDataLayout(uniformLayout).getEffectHash());
             EXPECT_EQ(EDataType::Indices, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(0)).dataType);
             EXPECT_EQ(EDataType::Vector4Buffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(1)).dataType);
@@ -338,6 +341,7 @@ namespace ramses_internal
             EXPECT_EQ(1u, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(3)).elementCount);
             EXPECT_EQ(1u, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(4)).elementCount);
             EXPECT_EQ(1u, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(5)).elementCount);
+            EXPECT_EQ(1u, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(6)).elementCount);
             EXPECT_EQ(1u, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(0)).elementCount);
             EXPECT_EQ(1u, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(1)).elementCount);
             EXPECT_EQ(1u, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(2)).elementCount);
@@ -394,6 +398,8 @@ namespace ramses_internal
             EXPECT_EQ(Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }), otherScene.getDataSingleMatrix44f(uniformData, DataFieldHandle(3u)));
             EXPECT_EQ(samplerWithTextureResource, otherScene.getDataTextureSamplerHandle(uniformData, DataFieldHandle(4u)));
             EXPECT_EQ(dataRef, otherScene.getDataReference(uniformData, DataFieldHandle(5u)));
+            EXPECT_EQ(samplerWithExternalTexture, otherScene.getDataTextureSamplerHandle(uniformData, DataFieldHandle(6u)));
+            EXPECT_EQ(TextureSampler::ContentType::ExternalTexture, otherScene.getTextureSampler(samplerWithExternalTexture).contentType);
         }
 
         template <typename OTHERSCENE>
@@ -673,6 +679,7 @@ namespace ramses_internal
         const TextureSamplerHandle   samplerWithRenderBuffer        {58u};
         const TextureSamplerHandle   samplerWithStreamTexture       {59u};
         const TextureSamplerHandle   samplerWithTextureBuffer       {60u};
+        const TextureSamplerHandle   samplerWithExternalTexture     {61u};
         const DataSlotHandle         transformDataSlot              {58u};
         const RenderGroupHandle      renderGroup                    {59u};
         const RenderGroupHandle      renderGroup2                   {60u};

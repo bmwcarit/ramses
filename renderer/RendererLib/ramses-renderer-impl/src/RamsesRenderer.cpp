@@ -147,6 +147,25 @@ namespace ramses
         return status;
     }
 
+    externalBufferId_t RamsesRenderer::createExternalBuffer(displayId_t display)
+    {
+        const auto bufferId = impl.createExternalBuffer(display);
+        LOG_HL_RENDERER_API1(bufferId, display);
+        return bufferId;
+    }
+
+    status_t RamsesRenderer::destroyExternalBuffer(displayId_t display, externalBufferId_t externalBuffer)
+    {
+        const auto status = impl.destroyExternalBuffer(display, externalBuffer);
+        LOG_HL_RENDERER_API2(status, display, externalBuffer);
+        return status;
+    }
+
+    bool RamsesRenderer::getExternalBufferGlId(displayId_t display, externalBufferId_t externalBuffer, uint32_t& textureGlId) const
+    {
+        return impl.getExternalBufferGlId(display, externalBuffer, textureGlId);
+    }
+
     status_t RamsesRenderer::setDisplayBufferClearFlags(RamsesRenderer& renderer, displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags)
     {
         const status_t status = renderer.impl.setDisplayBufferClearFlags(display, displayBuffer, clearFlags);

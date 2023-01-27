@@ -104,7 +104,7 @@ namespace ramses
         {
             usedAsTexture =
                 iscene.isTextureSamplerAllocated(sampler) &&
-                iscene.getTextureSampler(sampler).contentType == ramses_internal::TextureSampler::ContentType::RenderBuffer &&
+                iscene.getTextureSampler(sampler).isRenderBuffer() &&
                 iscene.getTextureSampler(sampler).contentHandle == getRenderBufferHandle().asMemoryHandle();
         }
 

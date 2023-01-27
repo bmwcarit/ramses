@@ -53,6 +53,19 @@ namespace ramses
         */
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
 
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+        /**
+        * @brief This method will be called when the data link between external buffer and scene's data slot is established.
+        * @details This is a result of #ramses::RendererSceneControl::linkExternalBuffer call.
+        *
+        * @param externalBufferId The ID of external buffer which is linked as data provider
+        * @param consumerScene The ID of scene where the data consumer slot is
+        * @param consumerId The ID of data consumer where the external buffer is linked to
+        * @param success True if succeeded, false otherwise - check renderer logs for concrete error message.
+        */
+        virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
+#endif
+
         /**
         * @brief This method will be called when the data link between a data provider and data consumer is established.
         * @details This is a result of #ramses::RendererSceneControl::linkData call.
@@ -219,6 +232,19 @@ namespace ramses
             (void)consumerId;
             (void)success;
         }
+
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::externalBufferLinked
+        */
+        virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        {
+            (void)externalBufferId;
+            (void)consumerScene;
+            (void)consumerId;
+            (void)success;
+        }
+#endif
 
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataLinked

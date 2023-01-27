@@ -403,6 +403,58 @@ namespace ramses
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
 
         /**
+        * @brief   Creates a buffer using OpenGL External textures for storage.
+        * @details The created buffer uses OpenGL External textures according to the OpenGL
+        *          extension OES_EGL_image_external. The created texture can be used for
+        *          compositing platform dependent content from native processes and applications
+        *          on the target platforms.
+        *
+        *          In order to provide content to the created buffer, the callback for external buffer's creation
+        *          should be handled in #ramses::IRendererEventHandler, where on creation success the buffer's OpenGL Id
+        *          should be provided. This texture Id should be passed to the native platform mechanisms.
+        *          On Android the texture Id should be passed to a SurfaceTexture object which connects the texture with
+        *          other Android platform constructs.
+        *
+        *          The created external buffer should be linked to a texture consumer created from
+        *          #ramses::TextureSamplerExternal. This can be used only with GLSL shader sampler
+        *          of type "samplerExternalOES".
+        *
+        *          External buffers can be used with #doOneLoop, since the user is expected to
+        *          make platform specific calls to update the content of the external texture.
+        *          Using a render thread could lead to race conditions and to unexpected and
+        *          undesirable behavior on target platform, so it is prohibited.
+        *          Trying to call this function if the renderer is not using #doOneLoop will
+        *          lead to failure, and an invalid external buffer id will be returned.
+        *
+        * @param[in] display Id of display that the buffer should be created on.
+        * @return Identifier of the created external buffer.
+        *         In case renderer is running in own thread \c externalBufferId_t::Invalid() will be returned.
+        */
+        externalBufferId_t createExternalBuffer(displayId_t display);
+
+        /**
+        * @brief Will destroy a previously created external buffer.
+        *        If there are any consumer texture samplers linked to this buffer, these links will be removed.
+        *
+        * @param[in] display id of display which the buffer belongs to
+        * @param[in] externalBuffer id of buffer to destroy
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalBuffer);
+
+        /**
+        * @brief Will query the OpenGL texture Id for the external texture used for a created external buffer.
+        *
+        * @param[in] display id of display which the buffer belongs to
+        * @param[in] externalBuffer id of buffer to query OpenGL texture ID for
+        * @param[out] textureGlId On success the OpenGL texture ID of the underlying external texture is written to this variable. On failure
+        *             the current value stored is not affected. The return value of the function must be checked for success before using this value.
+        * @return true for success, false otherwise, e.g., if the buffer was not created yet, failed creation or was already destroyed.
+        */
+        bool getExternalBufferGlId(displayId_t display, externalBufferId_t externalBuffer, uint32_t& textureGlId) const;
+
+        /**
         * @brief   Sets clear flags for a display buffer (display's framebuffer or offscreen buffer).
         * @details By default all display buffers' color, depth and stencil are cleared every frame when they are rendered to.
         *          This can be overridden for performance or special effect reasons.

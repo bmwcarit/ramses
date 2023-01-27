@@ -95,6 +95,20 @@ namespace ramses
             m_handler2.renderThreadLoopTimings(maximumLoopTime, averageLooptime);
         }
 
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+        virtual void externalBufferCreated(displayId_t displayId, externalBufferId_t externalBufferId, uint32_t textureGlId, ERendererEventResult result) override
+        {
+            m_handler1.externalBufferCreated(displayId, externalBufferId, textureGlId, result);
+            m_handler2.externalBufferCreated(displayId, externalBufferId, textureGlId, result);
+        }
+
+        virtual void externalBufferDestroyed(displayId_t displayId, externalBufferId_t externalBufferId, ERendererEventResult result) override
+        {
+            m_handler1.externalBufferDestroyed(displayId, externalBufferId, result);
+            m_handler2.externalBufferDestroyed(displayId, externalBufferId, result);
+        }
+#endif
+
     private:
         IRendererEventHandler& m_handler1;
         IRendererEventHandler& m_handler2;
@@ -132,6 +146,14 @@ namespace ramses
             m_handler1.offscreenBufferLinked(providerOffscreenBuffer, consumerScene, consumerId, result);
             m_handler2.offscreenBufferLinked(providerOffscreenBuffer, consumerScene, consumerId, result);
         }
+
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+        virtual void externalBufferLinked(externalBufferId_t providerExternalBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, bool result) override
+        {
+            m_handler1.externalBufferLinked(providerExternalBuffer, consumerScene, consumerId, result);
+            m_handler2.externalBufferLinked(providerExternalBuffer, consumerScene, consumerId, result);
+        }
+#endif
 
         virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool result) override
         {

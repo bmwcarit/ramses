@@ -67,6 +67,7 @@ function(add_abseil_scope)
     set(BUILD_TESTING OFF)
     ACME_CURRENT_FOLDER_PATH(folder_base)
     set(ABSL_IDE_FOLDER "${folder_base}/Abseil")
+    set(ABSL_PROPAGATE_CXX_STD ON)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-anon-enum-enum-conversion")
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13)
@@ -145,7 +146,7 @@ IF("${TARGET_OS}" STREQUAL "Integrity")
 ENDIF()
 
 # TODO (MacOS) find out why linking against the platform freetype doesn't work on Darwin
-IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")) 
+IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     SET(ramses-sdk_ALLOW_PLATFORM_FREETYPE OFF)
 ENDIF()
 
@@ -303,7 +304,7 @@ ENDIF()
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)
 
 # TODO (MacOS) find out why linking against the platform LZ4 doesn't work on Darwin
-IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")) 
+IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     SET(ramses-sdk_ALLOW_PLATFORM_LZ4 OFF)
 ENDIF()
 

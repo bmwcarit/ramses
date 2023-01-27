@@ -68,6 +68,11 @@ namespace ramses
         // IRendererSceneControlEventHandler
         virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override;
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
+
+#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
+        virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
+#endif
+
         virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
         virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
         virtual void objectsPicked(sceneId_t scene, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override;

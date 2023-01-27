@@ -126,15 +126,24 @@ public:
         , m_scene(scene)
     {
         const auto guiSceneId = imguiHelper.getScene()->getSceneId();
-        m_sceneControl->setSceneMapping(scene->getSceneId(), display);
+        if (scene)
+        {
+            m_sceneControl->setSceneMapping(scene->getSceneId(), display);
+        }
         m_sceneControl->setSceneMapping(guiSceneId, display);
-        m_sceneControl->setSceneState(scene->getSceneId(), ramses::RendererSceneState::Rendered);
+        if (scene)
+        {
+            m_sceneControl->setSceneState(scene->getSceneId(), ramses::RendererSceneState::Rendered);
+        }
         m_sceneControl->flush();
     }
 
     void apply() override
     {
-        m_imguiHelper.waitForSceneState(m_scene->getSceneId(), ramses::RendererSceneState::Rendered);
+        if (m_scene)
+        {
+            m_imguiHelper.waitForSceneState(m_scene->getSceneId(), ramses::RendererSceneState::Rendered);
+        }
         const auto guiSceneId = m_imguiHelper.getScene()->getSceneId();
         m_sceneControl->setSceneState(guiSceneId, ramses::RendererSceneState::Rendered);
         m_sceneControl->flush();

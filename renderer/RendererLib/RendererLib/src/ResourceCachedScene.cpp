@@ -388,6 +388,16 @@ namespace ramses_internal
         case TextureSampler::ContentType::StreamBuffer:
             m_deviceHandleCacheForTextures[sampler.asMemoryHandle()] = resourceAccessor.getStreamBufferDeviceHandle(StreamBufferHandle{ samplerData.contentHandle });
             return true;
+        case TextureSampler::ContentType::ExternalTexture:
+        {
+            if (samplerData.contentHandle == InvalidMemoryHandle)
+                m_deviceHandleCacheForTextures[sampler.asMemoryHandle()] = resourceAccessor.getEmptyExternalBufferDeviceHandle();
+            else
+                m_deviceHandleCacheForTextures[sampler.asMemoryHandle()] = resourceAccessor.getExternalBufferDeviceHandle(ExternalBufferHandle{ samplerData.contentHandle });
+
+            assert(m_deviceHandleCacheForTextures[sampler.asMemoryHandle()].isValid());
+            return true;
+        }
         case TextureSampler::ContentType::None:
             break;
         }

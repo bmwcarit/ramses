@@ -82,6 +82,9 @@ namespace ramses_internal
         virtual void             uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId) = 0;
         virtual void             unloadStreamBuffer(StreamBufferHandle bufferHandle) = 0;
 
+        virtual void             uploadExternalBuffer(ExternalBufferHandle bufferHandle) = 0;
+        virtual void             unloadExternalBuffer(ExternalBufferHandle bufferHandle) = 0;
+
         virtual const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const = 0;
     };
 }
