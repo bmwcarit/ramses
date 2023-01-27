@@ -361,65 +361,55 @@ endif()
 # MetalANGLE - Build for iOS and macOS Support only
 IF(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
 
-    # iOS Simulator Build
+    # MetalANGLE - iOS Simulator Build
     IF(${CMAKE_OSX_SYSROOT} MATCHES "iphonesimulator")
-        IF(EXISTS "${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-iphonesimulator.xcarchive")
-            ACME_INFO("MetalANGLE.framework found.")
-        ELSE()
-            ACME_INFO("MetalANGLE.framework not found, building now...")
-            execute_process(COMMAND "./ios/xcode/fetchDependencies.sh"
-                WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
-            execute_process(COMMAND xcodebuild archive
-                                        -project ios/xcode/OpenGLES.xcodeproj
-                                        -scheme MetalANGLE
-                                        -configuration Release
-                                        -destination "generic/platform=iOS Simulator"
-                                        -archivePath build/MetalANGLE.framework-iphonesimulator.xcarchive
-                                        SKIP_INSTALL=NO
-                                        BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
-                WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle" COMMAND_ERROR_IS_FATAL ANY)
-            ACME_INFO("MetalANGLE.framework build.")
-        ENDIF()       
-
-    # iOS Device Build
-    ELSE()
-        IF(EXISTS "${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-iphoneos.xcarchive")
-            ACME_INFO("MetalANGLE.framework found.")
-        ELSE()
-            ACME_INFO("MetalANGLE.framework not found, building now...")
-            execute_process(COMMAND "./ios/xcode/fetchDependencies.sh"
-                WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
-            execute_process(COMMAND xcodebuild archive
-                                        -project ios/xcode/OpenGLES.xcodeproj
-                                        -scheme MetalANGLE
-                                        -configuration Release
-                                        -destination "generic/platform=iOS"
-                                        -archivePath build/MetalANGLE.framework-iphoneos.xcarchive
-                                        SKIP_INSTALL=NO
-                                        BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
-                WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle" COMMAND_ERROR_IS_FATAL ANY)
-            ACME_INFO("MetalANGLE.framework build.")
-        ENDIF()
-      
-    ENDIF()
-
- # macOS Build
-ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    IF(EXISTS "${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-macos.xcarchive")
-        ACME_INFO("MetalANGLE.framework found.")
-    ELSE()
-        ACME_INFO("MetalANGLE.framework not found, building now...")
-        execute_process(COMMAND "./ios/xcode/fetchDependencies.sh"
+        SET(MetalANGLE_ARCHIVE "${CMAKE_BINARY_DIR}/MetalANGLE.xcarchive")
+        add_custom_command(OUTPUT "${MetalANGLE_ARCHIVE}"
+            COMMAND "./ios/xcode/fetchDependencies.sh"
+            COMMAND xcodebuild archive
+                    -project ios/xcode/OpenGLES.xcodeproj
+                    -scheme MetalANGLE
+                    -configuration Release
+                    -destination "generic/platform=iOS Simulator"
+                    -archivePath "${MetalANGLE_ARCHIVE}"
+                    SKIP_INSTALL=NO
+                    BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
             WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
-        execute_process(COMMAND xcodebuild archive
-                                    -project ios/xcode/OpenGLES.xcodeproj
-                                    -scheme MetalANGLE_mac
-                                    -configuration Release
-                                    -destination "generic/platform=OS X"
-                                    -archivePath build/MetalANGLE.framework-macos.xcarchive
-                                    SKIP_INSTALL=NO
-                                    BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
-            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle" COMMAND_ERROR_IS_FATAL ANY)
-        ACME_INFO("MetalANGLE.framework build.")
+        add_custom_target(MetalANGLE ALL
+            DEPENDS ${MetalANGLE_ARCHIVE})
+
+    # MetalANGLE - iOS Device Build
+    ELSE()
+        SET(MetalANGLE_ARCHIVE "${CMAKE_BINARY_DIR}/MetalANGLE.xcarchive")
+        add_custom_command(OUTPUT "${MetalANGLE_ARCHIVE}"
+            COMMAND "./ios/xcode/fetchDependencies.sh"
+            COMMAND xcodebuild archive
+                    -project ios/xcode/OpenGLES.xcodeproj
+                    -scheme MetalANGLE
+                    -configuration Release
+                    -destination "generic/platform=iOS"
+                    -archivePath "${MetalANGLE_ARCHIVE}"
+                    SKIP_INSTALL=NO
+                    BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
+            WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+        add_custom_target(MetalANGLE ALL
+            DEPENDS ${MetalANGLE_ARCHIVE})      
     ENDIF()
+
+# MetalANGLE - macOS Build
+ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    SET(MetalANGLE_ARCHIVE "${CMAKE_BINARY_DIR}/MetalANGLE.xcarchive")
+    add_custom_command(OUTPUT "${MetalANGLE_ARCHIVE}"
+        COMMAND "./ios/xcode/fetchDependencies.sh"
+        COMMAND xcodebuild archive
+                -project ios/xcode/OpenGLES.xcodeproj
+                -scheme MetalANGLE_mac
+                -configuration Release
+                -destination "generic/platform=OS X"
+                -archivePath "${MetalANGLE_ARCHIVE}"
+                SKIP_INSTALL=NO
+                BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
+        WORKING_DIRECTORY "${ramses-sdk_SOURCE_DIR}/external/metalangle")
+    add_custom_target(MetalANGLE ALL
+        DEPENDS ${MetalANGLE_ARCHIVE})
 ENDIF()

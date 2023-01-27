@@ -37,50 +37,16 @@ ELSEIF(TARGET_OS MATCHES "Linux" OR TARGET_OS MATCHES "Android")
         EGL_FOUND
     )
 
-ELSEIF(TARGET_OS MATCHES "Darwin")
+ELSEIF ((TARGET_OS MATCHES "Darwin") OR (TARGET_OS MATCHES "iOS"))
 
-    SET(EGL_INCLUDE_DIRS
-        ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
-    )   
+    SET(EGL_INCLUDE_DIRS "${ramses-sdk_SOURCE_DIR}/external/metalangle/include")   
 
-    FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
-        PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-macos.xcarchive/Products/Library/Frameworks/
-        NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-
-    IF(EGL_LIBRARIES)
-        SET(EGL_FOUND TRUE)
-    ENDIF()
+    SET(EGL_LIBRARIES "${CMAKE_BINARY_DIR}/MetalANGLE.xcarchive/Products/Library/Frameworks/MetalANGLE.framework")
+    SET(EGL_FOUND TRUE)
 
     MARK_AS_ADVANCED(
         EGL_INCLUDE_DIRS
         EGL_LIBRARIES
         EGL_FOUND
     )
-
-ELSEIF(TARGET_OS MATCHES "iOS")
-
-    SET(EGL_INCLUDE_DIRS
-        ${ramses-sdk_SOURCE_DIR}/external/MetalANGLE/include
-    )   
-   
-    IF(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
-        FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
-            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-iphonesimulator.xcarchive/Products/Library/Frameworks/
-            NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-    ELSE()
-        FIND_LIBRARY(EGL_LIBRARIES MetalANGLE
-            PATHS ${ramses-sdk_SOURCE_DIR}/external/metalangle/build/MetalANGLE.framework-iphoneos.xcarchive/Products/Library/Frameworks/
-            NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-    ENDIF()
-
-    IF(EGL_LIBRARIES)
-        SET(EGL_FOUND TRUE)
-    ENDIF()
-    
-    MARK_AS_ADVANCED(
-        EGL_INCLUDE_DIRS
-        EGL_LIBRARIES
-        EGL_FOUND
-    )
-
 ENDIF()

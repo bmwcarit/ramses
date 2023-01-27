@@ -50,12 +50,15 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
         ${RESOURCES}
     )
 
+    SET(EMBED_FRAMEWORKS ramses-shared-lib-ios-egl-es-3-0 "${OpenGL_LIBRARIES}")
     set_target_properties(ramses-renderer-ios-app PROPERTIES
         MACOSX_FRAMEWORK_IDENTIFIER com.bmw.ramses-renderer-ios-app
         XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
         XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@loader_path/Frameworks"
         XCODE_LINK_BUILD_PHASE_MODE KNOWN_LOCATION
         XCODE_ATTRIBUTE_SWIFT_OBJC_BRIDGING_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/ramses-renderer-ios-app-Bridging-Header.h"
+        XCODE_EMBED_FRAMEWORKS "${EMBED_FRAMEWORKS}"
+        XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY ON
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
         RESOURCE "${RESOURCES}"
     )

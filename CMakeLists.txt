@@ -214,6 +214,13 @@ ACME2_PROJECT(
 )
 
 #==========================================================================
+# iOS and macOS: Force MetalANGLE custom dependency build
+#==========================================================================
+
+add_dependencies(Context_EGL MetalANGLE)
+add_dependencies(Device_GL MetalANGLE)
+
+#==========================================================================
 # target: code style checker
 #==========================================================================
 include(cmake/ramses/addCheckerTargets.cmake)
