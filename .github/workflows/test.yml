@@ -21,6 +21,7 @@ jobs:
         target-platform: [host-os]
         os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
         type: [Debug, Release]
+        compiler: [default]
         include:
           - target-platform: iphoneos
             os: macos-12
@@ -32,6 +33,7 @@ jobs:
         exclude:
           - os: windows-2022
             type: Debug
+
     steps:
     - uses: actions/checkout@v3
       with:
@@ -47,53 +49,38 @@ jobs:
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
-    - name: Configure CMake (Windows)
+    - name: Configure CMake (${{matrix.os}} ${{matrix.compiler}} ${{matrix.type}} ${{matrix.target-platform}})
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        # This is needed because on the Windows Server 2019 build nodes of Github, the Perl installation
-        # exposes its libraries on the path and messes up CMake builds
-        restore_path=$PATH
-        echo "Path before: $PATH"
-        export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/c\/bin//')
-        export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/site\/bin//')
-        export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/bin//')
-        echo "Path after: $PATH"
+        cmake_args="-DCMAKE_BUILD_TYPE=${{ matrix.type }}"
 
-        # Limiting CMAKE_CONFIGURATION_TYPES for MSVC improves build time and reduces diskspace usage
-        cmake $GITHUB_WORKSPACE \
-            -DCMAKE_BUILD_TYPE=${{ matrix.type }} \
-            -DCMAKE_CONFIGURATION_TYPES=${{ matrix.type }}
-      if: ${{ contains(matrix.os, 'windows') }}
+        if [[ "${{matrix.compiler}}" == "clang"* ]]; then
+          cmake_args+=" -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
+          cmake_args+=" -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64_llvm.toolchain"
+        fi
 
-    - name: Configure CMake (Ubuntu 22.04 + Clang)
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        CC=clang CXX=clang++ cmake $GITHUB_WORKSPACE \
-            -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-      if: ${{ matrix.os == 'ubuntu-22.04' }}
+        if [[ "${{matrix.os}}" == "windows"* ]]; then
+            # This is needed because on the Windows Server 2019 build nodes of Github, the Perl installation
+            # exposes its libraries on the path and messes up CMake builds
+            echo "Path before: $PATH"
+            export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/c\/bin//')
+            export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/site\/bin//')
+            export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/bin//')
+            echo "Path after: $PATH"
 
-    - name: Configure CMake (Oldest Ubuntu + GCC)
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-      if: ${{ matrix.os == 'ubuntu-20.04' }}
-      
-    - name: Configure CMake (macOS)
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }}
-      if: ${{ matrix.os == 'macos-12' && matrix.target-platform == 'host-os' }}
+            # Limiting CMAKE_CONFIGURATION_TYPES for MSVC improves build time and reduces diskspace usage
+            cmake_args+=" -DCMAKE_CONFIGURATION_TYPES=${{ matrix.type }}"
+        fi
 
-    - name: Configure CMake (iOS)
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_SYSTEM_NAME=iOS -GXcode -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -DCMAKE_OSX_SYSROOT=${{ matrix.target-platform }}
-      if: ${{ matrix.os == 'macos-12' && (matrix.target-platform == 'iphoneos' || matrix.target-platform == 'iphonesimulator') }}
+        if [[ "${{matrix.target-platform}}" == "iphone"* ]]; then
+            cmake_args+=" -GXcode"
+            cmake_args+=" -DCMAKE_OSX_SYSROOT=${{ matrix.target-platform }}"
+            cmake_args+=" -DCMAKE_SYSTEM_NAME=iOS"
+            cmake_args+=" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO"
+        fi
+
+        cmake $GITHUB_WORKSPACE ${cmake_args}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -104,5 +91,5 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
-      # Tests cannot be executed on iOS, will only be executed if not cross-compiling for a different platform 
+      # Tests cannot be executed on iOS, will only be executed if not cross-compiling for a different platform
       if: ${{ matrix.target-platform == 'host-os'  }}
