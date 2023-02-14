@@ -31,7 +31,6 @@
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/EDataSlotType.h"
 #include "SceneAPI/TextureSampler.h"
-#include "AnimationAPI/IAnimationSystem.h"
 #include "Resource/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 
@@ -60,10 +59,7 @@ namespace ramses
     class Node;
     class Effect;
     class MeshNode;
-    class AnimationSystem;
-    class AnimationSystemRealTime;
     class GeometryBinding;
-    class AnimationSystemImpl;
     class AttributeInput;
     class NodeImpl;
     class RenderGroup;
@@ -229,9 +225,6 @@ namespace ramses
         status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t id);
         status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t id);
 
-        AnimationSystem*         createAnimationSystem(uint32_t flags, const char* name);
-        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags, const char* name);
-
         ArrayBuffer*             createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name);
         ArrayBufferImpl*         createArrayBufferImpl(EDataType dataType, uint32_t numElements, const char* name);
 
@@ -321,7 +314,6 @@ namespace ramses
         RenderPass* createRenderPassInternal(const char* name);
         void registerCreatedObject(SceneObject& object);
         void registerCreatedResourceObject(Resource& resource);
-        AnimationSystemImpl& createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name);
 
         void removeAllDataSlotsForNode(const Node& node);
 
@@ -339,7 +331,6 @@ namespace ramses
         status_t destroyCamera(Camera& camera);
         status_t destroyRenderGroup(RenderGroup& group);
         status_t destroyMeshNode(MeshNode& mesh);
-        status_t destroyAnimationSystem(AnimationSystem& animationSystem);
         status_t destroyNode(Node& node);
         status_t destroyDataObject(DataObject& dataObject);
         status_t destroyResource(Resource& resource);

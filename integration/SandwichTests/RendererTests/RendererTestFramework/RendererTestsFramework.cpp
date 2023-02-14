@@ -219,12 +219,6 @@ void RendererTestsFramework::removeDataLink(ramses::sceneId_t consumerScene, ram
     m_testRenderer.removeDataLink(consumerScene, consumerTag);
 }
 
-void RendererTestsFramework::setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx)
-{
-    assert(testDisplayIdx < m_displays.size());
-    m_testRenderer.updateWarpingMeshData(m_displays[testDisplayIdx].displayId, meshData);
-}
-
 void RendererTestsFramework::setClearFlags(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, uint32_t clearFlags)
 {
     assert(testDisplayIdx < m_displays.size());
@@ -493,12 +487,6 @@ bool RendererTestsFramework::applyRendererAndDisplaysConfigurationForTest(const 
 
         if (displayId == ramses::displayId_t::Invalid())
             return false;
-
-        if (displayConfig.impl.getInternalDisplayConfig().isWarpingEnabled())
-        {
-            // Use default test warping mesh for render tests using warped display
-            m_testRenderer.updateWarpingMeshData(displayId, RendererTestUtils::CreateTestWarpingMesh());
-        }
     }
     m_forceDisplaysReinitForNextTestCase = false;
 

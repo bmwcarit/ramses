@@ -11,7 +11,6 @@
 
 #include "framework_common_gmock_header.h"
 #include "Scene/ActionCollectingScene.h"
-#include "Scene/SceneActionApplierHelper.h"
 
 namespace ramses_internal
 {
@@ -279,13 +278,6 @@ namespace ramses_internal
         virtual bool                        isSceneReferenceAllocated       (SceneReferenceHandle handle) const override final;
         virtual UInt32                      getSceneReferenceCount          () const override final;
         virtual const SceneReference&       getSceneReference               (SceneReferenceHandle handle) const override final;
-        //Animation system
-        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle animSystemHandle = AnimationSystemHandle::Invalid()) override;
-        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
-        virtual IAnimationSystem*           getAnimationSystem              (AnimationSystemHandle animSystemHandle) override;
-        virtual const IAnimationSystem*     getAnimationSystem              (AnimationSystemHandle animSystemHandle) const override;
-        virtual bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override;
-        virtual UInt32                      getAnimationSystemCount         () const override;
 
         void flushPendingSceneActions();
 
@@ -295,8 +287,6 @@ namespace ramses_internal
     private:
         // Internal scene which holds the actual scene content; all getters are redirected to m_scene
         const Scene m_scene;
-        // Redirects scene actions to m_scene
-        SceneActionApplierHelper m_actionApplier;
         // Converts IScene calls to actions, collects them and applies to m_actionApplier, which applies them on m_scene
         ActionCollectingScene m_actionCollector;
     };

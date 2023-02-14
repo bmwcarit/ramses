@@ -38,7 +38,7 @@ namespace ramses
             , scene(*client.createScene(sceneId_t{ 0xf00 }))
             , otherScene(*client.createScene(sceneId_t{ 0xf00b42 }))
             , rdp(RamsesHMIUtils::GetResourceDataPoolForClient(client))
-            , helper(&scene, nullptr, &client)
+            , helper(&scene, &client)
         {
             brokenEffectDesc.setVertexShader("#version 100\n"
                 "attribute float inp;\n"

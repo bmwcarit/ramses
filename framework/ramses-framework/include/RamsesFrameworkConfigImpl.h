@@ -10,13 +10,14 @@
 #define RAMSES_RAMSESFRAMEWORKCONFIGIMPL_H
 
 #include "StatusObjectImpl.h"
-#include "SOMEIPICConfig.h"
 #include "TCPConfig.h"
-#include "Utils/CommandLineParser.h"
+#include "Utils/RamsesLogger.h"
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
+#include "ramses-framework-api/EFeatureLevel.h"
 #include "ThreadWatchdogConfig.h"
 #include "TransportCommon/EConnectionProtocol.h"
 #include "Collections/Guid.h"
+#include "CLI/CLI.hpp"
 
 namespace ramses
 {
@@ -25,7 +26,13 @@ namespace ramses
     public:
         RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv);
         ~RamsesFrameworkConfigImpl();
-        const ramses_internal::CommandLineParser& getCommandLineParser() const;
+
+        void registerOptions(CLI::App& cli);
+
+        const ramses_internal::String& getProgramName() const;
+
+        status_t setFeatureLevel(EFeatureLevel featureLevel);
+        EFeatureLevel getFeatureLevel() const;
 
         status_t enableDLTApplicationRegistration(bool state);
         bool getDltApplicationRegistrationEnabled() const;
@@ -39,42 +46,37 @@ namespace ramses
         uint32_t getProtocolVersion() const;
         void enableProtocolVersionOffset();
 
-        status_t enableSomeIPCommunication(uint32_t ramsesCommunicationUserID);
         status_t setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread, uint32_t interval);
         status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
 
         status_t setRequestedRamsesShellType(ERamsesShellType shellType);
 
         ramses_internal::EConnectionProtocol getUsedProtocol() const;
-        uint32_t getSomeipCommunicationUserID() const;
         uint32_t getWatchdogNotificationInterval(ERamsesThreadIdentifier thread) const;
         IThreadWatchdogNotification* getWatchdogNotificationCallback() const;
 
         void setPeriodicLogsEnabled(bool enabled);
         ramses_internal::Guid getUserProvidedGuid() const;
 
-        SOMEIPICConfig   m_someipICConfig;
-        bool             m_enableSomeIPHUSafeLocalMode;
         TCPConfig        m_tcpConfig;
         ERamsesShellType m_shellType;
         ramses_internal::ThreadWatchdogConfig m_watchdogConfig;
         bool m_periodicLogsEnabled;
-        std::chrono::milliseconds someipKeepAliveInterval{500};
-        std::chrono::milliseconds someipKeepAliveTimeout{2500};
+
+        ramses_internal::RamsesLoggerConfig loggerConfig;
+        uint32_t periodicLogTimeout = 2u;
+
+        void setFeatureLevelNoCheck(EFeatureLevel featureLevel);
 
     private:
-        RamsesFrameworkConfigImpl();
-
-        void parseCommandLine();
-
+        EFeatureLevel m_featureLevel = EFeatureLevel_01;
         ramses_internal::EConnectionProtocol m_usedProtocol;
-        uint32_t m_someipCommunicationUserID;
-        ramses_internal::CommandLineParser m_parser;
+        ramses_internal::String m_programName;
         bool m_enableDltApplicationRegistration = true;
-        ramses_internal::String m_dltAppID;
-        ramses_internal::String m_dltAppDescription;
         bool m_enableProtocolVersionOffset;
         ramses_internal::Guid m_userProvidedGuid;
+        bool m_dltAppIdSet = false;
+        bool m_dltDescriptionSet = false;
     };
 }
 

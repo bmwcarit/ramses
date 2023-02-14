@@ -31,103 +31,40 @@ namespace ramses_internal
             UpdateStreamTextures,
             UpdateScenesToBeMapped,
             UpdateResourceCache,
-            UpdateAnimations,
             UpdateTransformations,
             UpdateDataLinks,
             HandleDisplayEvents,
             DrawScenes,
             SwapBuffersAndNotifyClients,
-            MaxFramerateSleep, // do not use this directly with startRegion/stopRegion, its handled internally
+            MaxFramerateSleep, // do not use this directly with startRegion/endRegion, it is handled internally
             Count
         };
-
-        /*  Regions measure the execution time of marked pieces of code
-
-            For example with 3 different regions per frame the internal data would looks like this:
-            The horizontal axis represents all previous measured frames and the vertical axis the accumulated times for each region.
-            The first entry for each frame represents the base time of zero.
-            The region must be executed in increasing order of their position in the enum ERegion.
-
-            Frame           1   2   3   4   5   6   ...
-
-            Region  2       8   9  10   8   9   7   ...
-                    1       5   7   6   5   4   5   ...
-                    0       2   1   3   2   1   3   ...
-                            0   0   0   0   0   0   ...
-
-            The major benefit of this data layout is the directly usage as a vertex buffer for rendering the region times. No conversion is necessary.
-        */
-
-        enum class ECounter
-        {
-            DrawCalls = 0,
-            AppliedSceneActions,
-            UsedGPUMemory,
-            Count
-        };
-
-        /* Counters are simple values changing over each frame like draw calls or memory usage
-
-            Frame           1   2   3   4   5   6   ...
-
-            Counter value   0   9   5   0   9   0   ...
-
-            This counter value data is directly used as vertex buffer for rendering the counter graphs.
-        */
-
-        static const UInt32 NumberOfFrames = 600u;
-        static const UInt NumberOfRegions = static_cast<UInt>(ERegion::Count);
-        static const UInt NumberOfCounters = static_cast<UInt>(ECounter::Count);
-
-        // one additional region acting as base time for one frame, its always zero and crucial for rendering a stacked time line
-        static const UInt NumberOfEntries = NumberOfRegions + 1;
-
 
         FrameProfilerStatistics();
 
         void startRegion(ERegion region);
         void endRegion(ERegion region);
 
-        using RegionTimings = std::vector<Float>;
-        const RegionTimings& getRegionTimings() const;
-
-        void setCounterValue(ECounter counter, UInt32 value);
-
-        using CounterValues = std::vector<Float>;
-        const CounterValues& getCounterValues(ECounter counter) const;
-
-        // only shows the chosen combination of ERegions
-        void setFilteredRegionFlags(UInt32 regionFlags);
-
-        void markFrameFinished(std::chrono::microseconds sleepTime);
-        UInt32 getCurrentFrameId() const;
+        void markFrameFinished(std::chrono::microseconds prevFrameSleepTime);
 
         void writeLongestFrameTimingsToStream(StringOutputStream& str) const;
         void resetFrameTimings();
 
     private:
-        UInt getEntryIdForCurrentRegion() const;
         void initNextFrameTimings();
-        void setSleepTimeForLastFrame(std::chrono::microseconds sleepTime);
+        void setSleepTimeForPreviousFrame(std::chrono::microseconds prevFrameSleepTime);
 
         using RegionTimes = std::vector<UInt64>;
         RegionTimes m_regionStartTimes;
-
-        // region measurements in a circular buffer holding last NumberOfFrames data
-        // this data can be directly used for overlay profiler rendering
-        RegionTimings m_accumulatedRegionTimes;
 
         // region measurements for periodic logging
         // these are reset every period
         std::vector<UInt> m_frameTimings;
 
-        using Counters = std::vector<CounterValues>;
-        Counters m_counters;
-
-        UInt32 m_currentFrameId;
         UInt m_currentRegionId;
 
-        UInt32 m_filteredRegionFlags = ~0u;
+        static const uint32_t NumberOfRegions = static_cast<uint32_t>(ERegion::Count);
+        static const uint32_t NumberOfFrames = 600u;
     };
 
     class ScopedFrameProfilerRegion
@@ -164,7 +101,6 @@ namespace ramses_internal
         "UpdateScenesToBeMapped",
         "UpdateResourceCache",
         "UpdateAnimations",
-        "UpdateTransformations",
         "UpdateDataLinks",
         "HandleDisplayEvents",
         "DrawScenes",

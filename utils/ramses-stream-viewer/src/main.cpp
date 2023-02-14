@@ -17,10 +17,6 @@
 
 #include <Utils/CommandLineParser.h>
 #include <Utils/Argument.h>
-#include "RendererLib/RendererConfigUtils.h"
-#include "ramses-framework-api/IDcsmConsumerEventHandler.h"
-#include "ramses-framework-api/DcsmMetadataUpdate.h"
-#include "ramses-framework-api/DcsmConsumer.h"
 
 #include <thread>
 #include <vector>
@@ -237,99 +233,15 @@ private:
     StreamSourceViewer& m_sceneCreator;
 };
 
-class DcsmConsumerEventHandler: public ramses::IDcsmConsumerEventHandler
-{
-public:
-    DcsmConsumerEventHandler(StreamSourceViewer& sceneCreator, ramses::DcsmConsumer& dcsmConsumer, uint32_t displayWidth, uint32_t displayHeight)
-        : m_sceneCreator(sceneCreator)
-        , m_dcsmConsumer(dcsmConsumer)
-        , m_displayWidth(displayWidth)
-        , m_displayHeight(displayHeight)
-    {
-    }
-
-    virtual void contentOffered(ramses::ContentID contentID, ramses::Category /*category*/, ramses::ETechnicalContentType contentType) override
-    {
-        if (contentType == ramses::ETechnicalContentType::WaylandIviSurfaceID)
-        {
-            ramses::CategoryInfoUpdate update{ { m_displayWidth, m_displayHeight }, { 0, 0, m_displayWidth, m_displayHeight } };
-            m_dcsmConsumer.assignContentToConsumer(contentID, update);
-            m_dcsmConsumer.contentStateChange(contentID, ramses::EDcsmState::Ready, ramses::AnimationInformation());
-        }
-    }
-
-
-    virtual void contentDescription(ramses::ContentID contentID, ramses::TechnicalContentDescriptor contentDescriptor) override
-    {
-        contentToWaylandSurfaceIdMap[contentID] = ramses::waylandIviSurfaceId_t(static_cast<uint32_t>(contentDescriptor.getValue()));
-    }
-
-
-    virtual void contentReady(ramses::ContentID contentID) override
-    {
-        auto contentIt = contentToWaylandSurfaceIdMap.find(contentID);
-        if (contentIt != contentToWaylandSurfaceIdMap.end())
-        {
-            std::cout << std::endl << "Going to show content id" << contentID.getValue() << " (wayland surface id " << contentIt->second.getValue() << ")" << std::endl;
-            m_dcsmConsumer.contentStateChange(contentID, ramses::EDcsmState::Shown, ramses::AnimationInformation());
-            m_sceneCreator.createMesh(contentIt->second);
-        }
-    }
-
-    virtual void contentEnableFocusRequest(ramses::ContentID /*contentID*/, int32_t /*focusRequest*/) override
-    {
-    }
-
-    virtual void contentDisableFocusRequest(ramses::ContentID /*contentID*/, int32_t /*focusRequest*/) override
-    {
-    }
-
-    virtual void contentStopOfferRequest(ramses::ContentID contentID) override
-    {
-        m_dcsmConsumer.acceptStopOffer(contentID, ramses::AnimationInformation());
-        removeContent(contentID);
-    }
-
-    virtual void forceContentOfferStopped(ramses::ContentID contentID) override
-    {
-        removeContent(contentID);
-    }
-
-    virtual void contentMetadataUpdated(ramses::ContentID /*contentID*/, const ramses::DcsmMetadataUpdate& /*metadataUpdate*/) override
-    {
-    }
-
-private:
-    void removeContent(ramses::ContentID contentID)
-    {
-        auto contentIt = contentToWaylandSurfaceIdMap.find(contentID);
-        if (contentIt != contentToWaylandSurfaceIdMap.end())
-        {
-            m_sceneCreator.removeMesh(contentIt->second);
-            contentToWaylandSurfaceIdMap.erase(contentIt);
-        }
-    }
-
-private:
-    StreamSourceViewer& m_sceneCreator;
-    ramses::DcsmConsumer& m_dcsmConsumer;
-    std::unordered_map<ramses::ContentID, ramses::waylandIviSurfaceId_t> contentToWaylandSurfaceIdMap;
-    uint32_t m_displayWidth;
-    uint32_t m_displayHeight;
-};
-
 int main(int argc, char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
     ramses_internal::ArgumentBool      helpRequested(parser, "help", "help");
     ramses_internal::ArgumentFloat     maxFps(parser, "fps", "framesPerSecond", 60.0f);
-    ramses_internal::ArgumentBool      dcsmSupportRequested(parser, "dcsm", "dcsm", "if option is set stream content is only displayed if also a matching DCSM request is sent to the stream viewer");
     ramses_internal::ArgumentBool      flipY(parser, "y", "flip-y", "flip received stream vertically (on y-axis)");
 
     if (helpRequested)
     {
-        ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
-        std::cout << dcsmSupportRequested.getHelpString();
         std::cout << maxFps.getHelpString();
         std::cout << flipY.getHelpString();
         return 0;
@@ -359,50 +271,25 @@ int main(int argc, char* argv[])
     const ramses::displayId_t display = renderer->createDisplay(displayConfig);
     renderer->flush();
 
-
-    if (dcsmSupportRequested)
-        framework.connect();
-
     const ramses::sceneId_t sceneId{1u};
     int32_t x;
     int32_t y;
     uint32_t width;
     uint32_t height;
     displayConfig.getWindowRectangle(x, y, width, height);
-    StreamSourceViewer sceneCreator(*ramsesClient, sceneId, flipY,
-                                    dcsmSupportRequested ? ramses::EScenePublicationMode_LocalAndRemote : ramses::EScenePublicationMode_LocalOnly,
-                                    width, height);
+    StreamSourceViewer sceneCreator(*ramsesClient, sceneId, flipY, ramses::EScenePublicationMode_LocalOnly, width, height);
 
     sceneControlAPI->setSceneMapping(sceneId, display);
     sceneControlAPI->setSceneState(sceneId, ramses::RendererSceneState::Rendered);
     sceneControlAPI->flush();
 
-    std::unique_ptr<RendererSceneControlEventHandler> eventHandler;
-    ramses::DcsmConsumer* dcsmConsumer = nullptr;
-    std::unique_ptr<DcsmConsumerEventHandler> dcsmConsumerEventHandler;
-
-    if (dcsmSupportRequested)
-    {
-        dcsmConsumer = framework.createDcsmConsumer();
-        dcsmConsumerEventHandler = std::make_unique<DcsmConsumerEventHandler>(sceneCreator, *dcsmConsumer, width, height);
-    }
-    else
-    {
-        eventHandler = std::make_unique<RendererSceneControlEventHandler>(sceneCreator);
-    }
+    auto eventHandler = std::make_unique<RendererSceneControlEventHandler>(sceneCreator);
 
     RendererEventHandler rendererEventHandler;
     while (!rendererEventHandler.isWindowClosed())
     {
         renderer->dispatchEvents(rendererEventHandler);
+        sceneControlAPI->dispatchEvents(*eventHandler);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        if (dcsmSupportRequested)
-        {
-            dcsmConsumer->dispatchEvents(*dcsmConsumerEventHandler);
-        }
-        else
-        {
-            sceneControlAPI->dispatchEvents(*eventHandler);
-        }
     }
 }

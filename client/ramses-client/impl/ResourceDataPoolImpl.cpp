@@ -23,6 +23,7 @@
 #include "ResourceImpl.h"
 #include "RamsesClientTypesImpl.h"
 #include "Components/FileInputStreamContainer.h"
+#include "RamsesFrameworkImpl.h"
 
 namespace ramses
 {
@@ -126,7 +127,7 @@ namespace ramses
         }
 
         const ramses_internal::String fileInfo = ramses_internal::String("resource data file '") + filename + ramses_internal::String("'");
-        if (!RamsesClientImpl::ReadRamsesVersionAndPrintWarningOnMismatch(inputStream, fileInfo))
+        if (!RamsesClientImpl::ReadRamsesVersionAndPrintWarningOnMismatch(inputStream, fileInfo, m_client.getFramework().getFeatureLevel()))
         {
             LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addResourceDataFile '" << filename << "' failed, file is invalid");
             return false;
@@ -239,7 +240,7 @@ namespace ramses
             return false;
         }
 
-        RamsesClientImpl::WriteCurrentBuildVersionToStream(resourceDataFileOutStream);
+        RamsesClientImpl::WriteCurrentBuildVersionToStream(resourceDataFileOutStream, m_client.getFramework().getFeatureLevel());
 
         ramses_internal::UInt offsetDataStart = 0;
         if (!resourceDataFileOut.getPos(offsetDataStart))

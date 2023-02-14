@@ -25,7 +25,6 @@
 #include "SceneAPI/BlitPass.h"
 #include "SceneAPI/PickableObject.h"
 #include "SceneAPI/SceneReference.h"
-#include "AnimationAPI/IAnimationSystem.h"
 
 #include "Scene/TopologyNode.h"
 #include "Scene/TopologyTransform.h"
@@ -66,7 +65,6 @@ namespace ramses_internal
         using TextureBufferMemoryPool   = MEMORYPOOL<TextureBuffer      , TextureBufferHandle>;
         using DataSlotMemoryPool        = MEMORYPOOL<DataSlot           , DataSlotHandle>;
         using SceneReferenceMemoryPool  = MEMORYPOOL<SceneReference     , SceneReferenceHandle>;
-        using AnimationSystemMemoryPool = MEMORYPOOL<IAnimationSystem*  , AnimationSystemHandle>;
 
         explicit SceneT(const SceneInfo& sceneInfo = SceneInfo());
         virtual ~SceneT() override;
@@ -226,15 +224,6 @@ namespace ramses_internal
         virtual const TextureSampler&       getTextureSampler               (TextureSamplerHandle handle) const override final;
         const TextureSamplerMemoryPool&         getTextureSamplers              () const;
 
-        //Animation system
-        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) override;
-        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
-        virtual IAnimationSystem*           getAnimationSystem              (AnimationSystemHandle animSystemHandle) override final;
-        virtual const IAnimationSystem*     getAnimationSystem              (AnimationSystemHandle animSystemHandle) const override final;
-        virtual bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override final;
-        virtual UInt32                      getAnimationSystemCount         () const override final;
-        const AnimationSystemMemoryPool&    getAnimationSystems             () const;
-
         // Render groups
         virtual RenderGroupHandle       allocateRenderGroup             (UInt32 renderableCount = 0u, UInt32 nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
         virtual void                    releaseRenderGroup              (RenderGroupHandle groupHandle) override;
@@ -384,7 +373,6 @@ namespace ramses_internal
         TextureBufferMemoryPool     m_textureBuffers;
         DataSlotMemoryPool          m_dataSlots;
         SceneReferenceMemoryPool    m_sceneReferences;
-        AnimationSystemMemoryPool   m_animationSystems;
 
         const String                m_name;
         const SceneId               m_sceneId;
@@ -484,12 +472,6 @@ namespace ramses_internal
     inline bool SceneT<MEMORYPOOL>::isPickableObjectAllocated(PickableObjectHandle pickableHandle) const
     {
         return m_pickableObjects.isAllocated(pickableHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    inline bool SceneT<MEMORYPOOL>::isAnimationSystemAllocated(AnimationSystemHandle handle) const
-    {
-        return m_animationSystems.isAllocated(handle);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -621,13 +603,6 @@ namespace ramses_internal
     const typename SceneT<MEMORYPOOL>::TextureSamplerMemoryPool& SceneT<MEMORYPOOL>::getTextureSamplers() const
     {
         return m_textureSamplers;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    inline
-    const typename SceneT<MEMORYPOOL>::AnimationSystemMemoryPool& SceneT<MEMORYPOOL>::getAnimationSystems() const
-    {
-        return m_animationSystems;
     }
 
     template <template<typename, typename> class MEMORYPOOL>

@@ -70,7 +70,7 @@ namespace ramses_internal
         EXPECT_TRUE((second - first) > std::chrono::milliseconds(40));
     }
 
-#if !defined(RAMSES_LINUX_USE_DEV_PTP) && !defined(__INTEGRITY)
+#if !defined(RAMSES_LINUX_USE_DEV_PTP)
     // no ptp support: test synchroized time is system_clock
     TEST(PlatformTimeSynchronized, non_ptp_behavesAsSystemClock)
     {

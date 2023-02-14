@@ -97,9 +97,6 @@ namespace ramses_internal
         virtual TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
         virtual void                        releaseTextureSampler           (TextureSamplerHandle handle) override;
 
-        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) override;
-        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
-
         // Render groups
         virtual RenderGroupHandle           allocateRenderGroup             (UInt32 renderableCount = 0u, UInt32 nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
         virtual void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;

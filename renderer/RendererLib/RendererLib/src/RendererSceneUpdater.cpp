@@ -6,7 +6,6 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Animation/AnimationSystemFactory.h"
 #include "Scene/SceneActionApplier.h"
 #include "Scene/ResourceChanges.h"
 #include "SceneUtils/ResourceUtils.h"
@@ -63,7 +62,6 @@ namespace ramses_internal
         , m_frameTimer(frameTimer)
         , m_expirationMonitor(expirationMonitor)
         , m_rendererResourceCache(rendererResourceCache)
-        , m_animationSystemFactory(EAnimationSystemOwner_Renderer)
         , m_notifier(notifier)
     {
     }
@@ -133,9 +131,9 @@ namespace ramses_internal
 
             m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_display);
 
-            LOG_INFO_P(CONTEXT_RENDERER, "Created display: {}x{}{}{} MSAA{}",
+            LOG_INFO_P(CONTEXT_RENDERER, "Created display: {}x{}{} MSAA{}",
                 displayController.getDisplayWidth(), displayController.getDisplayHeight(), (displayConfig.getFullscreenState() ? " fullscreen" : ""),
-                (displayConfig.isWarpingEnabled() ? " warped" : ""), displayConfig.getAntialiasingSampleCount());
+                displayConfig.getAntialiasingSampleCount());
         }
         else
             m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreateFailed, m_display);
@@ -257,9 +255,8 @@ namespace ramses_internal
 
         {
             m_renderer.m_traceId = 9;
-            LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update renderer animations");
-            FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateAnimations);
-            updateScenesRendererAnimations();
+            LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update shader animations");
+            updateScenesShaderAnimations();
         }
 
         {
@@ -519,8 +516,6 @@ namespace ramses_internal
 
     void RendererSceneUpdater::tryToApplyPendingFlushes()
     {
-        UInt32 numActionsAppliedForStatistics = 0;
-
         // check and try to apply pending flushes
         for(const auto& rendererScene : m_rendererScenes)
         {
@@ -528,15 +523,11 @@ namespace ramses_internal
             StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneID);
 
             if (!stagingInfo.pendingData.pendingFlushes.empty())
-            {
-                numActionsAppliedForStatistics += updateScenePendingFlushes(sceneID, stagingInfo);
-            }
+                updateScenePendingFlushes(sceneID, stagingInfo);
         }
-
-        m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::AppliedSceneActions, numActionsAppliedForStatistics);
     }
 
-    UInt32 RendererSceneUpdater::updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo)
+    void RendererSceneUpdater::updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo)
     {
         const ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneID);
         const Bool sceneIsRenderedOrRequested = (sceneState == ESceneState::Rendered || sceneState == ESceneState::RenderRequested); // requested can become rendered still in this frame
@@ -565,22 +556,19 @@ namespace ramses_internal
         if (canApplyFlushes)
         {
             stagingInfo.pendingData.allPendingFlushesApplied = true;
-            return applyPendingFlushes(sceneID, stagingInfo);
+            applyPendingFlushes(sceneID, stagingInfo);
         }
         else
             m_renderer.getStatistics().flushBlocked(sceneID);
-
-        return 0;
     }
 
-    UInt32 RendererSceneUpdater::applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo)
+    void RendererSceneUpdater::applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo)
     {
         auto& rendererScene = const_cast<RendererCachedScene&>(m_rendererScenes.getScene(sceneID));
         rendererScene.preallocateSceneSize(stagingInfo.sizeInformation);
 
         PendingData& pendingData = stagingInfo.pendingData;
         PendingFlushes& pendingFlushes = pendingData.pendingFlushes;
-        UInt numActionsApplied = 0u;
         for (auto& pendingFlush : pendingFlushes)
         {
             const auto hadActiveShaderAnimation = rendererScene.hasActiveShaderAnimation();
@@ -595,8 +583,6 @@ namespace ramses_internal
                 rendererScene.setEffectTimeSync(pendingFlush.timeInfo.internalTimestamp);
             }
             applySceneActions(rendererScene, pendingFlush);
-
-            numActionsApplied += pendingFlush.sceneActions.numberOfActions();
 
             if (pendingFlush.versionTag.isValid())
             {
@@ -625,8 +611,6 @@ namespace ramses_internal
             assert(m_sceneReferenceLogic);
             m_sceneReferenceLogic->addActions(sceneID, pendingData.sceneReferenceActions);
         }
-
-        return static_cast<UInt32>(numActionsApplied);
     }
 
     void RendererSceneUpdater::processStagedResourceChangesFromAppliedFlushes()
@@ -948,7 +932,7 @@ namespace ramses_internal
         const UInt32 numActions = actionsForScene.numberOfActions();
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:" << numActions << "] for scene with id " << scene.getSceneId());
 
-        SceneActionApplier::ApplyActionsOnScene(scene, actionsForScene, &m_animationSystemFactory);
+        SceneActionApplier::ApplyActionsOnScene(scene, actionsForScene);
 
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id " << scene.getSceneId());
     }
@@ -1675,42 +1659,15 @@ namespace ramses_internal
         return true;
     }
 
-    void RendererSceneUpdater::updateScenesRendererAnimations()
+    void RendererSceneUpdater::updateScenesShaderAnimations()
     {
-        const UInt64 systemTime = PlatformTime::GetMillisecondsAbsolute();
-        const UInt64 ptpTime    = PlatformTime::GetMillisecondsSynchronized();
-
         for (const auto& scene : m_rendererScenes)
         {
             const SceneId sceneID = scene.key;
             if (m_sceneStateExecutor.getSceneState(sceneID) == ESceneState::Rendered)
             {
-                RendererCachedScene& renderScene = m_rendererScenes.getScene(sceneID);
-                for (auto handle = AnimationSystemHandle(0); handle < renderScene.getAnimationSystemCount(); ++handle)
-                {
-                    if (renderScene.isAnimationSystemAllocated(handle))
-                    {
-                        IAnimationSystem* animationSystem = renderScene.getAnimationSystem(handle);
-                        if (animationSystem->isRealTime())
-                        {
-                            if (animationSystem->useSynchronizedClock())
-                            {
-                                animationSystem->setTime(ptpTime);
-                            }
-                            else
-                            {
-                                animationSystem->setTime(systemTime);
-                            }
-
-                            if (animationSystem->hasActiveAnimations())
-                                m_modifiedScenesToRerender.put(sceneID);
-                        }
-                    }
-                }
-                if (renderScene.hasActiveShaderAnimation())
-                {
+                if (scene.value.scene->hasActiveShaderAnimation())
                     m_modifiedScenesToRerender.put(sceneID);
-                }
             }
         }
     }

@@ -75,15 +75,6 @@ namespace ramses_internal
 
     void DisplayThread::run()
     {
-#ifdef __ghs__
-#   ifdef RAMSES_RENDER_THREAD_PRIORITY
-        setThreadPriorityIntegrity(RAMSES_RENDER_THREAD_PRIORITY, "display thread");
-#   endif
-#   ifdef RAMSES_RENDER_THREAD_CORE_BINDING
-        setThreadCoreBindingIntegrity(RAMSES_RENDER_THREAD_CORE_BINDING, "display thread");
-#   endif
-#endif
-
         ThreadLocalLog::SetPrefix(static_cast<int>(m_displayHandle.asMemoryHandle()));
 
         std::chrono::milliseconds lastLoopSleepTime{ 0u };

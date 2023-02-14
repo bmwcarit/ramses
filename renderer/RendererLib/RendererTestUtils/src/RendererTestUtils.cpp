@@ -8,7 +8,6 @@
 
 #include "RendererTestUtils.h"
 #include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/WarpingMeshData.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "RamsesRendererImpl.h"
 #include "DisplayConfigImpl.h"
@@ -179,27 +178,6 @@ ramses::DisplayConfig RendererTestUtils::CreateTestDisplayConfig(uint32_t iviSur
         displayConfig.setWindowIviVisible();
 
     return displayConfig;
-}
-
-const ramses::WarpingMeshData& RendererTestUtils::CreateTestWarpingMesh()
-{
-    const uint16_t indices[6] = { 0, 1, 2, 2, 1, 3 };
-    const float trapezoidVertices[12] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        -1.5f, 1.2f, 0.0f,
-        1.5f, 1.2f, 0.0f
-    };
-    const float textureCoordinates[8] = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f
-    };
-
-    static const ramses::WarpingMeshData testWarpingMesh(6, indices, 4, trapezoidVertices, textureCoordinates);
-
-    return testWarpingMesh;
 }
 
 Image RendererTestUtils::ReadPixelData(

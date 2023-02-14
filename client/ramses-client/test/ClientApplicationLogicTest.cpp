@@ -183,7 +183,7 @@ class AClientApplicationLogicWithRealComponents : public ::testing::Test
 public:
     AClientApplicationLogicWithRealComponents()
         : resComp(stats, fwlock)
-        , sceneComp(clientId, commSystem, connStatusUpdateNotifier, resComp, fwlock)
+        , sceneComp(clientId, commSystem, connStatusUpdateNotifier, resComp, fwlock, ramses::EFeatureLevel_Latest)
         , logic(clientId, fwlock)
     {
         logic.init(resComp, sceneComp);

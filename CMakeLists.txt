@@ -8,10 +8,10 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-SET(RAMSES_VERSION_MAJOR 27)
+SET(RAMSES_VERSION_MAJOR 0)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 130)
-SET(RAMSES_VERSION_POSTFIX "")
+SET(RAMSES_VERSION_PATCH 0)
+SET(RAMSES_VERSION_POSTFIX "-devMaster")
 
 CMAKE_POLICY(SET CMP0048 NEW)
 PROJECT(ramses-sdk VERSION ${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH})
@@ -19,7 +19,7 @@ PROJECT(ramses-sdk VERSION ${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAM
 
 # TODO(tobias) must be here because used inside platformConfig, rework order of all options to solve properly
 OPTION(ramses-sdk_WARNINGS_AS_ERRORS "Enable warnings as errors during build" OFF)
-set(ramses-sdk_CPP_VERSION "14" CACHE STRING "Set used c++ version, must be 14, 17 or 20")
+set(ramses-sdk_CPP_VERSION "17" CACHE STRING "Set used c++ version, must be 17 or 20")
 
 include(cmake/ramses/setCmakePolicies.cmake NO_POLICY_SCOPE)  # we want to propagate policy settings out!
 include(cmake/ramses/platformDetection.cmake)
@@ -41,14 +41,14 @@ INCLUDE(external/acme2/acme2.cmake)
 
 # if no build configuration is defined, use build config 'Release'
 IF (NOT CMAKE_BUILD_TYPE)
-    ACME_INFO("Build type not defined. Using default build type 'Release'.")
+    message(STATUS "Build type not defined. Using default build type 'Release'.")
     SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose build type: Debug, Release." FORCE)
 ELSE ()
-    # Case-insensitive comparison required, built type is not case-sensitive
+    # Case-insensitive comparison required, build type is not case-sensitive
     STRING(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER_CASE)
     IF(NOT("${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "debug" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "release" OR
            "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "relwithdebinfo" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "minsizerel"))
-        ACME_ERROR("Build type set to unsupported type ${CMAKE_BUILD_TYPE}.")
+        message(FATAL_ERROR "Build type set to unsupported type ${CMAKE_BUILD_TYPE}.")
     ENDIF ()
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
@@ -63,6 +63,7 @@ OPTION(ramses-sdk_BUILD_EXAMPLES "Build Example targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_TOOLS "Build tools: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke test targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_DEMOS "Build demo targets: ON, OFF" ON)
+OPTION(ramses-sdk_TEXT_SUPPORT "Enable/disable the ramses text API" ON)
 OPTION(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client only shared library" OFF)
 OPTION(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per renderer shared libraries" ON)
 OPTION(ramses-sdk_BUILD_DOCS "Build documentation if Doxygen is found" ON)
@@ -77,6 +78,8 @@ option(ramses-sdk_ENABLE_COVERAGE "Build withcode coverage enabled (gcc: gcov, c
 
 SET(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
 SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
+
+SET(ramses-sdk_FOLDER_PREFIX "" CACHE STRING "Optional folder prefix for targets in visual studio")
 
 SET(ramses-sdk_ENABLE_SANITIZER "" CACHE STRING "Enable build with a clang sanitizer.")
 SET_PROPERTY(CACHE ramses-sdk_ENABLE_SANITIZER PROPERTY STRINGS "" "ubsan" "tsan" "asan" "asan+ubsan")
@@ -101,6 +104,11 @@ ENDIF()
 
 include(cmake/ramses/rendererModulePerConfig.cmake)
 
+if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") OR (${CMAKE_SYSTEM_NAME} MATCHES "iOS") AND ramses-sdk_TEXT_SUPPORT)
+    message(WARNING "Text rendering is not supported on iOS and MacOS currently! Disabling it!")
+    set(ramses-sdk_TEXT_SUPPORT OFF CACHE STRING "Enable/disable the ramses text API" FORCE)
+endif()
+
 ADD_DEFINITIONS(-DRAMSES_LINK_STATIC)
 
 
@@ -118,6 +126,14 @@ set(ramses-shared-lib-MIXIN CACHE INTERNAL "")
 set(ramses-shared-lib-renderer-MIXIN CACHE INTERNAL "")
 
 include(cmake/ramses/platformTargets.cmake)
+
+#==========================================================================
+# install path setup
+#==========================================================================
+set(RAMSES_INSTALL_HEADERS_PATH     "include/${ramses-sdk_VERSION_DIR}")
+set(RAMSES_INSTALL_RUNTIME_PATH     "${ramses-sdk_BINARY_DIR_BASE}")
+set(RAMSES_INSTALL_LIBRARY_PATH     lib)
+set(RAMSES_INSTALL_RESOURCES_PATH   "${ramses-sdk_BINARY_DIR_BASE}/res")
 
 ACME2_PROJECT(
     #==========================================================================
@@ -140,14 +156,6 @@ ACME2_PROJECT(
     # RNDSANDWICHTEST_VALGRINDGATE = subset of RNDSANDWICHTEST which are executed with valgrind in the gate
     #==========================================================================
     ALLOWED_TEST_SUFFIXES       UNITTEST RNDSANDWICHTEST RNDSANDWICHTEST_SWRAST RNDSANDWICHTEST_VALGRINDGATE
-
-    #==========================================================================
-    # install path setup
-    #==========================================================================
-    INSTALL_HEADER              "include/${ramses-sdk_VERSION_DIR}"
-    INSTALL_BINARY              "${ramses-sdk_BINARY_DIR_BASE}"
-    INSTALL_RESOURCE            "${ramses-sdk_BINARY_DIR_BASE}/res"
-    INSTALL_STATIC_LIB          "lib/${ramses-sdk_VERSION_DIR}"
 
     #==========================================================================
     # content
@@ -195,7 +203,6 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Platform_Wayland_IVI_EGL
                                 AUTO renderer/Platform/Platform_Wayland_Shell_EGL
                                 AUTO renderer/Platform/Platform_X11
-                                AUTO renderer/Platform/Platform_Integrity_RGL
                                 AUTO renderer/Platform/Platform_Android
 
                                 AUTO ramses-shared-lib
@@ -211,6 +218,8 @@ ACME2_PROJECT(
 
                                 AUTO demo
 )
+
+include(cmake/ramses/createPackage.cmake)
 
 #==========================================================================
 # target: code style checker
@@ -266,7 +275,7 @@ FOREACH(configmodule ${configmodules})
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/${configmodule}Template.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake"
         INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
-        PATH_VARS PROJECT_INSTALL_HEADER PROJECT_INSTALL_SHARED_LIB PROJECT_INSTALL_BINARY
+        PATH_VARS RAMSES_INSTALL_HEADERS_PATH RAMSES_INSTALL_LIBRARY_PATH RAMSES_INSTALL_RUNTIME_PATH
         NO_SET_AND_CHECK_MACRO
         NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
@@ -274,7 +283,7 @@ FOREACH(configmodule ${configmodules})
         FILES       ${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake
         DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
     )
-    ACME_INFO("G ${configmodule}Config.cmake")
+    message(STATUS "G ${configmodule}Config.cmake")
 
     # generate CMake version file
     WRITE_BASIC_PACKAGE_VERSION_FILE("${CMAKE_CURRENT_BINARY_DIR}/${configmodule}ConfigVersion.cmake"
@@ -284,7 +293,7 @@ FOREACH(configmodule ${configmodules})
         FILES       ${CMAKE_CURRENT_BINARY_DIR}/${configmodule}ConfigVersion.cmake
         DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
     )
-    ACME_INFO("G ${configmodule}ConfigVersion.cmake")
+    message(STATUS "G ${configmodule}ConfigVersion.cmake")
 
 ENDFOREACH()
 
@@ -293,7 +302,7 @@ IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ramses-version")
 # case when using a ascent source package already containing the originally configured file
     INSTALL(
             FILES       "${CMAKE_CURRENT_SOURCE_DIR}/ramses-version"
-            DESTINATION ${PROJECT_INSTALL_HEADER}
+            DESTINATION ${RAMSES_INSTALL_HEADERS_PATH}
         )
 ELSE()
     STRING(TIMESTAMP RAMSES_BUILD_TIME UTC)
@@ -304,6 +313,6 @@ ELSE()
         )
     INSTALL(
             FILES       "${CMAKE_CURRENT_BINARY_DIR}/ramses-version"
-            DESTINATION ${PROJECT_INSTALL_HEADER}
+            DESTINATION ${RAMSES_INSTALL_HEADERS_PATH}
         )
 ENDIF()

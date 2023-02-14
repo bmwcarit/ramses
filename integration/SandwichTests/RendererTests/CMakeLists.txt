@@ -105,7 +105,7 @@ ACME_MODULE(
 if(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0)
     ACME_ADD_TEST(EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
         RNDSANDWICHTEST_SWRAST
-         -lid 3 -scc --filterOut ShowStreamTextureAfterChangingSurfaceSize
+         --ivi-layer 3 --ivi-control --filterOut ShowStreamTextureAfterChangingSurfaceSize
         )
 endif()
 
@@ -146,11 +146,11 @@ IF (ramses-sdk_BUILD_TESTS)
         IF(TARGET platform-${TEST_PLATFORM})
             ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
                 RNDSANDWICHTEST
-                -scc -lid 3
+                --ivi-control --ivi-layer 3
             )
             ACME_ADD_TEST(RendererLifecycleTests-${TEST_PLATFORM}
                 RNDSANDWICHTEST_SWRAST
-                -scc -lid 3
+                --ivi-control --ivi-layer 3
             )
             # These tests don't work generally on emulated ES drivers
             #    MSAA and anisotropic filters are not strictly specified by OpenGL standard -> emulated driver don't support it
@@ -163,17 +163,17 @@ IF (ramses-sdk_BUILD_TESTS)
                 # A limited set of rendering tests executed in the gate (executing all tests takes too long)
                 ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_VALGRINDGATE
-                    -scc -lid 3 --filterIn TextTest_AccurateText:TextureTest_Texture2D_AddressMode
+                    --ivi-control --ivi-layer 3 --filterIn TextTest_AccurateText:TextureTest_Texture2D_AddressMode
                 )
                 # A limited set of renderer lifecycle tests executed in the gate (executing all tests takes too long)
                 ACME_ADD_TEST(RendererLifecycleTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_VALGRINDGATE
-                     -scc -lid 3 --gtest_filter=*DestroyRenderer_ChangeScene_ThenRecreateRenderer*:*RecreateSceneWithSameId*
+                     --ivi-control --ivi-layer 3 --gtest_filter=*DestroyRenderer_ChangeScene_ThenRecreateRenderer*:*RecreateSceneWithSameId*
                 )
                 # A limited set of EC tests executed in the gate (executing all tests takes too long)
                 ACME_ADD_TEST(EmbeddedCompositingTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_VALGRINDGATE
-                     -scc -lid 3 --filterIn ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
+                     --ivi-control --ivi-layer 3 --filterIn ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
                 )
             ENDIF()
 
@@ -181,7 +181,7 @@ IF (ramses-sdk_BUILD_TESTS)
             IF(NOT ${_INDEX} LESS 0)
                 ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_SWRAST
-                    -scc -lid 3 --filterOut ${SW_EMULATION_FILTER}
+                    --ivi-control --ivi-layer 3 --filterOut ${SW_EMULATION_FILTER}
                 )
             ENDIF()
         ENDIF()

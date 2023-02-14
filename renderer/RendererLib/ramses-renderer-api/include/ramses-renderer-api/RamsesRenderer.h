@@ -18,9 +18,7 @@ namespace ramses
     class SystemCompositorController;
     class DisplayConfig;
     class IRendererEventHandler;
-    class WarpingMeshData;
     class RendererSceneControl;
-    class DcsmContentControl;
 
     /**
     * @brief RamsesRenderer is the main renderer component which provides API to configure
@@ -443,16 +441,6 @@ namespace ramses
         */
         status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalBuffer);
 
-        /**
-        * @brief Will query the OpenGL texture Id for the external texture used for a created external buffer.
-        *
-        * @param[in] display id of display which the buffer belongs to
-        * @param[in] externalBuffer id of buffer to query OpenGL texture ID for
-        * @param[out] textureGlId On success the OpenGL texture ID of the underlying external texture is written to this variable. On failure
-        *             the current value stored is not affected. The return value of the function must be checked for success before using this value.
-        * @return true for success, false otherwise, e.g., if the buffer was not created yet, failed creation or was already destroyed.
-        */
-        bool getExternalBufferGlId(displayId_t display, externalBufferId_t externalBuffer, uint32_t& textureGlId) const;
 
         /**
         * @brief   Sets clear flags for a display buffer (display's framebuffer or offscreen buffer).
@@ -554,8 +542,6 @@ namespace ramses
         *          Scene control API has its own independent flush and event dispatching,
         *          see #ramses::RendererSceneControl for details.
         *
-        *          Obtaining the #ramses::RendererSceneControl will disallow usage of different type of scene control
-        *          (#ramses::DcsmContentControl).
         *          #RamsesRenderer is owner of the #ramses::RendererSceneControl API and the pointer
         *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
         *          without destroying the #RamsesRenderer.
@@ -563,29 +549,6 @@ namespace ramses
         * @return Pointer to scene control API, or nullptr on error
         */
         RendererSceneControl* getSceneControlAPI();
-
-        /**
-        * @brief Create #ramses::DcsmContentControl to control content states
-        * @details #ramses::DcsmContentControl can be used to control content states (a DCSM content is an abstraction
-        *          for a scene). In addition #ramses::DcsmContentControl handles content states in the DCSM protocol
-        *          context, it is essentially a combination of renderer scene control API and #ramses::DcsmConsumer.
-        *          There can be only a single instance of #ramses::DcsmContentControl within #RamsesRenderer. Calling
-        *          this method more than once will fail.
-        *          This method will return nullptr in case an internal policy disallows controlling of scenes
-        *          through this API - this could mean that there is another, incompatible scene control
-        *          mechanism in use.
-        *          #ramses::DcsmContentControl has its own event dispatching mechanism,
-        *          see #ramses::DcsmContentControl for details.
-        *
-        *          Obtaining the #ramses::DcsmContentControl will disallow usage of different type of scene control
-        *          (#ramses::RendererSceneControl).
-        *          #RamsesRenderer is owner of the #ramses::DcsmContentControl API and the pointer
-        *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
-        *          without destroying the #RamsesRenderer.
-        *
-        * @return Pointer to #ramses::DcsmContentControl, or nullptr on error
-        */
-        DcsmContentControl* createDcsmContentControl();
 
         /////////////////////////////////////////////////
         //      System Compositor API
@@ -643,17 +606,6 @@ namespace ramses
         /////////////////////////////////////////////////
         //      End of System Compositor API
         /////////////////////////////////////////////////
-
-        /**
-        * @brief Updates the warping mesh for the warping postprocessing based on the new config.
-        * @details Display must be created with warping enabled in order for this operation to succeed.
-        *
-        * @param[in] displayId id of display to update.
-        * @param[in] newWarpingMeshData Holds the geometry needed to create the mesh for display warping.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
 
         /**
         * @brief Most RamsesRenderer methods push commands to an internal queue which is submitted

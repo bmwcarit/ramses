@@ -15,7 +15,6 @@
 #include "Scene/EScenePublicationMode.h"
 #include "Components/SceneUpdate.h"
 #include "RendererLib/DisplayConfig.h"
-#include "RendererLib/WarpingMeshData.h"
 #include "Collections/String.h"
 #include "Math3d/Vector2.h"
 #include "PlatformAbstraction/VariantWrapper.h"
@@ -202,12 +201,6 @@ namespace ramses_internal
             uint32_t height;
         };
 
-        struct UpdateWarpingData
-        {
-            DisplayHandle display;
-            WarpingMeshData data;
-        };
-
         struct ReadPixels
         {
             DisplayHandle display;
@@ -310,26 +303,6 @@ namespace ramses_internal
             uint32_t limitForPendingFlushesForceUnsubscribe;
         };
 
-        struct FrameProfiler_Toggle
-        {
-            bool toggle;
-        };
-
-        struct FrameProfiler_TimingGraphHeight
-        {
-            uint32_t height;
-        };
-
-        struct FrameProfiler_CounterGraphHeight
-        {
-            uint32_t height;
-        };
-
-        struct FrameProfiler_RegionFilterFlags
-        {
-            uint32_t flags;
-        };
-
         struct ConfirmationEcho
         {
             DisplayHandle display;
@@ -363,7 +336,6 @@ namespace ramses_internal
             SetClearFlags,
             SetClearColor,
             SetExterallyOwnedWindowSize,
-            UpdateWarpingData,
             ReadPixels,
             SetSkippingOfUnmodifiedBuffers,
             LogStatistics,
@@ -380,10 +352,6 @@ namespace ramses_internal
             SetLimits_FrameBudgets,
             SetLimits_FlushesForceApply,
             SetLimits_FlushesForceUnsubscribe,
-            FrameProfiler_Toggle,
-            FrameProfiler_TimingGraphHeight,
-            FrameProfiler_CounterGraphHeight,
-            FrameProfiler_RegionFilterFlags,
             ConfirmationEcho
         >;
     }

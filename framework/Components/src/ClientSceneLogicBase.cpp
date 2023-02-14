@@ -28,7 +28,6 @@ namespace ramses_internal
         , m_sceneId(scene.getSceneId())
         , m_scene(scene)
         , m_scenePublicationMode(EScenePublicationMode_Unpublished)
-        , m_animationSystemFactory(ramses_internal::EAnimationSystemOwner_Scenemanager)
     {
         std::fill(m_resourceCount.begin(), m_resourceCount.end(), 0);
         std::fill(m_resourceMaxSize.begin(), m_resourceMaxSize.end(), 0);

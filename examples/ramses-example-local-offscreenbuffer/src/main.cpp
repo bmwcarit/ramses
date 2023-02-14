@@ -468,7 +468,6 @@ int main(int argc, char* argv[])
         ++timeStamp;
         std::this_thread::sleep_for(std::chrono::milliseconds{ 15u });
     }
-
     /// [Offscreen Buffer Example]
 
     renderer.stopThread();

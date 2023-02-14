@@ -83,7 +83,7 @@ namespace ramses_internal
     }
 
 
-    void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration)
+    void RamsesLogger::initialize(const RamsesLoggerConfig& config, bool disableDLT, bool enableDLTApplicationRegistration)
     {
         if (m_isInitialized)
         {
@@ -103,25 +103,18 @@ namespace ramses_internal
         if (m_consoleLogLevelSetProgrammatically)
             logLevelConsole = m_consoleLogLevelProgrammatically;
 
-        // generic "-l" argument applies to all log levels
-        ArgumentString logLevelStr(parser, "l", "log-level", "");
-        ELogLevel logLevel;
-        if (LogHelper::StringToLogLevel(logLevelStr, logLevel))
+        // generic argument applies to all log levels
+        if (config.logLevel.has_value())
         {
-            logLevelContexts = logLevel;
-            logLevelConsole = logLevel;
+            logLevelContexts = config.logLevel.value();
+            logLevelConsole = config.logLevel.value();
             pushLogLevelToDltDaemon = true;
         }
 
-        // output specific loglevels can overwrite generic argument
-        ArgumentString logLevelAllContextsStr(parser, "cl", "log-level-contexts", "");
-        if (LogHelper::StringToLogLevel(logLevelAllContextsStr, logLevelContexts))
+        if (config.logLevel.has_value())
         {
-            pushLogLevelToDltDaemon = true;
+            logLevelConsole = config.logLevel.value();
         }
-
-        ArgumentString logLevelConsoleStr(parser, "lc", "log-level-console", "");
-        LogHelper::StringToLogLevel(logLevelConsoleStr, logLevelConsole);
 
         //same for environment variable
         String envVarValue;
@@ -143,27 +136,22 @@ namespace ramses_internal
         m_consoleLogAppender.setLogLevel(logLevelConsole);
 
         // apply by context filter
-        ArgumentString logLevelContextsStr(parser, "clf", "log-level-contexts-filter", "");
-        if (logLevelContextsStr.hasValue())
+        if (!config.logLevelContextsStr.empty())
         {
-            applyContextFilterCommand(logLevelContextsStr);
+            applyContextFilterCommand(config.logLevelContextsStr);
             pushLogLevelToDltDaemon = true;
         }
 
         // create DLT adapter and appender
         if (!m_dltLogAppender && !disableDLT)
         {
-            const ramses_internal::ArgumentString dltAppId(parser, "dai", "dlt-app-id", idString);
-            const ramses_internal::ArgumentString dltAppDescription(parser, "dad", "dlt-app-description", descriptionString);
-            const String& dltAppIdAsString = dltAppId;
-
-            if (!dltAppIdAsString.empty())
+            if (!config.dltAppId.empty())
             {
                 if (!enableDLTApplicationRegistration)
                     LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: Reuse exising DLT application registration");
 
                 DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
-                if (dltAdapter->initialize(dltAppIdAsString, dltAppDescription, enableDLTApplicationRegistration,
+                if (dltAdapter->initialize(config.dltAppId, config.dltAppDescription, enableDLTApplicationRegistration,
                                            [this](const String& contextId_, int logLevel_) {
                                                dltLogLevelChangeCallback(contextId_, logLevel_);
                                            },
@@ -192,8 +180,7 @@ namespace ramses_internal
             LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: a user logger was added");
         }
 
-        ArgumentBool enableSmokeTestContext(parser, "estc", "enableSmokeTestContext", "");
-        if (!enableSmokeTestContext.wasDefined())
+        if (!config.enableSmokeTestContext)
         {
             CONTEXT_SMOKETEST.setLogLevel(ELogLevel::Off);
             CONTEXT_SMOKETEST.disableSetLogLevel();

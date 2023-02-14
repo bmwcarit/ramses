@@ -13,6 +13,11 @@
 #include "ramses-framework-api/StatusObject.h"
 #include <chrono>
 
+namespace CLI
+{
+    class App;
+}
+
 namespace ramses
 {
     class IBinaryShaderCache;
@@ -48,6 +53,16 @@ namespace ramses
         * @brief Destructor of RendererConfig
         */
         virtual ~RendererConfig();
+
+        /**
+        * @brief Register command line options for the CLI11 command line parser
+        *
+        * Creates an option group "Renderer Options" and registers command line options
+        * After parsing the command line with CLI::App::parse() this config object is assigned with the values provided by command line
+        *
+        * @param[in] cli CLI11 command line parser
+        */
+        void registerOptions(CLI::App& cli);
 
         /**
         * @brief Set the Binary Shader Cache to be used in Renderer.

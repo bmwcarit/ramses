@@ -12,7 +12,6 @@
 #include "RendererAPI/Types.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "SceneAPI/SceneId.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/BufferLinks.h"
 #include "RendererLib/FrameTimer.h"
@@ -124,9 +123,9 @@ namespace ramses_internal
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
         bool markClientAndSceneResourcesForReupload(SceneId sceneId);
 
-        UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
+        void updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo);
-        UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
+        void applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo);
 
         bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
@@ -141,7 +140,7 @@ namespace ramses_internal
         void handleECStreamAvailabilityChanges();
         void uploadAndUnloadVertexArrays();
         void updateScenesResourceCache();
-        void updateScenesRendererAnimations();
+        void updateScenesShaderAnimations();
         void updateScenesTransformationCache();
         void updateScenesDataLinks();
         void updateScenesStates();
@@ -167,8 +166,6 @@ namespace ramses_internal
         SceneExpirationMonitor&                           m_expirationMonitor;
         ISceneReferenceLogic*                             m_sceneReferenceLogic = nullptr;
         IRendererResourceCache*                           m_rendererResourceCache = nullptr;
-
-        AnimationSystemFactory                            m_animationSystemFactory;
 
         std::unique_ptr<IRendererResourceManager> m_displayResourceManager;
         std::unique_ptr<AsyncEffectUploader> m_asyncEffectUploader;

@@ -33,7 +33,6 @@ Any Ramses application (regardless if it has a client, a renderer, or both) has 
 
     20210212-16:33:50.770 | Info  | RPER | Version: 27.0.6 Hash:cca2a0b60f Commit:28143 Type:Release Env:(unknown) SyncT:1613144030770ms (dtSteady:2023 - dtSync:2023 -> 0) PUp:31679 RUp:31575 RInit:1 RParallel:1
     20210212-16:33:50.775 | Info  | RPER | Connected Participant(s): 00000000-0000-0000-0000-000000000003, 00000000-0000-0000-0000-000000000004, 00000000-0000-0000-0000-000000000002, 00000000-0000-0000-0000-000000000005
-    20210212-16:33:50.775 | Info  | RPER | Dcsm(7AB1-B4A4D03AA15F) C LP:false LC:false CP[] C[]
 
 First line:
 - Ramses version, commithash, commit no, build type
@@ -41,8 +40,6 @@ First line:
 - RParallel: 1 instance of ramses running now
 
 Second line: Participants connected to this instance of ramses
-
-Third line: Dcsm related stats
 
 ## Client periodic logs
 

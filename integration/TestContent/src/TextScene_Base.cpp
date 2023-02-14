@@ -10,6 +10,8 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/OrthographicCamera.h"
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 namespace ramses_internal
 {
     TextScene_Base::TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
@@ -22,3 +24,5 @@ namespace ramses_internal
         setCameraToDefaultRenderPass(m_textOrthoCamera);
     }
 }
+
+#endif

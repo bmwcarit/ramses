@@ -185,6 +185,7 @@ namespace ramses_internal
         testScenesAndRenderer.destroyRenderer();
     }
 
+#if defined(RAMSES_TEXT_ENABLED)
     TEST_F(ARendererLifecycleTest, DestroyRenderer_ChangeScene_ThenRecreateRenderer)
     {
         const ramses::sceneId_t sceneId = createScene<TextScene>(TextScene::EState_INITIAL);
@@ -215,6 +216,7 @@ namespace ramses_internal
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
     }
+#endif
 
     TEST_F(ARendererLifecycleTest, UnsubscribeRenderer_ChangeScene_ThenResubscribeRenderer)
     {

@@ -21,9 +21,9 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-framework-api/RamsesFramework.h"
+#include "RamsesFrameworkConfigImpl.h"
 
 #include "PlatformAbstraction/PlatformThread.h"
-#include "RendererLib/RendererConfigUtils.h"
 #include "ramses-hmi-utils.h"
 #include <fstream>
 #include "Utils/Image.h"
@@ -81,7 +81,7 @@ namespace ramses_internal
         , m_displayConfig(argc, argv)
         , m_args(argv, argv + argc)
     {
-        GetRamsesLogger().initialize(m_parser, String(), String(), false, true);
+        GetRamsesLogger().initialize(m_frameworkConfig.impl.loggerConfig, false, true);
         m_frameworkConfig.setPeriodicLogsEnabled(false);
         m_frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
         m_displayConfig.setResizable(true);
@@ -131,8 +131,6 @@ namespace ramses_internal
                 "\nUsage: " << programName << " [options] -s <sceneFileName>\n"
                 "Loads and views a RAMSES scene from the files <sceneFileName>.ramses / <sceneFileName>.ramres\n"
                 "Arguments:\n" << argumentHelpString);
-
-        ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
     }
 
     SceneViewer::GuiMode SceneViewer::getGuiMode() const
@@ -164,6 +162,12 @@ namespace ramses_internal
         {
             return ErrorUsage;
         }
+
+        ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_01;
+        if (!ramses::RamsesClient::GetFeatureLevelFromFile(sceneFile.c_str(), featureLevel))
+            return ErrorUsage;
+
+        m_frameworkConfig.setFeatureLevel(featureLevel);
         ramses::RamsesFramework framework(m_frameworkConfig);
 
         auto client = framework.createClient("ramses-scene-viewer");

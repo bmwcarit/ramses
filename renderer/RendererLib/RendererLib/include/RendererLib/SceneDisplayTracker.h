@@ -56,7 +56,6 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetClearFlags& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetClearColor& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetExterallyOwnedWindowSize& cmd) const { return cmd.display; }
-        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::UpdateWarpingData& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::ReadPixels& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::ConfirmationEcho& cmd) const { return cmd.display; }
         // broadcast commands
@@ -77,10 +76,6 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetLimits_FrameBudgets&) const { return {}; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetLimits_FlushesForceApply&) const { return {}; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetLimits_FlushesForceUnsubscribe&) const { return {}; }
-        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_Toggle&) const { return {}; }
-        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_TimingGraphHeight&) const { return {}; }
-        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_CounterGraphHeight&) const { return {}; }
-        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_RegionFilterFlags&) const { return {}; }
 
         std::unordered_map<SceneId, DisplayHandle> m_sceneToDisplay;
     };

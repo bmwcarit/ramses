@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-client.h"
+#include "ramses-utils.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
@@ -91,34 +92,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, 500.f);
-    spline1->setKey(10000u, 1000.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(5.f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
     appearance->setInputValueVector4f(colorInput, 1.0f, 1.0f, 0.3f, 1.0f);
-
 
     return clientScene;
 }
@@ -171,34 +145,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, -500.f);
-    spline1->setKey(10000u, -1000.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(5.f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
     appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.5f, 1.0f);
-
 
     return clientScene;
 }
@@ -249,20 +196,26 @@ int main(int argc, char* argv[])
     sceneControlAPI.flush();
 
     /// [Displays Example]
+    /// Refresh first display 60fps but limit second display to 5fps
+    ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display1);
     ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
+
     renderer.startThread();
     renderer.flush();
-    //ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
+    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
+
     RendererEventHandler eventHandler;
     while (!eventHandler.isWindowClosed())
     {
         renderer.dispatchEvents(eventHandler);
-        ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display2);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ramses::RamsesRenderer::setMaximumFramerate(renderer, 1, display2);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        meshScene1->rotate(0.f, 0.f, 1.f);
+        scene1->flush();
+        meshScene2->rotate(0.f, 0.f, -1.f);
+        scene2->flush();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

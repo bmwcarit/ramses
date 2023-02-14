@@ -69,7 +69,7 @@ ACME_MODULE(
                             ramses-framework
 )
 
-INSTALL(DIRECTORY ramses-renderer-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+install(DIRECTORY ramses-renderer-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-renderer-lib PRIVATE "-Wsuggest-override")

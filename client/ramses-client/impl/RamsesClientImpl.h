@@ -20,6 +20,7 @@
 #include "ramses-client-api/ResourceDataPool.h"
 
 // RAMSES framework
+#include "ramses-framework-api/EFeatureLevel.h"
 #include "Utils/LogContext.h"
 #include "SceneFactory.h"
 #include "ClientApplicationLogic.h"
@@ -136,8 +137,10 @@ namespace ramses
         ramses_internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name, std::string& errorMessages);
 
         void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const;
-        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName);
-        static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream);
+        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName, EFeatureLevel featureLevel);
+        static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream, EFeatureLevel featureLevel);
+        static bool GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel);
+        static bool GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel);
 
         ResourceDataPool& getResourceDataPool();
         ResourceDataPool const& getResourceDataPool() const;
@@ -198,6 +201,8 @@ namespace ramses
         void finalizeLoadedScene(Scene* scene);
 
         status_t validateScenes() const;
+
+        static bool GetFeatureLevelFromStream(ramses_internal::IInputStreamContainer& streamContainer, const std::string& desc, EFeatureLevel& detectedFeatureLevel);
 
         RamsesClient* m_hlClient = nullptr;
         ramses_internal::ClientApplicationLogic m_appLogic;

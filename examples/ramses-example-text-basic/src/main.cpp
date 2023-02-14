@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     const uint32_t displayWidth(1280);
     const uint32_t displayHeight(480);
 
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
     ramses::RamsesClient& client(*framework.createClient("ExampleTextBasic"));
 
     ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u));

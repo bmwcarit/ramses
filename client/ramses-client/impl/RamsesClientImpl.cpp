@@ -15,8 +15,6 @@
 #include "SceneImpl.h"
 #include "SceneConfigImpl.h"
 #include "ResourceImpl.h"
-#include "AnimationSystemImpl.h"
-#include "AnimatedPropertyImpl.h"
 #include "RamsesFrameworkImpl.h"
 #include "RamsesClientImpl.h"
 #include "RamsesObjectRegistryIterator.h"
@@ -34,7 +32,6 @@
 #include "Components/FileInputStreamContainer.h"
 #include "Components/MemoryInputStreamContainer.h"
 #include "Components/OffsetFileInputStreamContainer.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "Resource/IResource.h"
 #include "ClientCommands/PrintSceneList.h"
 #include "ClientCommands/ForceFallbackImage.h"
@@ -269,8 +266,6 @@ namespace ramses
         }
         internalScene->preallocateSceneSize(sizeInformation);
 
-        ramses_internal::AnimationSystemFactory animSystemFactory(ramses_internal::EAnimationSystemOwner_Client, &internalScene->getSceneActionCollection());
-
         // need first to create the pimpl, so that internal framework components know the new scene
         SceneConfigImpl sceneConfig;
         if (localOnly)
@@ -283,7 +278,7 @@ namespace ramses
 
         // now the scene is registered, so it's possible to load the low level content into the scene
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Reading low level scene from stream");
-        ramses_internal::ScenePersistation::ReadSceneFromStream(inputStream, *internalScene, &animSystemFactory);
+        ramses_internal::ScenePersistation::ReadSceneFromStream(inputStream, *internalScene);
 
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Deserializing high level scene objects from stream");
         DeserializationContext deserializationContext;
@@ -312,7 +307,7 @@ namespace ramses
             return nullptr;
         }
 
-        if (!ReadRamsesVersionAndPrintWarningOnMismatch(inputStream, "scene file"))
+        if (!ReadRamsesVersionAndPrintWarningOnMismatch(inputStream, "scene file", getFramework().getFeatureLevel()))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << ": failed to read from scene source " << cconfig.dataSource);
             return nullptr;
@@ -477,28 +472,72 @@ namespace ramses
         m_scenes.push_back(scene);
     }
 
-    void RamsesClientImpl::WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream)
+    void RamsesClientImpl::WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream, EFeatureLevel featureLevel)
     {
-        ramses_internal::RamsesVersion::WriteToStream(stream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
+        ramses_internal::RamsesVersion::WriteToStream(stream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
     }
 
-    bool RamsesClientImpl::ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName)
+    bool RamsesClientImpl::GetFeatureLevelFromStream(ramses_internal::IInputStreamContainer& streamContainer, const std::string& desc, EFeatureLevel& detectedFeatureLevel)
+    {
+        ramses_internal::RamsesVersion::VersionInfo readVersion;
+        if (!ramses_internal::RamsesVersion::ReadFromStream(streamContainer.getStream(), readVersion, detectedFeatureLevel))
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromSceneFile: failed to read RAMSES version and feature level from '" << desc << "'.");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool RamsesClientImpl::GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel)
+    {
+        ramses_internal::FileInputStreamContainer streamContainer{ fileName };
+        return GetFeatureLevelFromStream(streamContainer, fileName, detectedFeatureLevel);
+    }
+
+    bool RamsesClientImpl::GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel)
+    {
+        if (fd <= 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromFile: filedescriptor must be valid " << fd);
+            return false;
+        }
+        if (length == 0u)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromFile: length may not be 0");
+            return false;
+        }
+
+        ramses_internal::OffsetFileInputStreamContainer streamContainer{ fd, offset, length };
+        return GetFeatureLevelFromStream(streamContainer, fmt::format("fileDescriptor fd:{} offset:{} length:{}", fd, offset, length), detectedFeatureLevel);
+    }
+
+    bool RamsesClientImpl::ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName, EFeatureLevel featureLevel)
     {
         // return false on read error only, not version mismatch
         ramses_internal::RamsesVersion::VersionInfo readVersion;
-        if (!ramses_internal::RamsesVersion::ReadFromStream(inputStream, readVersion))
+        EFeatureLevel featureLevelFromFile = EFeatureLevel_01;
+        if (!ramses_internal::RamsesVersion::ReadFromStream(inputStream, readVersion, featureLevelFromFile))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: failed to read RAMSES version for " << verboseFileName << ", file probably corrupt. Loading aborted.");
             return false;
         }
-        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RAMSES version in file '" << verboseFileName << "': [" << readVersion.versionString << "]; GitHash: [" << readVersion.gitHash << "]");
+        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RAMSES version in file '" << verboseFileName << "': [" << readVersion.versionString << "]; GitHash: [" << readVersion.gitHash << "]; FeatureLevel: [" << featureLevelFromFile << "];");
 
         if (!ramses_internal::RamsesVersion::MatchesMajorMinor(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT, readVersion))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Version of file " << verboseFileName << "does not match MAJOR.MINOR of this build. Cannot load the file.");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Version of file " << verboseFileName << " does not match MAJOR.MINOR of this build. Cannot load the file.");
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "SDK version of loader: [" << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << "]; GitHash: [" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << "]");
             return false;
         }
+
+        if (featureLevelFromFile != featureLevel)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Feature level of file '" << verboseFileName
+                << "' is " << featureLevelFromFile << " which does not match feature level of this Ramses instance (" << featureLevel << "). Cannot load the file.");
+            return false;
+        }
+
         return true;
     }
 

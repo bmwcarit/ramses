@@ -103,7 +103,7 @@ namespace ramses
 
     TEST(DistributedSceneTest, givesErrorWhenRemotePublishingAfterEnablingLocalOnlyOptmisations)
     {
-        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
+        RamsesFramework framework{ LocalTestClient::GetDefaultFrameworkConfig() };
         RamsesClient& remoteClient(*framework.createClient(nullptr));
         framework.connect();
         SceneConfig config;
@@ -114,7 +114,7 @@ namespace ramses
 
     TEST(DistributedSceneTest, canPublishRemotelyIfSetInConfig)
     {
-        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
+        RamsesFramework framework{ LocalTestClient::GetDefaultFrameworkConfig() };
         RamsesClient& remoteClient(*framework.createClient(nullptr));
         framework.connect();
         SceneConfig config;
@@ -125,7 +125,7 @@ namespace ramses
 
     TEST(DistributedSceneTest, canPublishRemotelyIfNoSettingInConfig)
     {
-        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
+        RamsesFramework framework{ LocalTestClient::GetDefaultFrameworkConfig() };
         RamsesClient& remoteClient(*framework.createClient(nullptr));
         framework.connect();
         SceneConfig config;
@@ -135,7 +135,7 @@ namespace ramses
 
     TEST(DistributedSceneTest, canPublishLocallyWhenEnablingLocalOnlyOptimisations)
     {
-        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
+        RamsesFramework framework{ LocalTestClient::GetDefaultFrameworkConfig() };
         RamsesClient& remoteClient(*framework.createClient(nullptr));
         framework.connect();
         SceneConfig config;
@@ -146,7 +146,7 @@ namespace ramses
 
     TEST(DistributedSceneTest, isPublishedAfterDisconnect)
     {
-        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
+        RamsesFramework framework{ LocalTestClient::GetDefaultFrameworkConfig() };
         RamsesClient& remoteClient(*framework.createClient(nullptr));
         framework.connect();
         SceneConfig config;
@@ -161,7 +161,7 @@ namespace ramses
 
     TEST(DistributedSceneTest, canPublishSceneIfNotConnected)
     {
-        RamsesFramework framework(sizeof(clientArgs) / sizeof(char*), clientArgs);
+        RamsesFramework framework{ LocalTestClient::GetDefaultFrameworkConfig() };
         RamsesClient& remoteClient(*framework.createClient(nullptr));
         Scene* distributedScene = remoteClient.createScene(sceneId_t(1u));
         EXPECT_EQ(StatusOK, distributedScene->publish());

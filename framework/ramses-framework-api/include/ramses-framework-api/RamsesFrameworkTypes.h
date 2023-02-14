@@ -10,7 +10,7 @@
 #define RAMSES_RAMSESFRAMEWORKTYPES_H
 
 #include "ramses-framework-api/StronglyTypedValue.h"
-#include "stdint.h"
+#include <cstdint>
 #include <limits>
 #include <string>
 

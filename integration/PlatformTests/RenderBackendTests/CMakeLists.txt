@@ -27,7 +27,7 @@ IF (ramses-sdk_BUILD_TESTS)
         IF(TARGET platform-${TEST_PLATFORM})
             ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
                 RNDSANDWICHTEST
-                -lid 3
+                --ivi-layer 3
             )
             # These tests don't work specifically on the build slaves, because binary shaders are not supported there
             SET(GATE_FILTER "-ADeviceSupportingBinaryShaders*:ADeviceSupportingGeometryShaders*")
@@ -36,7 +36,7 @@ IF (ramses-sdk_BUILD_TESTS)
             IF(NOT ${_INDEX} LESS 0)
                 ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_SWRAST
-                    --gtest_filter=${GATE_FILTER} -lid 3
+                    --gtest_filter=${GATE_FILTER} --ivi-layer 3
                 )
             ENDIF()
         ENDIF()

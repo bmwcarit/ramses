@@ -16,8 +16,8 @@ from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorR
 class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
 
     def impl_setUp(self):
-        if not self.target.systemCompositorControllerSupported:
-            self.skipTest("System compositor controller support is not configured for this target")
+        if not self.target.systemCompositorScreenshotSupported:
+            self.skipTest("System compositor controller screenshot support is not configured for this target")
 
         self.backgroundRendererLayerIviId = DEFAULT_TEST_LAYER
         self.firstLayerIviId = DEFAULT_TEST_LAYER + 1
@@ -38,12 +38,12 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
         self.ramsesDaemon = self.target.start_daemon()
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-13 -w 640".
+        self.renderer = self.target.start_default_renderer("--ivi-layer {0} --ivi-surface {1} --ec-display wayland-13 --width 640".
                                                            format(self.firstLayerIviId, self.rendererSurfaceIviId), nameExtension='main')
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
         self.rendererbackground = self.target.start_default_renderer(
-            "--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-12 -w 640".
+            "--ivi-layer {0} --ivi-surface {1} --ec-display wayland-12 --width 640".
             format(self.backgroundRendererLayerIviId, self.backgroundRendererSurfaceIviId), nameExtension='background')
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)

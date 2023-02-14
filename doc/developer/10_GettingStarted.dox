@@ -141,7 +141,7 @@ Run with '-help' to see available command line parameters.
 ### Run Client Application
 All RAMSES client applications need a connection to RAMSES daemon to register their content.
 All current client applications interpret the command line flag
-- `-i <ip_address>`
+- `--daemon-ip <ip_address>`
 
 as IP address of the daemon to connect to.
 If no IP address is provided, 'localhost' is silently used as daemon address.
@@ -165,6 +165,6 @@ where res folder can be resolved. Otherwise expect misbehaviour of client applic
 #### Example: Start a basic example, connect to ramses-daemon at IP 1.2.3.4
 
     $ cd <CMAKE_INSTALL_PREFIX>/bin
-    $ ./ramses-example-basic-geometry -i 1.2.3.4
+    $ ./ramses-example-basic-geometry --daemon-ip 1.2.3.4
 
 */

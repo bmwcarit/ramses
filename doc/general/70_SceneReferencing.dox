@@ -8,20 +8,20 @@
 
 /**
 
-@page SceneReferencing Scene Referencing and DCSM
+@page SceneReferencing Scene Referencing
 
 # The concept
 
-There are two main roles in the DCSM/Ramses ecosystem:
-    - content provider (RamsesClient + DcsmProvider)
+There are two main roles in the Ramses ecosystem:
+    - content provider (ramses::RamsesClient)
         - create and offer content
         - modify content based on application logic
-    - content consumer (ramses::RamsesRenderer + ramses::DcsmContentControl)
+    - content consumer (ramses::RamsesRenderer + ramses::RendererSceneControl)
         - accept/assign content from providers
         - control content rendering state based on application logic
 
 If one application implements both of these roles, it has full control over the rendered result. If the provider and consumer are two different applications
-then each takes care of its own part and thanks to DCSM and Ramses a large number of use cases can be achieved without any additional communication channel.
+then each takes care of its own part and thanks to Ramses a large number of use cases can be achieved without any additional communication channel.
 
 Now imagine a situation where there are 3 participants, each being a separate application:
     - content provider A
@@ -38,9 +38,8 @@ to arbitrary number of nesting layers and arbitrary number of contents nested in
 
 # The concept vs Ramses
 
-This concept works well with DCSM, the provider/consumer layer in the middle simply implements both ramses::DcsmProvider and ramses::DcsmConsumer.
-However applying this concept on Ramses level reveals a problem - the content to be nested coming from lower layer carries a very limited set of information -
-content ID, scene ID and maybe some DCSM metadata. Also there is typically just one ramses::RamsesRenderer for given content
+Applying this concept on Ramses level reveals a problem - the content to be nested coming from lower layer carries a very limited set of information -
+scene ID and maybe some extra metadata. Also there is typically just one ramses::RamsesRenderer for given content
 and it is owned by a consumer which in case of nesting is in the top layer, so it is inaccessible from any other layer.
 
 # Scene Referencing
@@ -53,16 +52,14 @@ Even though limited, this already gives a number of possibilities how to composi
 
 Overview of the example above, now with scene referencing:
     - content provider A
-        - creates and publishes sceneA (Ramses scene ID) offered in contentA (DCSM content ID) for categoryB (DCSM category ID)
+        - creates and publishes sceneA
     - content provider/consumer B
-        - owns categoryB and accepts contentA with sceneA
         - creates and maintains its own sceneB
         - creates scene reference for sceneA in sceneB (sceneB becomes master of sceneA)
         - maintains sceneA's states using scene referencing API
-        - publishes sceneB offered in contentB for categoryC
+        - publishes sceneB
     - content consumer C
-        - owns categoryC and accepts contentB with sceneB
-        - maintains contentB's states using content control API
+        - maintains sceneB's states using scene control API
 
 Consumer C knows nothing about provider A on application level which is one of the key goals of the initial concept. However down there,
 in consumer C's renderer, all the data is available to render sceneA as part of its master sceneB.
@@ -93,48 +90,29 @@ by the application logic (see ramses::Scene::flush).
 
 The READY state is probably the most important state and should always be used as synchronization point whenever there is need to show a scene/content
 'at once' (with minimal delay), Ramses guarantees to show any given READY scene in the very next frame after the show request. This is essential if a collection
-of scenes/contents need to appear together, which is probably the case whenever scene referencing is used. There are however different meanings of 'ready'
-and in the context of scene referencing good understanding might be necessary to properly implement some more advanced use cases.
-
-There are two basic types of READY, one in the DCSM context (ramses::EDcsmState::Ready) and the other in Ramses rendering context (ramses::RenderState::Ready).
-Even though seemingly independent they need to be considered both together by any content consumer (including the middle layer consumer using scene referencing).
-    - DCSM READY (ramses::DcsmProvider) is just a signal between DCSM consumer/provider
-        - consumer requests READY, provider decides on its own when it is READY and sends signal back
-    - Ramses scene READY (ramses::RendererSceneControl) is more of a technical state
-        - a scene is READY when it is mapped to display, assigned to display buffer, its resources are uploaded and it is ready to be shown within a single frame
-
-Then there is the ramses::DcsmContentControl which is already implemented in a way that combines the two for convenience:
-    - request READY -> sends DCSM ready request and at the same time scene control ready request for scene associated with the content
-    - reports READY <- only when both DCSM content marked as ready by provider and the scene reported as ready from Ramses
+of scenes/contents need to appear together, which is probably the case whenever scene referencing is used. Ramses scene in state READY (ramses::RendererSceneControl::setSceneState)
+means that it is mapped to display, assigned to display buffer, its resources are uploaded and it is ready to be shown within a single frame.
 
 Typical example of a desired sequence of state requests/events would then look like this:
 
 <table>
 <tr><th>Provider                                           <th>Consumer/Provider (master scene)                    <th>Consumer with renderer
-<tr><td>                                                   <td>create *categoryB*                                    <td>create *categoryC*
-<tr><td>prepare *sceneA* and *contentA*                    <td>prepare *sceneB* and *contentB*                     <td>set up renderer
-<tr><td>publish *sceneA* and offer *contentA* for *categoryB*<td>publish *sceneB* and offer *contentB* for *categoryC* <td>
-<tr><td>                                                   <td>assign *contentA*                                   <td>assign *contentB*
+<tr><td>prepare *sceneA*                                   <td>prepare *sceneB*                                    <td>set up renderer
+<tr><td>publish *sceneA*                                   <td>publish *sceneB*                                    <td>
 <tr><td>                                                   <td>create *sceneA* reference                           <td>
 <tr><td><td><td>
-<tr><td>                                                   <td>                                                    <td>request *contentB* **READY**
-<tr><td>                                                   <td>request *contentA* **READY**                        <td> (*sceneB* gets uploaded by Ramses internal logic)
 <tr><td>update *sceneA* (optionally flush with version tag)<td>                                                    <td>
-<tr><td>mark *contentA* **READY**                          <td>                                                    <td>
 <tr><td>                                                   <td> (optionally wait for version tag)                  <td>
 <tr><td>                                                   <td>request *sceneA* reference **READY**                <td>
 <tr><td>                                                   <td>...                                                 <td> (*sceneA* gets uploaded by Ramses internal logic)
-<tr><td>                                                   <td>mark *contentB* **READY**                           <td>
 <tr><td>                                                   <td>request *sceneA* reference **RENDERED** (*see note below*)<td>
 <tr><td><td><td>
-<tr><td>                                                   <td>                                                    <td> announce *contentB* will be **RENDERED**
-<tr><td>                                                   <td>                                                    <td> set *contentB* to **RENDERED**
+<tr><td>                                                   <td>                                                    <td> set *sceneB* to **RENDERED**
 <tr><td>                                                   <td>                                                    <td> (both *sceneA* and *sceneB* are shown together)
 </table>
 
-The important rule here is always prepare and make all the content you are nesting READY and only then report it as READY. Concretely in this example
-it means when contentB is requested to be READY via DCSM, make sure that contentB is DCSM READY and also all scenes nested into it were requested to be READY
-(both DCSM and as scene reference) and reported back as READY (again both DCSM and scene reference state), only then report the contentB as READY to its consumer.
+It is important to prepare and set all the content you are nesting to a state which is desired to be rendered. Good practice is to synchronize using the scene version tag,
+that way the consumer can make sure that the scene it is consuming is in the correct state before requesting it to be READY/RENDERED.
 
 Note regarding requesting the scene reference RENDERED: remember that a referenced scene's rendering state on renderer's side will be kept back to never be higher
 than master scene's state so it is safe to request RENDERED right away, it can even replace the READY request (state change events will anyway be reported one by one,

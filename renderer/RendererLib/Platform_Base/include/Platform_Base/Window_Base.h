@@ -35,7 +35,6 @@ namespace ramses_internal
 
         UInt32 getMSAASampleCount() const;
 
-        virtual IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const final;
         virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
 
         virtual bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
@@ -52,7 +51,6 @@ namespace ramses_internal
         Int32 m_posX;
         Int32 m_posY;
 
-        const IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         const WaylandIviSurfaceId m_waylandIviSurfaceID;
         const Bool m_resizable;
     };

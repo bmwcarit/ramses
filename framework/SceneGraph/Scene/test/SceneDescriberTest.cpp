@@ -12,7 +12,7 @@
 #include "Scene/ClientScene.h"
 #include "SceneActionUtils.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneActionApplierHelper.h"
+#include "Scene/SceneActionApplier.h"
 #include "TestEqualHelper.h"
 #include "Math3d/Matrix22f.h"
 #include "Math3d/Vector2i.h"
@@ -218,8 +218,7 @@ namespace ramses_internal
         // no actions for setting the zeroed data types
 
         Scene newScene;
-        SceneActionApplierHelper sceneCreator(newScene);
-        sceneCreator.applyActionsOnScene(actions);
+        SceneActionApplier::ApplyActionsOnScene(newScene, actions);
 
         // validate skipped actions still result in nulled data
         EXPECT_TRUE(MemoryUtils::AreAllBytesZero(newScene.getDataIntegerArray(dataInstance, DataFieldHandle(0u)), dataFieldElementCount));

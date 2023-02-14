@@ -21,15 +21,6 @@
 
 namespace ramses_internal
 {
-    constexpr const ramses::dataProviderId_t CameraDataLinkScene::ViewportOffsetProviderId;
-    constexpr const ramses::dataProviderId_t CameraDataLinkScene::ViewportSizeProviderId;
-    constexpr const ramses::dataProviderId_t CameraDataLinkScene::FrustumPlanesProviderId;
-    constexpr const ramses::dataProviderId_t CameraDataLinkScene::FrustumPlanesNearFarProviderId;
-    constexpr const ramses::dataConsumerId_t CameraDataLinkScene::ViewportOffsetConsumerId;
-    constexpr const ramses::dataConsumerId_t CameraDataLinkScene::ViewportSizeConsumerId;
-    constexpr const ramses::dataConsumerId_t CameraDataLinkScene::FrustumPlanesConsumerId;
-    constexpr const ramses::dataConsumerId_t CameraDataLinkScene::FrustumPlanesNearFarConsumerId;
-
     CameraDataLinkScene::CameraDataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {

@@ -7,15 +7,34 @@
 //  -------------------------------------------------------------------------
 
 #include "DisplayConfigImpl.h"
-#include "RendererLib/RendererConfigUtils.h"
+#include "CLI/CLI.hpp"
 
 namespace ramses
 {
     DisplayConfigImpl::DisplayConfigImpl(int32_t argc, char const* const* argv)
         : StatusObjectImpl()
     {
-        ramses_internal::CommandLineParser parser(argc, argv);
-        ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, m_internalConfig);
+        if (argc > 1)
+        {
+            CLI::App cli;
+            m_internalConfig.registerOptions(cli);
+            cli.allow_extras();
+            try
+            {
+                cli.parse(argc, argv);
+            }
+            catch (CLI::ParseError& e)
+            {
+                const auto err = cli.exit(e);
+                if (err != 0)
+                    exit(err);
+            }
+        }
+    }
+
+    void DisplayConfigImpl::registerOptions(CLI::App& cli)
+    {
+        m_internalConfig.registerOptions(cli);
     }
 
     status_t DisplayConfigImpl::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
@@ -82,12 +101,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::enableWarpingPostEffect()
-    {
-        m_internalConfig.setWarpingEnabled(true);
-        return StatusOK;
-    }
-
     status_t DisplayConfigImpl::setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID)
     {
         m_internalConfig.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(waylandIviLayerID.getValue()));
@@ -108,17 +121,6 @@ namespace ramses
     waylandIviSurfaceId_t DisplayConfigImpl::getWaylandIviSurfaceID() const
     {
         return waylandIviSurfaceId_t(m_internalConfig.getWaylandIviSurfaceID().getValue());
-    }
-
-    status_t DisplayConfigImpl::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)
-    {
-        m_internalConfig.setIntegrityRGLDeviceUnit(ramses_internal::IntegrityRGLDeviceUnit(rglDeviceUnit));
-        return StatusOK;
-    }
-
-    uint32_t DisplayConfigImpl::getIntegrityRGLDeviceUnit() const
-    {
-        return m_internalConfig.getIntegrityRGLDeviceUnit().getValue();
     }
 
     void* DisplayConfigImpl::getAndroidNativeWindow() const

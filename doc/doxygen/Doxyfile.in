@@ -26,7 +26,7 @@ EXAMPLE_PATH           = "@DOXYGEN_EXAMPLE_PATH@"
 LAYOUT_FILE            = "@DOXYGEN_LAYOUT@"
 
 # hide classes in example applications or fwd declarations
-EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo SomeIP DCSMProviderExample
+EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo
 
 INPUT                  = @DOXYGEN_INPUT@
 IMAGE_PATH             = @DOXYGEN_IMAGE_PATH@

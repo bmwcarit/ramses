@@ -21,7 +21,6 @@ enum ERendererEventTestType
     ERendererEventTestType_OffscreenBufferCreated,
     ERendererEventTestType_OffscreenBufferDestroyed,
     ERendererEventTestType_PixelsRead,
-    ERendererEventTestType_WarpingUpdated,
     ERendererEventTestType_DisplayCreated,
     ERendererEventTestType_DisplayDestroyed,
     ERendererEventTestType_WindowClosed,
@@ -123,15 +122,6 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void warpingMeshDataUpdated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
-    {
-        RendererTestEvent event;
-        event.eventType = ERendererEventTestType_WarpingUpdated;
-        event.result = result;
-        event.displayId = displayId;
-        m_events.push_back(event);
-    }
-
     virtual void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
@@ -200,7 +190,6 @@ public:
         m_events.push_back(event);
     }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
     virtual void externalBufferCreated(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, uint32_t textureGlId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
@@ -221,7 +210,6 @@ public:
         event.result = result;
         m_events.push_back(event);
     }
-#endif
 
     void expectOffscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
@@ -268,15 +256,6 @@ public:
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_PixelsRead;
-        event.result = result;
-        event.displayId = displayId;
-        expectEvent(event);
-    }
-
-    void expectWarpingMeshDataUpdated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
-    {
-        RendererTestEvent event;
-        event.eventType = ERendererEventTestType_WarpingUpdated;
         event.result = result;
         event.displayId = displayId;
         expectEvent(event);
@@ -350,10 +329,11 @@ public:
         expectEvent(event);
     }
 
-    virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTimeMilliseconds, std::chrono::microseconds averageLooptimeMilliseconds) override
+    virtual void renderThreadLoopTimings(ramses::displayId_t displayId, std::chrono::microseconds maximumLoopTimeMilliseconds, std::chrono::microseconds averageLooptimeMilliseconds) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_RenderThreadPeriodicLoopTimes;
+        event.displayId = displayId;
         event.renderthread_maximumLoopTime = maximumLoopTimeMilliseconds;
         event.renderthread_avg_looptime = averageLooptimeMilliseconds;
         expectEvent(event);

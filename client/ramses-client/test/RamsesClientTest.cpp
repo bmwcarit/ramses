@@ -107,7 +107,7 @@ namespace ramses
 
     TEST(RamsesClient, canCreateClientWithNULLNameAndCmdLineArguments)
     {
-        ramses::RamsesFramework framework(0, static_cast<const char**>(nullptr));
+        ramses::RamsesFramework framework{ RamsesFrameworkConfig{ 0, static_cast<const char**>(nullptr) } };
         EXPECT_NE(framework.createClient(nullptr), nullptr);
         EXPECT_FALSE(framework.isConnected());
     }

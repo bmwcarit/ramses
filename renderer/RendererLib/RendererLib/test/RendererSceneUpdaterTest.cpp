@@ -11,8 +11,6 @@
 
 namespace ramses_internal {
 
-constexpr DisplayHandle ARendererSceneUpdater::Display;
-
 ///////////////////////////
 // General tests
 ///////////////////////////
@@ -273,44 +271,6 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterDestroysAllDisplayContexts)
     destroySceneUpdater();
 
     EXPECT_FALSE(renderer.hasDisplayController());
-}
-
-TEST_F(ARendererSceneUpdater, updateScenesWillUpdateRealTimeAnimationSystems)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    IScene& scene = *stagingScene[0u];
-    AnimationSystem& animSystem = *new AnimationSystem(EAnimationSystemFlags_Default, AnimationSystemSizeInformation());
-    AnimationSystem& animSystemReal = *new AnimationSystem(EAnimationSystemFlags_RealTime, AnimationSystemSizeInformation());
-
-    auto hdl1 = scene.addAnimationSystem(&animSystem);
-    auto hdl2 = scene.addAnimationSystem(&animSystemReal);
-    performFlush();
-    update();
-
-    const IScene& rendererScene = rendererScenes.getScene(getSceneId());
-    const IAnimationSystem* rendAnimSystem = rendererScene.getAnimationSystem(hdl1);
-    const IAnimationSystem* rendAnimSystemReal = rendererScene.getAnimationSystem(hdl2);
-    ASSERT_TRUE(rendAnimSystem != nullptr);
-    ASSERT_TRUE(rendAnimSystemReal != nullptr);
-
-    const AnimationTime time1 = rendAnimSystem->getTime();
-    const AnimationTime time1real = rendAnimSystemReal->getTime();
-    PlatformThread::Sleep(2u); // needed to make sure there's actual difference
-    update();
-    const AnimationTime time2 = rendAnimSystem->getTime();
-    const AnimationTime time2real = rendAnimSystemReal->getTime();
-
-    EXPECT_TRUE(time1 == time2);
-    EXPECT_TRUE(time1real < time2real);
-
-    hideScene();
-    unmapScene();
-
-    destroyDisplay();
 }
 
 TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
@@ -3108,33 +3068,6 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
         unmapScene(i);
     }
 
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfRealTimeAnimationIsActive)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    const auto animationHandle = createRealTimeActiveAnimation();
-    PlatformThread::Sleep(1u);
-    expectModifiedScenesReportedToRenderer();
-    update();
-
-    PlatformThread::Sleep(1u);
-    expectModifiedScenesReportedToRenderer();
-    update();
-
-    expectModifiedScenesReportedToRenderer();
-    stopAnimation(animationHandle);
-
-    expectNoModifiedScenesReportedToRenderer();
-    update();
-
-    hideScene();
-    unmapScene();
     destroyDisplay();
 }
 

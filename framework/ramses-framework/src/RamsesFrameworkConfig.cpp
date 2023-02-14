@@ -26,6 +26,21 @@ namespace ramses
     {
     }
 
+    void RamsesFrameworkConfig::registerOptions(CLI::App& cli)
+    {
+        return impl.registerOptions(cli);
+    }
+
+    status_t RamsesFrameworkConfig::setFeatureLevel(EFeatureLevel featureLevel)
+    {
+        return impl.setFeatureLevel(featureLevel);
+    }
+
+    EFeatureLevel RamsesFrameworkConfig::getFeatureLevel() const
+    {
+        return impl.getFeatureLevel();
+    }
+
     status_t RamsesFrameworkConfig::setRequestedRamsesShellType(ERamsesShellType requestedShellType)
     {
         const status_t status = impl.setRequestedRamsesShellType(requestedShellType);

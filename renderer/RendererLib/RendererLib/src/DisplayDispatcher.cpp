@@ -180,15 +180,12 @@ namespace ramses_internal
         bundle.platform.reset(Platform_Base::CreatePlatform(m_rendererConfig));
 
         LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: creating display bundle of components for display {}", displayHandle);
-        const bool firstDisplay = m_displays.empty(); // allow time report and KPI monitoring only for 1st display
         bundle.displayBundle = DisplayBundleShared{ std::make_unique<DisplayBundle>(
             displayHandle,
             m_rendererSceneSender,
             *bundle.platform,
             m_notifier,
-            m_rendererConfig.getRenderThreadLoopTimingReportingPeriod(),
-            firstDisplay,
-            firstDisplay ? m_rendererConfig.getKPIFileName() : String{})
+            m_rendererConfig.getRenderThreadLoopTimingReportingPeriod())
         };
         if (m_threadedDisplays)
         {

@@ -25,18 +25,10 @@ TEST(ARamsesFramework, canDefaultConstruct)
 
 TEST(ARamsesFramework, canConstructFromConfig)
 {
-    const char* argv[] = {"", "-guid", "0000-000000000123"};
+    const char* argv[] = {"", "--guid", "0000-000000000123"};
     RamsesFrameworkConfig config(3, argv);
     RamsesFramework fw(config);
     EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x123);
-}
-
-
-TEST(ARamsesFramework, canConstructWithArgcArgv)
-{
-    const char* argv[] = {"", "-guid", "0000-000000000124"};
-    RamsesFramework fw(3, argv);
-    EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x124);
 }
 
 TEST(ARamsesFramework, isNotConnectedInitially)

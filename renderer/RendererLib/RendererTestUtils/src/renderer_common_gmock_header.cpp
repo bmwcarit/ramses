@@ -17,7 +17,6 @@ namespace ramses_internal
     {
         *os << "Fullscreen=" << config.getFullscreenState();
         *os << "\nBorderlesss=" << config.getBorderlessState();
-        *os << "\nWarping=" << config.isWarpingEnabled();
 
         *os << "\nAntialiasing samples=" << config.getAntialiasingSampleCount();
 

@@ -50,7 +50,7 @@ namespace ramses_internal
         in.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
         SceneReferenceAction refAction{ SceneReferenceActionType::LinkData, SceneReferenceHandle{ 1 }, DataSlotId{ 1 }, SceneReferenceHandle{ 2 }, DataSlotId{ 2 } };
         in.sceneReferences.push_back(refAction);
-        in.sizeInfo = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 };
+        in.sizeInfo = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 };
         in.versionTag = SceneVersionTag(2);
         EXPECT_EQ(in, SerializeDeserialize(in));
     }
@@ -105,14 +105,14 @@ namespace ramses_internal
         in.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
         SceneReferenceAction refAction{ SceneReferenceActionType::LinkData, SceneReferenceHandle{ 1 }, DataSlotId{ 1 }, SceneReferenceHandle{ 2 }, DataSlotId{ 2 } };
         in.sceneReferences.push_back(refAction);
-        in.sizeInfo = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 };
+        in.sizeInfo = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18,19,20 };
         in.versionTag = SceneVersionTag(2);
 
         EXPECT_EQ(fmt::to_string(in),
             "FlushInformation:[valid:true;flushcounter:14;version:2;"
                 "resChanges[+:1;-:1;resActions:1];refActions:1;time[0;sync:1;exp:12345;int:54321];"
                 "sizeInfo:[node=1 camera=2 transform=3 renderable=4 state=5 datalayout=6 datainstance=7 renderGroup=8 renderPass=9 blitPass=10 renderTarget=11 renderBuffer=12 textureSampler=13 streamTexture=14 dataSlot=15 "
-                "dataBuffer=16 animationSystem=17 textureBuffer=18 pickableObjectCount=19 sceneReferenceCount=20]]");
+                "dataBuffer=16 textureBuffer=18 pickableObjectCount=19 sceneReferenceCount=20]]");
     }
 
 }

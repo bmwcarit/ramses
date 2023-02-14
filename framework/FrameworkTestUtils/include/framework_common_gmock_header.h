@@ -26,7 +26,6 @@ namespace ramses_internal
     class RamshInput;
     class Guid;
     struct SceneInfo;
-    struct SomeIPMsgHeader;
 
     void PrintTo(const Matrix44f& matrix, ::std::ostream* os);
     void PrintTo(const SceneActionCollection& actions, std::ostream* os);
@@ -35,7 +34,6 @@ namespace ramses_internal
     void PrintTo(const Guid& guid, ::std::ostream* os);
     void PrintTo(const SceneInfo&, ::std::ostream* os);
     void PrintTo(const RamshInput&, ::std::ostream* os);
-    void PrintTo(const SomeIPMsgHeader&, ::std::ostream* os);
 }
 
 

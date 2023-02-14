@@ -8,9 +8,19 @@
 
 #include "RendererLib/RendererConfig.h"
 #include "Collections/StringOutputStream.h"
+#include "CLI/CLI.hpp"
 
 namespace ramses_internal
 {
+    void RendererConfig::registerOptions(CLI::App& cli)
+    {
+        auto* grp = cli.add_option_group("Renderer Options");
+        auto* ec  = grp->add_option("--ec-display", m_waylandSocketEmbedded, "set wayland display (socket name) that is created by the embedded compositor")->type_name("NAME");
+        grp->add_option("--ec-socket-group", m_waylandSocketEmbeddedGroupName, "group name for wayland display socket")->needs(ec)->type_name("NAME");
+        grp->add_option("--ec-socket-permissions", m_waylandSocketEmbeddedPermissions, "file permissions for wayland display socket")->needs(ec)->type_name("MODE");
+        grp->add_flag("--ivi-control,!--no-ivi-control", m_systemCompositorEnabled, "enable system compositor IVI controller");
+    }
+
     void RendererConfig::setWaylandEmbeddedCompositingSocketName(const String& socket)
     {
         m_waylandSocketEmbedded = socket;
@@ -52,16 +62,6 @@ namespace ramses_internal
     uint32_t RendererConfig::getWaylandSocketEmbeddedPermissions() const
     {
         return m_waylandSocketEmbeddedPermissions;
-    }
-
-    void RendererConfig::setKPIFileName(const String& filename)
-    {
-        m_kpiFilename = filename;
-    }
-
-    const String& RendererConfig::getKPIFileName() const
-    {
-        return m_kpiFilename;
     }
 
     void RendererConfig::enableSystemCompositorControl()

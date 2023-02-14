@@ -7,13 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "RamsesFrameworkConfigImpl.h"
-#include "Utils/CommandLineParser.h"
 #include "Utils/LoggingUtils.h"
 #include "Utils/Argument.h"
 #include "Watchdog/PlatformWatchdog.h"
 #include "TransportCommon/EConnectionProtocol.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
-#include "TransportCommon/SomeIPAdapter.h"
+#include <map>
 
 namespace ramses
 {
@@ -27,21 +26,44 @@ namespace ramses
 
     RamsesFrameworkConfigImpl::RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv)
         : StatusObjectImpl()
-        , m_enableSomeIPHUSafeLocalMode(false)
         , m_shellType(ERamsesShellType_Default)
         , m_periodicLogsEnabled(true)
-        , m_usedProtocol(EConnectionProtocol::Invalid)
-        , m_someipCommunicationUserID(SomeIPAdapter::GetInvalidCommunicationUser())
-        , m_parser(argc, argv)
-        , m_dltAppID("RAMS")
-        , m_dltAppDescription("RAMS-DESC")
+        , m_usedProtocol(gHasTCPComm ? EConnectionProtocol::TCP : EConnectionProtocol::Fake)
         , m_enableProtocolVersionOffset(false)
     {
-        parseCommandLine();
+        m_programName = (argc >= 1) ? argv[0] : "";
+        if (argc > 1)
+        {
+            CLI::App cli;
+            registerOptions(cli);
+            cli.allow_extras();
+            try
+            {
+                cli.parse(argc, argv);
+            }
+            catch (CLI::ParseError& e)
+            {
+                const auto err = cli.exit(e);
+                if (err != 0)
+                    exit(err);
+            }
+        }
     }
 
-    RamsesFrameworkConfigImpl::~RamsesFrameworkConfigImpl()
+    RamsesFrameworkConfigImpl::~RamsesFrameworkConfigImpl() = default;
+
+    status_t RamsesFrameworkConfigImpl::setFeatureLevel(EFeatureLevel featureLevel)
     {
+        if (std::find(ramses::AllFeatureLevels.cbegin(), ramses::AllFeatureLevels.cend(), featureLevel) == ramses::AllFeatureLevels.cend())
+            return addErrorEntry(fmt::format("RamsesFrameworkConfig::setFeatureLevel: Failed to set unsupported feature level '{}'.", featureLevel));
+
+        m_featureLevel = featureLevel;
+        return StatusOK;
+    }
+
+    EFeatureLevel RamsesFrameworkConfigImpl::getFeatureLevel() const
+    {
+        return m_featureLevel;
     }
 
     void RamsesFrameworkConfigImpl::enableProtocolVersionOffset()
@@ -62,19 +84,14 @@ namespace ramses
         }
     }
 
-    const ramses_internal::CommandLineParser& RamsesFrameworkConfigImpl::getCommandLineParser() const
+    const ramses_internal::String& RamsesFrameworkConfigImpl::getProgramName() const
     {
-        return m_parser;
+        return m_programName;
     }
 
     EConnectionProtocol RamsesFrameworkConfigImpl::getUsedProtocol() const
     {
         return m_usedProtocol;
-    }
-
-    uint32_t RamsesFrameworkConfigImpl::getSomeipCommunicationUserID() const
-    {
-        return m_someipCommunicationUserID;
     }
 
     uint32_t RamsesFrameworkConfigImpl::getWatchdogNotificationInterval(ERamsesThreadIdentifier thread) const
@@ -85,34 +102,6 @@ namespace ramses
     IThreadWatchdogNotification* RamsesFrameworkConfigImpl::getWatchdogNotificationCallback() const
     {
         return m_watchdogConfig.getCallBack();
-    }
-
-    status_t RamsesFrameworkConfigImpl::enableSomeIPCommunication(uint32_t ramsesCommunicationUserID)
-    {
-        m_someipCommunicationUserID = ramsesCommunicationUserID;
-        m_usedProtocol = SomeIPAdapter::GetUsedSomeIPStack(ramsesCommunicationUserID);
-
-        if (m_usedProtocol != EConnectionProtocol::Invalid)
-        {
-            if (SomeIPAdapter::IsSomeIPStackCompiled(m_usedProtocol))
-            {
-                return StatusOK;
-            }
-            else
-            {
-                StringOutputStream error;
-                error << "Specified to use " << m_usedProtocol << " but was compiled without";
-                LOG_FATAL(CONTEXT_COMMUNICATION, error.c_str());
-                return addErrorEntry(error.c_str());
-            }
-        }
-        else
-        {
-            StringOutputStream error;
-            error << "No SomeIP stack is configured for communication user ID " << ramsesCommunicationUserID;
-            LOG_FATAL(CONTEXT_COMMUNICATION, error.c_str());
-            return addErrorEntry(error.c_str());
-        }
     }
 
     status_t RamsesFrameworkConfigImpl::setRequestedRamsesShellType(ERamsesShellType shellType)
@@ -144,69 +133,67 @@ namespace ramses
         return StatusOK;
     }
 
-    void RamsesFrameworkConfigImpl::parseCommandLine()
+    void RamsesFrameworkConfigImpl::registerOptions(CLI::App& cli)
     {
-        const ArgumentUInt32 someipCommunicationUserID(m_parser, "someip", "enableSomeIPWithID", 0);
-        const ArgumentBool useFakeConnection( m_parser, "fakeConnection", "fakeConnection");
-        const ArgumentBool isRamshEnabled(m_parser, "ramsh", "ramsh");
-        const ArgumentBool enableOffsetPlatformProtocolVersion(m_parser, "pvo", "protocolVersionOffset");
-        const ArgumentBool disablePeriodicLogs(m_parser, "disablePeriodicLogs", "disablePeriodicLogs");
-        const ArgumentString userProvidedGuid(m_parser, "guid", "guid", "");
+        auto* fw = cli.add_option_group("Framework Options");
+        auto* logger = cli.add_option_group("Logger Options");
 
-        if (enableOffsetPlatformProtocolVersion)
-        {
-            enableProtocolVersionOffset();
-        }
-        if (isRamshEnabled)
-        {
-            m_shellType = ERamsesShellType_Console;
-        }
+        std::map<std::string, EConnectionProtocol> mapConn{{"tcp", EConnectionProtocol::TCP}, {"off", EConnectionProtocol::Fake}};
+        fw->add_option("--connection", m_usedProtocol, "Connection system")->transform(CLI::CheckedTransformer(mapConn, CLI::ignore_case))->default_val(m_usedProtocol);
 
-        if (disablePeriodicLogs)
-        {
-            m_periodicLogsEnabled = false;
-        }
+        fw->add_flag_function(
+            "--ramsh,!--no-ramsh",
+            [&](std::int64_t count) {
+                if (count > 0)
+                {
+                    m_shellType = ERamsesShellType_Console;
+                }
+                if (count < 0)
+                {
+                    m_shellType = ERamsesShellType_None;
+                }
+            },
+            "Enable Ramses Shell");
+        fw->add_option_function<std::string>(
+            "--guid", [&](const std::string& guid) { m_userProvidedGuid = Guid(guid.c_str()); }, "User provided Guid");
 
-        if (someipCommunicationUserID)
-        {
-            const ArgumentBool someipHuLocalMode(m_parser, "shl", "someip-hu-local");
-            m_enableSomeIPHUSafeLocalMode = someipHuLocalMode;
+        fw->add_option_function<std::string>(
+            "--ip", [&](const std::string& myip) { m_tcpConfig.setIPAddress(String(myip)); }, "IP Address for TCP connection");
 
-            enableSomeIPCommunication(someipCommunicationUserID);
+        // TCP/IP options
+        fw->add_option_function<uint16_t>(
+            "--port", [&](uint16_t p) { m_tcpConfig.setPort(p); }, "TCP port");
+        fw->add_option_function<std::string>(
+            "--daemon-ip", [&](const std::string& ip) { m_tcpConfig.setDaemonIPAddress(String(ip)); }, "Ramses Daemon TCP port");
+        fw->add_option_function<uint16_t>(
+            "--daemon-port", [&](uint16_t p) { m_tcpConfig.setDaemonPort(p); }, "Ramses Daemon TCP port");
+        fw->add_option_function<std::chrono::milliseconds>(
+            "--tcp-alive", [&](const std::chrono::milliseconds& val) { m_tcpConfig.setAliveInterval(val); }, "TCP Keepalive interval in milliseconds");
+        fw->add_option_function<std::chrono::milliseconds>(
+            "--tcp-alive-timeout", [&](const std::chrono::milliseconds& val) { m_tcpConfig.setAliveTimeout(val); }, "TCP Keepalive timeout in milliseconds");
 
-            if (SomeIPAdapter::GetUsedSomeIPStack(someipCommunicationUserID) == EConnectionProtocol::SomeIP_IC)
-            {
-                m_someipICConfig.setIPAddress(ArgumentString(m_parser, "myip", "myipaddress", m_someipICConfig.getIPAddress()));
-            }
+        // Logger options
+        logger->add_flag("--logp,!--no-logp", m_periodicLogsEnabled, "Enable periodic logs");
+        logger->add_option("--periodic-log-timeout", periodicLogTimeout, "Periodic log time interval in seconds");
 
-            someipKeepAliveInterval = std::chrono::milliseconds(ArgumentUInt32(m_parser, "someipAlive", "someipAlive", static_cast<uint32_t>(someipKeepAliveInterval.count())));
-            someipKeepAliveTimeout = std::chrono::milliseconds(ArgumentUInt32(m_parser, "someipAliveTimeout", "someipAliveTimeout", static_cast<uint32_t>(someipKeepAliveTimeout.count())));
-        }
-        else if( useFakeConnection || !gHasTCPComm )
-        {
-            m_usedProtocol = EConnectionProtocol::Fake;
-        }
-        else
-        {
-            m_usedProtocol = EConnectionProtocol::TCP;
-            ArgumentUInt16 port(m_parser, "myport", "myportnumber", m_tcpConfig.getPort());
-            if( port.wasDefined() )
-            {
-                m_tcpConfig.setPort(port);
-            }
-
-            m_tcpConfig.setIPAddress(ArgumentString(m_parser, "myip", "myipaddress", m_tcpConfig.getIPAddress()));
-            m_tcpConfig.setDaemonIPAddress(ArgumentString(m_parser, "i", "daemon-ip", m_tcpConfig.getDaemonIPAddress()));
-            m_tcpConfig.setDaemonPort(ArgumentUInt16(m_parser, "p", "daemon-port", m_tcpConfig.getDaemonPort()));
-
-            m_tcpConfig.setAliveInterval(std::chrono::milliseconds(ArgumentUInt32(m_parser, "tcpAlive", "tcpAlive", static_cast<uint32_t>(m_tcpConfig.getAliveInterval().count()))));
-            m_tcpConfig.setAliveTimeout(std::chrono::milliseconds(ArgumentUInt32(m_parser, "tcpAliveTimeout", "tcpAliveTimeout", static_cast<uint32_t>(m_tcpConfig.getAliveTimeout().count()))));
-        }
-
-        if (userProvidedGuid.hasValue())
-        {
-            m_userProvidedGuid = Guid(userProvidedGuid);
-        }
+        std::map<std::string, ELogLevel> logLevels = {
+            {"off", ELogLevel::Off},
+            {"fatal", ELogLevel::Fatal},
+            {"error", ELogLevel::Error},
+            {"warn", ELogLevel::Warn},
+            {"info", ELogLevel::Info},
+            {"debug", ELogLevel::Debug},
+            {"trace", ELogLevel::Trace},
+        };
+        logger->add_option("--log-level", loggerConfig.logLevel, "Log level for all contexts (both console and dlt)")
+            ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));
+        logger->add_option("--log-level-console", loggerConfig.logLevelConsole, "Log level for all contexts (console only)")
+            ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));
+        logger->add_option("--log-contexts", loggerConfig.logLevelContextsStr, "Log level per context: [logLevel:context,logLevel:context,...]");
+        logger->add_option("--dlt-app-id", loggerConfig.dltAppId, "DLT Application ID")->default_str(loggerConfig.dltAppId.stdRef());
+        logger->add_option("--dlt-app-description", loggerConfig.dltAppDescription, "DLT Application description")->default_str(loggerConfig.dltAppDescription.stdRef());
+        logger->add_flag("--log-test", loggerConfig.enableSmokeTestContext, "Enables additional log context for smoke tests (RSMT)");
+        cli.callback([&](){m_programName = cli.get_name();});
     }
 
     status_t RamsesFrameworkConfigImpl::enableDLTApplicationRegistration(bool state)
@@ -222,22 +209,32 @@ namespace ramses
 
     void RamsesFrameworkConfigImpl::setDLTApplicationID(const char* id)
     {
-        m_dltAppID = id;
+        // command line args overwrite hard coded settings
+        // TOOD: remove condition after CLI11 integration
+        if (!m_dltAppIdSet)
+        {
+            loggerConfig.dltAppId = id;
+        }
     }
 
     const char* RamsesFrameworkConfigImpl::getDLTApplicationID() const
     {
-        return m_dltAppID.c_str();
+        return loggerConfig.dltAppId.c_str();
     }
 
     void RamsesFrameworkConfigImpl::setDLTApplicationDescription(const char* description)
     {
-        m_dltAppDescription = description;
+        // command line args overwrite hard coded settings
+        // TOOD: remove condition after CLI11 integration
+        if (!m_dltDescriptionSet)
+        {
+            loggerConfig.dltAppDescription = description;
+        }
     }
 
     const char* RamsesFrameworkConfigImpl::getDLTApplicationDescription() const
     {
-        return m_dltAppDescription.c_str();
+        return loggerConfig.dltAppDescription.c_str();
     }
 
     void RamsesFrameworkConfigImpl::setPeriodicLogsEnabled(bool enabled)
@@ -248,5 +245,12 @@ namespace ramses
     ramses_internal::Guid RamsesFrameworkConfigImpl::getUserProvidedGuid() const
     {
         return m_userProvidedGuid;
+    }
+
+    void RamsesFrameworkConfigImpl::setFeatureLevelNoCheck(EFeatureLevel featureLevel)
+    {
+        static_assert(EFeatureLevel_Latest == EFeatureLevel_01,
+            "remove this method which is used only for testing while there is no valid mismatching feature level yet");
+        m_featureLevel = featureLevel;
     }
 }

@@ -27,7 +27,6 @@
 
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
-#include "AnimationAPI/IAnimationSystem.h"
 #include "Components/FlushTimeInformation.h"
 
 namespace ramses_internal
@@ -325,14 +324,6 @@ namespace ramses_internal
         virtual bool                        isSceneReferenceAllocated       (SceneReferenceHandle handle) const = 0;
         virtual UInt32                      getSceneReferenceCount          () const = 0;
         virtual const SceneReference&       getSceneReference               (SceneReferenceHandle handle) const = 0;
-
-        //Animation system
-        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) = 0;
-        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) = 0;
-        virtual IAnimationSystem*           getAnimationSystem              (AnimationSystemHandle animSystemHandle) = 0;
-        virtual const IAnimationSystem*     getAnimationSystem              (AnimationSystemHandle animSystemHandle) const = 0;
-        virtual bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const = 0;
-        virtual UInt32                      getAnimationSystemCount         () const = 0;
     };
 }
 

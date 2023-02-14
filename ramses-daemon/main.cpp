@@ -23,7 +23,9 @@ int main(int argc, const char* argv[])
     using namespace ramses_internal;
 
     ramses::RamsesFrameworkConfigImpl config(argc, argv);
-    GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false, true); // no framework used
+    config.setDLTApplicationDescription("ramses-daemon");
+    config.setDLTApplicationID("SMGR");
+    GetRamsesLogger().initialize(config.loggerConfig, false, true); // no framework used
 
     auto commandExit = std::make_shared<RamshCommandExit>();
     RamshStandardSetup ramsh(ramses::ERamsesShellType_Console, "Daemon");

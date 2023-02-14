@@ -11,7 +11,6 @@
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/SceneObjectIterator.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"

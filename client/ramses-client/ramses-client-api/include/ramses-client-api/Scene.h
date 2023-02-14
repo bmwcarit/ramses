@@ -11,7 +11,6 @@
 
 #include "ramses-client-api/ClientObject.h"
 #include "ramses-client-api/TextureEnums.h"
-#include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/MipLevelData.h"
@@ -32,8 +31,6 @@ namespace ramses
     class GeometryBinding;
     class SceneImpl;
     class RamsesClientImpl;
-    class AnimationSystem;
-    class AnimationSystemRealTime;
     class RenderGroup;
     class RenderPass;
     class RenderBuffer;
@@ -888,38 +885,6 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t dataId);
-
-        /**
-        * @brief Create a new animation system. The animation system will be
-        * updated on renderer side after calls to AnimationSystem::setTime().
-        * The animation system is not automatically updated on client side.
-        * If live updates of animated values are needed on client side, provide
-        * the creation flag EAnimationSystemFlags_ClientSideProcessing. Calls to
-        * AnimationSystem::setTime() then also update the animation systems
-        * client side state.
-        *
-        * @param[in] flags Optional creation flags for the animation system.
-        * @param[in] name The optional name of the created animation system.
-        * @return A reference to the created animation system.
-        */
-        AnimationSystem* createAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
-
-        /**
-        * @brief Create a new animation system that is designed to work with system
-        * time. The animation system will be updated automatically every frame on
-        * renderer side using its system time. The animation system is not
-        * automatically updated on client side. If live updates of animated values
-        * are needed on client side, provide the creation flag
-        * EAnimationSystemFlags_ClientSideProcessing, and make sure to call
-        * AnimationSystem::updateLocalTime() before accessing any values. Calls
-        * to AnimationSystem::updateLocalTime() are also mandatory before any
-        * client side changes to the state of the animation system.
-        *
-        * @param[in] flags Optional creation flags for the animation system.
-        * @param[in] name The optional name of the created animation system.
-        * @return A reference to the created animation system.
-        */
-        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
 
         /**
         * @brief Creates a new SceneReference object.

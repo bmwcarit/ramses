@@ -19,9 +19,6 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-OPTION(ACME_CREATE_PACKAGE           "include CPack in order to create a 'package' target" ON)
-OPTION(ACME_ENABLE_TEST_PROPERTIES   "Enable use of test properties" ON)
-
 SET(ACME2_BASE_DIR   ${CMAKE_CURRENT_LIST_DIR})
 
 INCLUDE(${ACME2_BASE_DIR}/internal/tools.cmake)
@@ -31,21 +28,17 @@ CMAKE_POLICY(SET CMP0054 NEW)
 CMAKE_POLICY(SET CMP0022 NEW)
 
 MACRO(ACME2_PROJECT)
-    SET(PROJECT_SETTINGS "${ARGV}")
-
-    SET(SUPER_PROJECT_NAME ${PROJECT_NAME})
-    SET(PROJECT_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-
-    set_property(DIRECTORY "${PROJECT_BASE_DIR}" APPEND PROPERTY ACME_COPIED_RESOURCE_NAMES_TO_DIRECTORY "")
-    set_property(DIRECTORY "${PROJECT_BASE_DIR}" APPEND PROPERTY ACME_COPIED_RESOURCE_PATHS_TO_DIRECTORY "")
-
     # reset PROJECT_<value>
     FOREACH(PROPERTY ${ACME2_API})
         SET(PROJECT_${PROPERTY} "")
     ENDFOREACH()
 
     # values provided by ACME_PROJECT call are in PROJECT_<value>
-    cmake_parse_arguments(PROJECT "" "" "${ACME2_API}" ${PROJECT_SETTINGS})
+    cmake_parse_arguments(PROJECT "" "" "${ACME2_API}" ${ARGV})
+
+    if(${PROJECT_UNPARSED_ARGUMENTS})
+        message(FATAL_ERROR "Unparsed ACME_PROJECT properties: '${PROJECT_UNPARSED_ARGUMENTS}'")
+    endif()
 
     # apply project settings or use externally provided values or use default values
     FOREACH(PROPERTY ${ACME2_API})
@@ -58,7 +51,7 @@ MACRO(ACME2_PROJECT)
         ENDIF()
     ENDFOREACH()
 
-    include(${ACME2_BASE_DIR}/internal/create_build_config.cmake)
+    createBuildConfig()
 
     OPTION(${PROJECT_NAME}_BUILD_TESTS "build unit tests for project '${PROJECT_NAME}'" ON)
 
@@ -74,11 +67,11 @@ MACRO(ACME2_PROJECT)
             SET_PROPERTY(CACHE ${PROJECT_NAME}_${CONTENT_STRING} PROPERTY STRINGS ON OFF AUTO)
 
             IF("${${PROJECT_NAME}_${CONTENT_STRING}}" STREQUAL "OFF")
-                ACME_INFO("- ${CONTENT}")
+                message(STATUS "- ${CONTENT}")
             ENDIF()
 
             IF("${${PROJECT_NAME}_${CONTENT_STRING}}" STREQUAL "AUTO")
-                IF (EXISTS "${PROJECT_BASE_DIR}/${CONTENT}")
+                IF (EXISTS "${PROJECT_SOURCE_DIR}/${CONTENT}")
                     SET(ACME_ENABLE_DEPENDENCY_CHECK ON)
                     ADD_SUBDIRECTORY(${CONTENT})
                 ENDIF()
@@ -90,17 +83,9 @@ MACRO(ACME2_PROJECT)
             ENDIF()
         ENDIF()
     ENDFOREACH()
-
-    IF(ACME_CREATE_PACKAGE)
-        INCLUDE(${ACME2_BASE_DIR}/internal/create_package.cmake)
-    ENDIF()
 ENDMACRO(ACME2_PROJECT)
 
 MACRO(ACME_MODULE)
-
-    CMAKE_POLICY(SET CMP0054 NEW)
-
-    SET(MODULE_SETTINGS "${ARGV}")
     SET(BUILD_ENABLED TRUE)
 
     # translate all MODULE_* provided by ACME2 module
@@ -112,7 +97,11 @@ MACRO(ACME_MODULE)
     ENDFOREACH()
 
     # values provided by ACME_MODULE call are in MOUDLE_<value>
-    cmake_parse_arguments(MODULE "" "" "${ACME2_API}" ${MODULE_SETTINGS})
+    cmake_parse_arguments(MODULE "" "" "${ACME2_API}" ${ARGV})
+
+    if(${MODULE_UNPARSED_ARGUMENTS})
+        message(FATAL_ERROR "Unparsed ACME_MODULE properties: '${MODULE_UNPARSED_ARGUMENTS}'")
+    endif()
 
     # apply module settings or use project values,
     # if property was was not provided
@@ -121,9 +110,6 @@ MACRO(ACME_MODULE)
             SET(MODULE_${PROPERTY} ${PROJECT_${PROPERTY}})
         ENDIF()
     ENDFOREACH()
-
-    # do not use CONTENT, this is project specific
-    SET(MODULE_CONTENT "")
 
     # init acme settings with module settings
     FOREACH(PROPERTY ${ACME2_API})
@@ -170,7 +156,7 @@ MACRO(ACME_MODULE)
     ENDIF()
 
     IF(NOT BUILD_ENABLED)
-        ACME_INFO("- ${ACME_NAME} [${MSG}]")
+        message(STATUS "- ${ACME_NAME} [${MSG}]")
         SET(${PROJECT_NAME}_WILL_NOT_FIND "${ACME_NAME};${${PROJECT_NAME}_WILL_NOT_FIND}" CACHE INTERNAL "")
     ELSE()
         IF(NOT "${MSG}" STREQUAL "")
@@ -178,10 +164,10 @@ MACRO(ACME_MODULE)
             FOREACH(M ${MSG})
                 message("        - ${M}")
             ENDFOREACH()
-            ACME_ERROR("aborting configuration")
+            message(FATAL_ERROR "aborting configuration")
         ENDIF()
 
-        ACME_INFO("+ ${ACME_NAME} (${ACME_TYPE})")
+        message(STATUS "+ ${ACME_NAME} (${ACME_TYPE})")
 
         # build module
         INCLUDE(${ACME2_BASE_DIR}/internal/module_template.cmake)

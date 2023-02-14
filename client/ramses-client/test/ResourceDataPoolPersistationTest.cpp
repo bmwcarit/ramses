@@ -352,18 +352,18 @@ namespace ramses
         this->createResource<TextureCube>("resourceTex");
         this->createResource<TextureCube>("resourceTex");
 
-        for (ramses_internal::String name : { "ts1.ramres", "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
+        for (const auto& name : { "ts1.ramres", "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
         {
-            EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(m_scene, name.c_str(), false));
+            EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(m_scene, name, false));
         }
 
-        for (ramses_internal::String name : { "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
+        for (const auto& name : { "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
         {
-            EXPECT_TRUE(ramses::ClientTestUtils::CompareBinaryFiles("ts1.ramres", name.c_str()));
+            EXPECT_TRUE(ramses::ClientTestUtils::CompareBinaryFiles("ts1.ramres", name));
         }
     }
 
-    class ResourceSavingTestClient : public LocalTestClientWithSceneAndAnimationSystem
+    class ResourceSavingTestClient : public LocalTestClientWithScene
     {
     public:
         template<typename ResourceType>
@@ -375,7 +375,7 @@ namespace ramses
 
     TEST(AResourceDataPoolPersistation, keepsResourceDataFilesConsistentAcrossMultipleClients)
     {
-        for (ramses_internal::String name : { "ts1.ramres", "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
+        for (const auto& name : { "ts1.ramres", "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
         {
             ResourceSavingTestClient testClient;
             testClient.createResource<ArrayResource>("resourceTex");
@@ -385,12 +385,12 @@ namespace ramses
             testClient.createResource<Texture2D>("resourceTex");
             testClient.createResource<Texture3D>("resourceTex");
             testClient.createResource<TextureCube>("resourceTex");
-            EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(testClient.getScene(), name.c_str(), false));
+            EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(testClient.getScene(), name, false));
         }
 
-        for (ramses_internal::String name : { "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
+        for (const auto& name : { "ts2.ramres", "ts3.ramres", "ts4.ramres", "ts5.ramres", "ts6.ramres" })
         {
-            EXPECT_TRUE(ramses::ClientTestUtils::CompareBinaryFiles("ts1.ramres", name.c_str()));
+            EXPECT_TRUE(ramses::ClientTestUtils::CompareBinaryFiles("ts1.ramres", name));
         }
     }
 

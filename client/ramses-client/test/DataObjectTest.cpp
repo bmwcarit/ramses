@@ -28,7 +28,7 @@ using namespace ramses_internal;
 
 namespace ramses
 {
-    class ADataObject : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class ADataObject : public LocalTestClientWithScene, public testing::Test
     {
     protected:
         template <typename T>

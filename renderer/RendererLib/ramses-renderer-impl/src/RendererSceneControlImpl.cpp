@@ -170,10 +170,8 @@ namespace ramses
                 if (event.streamBuffer.isValid())
                     m_waylandEvents.push_back(event);
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
                 if (event.externalBuffer.isValid())
                     eventHandler.externalBufferLinked(externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
-#endif
 
                 break;
             case ramses_internal::ERendererEventType::SceneDataBufferLinkFailed:
@@ -185,10 +183,8 @@ namespace ramses
                 if (event.streamBuffer.isValid())
                     m_waylandEvents.push_back(event);
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
                 if (event.externalBuffer.isValid())
                     eventHandler.externalBufferLinked(externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
-#endif
 
                 break;
             case ramses_internal::ERendererEventType::SceneDataLinked:

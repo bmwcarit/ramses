@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererConfigImpl.h"
-#include "RendererLib/RendererConfigUtils.h"
+#include "CLI/CLI.hpp"
 
 namespace ramses
 {
@@ -16,8 +16,27 @@ namespace ramses
         , m_binaryShaderCache(nullptr)
         , m_rendererResourceCache(nullptr)
     {
-        ramses_internal::CommandLineParser parser(argc, argv);
-        ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, m_internalConfig);
+        if (argc > 1)
+        {
+            CLI::App cli;
+            m_internalConfig.registerOptions(cli);
+            cli.allow_extras();
+            try
+            {
+                cli.parse(argc, argv);
+            }
+            catch (CLI::ParseError& e)
+            {
+                const auto err = cli.exit(e);
+                if (err != 0)
+                    exit(err);
+            }
+        }
+    }
+
+    void RendererConfigImpl::registerOptions(CLI::App& cli)
+    {
+        m_internalConfig.registerOptions(cli);
     }
 
     status_t RendererConfigImpl::enableSystemCompositorControl()

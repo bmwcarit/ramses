@@ -22,11 +22,11 @@ SET(TARGET_CONTENT
 )
 
 IF (TARGET ${ACME_NAME})
-    ACME_ERROR("Target ${ACME_NAME} already exists")
+    message(FATAL_ERROR "Target ${ACME_NAME} already exists")
 ENDIF()
 
 IF("${TARGET_CONTENT}" STREQUAL "")
-    ACME_ERROR("Target ${ACME_NAME} has no files")
+    message(FATAL_ERROR "Target ${ACME_NAME} has no files")
 ENDIF()
 
 if (NOT "${ACME_FILES_RESOURCE}" STREQUAL "")
@@ -44,9 +44,9 @@ ELSEIF("${ACME_TYPE}" STREQUAL "BINARY")
     ADD_EXECUTABLE(${ACME_NAME} ${TARGET_CONTENT})
     set_target_properties(${ACME_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     IF(ACME_ENABLE_INSTALL)
-        INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_BINARY} COMPONENT "${ACME_PACKAGE_NAME}")
+        install(TARGETS ${ACME_NAME} DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} COMPONENT "${ACME_PACKAGE_NAME}")
         if (MSVC)
-            INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_BINARY} CONFIGURATIONS Debug RelWithDebInfo)
+            install(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} CONFIGURATIONS Debug RelWithDebInfo)
         endif()
     ENDIF()
 
@@ -55,7 +55,7 @@ ELSEIF("${ACME_TYPE}" STREQUAL "TEST")
     #==============================================================================================
     LIST(FIND ACME_ALLOWED_TEST_SUFFIXES ${ACME_TEST_SUFFIX} _INDEX_OF_SUFFIX)
     IF(${_INDEX_OF_SUFFIX} EQUAL -1)
-        ACME_ERROR("Your test module has invalid suffix: '${ACME_TEST_SUFFIX}'")
+        message(FATAL_ERROR "Your test module has invalid suffix: '${ACME_TEST_SUFFIX}'")
     ENDIF()
 
     ADD_EXECUTABLE(${ACME_NAME} ${TARGET_CONTENT})
@@ -68,16 +68,14 @@ ELSEIF("${ACME_TYPE}" STREQUAL "TEST")
         )
 
     # TODO(tobias) stay compatible: tests are always installed when they are built
-    INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_BINARY} COMPONENT "${ACME_PACKAGE_NAME}")
+    install(TARGETS ${ACME_NAME} DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} COMPONENT "${ACME_PACKAGE_NAME}")
     if (MSVC)
-        INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_BINARY} CONFIGURATIONS Debug RelWithDebInfo)
+        install(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} CONFIGURATIONS Debug RelWithDebInfo)
     endif()
 
-    if (${ACME_ENABLE_TEST_PROPERTIES})
-        # attach environment variable for clang coverage
-        set_tests_properties(${ACME_NAME}_${ACME_TEST_SUFFIX} PROPERTIES
-            ENVIRONMENT LLVM_PROFILE_FILE=${ACME_NAME}_${ACME_TEST_SUFFIX}_%p.profraw)
-    endif()
+    # attach environment variable for clang coverage
+    set_tests_properties(${ACME_NAME}_${ACME_TEST_SUFFIX} PROPERTIES
+        ENVIRONMENT LLVM_PROFILE_FILE=${ACME_NAME}_${ACME_TEST_SUFFIX}_%p.profraw)
 
     #==============================================================================================
 ELSEIF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY")
@@ -85,17 +83,17 @@ ELSEIF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY")
     ADD_LIBRARY(${ACME_NAME} SHARED ${TARGET_CONTENT})
     IF(ACME_ENABLE_INSTALL)
         if (MSVC)
-            INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_BINARY} COMPONENT "${ACME_PACKAGE_NAME}")
-            INSTALL(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${ACME_INSTALL_BINARY} CONFIGURATIONS Debug RelWithDebInfo)
+            install(TARGETS ${ACME_NAME} DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} COMPONENT "${ACME_PACKAGE_NAME}")
+            install(FILES $<TARGET_PDB_FILE:${ACME_NAME}> DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} CONFIGURATIONS Debug RelWithDebInfo)
         else()
-            INSTALL(TARGETS ${ACME_NAME} DESTINATION ${ACME_INSTALL_SHARED_LIB} COMPONENT "${ACME_PACKAGE_NAME}")
+            install(TARGETS ${ACME_NAME} DESTINATION ${RAMSES_INSTALL_LIBRARY_PATH} COMPONENT "${ACME_PACKAGE_NAME}")
         endif()
     ENDIF()
 
     #==============================================================================================
 ELSEIF()
     #==============================================================================================
-    ACME_ERROR("Your module has invalid type '${ACME_TYPE}'")
+    message(FATAL_ERROR "Your module has invalid type '${ACME_TYPE}'")
 ENDIF()
 
 #==============================================================================================
@@ -142,7 +140,7 @@ FOREACH(DEPENDENCY ${ACME_DEPENDENCIES})
     ELSE()
         # ensure it was already found by outside dependency checker
         if (NOT ${DEPENDENCY}_FOUND)
-            ACME_ERROR("${ACME_NAME}: Missing dependency ${DEPENDENCY}")
+            message(FATAL_ERROR "${ACME_NAME}: Missing dependency ${DEPENDENCY}")
         endif()
 
         # link includes and libs from vars

@@ -12,6 +12,12 @@
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
 #include "ramses-framework-api/APIExport.h"
+#include "ramses-framework-api/EFeatureLevel.h"
+
+namespace CLI
+{
+    class App;
+}
 
 namespace ramses
 {
@@ -32,6 +38,7 @@ namespace ramses
         *
         * @param[in] argc Number of strings in argv array
         * @param[in] argv Command line parameters as array of string
+        * @deprecated
         */
         RamsesFrameworkConfig(int32_t argc, char const* const* argv);
 
@@ -39,6 +46,41 @@ namespace ramses
         * @brief Destructor of RamsesFrameworkConfig
         */
         ~RamsesFrameworkConfig() override;
+
+        /**
+        * @brief Register command line options for the CLI11 command line parser
+        *
+        * Creates an option group "Framework Options" and registers command line options
+        * After parsing the command line with CLI::App::parser() this config object is assigned with the values provided by command line
+        *
+        * @param[in] cli CLI11 command line parser
+        */
+        void registerOptions(CLI::App& cli);
+
+        /**
+        * @brief Set feature level
+        *
+        * Sets feature level that will be used when creating #ramses::RamsesFramework.
+        * #ramses::RamsesClient and #ramses::RamsesRenderer created from this framework will only be able to connect
+        * to client/renderer using a compatible feature level.
+        * Only files exported using the exact same feature level can be loaded into #ramses::RamsesClient created
+        * from this framework.
+        * See #ramses::EFeatureLevel for more details.
+        *
+        * @param[in] featureLevel feature level to use (default is #ramses::EFeatureLevel_01)
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setFeatureLevel(EFeatureLevel featureLevel);
+
+        /**
+        * @brief Get feature level
+        *
+        * Gets feature level that was set using #setFeatureLevel.
+        *
+        * @return currently set feature level.
+        */
+        EFeatureLevel getFeatureLevel() const;
 
         /**
          * @brief Request a certain type of ramses shell
@@ -74,7 +116,7 @@ namespace ramses
         /**
          * @brief Disable DLT application registration
          *
-         * When set and DLT is enabled ramses expects DLT_REGISTER_APP beeing called before
+         * When set and DLT is enabled ramses expects DLT_REGISTER_APP being called before
          * RamsesFramework construction and DLT_UNREGISTER_APP after RamsesFramework destruction.
          * Ramses will add its context to the existing application.
          *
@@ -95,7 +137,7 @@ namespace ramses
         /**
         * @brief Return the DLT application id value set in configuration object
         *
-        * @return dlt application id value set in this configuration object
+        * @return DLT application id value set in this configuration object
         */
         const char* getDLTApplicationID() const;
 
@@ -109,7 +151,7 @@ namespace ramses
         /**
         * @brief Return the DLT application description set in configuration object
         *
-        * @return dlt application description set in this configuration object
+        * @return DLT application description set in this configuration object
         */
         const char* getDLTApplicationDescription() const;
 
@@ -156,16 +198,14 @@ namespace ramses
 
         /**
          * @brief Deleted copy constructor
-         * @param other unused
          */
-        RamsesFrameworkConfig(const RamsesFrameworkConfig& other) = delete;
+        RamsesFrameworkConfig(const RamsesFrameworkConfig&) = delete;
 
         /**
          * @brief Deleted copy assignment
-         * @param other unused
          * @return unused
          */
-        RamsesFrameworkConfig& operator=(const RamsesFrameworkConfig& other) = delete;
+        RamsesFrameworkConfig& operator=(const RamsesFrameworkConfig&) = delete;
     };
 
 }

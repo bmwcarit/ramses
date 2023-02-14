@@ -45,14 +45,6 @@ SET(ACME2_API
 
     # install module: boolean
     ENABLE_INSTALL
-    ENABLE_INSTALL_HEADER
-
-    # install paths
-    INSTALL_HEADER
-    INSTALL_BINARY
-    INSTALL_STATIC_LIB
-    INSTALL_SHARED_LIB
-    INSTALL_RESOURCE
 
     # content
     CONTENT
@@ -86,13 +78,6 @@ SET(ACME2_DEFAULT_VALUES
 
     # install module: boolean
     ENABLE_INSTALL          ON
-
-    # install paths
-    INSTALL_HEADER          include
-    INSTALL_BINARY          bin
-    INSTALL_STATIC_LIB      lib
-    INSTALL_SHARED_LIB      lib
-    INSTALL_RESOURCE        bin/res
 
     # content
     CONTENT

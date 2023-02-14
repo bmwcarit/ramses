@@ -7,7 +7,7 @@
 #  -------------------------------------------------------------------------
 
 # check selected c++ version
-set(ramses-sdk_ALLOWED_CPP_VERSIONS 14 17 20)
+set(ramses-sdk_ALLOWED_CPP_VERSIONS 17 20)
 if (NOT ramses-sdk_CPP_VERSION IN_LIST ramses-sdk_ALLOWED_CPP_VERSIONS)
     message(FATAL_ERROR "ramses-sdk_CPP_VERSION=${ramses-sdk_CPP_VERSION} must be in ${ramses-sdk_ALLOWED_CPP_VERSIONS}")
 endif()
@@ -154,21 +154,6 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         endif()
         ADD_FLAGS(RAMSES_C_CXX_FLAGS "-fno-omit-frame-pointer ${sanitizer_options}")
     endif()
-ENDIF()
-
-# flags for integrity
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Integrity")
-    target_compile_options(ramses-build-options-base INTERFACE --diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177,174 --pending_instantiations=200 --exceptions)
-    ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++${ramses-sdk_CPP_VERSION}")
-    ADD_FLAGS(RAMSES_RELEASE_FLAGS "-DNDEBUG")
-
-    if (ramses-sdk_WARNINGS_AS_ERRORS)
-        target_compile_options(ramses-build-options-base INTERFACE --quit_after_warnings)
-    endif()
-
-    # integrity is an unknown system to the eglplatform.h header
-    # so we manually define the correct choice for integrity here
-    ADD_DEFINITIONS("-D__WINSCW__" "-DGTEST_HAS_TYPED_TEST=1" "-DGTEST_HAS_TYPED_TEST_P=1")
 ENDIF()
 
 # flags for windows

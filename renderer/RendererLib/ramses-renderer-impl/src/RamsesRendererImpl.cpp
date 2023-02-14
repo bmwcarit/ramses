@@ -9,17 +9,12 @@
 #include "RamsesRendererImpl.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/WarpingMeshData.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "ramses-framework-api/DcsmConsumer.h"
 #include "RamsesFrameworkImpl.h"
 #include "RendererConfigImpl.h"
 #include "DisplayConfigImpl.h"
-#include "WarpingMeshDataImpl.h"
 #include "RendererSceneControlImpl.h"
-#include "DcsmContentControlImpl.h"
-#include "DcsmConsumerImpl.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/Handles.h"
@@ -57,7 +52,6 @@ namespace ramses
         { //Add ramsh commands to ramsh, independent of whether it is enabled or not.
             m_ramshCommands.push_back(std::make_shared<ramses_internal::Screenshot>(m_rendererCommandBuffer));
             m_ramshCommands.push_back(std::make_shared<ramses_internal::LogRendererInfo>(m_rendererCommandBuffer));
-            m_ramshCommands.push_back(std::make_shared<ramses_internal::ShowFrameProfiler>(m_rendererCommandBuffer));
             m_ramshCommands.push_back(std::make_shared<ramses_internal::PrintStatistics>(m_rendererCommandBuffer));
             m_ramshCommands.push_back(std::make_shared<ramses_internal::TriggerPickEvent>(m_rendererCommandBuffer));
             m_ramshCommands.push_back(std::make_shared<ramses_internal::SetClearColor>(m_rendererCommandBuffer));
@@ -180,12 +174,6 @@ namespace ramses
 
     RendererSceneControl* RamsesRendererImpl::getSceneControlAPI()
     {
-        if (m_dcsmContentControl)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Cannot instantiate RendererSceneControl, another scene control API is already in use, only one can be active per session.");
-            return nullptr;
-        }
-
         if (!m_sceneControlAPI)
         {
             LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: instantiating RendererSceneControl");
@@ -193,24 +181,6 @@ namespace ramses
         }
 
         return m_sceneControlAPI.get();
-    }
-
-    DcsmContentControl* RamsesRendererImpl::createDcsmContentControl()
-    {
-        if (m_dcsmContentControl || m_sceneControlAPI)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Cannot instantiate DcsmContentControl, another scene control API is already in use, only one can be active per session.");
-            return nullptr;
-        }
-
-        // DcsmContentControl operates on scene control API, the check above makes sure that it can be instantiated.
-        // DcsmContentControl will be then the only active 'scene control' API for user, even though in fact RendererSceneControl is the actual API used internally - via DcsmContentControl.
-        auto sceneControlAPI = getSceneControlAPI();
-        assert(sceneControlAPI != nullptr);
-
-        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: instantiating DcsmContentControl");
-        m_dcsmContentControl = UniquePtrWithDeleter<DcsmContentControl>{ new DcsmContentControl(*new DcsmContentControlImpl(m_framework.createDcsmConsumer()->impl, sceneControlAPI->impl)), [](DcsmContentControl* api) { delete api; } };
-        return m_dcsmContentControl.get();
     }
 
     void RamsesRendererImpl::logConfirmationEcho(displayId_t display, const ramses_internal::String& text)
@@ -221,26 +191,6 @@ namespace ramses
     const ramses_internal::RendererCommands& RamsesRendererImpl::getPendingCommands() const
     {
         return m_pendingRendererCommands;
-    }
-
-    status_t RamsesRendererImpl::updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData)
-    {
-        if (newWarpingMeshData.impl.getWarpingMeshData().getIndices().size() % 3 != 0)
-        {
-            return addErrorEntry("RamsesRenderer::updateWarpingConfig failed: warping indices not divisible by 3 (not a triangle list)!");
-        }
-
-        assert(newWarpingMeshData.impl.getWarpingMeshData().getTextureCoordinates().size() == newWarpingMeshData.impl.getWarpingMeshData().getVertexPositions().size());
-
-        if (newWarpingMeshData.impl.getWarpingMeshData().getVertexPositions().size() == 0 || newWarpingMeshData.impl.getWarpingMeshData().getIndices().size() == 0)
-        {
-            return addErrorEntry("RamsesRenderer::updateWarpingConfig failed: must provide more than zero indices and vertices!");
-        }
-
-        ramses_internal::RendererCommand::UpdateWarpingData cmd{ ramses_internal::DisplayHandle(displayId.getValue()), newWarpingMeshData.impl.getWarpingMeshData() };
-        m_pendingRendererCommands.push_back(std::move(cmd));
-
-        return StatusOK;
     }
 
     displayBufferId_t RamsesRendererImpl::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible, EDepthBufferType depthBufferType)
@@ -428,19 +378,6 @@ namespace ramses
         return StatusOK;
     }
 
-    bool RamsesRendererImpl::getExternalBufferGlId(displayId_t display, externalBufferId_t externalTexture, uint32_t& textureGlId) const
-    {
-        const auto it = std::find_if(m_externalBufferInfos.cbegin(), m_externalBufferInfos.cend(), [&](const auto& e){return e.display == display && e.externalBuffer == externalTexture;});
-
-        if(it != m_externalBufferInfos.cend())
-        {
-            textureGlId = it->glId;
-            return true;
-        }
-
-        return false;
-    }
-
     status_t RamsesRendererImpl::readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
         if (width == 0u || height == 0u)
@@ -554,12 +491,6 @@ namespace ramses
                 rendererEventHandler.framebufferPixelsRead(pixelData.data(), static_cast<uint32_t>(pixelData.size()), displayId, displayBuffer, eventResult);
                 break;
             }
-            case ramses_internal::ERendererEventType::WarpingDataUpdated:
-                rendererEventHandler.warpingMeshDataUpdated(displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_OK);
-                break;
-            case ramses_internal::ERendererEventType::WarpingDataUpdateFailed:
-                rendererEventHandler.warpingMeshDataUpdated(displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_FAIL);
-                break;
             case ramses_internal::ERendererEventType::OffscreenBufferCreated:
             {
                 const displayId_t display{ event.displayHandle.asMemoryHandle() };
@@ -588,33 +519,16 @@ namespace ramses
                 rendererEventHandler.offscreenBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, ERendererEventResult_FAIL);
                 break;
             case ramses_internal::ERendererEventType::ExternalBufferCreated:
-            {
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
                 rendererEventHandler.externalBufferCreated(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, event.textureGlId, ERendererEventResult_OK);
-#endif
-                m_externalBufferInfos.push_back(ExternalBufferInfo{ displayId_t{event.displayHandle.asMemoryHandle()}, externalBufferId_t{ event.externalBuffer.asMemoryHandle()}, event.textureGlId });
                 break;
-            }
             case ramses_internal::ERendererEventType::ExternalBufferCreateFailed:
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
                 rendererEventHandler.externalBufferCreated(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, 0u, ERendererEventResult_FAIL);
-#endif
                 break;
             case ramses_internal::ERendererEventType::ExternalBufferDestroyed:
-            {
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
                 rendererEventHandler.externalBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, ERendererEventResult_OK);
-#endif
-                auto it = std::find_if(m_externalBufferInfos.begin(), m_externalBufferInfos.end(), [&event](const auto& bufferInfo) {return bufferInfo.externalBuffer.getValue() == event.externalBuffer.asMemoryHandle(); });
-                assert(it != m_externalBufferInfos.end());
-                m_externalBufferInfos.erase(it);
-
                 break;
-            }
             case ramses_internal::ERendererEventType::ExternalBufferDestroyFailed:
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
                 rendererEventHandler.externalBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, ERendererEventResult_FAIL);
-#endif
                 break;
             case ramses_internal::ERendererEventType::WindowClosed:
                 rendererEventHandler.windowClosed(displayId_t{ event.displayHandle.asMemoryHandle() });
@@ -636,11 +550,7 @@ namespace ramses
                 rendererEventHandler.windowMoved(displayId_t{ event.displayHandle.asMemoryHandle() }, event.moveEvent.posX, event.moveEvent.posY);
                 break;
             case ramses_internal::ERendererEventType::FrameTimingReport:
-                if (event.isFirstDisplay)
-                    rendererEventHandler.renderThreadLoopTimings(event.frameTimings.maximumLoopTimeWithinPeriod, event.frameTimings.averageLoopTimeWithinPeriod);
-#ifdef RAMSES_ENABLE_RENDER_LOOP_TIMINGS_PER_DISPLAY
-                rendererEventHandler.renderThreadLoopTimingsPerDisplay(displayId_t{ event.displayHandle.asMemoryHandle() }, event.frameTimings.maximumLoopTimeWithinPeriod, event.frameTimings.averageLoopTimeWithinPeriod);
-#endif
+                rendererEventHandler.renderThreadLoopTimings(displayId_t{ event.displayHandle.asMemoryHandle() }, event.frameTimings.maximumLoopTimeWithinPeriod, event.frameTimings.averageLoopTimeWithinPeriod);
                 break;
             default:
                 assert(false);

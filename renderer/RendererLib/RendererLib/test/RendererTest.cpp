@@ -97,7 +97,6 @@ public:
             // normally render executor clears, in some cases (no scene assigned) renderer clears instead
             if (expectRendererClear != EClearFlags_None)
                 EXPECT_CALL(*renderer.m_displayController, clearBuffer(DisplayControllerMock::FakeFrameBufferHandle, expectRendererClear, clearColor));
-            EXPECT_CALL(*renderer.m_displayController, executePostProcessing()).InSequence(SeqRender);
         }
         else
         {
@@ -1493,31 +1492,6 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
     // no change
     expectFrameBufferRendered(false);
     doOneRendererLoop();
-    expectFrameBufferRendered(false);
-    doOneRendererLoop();
-}
-
-TEST_P(ARenderer, rerendersFramebufferIfWarpingDataChanged)
-{
-    createDisplayController();
-    EXPECT_CALL(*renderer.m_displayController, isWarpingEnabled()).WillRepeatedly(Return(true));
-
-    expectFrameBufferRendered(true);
-    expectSwapBuffers();
-    doOneRendererLoop();
-
-    // no change
-    expectFrameBufferRendered(false);
-    doOneRendererLoop();
-
-    // changing warping data causes re-render
-    EXPECT_CALL(*renderer.m_displayController, setWarpingMeshData(_));
-    renderer.setWarpingMeshData({});
-    expectFrameBufferRendered(true);
-    expectSwapBuffers();
-    doOneRendererLoop();
-
-    // no change
     expectFrameBufferRendered(false);
     doOneRendererLoop();
 }

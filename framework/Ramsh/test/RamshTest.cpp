@@ -16,7 +16,6 @@
 #include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/RamsesLogger.h"
-#include "Utils/CommandLineParser.h"
 
 namespace ramses_internal
 {
@@ -451,7 +450,10 @@ namespace ramses_internal
         virtual void TearDown() override
         {
             // reset loglevels back to default
-            GetRamsesLogger().initialize(CommandLineParser{0, nullptr}, "RAMS", "ramses", false, true);
+            RamsesLoggerConfig cfg;
+            cfg.dltAppId = "RAMS";
+            cfg.dltAppDescription = "ramses";
+            GetRamsesLogger().initialize(cfg, false, true);
         }
 
         Ramsh rsh;

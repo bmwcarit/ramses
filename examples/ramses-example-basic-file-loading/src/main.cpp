@@ -15,97 +15,11 @@
  * @brief Basic File Loading Example
  */
 
-void initializeAnimationContent(ramses::Scene& scene, ramses::RenderGroup& renderGroup)
-{
-    // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsData[] = { -0.3f, 0.f, -0.3f, 0.3f, 0.f, -0.3f, 0.f, 0.3f, -0.3f };
-    ramses::ArrayResource* vertexPositions = scene.createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
-
-    uint16_t indexData[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = scene.createArrayResource(ramses::EDataType::UInt16, 3, indexData);
-
-    // create an appearance for red triangle
-    ramses::EffectDescription effectDesc;
-    effectDesc.setVertexShaderFromFile("res/ramses-example-basic-file-loading-basic.vert");
-    effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-file-loading-red.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
-
-    ramses::Effect* effect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader anim");
-    ramses::Appearance* appearance = scene.createAppearance(*effect, "triangle appearance anim");
-
-    // set vertex positions directly in geometry
-    ramses::GeometryBinding* geometry = scene.createGeometryBinding(*effect, "triangle geometry");
-    geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-
-    // create a mesh nodes to define the triangles with chosen appearance
-    ramses::MeshNode* meshNode1 = scene.createMeshNode("red triangle mesh node1");
-    meshNode1->setAppearance(*appearance);
-    meshNode1->setGeometryBinding(*geometry);
-    ramses::MeshNode* meshNode2 = scene.createMeshNode("red triangle mesh node2");
-    meshNode2->setAppearance(*appearance);
-    meshNode2->setGeometryBinding(*geometry);
-    ramses::MeshNode* meshNode3 = scene.createMeshNode("red triangle mesh node3");
-    meshNode3->setAppearance(*appearance);
-    meshNode3->setGeometryBinding(*geometry);
-
-    // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
-    renderGroup.addMeshNode(*meshNode1);
-    renderGroup.addMeshNode(*meshNode2);
-    renderGroup.addMeshNode(*meshNode3);
-
-    // create animation system
-    ramses::AnimationSystem* animationSystem = scene.createAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, -1.f);
-    spline1->setKey(10000u, 0.f);
-    ramses::SplineLinearFloat* spline2 = animationSystem->createSplineLinearFloat("spline2");
-    spline2->setKey(0u, 0.f);
-    spline2->setKey(5000u, 1.f);
-    spline2->setKey(10000u, 0.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode1, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
-    ramses::AnimatedProperty* animProperty2 = animationSystem->createAnimatedProperty(*meshNode2, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_X);
-    ramses::AnimatedProperty* animProperty3 = animationSystem->createAnimatedProperty(*meshNode3, ramses::EAnimatedProperty_Translation, ramses::EAnimatedPropertyComponent_Y);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-    ramses::Animation* animation2 = animationSystem->createAnimation(*animProperty2, *spline2, "animation2");
-    ramses::Animation* animation3 = animationSystem->createAnimation(*animProperty3, *spline1, "animation3"); // we can reuse spline1 for animating Y component of the third translation node
-
-    // create animation sequence
-    ramses::AnimationSequence* animSequence = animationSystem->createAnimationSequence();
-
-    // add animations to a sequence
-    animSequence->addAnimation(*animation1);
-    animSequence->addAnimation(*animation2);
-    animSequence->addAnimation(*animation3);
-
-    // set animation properties (optional)
-    animSequence->setAnimationLooping(*animation1);
-    animSequence->setAnimationLooping(*animation2);
-    animSequence->setAnimationLooping(*animation3);
-
-    // set playbackSpeed
-    animSequence->setPlaybackSpeed(5.f);
-
-    // start animation sequence
-    animSequence->startAt(0u);
-
-    animationSystem->setTime(20800u);
-}
-
 int main(int argc, char* argv[])
 {
     // create a scene and write it to a file
     {
-        ramses::RamsesFramework framework(argc, argv);
+        ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
         ramses::RamsesClient& ramses(*framework.createClient("ramses-example-file-loading"));
         ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic scene loading from file");
         // every scene needs a render pass with camera
@@ -168,8 +82,6 @@ int main(int argc, char* argv[])
 
         scaleNode->addChild(*meshNode);
 
-        initializeAnimationContent(*scene, *renderGroup);
-
         scene->saveToFile("tempfile.ramses", false);
 
         scene->destroy(*vertexPositions);
@@ -180,7 +92,7 @@ int main(int argc, char* argv[])
 
     // load the saved file
     {
-        ramses::RamsesFramework framework(argc, argv);
+        ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
         ramses::RamsesClient& ramses(*framework.createClient("ramses-example-file-loading"));
 
         /// [Basic File Loading Example]
@@ -198,10 +110,6 @@ int main(int argc, char* argv[])
         loadedScene->publish();
 
         loadedScaleNode->setScaling(2, 2, 2);
-
-        ramses::AnimationSystem* loadedAnimSystem = ramses::RamsesUtils::TryConvert<ramses::AnimationSystem>(*loadedScene->findObjectByName("animation system"));
-        const ramses::globalTimeStamp_t currTimeState = loadedAnimSystem->getTime();
-        loadedAnimSystem->setTime(currTimeState + 3333u);
 
         loadedScene->flush();
         std::this_thread::sleep_for(std::chrono::seconds(30));

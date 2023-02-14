@@ -71,9 +71,7 @@ directory pointed to by `$XDG_RUNTIME_DIR`
 
 Command line
 
-    -wse filename
-    or
-    --wayland-socket-embedded filename
+    --ec-display filename
 
 API in `DisplayConfig`
 
@@ -86,9 +84,7 @@ the group ownership of the socket file will be transered to this group.
 
 Command line
 
-    -wsegn groupname
-    or
-    --wayland-socket-embedded-groupname groupname
+    --ec-socket--group groupname
 
 API in `DisplayConfig` : \ref ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketGroup
 
@@ -112,11 +108,10 @@ The only type available for RAMSES clients to facilitate embedded compositing is
   compositing the default fallback texture is used.
 
 To create the StreamTexture object one needs to call
-\ref ramses::Scene::createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t
-source, const char* name). The `source` is an ID of a surface which will be used
-for nested compositing. In case that surface is not available or the platform
-doesn't support embedded compositing the default texture (ie. `fallbackTexture`)
-will be used.
+#ramses::Scene::createStreamTexture. The argument `source` is an ID of a surface
+which will be used for nested compositing. In case that surface is not available
+or the platform doesn't support embedded compositing the default texture
+(ie. `fallbackTexture`) will be used.
 
 
 ## Example

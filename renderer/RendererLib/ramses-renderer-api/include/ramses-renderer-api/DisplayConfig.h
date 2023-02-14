@@ -13,6 +13,11 @@
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
+namespace CLI
+{
+    class App;
+}
+
 namespace ramses
 {
     /**
@@ -44,6 +49,16 @@ namespace ramses
         * @brief Destructor of DisplayConfig
         */
         virtual ~DisplayConfig();
+
+        /**
+        * @brief Register command line options for the CLI11 command line parser
+        *
+        * Creates an option group "Display Options" and registers command line options
+        * After parsing the command line with CLI::App::parse() this config object is assigned with the values provided by command line
+        *
+        * @param[in] cli CLI11 command line parser
+        */
+        void registerOptions(CLI::App& cli);
 
         /**
         * @brief Sets the window size and position in display pixel space.
@@ -123,15 +138,6 @@ namespace ramses
         status_t getMultiSamplingSamples(uint32_t& numSamples) const;
 
         /**
-        * @brief Enable warping post effect. User has to set warping mesh data later in the display,
-        * otherwise the mesh is a fullscreen quad.
-        *
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t enableWarpingPostEffect();
-
-        /**
         * @brief [Mandatory on Wayland] Set IVI layer ID to use for attaching the IVI surface created by the display.
         *
         * RAMSES does not try to create the layer, instead the layer must be already existing before creating the display.
@@ -172,23 +178,6 @@ namespace ramses
         * @return the current setting of IVI surface ID, returns waylandIviSurfaceId_t::Invalid() if no value has been set yet
         */
         waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
-
-        /**
-        * @brief [Mandatory on Integrity] Set device unit number to use when creating the display window on Integrity using RGL Window Manager API.
-        *
-        *
-        * @param[in] rglDeviceUnit Device unit number to use for the display window
-        * @return StatusOK on success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
-
-        /**
-        * @brief Get the current setting of RGL device unit number
-        *
-        * @return the current setting of RGL device unit, returns 0xFFFFFFFF if no value has been set yet
-        */
-        uint32_t getIntegrityRGLDeviceUnit() const;
 
         /**
         * @brief Get the current setting of Android native window
@@ -283,13 +272,12 @@ namespace ramses
         *        but stencil buffer is not it can happen that a stencil buffer will still be created because WGL/EGL does
         *        not have a configuration with that specific description.
         *
-        * @param[in] config The display config to call this method on. This API is temporarily added in static fashion for ABI compatibility.
         * @param[in] depthBufferType Configure depth and stencil buffers.
         *
         * @return  StatusOK on success, otherwise the returned status can be used to resolve
         *          to resolve error message using getStatusMessage()
         */
-        static status_t setDepthStencilBufferType(DisplayConfig& config, EDepthBufferType depthBufferType);
+        status_t setDepthStencilBufferType(EDepthBufferType depthBufferType);
 
         /**
         * @brief [Only for X11] Set the X11 window handle to create a ramses display from an existing X11 window.
@@ -365,13 +353,12 @@ namespace ramses
         *          and an additional thread, but their logic will not be triggered.
         *          Instead, shaders will be compiled and uploaded within the rendering loop, i.e. potentially stalling rendering.
         *
-        * @param[in] config The display config to call this method on. This API is temporarily added in static fashion for ABI compatibility.
         * @param[in] enabled Set to true to enable async effect upload, false to disable it.
         *
         * @return  StatusOK on success, otherwise the returned status can be used to resolve
         *          to resolve error message using getStatusMessage()
         */
-        static status_t setAsyncEffectUploadEnabled(DisplayConfig& config, bool enabled);
+        status_t setAsyncEffectUploadEnabled(bool enabled);
 
         /**
          * @brief      Set the name to be used for the embedded compositing

@@ -55,7 +55,7 @@ def check_specific_license_in_file(filename, file_contents, license_re):
 
 def check_license_for_file(file_name, file_contents, solution_path):
     """
-    Check license for given file name. Default ot open except it is in
+    Check license for given file name. Default to open except file is in
     G_PROP_FILES list.
     """
 

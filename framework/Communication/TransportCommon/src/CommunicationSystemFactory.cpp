@@ -65,15 +65,6 @@ namespace ramses_internal
         std::unique_ptr<IDiscoveryDaemon> constructedDaemon;
         switch(config.getUsedProtocol())
         {
-            case EConnectionProtocol::SomeIP_HU:
-            {
-                break;
-            }
-            case EConnectionProtocol::SomeIP_IC:
-            {
-            }
-                break;
-
             case EConnectionProtocol::TCP:
             {
 #if defined(HAS_TCP_COMM)
@@ -117,8 +108,8 @@ namespace ramses_internal
         }
 #endif
         default:
-            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol() << ". Ensure that a SomeIP stack, TCP or the fake connection system is enabled.");
-            assert(false && "Unable to construct connection system for given protocol. Ensure that a SomeIP stack, TCP or the fake connection system is enabled.");
+            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol() << ". Ensure that TCP or the fake connection system is enabled.");
+            assert(false && "Unable to construct connection system for given protocol. Ensure that TCP or the fake connection system is enabled.");
             return nullptr;
         }
     }

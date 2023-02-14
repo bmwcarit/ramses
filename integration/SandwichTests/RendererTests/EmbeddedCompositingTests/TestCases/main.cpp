@@ -31,7 +31,8 @@ int main(int argc, const char *argv[])
 
     // It is not allowed to call fork after DLT_REGISTER_APP.
     // For the compositing tests, we don't need DLT at all, so just disable DLT.
-    ramses_internal::GetRamsesLogger().initialize(parser, ramses_internal::String(), ramses_internal::String(), true, true);
+    ramses_internal::RamsesLoggerConfig loggerConfig;
+    ramses_internal::GetRamsesLogger().initialize(loggerConfig, true, true);
 
     //The creation of the forking controller MUST happen before doing anything!!!
     //Do not move this from here, and do not do anything meaningful before it!!!

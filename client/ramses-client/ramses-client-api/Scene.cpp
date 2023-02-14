@@ -27,8 +27,6 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/PickableObject.h"
@@ -179,20 +177,6 @@ namespace ramses
     int32_t Scene::getUniformTimeMs() const
     {
         return impl.getUniformTimeMs();
-    }
-
-    AnimationSystem* Scene::createAnimationSystem(uint32_t flags, const char* name)
-    {
-        AnimationSystem* animationSystem = impl.createAnimationSystem(flags, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystem), flags, name);
-        return animationSystem;
-    }
-
-    AnimationSystemRealTime* Scene::createRealTimeAnimationSystem(uint32_t flags, const char* name)
-    {
-        AnimationSystemRealTime* animationSystemRealtime = impl.createRealTimeAnimationSystem(flags, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystemRealtime), flags, name);
-        return animationSystemRealtime;
     }
 
     ArrayBuffer* Scene::createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name /*= nullptr*/)

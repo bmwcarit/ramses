@@ -18,7 +18,7 @@
 
 namespace ramses
 {
-    class ResourceDataPoolPersistation : public ASceneAndAnimationSystemLoadedFromFile
+    class ResourceDataPoolPersistation : public ASceneLoadedFromFile
     {
     public:
         template<typename ResourceType>

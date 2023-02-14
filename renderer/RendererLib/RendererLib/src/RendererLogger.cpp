@@ -695,7 +695,7 @@ namespace ramses_internal
                 const RendererCachedScene& renderScene = updater.m_renderer.m_rendererScenes.getScene(sceneInfo.sceneId);
                 LoggingDevice logDevice(displayController.getRenderBackend().getDevice(), context);
                 RenderingContext renderContext{
-                    displayController.m_postProcessing->getScenesRenderTarget(),
+                    displayController.m_device.getFramebufferRenderTarget(),
                     displayController.getDisplayWidth(), displayController.getDisplayHeight(),
                     SceneRenderExecutionIterator{},
                     EClearFlags_All,

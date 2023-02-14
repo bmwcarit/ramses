@@ -22,7 +22,7 @@ namespace
 }
 
 TextLayoutDemo::TextLayoutDemo(int argc, char* argv[])
-    : m_framework(argc, argv)
+    : m_framework{ ramses::RamsesFrameworkConfig{ argc, argv } }
     , m_client(*m_framework.createClient("ExampleFontMetrics"))
     , m_scene(*m_client.createScene(ramses::sceneId_t(123u)))
     , m_textCache(m_scene, m_fontRegistry, 1024u, 1024u)

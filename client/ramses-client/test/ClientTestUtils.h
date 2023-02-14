@@ -11,7 +11,6 @@
 
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/AnimationSystem.h"
 
 #include "CreationHelper.h"
 #include "MockActionCollector.h"
@@ -34,17 +33,13 @@ namespace ramses_internal
 
 namespace ramses
 {
-    //disabling the periodic logs is important as otherwise race conditions can occur in the tests that check
-    //that the statistic counters are updated (periodic logger resets the counters)
-    static const char* clientArgs[] = { "LocalTestClient", "-l", "0", "-fakeConnection", "-disablePeriodicLogs" };
-
     class LocalTestClient
     {
     public:
         LocalTestClient()
-            : framework(sizeof(clientArgs) / sizeof(char*), clientArgs)
+            : framework{ GetDefaultFrameworkConfig() }
             , client(*framework.createClient("localTestClient"))
-            , m_creationHelper(nullptr, nullptr, &client)
+            , m_creationHelper(nullptr, &client)
             , sceneActionsCollector()
         {
             sceneActionsCollector.init(framework.impl.getScenegraphComponent());
@@ -65,6 +60,15 @@ namespace ramses
         RamsesFramework& getFramework()
         {
             return framework;
+        }
+
+        static const RamsesFrameworkConfig& GetDefaultFrameworkConfig()
+        {
+            //disabling the periodic logs is important as otherwise race conditions can occur in the tests that check
+            //that the statistic counters are updated (periodic logger resets the counters)
+            static const char* clientArgs[] = { "LocalTestClient", "--log-level=0", "--connection=off", "--no-logp" };
+            static RamsesFrameworkConfig config{ sizeof(clientArgs) / sizeof(char*), clientArgs };
+            return config;
         }
 
     protected:
@@ -143,25 +147,6 @@ namespace ramses
         Scene& m_scene;
         const Scene& m_constRefToScene;
         ramses_internal::ClientScene& m_internalScene;
-    };
-
-    class LocalTestClientWithSceneAndAnimationSystem : public LocalTestClientWithScene
-    {
-    protected:
-        explicit LocalTestClientWithSceneAndAnimationSystem(uint32_t animationSystemCreationFlags = EAnimationSystemFlags_Default)
-            : LocalTestClientWithScene()
-            , animationSystem(*m_scene.createAnimationSystem(animationSystemCreationFlags, "animation system"))
-        {
-            m_creationHelper.setAnimationSystem(&animationSystem);
-        }
-
-        ~LocalTestClientWithSceneAndAnimationSystem()
-        {
-            m_creationHelper.destroyAdditionalAllocatedAnimationSystemObjects();
-            m_scene.destroy(animationSystem);
-        }
-
-        AnimationSystem& animationSystem;
     };
 
     class ClientTestUtils

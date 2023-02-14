@@ -10,6 +10,7 @@
 #include "ramses-renderer-api/BinaryShaderCache.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "RendererConfigImpl.h"
+#include "CLI/CLI.hpp"
 
 TEST(ARendererConfig, hasDefaultValuesUponConstruction)
 {
@@ -19,7 +20,6 @@ TEST(ARendererConfig, hasDefaultValuesUponConstruction)
 
     const ramses_internal::RendererConfig& internalConfig = config.impl.getInternalRendererConfig();
 
-    EXPECT_EQ(defaultConfig.getKPIFileName(), internalConfig.getKPIFileName());
     EXPECT_EQ(defaultConfig.getFrameCallbackMaxPollTime(), internalConfig.getFrameCallbackMaxPollTime());
     EXPECT_EQ(defaultConfig.getRenderThreadLoopTimingReportingPeriod(), internalConfig.getRenderThreadLoopTimingReportingPeriod());
     EXPECT_EQ(defaultConfig.getSystemCompositorControlEnabled(), internalConfig.getSystemCompositorControlEnabled());
@@ -119,4 +119,55 @@ TEST(ARendererConfig, setsAndGetsLoopCountPeriod)
     ramses::RendererConfig config;
     EXPECT_EQ(ramses::StatusOK, config.setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds(1234)));
     EXPECT_EQ(std::chrono::milliseconds(1234), config.getRenderThreadLoopTimingReportingPeriod());
+}
+
+TEST(ARendererConfig, cliEcDisplay)
+{
+    ramses::RendererConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-display"}), CLI::ParseError);
+    cli.parse(std::vector<std::string>{"--ec-display=wse"});
+    EXPECT_STREQ("wse", config.getWaylandEmbeddedCompositingSocketName());
+}
+
+TEST(ARendererConfig, cliEcGroup)
+{
+    ramses::RendererConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group"}), CLI::ParseError);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group=grp"}), CLI::RequiresError);
+    cli.parse(std::vector<std::string>{"--ec-socket-group=grp", "--ec-display=wse"});
+    EXPECT_STREQ("grp", config.impl.getWaylandSocketEmbeddedGroup());
+}
+
+TEST(ARendererConfig, cliEcPermissions)
+{
+    ramses::RendererConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions"}), CLI::ParseError);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744"}), CLI::RequiresError);
+    cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744", "--ec-display=wse"});
+    EXPECT_EQ(0744u, config.impl.getWaylandSocketEmbeddedPermissions());
+}
+
+TEST(ARendererConfig, cliIviControl)
+{
+    ramses::RendererConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--ivi-control"});
+    EXPECT_TRUE(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled());
+    cli.parse(std::vector<std::string>{"--no-ivi-control"});
+    EXPECT_FALSE(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled());
+}
+
+TEST(ARendererConfig, cliThrowsErrorsForExtras)
+{
+    ramses::RendererConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--foo"}), CLI::ExtrasError);
 }

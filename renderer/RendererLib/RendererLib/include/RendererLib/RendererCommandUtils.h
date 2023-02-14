@@ -44,7 +44,6 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::SetClearFlags& cmd) { return fmt::format("SetClearEnabled (displayId={} OB={} flags={})", cmd.display, cmd.offscreenBuffer, cmd.clearFlags); }
         inline std::string ToString(const RendererCommand::SetClearColor& cmd) { return fmt::format("SetClearColor (displayId={} OB={} color={})", cmd.display, cmd.offscreenBuffer, cmd.clearColor); }
         inline std::string ToString(const RendererCommand::SetExterallyOwnedWindowSize& cmd) { return fmt::format("SetExterallyOwnedWindowSize (displayId={} width={} height={})", cmd.display, cmd.width, cmd.height); }
-        inline std::string ToString(const RendererCommand::UpdateWarpingData& cmd) { return fmt::format("UpdateWarpingData (displayId={})", cmd.display); }
         inline std::string ToString(const RendererCommand::ReadPixels& cmd) { return fmt::format("ReadPixels (displayId={} OB={})", cmd.display, cmd.offscreenBuffer); }
         inline std::string ToString(const RendererCommand::SetSkippingOfUnmodifiedBuffers& cmd) { return fmt::format("SetSkippingOfUnmodifiedBuffers (enable={})", cmd.enable); }
         inline std::string ToString(const RendererCommand::LogStatistics&) { return "LogStatistics"; }
@@ -61,10 +60,6 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::SetLimits_FrameBudgets& cmd) { return fmt::format("SetLimits_FrameBudgets (dynResources={} resources={} obRender={})", cmd.limitForSceneResourcesUploadMicrosec, cmd.limitForResourcesUploadMicrosec, cmd.limitForOffscreenBufferRenderMicrosec); }
         inline std::string ToString(const RendererCommand::SetLimits_FlushesForceApply& cmd) { return fmt::format("SetLimits_FlushesForceApply (numFlushes={})", cmd.limitForPendingFlushesForceApply); }
         inline std::string ToString(const RendererCommand::SetLimits_FlushesForceUnsubscribe& cmd) { return fmt::format("SetLimits_FlushesForceUnsubscribe (numFlushes={})", cmd.limitForPendingFlushesForceUnsubscribe); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_Toggle& cmd) { return fmt::format("FrameProfiler_Toggle (enable={})", cmd.toggle); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_TimingGraphHeight& cmd) { return fmt::format("FrameProfiler_TimingGraphHeight (height={})", cmd.height); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_CounterGraphHeight& cmd) { return fmt::format("FrameProfiler_CounterGraphHeight (height={})", cmd.height); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_RegionFilterFlags& cmd) { return fmt::format("FrameProfiler_RegionFilterFlags (flags={})", cmd.flags); }
         inline std::string ToString(const RendererCommand::ConfirmationEcho& cmd) { return fmt::format("ConfirmationEcho (display={} text={})", cmd.display, cmd.text); }
         inline std::string ToString(const RendererCommand::Variant& var)
         {
@@ -142,13 +137,6 @@ namespace ramses_internal
             return evt;
         }
         template <>
-        inline RendererEvent GenerateFailEventForCommand<RendererCommand::UpdateWarpingData>(const RendererCommand::UpdateWarpingData& cmd)
-        {
-            RendererEvent evt{ ERendererEventType::WarpingDataUpdateFailed };
-            evt.displayHandle = cmd.display;
-            return evt;
-        }
-        template <>
         inline RendererEvent GenerateFailEventForCommand<RendererCommand::ReadPixels>(const RendererCommand::ReadPixels& cmd)
         {
             RendererEvent evt{ ERendererEventType::ReadPixelsFromFramebufferFailed };
@@ -181,7 +169,7 @@ namespace ramses_internal
                     commands.push_back(std::move(cmd));
             }
             // do not stash single time commands and frame profiler
-            else if (absl::holds_alternative<RendererCommand::FrameProfiler_Toggle>(cmd) ||
+            else if (
                 absl::holds_alternative<RendererCommand::LogInfo>(cmd) ||
                 absl::holds_alternative<RendererCommand::LogStatistics>(cmd))
             {

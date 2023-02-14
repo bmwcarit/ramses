@@ -10,8 +10,12 @@
 #define RAMSES_RENDERERCONFIGIMPL_H
 
 #include "RendererLib/RendererConfig.h"
-#include "Utils/CommandLineParser.h"
 #include "StatusObjectImpl.h"
+
+namespace CLI
+{
+    class App;
+}
 
 namespace ramses
 {
@@ -22,6 +26,8 @@ namespace ramses
     {
     public:
         RendererConfigImpl(int32_t argc, char const* const* argv);
+
+        void registerOptions(CLI::App& cli);
 
         status_t enableSystemCompositorControl();
         status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);

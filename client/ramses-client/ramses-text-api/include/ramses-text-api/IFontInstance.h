@@ -10,7 +10,7 @@
 #define RAMSES_TEXT_IFONTINSTANCE_H
 
 #include "ramses-text-api/GlyphMetrics.h"
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <unordered_set>
 

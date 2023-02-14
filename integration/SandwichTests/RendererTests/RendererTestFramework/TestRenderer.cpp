@@ -8,9 +8,7 @@
 
 #include "TestRenderer.h"
 #include "ramses-renderer-api/RendererConfig.h"
-#include "ramses-renderer-api/WarpingMeshData.h"
 #include "RendererAPI/IRenderBackend.h"
-#include "RendererLib/FrameProfileRenderer.h"
 #include "RamsesRendererImpl.h"
 #include "RendererSceneControlImpl.h"
 #include "RendererAndSceneTestEventHandler.h"
@@ -249,12 +247,6 @@ namespace ramses_internal
         m_sceneControlAPI->flush();
     }
 
-    void TestRenderer::updateWarpingMeshData(ramses::displayId_t displayId, const ramses::WarpingMeshData& warpingMeshData)
-    {
-        m_renderer->updateWarpingMeshData(displayId, warpingMeshData);
-        m_renderer->flush();
-    }
-
     bool TestRenderer::performScreenshotCheck(
         ramses::displayId_t displayId,
         ramses::displayBufferId_t bufferId,
@@ -293,15 +285,6 @@ namespace ramses_internal
             width,
             height,
             imageFile);
-    }
-
-    void TestRenderer::toggleRendererFrameProfiler(uint32_t timeHeight, uint32_t counterHeight)
-    {
-        RendererCommands cmds;
-        cmds.push_back(RendererCommand::FrameProfiler_Toggle{ true });
-        cmds.push_back(RendererCommand::FrameProfiler_TimingGraphHeight{ timeHeight });
-        cmds.push_back(RendererCommand::FrameProfiler_CounterGraphHeight{ counterHeight });
-        m_renderer->impl.pushAndConsumeRendererCommands(cmds);
     }
 
     void TestRenderer::readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)

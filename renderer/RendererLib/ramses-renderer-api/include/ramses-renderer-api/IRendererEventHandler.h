@@ -58,15 +58,6 @@ namespace ramses
         virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, displayId_t displayId, displayBufferId_t displayBuffer, ERendererEventResult result) = 0;
 
         /**
-        * @brief This method will be called when update of warping mesh data was finished.
-        *        This is the result of RamsesRenderer::updateWarpingMeshData call which
-        *        triggers an asynchronous update of warping data used by internal display.
-        * @param displayId Display id of display that the callback refers to.
-        * @param result Can be ERendererEventResult_OK if succeeded or ERendererEventResult_FAIL if failed.
-        */
-        virtual void warpingMeshDataUpdated(displayId_t displayId, ERendererEventResult result) = 0;
-
-        /**
         * @brief This method will be called after a display was created (or failed to create) as a result of RamsesRenderer API createDisplay call.
         *
         * @param displayId id of the display that was created and initialized (or failed in case of error).
@@ -132,17 +123,6 @@ namespace ramses
         /**
         * @brief This method will be called in period given to renderer config (#ramses::RendererConfig::setRenderThreadLoopTimingReportingPeriod)
         *        and provides rough performance indicators - maximum and average loop (frame) time within that measure period.
-        *        It only reports timings for first display.
-        *
-        * @param[in] maximumLoopTime The maximum time a loop of the first display within the last measure period
-        * @param[in] averageLooptime The average time a loop of the first display within the last measure period
-        */
-        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) = 0;
-
-#ifdef RAMSES_ENABLE_RENDER_LOOP_TIMINGS_PER_DISPLAY
-        /**
-        * @brief This method will be called in period given to renderer config (#ramses::RendererConfig::setRenderThreadLoopTimingReportingPeriod)
-        *        and provides rough performance indicators - maximum and average loop (frame) time within that measure period.
         *
         * This method will be called for all displays with different displayId values. There is no guarantee that all displays appear within
         * the same dispatch call.
@@ -151,15 +131,13 @@ namespace ramses
         * @param[in] maximumLoopTime The maximum time a loop of the first display within the last measure period
         * @param[in] averageLooptime The average time a loop of the first display within the last measure period
         */
-        virtual void renderThreadLoopTimingsPerDisplay(displayId_t displayId, std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime)
+        virtual void renderThreadLoopTimings(displayId_t displayId, std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime)
         {
             (void)displayId;
             (void)maximumLoopTime;
             (void)averageLooptime;
         }
-#endif
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         /**
         * @brief This method will be called after an external buffer is created (or failed to be created) as a result of RamsesRenderer API \c createExternalBuffer call.
         *
@@ -178,7 +156,6 @@ namespace ramses
         * @param result Can be ERendererEventResult_OK if succeeded, ERendererEventResult_FAIL if failed.
         */
         virtual void externalBufferDestroyed(displayId_t displayId, externalBufferId_t externalBufferId, ERendererEventResult result) = 0;
-#endif
 
         /**
         * @brief Empty destructor
@@ -222,15 +199,6 @@ namespace ramses
             (void)pixelDataSize;
             (void)displayId;
             (void)displayBuffer;
-            (void)result;
-        }
-
-        /**
-        * @copydoc ramses::IRendererEventHandler::warpingMeshDataUpdated
-        */
-        virtual void warpingMeshDataUpdated(displayId_t displayId, ERendererEventResult result) override
-        {
-            (void)displayId;
             (void)result;
         }
 
@@ -305,13 +273,13 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererEventHandler::renderThreadLoopTimings
         */
-        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override
+        virtual void renderThreadLoopTimings(displayId_t displayId, std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override
         {
+            (void)displayId;
             (void)maximumLoopTime;
             (void)averageLooptime;
         }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         /**
         * @copydoc ramses::IRendererEventHandler::externalBufferCreated
         */
@@ -332,7 +300,6 @@ namespace ramses
             (void)externalBufferId;
             (void)result;
         }
-#endif
 
     };
 }

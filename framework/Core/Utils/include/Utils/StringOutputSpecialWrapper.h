@@ -11,7 +11,6 @@
 
 #include "Common/StronglyTypedValue.h"
 
-#include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 #define MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(stronglyType, compatibleOutputType) \

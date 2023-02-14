@@ -9,7 +9,7 @@
 #ifndef RAMSES_EDATATYPE_H
 #define RAMSES_EDATATYPE_H
 #include <cstdint> // for integer datatypes
-#include <stddef.h> // for size_t
+#include <cstddef> // for size_t
 
 namespace ramses
 {

@@ -16,32 +16,6 @@
 #include <cassert>
 #include <pthread.h>
 
-#define RAMSES_INTEGRITY_DEFAULT_THREAD_STACK_SIZE 0x7D000    // stack size for all integrity threads in bytes (512k)
-
-#if defined(__ghs__)
-#include "Utils/LogMacros.h"
-#include "absl/strings/string_view.h"
-
-inline void setThreadPriorityIntegrity(int priority, absl::string_view threadname)
-{
-    const Error ret = SetPriorityAndWeight(CurrentTask(), priority, 1, true);
-    if (ret != Success)
-        LOG_ERROR(ramses_internal::CONTEXT_FRAMEWORK, "setThreadPriorityIntegrity: " << threadname.data() << " setting thread priority failed:" << ret);
-    else
-        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "setThreadPriorityIntegrity: " << threadname.data() << " set thread priority to:" << priority);
-}
-
-inline void setThreadCoreBindingIntegrity(int subset, absl::string_view threadname)
-{
-    // bind the thread to the passed processor (core) subset
-    const Error ret = SetTaskProcessorSubsetBinding(CurrentTask(), true, subset);
-    if (ret != Success)
-        LOG_ERROR(ramses_internal::CONTEXT_FRAMEWORK, "setThreadCoreBindingIntegrity: " << threadname.data() << " setting thread core binding failed:" << ret);
-    else
-        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "setThreadCoreBindingIntegrity: " << threadname.data() << " bind thread to processor subset:" << subset);
-}
-#endif
-
 namespace ramses_internal
 {
 namespace internal
@@ -86,9 +60,7 @@ namespace internal
     inline Thread::Thread(const std::string& name, Fun_t fun)
         : m_fun(new Fun_t([name = name, userfun = std::move(fun)]()
                           {
-#ifdef __INTEGRITY
-                              (void)name;
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
                               pthread_setname_np(name.c_str());
 #else
                               pthread_setname_np(pthread_self(), name.c_str());
@@ -99,16 +71,7 @@ namespace internal
         pthread_attr_t attr;
         pthread_attr_init(&attr);
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-#ifdef __INTEGRITY
-        if (pthread_attr_setstacksize(&attr, RAMSES_INTEGRITY_DEFAULT_THREAD_STACK_SIZE) == -1)
-            printf("Error while setting stack size for Integrity thread\n");
 
-        pthread_attr_setthreadname(&attr, name.c_str());
-
-        // TODO: understand this
-        pthread_t currentThreadId = 0;
-        PosixEnableCurrentTask(&currentThreadId);
-#endif
         if (pthread_create(&m_threadId, &attr, Thread::Run, m_fun.get()) == 0)
             m_running = true;
         else

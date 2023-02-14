@@ -18,11 +18,23 @@
 #include "Collections/String.h"
 #include <mutex>
 #include <memory>
+#include "absl/types/optional.h"
 
 namespace ramses_internal
 {
-    class CommandLineParser;
     class DltLogAppender;
+
+    struct RamsesLoggerConfig
+    {
+        // generic argument applies to all log levels
+        absl::optional<ELogLevel> logLevel;
+        absl::optional<ELogLevel> logLevelConsole;
+        // output specific loglevels can overwrite generic argument
+        String logLevelContextsStr;
+        String dltAppId = "RAMS";
+        String dltAppDescription = "RAMS-DESC";
+        bool enableSmokeTestContext = false;
+    };
 
     struct LogContextInformation
     {
@@ -37,7 +49,7 @@ namespace ramses_internal
         RamsesLogger();
         ~RamsesLogger();
 
-        void initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration);
+        void initialize(const RamsesLoggerConfig& config, bool disableDLT, bool enableDLTApplicationRegistration);
 
         LogContext& createContext(const char* name, const char* id);
 

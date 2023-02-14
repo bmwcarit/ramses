@@ -24,9 +24,8 @@ Every display can be configured through an individual ramses::DisplayConfig.
 
 # Scene control and scene states
 
-A renderer offers a set of APIs to allow to control the scene states. Currently there are the RendererSceneControl
-and the DcsmContentControl. They can be created with the #ramses::RamsesRenderer::getSceneControlAPI respectively the
-#ramses::RamsesRenderer::createDcsmContentControl functions.
+A renderer offers a separate API to control the scene states, the RendererSceneControl. It can be obtained
+using the #ramses::RamsesRenderer::getSceneControlAPI function.
 
 ## RendererSceneControl
 Graphical content (a #ramses::Scene provided from #ramses::RamsesClient) is always in a certain state,
@@ -44,9 +43,6 @@ for more details.
 
 @image html renderer_scene_states.png "Renderer Scene States"
 
-## DcsmContentControl
-DcsmContentControl uses a RendererSceneControl and a DcsmConsumer to allow a user to render ramses scene Dcsm contents with one interface. Refer to the @ref DCSMProtocol documentation for details.
-
 ## Data Linking
 
 In order to achieve scene interaction, it is possible to attach scene content of one scene to scene content of another scene. There are several types of data links,
@@ -58,7 +54,7 @@ on renderer they can be linked together.
 
 Data links are dynamic so any change to provider data (including animations) will be reflected to all its consumers.
 
-Data links of any kind can only be established if provider scene and consumer scene are mapped to the same display via #ramses::RendererSceneControl::setSceneMapping or - in case of DCSM contents - the contents' categories are mapped to the same display via #ramses::DcsmContentControl::addContentCategory.
+Data links of any kind can only be established if provider scene and consumer scene are mapped to the same display via #ramses::RendererSceneControl::setSceneMapping.
 
 ### Transformation Linking
 

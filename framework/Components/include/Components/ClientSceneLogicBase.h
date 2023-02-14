@@ -11,7 +11,6 @@
 
 #include "Scene/EScenePublicationMode.h"
 #include "Scene/ClientScene.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "Scene/Scene.h"
 
 namespace ramses_internal
@@ -70,7 +69,6 @@ namespace ramses_internal
 
         ResourceChanges m_resourceChangesSinceLastFlush; // keep container memory allocated
         ResourceContentHashVector m_currentFlushResourcesInUse; // keep container memory allocated
-        AnimationSystemFactory m_animationSystemFactory;
 
         // resource statistics gathered while flushing the last time
         std::array<uint64_t, EResourceStatisticIndex_NumIndices> m_resourceCount;

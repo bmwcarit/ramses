@@ -23,7 +23,6 @@
 #include "RendererLib/RendererStatistics.h"
 #include "RendererAPI/ELoopMode.h"
 #include "RendererEventCollector.h"
-#include "Monitoring/Monitor.h"
 
 namespace ramses_internal
 {
@@ -36,7 +35,7 @@ namespace ramses_internal
     class IDisplayBundle
     {
     public:
-        virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) = 0;
+        virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds prevFrameSleepTime) = 0;
         virtual void pushAndConsumeCommands(RendererCommands& cmds) = 0;
         virtual void dispatchRendererEvents(RendererEventVector& events) = 0;
         virtual void dispatchSceneControlEvents(RendererEventVector& events) = 0;
@@ -59,9 +58,7 @@ namespace ramses_internal
             IRendererSceneEventSender& rendererSceneSender,
             IPlatform& platform,
             IThreadAliveNotifier& notifier,
-            std::chrono::milliseconds timingReportingPeriod,
-            bool isFirstDisplay,
-            const String& kpiFilename = {});
+            std::chrono::milliseconds timingReportingPeriod);
 
         virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
 
@@ -87,7 +84,7 @@ namespace ramses_internal
         void render();
 
         void collectEvents();
-        void finishFrameStatistics(std::chrono::microseconds sleepTime);
+        void finishFrameStatistics(std::chrono::microseconds prevFrameSleepTime);
         void updateSceneControlLogic();
         void updateTiming();
 
@@ -114,12 +111,6 @@ namespace ramses_internal
         std::chrono::microseconds m_sumFrameTimes{ 0 };
         std::chrono::microseconds m_maxFrameTime{ 0 };
         size_t m_loopsWithinMeasurePeriod{ 0u };
-        const bool m_isFirstDisplay;
-
-        // TODO rework KPI monitor
-        uint64_t m_lastUpdateTimeStampMilliSec = 0;
-        static constexpr uint64_t MonitorUpdateIntervalInMilliSec = 500u;
-        std::unique_ptr<Monitor> m_kpiMonitor;
     };
 }
 

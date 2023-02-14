@@ -26,7 +26,6 @@ protected:
 
     const SceneId sceneId{ 12u };
     const SceneInfo sceneInfo{ sceneId, "testScene" };
-    const WarpingMeshData warpingData;
     const DisplayHandle displayHandle{ 1u };
     const DisplayConfig displayConfig;
     const OffscreenBufferHandle obHandle{ 6u };

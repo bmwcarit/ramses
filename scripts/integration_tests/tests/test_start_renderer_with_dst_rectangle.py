@@ -16,17 +16,17 @@ class TestRendererWithDstRect(test_classes.OnSelectedTargetsTest):
 
     @with_ramses_process_check
     def impl_setUp(self):
-        if not self.target.systemCompositorControllerSupported:
-            self.skipTest("System compositor controller support is not configured for this target")
+        if not self.target.systemCompositorScreenshotSupported:
+            self.skipTest("System compositor controller screenshot support is not configured for this target")
 
         # Start black background renderer
-        self.rendererbackground = self.target.start_default_renderer("--waylandIviSurfaceID {}".format(DEFAULT_TEST_SURFACE + 1))
+        self.rendererbackground = self.target.start_default_renderer("--ivi-surface {}".format(DEFAULT_TEST_SURFACE + 1))
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
         self.rendererbackground.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
 
         # Start renderer with non-default dest rectangle
-        self.renderer = self.target.start_default_renderer("-x 100 -y 70 -w 150 -h 200 --clearColorR 0.5 --clearColorG 0.0 --clearColorB 0.5 --clearColorA 1.0")
+        self.renderer = self.target.start_default_renderer("--xpos 100 --ypos 70 --width 150 --height 200 --clear 0.5 0.0 0.5 1.0")
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
 

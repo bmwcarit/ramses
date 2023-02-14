@@ -55,7 +55,7 @@ namespace ramses_internal
         const ramses::ArrayResource& createTextureCoordinates(UInt32 state);
         void createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::waylandIviSurfaceId_t sourceId, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture);
 
-        static const WaylandIviSurfaceId EmbeddedSurfaceStreamTextureSourceId;
+        static constexpr WaylandIviSurfaceId EmbeddedSurfaceStreamTextureSourceId{ 10123u };
         const ramses::Effect& m_effect;
         const ramses::ArrayResource& m_textureCoords;
     };

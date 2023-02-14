@@ -299,7 +299,6 @@ namespace ramses_internal
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene3, {} });
         m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene2 });
         // not stashed
-        m_commandBuffer.enqueueCommand(RendererCommand::FrameProfiler_Toggle{});
         m_commandBuffer.enqueueCommand(RendererCommand::LogInfo{});
         m_commandBuffer.enqueueCommand(RendererCommand::LogStatistics{});
         // only last one kept
@@ -307,7 +306,7 @@ namespace ramses_internal
         m_commandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{});
         m_commandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{});
 
-        expectCommandsCountPushed(display1, 15u);
+        expectCommandsCountPushed(display1, 14u);
         update();
 
         // will expect these commands to be pushed to any new display

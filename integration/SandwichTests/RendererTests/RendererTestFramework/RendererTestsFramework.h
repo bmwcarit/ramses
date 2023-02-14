@@ -23,7 +23,6 @@ using RenderingTestCases = std::vector<RenderingTestCase *>;
 
 namespace ramses
 {
-    class WarpingMeshData;
     class IRendererEventHandler;
     class IRendererSceneControlEventHandler;
 }
@@ -64,7 +63,6 @@ public:
     void createBufferDataLink(ramses::streamBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerTag, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
-    void setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx = 0u);
     void setClearFlags(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, uint32_t clearFlags);
     void setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor);
     void publishAndFlushScene(ramses::sceneId_t sceneId);

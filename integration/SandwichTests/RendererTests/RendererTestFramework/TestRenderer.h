@@ -79,7 +79,6 @@ namespace ramses_internal
         void createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId);
         void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId);
 
-        void updateWarpingMeshData(ramses::displayId_t displayId, const ramses::WarpingMeshData& warpingMeshData);
         bool performScreenshotCheck(
             const ramses::displayId_t displayId,
             ramses::displayBufferId_t bufferId,
@@ -89,7 +88,6 @@ namespace ramses_internal
             bool readPixelsTwice = false,
             bool saveDiffOnError = true);
         void saveScreenshotForDisplay(const ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile);
-        void toggleRendererFrameProfiler(uint32_t timeHeight = 16u, uint32_t counterHeight = 500u);
         void readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
         void setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility);

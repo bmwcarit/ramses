@@ -87,10 +87,6 @@ namespace ramses_internal
     {
         return sizeInfo.dataBufferCount;
     }
-    template <> UInt32& getObjectCount<AnimationSystemHandle>(SceneSizeInformation& sizeInfo)
-    {
-        return sizeInfo.animationSystemCount;
-    }
     template <> UInt32& getObjectCount<TextureBufferHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.textureBufferCount;

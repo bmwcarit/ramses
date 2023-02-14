@@ -23,10 +23,6 @@
 
 namespace ramses_internal
 {
-    const WaylandIviSurfaceId EmbeddedCompositorScene::EmbeddedSurfaceStreamTextureSourceId = WaylandIviSurfaceId{ 10123u };
-    constexpr ramses::dataConsumerId_t EmbeddedCompositorScene::SamplerConsumerId1;
-    constexpr ramses::dataConsumerId_t EmbeddedCompositorScene::SamplerConsumerId2;
-
     EmbeddedCompositorScene::EmbeddedCompositorScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_effect(createTestEffect(state))

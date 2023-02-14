@@ -105,13 +105,6 @@ namespace ramses
         return impl.getSceneControlAPI();
     }
 
-    DcsmContentControl* RamsesRenderer::createDcsmContentControl()
-    {
-        auto ret = impl.createDcsmContentControl();
-        LOG_HL_RENDERER_API_NOARG(LOG_API_GENERIC_PTR_STRING(ret));
-        return ret;
-    }
-
     status_t RamsesRenderer::dispatchEvents(IRendererEventHandler& rendererEventHandler)
     {
         const status_t status = impl.dispatchEvents(rendererEventHandler);
@@ -161,11 +154,6 @@ namespace ramses
         return status;
     }
 
-    bool RamsesRenderer::getExternalBufferGlId(displayId_t display, externalBufferId_t externalBuffer, uint32_t& textureGlId) const
-    {
-        return impl.getExternalBufferGlId(display, externalBuffer, textureGlId);
-    }
-
     status_t RamsesRenderer::setDisplayBufferClearFlags(RamsesRenderer& renderer, displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags)
     {
         const status_t status = renderer.impl.setDisplayBufferClearFlags(display, displayBuffer, clearFlags);
@@ -184,13 +172,6 @@ namespace ramses
     {
         const status_t status = impl.readPixels(displayId, displayBuffer, x, y, width, height);
         LOG_HL_RENDERER_API6(status, displayId, displayBuffer, x, y, width, height);
-        return status;
-    }
-
-    status_t RamsesRenderer::updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData)
-    {
-        const status_t status = impl.updateWarpingMeshData(displayId, newWarpingMeshData);
-        LOG_HL_RENDERER_API2(status, displayId, LOG_API_GENERIC_OBJECT_STRING(newWarpingMeshData));
         return status;
     }
 

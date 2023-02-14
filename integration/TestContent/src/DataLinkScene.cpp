@@ -17,9 +17,6 @@
 
 namespace ramses_internal
 {
-    constexpr const ramses::dataProviderId_t DataLinkScene::DataProviderId;
-    constexpr const ramses::dataConsumerId_t DataLinkScene::DataConsumerId;
-
     DataLinkScene::DataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {

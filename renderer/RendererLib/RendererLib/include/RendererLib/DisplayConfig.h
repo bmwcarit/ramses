@@ -16,12 +16,19 @@
 #include "Math3d/Vector4.h"
 #include <unordered_map>
 
+namespace CLI
+{
+    class App;
+}
+
 namespace ramses_internal
 {
     class DisplayConfig
     {
     public:
         DisplayConfig() {}
+
+        void registerOptions(CLI::App& cli);
 
         Bool getFullscreenState() const;
         void setFullscreenState(Bool state);
@@ -53,9 +60,6 @@ namespace ramses_internal
         void setWaylandDisplay(const String& waylandDisplay);
         const String& getWaylandDisplay() const;
 
-        IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const;
-        void setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit);
-
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
         WindowsWindowHandle getWindowsWindowHandle() const;
 
@@ -67,9 +71,6 @@ namespace ramses_internal
 
         Bool getStartVisibleIvi() const;
         void setStartVisibleIvi(bool startVisible);
-
-        Bool isWarpingEnabled() const;
-        void setWarpingEnabled(Bool enabled);
 
         Bool getKeepEffectsUploaded() const;
         void setKeepEffectsUploaded(Bool enable);
@@ -120,7 +121,6 @@ namespace ramses_internal
     private:
         Bool m_fullscreen = false;
         Bool m_borderless = false;
-        Bool m_warpingEnabled = false;
         Bool m_resizable = false;
 
         UInt32 m_desiredWindowWidth = 1280;
@@ -130,7 +130,6 @@ namespace ramses_internal
 
         WaylandIviLayerId m_waylandIviLayerID;
         WaylandIviSurfaceId m_waylandIviSurfaceID;
-        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         WindowsWindowHandle m_windowsWindowHandle;
         X11WindowHandle m_x11WindowHandle;
         AndroidNativeWindowPtr m_androidNativeWindowPtr;

@@ -52,17 +52,6 @@ WARNING_DISABLE_CLANG(-Wimplicit-fallthrough)
 #define ASIO_DISABLE_STD_EXPERIMENTAL_STRING_VIEW
 #define ASIO_DISABLE_STD_INVOKE_RESULT
 
-#if defined(__INTEGRITY)
-// no CLOCK_MONOTONIC, fall back on realtime
-#define CLOCK_MONOTONIC CLOCK_REALTIME
-
-// provice dummy function for changing condvar clock
-inline int pthread_condattr_setclock(pthread_condattr_t *, clockid_t)
-{
-    return 0;
-}
-#endif
-
 #include "asio/io_service.hpp"
 #include "asio/steady_timer.hpp"
 #include "asio/ip/address.hpp"
@@ -70,10 +59,6 @@ inline int pthread_condattr_setclock(pthread_condattr_t *, clockid_t)
 #include "asio/connect.hpp"
 #include "asio/read.hpp"
 #include "asio/write.hpp"
-
-#if defined(__INTEGRITY)
-#undef CLOCK_MONOTONIC
-#endif
 
 WARNINGS_POP
 

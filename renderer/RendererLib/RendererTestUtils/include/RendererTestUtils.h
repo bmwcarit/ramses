@@ -21,7 +21,6 @@ namespace ramses
 {
     class RamsesRenderer;
     class RamsesDisplay;
-    class WarpingMeshData;
 }
 
 namespace ramses_internal
@@ -79,7 +78,6 @@ public:
     static ramses::DisplayConfig CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible = true);
     static void SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::microseconds time);
     static void SetCommandLineParamsForAllTests(const int argc, char const* const* argv);
-    static const ramses::WarpingMeshData& CreateTestWarpingMesh();
 
     static void SetWaylandDisplayForSystemCompositorControllerForAllTests(const ramses_internal::String& wd);
 

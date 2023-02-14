@@ -13,12 +13,19 @@
 #include "Collections/String.h"
 #include <chrono>
 
+namespace CLI
+{
+    class App;
+}
+
 namespace ramses_internal
 {
     class RendererConfig
     {
     public:
         RendererConfig() {}
+
+        void registerOptions(CLI::App& cli);
 
         const String& getWaylandSocketEmbedded() const;
         const String& getWaylandSocketEmbeddedGroup() const;
@@ -34,9 +41,6 @@ namespace ramses_internal
         void enableSystemCompositorControl();
         Bool getSystemCompositorControlEnabled() const;
 
-        const String& getKPIFileName() const;
-        void setKPIFileName(const String& filename);
-
         std::chrono::microseconds getFrameCallbackMaxPollTime() const;
         void setFrameCallbackMaxPollTime(std::chrono::microseconds pollTime);
         void setRenderthreadLooptimingReportingPeriod(std::chrono::milliseconds period);
@@ -48,7 +52,6 @@ namespace ramses_internal
         int m_waylandSocketEmbeddedFD = -1;
         String m_waylandDisplayForSystemCompositorController;
         Bool m_systemCompositorEnabled = false;
-        String m_kpiFilename;
         std::chrono::microseconds m_frameCallbackMaxPollTime{10000u};
         std::chrono::milliseconds m_renderThreadLoopTimingReportingPeriod { 0 }; // zero deactivates reporting
     };

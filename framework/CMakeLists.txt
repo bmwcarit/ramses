@@ -66,6 +66,7 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    ramses-framework-api/include/*.h
                             ramses-framework-api/include/ramses-framework-api/*.h
     DEPENDENCIES            ramses-framework-api
+                            CLI11
 
     # FrameworkAPI
     INCLUDE_BASE            Watchdog/include
@@ -82,6 +83,7 @@ ACME_MODULE(
                             lz4
                             fmt::fmt
                             ramses-abseil
+                            CLI11::CLI11
 
     INCLUDE_BASE            Core/Math3d/include
     FILES_PRIVATE_HEADER    Core/Math3d/include/Math3d/*.h
@@ -127,13 +129,6 @@ ACME_MODULE(
     INCLUDE_BASE            Collision/include
     FILES_PRIVATE_HEADER    Collision/include/Collision/*.h
     FILES_SOURCE            Collision/src/*.cpp
-
-    INCLUDE_BASE            Animation/Animation/include
-    FILES_PRIVATE_HEADER    Animation/Animation/include/Animation/*.h
-    FILES_SOURCE            Animation/Animation/src/*.cpp
-
-    INCLUDE_BASE            Animation/AnimationAPI/include
-    FILES_PRIVATE_HEADER    Animation/AnimationAPI/include/AnimationAPI/*.h
 
     INCLUDE_BASE            Communication/TransportCommon/include
     FILES_PRIVATE_HEADER    Communication/TransportCommon/include/TransportCommon/*.h
@@ -185,17 +180,17 @@ ACME_MODULE(
     )
 
 IF (ramses-sdk_ENABLE_TCP_SUPPORT)
-  ACME_INFO("+ TCP communication system support enabled")
+  message(STATUS "+ TCP communication system support enabled")
   TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_TCP_COMM=1")
 else()
-  ACME_INFO("- TCP communication system support disabled")
+  message(STATUS "- TCP communication system support disabled")
 ENDIF()
 
 IF (ramses-sdk_ENABLE_FALLBACK_FAKE_COMMUNICATION_SYSTEM)
-  ACME_INFO("+ Fallback fake communication system enabled")
+  message(STATUS "+ Fallback fake communication system enabled")
   TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_FALLBACK_FAKE_COMMUNICATION_SYSTEM=1")
 else()
-  ACME_INFO("- Fallback fake communication system disabled")
+  message(STATUS "- Fallback fake communication system disabled")
 ENDIF()
 
 IF (ramses-sdk_HAS_DLT)
@@ -224,11 +219,6 @@ if (DEFINED ramses-sdk_WORKER_THREAD_CORE_BINDING AND NOT ramses-sdk_WORKER_THRE
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_WORKER_THREAD_CORE_BINDING=${ramses-sdk_WORKER_THREAD_CORE_BINDING}")
 endif()
 
-# Thread priority and binding for someip connection keepalive threads
-if (DEFINED ramses-sdk_CONN_KEEPALIVE_THREAD_PRIORITY AND NOT ramses-sdk_CONN_KEEPALIVE_THREAD_PRIORITY STREQUAL "")
-    target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONN_KEEPALIVE_THREAD_PRIORITY=${ramses-sdk_CONN_KEEPALIVE_THREAD_PRIORITY}")
-endif()
-
 if (DEFINED ramses-sdk_CONN_KEEPALIVE_THREAD_CORE_BINDING AND NOT ramses-sdk_CONN_KEEPALIVE_THREAD_CORE_BINDING STREQUAL "")
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONN_KEEPALIVE_THREAD_CORE_BINDING=${ramses-sdk_CONN_KEEPALIVE_THREAD_CORE_BINDING}")
 endif()
@@ -238,7 +228,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-framework PRIVATE "-Wsuggest-override")
 endif()
 
-INSTALL(DIRECTORY ramses-framework-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+install(DIRECTORY ramses-framework-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
 
 set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}
@@ -321,10 +311,6 @@ ACME_MODULE(
     FILES_PRIVATE_HEADER    Effect/test/*.h
     FILES_SOURCE            Effect/test/*.cpp
 
-    INCLUDE_BASE            Animation/Animation/test
-    FILES_PRIVATE_HEADER    Animation/Animation/test/*.h
-    FILES_SOURCE            Animation/Animation/test/*.cpp
-
     INCLUDE_BASE            Communication/TransportCommon/test
     FILES_PRIVATE_HEADER    Communication/TransportCommon/test/*.h
     FILES_SOURCE            Communication/TransportCommon/test/*.cpp
@@ -336,10 +322,6 @@ ACME_MODULE(
     INCLUDE_BASE            Components/test
     FILES_PRIVATE_HEADER    Components/test/*.h
     FILES_SOURCE            Components/test/*.cpp
-
-    INCLUDE_BASE            Monitoring/test
-    FILES_PRIVATE_HEADER    Monitoring/test/*.h
-    FILES_SOURCE            Monitoring/test/*.cpp
 
     INCLUDE_BASE            Collision/test
     FILES_PRIVATE_HEADER    Collision/test/*.h
@@ -376,4 +358,4 @@ if (TARGET ramses-framework-test)
             target_compile_options(ramses-framework-test PRIVATE -Wno-maybe-uninitialized)
         ENDIF()
     ENDIF()
-ENDIF()
+endif()

@@ -28,11 +28,6 @@
 
 namespace ramses_internal
 {
-    constexpr DataFieldHandle Camera::ViewportOffsetField;
-    constexpr DataFieldHandle Camera::ViewportSizeField;
-    constexpr DataFieldHandle Camera::FrustumPlanesField;
-    constexpr DataFieldHandle Camera::FrustumNearFarPlanesField;
-
     template <template<typename, typename> class MEMORYPOOL>
     SceneT<MEMORYPOOL>::SceneT(const SceneInfo& sceneInfo)
         : m_name(sceneInfo.friendlyName)
@@ -50,13 +45,6 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     SceneT<MEMORYPOOL>::~SceneT()
     {
-        for (auto i = AnimationSystemHandle(0); i < getAnimationSystemCount(); ++i)
-        {
-            if (isAnimationSystemAllocated(i))
-            {
-                removeAnimationSystem(i);
-            }
-        }
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -508,42 +496,6 @@ namespace ramses_internal
     const BlitPass& SceneT<MEMORYPOOL>::getBlitPass(BlitPassHandle passHandle) const
     {
         return *m_blitPasses.getMemory(passHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    AnimationSystemHandle SceneT<MEMORYPOOL>::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
-    {
-        assert(nullptr != animationSystem);
-        const auto handle = m_animationSystems.allocate(externalHandle);
-        *m_animationSystems.getMemory(handle) = animationSystem;
-        animationSystem->setHandle(handle);
-        return handle;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::removeAnimationSystem(AnimationSystemHandle handle)
-    {
-        delete getAnimationSystem(handle);
-        m_animationSystems.release(handle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle)
-    {
-        // Non-const version of getAnimationSystem cast to its const version to avoid duplicating code
-        return const_cast<IAnimationSystem*>((const_cast<const SceneT&>(*this)).getAnimationSystem(handle));
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle) const
-    {
-        return m_animationSystems.isAllocated(handle) ? *m_animationSystems.getMemory(handle) : nullptr;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    UInt32 SceneT<MEMORYPOOL>::getAnimationSystemCount() const
-    {
-        return m_animationSystems.getTotalCount();
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1108,7 +1060,6 @@ namespace ramses_internal
         m_streamTextures.preallocateSize(sizeInfo.streamTextureCount);
         m_dataSlots.preallocateSize(sizeInfo.dataSlotCount);
         m_dataBuffers.preallocateSize(sizeInfo.dataBufferCount);
-        m_animationSystems.preallocateSize(sizeInfo.animationSystemCount);
         m_textureBuffers.preallocateSize(sizeInfo.textureBufferCount);
         m_pickableObjects.preallocateSize(sizeInfo.pickableObjectCount);
         m_sceneReferences.preallocateSize(sizeInfo.sceneReferenceCount);
@@ -1292,8 +1243,6 @@ namespace ramses_internal
         sizeInfo.textureBufferCount = m_textureBuffers.getTotalCount();
         sizeInfo.pickableObjectCount = m_pickableObjects.getTotalCount();
         sizeInfo.sceneReferenceCount = m_sceneReferences.getTotalCount();
-        sizeInfo.animationSystemCount = m_animationSystems.getTotalCount();
-
         return sizeInfo;
     }
 

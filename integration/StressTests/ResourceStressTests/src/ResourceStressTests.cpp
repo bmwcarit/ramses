@@ -29,7 +29,7 @@ namespace ramses_internal
 
     ResourceStressTests::ResourceStressTests(const StressTestConfig& config)
         : m_testConfig(config)
-        , m_framework(config.argc, config.argv)
+        , m_framework{ ramses::RamsesFrameworkConfig{ config.argc, config.argv } }
         , m_client(*m_framework.createClient("resource-stress-tests"))
         , m_testRenderer(m_framework, ramses::RendererConfig(config.argc, config.argv))
         , m_displays(config.displayCount)

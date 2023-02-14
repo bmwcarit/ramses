@@ -16,7 +16,7 @@
 namespace ramses
 {
     template <typename ObjectType>
-    class RamsesObjectTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class RamsesObjectTest : public LocalTestClientWithScene, public testing::Test
     {
     };
 
@@ -129,15 +129,15 @@ namespace ramses
         RamsesObject& obj = this->template createObject<TypeParam>("object");
         const RamsesObject& constObj = obj;
 
-        if (constObj.getType() != ERamsesObjectType_SplineStepBool)
+        if (constObj.getType() != ERamsesObjectType_PerspectiveCamera)
         {
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(obj));
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<PerspectiveCamera>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<PerspectiveCamera>(constObj));
         }
         else
         {
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(obj));
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<OrthographicCamera>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<OrthographicCamera>(constObj));
         }
     }
 

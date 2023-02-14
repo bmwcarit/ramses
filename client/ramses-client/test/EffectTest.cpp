@@ -60,13 +60,13 @@ namespace ramses
 
     TEST_F(AnEffect, hasNoGeometryShaderWhenNotCreatedWithSuch)
     {
-        EXPECT_FALSE(Effect::hasGeometryShader(*sharedTestState->effect));
+        EXPECT_FALSE(sharedTestState->effect->hasGeometryShader());
     }
 
     TEST_F(AnEffect, reportsErrorWhenAskedForGeometryInputType_ButNoGeometryShaderProvided)
     {
         EDrawMode mode;
-        EXPECT_NE(StatusOK, Effect::getGeometryShaderInputType(*sharedTestState->effect, mode));
+        EXPECT_NE(StatusOK, sharedTestState->effect->getGeometryShaderInputType(mode));
     }
 
     TEST_F(AnEffect, reportsErrorWhenAskingForNonExistingUniformInput)
@@ -505,7 +505,7 @@ namespace ramses
 
         ASSERT_NE(nullptr, effect);
         EDrawMode geometryShaderInput;
-        EXPECT_EQ(StatusOK, Effect::getGeometryShaderInputType(*effect, geometryShaderInput));
+        EXPECT_EQ(StatusOK, effect->getGeometryShaderInputType(geometryShaderInput));
         EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Points);
     }
 
@@ -527,7 +527,7 @@ namespace ramses
         Effect* effect = sharedTestState->getScene().createEffect(effectDesc);
         ASSERT_NE(nullptr, effect);
         EDrawMode geometryShaderInput;
-        EXPECT_EQ(StatusOK, Effect::getGeometryShaderInputType(*effect, geometryShaderInput));
+        EXPECT_EQ(StatusOK, effect->getGeometryShaderInputType(geometryShaderInput));
         EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Lines);
     }
 
@@ -549,7 +549,7 @@ namespace ramses
         Effect* effect = sharedTestState->getScene().createEffect(effectDesc);
         ASSERT_NE(nullptr, effect);
         EDrawMode geometryShaderInput;
-        EXPECT_EQ(StatusOK, Effect::getGeometryShaderInputType(*effect, geometryShaderInput));
+        EXPECT_EQ(StatusOK, effect->getGeometryShaderInputType(geometryShaderInput));
         EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Triangles);
     }
 }

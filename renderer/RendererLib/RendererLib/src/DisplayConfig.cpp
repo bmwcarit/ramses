@@ -7,9 +7,29 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplayConfig.h"
+#include <array>
+#include "Utils/Cli.h"
 
 namespace ramses_internal
 {
+    void DisplayConfig::registerOptions(CLI::App& cli)
+    {
+        auto* grp = cli.add_option_group("Display Options");
+        grp->add_option("--xpos", m_windowPositionX, "set x position of window");
+        grp->add_option("--ypos", m_windowPositionY, "set y position of window");
+        grp->add_option("--width", m_desiredWindowWidth, "set window width")->default_val(m_desiredWindowWidth);
+        grp->add_option("--height", m_desiredWindowHeight, "set window height")->default_val(m_desiredWindowHeight);
+        grp->add_flag("-f,--fullscreen", m_fullscreen, "enable fullscreen mode");
+        grp->add_flag("--borderless", m_borderless, "disable window borders");
+        grp->add_flag("--resizable", m_resizable, "enables resizable renderer window");
+        grp->add_option("--msaa", m_antiAliasingSamples, "set msaa (antialiasing) sample count")->check(CLI::IsMember({1, 2, 4, 8}));
+        grp->add_flag_function("--delete-effects", [&](std::int64_t) { m_keepEffectsUploaded = false; }, "do not keep effects uploaded");
+        grp->add_flag("--ivi-visible,!--no-ivi-visible", m_startVisibleIvi, "set IVI surface visible when created");
+        grp->add_option("--ivi-layer", m_waylandIviLayerID, "set id of IVI layer the display surface will be added to")->type_name("LAYER");
+        grp->add_option("--ivi-surface", m_waylandIviSurfaceID, "set id of IVI surface the display will be composited on")->type_name("SURFACE");
+        grp->add_option("--clear", m_clearColor, "set clear color (rgba)");
+    }
+
     void DisplayConfig::setAntialiasingSampleCount(UInt32 samples)
     {
         assert(ramses_internal::contains_c<uint32_t>({ 1u, 2u, 4u, 8u }, samples));
@@ -34,16 +54,6 @@ namespace ramses_internal
     void DisplayConfig::setWaylandIviSurfaceID(WaylandIviSurfaceId waylandIviSurfaceID)
     {
         m_waylandIviSurfaceID = waylandIviSurfaceID;
-    }
-
-    IntegrityRGLDeviceUnit DisplayConfig::getIntegrityRGLDeviceUnit() const
-    {
-        return m_integrityRGLDeviceUnit;
-    }
-
-    void DisplayConfig::setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit)
-    {
-        m_integrityRGLDeviceUnit = rglDeviceUnit;
     }
 
     AndroidNativeWindowPtr DisplayConfig::getAndroidNativeWindow() const
@@ -131,16 +141,6 @@ namespace ramses_internal
     void DisplayConfig::setWindowPositionY(Int32 posy)
     {
         m_windowPositionY = posy;
-    }
-
-    void DisplayConfig::setWarpingEnabled(Bool enabled)
-    {
-        m_warpingEnabled = enabled;
-    }
-
-    Bool DisplayConfig::isWarpingEnabled() const
-    {
-        return m_warpingEnabled;
     }
 
     void DisplayConfig::setKeepEffectsUploaded(Bool enabled)
@@ -330,7 +330,6 @@ namespace ramses_internal
         return
             m_fullscreen                 == other.m_fullscreen &&
             m_borderless                 == other.m_borderless &&
-            m_warpingEnabled             == other.m_warpingEnabled &&
             m_antiAliasingSamples        == other.m_antiAliasingSamples &&
             m_desiredWindowWidth         == other.m_desiredWindowWidth &&
             m_desiredWindowHeight        == other.m_desiredWindowHeight &&
@@ -338,7 +337,6 @@ namespace ramses_internal
             m_windowPositionY            == other.m_windowPositionY &&
             m_waylandIviLayerID          == other.m_waylandIviLayerID &&
             m_waylandIviSurfaceID        == other.m_waylandIviSurfaceID &&
-            m_integrityRGLDeviceUnit     == other.m_integrityRGLDeviceUnit &&
             m_startVisibleIvi            == other.m_startVisibleIvi &&
             m_resizable                  == other.m_resizable &&
             m_gpuMemoryCacheSize         == other.m_gpuMemoryCacheSize &&

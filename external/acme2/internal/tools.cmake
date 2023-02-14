@@ -18,29 +18,17 @@
 ############################################################################
 
 #==============================================================================
-# logging
-#==============================================================================
-
-MACRO(ACME_INFO)
-    MESSAGE(STATUS "${ARGV}")
-ENDMACRO()
-
-MACRO(ACME_ERROR)
-    message(FATAL_ERROR "ERROR: ${ARGV}")
-ENDMACRO()
-
-#==============================================================================
 # add_test helper
 #==============================================================================
 
 MACRO(ACME_ADD_TEST test_target test_suffix)
     if (NOT TARGET ${test_target})
-        ACME_ERROR("ACME_ADD_TEST: Target ${test_target} not found")
+        message(FATAL_ERROR "ACME_ADD_TEST: Target ${test_target} not found")
     endif()
 
     list(FIND PROJECT_ALLOWED_TEST_SUFFIXES ${test_suffix} ACME_ADD_TEST_SUFFIX_FOUND)
     if (ACME_ADD_TEST_SUFFIX_FOUND EQUAL -1)
-        ACME_ERROR("ACME_ADD_TEST: Test suffix ${test_suffix} invalid. Allowed are ${PROJECT_ALLOWED_TEST_SUFFIXES}")
+        message(FATAL_ERROR "ACME_ADD_TEST: Test suffix ${test_suffix} invalid. Allowed are ${PROJECT_ALLOWED_TEST_SUFFIXES}")
     endif()
 
     ADD_TEST(
@@ -49,11 +37,9 @@ MACRO(ACME_ADD_TEST test_target test_suffix)
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 
-    if (${ACME_ENABLE_TEST_PROPERTIES})
-        # attach environment variable for clang coverage
-        set_tests_properties(${test_target}_${test_suffix} PROPERTIES
-            ENVIRONMENT LLVM_PROFILE_FILE=${test_target}_${test_suffix}_%p.profraw)
-    endif()
+    # attach environment variable for clang coverage
+    set_tests_properties(${test_target}_${test_suffix} PROPERTIES
+        ENVIRONMENT LLVM_PROFILE_FILE=${test_target}_${test_suffix}_%p.profraw)
 ENDMACRO()
 
 #==============================================================================
@@ -120,7 +106,7 @@ function(ACME_COPY_RESOURCES_FOR_TARGET tgt)
     # install whole folders if requested
     if (RES_ENABLE_INSTALL)
         foreach(user_dir ${res_folders})
-            install(DIRECTORY ${user_dir}/ DESTINATION ${ACME_INSTALL_RESOURCE} COMPONENT "${ACME_PACKAGE_NAME}")
+            install(DIRECTORY ${user_dir}/ DESTINATION ${RAMSES_INSTALL_RESOURCES_PATH} COMPONENT "${ACME_PACKAGE_NAME}")
         endforeach()
     endif()
 
@@ -150,7 +136,7 @@ function(ACME_COPY_RESOURCES_FOR_TARGET tgt)
         target_sources(${tgt} PRIVATE ${dir_files_src})
 
         # check if already copy target fir dir
-        get_property(dir_copy_target DIRECTORY "${PROJECT_BASE_DIR}" PROPERTY ACME_DIR_COPY_${dir_hash})
+        get_property(dir_copy_target DIRECTORY "${PROJECT_SOURCE_DIR}" PROPERTY ACME_DIR_COPY_${dir_hash})
         if (dir_copy_target)
             add_dependencies(${tgt} ${dir_copy_target})
         else()
@@ -168,7 +154,7 @@ function(ACME_COPY_RESOURCES_FOR_TARGET tgt)
             add_dependencies(${tgt} ${target_name})
 
             # store target name
-            set_property(DIRECTORY ${PROJECT_BASE_DIR} PROPERTY ACME_DIR_COPY_${dir_hash} ${target_name})
+            set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY ACME_DIR_COPY_${dir_hash} ${target_name})
         endif()
 
         # TODO check uniqueness (?)

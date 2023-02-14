@@ -36,7 +36,6 @@
 #include "RamsesClientImpl.h"
 #include "EffectInputImpl.h"
 #include "SceneReferenceImpl.h"
-#include "AnimationSystemImpl.h"
 #include "BlitPassImpl.h"
 #include "RamsesObjectRegistryIterator.h"
 #include "Resource/EffectResource.h"
@@ -585,41 +584,9 @@ namespace ramses_internal
             case ramses::ERamsesObjectType_ClientObject:
             case ramses::ERamsesObjectType_RamsesObject:
             case ramses::ERamsesObjectType_SceneObject:
-            case ramses::ERamsesObjectType_AnimationObject:
             case ramses::ERamsesObjectType_Client:
             case ramses::ERamsesObjectType_Scene:
-            case ramses::ERamsesObjectType_AnimationSystem:
-            case ramses::ERamsesObjectType_AnimationSystemRealTime:
             case ramses::ERamsesObjectType_Camera:
-            case ramses::ERamsesObjectType_AnimatedProperty:
-            case ramses::ERamsesObjectType_Animation:
-            case ramses::ERamsesObjectType_AnimationSequence:
-            case ramses::ERamsesObjectType_Spline:
-            case ramses::ERamsesObjectType_SplineStepBool:
-            case ramses::ERamsesObjectType_SplineStepFloat:
-            case ramses::ERamsesObjectType_SplineStepInt32:
-            case ramses::ERamsesObjectType_SplineStepVector2f:
-            case ramses::ERamsesObjectType_SplineStepVector3f:
-            case ramses::ERamsesObjectType_SplineStepVector4f:
-            case ramses::ERamsesObjectType_SplineStepVector2i:
-            case ramses::ERamsesObjectType_SplineStepVector3i:
-            case ramses::ERamsesObjectType_SplineStepVector4i:
-            case ramses::ERamsesObjectType_SplineLinearFloat:
-            case ramses::ERamsesObjectType_SplineLinearInt32:
-            case ramses::ERamsesObjectType_SplineLinearVector2f:
-            case ramses::ERamsesObjectType_SplineLinearVector3f:
-            case ramses::ERamsesObjectType_SplineLinearVector4f:
-            case ramses::ERamsesObjectType_SplineLinearVector2i:
-            case ramses::ERamsesObjectType_SplineLinearVector3i:
-            case ramses::ERamsesObjectType_SplineLinearVector4i:
-            case ramses::ERamsesObjectType_SplineBezierFloat:
-            case ramses::ERamsesObjectType_SplineBezierInt32:
-            case ramses::ERamsesObjectType_SplineBezierVector2f:
-            case ramses::ERamsesObjectType_SplineBezierVector3f:
-            case ramses::ERamsesObjectType_SplineBezierVector4f:
-            case ramses::ERamsesObjectType_SplineBezierVector2i:
-            case ramses::ERamsesObjectType_SplineBezierVector3i:
-            case ramses::ERamsesObjectType_SplineBezierVector4i:
             case ramses::ERamsesObjectType_Resource:
             case ramses::ERamsesObjectType_DataObject:
             case ramses::ERamsesObjectType_NUMBER_OF_TYPES:
@@ -1121,126 +1088,9 @@ namespace ramses_internal
     {
         const ramses::Effect& effect = obj.getEffect();
         ramses_internal::ClientScene& iscene   = m_scene.impl.getIScene();
-        const ramses_internal::RenderState& rs = m_scene.impl.getIScene().getRenderState(obj.getRenderStateHandle());
 
-        if (ImGui::TreeNode("Blending"))
-        {
-            float rgba[4];
-            obj.getBlendingColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-            if (ImGui::ColorEdit4("BlendingColor", rgba))
-                obj.setBlendingColor(rgba[0], rgba[1], rgba[2], rgba[3]);
+        imgui::RenderState(iscene, obj.getRenderStateHandle());
 
-            int srcColor  = static_cast<int>(rs.blendFactorSrcColor);
-            int destColor = static_cast<int>(rs.blendFactorDstColor);
-            int srcAlpha  = static_cast<int>(rs.blendFactorSrcAlpha);
-            int destAlpha = static_cast<int>(rs.blendFactorDstAlpha);
-            auto setBlendFactors = [&]() {
-                iscene.setRenderStateBlendFactors(obj.getRenderStateHandle(),
-                                                  static_cast<EBlendFactor>(srcColor),
-                                                  static_cast<EBlendFactor>(destColor),
-                                                  static_cast<EBlendFactor>(srcAlpha),
-                                                  static_cast<EBlendFactor>(destAlpha));
-            };
-            if (ImGui::Combo("srcColor", &srcColor, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-            if (ImGui::Combo("destColor", &destColor, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-            if (ImGui::Combo("srcAlpha", &srcAlpha, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-            if (ImGui::Combo("destAlpha", &destAlpha, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-
-            int blendingOperationColor = static_cast<int>(rs.blendOperationColor);
-            int blendingOperationAlpha = static_cast<int>(rs.blendOperationAlpha);
-            auto setBlendOperations = [&]() {
-                iscene.setRenderStateBlendOperations(
-                    obj.getRenderStateHandle(), static_cast<EBlendOperation>(blendingOperationColor), static_cast<EBlendOperation>(blendingOperationAlpha));
-            };
-            if (ImGui::Combo("colorOperation", &blendingOperationColor, ramses_internal::BlendOperationNames, static_cast<int>(EBlendOperation::NUMBER_OF_ELEMENTS)))
-                setBlendOperations();
-            if (ImGui::Combo("alphaOperation", &blendingOperationAlpha, ramses_internal::BlendOperationNames, static_cast<int>(EBlendOperation::NUMBER_OF_ELEMENTS)))
-                setBlendOperations();
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("Depth"))
-        {
-            int depthFunc = static_cast<int>(rs.depthFunc);
-            if (ImGui::Combo("depthFunc", &depthFunc, DepthFuncNames, static_cast<int>(EDepthFunc::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateDepthFunc(obj.getRenderStateHandle(), static_cast<EDepthFunc>(depthFunc));
-            int depthWrite = static_cast<int>(rs.depthWrite);
-            if (ImGui::Combo("depthWrite", &depthWrite, DepthWriteNames, static_cast<int>(EDepthWrite::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateDepthWrite(obj.getRenderStateHandle(), static_cast<EDepthWrite>(depthWrite));
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("Scissor"))
-        {
-            int mode = static_cast<int>(rs.scissorTest);
-            int xywh[4] = {
-                rs.scissorRegion.x,
-                rs.scissorRegion.y,
-                rs.scissorRegion.width,
-                rs.scissorRegion.height
-            };
-            auto setScissorTest = [&]() {
-                iscene.setRenderStateScissorTest(obj.getRenderStateHandle(), static_cast<EScissorTest>(mode),
-                    {static_cast<int16_t>(xywh[0]), static_cast<int16_t>(xywh[1]), static_cast<uint16_t>(xywh[2]), static_cast<uint16_t>(xywh[3])});
-            };
-            if (ImGui::Combo("scissorTest", &mode, ScissorTestNames, static_cast<int>(EScissorTest::NUMBER_OF_ELEMENTS)))
-                setScissorTest();
-            if (ImGui::DragInt4("Region", xywh))
-                setScissorTest();
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("Stencil"))
-        {
-            int func = static_cast<int>(rs.stencilFunc);
-            int refMask[2]  = {
-                rs.stencilRefValue,
-                rs.stencilMask
-            };
-            auto setStencilFunc = [&]() {
-                iscene.setRenderStateStencilFunc(obj.getRenderStateHandle(), static_cast<EStencilFunc>(func), static_cast<uint8_t>(refMask[0]), static_cast<uint8_t>(refMask[1]));
-            };
-            if (ImGui::Combo("stencilFunc", &func, StencilFuncNames, static_cast<int>(EStencilFunc::NUMBER_OF_ELEMENTS)))
-                setStencilFunc();
-            if (ImGui::DragInt2("RefValue, Mask", refMask))
-                setStencilFunc();
-
-            int sfail = static_cast<int>(rs.stencilOpFail);
-            int dpfail = static_cast<int>(rs.stencilOpDepthFail);
-            int dppass = static_cast<int>(rs.stencilOpDepthPass);
-            auto setStencilOps = [&]() {
-                iscene.setRenderStateStencilOps(obj.getRenderStateHandle(), static_cast<EStencilOp>(sfail), static_cast<EStencilOp>(dpfail), static_cast<EStencilOp>(dppass));
-            };
-            if (ImGui::Combo("fail operation", &sfail, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
-                setStencilOps();
-            if (ImGui::Combo("depth fail operation", &dpfail, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
-                setStencilOps();
-            if (ImGui::Combo("depth pass operation", &dppass, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
-                setStencilOps();
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("DrawMode"))
-        {
-            int culling = static_cast<int>(rs.cullMode);
-            if (ImGui::Combo("Culling", &culling, CullModeNames, static_cast<int>(ECullMode::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateCullMode(obj.getRenderStateHandle(), static_cast<ECullMode>(culling));
-            int drawMode = static_cast<int>(rs.drawMode);
-            if (ImGui::Combo("DrawMode", &drawMode, DrawModeNames, static_cast<int>(EDrawMode::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateDrawMode(obj.getRenderStateHandle(), static_cast<EDrawMode>(drawMode));
-            uint32_t colorFlags = rs.colorWriteMask;
-            ImGui::Text("ColorWriteMask");
-            auto setColorWriteMask = [&]() { iscene.setRenderStateColorWriteMask(obj.getRenderStateHandle(), static_cast<uint8_t>(colorFlags)); };
-            if (ImGui::CheckboxFlags("Red", &colorFlags, EColorWriteFlag_Red))
-                setColorWriteMask();
-            if (ImGui::CheckboxFlags("Green", &colorFlags, EColorWriteFlag_Green))
-                setColorWriteMask();
-            if (ImGui::CheckboxFlags("Blue", &colorFlags, EColorWriteFlag_Blue))
-                setColorWriteMask();
-            if (ImGui::CheckboxFlags("Alpha", &colorFlags, EColorWriteFlag_Alpha))
-                setColorWriteMask();
-            ImGui::TreePop();
-        }
         if (ImGui::TreeNode("Uniform input"))
         {
             for (uint32_t i = 0; i < effect.getUniformInputCount(); ++i)
@@ -1867,7 +1717,6 @@ namespace ramses_internal
                 const auto type = static_cast<ramses::ERamsesObjectType>(i);
 
                 if (ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_SceneObject)
-                    && !ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_AnimationObject)
                     && ramses::RamsesObjectTypeUtils::IsConcreteType(type))
                 {
                     auto& objects = m_sceneObjects[type];

@@ -393,7 +393,6 @@ namespace ramses
     }
 
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
     TEST_F(ARendererSceneControl, dispatchesExternalBufferLinkedEventFromRenderer)
     {
         constexpr sceneId_t consumerScene{ 3 };
@@ -413,7 +412,6 @@ namespace ramses
         submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
-#endif
 
     TEST_F(ARendererSceneControl, dispatchesDataLinkedEventFromRenderer)
     {

@@ -7,9 +7,9 @@
 #  -------------------------------------------------------------------------
 
 IF(ramses-sdk_BUILD_DEMOS)
-    ADD_SUBDIRECTORY(ramses-text-layout-demo)
-    ADD_SUBDIRECTORY(ramses-text-shadow-demo)
-    ADD_SUBDIRECTORY(ramses-dcsm-list)
+    if(ramses-sdk_TEXT_SUPPORT)
+        add_subdirectory(ramses-text-layout-demo)
+        add_subdirectory(ramses-text-shadow-demo)
+    endif()
     ADD_SUBDIRECTORY(android)
-    ADD_SUBDIRECTORY(ramses-dcsm-scene-references-demo)
 ENDIF()

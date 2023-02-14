@@ -44,7 +44,6 @@ class Target(with_metaclass(ABCMeta)):
         self.powerOutletNr = targetInfo.powerOutletNr
         self.password = targetInfo.password
         self.sshPort = targetInfo.sshPort
-        self.someIPTestsInterfaceIp = targetInfo.someIPTestsInterfaceIp
         self.tcpTestsInterfaceIp = targetInfo.tcpTestsInterfaceIp
         self.tcpAliveIntervalMs = None
         self.tcpAliveTimeoutMs = None
@@ -62,9 +61,10 @@ class Target(with_metaclass(ABCMeta)):
         self.dltSupported = False
         self.embeddedCompositingSupported = False
         self.systemCompositorControllerSupported = False
+        # targets with systemCompositorScreenshotSupported have to be a subset of  systemCompositorControllerSupported,
+        # i.e. this should only be true if systemCompositorControllerSupported is true as well
         self.systemCompositorScreenshotSupported = False
         self.binaryShaderCompilerSupported = False
-        self.externalSomeIPHUDaemon = False
         self.baseWorkingDirectory = self.ramsesInstallDir + "/bin"
         self.tmpDir = "/tmp"
         self.fixed_screenshot_prefix = 'ramsestlst_'
@@ -126,7 +126,7 @@ class Target(with_metaclass(ABCMeta)):
 
     def start_daemon(self, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='SMGR'):
         # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
-        extendedArgs = args + " -myport {}".format(CUSTOM_DAEMON_PORT)
+        extendedArgs = args + " --port {}".format(CUSTOM_DAEMON_PORT)
         daemon = self._start_ramses_application("ramses-daemon", extendedArgs, workingDirectory, nameExtension, env, dltAppID)
         daemon.initialisation_message_to_look_for("Ramsh commands registered")
         return daemon
@@ -137,11 +137,11 @@ class Target(with_metaclass(ABCMeta)):
         if startVisible:
             extendedArgs += " --startVisible"
         if self.systemCompositorControllerSupported:
-            extendedArgs += "  -scc "
-        if "--waylandIviLayerId" not in args and "-lid" not in args:
-            extendedArgs += " -lid {}".format(DEFAULT_TEST_LAYER)
-        if "--waylandIviSurfaceID" not in args and "-sid" not in args:
-            extendedArgs += " -sid {}".format(DEFAULT_TEST_SURFACE)
+            extendedArgs += "  --ivi-control "
+        if "--ivi-layer" not in args:
+            extendedArgs += " --ivi-layer {}".format(DEFAULT_TEST_LAYER)
+        if "--ivi-surface" not in args:
+            extendedArgs += " --ivi-surface {}".format(DEFAULT_TEST_SURFACE)
         if not automap:
             extendedArgs += " -nomap"
 
@@ -172,10 +172,12 @@ class Target(with_metaclass(ABCMeta)):
         binaryDirectoryOnTarget = self._get_merged_working_directory(workingDirectory)
         extendedArgs = args
         if dltAppID:
-            extendedArgs += " -dai " + dltAppID
-        extendedArgs += " -l " + str(self.logLevel) + " --enableSmokeTestContext " + " --enableProtocolVersionOffset "
+            extendedArgs += " --dlt-app-id " + dltAppID
+        if "--log-level" not in args:
+            extendedArgs += " --log-level " + str(self.logLevel)
+        extendedArgs += " --log-test "
         # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
-        extendedArgs += " -p {}".format(CUSTOM_DAEMON_PORT)
+        extendedArgs += " --daemon-port {}".format(CUSTOM_DAEMON_PORT)
         if self.currentTestId:
             extendedArgs += " --executionIdentifier '{}'".format(self.currentTestId)
         env['DISABLE_CONSOLE_COLORS'] = '1'

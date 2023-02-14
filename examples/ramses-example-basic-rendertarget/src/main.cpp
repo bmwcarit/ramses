@@ -19,7 +19,7 @@
 int main(int argc, char* argv[])
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-rendertarget"));
     framework.connect();
 

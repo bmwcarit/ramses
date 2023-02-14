@@ -36,6 +36,11 @@ namespace ramses
     {
     }
 
+    void DisplayConfig::registerOptions(CLI::App& cli)
+    {
+        impl.registerOptions(cli);
+    }
+
     status_t DisplayConfig::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         const status_t status = impl.setWindowRectangle(x, y, width, height);
@@ -79,13 +84,6 @@ namespace ramses
         return impl.getMultiSamplingSamples(numSamples);
     }
 
-    status_t DisplayConfig::enableWarpingPostEffect()
-    {
-        const status_t status = impl.enableWarpingPostEffect();
-        LOG_HL_RENDERER_API_NOARG(status);
-        return status;
-    }
-
     status_t DisplayConfig::setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID)
     {
         const status_t status = impl.setWaylandIviLayerID(waylandIviLayerID);
@@ -120,23 +118,11 @@ namespace ramses
         return impl.getWaylandDisplay();
     }
 
-    status_t DisplayConfig::setAsyncEffectUploadEnabled(DisplayConfig& config, bool enabled)
+    status_t DisplayConfig::setAsyncEffectUploadEnabled(bool enabled)
     {
-        const status_t status = config.impl.setAsyncEffectUploadEnabled(enabled);
-        LOG_HL_RENDERER_STATIC_API1(status, enabled);
+        const status_t status = impl.setAsyncEffectUploadEnabled(enabled);
+        LOG_HL_RENDERER_API1(status, enabled);
         return status;
-    }
-
-    status_t DisplayConfig::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)
-    {
-        const status_t status = impl.setIntegrityRGLDeviceUnit(rglDeviceUnit);
-        LOG_HL_RENDERER_API1(status, rglDeviceUnit);
-        return status;
-    }
-
-    uint32_t DisplayConfig::getIntegrityRGLDeviceUnit() const
-    {
-        return impl.getIntegrityRGLDeviceUnit();
     }
 
     void* DisplayConfig::getAndroidNativeWindow() const
@@ -184,10 +170,10 @@ namespace ramses
         return status;
     }
 
-    status_t DisplayConfig::setDepthStencilBufferType(DisplayConfig& config, EDepthBufferType depthBufferType)
+    status_t DisplayConfig::setDepthStencilBufferType(EDepthBufferType depthBufferType)
     {
-        const auto status = config.impl.setDepthStencilBufferType(depthBufferType);
-        LOG_HL_RENDERER_STATIC_API1(status, depthBufferType);
+        const auto status = impl.setDepthStencilBufferType(depthBufferType);
+        LOG_HL_RENDERER_API1(status, depthBufferType);
         return status;
     }
 

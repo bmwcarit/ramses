@@ -9,8 +9,7 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/RendererConfig.h"
-#include "RendererLib/RendererConfigUtils.h"
-#include "Utils/CommandLineParser.h"
+#include "CLI/CLI.hpp"
 
 TEST(AInternalRendererConfig, hasDefaultValues)
 {
@@ -19,7 +18,6 @@ TEST(AInternalRendererConfig, hasDefaultValues)
     EXPECT_EQ(ramses_internal::String(""), config.getWaylandSocketEmbeddedGroup());
     EXPECT_EQ(-1, config.getWaylandSocketEmbeddedFD());
     EXPECT_FALSE(config.getSystemCompositorControlEnabled());
-    EXPECT_STREQ("", config.getKPIFileName().c_str());
     EXPECT_EQ(std::chrono::microseconds{10000u}, config.getFrameCallbackMaxPollTime());
     EXPECT_STREQ("", config.getWaylandDisplayForSystemCompositorController().c_str());
 }
@@ -62,14 +60,6 @@ TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedFD)
     EXPECT_EQ(42, config.getWaylandSocketEmbeddedFD());
 }
 
-TEST(AInternalRendererConfig, canSetGetKPIFilename)
-{
-    ramses_internal::RendererConfig config;
-    config.setKPIFileName("filename");
-
-    EXPECT_STREQ("filename", config.getKPIFileName().c_str());
-}
-
 TEST(AInternalRendererConfig, canSetGetMaxFramecallbackPollTime)
 {
     ramses_internal::RendererConfig config;
@@ -86,21 +76,3 @@ TEST(AInternalRendererConfig, canSetGetWaylandDisplayForSystemCompositorControll
     EXPECT_STREQ("ramses wd", config.getWaylandDisplayForSystemCompositorController().c_str());
 }
 
-TEST(AInternalRendererConfig, getsValuesAssignedFromCommandLine)
-{
-    static const ramses_internal::Char* args[] =
-    {
-        "app",
-        "-wse", "wse",
-        "-wsegn", "wsegn",
-        "-kpi", "filename"
-    };
-    ramses_internal::CommandLineParser parser(sizeof(args) / sizeof(ramses_internal::Char*), args);
-
-    ramses_internal::RendererConfig config;
-    ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, config);
-
-    EXPECT_STREQ("wse", config.getWaylandSocketEmbedded().c_str());
-    EXPECT_STREQ("wsegn", config.getWaylandSocketEmbeddedGroup().c_str());
-    EXPECT_STREQ("filename", config.getKPIFileName().c_str());
-}

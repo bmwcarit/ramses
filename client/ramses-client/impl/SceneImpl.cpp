@@ -22,14 +22,11 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
-#include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -66,10 +63,6 @@
 #include "AppearanceImpl.h"
 #include "GeometryBindingImpl.h"
 #include "StreamTextureImpl.h"
-#include "AnimationSystemImpl.h"
-#include "AnimationAPI/IAnimationSystem.h"
-#include "Animation/ActionCollectingAnimationSystem.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "SerializationContext.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
@@ -265,12 +258,6 @@ namespace ramses
             case ERamsesObjectType_StreamTexture:
                 status = createAndDeserializeObjectImpls<StreamTexture, StreamTextureImpl>(inStream, serializationContext, count);
                 break;
-            case ERamsesObjectType_AnimationSystem:
-                status = createAndDeserializeObjectImpls<AnimationSystem, AnimationSystemImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_AnimationSystemRealTime:
-                status = createAndDeserializeObjectImpls<AnimationSystemRealTime, AnimationSystemImpl>(inStream, serializationContext, count);
-                break;
             case ERamsesObjectType_RenderGroup:
                 status = createAndDeserializeObjectImpls<RenderGroup, RenderGroupImpl>(inStream, serializationContext, count);
                 break;
@@ -390,7 +377,6 @@ namespace ramses
         {
             const ERamsesObjectType type = static_cast<ERamsesObjectType>(i);
             if (RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_SceneObject)
-                && !RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_AnimationObject)
                 && RamsesObjectTypeUtils::IsConcreteType(type))
             {
                 objectCount[i] = 0u;
@@ -407,7 +393,6 @@ namespace ramses
         {
             const ERamsesObjectType type = static_cast<ERamsesObjectType>(i);
             if (RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_SceneObject)
-                && !RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_AnimationObject)
                 && RamsesObjectTypeUtils::IsConcreteType(type))
             {
                 ramses_internal::StringOutputStream msg;
@@ -534,10 +519,6 @@ namespace ramses
             break;
         case ERamsesObjectType_MeshNode:
             returnStatus = destroyMeshNode(RamsesObjectTypeUtils::ConvertTo<MeshNode>(object));
-            break;
-        case ERamsesObjectType_AnimationSystem:
-        case ERamsesObjectType_AnimationSystemRealTime:
-            returnStatus = destroyAnimationSystem(RamsesObjectTypeUtils::ConvertTo<AnimationSystem>(object));
             break;
         case ERamsesObjectType_DataFloat:
         case ERamsesObjectType_DataVector2f:
@@ -1522,57 +1503,6 @@ namespace ramses
         return ramses_internal::EffectUniformTime::GetMilliseconds(getIScene().getEffectTimeSync());
     }
 
-    AnimationSystem* SceneImpl::createAnimationSystem(uint32_t flags, const char* name)
-    {
-        uint32_t creationFlags = ramses_internal::EAnimationSystemFlags_Default;
-        if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
-        {
-            creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
-        }
-        if ((flags & EAnimationSystemFlags_SynchronizedClock) != 0)
-        {
-            LOG_WARN(CONTEXT_CLIENT, "Scene::createAnimationSystem: flag EAnimationSystemFlags_SynchronizedClock is relevant only for real-time animation system, it will be ignored");
-        }
-
-        AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystem, name);
-        AnimationSystem* animationSystem = new AnimationSystem(pimpl);
-        registerCreatedObject(*animationSystem);
-        return animationSystem;
-    }
-
-    AnimationSystemRealTime* SceneImpl::createRealTimeAnimationSystem(uint32_t flags, const char* name)
-    {
-        uint32_t creationFlags = ramses_internal::EAnimationSystemFlags_RealTime;
-        if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
-        {
-            creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
-        }
-        if ((flags & EAnimationSystemFlags_SynchronizedClock) != 0)
-        {
-            creationFlags |= ramses_internal::EAnimationSystemFlags_SynchronizedClock;
-        }
-
-        AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystemRealTime, name);
-        AnimationSystemRealTime* animationSystem = new AnimationSystemRealTime(pimpl);
-        registerCreatedObject(*animationSystem);
-        return animationSystem;
-    }
-
-    AnimationSystemImpl& SceneImpl::createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name)
-    {
-        ramses_internal::AnimationSystemFactory animSystemFactory(ramses_internal::EAnimationSystemOwner_Client, &m_scene.getSceneActionCollection());
-        ramses_internal::IAnimationSystem* ianimationSystem =
-            animSystemFactory.createAnimationSystem(flags, ramses_internal::AnimationSystemSizeInformation());
-        AnimationSystemImpl& pimpl = *new AnimationSystemImpl(*this, type, name);
-        pimpl.initializeFrameworkData(*ianimationSystem);
-        return pimpl;
-    }
-
-    status_t SceneImpl::destroyAnimationSystem(AnimationSystem& animationSystem)
-    {
-        return destroyObject(animationSystem);
-    }
-
     RamsesObjectRegistry& SceneImpl::getObjectRegistry()
     {
         return m_objectRegistry;
@@ -2110,7 +2040,8 @@ namespace ramses
         if (!outputFile.isOpen())
             return addErrorEntry(fmt::format("Scene::saveToFile failed, could not open file for writing: '{}'", fileName));
 
-        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
+        const EFeatureLevel featureLevel = m_hlClient.impl.getFramework().getFeatureLevel();
+        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
 
         ramses_internal::UInt bytesForVersion = 0;
         if (!outputFile.getPos(bytesForVersion))

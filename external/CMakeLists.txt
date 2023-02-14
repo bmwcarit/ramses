@@ -24,9 +24,9 @@ IF(ramses-sdk_BUILD_TESTS AND NOT TARGET gmock)
     target_compile_options(gmock PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
 
     ACME_FOLDERIZE_TARGETS(gmock gmock_main gtest gtest_main)
-    ACME_INFO("+ googletest (custom)")
+    message(STATUS "+ googletest (custom)")
 ELSE()
-    ACME_INFO("+ googletest (external)")
+    message(STATUS "+ googletest (external)")
 ENDIF()
 
 add_library(ramses-gmock INTERFACE)
@@ -37,18 +37,18 @@ target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 
 # fmt string formatting library
 if (TARGET fmt::fmt)
-    ACME_INFO("+ fmt (existing target)")
+    message(STATUS "+ fmt (existing target)")
 else()
     add_subdirectory("fmt")
     target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
     ACME_FOLDERIZE_TARGET(fmt)
-    ACME_INFO("+ fmt")
+    message(STATUS "+ fmt")
 endif()
 
 
 # CLI11 command line parsing library
 if (TARGET CLI11::CLI11)
-    ACME_INFO("+ CLI11 (existing target)")
+    message(STATUS "+ CLI11 (existing target)")
 else()
     add_subdirectory(cli11)
 
@@ -58,7 +58,7 @@ else()
         )
     add_custom_target(cli11 SOURCES ${CLI11_HEADER})
     ACME_FOLDERIZE_TARGET(cli11)
-    ACME_INFO("+ CLI11")
+    message(STATUS "+ CLI11")
 endif()
 
 
@@ -93,7 +93,7 @@ function(add_abseil_scope)
         set_target_properties(absl_random_internal_randen_hwaes_impl PROPERTIES COMPILE_OPTIONS "${randen_hwaes_impl_CXX_FLAGS}")
     endif()
 
-    ACME_INFO("+ abseil")
+    message(STATUS "+ abseil")
 endfunction()
 add_abseil_scope()
 
@@ -140,89 +140,33 @@ ACME_MODULE(
                             glslang/OGLCompilersDLL/*.cpp
                             glslang-os-dep/GenericSingleThreaded/ossource.cpp
                             )
-IF("${TARGET_OS}" STREQUAL "Integrity")
-    # prevent error because __inline not allowed in c++ code
-    TARGET_COMPILE_DEFINITIONS(ramses-glslang PRIVATE "-D__inline=inline")
-ENDIF()
 
-# TODO (MacOS) find out why linking against the platform freetype doesn't work on Darwin
-IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
-    SET(ramses-sdk_ALLOW_PLATFORM_FREETYPE OFF)
-ENDIF()
 
-# find freetype with harfbuzz support
-IF (ramses-sdk_ALLOW_PLATFORM_FREETYPE)
-    find_package(FreetypeAndHarfbuzz QUIET)
-ENDIF()
-IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
+if(ramses-sdk_TEXT_SUPPORT)
+    # find freetype with harfbuzz support
+    if (ramses-sdk_ALLOW_PLATFORM_FREETYPE)
+        find_package(FreetypeAndHarfbuzz QUIET)
+    endif()
+    if (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
+        set(SKIP_INSTALL_ALL ON)
 
-    # Don't install anything from Freetype and Harfbuzz, manual install later
-    # Reason: the libraries are not meant to be build as submodule together
-    set(SKIP_INSTALL_ALL ON)
+        # no 'd' suffix on debug libs
+        set(DISABLE_FORCE_DEBUG_POSTFIX TRUE)
 
-    # no 'd' suffix on debug libs
-    set(DISABLE_FORCE_DEBUG_POSTFIX TRUE)
+        add_subdirectory(freetype)
+        message(STATUS "+ freetype")
 
-    # newer harfbuzz versions use include (FindFreetype): provide an adhoc find script
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake"
-        "set(FREETYPE_INCLUDE_DIRS \"${CMAKE_CURRENT_SOURCE_DIR}/freetype\" \"${CMAKE_CURRENT_SOURCE_DIR}/freetype/include\")\n"
-        "set(FREETYPE_LIBRARIES freetype)\n"
-        "set(FREETYPE_FOUND TRUE)\n")
+        set(HB_BUILD_SUBSET OFF)
+        add_subdirectory(harfbuzz)
+        message(STATUS "+ harfbuzz")
 
-    # enable freetype in harfbuzz
-    set(HB_HAVE_FREETYPE ON CACHE BOOL "Enable freetype interop helpers" FORCE)
 
-    # save and restore module search path
-    set(OLD_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_MODULE_PATH})
+        ACME_FOLDERIZE_TARGETS(freetype harfbuzz)
 
-    # Checking the availability of the functions below by harfbuzz does not work, because
-    # check_function_exists() checks against an existing platform freetype library.
-    # The freetype version from external does not support those functions, so set them to off manually:
-    set(HAVE_FT_GET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
-    set(HAVE_FT_SET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
-    set(HAVE_FT_DONE_MM_VAR OFF CACHE BOOL "" FORCE)
-    set(HB_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-
-    ADD_SUBDIRECTORY(harfbuzz)
-    ACME_INFO("+ harfbuzz")
-
-    IF("${TARGET_OS}" STREQUAL "Integrity")
-        # define __restrict to nothing because not known to integrity compiler
-        TARGET_COMPILE_DEFINITIONS(harfbuzz PRIVATE "-D__restrict=")
-    ENDIF()
-
-    # remove find script again
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake")
-
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake"
-        "set(HARFBUZZ_INCLUDE_DIRS \"${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz\" \"${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz/include\")\n"
-        "set(HARFBUZZ_LIBRARIES harfbuzz)\n"
-        "set(HARFBUZZ_FOUND TRUE)\n")
-
-    # config and include freetype
-    foreach (inc "${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
-        if (EXISTS "${inc}")
-            target_include_directories(harfbuzz INTERFACE ${inc})
-        endif()
-    endforeach()
-    ADD_SUBDIRECTORY(freetype)
-    set(CMAKE_MODULE_PATH ${OLD_CMAKE_MODULE_PATH})
-
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake")
-
-    target_include_directories(freetype INTERFACE "freetype/include")
-
-    ACME_FOLDERIZE_TARGETS(freetype harfbuzz)
-    foreach (tgt dist harfbuzz-subset hb-ot-tag main test-buffer-serialize test-size-params test-size-params test-test test-unicode-ranges test-would-substitute)
-        if (TARGET ${tgt})
-            ACME_FOLDERIZE_TARGETS(${tgt})
-            set_target_properties(${tgt} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
-        endif()
-    endforeach()
-
-    ACME_INFO("+ freetype")
-ENDIF()
+    endif()
+else()
+    message(STATUS "- harfbuzz/freetype (text support disabled)")
+endif()
 
 # try to find automotive-dlt (if not already available)
 IF (ramses-sdk_ENABLE_DLT AND NOT automotive-dlt_FOUND)
@@ -230,10 +174,10 @@ IF (ramses-sdk_ENABLE_DLT AND NOT automotive-dlt_FOUND)
 ENDIF()
 IF (ramses-sdk_ENABLE_DLT AND automotive-dlt_FOUND)
     SET(ramses-sdk_HAS_DLT TRUE CACHE BOOL "dlt found" FORCE)
-    ACME_INFO("+ automotive-dlt (platform)")
+    message(STATUS "+ automotive-dlt (platform)")
 ELSEIF()
     SET(ramses-sdk_HAS_DLT FALSE CACHE BOOL "dlt found" FORCE)
-    ACME_INFO("- automotive-dlt")
+    message(STATUS "- automotive-dlt")
 ENDIF()
 
 # try find wayland libs for following targets
@@ -244,7 +188,7 @@ FIND_PACKAGE(wayland-server QUIET)
 IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
     FIND_PACKAGE(wayland-ivi-extension QUIET)
     IF (wayland-ivi-extension_FOUND)
-        ACME_INFO("+ wayland-ivi-extension (system)")
+        message(STATUS "+ wayland-ivi-extension (system)")
     ELSEIF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-extension")
         IF (wayland-client_FOUND AND wayland-server_FOUND)
             ACME_MODULE(
@@ -292,7 +236,7 @@ IF (wayland-client_FOUND AND wayland-server_FOUND AND EXISTS "${CMAKE_CURRENT_SO
     ACME_MODULE(
         NAME                    wayland-zwp-linux-dmabuf-v1-extension
         TYPE                    STATIC_LIBRARY
-        ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+        ENABLE_INSTALL          OFF
 
         INCLUDE_BASE            wayland-zwp-linux-dmabuf-v1-extension
         FILES_PRIVATE_HEADER    wayland-zwp-linux-dmabuf-v1-extension/*.h
@@ -313,7 +257,7 @@ IF (ramses-sdk_ALLOW_PLATFORM_LZ4)
 ENDIF()
 
 IF (lz4_FOUND)
-    ACME_INFO("+ lz4 (system)")
+    message(STATUS "+ lz4 (system)")
 ELSE()
   SET(LZ4_DIR lz4)
   ACME_MODULE(

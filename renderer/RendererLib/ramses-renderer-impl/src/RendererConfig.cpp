@@ -38,6 +38,11 @@ namespace ramses
     {
     }
 
+    void RendererConfig::registerOptions(CLI::App& cli)
+    {
+        impl.registerOptions(cli);
+    }
+
     ramses::status_t RendererConfig::setBinaryShaderCache(IBinaryShaderCache& cache)
     {
         const status_t status = impl.setBinaryShaderCache(cache);

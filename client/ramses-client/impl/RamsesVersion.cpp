@@ -19,11 +19,11 @@ namespace ramses_internal
 {
     namespace RamsesVersion
     {
-        void WriteToStream(IOutputStream& stream, const String& versionString, const String& gitHash)
+        void WriteToStream(IOutputStream& stream, const String& versionString, const String& gitHash, ramses::EFeatureLevel featureLevel)
         {
-            LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: " << versionString << " Git Hash: " << gitHash);
+            LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: " << versionString << " Git Hash: " << gitHash << " Feature Level: " << featureLevel);
             StringOutputStream out;
-            out << "[RamsesVersion:" << versionString << "]\n[GitHash:" << gitHash << "]\n";
+            out << "[RamsesVersion:" << versionString << "]\n[GitHash:" << gitHash << "]\n[FeatureLevel:" << featureLevel << "]\n";
             stream.write(out.c_str(), out.size());
         }
 
@@ -126,19 +126,45 @@ namespace ramses_internal
             return true;
         }
 
-        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion)
+        static bool ExpectFeatureLevel(const String& featureLevelString, ramses::EFeatureLevel& outFeatureLevel)
+        {
+            UInt idx = 0;
+            if (!ExpectString(featureLevelString, idx, "[FeatureLevel:"))
+                return false;
+
+            uint32_t num = 0;
+            if (!ExpectAndGetNumber(featureLevelString, idx, num))
+                return false;
+
+            if (std::find(ramses::AllFeatureLevels.cbegin(), ramses::AllFeatureLevels.cend(), num) == ramses::AllFeatureLevels.cend())
+            {
+                LOG_ERROR(CONTEXT_CLIENT, "RamsesVersion::ReadFromStream: Unknown feature level " << num << " in file, either file corrupt or file exported with future version");
+                return false;
+            }
+            outFeatureLevel = static_cast<ramses::EFeatureLevel>(num);
+
+            if (!ExpectString(featureLevelString, idx, "]") || idx != featureLevelString.size())
+                return false;
+
+            return true;
+        }
+
+        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion, ramses::EFeatureLevel& outFeatureLevel)
         {
             String versionString;
             String gitHashString;
+            String featureLevelString;
             if (!ReadUntilNewline(stream, 100, versionString) ||
-                !ReadUntilNewline(stream, 100, gitHashString))
+                !ReadUntilNewline(stream, 100, gitHashString) ||
+                !ReadUntilNewline(stream, 100, featureLevelString))
             {
                 LOG_ERROR(CONTEXT_CLIENT, "RamsesVersion::ReadFromStream: Can not read version information, file probably corrupt or invalid");
                 return false;
             }
 
             if (!ExpectRamsesVersion(versionString, outVersion) ||
-                !ExpectGitHash(gitHashString, outVersion))
+                !ExpectGitHash(gitHashString, outVersion) ||
+                !ExpectFeatureLevel(featureLevelString, outFeatureLevel))
                 return false;
 
             return true;

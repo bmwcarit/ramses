@@ -21,11 +21,11 @@ using namespace ramses_internal;
 
 namespace ramses
 {
-    class APickableObject : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class APickableObject : public LocalTestClientWithScene, public testing::Test
     {
     protected:
         APickableObject()
-            : LocalTestClientWithSceneAndAnimationSystem()
+            : LocalTestClientWithScene()
             , geometryBuffer(*createGeometryBuffer())
             , pickableObject(*m_scene.createPickableObject(geometryBuffer, pickableObjectId_t(1u)))
             , pickableObjectHandle(pickableObject.impl.getPickableObjectHandle())

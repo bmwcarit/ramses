@@ -12,7 +12,11 @@
 #include "ramses-renderer-api/Types.h"
 #include "RendererLib/DisplayConfig.h"
 #include "StatusObjectImpl.h"
-#include "Utils/CommandLineParser.h"
+
+namespace CLI
+{
+    class App;
+}
 
 namespace ramses
 {
@@ -21,6 +25,7 @@ namespace ramses
     public:
         DisplayConfigImpl(int32_t argc, char const* const* argv);
 
+        void registerOptions(CLI::App& cli);
         status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
         status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
         status_t setFullscreen(bool fullscreen);
@@ -28,15 +33,12 @@ namespace ramses
         status_t setBorderless(bool borderless);
         status_t setMultiSampling(uint32_t numSamples);
         status_t getMultiSamplingSamples(uint32_t& numSamples) const;
-        status_t enableWarpingPostEffect();
         status_t setWaylandIviSurfaceID(waylandIviSurfaceId_t waylandIviSurfaceID);
         waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
         status_t setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID);
         waylandIviLayerId_t getWaylandIviLayerID() const;
         status_t setWaylandDisplay(const char* waylandDisplay);
         const char* getWaylandDisplay() const;
-        status_t setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit);
-        uint32_t getIntegrityRGLDeviceUnit() const;
         void* getAndroidNativeWindow() const;
         status_t setAndroidNativeWindow(void * nativeWindowPtr);
         status_t setWindowIviVisible(bool visible);

@@ -16,7 +16,7 @@ SET(ramses-shared-lib-client-only_VERSION @RAMSES_VERSION@)
 
 #find include dir
 FIND_PATH(ramses-shared-lib-client-only_INCLUDE_DIRS ramses-client.h
-    HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+    HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
 )
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -24,7 +24,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
     # no shlib versioning support on windows
     FIND_LIBRARY(ramses-shared-lib-client-only_LIBRARIES
         NAMES "ramses-shared-lib-client-only"
-        HINTS @PACKAGE_PROJECT_INSTALL_BINARY@
+        HINTS @PACKAGE_RAMSES_INSTALL_RUNTIME_PATH@
     )
 
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -32,7 +32,7 @@ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
     # require exact shlib version
     FIND_LIBRARY(ramses-shared-lib-client-only_LIBRARIES
         NAMES "libramses-shared-lib-client-only.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
     )
 
 ELSE()

@@ -99,9 +99,6 @@ namespace ramses
     void SceneDumper::dumpUnrequiredObjects(ramses_internal::StringOutputStream& output)
     {
         setupMaps();
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationObject);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystem);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystemRealTime);
 
         RenderPassSet requiredRenderPasses = markRequiredScreenRenderPasses();
         while (requiredRenderPasses.size() > 0)
@@ -212,16 +209,6 @@ namespace ramses
                               << blitPassData.sourceRenderBuffer << " !!!");
                 assert(false);
             }
-        }
-    }
-
-    void SceneDumper::markAllObjectsOfTypeAsRequired(ERamsesObjectType objectType)
-    {
-        RamsesObjectVector objects;
-        m_objectRegistry.getObjectsOfType(objects, objectType);
-        for (auto object : objects)
-        {
-            m_requiredObjects.put(&object->impl);
         }
     }
 

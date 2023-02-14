@@ -17,7 +17,6 @@
 #include "RendererLib/RendererInterruptState.h"
 #include "RendererLib/DisplaySetup.h"
 #include "RendererLib/DisplayEventHandler.h"
-#include "FrameProfileRenderer.h"
 #include "MemoryStatistics.h"
 #include "Collections/Vector.h"
 #include "Collections/HashMap.h"
@@ -35,7 +34,6 @@ namespace ramses_internal
     class RendererEventCollector;
     class FrameTimer;
     class SceneExpirationMonitor;
-    class WarpingMeshData;
 
     class Renderer
     {
@@ -74,7 +72,6 @@ namespace ramses_internal
         void                        destroyDisplayContext();
 
         DisplayEventHandler&        getDisplayEventHandler();
-        void                        setWarpingMeshData(const WarpingMeshData& meshData);
 
         virtual void                setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
         virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
@@ -84,8 +81,6 @@ namespace ramses_internal
 
         Bool                        hasAnyBufferWithInterruptedRendering() const;
         void                        resetRenderInterruptState();
-
-        FrameProfileRenderer&       getFrameProfileRenderer();
 
         Bool hasSystemCompositorController() const;
         void updateSystemCompositorController() const;
@@ -139,8 +134,6 @@ namespace ramses_internal
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;
         SceneExpirationMonitor&                m_expirationMonitor;
-
-        std::unique_ptr<FrameProfileRenderer> m_frameProfileRenderer;
 
         // temporary containers kept to avoid re-allocations
         std::vector<SceneId> m_tempScenesToRender;

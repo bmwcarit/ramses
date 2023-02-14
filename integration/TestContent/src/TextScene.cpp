@@ -6,6 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 #include "TestScenes/TextScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
@@ -259,3 +261,5 @@ namespace ramses_internal
         }
     }
 }
+
+#endif
