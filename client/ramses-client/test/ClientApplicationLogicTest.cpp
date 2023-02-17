@@ -118,7 +118,7 @@ TEST_F(AClientApplicationLogic, triesToGetRequestedResourceFromResourceComponent
     const ResourceContentHash dummyResourceHash(44u, 0);
     ON_CALL(resourceComponent, getResource(_)).WillByDefault(Return(ManagedResource()));
     EXPECT_CALL(resourceComponent, getResource(dummyResourceHash));
-    logic.getResource(dummyResourceHash);
+    EXPECT_EQ(ManagedResource(), logic.getResource(dummyResourceHash));
 }
 
 TEST_F(AClientApplicationLogic, triesToGetHashUsageFromResourceComponent)
@@ -126,7 +126,7 @@ TEST_F(AClientApplicationLogic, triesToGetHashUsageFromResourceComponent)
     const ResourceContentHash dummyResourceHash(44u, 0);
     ON_CALL(resourceComponent, getResourceHashUsage(_)).WillByDefault(Return(ResourceHashUsage()));
     EXPECT_CALL(resourceComponent, getResourceHashUsage(dummyResourceHash));
-    logic.getHashUsage(dummyResourceHash);
+    EXPECT_FALSE(logic.getHashUsage(dummyResourceHash).isValid());
 }
 
 TEST_F(AClientApplicationLogic, addsAndRemovesResourceFilesFromComponent)

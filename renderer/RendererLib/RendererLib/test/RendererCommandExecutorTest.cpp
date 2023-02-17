@@ -258,20 +258,6 @@ TEST_F(ARendererCommandExecutor, linkStreamBufferToConsumer)
     doCommandExecutorLoop();
 }
 
-TEST_F(ARendererCommandExecutor, setsStreamBufferState)
-{
-    constexpr StreamBufferHandle buffer{ 123u };
-    constexpr DisplayHandle display{ 1 };
-
-    m_commandBuffer.enqueueCommand(RendererCommand::SetStreamBufferState{ display, buffer, true });
-    EXPECT_CALL(m_sceneUpdater, setStreamBufferState(buffer, true));
-    doCommandExecutorLoop();
-
-    m_commandBuffer.enqueueCommand(RendererCommand::SetStreamBufferState{ display, buffer, false });
-    EXPECT_CALL(m_sceneUpdater, setStreamBufferState(buffer, false));
-    doCommandExecutorLoop();
-}
-
 TEST_F(ARendererCommandExecutor, createExternalBuffer)
 {
     constexpr ExternalBufferHandle buffer{ 123u };

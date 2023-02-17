@@ -29,14 +29,14 @@ namespace ramses
         *
         * @return Scene object id.
         */
-        sceneObjectId_t getSceneObjectId() const;
+        [[nodiscard]] sceneObjectId_t getSceneObjectId() const;
 
         /**
         * @brief Returns sceneid to which this object belongs to
         *
         * @return Scene id this object belongs to
         */
-        sceneId_t getSceneId() const;
+        [[nodiscard]] sceneId_t getSceneId() const;
 
     protected:
         /**

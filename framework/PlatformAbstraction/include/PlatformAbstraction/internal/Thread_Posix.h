@@ -33,7 +33,7 @@ namespace internal
 
         ~Thread();
 
-        bool joinable() const;
+        [[nodiscard]] bool joinable() const;
         void join();
 
         Thread(const Thread&) = delete;

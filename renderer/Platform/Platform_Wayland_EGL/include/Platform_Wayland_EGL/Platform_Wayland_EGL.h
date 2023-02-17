@@ -23,10 +23,10 @@ namespace ramses_internal
         virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig) override;
         virtual void createTextureUploadingAdapter(const DisplayConfig& displayConfig) override;
 
-        virtual uint32_t getSwapInterval() const override;
+        [[nodiscard]] virtual uint32_t getSwapInterval() const override;
 
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
-        Bool isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const;
+        [[nodiscard]] Bool isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const;
 
         const std::chrono::microseconds m_frameCallbackMaxPollTime;
     };

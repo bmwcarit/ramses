@@ -145,6 +145,12 @@ namespace ramses
             m_handler2.externalBufferLinked(providerExternalBuffer, consumerScene, consumerId, result);
         }
 
+        virtual void streamBufferLinked(streamBufferId_t providerStreamBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, bool result) override
+        {
+            m_handler1.streamBufferLinked(providerStreamBuffer, consumerScene, consumerId, result);
+            m_handler2.streamBufferLinked(providerStreamBuffer, consumerScene, consumerId, result);
+        }
+
         virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool result) override
         {
             m_handler1.dataUnlinked(consumerScene, consumerId, result);

@@ -60,7 +60,7 @@ namespace ramses
             SinglePixel
         };
 
-        GlyphTexturePage::QuadIndex getFittingFreeQuadIndex(EClaimedQuadSize size) const
+        [[nodiscard]] GlyphTexturePage::QuadIndex getFittingFreeQuadIndex(EClaimedQuadSize size) const
         {
             QuadSize quadSize = getQuadSize(size);
             GlyphTexturePage::QuadIndex i(0);
@@ -75,12 +75,12 @@ namespace ramses
             return std::numeric_limits<GlyphTexturePage::QuadIndex>::max();
         }
 
-        bool canClaimQuad(EClaimedQuadSize size) const
+        [[nodiscard]] bool canClaimQuad(EClaimedQuadSize size) const
         {
             return getFittingFreeQuadIndex(size) != std::numeric_limits<GlyphTexturePage::QuadIndex>::max();
         }
 
-        QuadSize getQuadSize(EClaimedQuadSize size) const
+        [[nodiscard]] QuadSize getQuadSize(EClaimedQuadSize size) const
         {
             switch (size)
             {

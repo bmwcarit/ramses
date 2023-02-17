@@ -256,18 +256,6 @@ namespace ramses_internal
         EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
     }
 
-    TEST_F(ARendererEventCollector, CanAddStreamBufferEnabledEvent)
-    {
-        const WaylandIviSurfaceId streamId(794u);
-
-        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamBufferEnabled, streamId);
-        const RendererEventVector resultEvents = consumeSceneControlEvents();
-
-        ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType::StreamBufferEnabled, resultEvents[0].eventType);
-        EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
-    }
-
     TEST_F(ARendererEventCollector, CanAddAndDispatchWindowResizeEvent)
     {
         const DisplayHandle displayHandle(124u);

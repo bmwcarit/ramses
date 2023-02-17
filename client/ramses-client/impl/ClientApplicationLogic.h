@@ -49,7 +49,7 @@ namespace ramses_internal
         void createScene(ClientScene& scene, bool enableLocalOnlyOptimization);
         void publishScene(SceneId sceneId, EScenePublicationMode publicationMode);
         void unpublishScene(SceneId sceneId);
-        Bool isScenePublished(SceneId sceneId) const;
+        [[nodiscard]] Bool isScenePublished(SceneId sceneId) const;
 
         bool flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);
@@ -59,14 +59,14 @@ namespace ramses_internal
 
         // Resource handling
         ManagedResource         addResource(const IResource* resource);
-        ManagedResource         getResource(ResourceContentHash hash) const;
-        ManagedResource         loadResource(const ResourceContentHash& hash) const;
-        ResourceHashUsage       getHashUsage(const ResourceContentHash& hash) const;
+        [[nodiscard]] ManagedResource         getResource(ResourceContentHash hash) const;
+        [[nodiscard]] ManagedResource         loadResource(const ResourceContentHash& hash) const;
+        [[nodiscard]] ResourceHashUsage       getHashUsage(const ResourceContentHash& hash) const;
         SceneFileHandle         addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ResourceTableOfContents& toc);
         void                    removeResourceFile(SceneFileHandle handle);
         void                    loadResourceFromFile(SceneFileHandle handle);
         void                    reserveResourceCount(uint32_t totalCount);
-        bool                    hasResourceFile(SceneFileHandle handle) const;
+        [[nodiscard]] bool                    hasResourceFile(SceneFileHandle handle) const;
 
         std::vector<ramses_internal::SceneReferenceEvent> popSceneReferenceEvents();
 

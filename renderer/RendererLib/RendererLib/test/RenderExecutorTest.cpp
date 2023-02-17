@@ -265,7 +265,7 @@ protected:
         return pass;
     }
 
-    TransformHandle findTransformForNode(NodeHandle node) const
+    [[nodiscard]] TransformHandle findTransformForNode(NodeHandle  node) const
     {
         for (TransformHandle transform(0u); transform < scene.getTransformCount(); ++transform)
         {

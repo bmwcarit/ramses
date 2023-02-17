@@ -113,14 +113,14 @@ namespace ramses
         * @return true, if scene is currently published.
         * @return false, if scene is currently not published.
         */
-        bool isPublished() const;
+        [[nodiscard]] bool isPublished() const;
 
         /**
         * @brief Returns scene id defined at scene creation time
         *
         * @return Scene id.
         */
-        sceneId_t getSceneId() const;
+        [[nodiscard]] sceneId_t getSceneId() const;
 
         /**
         * @brief Saves all scene contents to a file.
@@ -272,7 +272,7 @@ namespace ramses
         *
         * @return time in milliseconds, value range is 0 .. std::numeric_limits<int32_t>::max() (~24 days)
         */
-        int32_t getUniformTimeMs() const;
+        [[nodiscard]] int32_t getUniformTimeMs() const;
 
         /**
         * @brief Get an object from the scene by name
@@ -293,7 +293,7 @@ namespace ramses
         * @param[in] id The id of the object to get.
         * @return Pointer to the object if found, nullptr otherwise.
         */
-        const SceneObject* findObjectById(sceneObjectId_t id) const;
+        [[nodiscard]] const SceneObject* findObjectById(sceneObjectId_t id) const;
 
         /**
         * @copydoc findObjectById(sceneObjectId_t id) const
@@ -665,7 +665,7 @@ namespace ramses
          *
          * @return A string containing the GLSL error messages of the last effect
          */
-        std::string getLastEffectErrorMessages() const;
+        [[nodiscard]] std::string getLastEffectErrorMessages() const;
 
         /**
         * @brief Create a new #ramses::ArrayBuffer. The created object is a mutable buffer object that can be used as index or
@@ -965,7 +965,7 @@ namespace ramses
         * @param[in] id The resource id of the resource to get.
         * @return Pointer to the resource if found, nullptr otherwise.
         */
-        const Resource* getResource(resourceId_t id) const;
+        [[nodiscard]] const Resource* getResource(resourceId_t id) const;
 
         /**
         * @copydoc getResource(resourceId_t id) const

@@ -365,17 +365,6 @@ protected:
 
     }
 
-    void expectStreamBufferEvent(StreamBufferHandle handle, bool expectedState)
-    {
-        RendererEventVector events;
-        RendererEventVector dummy;
-        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
-        ASSERT_EQ(events.size(), 1u);
-
-        EXPECT_EQ(events[0].streamBuffer, handle);
-        EXPECT_EQ(events[0].eventType, expectedState ? ERendererEventType::StreamBufferEnabled : ERendererEventType::StreamBufferDisabled);
-    }
-
     void performFlush(UInt32 sceneIndex = 0u, SceneVersionTag version = SceneVersionTag::Invalid(), const SceneSizeInformation* sizeInfo = nullptr, const FlushTimeInformation& timeInfo = {}, const SceneReferenceActionVector& sceneRefActions = {})
     {
         ActionCollectingScene& scene = *stagingScene[sceneIndex];

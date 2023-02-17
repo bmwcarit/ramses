@@ -30,42 +30,42 @@ namespace ramses
         *
         * @returns width in pixels
         */
-        uint32_t getWidth() const;
+        [[nodiscard]] uint32_t getWidth() const;
 
         /**
         * @brief Returns the height of the RenderBuffer in pixels
         *
         * @returns height in pixels
         */
-        uint32_t getHeight() const;
+        [[nodiscard]] uint32_t getHeight() const;
 
         /**
         * @brief Returns the type of the RenderBuffer
         *
         * @returns RenderBuffer type (color, depth, depth/stencil)
         */
-        ERenderBufferType getBufferType() const;
+        [[nodiscard]] ERenderBufferType getBufferType() const;
 
         /**
         * @brief Returns the data format of the RenderBuffer
         *
         * @returns RenderBuffer data format
         */
-        ERenderBufferFormat getBufferFormat() const;
+        [[nodiscard]] ERenderBufferFormat getBufferFormat() const;
 
         /**
         * @brief Returns the read/write access mode of the RenderBuffer
         *
         * @returns RenderBuffer access mode
         */
-        ERenderBufferAccessMode getAccessMode() const;
+        [[nodiscard]] ERenderBufferAccessMode getAccessMode() const;
 
         /**
         * @brief Returns the sample count used for MSAA
         *
         * @returns RenderBuffer sample count
         */
-        uint32_t getSampleCount() const;
+        [[nodiscard]] uint32_t getSampleCount() const;
 
         /**
         * Stores internal data for implementation specifics of RenderBuffer.

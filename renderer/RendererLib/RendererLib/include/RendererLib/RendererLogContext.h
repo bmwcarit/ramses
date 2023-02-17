@@ -33,15 +33,15 @@ namespace ramses_internal
 
         void indent();
         void unindent();
-        Bool isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const;
+        [[nodiscard]] Bool isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const;
 
         void setNodeHandleFilter(NodeHandle nodeHandleFilter);
-        Bool isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const;
+        [[nodiscard]] Bool isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const;
 
         template <typename T>
         RendererLogContext& operator<<(const T& value);
 
-        const StringOutputStream& getStream() const;
+        [[nodiscard]] const StringOutputStream& getStream() const;
 
     private:
         static String ExtractStringFromFilter(const String& filter);

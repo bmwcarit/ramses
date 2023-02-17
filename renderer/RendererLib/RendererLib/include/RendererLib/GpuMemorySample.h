@@ -23,13 +23,13 @@ namespace ramses_internal
     public:
         explicit GpuMemorySample(const RendererSceneUpdater& updater);
 
-        UInt64 getTotalMemoryUsage() const;
-        UInt64 getTextureMemoryUsage() const;
-        UInt64 getGeometryMemoryUsage() const;
-        UInt64 getRenderbufferMemoryUsage() const;
+        [[nodiscard]] UInt64 getTotalMemoryUsage() const;
+        [[nodiscard]] UInt64 getTextureMemoryUsage() const;
+        [[nodiscard]] UInt64 getGeometryMemoryUsage() const;
+        [[nodiscard]] UInt64 getRenderbufferMemoryUsage() const;
 
-        SceneIdVector getSampledScenes() const;
-        UInt64 getTotalSceneMemoryUsage(SceneId sceneId) const;
+        [[nodiscard]] SceneIdVector getSampledScenes() const;
+        [[nodiscard]] UInt64 getTotalSceneMemoryUsage(SceneId sceneId) const;
 
         // This is technically incorrect, because resources might be reused across scenes
         // However, this still works as an upper bound memory estimate, and VRAM is always an estimate

@@ -38,13 +38,13 @@ namespace ramses_internal
 
         void                            addRenderBuffer             (RenderBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size, bool writeOnly);
         void                            removeRenderBuffer          (RenderBufferHandle handle);
-        DeviceResourceHandle            getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
-        UInt32                          getRenderBufferByteSize     (RenderBufferHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
+        [[nodiscard]] UInt32                          getRenderBufferByteSize     (RenderBufferHandle handle) const;
         void                            getAllRenderBuffers         (RenderBufferHandleVector& renderBuffers) const;
 
         void                            addRenderTarget             (RenderTargetHandle handle, DeviceResourceHandle deviceHandle);
         void                            removeRenderTarget          (RenderTargetHandle handle);
-        DeviceResourceHandle            getRenderTargetDeviceHandle (RenderTargetHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getRenderTargetDeviceHandle (RenderTargetHandle handle) const;
         void                            getAllRenderTargets         (RenderTargetHandleVector& renderTargets) const;
 
         void                            addBlitPass                 (BlitPassHandle handle, DeviceResourceHandle srcRenderTargetDeviceHandle, DeviceResourceHandle dstRenderTargetDeviceHandle);
@@ -54,28 +54,28 @@ namespace ramses_internal
 
         void                            addStreamTexture            (StreamTextureHandle handle, WaylandIviSurfaceId source);
         void                            removeStreamTexture         (StreamTextureHandle handle);
-        WaylandIviSurfaceId             getStreamTextureSourceId    (StreamTextureHandle handle) const;
+        [[nodiscard]] WaylandIviSurfaceId             getStreamTextureSourceId    (StreamTextureHandle handle) const;
         void                            getAllStreamTextures        (StreamTextureHandleVector& streamTextures) const;
 
         void                            addDataBuffer               (DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, UInt32 size);
         void                            removeDataBuffer            (DataBufferHandle handle);
-        DeviceResourceHandle            getDataBufferDeviceHandle   (DataBufferHandle handle) const;
-        EDataBufferType                 getDataBufferType           (DataBufferHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getDataBufferDeviceHandle   (DataBufferHandle handle) const;
+        [[nodiscard]] EDataBufferType                 getDataBufferType           (DataBufferHandle handle) const;
         void                            getAllDataBuffers           (DataBufferHandleVector& dataBuffers) const;
 
         void                            addTextureBuffer            (TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, UInt32 size);
         void                            removeTextureBuffer         (TextureBufferHandle handle);
-        DeviceResourceHandle            getTextureBufferDeviceHandle(TextureBufferHandle handle) const;
-        ETextureFormat                  getTextureBufferFormat      (TextureBufferHandle handle) const;
-        UInt32                          getTextureBufferByteSize    (TextureBufferHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getTextureBufferDeviceHandle(TextureBufferHandle handle) const;
+        [[nodiscard]] ETextureFormat                  getTextureBufferFormat      (TextureBufferHandle handle) const;
+        [[nodiscard]] UInt32                          getTextureBufferByteSize    (TextureBufferHandle handle) const;
         void                            getAllTextureBuffers        (TextureBufferHandleVector& textureBuffers) const;
 
         void                            addVertexArray(RenderableHandle renderableHandle, DeviceResourceHandle deviceHandle);
         void                            removeVertexArray(RenderableHandle renderableHandle);
-        DeviceResourceHandle            getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
+        [[nodiscard]] DeviceResourceHandle            getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
         void                            getAllVertexArrayRenderables(RenderableVector& vertexArrayRenderables) const;
 
-        UInt32                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
+        [[nodiscard]] UInt32                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
 
     private:
         struct TextureBufferEntry

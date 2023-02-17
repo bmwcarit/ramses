@@ -74,7 +74,6 @@ namespace ramses_internal
         virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) override;
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) override;
-        virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) override;
         virtual bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) override;
         virtual bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) override;
         virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
@@ -104,7 +103,7 @@ namespace ramses_internal
         void updateScenes();
 
         void processScreenshotResults();
-        bool hasPendingFlushes(SceneId sceneId) const;
+        [[nodiscard]] bool hasPendingFlushes(SceneId sceneId) const;
         void setSceneReferenceLogicHandler(ISceneReferenceLogic& sceneRefLogic);
 
     protected:
@@ -128,7 +127,7 @@ namespace ramses_internal
         void applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo);
 
-        bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
+        [[nodiscard]] bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
 
         void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
         void consolidateResourceDataForMapping(SceneId sceneID);
@@ -153,7 +152,7 @@ namespace ramses_internal
         void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
         void logMissingResources(const PendingData& pendingData, SceneId sceneId) const;
         void logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const;
-        uint32_t getNumberOfPendingNonEmptyFlushes(SceneId sceneId) const;
+        [[nodiscard]] uint32_t getNumberOfPendingNonEmptyFlushes(SceneId sceneId) const;
 
         DisplayHandle m_display;
 

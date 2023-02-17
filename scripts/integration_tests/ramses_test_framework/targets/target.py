@@ -135,7 +135,7 @@ class Target(with_metaclass(ABCMeta)):
                        waitForDisplayManagerRamsh=True, automap=False, startVisible=True):
         extendedArgs = args
         if startVisible:
-            extendedArgs += " --startVisible"
+            extendedArgs += " --ivi-visible"
         if self.systemCompositorControllerSupported:
             extendedArgs += "  --ivi-control "
         if "--ivi-layer" not in args:
@@ -143,7 +143,7 @@ class Target(with_metaclass(ABCMeta)):
         if "--ivi-surface" not in args:
             extendedArgs += " --ivi-surface {}".format(DEFAULT_TEST_SURFACE)
         if not automap:
-            extendedArgs += " -nomap"
+            extendedArgs += " --no-auto-show"
 
         renderer = self._start_ramses_application(applicationName, extendedArgs, workingDirectory, nameExtension, env, dltAppID)
         if (waitForDisplayManagerRamsh):
@@ -178,8 +178,6 @@ class Target(with_metaclass(ABCMeta)):
         extendedArgs += " --log-test "
         # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
         extendedArgs += " --daemon-port {}".format(CUSTOM_DAEMON_PORT)
-        if self.currentTestId:
-            extendedArgs += " --executionIdentifier '{}'".format(self.currentTestId)
         env['DISABLE_CONSOLE_COLORS'] = '1'
         env['DISABLE_RAMSH_INTERACTIVE_MODE'] = '1'
         application = self.start_application(applicationName, extendedArgs, binaryDirectoryOnTarget, nameExtension, env, dltAppID)

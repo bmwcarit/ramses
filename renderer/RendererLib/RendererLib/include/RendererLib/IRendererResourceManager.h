@@ -37,14 +37,14 @@ namespace ramses_internal
     {
     public:
         // Immutable resources
-        virtual EResourceStatus  getResourceStatus(const ResourceContentHash& hash) const = 0;
-        virtual EResourceType    getResourceType(const ResourceContentHash& hash) const = 0;
+        [[nodiscard]] virtual EResourceStatus  getResourceStatus(const ResourceContentHash& hash) const = 0;
+        [[nodiscard]] virtual EResourceType    getResourceType(const ResourceContentHash& hash) const = 0;
 
         virtual void             referenceResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
         virtual void             unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
 
         virtual void             provideResourceData(const ManagedResource& mr) = 0;
-        virtual Bool             hasResourcesToBeUploaded() const = 0;
+        [[nodiscard]] virtual Bool             hasResourcesToBeUploaded() const = 0;
         virtual void             uploadAndUnloadPendingResources() = 0;
 
         // Scene resources
@@ -72,7 +72,7 @@ namespace ramses_internal
 
         virtual void             unloadAllSceneResourcesForScene(SceneId sceneId) = 0;
         virtual void             unreferenceAllResourcesForScene(SceneId sceneId) = 0;
-        virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const = 0;
+        [[nodiscard]] virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const = 0;
 
         // Renderer resources
         virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
@@ -85,7 +85,7 @@ namespace ramses_internal
         virtual void             uploadExternalBuffer(ExternalBufferHandle bufferHandle) = 0;
         virtual void             unloadExternalBuffer(ExternalBufferHandle bufferHandle) = 0;
 
-        virtual const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const = 0;
+        [[nodiscard]] virtual const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const = 0;
     };
 }
 #endif

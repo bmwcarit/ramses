@@ -30,25 +30,6 @@ validate all its scene objects, and so on.
 For a detailed overview of the various ways to profile your content and optimize performance, refer to the @ref Profiling
 section.
 
-# Resource and shader tools
-
-Compiling shaders typically consumes a lot of compute time and resources.
-RAMSES provides a chain of command line tools to help reduce the time for
-loading effects for final deployments by preparing binary versions of them
-and deploying them as cache directly on the renderer side. The last tool in
-the chain - the Resource Packer, can be used to combine not only effects
-into files, but also other types of RAMSES resources.
-
-@ref EffectLifecycle
-
-@ref GLSLToBinaryShader
-
-@ref GLSLToEffectResource
-
-@ref ResourcePacker
-
-@ref ExampleUsageAllTools
-
 # Scene viewer
 
 Ramses scenes can be stored to a file @ref ramses::Scene::saveToFile().

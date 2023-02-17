@@ -69,8 +69,8 @@ namespace
         explicit PartialApiRamshCommandMock(const std::string& kw_)
             : kw(kw_)
         {}
-        const std::string& keyword() const override { return kw; }
-        const std::string& help() const override { return helpText; }
+        [[nodiscard]] const std::string& keyword() const override { return kw; }
+        [[nodiscard]] const std::string& help() const override { return helpText; }
         std::string kw;
         std::string helpText{"text"};
     };

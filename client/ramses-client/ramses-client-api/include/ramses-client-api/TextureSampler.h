@@ -33,49 +33,49 @@ namespace ramses
         *
         * @return ETextureAddressMode wrap mode for u axis
         */
-        ETextureAddressMode getWrapUMode() const;
+        [[nodiscard]] ETextureAddressMode getWrapUMode() const;
 
         /**
         * @brief Gets the texture wrap mode for the v axis
         *
         * @return ETextureAddressMode wrap mode for v axis
         */
-        ETextureAddressMode getWrapVMode() const;
+        [[nodiscard]] ETextureAddressMode getWrapVMode() const;
 
         /**
         * @brief Gets the texture wrap mode for the r axis
         *
         * @return ETextureAddressMode wrap mode for r axis
         */
-        ETextureAddressMode getWrapRMode() const;
+        [[nodiscard]] ETextureAddressMode getWrapRMode() const;
 
         /**
         * @brief Gets the texture min sampling method
         *
         * @return ETextureSamplingMethod min sampling method
         */
-        ETextureSamplingMethod getMinSamplingMethod() const;
+        [[nodiscard]] ETextureSamplingMethod getMinSamplingMethod() const;
 
         /**
         * @brief Gets the texture mag sampling method
         *
         * @return ETextureSamplingMethod mag sampling method
         */
-        ETextureSamplingMethod getMagSamplingMethod() const;
+        [[nodiscard]] ETextureSamplingMethod getMagSamplingMethod() const;
 
         /**
         * @brief Gets the texture sampling anisotropy level
         *
         * @return The texture sampling anisotropy level.
         */
-        uint32_t getAnisotropyLevel() const;
+        [[nodiscard]] uint32_t getAnisotropyLevel() const;
 
         /**
         * @brief Gets the type of the texture
         *
         * @return Type of the texture, see ERamsesObjectType enum for possible values.
         */
-        ERamsesObjectType getTextureType() const;
+        [[nodiscard]] ERamsesObjectType getTextureType() const;
 
         /**
         * @brief Replaces current texture content source with a new one.

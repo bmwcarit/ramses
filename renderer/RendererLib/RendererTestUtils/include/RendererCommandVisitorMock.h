@@ -128,11 +128,6 @@ namespace ramses_internal
             handleBufferDestroyRequest(cmd.streamBuffer, cmd.display);
         }
 
-        void operator()(const RendererCommand::SetStreamBufferState& cmd)
-        {
-            setStreamBufferState(cmd.streamBuffer, cmd.display, cmd.newState);
-        }
-
         void operator()(const RendererCommand::CreateExternalBuffer& cmd)
         {
             handleExternalBufferCreateRequest(cmd.externalBuffer, cmd.display);
@@ -259,7 +254,6 @@ namespace ramses_internal
         MOCK_METHOD(void, handleBufferDestroyRequest, (OffscreenBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleBufferCreateRequest, (StreamBufferHandle, DisplayHandle, WaylandIviSurfaceId));
         MOCK_METHOD(void, handleBufferDestroyRequest, (StreamBufferHandle, DisplayHandle));
-        MOCK_METHOD(void, setStreamBufferState, (StreamBufferHandle, DisplayHandle, bool));
         MOCK_METHOD(void, handleExternalBufferCreateRequest, (ExternalBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleExternalBufferDestroyRequest, (ExternalBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (OffscreenBufferHandle, SceneId, DataSlotId));

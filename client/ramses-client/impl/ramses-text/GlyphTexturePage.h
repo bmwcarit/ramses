@@ -32,15 +32,15 @@ namespace ramses
         using GlyphPageData = std::vector<uint8_t>;
 
         // Free space management
-        const Quads& getFreeSpace() const;
+        [[nodiscard]] const Quads& getFreeSpace() const;
         QuadOffset claimSpace(QuadIndex freeQuadIndex, const QuadSize& subportionSize);
         void releaseSpace(Quad box);
-        QuadIndex findFreeSpace(QuadSize const& size) const;
+        [[nodiscard]] QuadIndex findFreeSpace(QuadSize const& size) const;
 
         // Texture data management
         void updateDataWithPadding(const Quad& targetQuad, const uint8_t* sourceData, GlyphPageData& cacheForDataUpdate);
-        const Texture2DBuffer& getTextureBuffer() const;
-        const TextureSampler& getSampler() const;
+        [[nodiscard]] const Texture2DBuffer& getTextureBuffer() const;
+        [[nodiscard]] const TextureSampler& getSampler() const;
 
     private:
         bool mergeFreeQuad(Quad& freeQuadInAndOut);

@@ -447,7 +447,7 @@ namespace ramses_internal
         assert(hasDisplayController());
         assert(m_rendererScenes.hasScene(sceneId));
 
-        getBufferSceneIsAssignedTo(sceneId);
+        std::ignore = getBufferSceneIsAssignedTo(sceneId); // TODO: remove or assert
         m_displayBuffersSetup.assignSceneToDisplayBuffer(sceneId, buffer, globalSceneOrder);
     }
 

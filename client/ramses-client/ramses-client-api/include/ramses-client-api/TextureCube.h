@@ -36,21 +36,21 @@ namespace ramses
         *
         * @return Texture cube edge length
         */
-        uint32_t getSize() const;
+        [[nodiscard]] uint32_t getSize() const;
 
         /**
         * @brief Gets texture format
         *
         * @return Texture format
         */
-        ETextureFormat getTextureFormat() const;
+        [[nodiscard]] ETextureFormat getTextureFormat() const;
 
         /**
         * @brief Gets swizzle description
         *
         * @return Swizzle Description
         */
-        const TextureSwizzle& getTextureSwizzle() const;
+        [[nodiscard]] const TextureSwizzle& getTextureSwizzle() const;
 
     protected:
         /**

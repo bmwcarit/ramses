@@ -37,7 +37,7 @@ namespace ramses
         * @param[in] fontInstanceId The id of font instance
         * @return The font instance object, nullptr if not found
         */
-        virtual IFontInstance*  getFontInstance(FontInstanceId fontInstanceId) const override;
+        [[nodiscard]] virtual IFontInstance*  getFontInstance(FontInstanceId fontInstanceId) const override;
 
         /**
         * @brief Load Freetype2 font from file

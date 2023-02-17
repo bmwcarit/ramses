@@ -124,17 +124,17 @@ namespace ramses_internal
                 m_ended = true;
             }
 
-            Bool couldConnectToEmbeddedCompositor() const
+            [[nodiscard]] Bool couldConnectToEmbeddedCompositor() const
             {
                 return m_result;
             }
 
-            Bool hasStarted() const
+            [[nodiscard]] Bool hasStarted() const
             {
                 return m_started;
             }
 
-            Bool hasEnded() const
+            [[nodiscard]] Bool hasEnded() const
             {
                 return m_ended;
             }

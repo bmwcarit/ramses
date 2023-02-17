@@ -343,14 +343,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RamsesRendererImpl::setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state)
-    {
-        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
-        const ramses_internal::StreamBufferHandle bufferHandle{ streamBufferId.getValue() };
-        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetStreamBufferState{displayHandle, bufferHandle, state});
-        return StatusOK;
-    }
-
     externalBufferId_t RamsesRendererImpl::createExternalBuffer(displayId_t display)
     {
         if (isThreaded())

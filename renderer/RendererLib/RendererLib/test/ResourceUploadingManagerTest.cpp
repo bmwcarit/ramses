@@ -51,7 +51,7 @@ class AResourceUploadingManager : public ::testing::Test
 public:
     explicit AResourceUploadingManager(const DisplayConfig& cfg = DisplayConfig())
         : dummyResource(EResourceType_IndexArray, 5, EDataType::UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, String())
-        , dummyEffectResource("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
+        , dummyEffectResource("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
         , dummyManagedResourceCallback(managedResourceDeleter)
         , sceneId(66u)
         , uploader{ new StrictMock<ResourceUploaderMock> }

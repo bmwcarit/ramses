@@ -100,7 +100,7 @@ namespace ramses
         *
         * @return The effect used to create the geometry binding.
         */
-        const Effect& getEffect() const;
+        [[nodiscard]] const Effect& getEffect() const;
 
         /**
         * @brief Stores internal data for implementation specifics of GeometryBinding.

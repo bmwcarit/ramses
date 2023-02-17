@@ -37,7 +37,7 @@ public:
     void initializeRenderer(const ramses::RendererConfig& rendererConfig);
     void destroyRenderer();
     ramses::displayId_t createDisplay(const ramses::DisplayConfig& displayConfig);
-    ramses::displayBufferId_t getDisplayFramebufferId(uint32_t testDisplayIdx) const;
+    [[nodiscard]] ramses::displayBufferId_t getDisplayFramebufferId(uint32_t testDisplayIdx) const;
     void destroyDisplays();
     ramses_internal::TestRenderer& getTestRenderer();
     TestScenes& getScenesRegistry();
@@ -83,7 +83,7 @@ public:
     void filterTestCases(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut);
 
     bool runAllTests();
-    std::string generateReport() const;
+    [[nodiscard]] std::string generateReport() const;
 
     static bool NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filter);
 
@@ -118,7 +118,7 @@ protected:
     };
 
     using TestDisplays = std::vector<TestDisplayInfo>;
-    const TestDisplays& getDisplays() const;
+    [[nodiscard]] const TestDisplays& getDisplays() const;
 
 private:
     bool compareScreenshotInternal(
@@ -134,7 +134,7 @@ private:
         bool saveDiffOnError);
 
     void sortTestCases();
-    bool currentDisplaySetupMatchesTestCase(const RenderingTestCase& testCase) const;
+    [[nodiscard]] bool currentDisplaySetupMatchesTestCase(const RenderingTestCase& testCase) const;
     bool applyRendererAndDisplaysConfigurationForTest(const RenderingTestCase& testCase);
     void destroyScenes();
     void destroyBuffers();

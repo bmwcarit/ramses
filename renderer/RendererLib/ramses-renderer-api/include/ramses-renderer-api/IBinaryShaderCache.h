@@ -94,7 +94,7 @@ namespace ramses
          * @return true if there is binary shader for the Effect Id
          *         false otherwise
          */
-        virtual bool hasBinaryShader(effectId_t effectId) const = 0;
+        [[nodiscard]] virtual bool hasBinaryShader(effectId_t effectId) const = 0;
 
         /**
          * @brief Used by RamsesRenderer to ask the application for the size in bytes of the binary shader for the given effectId
@@ -105,7 +105,7 @@ namespace ramses
          * @return the application must return the exact size of the binary shader data for effectId in bytes. This is the amount of
          *          memory RAMSES will allocate for the buffer parameter in the getBinaryShaderData() method below
          */
-        virtual uint32_t getBinaryShaderSize(effectId_t effectId) const = 0;
+        [[nodiscard]] virtual uint32_t getBinaryShaderSize(effectId_t effectId) const = 0;
 
         /**
          * @brief Used by RamsesRenderer to ask the application for the shader format of the binary shader for the given effectId
@@ -121,7 +121,7 @@ namespace ramses
          * binary shaders from an offline shader compiler with storage format from an online shader compiler or vice-versa,
          * as they may differ and using them wrongly can cause surprising driver crashes at unsuspected places!
          */
-        virtual binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const = 0;
+        [[nodiscard]] virtual binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const = 0;
 
         /**
          * @brief      Used by RamsesRenderer to ask the application whether a specific effect should be cached.
@@ -136,7 +136,7 @@ namespace ramses
          * @param[in]  sceneId  ID of scene that uses the effect.
          * @return     true if the effect should be cached, false otherwise.
          */
-        virtual bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const = 0;
+        [[nodiscard]] virtual bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const = 0;
 
         /**
          * @brief Used by RamsesRenderer to ask the application to provide the binary shader data for the given effectId

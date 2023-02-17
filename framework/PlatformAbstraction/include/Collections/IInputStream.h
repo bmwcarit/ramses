@@ -27,7 +27,7 @@ namespace ramses_internal
         virtual ~IInputStream() = default;
 
         virtual IInputStream& read(void* data, size_t size) = 0;
-        virtual EStatus getState() const = 0;
+        [[nodiscard]] virtual EStatus getState() const = 0;
 
         virtual EStatus seek(Int numberOfBytesToSeek, Seek origin) = 0;
         virtual EStatus getPos(size_t& position) const = 0;

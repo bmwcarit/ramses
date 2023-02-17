@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         WaylandShellConnection(IWaylandClient& client, uint32_t version, uint32_t id);
         virtual ~WaylandShellConnection() override;
-        bool wasSuccessfullyInitialized() const;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
 
         virtual void resourceDestroyed() override;
         virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, INativeWaylandResource& surfaceResource) override;

@@ -37,7 +37,6 @@ namespace ramses_internal
         virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) = 0;
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) = 0;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) = 0;
-        virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) = 0;
         virtual bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) = 0;
         virtual bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) = 0;
         virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) = 0;

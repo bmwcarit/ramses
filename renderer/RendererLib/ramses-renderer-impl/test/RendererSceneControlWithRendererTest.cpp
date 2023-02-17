@@ -161,17 +161,17 @@ namespace ramses
         static constexpr int NumStepsToReachTargetState = NumLoopsToReachTargetState * 2; // 2 steps per loop
         static constexpr int NumCombinations = NumStepsToReachTargetState * NumStates * NumStates; // can switch to new state at any step
 
-        RendererSceneState GetTargetState1() const
+        [[nodiscard]] RendererSceneState GetTargetState1() const
         {
             return RendererSceneState(StartState + (GetParam() / NumStepsToReachTargetState) / NumStates);
         }
 
-        RendererSceneState GetTargetState2() const
+        [[nodiscard]] RendererSceneState GetTargetState2() const
         {
             return RendererSceneState(StartState + (GetParam() / NumStepsToReachTargetState) % NumStates);
         }
 
-        int GetStepToSwitchState() const
+        [[nodiscard]] int GetStepToSwitchState() const
         {
             return GetParam() % NumStepsToReachTargetState;
         }
@@ -230,17 +230,17 @@ namespace ramses
         static constexpr int NumStepsToReachTargetState = NumLoopsToReachTargetState * 2; // 2 steps per loop
         static constexpr int NumCombinations = (NumStepsToReachTargetState - 5) * MaxNumStepsRepublishComesAfter * NumStates; // can unpublish at any step, with room to process (-5), and encodes when publish comes (*MaxNumStepsRepublishComesAfter) and target state
 
-        RendererSceneState GetTargetState() const
+        [[nodiscard]] RendererSceneState GetTargetState() const
         {
             return RendererSceneState(StartState + (GetParam() % NumStates));
         }
 
-        int GetStepToUnpublish() const
+        [[nodiscard]] int GetStepToUnpublish() const
         {
             return (GetParam() / NumStates) / MaxNumStepsRepublishComesAfter;
         }
 
-        int GetStepToRepublish() const
+        [[nodiscard]] int GetStepToRepublish() const
         {
             // either at same step or one step
             return GetStepToUnpublish() + (GetParam() / NumStates) % MaxNumStepsRepublishComesAfter;

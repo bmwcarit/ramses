@@ -17,7 +17,7 @@ using namespace ramses_internal;
 class ARendererStatistics : public ::testing::Test
 {
 public:
-    std::string logOutput() const
+    [[nodiscard]] std::string logOutput() const
     {
         StringOutputStream strstr;
         stats.writeStatsToStream(strstr);

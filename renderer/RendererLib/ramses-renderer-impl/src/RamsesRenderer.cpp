@@ -154,6 +154,16 @@ namespace ramses
         return status;
     }
 
+    streamBufferId_t RamsesRenderer::createStreamBuffer(displayId_t display, ramses::waylandIviSurfaceId_t surfaceId)
+    {
+        return impl.createStreamBuffer(display, surfaceId);
+    }
+
+    status_t RamsesRenderer::destroyStreamBuffer(displayId_t display, ramses::streamBufferId_t bufferId)
+    {
+        return impl.destroyStreamBuffer(display, bufferId);
+    }
+
     status_t RamsesRenderer::setDisplayBufferClearFlags(RamsesRenderer& renderer, displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags)
     {
         const status_t status = renderer.impl.setDisplayBufferClearFlags(display, displayBuffer, clearFlags);

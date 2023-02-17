@@ -765,7 +765,7 @@ namespace ramses_internal
         {
             m_lastReportedVersion = versionTag;
         }
-        virtual bool waitCondition() const override
+        [[nodiscard]] virtual bool waitCondition() const override
         {
             return m_lastReportedVersion != ramses::InvalidSceneVersionTag;
         }

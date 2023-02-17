@@ -138,6 +138,34 @@ namespace ramses
         status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
 
         /**
+        * @brief   Links display's stream buffer to a data consumer in scene.
+        * @details This is a special case of Ramses data linking where stream buffer acts as texture provider.
+        *          Stream buffer can be used as texture data in one or more scene's texture sampler(s) (#ramses::Scene::createTextureConsumer).
+        *          For successful link, the consumer scene must be #RendererSceneState::Ready or #RendererSceneState::Rendered
+        *          and has to be mapped (#setSceneMapping) to the same display that the stream buffer belongs to.
+        *          If the data consumer is already linked to a provider (data or stream buffer), the old link will be discarded,
+        *          however if the new link fails it is undefined whether previous link was discarded or not.
+        *          Note: To unlink stream buffer use #unlinkData as with any other type of data linking.
+        *
+        *          Additionally, for successful linking of stream buffer content must be already available on the corresponding
+        *          wayland ivi surface. This can be monitored by handling #ramses::IRendererSceneControlEventHandler::streamAvailabilityChanged.
+        *
+        *          If a wayland ivi surface becomes unavailable, e.g., the wayland client destroys the surface or attaches null buffer to it, all
+        *          stream buffers created for that ivi surface id get unlinked from linked texture consumers - without generating unlink event.
+        *
+        *          #ramses::IRendererSceneControlEventHandler::streamBufferLinked will be emitted after stream buffer linked to consumer.
+        *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.
+        *
+        * @param[in] streamBufferId ID of the stream buffer to use as texture provider.
+        * @param[in] consumerSceneId Scene which consumes the data.
+        * @param[in] consumerDataSlotId Data consumer within the consumer scene (#ramses::Scene::createTextureConsumer).
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
+        */
+        status_t linkStreamBuffer(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
+
+        /**
         * @brief   Links external buffer to a data consumer in scene.
         * @details This is a case of Ramses data linking where external buffer acts as texture data provider.
         *          External buffer can be used as texture data in one or more scene's external texture sampler(s) (#ramses::Scene::createTextureConsumer).

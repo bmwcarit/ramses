@@ -61,7 +61,7 @@ namespace ramses
         *                 using the same resource, only the first scene id is guaranteed to be reported.
         * @return true if the cache wants to store the resource.
         */
-        virtual bool shouldResourceBeCached(rendererResourceId_t resourceId, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId) const = 0;
+        [[nodiscard]] virtual bool shouldResourceBeCached(rendererResourceId_t resourceId, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId) const = 0;
 
         /**
         * @brief Called by RamsesRenderer with the final resource for storing. This is called

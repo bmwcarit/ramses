@@ -78,7 +78,7 @@ namespace ramses_internal
         /**
          * gets the platform specific default swap interval
          */
-        virtual uint32_t getSwapInterval() const = 0;
+        [[nodiscard]] virtual uint32_t getSwapInterval() const = 0;
 
     private:
         std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, Context_EGL* sharedContext)

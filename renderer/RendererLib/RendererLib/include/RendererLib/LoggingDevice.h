@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         LoggingDevice(const IDevice& deviceDelegate, RendererLogContext& context);
 
-        virtual EDeviceTypeId getDeviceTypeId() const override final;
+        [[nodiscard]] virtual EDeviceTypeId getDeviceTypeId() const override final;
 
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Float* value) override;
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector2* value) override;
@@ -67,7 +67,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle allocateTexture3D(UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 dataSize) override;
         virtual DeviceResourceHandle allocateTextureCube(UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 dataSize) override;
         virtual DeviceResourceHandle allocateExternalTexture() override;
-        virtual DeviceResourceHandle getEmptyExternalTexture() const override;
+        [[nodiscard]] virtual DeviceResourceHandle getEmptyExternalTexture() const override;
         virtual void                 bindTexture(DeviceResourceHandle handle) override;
         virtual void                 generateMipmaps(DeviceResourceHandle handle) override;
         virtual void                 uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) override;
@@ -83,7 +83,7 @@ namespace ramses_internal
         virtual uint32_t                getDmaRenderBufferStride(DeviceResourceHandle handle) override;
         virtual void                    destroyDmaRenderBuffer(DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    getFramebufferRenderTarget() const override;
+        [[nodiscard]] virtual DeviceResourceHandle    getFramebufferRenderTarget() const override;
         virtual DeviceResourceHandle    uploadRenderTarget(const DeviceHandleVector& renderBuffers) override;
         virtual void                    activateRenderTarget(DeviceResourceHandle handle) override;
         virtual void                    deleteRenderTarget(DeviceResourceHandle handle) override;
@@ -100,22 +100,22 @@ namespace ramses_internal
 
         virtual void readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height) override;
 
-        virtual uint32_t getTotalGpuMemoryUsageInKB() const override;
+        [[nodiscard]] virtual uint32_t getTotalGpuMemoryUsageInKB() const override;
         virtual uint32_t getAndResetDrawCallCount() override;
 
         virtual void clearDepth(Float d) override;
         virtual void clearStencil(Int32 s) override;
 
-        virtual Int32 getTextureAddress(DeviceResourceHandle handle) const override;
+        [[nodiscard]] virtual Int32 getTextureAddress(DeviceResourceHandle handle) const override;
 
         virtual void validateDeviceStatusHealthy() const override;
-        virtual Bool isDeviceStatusHealthy() const override;
+        [[nodiscard]] virtual Bool isDeviceStatusHealthy() const override;
         virtual void getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const override;
-        virtual bool isExternalTextureExtensionSupported() const override;
+        [[nodiscard]] virtual bool isExternalTextureExtensionSupported() const override;
 
         virtual void flush() override;
 
-        virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const override;
+        [[nodiscard]] virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const override;
 
     private:
         // Used only to delegate getters for components

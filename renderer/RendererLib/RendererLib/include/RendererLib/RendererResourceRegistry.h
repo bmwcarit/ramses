@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         void                       registerResource     (const ResourceContentHash& hash);
         void                       unregisterResource   (const ResourceContentHash& hash);
-        Bool                       containsResource     (const ResourceContentHash& hash) const;
+        [[nodiscard]] Bool                       containsResource     (const ResourceContentHash& hash) const;
 
         void                       setResourceData      (const ResourceContentHash& hash, const ManagedResource& resourceObject);
         void                       setResourceScheduledForUpload(const ResourceContentHash& hash);
@@ -30,14 +30,14 @@ namespace ramses_internal
         void                       addResourceRef       (const ResourceContentHash& hash, SceneId sceneId);
         void                       removeResourceRef    (const ResourceContentHash& hash, SceneId sceneId);
 
-        EResourceStatus            getResourceStatus    (const ResourceContentHash& hash) const;
-        const ResourceDescriptor&  getResourceDescriptor(const ResourceContentHash& hash) const;
+        [[nodiscard]] EResourceStatus            getResourceStatus    (const ResourceContentHash& hash) const;
+        [[nodiscard]] const ResourceDescriptor&  getResourceDescriptor(const ResourceContentHash& hash) const;
 
-        const ResourceDescriptors& getAllResourceDescriptors() const;
-        const ResourceContentHashVector& getAllProvidedResources() const;
-        const ResourceContentHashVector& getAllResourcesNotInUseByScenes() const;
-        const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const;
-        bool hasAnyResourcesScheduledForUpload() const;
+        [[nodiscard]] const ResourceDescriptors& getAllResourceDescriptors() const;
+        [[nodiscard]] const ResourceContentHashVector& getAllProvidedResources() const;
+        [[nodiscard]] const ResourceContentHashVector& getAllResourcesNotInUseByScenes() const;
+        [[nodiscard]] const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const;
+        [[nodiscard]] bool hasAnyResourcesScheduledForUpload() const;
 
     private:
         void setResourceStatus(const ResourceContentHash& hash, EResourceStatus status);

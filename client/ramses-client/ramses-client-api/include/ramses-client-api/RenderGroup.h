@@ -58,7 +58,7 @@ namespace ramses
         * @param[in] mesh The mesh to query
         * @return \c true if the mesh is contained in this RenderGroup \c false otherwise
         */
-        bool containsMeshNode(const MeshNode& mesh) const;
+        [[nodiscard]] bool containsMeshNode(const MeshNode& mesh) const;
 
         /**
         * @brief Gets a render order of given MeshNode within this RenderGroup.
@@ -98,7 +98,7 @@ namespace ramses
         * @param[in] renderGroup The RenderGroup to query
         * @return \c true if the RenderGroup is contained in this RenderGroup \c false otherwise
         */
-        bool containsRenderGroup(const RenderGroup& renderGroup) const;
+        [[nodiscard]] bool containsRenderGroup(const RenderGroup& renderGroup) const;
 
         /**
         * @brief Gets a render order of given RenderGroup within this RenderGroup.

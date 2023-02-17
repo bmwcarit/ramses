@@ -39,11 +39,11 @@ namespace ramses_internal
         virtual void pushAndConsumeCommands(RendererCommands& cmds) = 0;
         virtual void dispatchRendererEvents(RendererEventVector& events) = 0;
         virtual void dispatchSceneControlEvents(RendererEventVector& events) = 0;
-        virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const = 0;
+        [[nodiscard]] virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const = 0;
         virtual void enableContext() = 0;
         virtual IEmbeddedCompositingManager& getECManager() = 0;
         virtual IEmbeddedCompositor& getEC() = 0;
-        virtual bool hasSystemCompositorController() const = 0;
+        [[nodiscard]] virtual bool hasSystemCompositorController() const = 0;
 
         virtual std::atomic_int& traceId() = 0;
 
@@ -66,7 +66,7 @@ namespace ramses_internal
         virtual void dispatchRendererEvents(RendererEventVector& events) override;
         virtual void dispatchSceneControlEvents(RendererEventVector& events) override;
 
-        virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const override;
+        [[nodiscard]] virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const override;
         virtual void enableContext() override;
 
         // needed for EC tests...
@@ -74,7 +74,7 @@ namespace ramses_internal
         virtual IEmbeddedCompositor& getEC() override;
 
         // needed for Renderer lifecycle tests...
-        virtual bool hasSystemCompositorController() const override;
+        [[nodiscard]] virtual bool hasSystemCompositorController() const override;
 
         // TODO vaclav remove, debugging only
         virtual std::atomic_int& traceId() override { return m_renderer.m_traceId; }

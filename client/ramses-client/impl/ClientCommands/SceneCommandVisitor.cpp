@@ -54,7 +54,7 @@ namespace ramses_internal
         {
             if (const ramses::RamsesObject* ro = m_scene.findObjectByName(cmd.optionalObjectName.c_str()))
             {
-                ro->validate();
+                std::ignore = ro->validate();
                 LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Validation:  " << ro->getValidationReport(cmd.severity));
             }
             else

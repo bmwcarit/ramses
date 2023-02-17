@@ -19,8 +19,8 @@ namespace ramses_internal
     public:
         explicit ResourceChangeCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
 
-        const SceneResourceActionVector&    getSceneResourceActions() const;
-        bool                                haveResourcesChanged() const;
+        [[nodiscard]] const SceneResourceActionVector&    getSceneResourceActions() const;
+        [[nodiscard]] bool                                haveResourcesChanged() const;
         void                                resetResourceChanges();
 
         // functions which affect client resources

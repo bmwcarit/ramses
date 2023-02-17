@@ -53,23 +53,23 @@ namespace ramses_internal
 
         LogContext& createContext(const char* name, const char* id);
 
-        bool isDltAppenderActive() const;
+        [[nodiscard]] bool isDltAppenderActive() const;
 
         void log(const LogMessage& msg);
 
         void applyContextFilterCommand(const String& command);
-        std::vector<LogContextInformation> getAllContextsInformation() const;
+        [[nodiscard]] std::vector<LogContextInformation> getAllContextsInformation() const;
 
         void setLogLevelForContexts(ELogLevel logLevel);
 
         void setConsoleLogLevel(ELogLevel logLevel);
         void setConsoleLogLevelProgrammatically(ELogLevel logLevel);
-        ELogLevel getConsoleLogLevel() const;
+        [[nodiscard]] ELogLevel getConsoleLogLevel() const;
 
         void setAfterConsoleLogCallback(const std::function<void()>& callback);
         void removeAfterConsoleLogCallback();
 
-        bool transmitFile(const String& path, bool deleteFile) const;
+        [[nodiscard]] bool transmitFile(const String& path, bool deleteFile) const;
         bool registerInjectionCallback(LogContext& ctx, UInt32 serviceId, int (*callback)(UInt32 serviceId, void* data, UInt32 length));
 
         static const char* GetLogLevelText(ELogLevel logLevel);

@@ -53,7 +53,7 @@ namespace ramses
         *
         * @return Maximum number of elements
         */
-        uint32_t getMaximumNumberOfElements() const;
+        [[nodiscard]] uint32_t getMaximumNumberOfElements() const;
 
         /**
         * @brief Returns the used number of data elements.
@@ -64,14 +64,14 @@ namespace ramses
         *
         * @return Used size in number of elements
         */
-        uint32_t getUsedNumberOfElements() const;
+        [[nodiscard]] uint32_t getUsedNumberOfElements() const;
 
         /**
         * @brief Returns the data type associated with the buffer data
         *
         * @return data type of buffer data
         */
-        EDataType getDataType() const;
+        [[nodiscard]] EDataType getDataType() const;
 
         /**
         * @brief Copies the data of the data buffer into a user-provided buffer. The buffer must

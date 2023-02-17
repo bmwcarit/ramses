@@ -153,7 +153,7 @@ namespace ramses
         *
         * @return Wayland display name to use for embedded compositing socket
         */
-        const char* getWaylandEmbeddedCompositingSocketName() const;
+        [[nodiscard]] const char* getWaylandEmbeddedCompositingSocketName() const;
 
         /**
         * @deprecated This function is deprecated and will be removed in one of the next
@@ -247,7 +247,7 @@ namespace ramses
         *
         * @return Wayland display name to use for connection, empty means default
         */
-        const char* getSystemCompositorWaylandDisplay() const;
+        [[nodiscard]] const char* getSystemCompositorWaylandDisplay() const;
 
         /**
         * @brief   Set the desired reporting period for first display loop timings.
@@ -267,7 +267,7 @@ namespace ramses
         *
         * @return Reporting period for renderThread loop timings
         */
-        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
+        [[nodiscard]] std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
 
         /**
         * Stores internal data for implementation specifics of RendererConfig.

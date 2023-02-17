@@ -31,22 +31,22 @@ namespace ramses_internal
         {
         }
 
-        EGLImage getEGLImage() const
+        [[nodiscard]] EGLImage getEGLImage() const
         {
             return m_eglImage;
         }
 
-        gbm_bo* getGBMBufferObject() const
+        [[nodiscard]] gbm_bo* getGBMBufferObject() const
         {
             return m_gbmBufferObject;
         }
 
-        int getFD() const
+        [[nodiscard]] int getFD() const
         {
             return m_fd;
         }
 
-        UInt32 getStride() const
+        [[nodiscard]] UInt32 getStride() const
         {
             return m_stride;
         }

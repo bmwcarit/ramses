@@ -15,15 +15,13 @@
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
 
-#include <Utils/CommandLineParser.h>
-#include <Utils/Argument.h>
-
 #include <thread>
 #include <vector>
 #include <algorithm>
 #include <cassert>
 #include <unordered_map>
 #include <iostream>
+#include "CLI/CLI.hpp"
 
 
 constexpr const char* const vertexShader = R"##(
@@ -198,7 +196,7 @@ public:
         m_windowClosed = true;
     }
 
-    bool isWindowClosed() const
+    [[nodiscard]] bool isWindowClosed() const
     {
         return m_windowClosed;
     }
@@ -235,25 +233,36 @@ private:
 
 int main(int argc, char* argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentBool      helpRequested(parser, "help", "help");
-    ramses_internal::ArgumentFloat     maxFps(parser, "fps", "framesPerSecond", 60.0f);
-    ramses_internal::ArgumentBool      flipY(parser, "y", "flip-y", "flip received stream vertically (on y-axis)");
+    // default configuration
+    float maxFps = 60.0f;
+    bool  flipY  = false;
+    ramses::RamsesFrameworkConfig config;
+    config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
+    ramses::RendererConfig rendererConfig;
+    ramses::DisplayConfig  displayConfig;
+    displayConfig.setClearColor(0.5f, 0.f, 0.f, 1.f);
 
-    if (helpRequested)
+    CLI::App cli;
+    try
     {
-        std::cout << maxFps.getHelpString();
-        std::cout << flipY.getHelpString();
-        return 0;
+        cli.add_option("--fps", maxFps, "Frames per second")->default_val(maxFps);
+        cli.add_flag("-y,--flip-y", flipY, "flip received stream vertically (on y-axis)");
+        config.registerOptions(cli);
+        rendererConfig.registerOptions(cli);
+        displayConfig.registerOptions(cli);
+    }
+    catch (const CLI::Error& error)
+    {
+        // configuration error
+        std::cerr << error.what();
+        return -1;
     }
 
-    ramses::RamsesFrameworkConfig config(argc, argv);
-    config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
-    ramses::RamsesFramework framework(config);
+    CLI11_PARSE(cli, argc, argv);
 
+    ramses::RamsesFramework framework(config);
     ramses::RamsesClient* ramsesClient(framework.createClient("stream viewer"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer* renderer(framework.createRenderer(rendererConfig));
     auto sceneControlAPI = renderer->getSceneControlAPI();
 
@@ -266,8 +275,6 @@ int main(int argc, char* argv[])
     renderer->setMaximumFramerate(maxFps);
     renderer->startThread();
 
-    ramses::DisplayConfig displayConfig(argc, argv);
-    displayConfig.setClearColor(0.5f, 0.f, 0.f, 1.f);
     const ramses::displayId_t display = renderer->createDisplay(displayConfig);
     renderer->flush();
 

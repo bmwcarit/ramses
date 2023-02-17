@@ -28,7 +28,7 @@ namespace ramses
 
         bool virtual hasResource(rendererResourceId_t resourceId, uint32_t& size) const override;
         bool virtual getResourceData(rendererResourceId_t resourceId, uint8_t* buffer, uint32_t bufferSize) const override;
-        bool virtual shouldResourceBeCached(rendererResourceId_t resourceId, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId) const override;
+        [[nodiscard]] bool virtual shouldResourceBeCached(rendererResourceId_t resourceId, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId) const override;
         void virtual storeResource(rendererResourceId_t resourceId, const uint8_t* resourceData, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId) override;
 
         void saveToFile(const char* filePath) const;

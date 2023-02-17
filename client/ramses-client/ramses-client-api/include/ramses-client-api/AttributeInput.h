@@ -31,14 +31,14 @@ namespace ramses
         *
         * @return Effect input data type
         */
-        EEffectInputDataType getDataType() const;
+        [[nodiscard]] EEffectInputDataType getDataType() const;
 
         /**
         * @brief Returns the effect input semantics.
         *
         * @return Effect input semantics
         */
-        EEffectAttributeSemantic getSemantics() const;
+        [[nodiscard]] EEffectAttributeSemantic getSemantics() const;
     };
 }
 

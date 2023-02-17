@@ -61,7 +61,7 @@ namespace ramses
         return impl.hasGeometryShader();
     }
 
-    status_t Effect::getGeometryShaderInputType(EDrawMode& expectedGeometryInputType)
+    status_t Effect::getGeometryShaderInputType(EDrawMode& expectedGeometryInputType) const
     {
         return impl.getGeometryShaderInputType(expectedGeometryInputType);
     }

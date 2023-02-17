@@ -205,7 +205,7 @@ namespace ramses
         constexpr sceneId_t consumerScene{ 2u };
         constexpr dataConsumerId_t dataConsumer{ 3u };
 
-        EXPECT_EQ(StatusOK, m_sceneControlAPI.impl.linkStreamBuffer(bufferId, consumerScene, dataConsumer));
+        EXPECT_EQ(StatusOK, m_sceneControlAPI.linkStreamBuffer(bufferId, consumerScene, dataConsumer));
         EXPECT_CALL(m_cmdVisitor, handleBufferToSceneDataLinkRequest(
             ramses_internal::StreamBufferHandle{ bufferId.getValue() },
             ramses_internal::SceneId{ consumerScene.getValue() },
@@ -392,7 +392,6 @@ namespace ramses
         dispatchSceneControlEvents();
     }
 
-
     TEST_F(ARendererSceneControl, dispatchesExternalBufferLinkedEventFromRenderer)
     {
         constexpr sceneId_t consumerScene{ 3 };
@@ -408,6 +407,26 @@ namespace ramses
 
         EXPECT_CALL(m_eventHandler, externalBufferLinked(bufferId, consumerScene, consumerId, false));
         m_eventsFromRenderer.addBufferEvent(ramses_internal::ERendererEventType::SceneDataBufferLinkFailed, ebInternal, consumerSceneInternal, consumerIdInternal);
+
+        submitEventsFromRenderer();
+        dispatchSceneControlEvents();
+    }
+
+    TEST_F(ARendererSceneControl, dispatchesStreamBufferLinkedEventFromRenderer)
+    {
+        constexpr sceneId_t consumerScene{ 3 };
+        constexpr ramses_internal::SceneId consumerSceneInternal{ consumerScene.getValue() };
+        constexpr dataConsumerId_t consumerId{ 4 };
+        constexpr ramses_internal::DataSlotId consumerIdInternal{ consumerId.getValue() };
+        constexpr streamBufferId_t bufferId{ 5 };
+        constexpr ramses_internal::StreamBufferHandle sbInternal{ bufferId.getValue() };
+
+        InSequence seq;
+        EXPECT_CALL(m_eventHandler, streamBufferLinked(bufferId, consumerScene, consumerId, true));
+        m_eventsFromRenderer.addBufferEvent(ramses_internal::ERendererEventType::SceneDataBufferLinked, sbInternal, consumerSceneInternal, consumerIdInternal);
+
+        EXPECT_CALL(m_eventHandler, streamBufferLinked(bufferId, consumerScene, consumerId, false));
+        m_eventsFromRenderer.addBufferEvent(ramses_internal::ERendererEventType::SceneDataBufferLinkFailed, sbInternal, consumerSceneInternal, consumerIdInternal);
 
         submitEventsFromRenderer();
         dispatchSceneControlEvents();
@@ -612,44 +631,5 @@ namespace ramses
 
         simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, ramses_internal::SceneId{ 123 }, ramses_internal::RendererSceneState::Available);
         EXPECT_TRUE(handler.waitForRenderedStateReached());
-    }
-
-    TEST_F(ARendererSceneControl, createsCommandForCreateStreamBuffer)
-    {
-        constexpr displayId_t display{ 1u };
-        constexpr waylandIviSurfaceId_t surface{ 1u };
-
-        auto streamBuffer = m_sceneControlAPI.impl.createStreamBuffer(display, surface);
-        EXPECT_TRUE(streamBuffer.isValid());
-        EXPECT_CALL(m_cmdVisitor, handleBufferCreateRequest(
-            ramses_internal::StreamBufferHandle{ streamBuffer.getValue() },
-            ramses_internal::DisplayHandle{ display.getValue() },
-            ramses_internal::WaylandIviSurfaceId{ surface.getValue() } ));
-        m_cmdVisitor.visit(m_pendingCommands);
-    }
-
-    TEST_F(ARendererSceneControl, createsCommandForDestroyStreamBuffer)
-    {
-        constexpr displayId_t display{ 1u };
-        constexpr streamBufferId_t streamBuffer{ 1u };
-
-        EXPECT_EQ(StatusOK, m_sceneControlAPI.impl.destroyStreamBuffer(display, streamBuffer));
-        EXPECT_CALL(m_cmdVisitor, handleBufferDestroyRequest(
-            ramses_internal::StreamBufferHandle{ streamBuffer.getValue() },
-            ramses_internal::DisplayHandle{ display.getValue() }));
-        m_cmdVisitor.visit(m_pendingCommands);
-    }
-
-    TEST_F(ARendererSceneControl, createsCommandForSetStreamBufferState)
-    {
-        constexpr displayId_t display{ 1u };
-        constexpr streamBufferId_t streamBuffer{ 1u };
-
-        EXPECT_EQ(StatusOK, m_sceneControlAPI.impl.setStreamBufferState(display, streamBuffer, false));
-        EXPECT_CALL(m_cmdVisitor, setStreamBufferState(
-            ramses_internal::StreamBufferHandle{ streamBuffer.getValue() },
-            ramses_internal::DisplayHandle{ display.getValue() },
-            false));
-        m_cmdVisitor.visit(m_pendingCommands);
     }
 }

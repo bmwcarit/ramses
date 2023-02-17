@@ -23,7 +23,7 @@ namespace ramses_internal
         LinuxDmabufConnection(IWaylandClient& client, uint32_t version, uint32_t id);
         ~LinuxDmabufConnection();
 
-        bool wasSuccessfullyInitialized() const;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
 
         void sendFormats();
 

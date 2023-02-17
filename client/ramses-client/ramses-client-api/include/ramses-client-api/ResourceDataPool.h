@@ -173,7 +173,7 @@ namespace ramses
          *
          * @return A string containing the GLSL error messages of the last effect
          */
-        std::string getLastEffectErrorMessages() const;
+        [[nodiscard]] std::string getLastEffectErrorMessages() const;
 
         /**
         * @brief Removes data which was added to the pool. The provided resource id might not be used anymore to instantiate a

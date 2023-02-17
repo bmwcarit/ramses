@@ -26,13 +26,13 @@ namespace ramses_internal
 
         DeviceResourceHandle    registerResource(std::unique_ptr<const GPUResource> resource);
         void                    deleteResource  (DeviceResourceHandle resourceHandle);
-        Bool                    containsResource(DeviceResourceHandle resourceHandle) const;
-        const GPUResource&      getResource     (DeviceResourceHandle resourceHandle) const;
+        [[nodiscard]] Bool                    containsResource(DeviceResourceHandle resourceHandle) const;
+        [[nodiscard]] const GPUResource&      getResource     (DeviceResourceHandle resourceHandle) const;
 
         template <typename TYPE>
         const TYPE&             getResourceAs   (DeviceResourceHandle resourceHandle) const;
 
-        UInt32 getTotalGpuMemoryUsageInKB() const;
+        [[nodiscard]] UInt32 getTotalGpuMemoryUsageInKB() const;
 
     private:
         MemoryPool<const GPUResource*, DeviceResourceHandle> m_resources;

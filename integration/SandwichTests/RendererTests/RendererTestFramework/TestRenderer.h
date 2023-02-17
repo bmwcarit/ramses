@@ -38,13 +38,13 @@ namespace ramses_internal
         virtual ~TestRenderer() = default;
 
         void initializeRendererWithFramework(ramses::RamsesFramework& ramsesFramework, const ramses::RendererConfig& rendererConfig);
-        bool isRendererInitialized() const;
+        [[nodiscard]] bool isRendererInitialized() const;
         void destroyRendererWithFramework(ramses::RamsesFramework& ramsesFramework);
         void flushRenderer();
 
         ramses::displayId_t createDisplay(const ramses::DisplayConfig& displayConfig);
         void destroyDisplay(ramses::displayId_t displayId);
-        ramses::displayBufferId_t getDisplayFramebufferId(ramses::displayId_t displayId) const;
+        [[nodiscard]] ramses::displayBufferId_t getDisplayFramebufferId(ramses::displayId_t displayId) const;
 
         void setSceneMapping(ramses::sceneId_t sceneId, ramses::displayId_t display);
         bool getSceneToState(ramses::sceneId_t sceneId, ramses::RendererSceneState state);
@@ -60,7 +60,7 @@ namespace ramses_internal
         void setLoopMode(ramses::ELoopMode loopMode);
         void startRendererThread();
         void stopRendererThread();
-        bool isRendererThreadEnabled() const;
+        [[nodiscard]] bool isRendererThreadEnabled() const;
         void doOneLoop();
 
         ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u, ramses::EDepthBufferType depthBufferType = ramses::EDepthBufferType_DepthStencil);
@@ -95,7 +95,7 @@ namespace ramses_internal
         IEmbeddedCompositor& getEmbeddedCompositor(ramses::displayId_t displayId);
         IEmbeddedCompositingManager& getEmbeddedCompositorManager(ramses::displayId_t displayId);
 
-        bool hasSystemCompositorController() const;
+        [[nodiscard]] bool hasSystemCompositorController() const;
 
     private:
         ramses::RamsesRenderer* m_renderer = nullptr;

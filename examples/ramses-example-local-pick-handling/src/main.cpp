@@ -93,7 +93,7 @@ public:
         m_windowClosed = true;
     }
 
-    bool isWindowClosed() const
+    [[nodiscard]] bool isWindowClosed() const
     {
         return m_windowClosed;
     }

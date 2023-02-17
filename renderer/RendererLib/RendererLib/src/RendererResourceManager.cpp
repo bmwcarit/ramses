@@ -325,7 +325,7 @@ namespace ramses_internal
         if (!deviceHandle.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadRenderTargetBuffer failed to create render buffer, this is fatal...");
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addRenderBuffer(renderBufferHandle, deviceHandle, memSize, ERenderBufferAccessMode_WriteOnly == renderBuffer.accessMode);
@@ -610,7 +610,7 @@ namespace ramses_internal
         if (!blitRtSource.isValid() || !blitRtDest.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadBlitPassRenderTargets failed to create blit render target(s), this is fatal...");
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addBlitPass(blitPass, blitRtSource, blitRtDest);
@@ -660,7 +660,7 @@ namespace ramses_internal
         {
             LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadDataBuffer sceneId={} handle={} dataType={} size={} failed to allocate data buffer, this is fatal...",
                 sceneId, dataBufferHandle, EnumToString(dataType), dataSizeInBytes);
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addDataBuffer(dataBufferHandle, deviceHandle, dataBufferType, dataSizeInBytes);
@@ -742,7 +742,7 @@ namespace ramses_internal
         if (!deviceHandle.isValid())
         {
             LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadTextureBuffer failed to allocate texture buffer, this is fatal...");
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addTextureBuffer(textureBufferHandle, deviceHandle, textureFormat, totalSizeInBytes);
@@ -794,7 +794,7 @@ namespace ramses_internal
         {
             LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadVertexArray sceneId={} renderableHandle={} failed to allocate vertex array, this is fatal...",
                 sceneId, renderableHandle);
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);

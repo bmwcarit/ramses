@@ -11,8 +11,6 @@
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StringUtils.h"
 #include "RendererMate.h"
@@ -20,9 +18,9 @@
 #include "Ramsh/RamshCommandExit.h"
 #include "RamsesFrameworkImpl.h"
 #include "Ramsh/Ramsh.h"
-
 #include <unordered_set>
 #include <thread>
+#include <sstream>
 
 struct MappingCommand
 {
@@ -30,6 +28,23 @@ struct MappingCommand
     ramses::sceneId_t sceneId;
     int32_t sceneRenderOrder;
 };
+
+namespace CLI
+{
+    inline std::istringstream& operator>>(std::istringstream& is, MappingCommand& val)
+    {
+        uint32_t display;
+        uint64_t sceneId;
+        char separator = 0;
+        is >> display >> separator >> sceneId >> separator >> val.sceneRenderOrder;
+        val.sceneId = ramses::sceneId_t(sceneId);
+        val.display = ramses::displayId_t(display);
+        return is;
+    }
+}
+
+#include "CLI/CLI.hpp"
+
 
 class RendererEventHandler : public ramses::RendererEventHandlerEmpty
 {
@@ -47,7 +62,7 @@ public:
         m_running = false;
     }
 
-    bool isRunning() const
+    [[nodiscard]] bool isRunning() const
     {
         return m_running;
     }
@@ -58,65 +73,53 @@ private:
 
 ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentBool      helpRequested(parser, "help", "help");
-    ramses_internal::ArgumentUInt32    numDisplays(parser, "nd", "numDisplays", 1u);
-    ramses_internal::ArgumentString    mappingToParse(parser, "sm", "sceneMappings", "");
-    ramses_internal::ArgumentBool      disableAutoMapping(parser, "nomap", "disableAutoMapping");
-    ramses_internal::ArgumentUInt32    msaaSamples(parser, "msaa", "msaaSamples", 1u);
-    ramses_internal::ArgumentBool      skub(parser, "skub", "skub");
+    CLI::App cli;
 
+    // default configuration
+    uint32_t numDisplays = 1u;
+    bool     disableAutoMapping = false;
+    bool     skub               = false;
     std::vector<MappingCommand> mappingCommands;
-    {
-        std::vector<ramses_internal::String> tokens = ramses_internal::StringUtils::Tokenize(mappingToParse, ',');
-        int tokenIndex = 0;
-        while (tokens.size() - tokenIndex >= 3)
-        {
-            MappingCommand command;
-            command.display.getReference() = uint32_t(atoi(tokens[tokenIndex++].c_str()));
-            command.sceneId = ramses::sceneId_t(atoi(tokens[tokenIndex++].c_str()));
-            command.sceneRenderOrder = atoi(tokens[tokenIndex++].c_str());
-            mappingCommands.push_back(command);
-        }
-    }
-
-    ramses::RamsesFrameworkConfig config(argc, argv);
-    // Always enable console mode for now to be able to use Ramsh commands
+    ramses::RamsesFrameworkConfig config;
+    // enable console mode by default to be able to use Ramsh commands
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     config.setDLTApplicationID("REND");
+    config.registerOptions(cli);
+    ramses::RendererConfig rendererConfig;
+    ramses::DisplayConfig  displayConfig;
+
+    try
+    {
+        cli.add_option("--displays", numDisplays, "Number of displays to create")->default_val(numDisplays);
+        cli.add_option("-m,--scene-mapping", mappingCommands, "scene mappings: displayIdx,sceneId,renderOrder");
+        cli.add_flag("--no-auto-show", disableAutoMapping, "disables automatic mapping and showing of published scenes");
+        cli.add_flag("--skub", skub, "Enable renderer optimization: skip unmodified buffers");
+        config.registerOptions(cli);
+        rendererConfig.registerOptions(cli);
+        displayConfig.registerOptions(cli);
+    }
+    catch (const CLI::Error& error)
+    {
+        // configuration error
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
+
     ramses::RamsesFramework framework(config);
     auto commandExit = std::make_shared<ramses_internal::RamshCommandExit>();
     framework.impl.getRamsh().add(commandExit);
 
-    if (helpRequested)
-    {
-        LOG_INFO_F(ramses_internal::CONTEXT_RENDERER, ([](ramses_internal::StringOutputStream& sos)
-        {
-            sos << "\n";
-            sos << "-help    --help                    print this message\n";
-            sos << "-nd      --numDisplays             number of displays to create (default 1)\n";
-            sos << "-sm      --sceneMappings           list of scene mappings: displayIdx,sceneId,renderOrder[,displayIdx,sceneId,renderOrder]*\n";
-            sos << "-nomap   --disableAutoMapping      will disable automatic mapping and showing of any published scene (auto mapping is enabled by default)\n";
-            sos << "-msaa    --msaaSamples             number of samples per pixel to use for multisampling (default 1)\n";
-            sos << "-skub    --skub                    Enable renderer optimization: skip unmodified buffers\n";
-        }));
-        return 0;
-    }
-
-    ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     renderer.setSkippingOfUnmodifiedBuffers(skub);
     framework.connect();
 
     for (uint32_t i = 0u; i < numDisplays; ++i)
     {
-        ramses::DisplayConfig displayConfig(argc, argv);
-        displayConfig.setMultiSampling(msaaSamples);
         //This is a workaround for the need of unique Wayland surface IDs.
         //Typically this will be configured by the applications which use ramses, but the stand-alone renderer does not allow
         //to have explicit configuration of several Wayland surface IDs as command line arguments
         displayConfig.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(displayConfig.getWaylandIviSurfaceID().getValue() + i));
-
         renderer.createDisplay(displayConfig);
     }
     renderer.setMaximumFramerate(60);
@@ -126,7 +129,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     ramses::RendererMate rendererMate(renderer.impl, framework.impl);
     // allow camera free move
     rendererMate.enableKeysHandling();
-    ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping.wasDefined());
+    ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping);
 
     // apply mapping commands
     for (const auto& command : mappingCommands)

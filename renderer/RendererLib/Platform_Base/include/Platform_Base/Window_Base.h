@@ -21,21 +21,21 @@ namespace ramses_internal
     public:
         Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
 
-        Bool canRenderNewFrame() const override;
+        [[nodiscard]] Bool canRenderNewFrame() const override;
         void frameRendered() override;
-        Int32 getPosX() const override final;
-        Int32 getPosY() const override final;
+        [[nodiscard]] Int32 getPosX() const override final;
+        [[nodiscard]] Int32 getPosY() const override final;
 
-        UInt32 getWidth() const override final;
-        UInt32 getHeight() const override final;
-        Float  getAspectRatio() const override final;
+        [[nodiscard]] UInt32 getWidth() const override final;
+        [[nodiscard]] UInt32 getHeight() const override final;
+        [[nodiscard]] Float  getAspectRatio() const override final;
 
-        const String& getTitle() const override final;
+        [[nodiscard]] const String& getTitle() const override final;
         void setTitle(const String& title) override;
 
-        UInt32 getMSAASampleCount() const;
+        [[nodiscard]] UInt32 getMSAASampleCount() const;
 
-        virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
+        [[nodiscard]] virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
 
         virtual bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 

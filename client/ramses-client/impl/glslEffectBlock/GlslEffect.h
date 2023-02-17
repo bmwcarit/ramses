@@ -15,7 +15,6 @@
 #include "SceneAPI/EFixedSemantics.h"
 #include "SceneAPI/RenderState.h"
 #include "Resource/IResource.h"
-#include "absl/types/optional.h"
 
 struct TBuiltInResource;
 namespace glslang

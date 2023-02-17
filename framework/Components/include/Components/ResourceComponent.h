@@ -33,13 +33,13 @@ namespace ramses_internal
         virtual SceneFileHandle addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc) override;
         virtual void loadResourceFromFile(SceneFileHandle handle) override;
         virtual void removeResourceFile(SceneFileHandle handle) override;
-        virtual bool hasResourceFile(SceneFileHandle handle) const override;
+        [[nodiscard]] virtual bool hasResourceFile(SceneFileHandle handle) const override;
 
         virtual void reserveResourceCount(uint32_t totalCount) override;
         virtual ManagedResourceVector resolveResources(ResourceContentHashVector& hashes) override;
 
         virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) override;
-        virtual bool knowsResource(const ResourceContentHash& hash) const override;
+        [[nodiscard]] virtual bool knowsResource(const ResourceContentHash& hash) const override;
 
         ManagedResourceVector getResources();
 

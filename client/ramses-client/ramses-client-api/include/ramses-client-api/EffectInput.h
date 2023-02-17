@@ -34,14 +34,14 @@ namespace ramses
         *
         * @return Name of the effect input
         */
-        const char* getName() const;
+        [[nodiscard]] const char* getName() const;
 
         /**
         * @brief Returns the state of the EffectInput object.
         *
         * @return Returns true if this EffectInput object is initialized and refers to an existing effect input
         */
-        bool isValid() const;
+        [[nodiscard]] bool isValid() const;
 
     protected:
         /**

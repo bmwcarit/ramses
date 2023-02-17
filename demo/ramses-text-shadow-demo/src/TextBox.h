@@ -29,8 +29,8 @@ public:
             int32_t                 renderOrder);
 
     void    setPosition(int32_t x, int32_t y);
-    int32_t getOffsetX() const;
-    int32_t getOffsetY() const;
+    [[nodiscard]] int32_t getOffsetX() const;
+    [[nodiscard]] int32_t getOffsetY() const;
 
 private:
     void createTextNodes(const std::u32string&      string,

@@ -22,10 +22,10 @@ namespace ramses_internal
     public:
         WaylandShellSurface(IWaylandClient& client, INativeWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface);
         ~WaylandShellSurface() override;
-        bool wasSuccessfullyInitialized() const;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
         virtual void resourceDestroyed() override;
         virtual void surfaceWasDeleted() override;
-        virtual const String& getTitle() const override;
+        [[nodiscard]] virtual const String& getTitle() const override;
         virtual void shellSurfacePong(IWaylandClient& client, uint32_t serial) override;
         virtual void shellSurfaceMove(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial) override;
         virtual void shellSurfaceResize(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, uint32_t edges) override;

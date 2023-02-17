@@ -1034,7 +1034,7 @@ TEST_F(ARendererResourceManager, ReturnsInvalidGlIdForUnknownExternalBuffer)
 
 TEST_F(ARendererResourceManager, UploadAndDeleteValidShader)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -1071,7 +1071,7 @@ TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasUploaded)
 
 TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasScheduledForUpload)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -1108,7 +1108,7 @@ TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasScheduledForUpl
 
 TEST_F(ARendererResourceManager, CanUploadAndUnloadEffectOwnedBySceneThatGetsDestroyed_ConfidenceTest)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -1157,7 +1157,7 @@ TEST_F(ARendererResourceManager, CanUploadAndUnloadEffectOwnedBySceneThatGetsDes
 
 TEST_F(ARendererResourceManager, DoesNotUnloadEffectThatGetsUnreferencedAndReReferencedWhileCompiling)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -1215,7 +1215,7 @@ TEST_F(ARendererResourceManager, DoesNotUnloadEffectThatGetsUnreferencedAndReRef
 
 TEST_F(ARendererResourceManager, UploadInvalidShaderResultsInBrokenResource)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources

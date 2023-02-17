@@ -211,7 +211,7 @@ namespace ramses_internal
 
     ramses::streamBufferId_t TestRenderer::createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source)
     {
-        const auto bufferId = m_renderer->impl.createStreamBuffer(displayId, source);
+        const auto bufferId = m_renderer->createStreamBuffer(displayId, source);
         m_renderer->flush();
 
         return bufferId;

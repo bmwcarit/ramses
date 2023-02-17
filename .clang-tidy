@@ -177,7 +177,7 @@ Checks:
     modernize-use-nullptr,
     modernize-use-bool-literals,
     modernize-raw-string-literal,
-    # TODO modernize-use-nodiscard,
+    modernize-use-nodiscard,
     modernize-use-using,
     modernize-deprecated-headers,
     modernize-make-unique,

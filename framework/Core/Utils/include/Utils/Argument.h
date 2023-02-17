@@ -43,7 +43,7 @@ namespace ramses_internal
     private:
         void interpretValue(const String& valueString);
         void searchToken(const CommandLineParser& parser);
-        T getValue() const;
+        [[nodiscard]] T getValue() const;
 
         const char* m_shortName;
         const char* m_longName;

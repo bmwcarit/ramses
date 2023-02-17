@@ -39,7 +39,7 @@ namespace ramses_internal
         constexpr Guid(const Guid&) = default;
         constexpr Guid& operator=(const Guid&) = default;
 
-        String toString() const;
+        [[nodiscard]] String toString() const;
 
         RNODISCARD constexpr uint64_t get() const;
 

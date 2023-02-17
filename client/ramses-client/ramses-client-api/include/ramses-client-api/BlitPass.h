@@ -30,14 +30,14 @@ namespace ramses
         *
         * @return The source render buffer.
         */
-        const RenderBuffer& getSourceRenderBuffer() const;
+        [[nodiscard]] const RenderBuffer& getSourceRenderBuffer() const;
 
         /**
         * @brief Get the destination render buffer used for blitting.
         *
         * @return The destination render buffer.
         */
-        const RenderBuffer& getDestinationRenderBuffer() const;
+        [[nodiscard]] const RenderBuffer& getDestinationRenderBuffer() const;
 
         /**
         * @brief Set the region for blitting from source and destination render buffers.
@@ -90,7 +90,7 @@ namespace ramses
         *
         * @return The render order of this blit pass.
         */
-        int32_t getRenderOrder() const;
+        [[nodiscard]] int32_t getRenderOrder() const;
 
         /**
         * @brief Enable/Disable blit pass
@@ -106,7 +106,7 @@ namespace ramses
         *
         * @return Indicates if the blit pass is enabled
         */
-        bool isEnabled() const;
+        [[nodiscard]] bool isEnabled() const;
 
         /**
         * Stores internal data for implementation specifics of BlitPass.

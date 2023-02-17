@@ -20,8 +20,6 @@
 #include "SceneUtils/DataLayoutCreationHelper.h"
 #include "SceneAPI/RenderState.h"
 
-#include "absl/types/optional.h"
-
 namespace ramses
 {
     class EffectInputImpl;
@@ -32,7 +30,7 @@ namespace ramses
         EffectImpl(ramses_internal::ResourceHashUsage hashUsage, SceneImpl& scene, const char* effectname);
         virtual ~EffectImpl() override;
 
-        void initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, absl::optional<ramses_internal::EDrawMode> geometryShaderInputType);
+        void initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, std::optional<EDrawMode> geometryShaderInputType);
 
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
@@ -62,7 +60,7 @@ namespace ramses
 
         ramses_internal::EffectInputInformationVector m_effectUniformInputs;
         ramses_internal::EffectInputInformationVector m_effectAttributeInputs;
-        absl::optional<ramses_internal::EDrawMode> m_geometryShaderInputType;
+        std::optional<EDrawMode> m_geometryShaderInputType;
     };
 }
 

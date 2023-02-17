@@ -93,7 +93,7 @@ namespace ramses
         const RamsesObject& obj = this->template createObject<TypeParam>("object");
 
         EXPECT_STREQ("", obj.getValidationReport());
-        obj.validate();
+        std::ignore = obj.validate();
         EXPECT_STRNE("", obj.getValidationReport());
     }
 
@@ -102,7 +102,7 @@ namespace ramses
         const RamsesObject& obj = this->template createObject<TypeParam>("object");
 
         EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy"));
-        obj.validate();
+        std::ignore = obj.validate();
         const ramses_internal::String validationReport = obj.getValidationReport(EValidationSeverity_Info);
 
         EXPECT_THAT(validationReport.stdRef(), ::testing::HasSubstr(RamsesObjectTypeUtils::GetRamsesObjectTypeName(obj.getType())));
@@ -116,11 +116,11 @@ namespace ramses
         // simulate some API usage error
         EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy error msg"));
 
-        obj.validate();
+        std::ignore = obj.validate();
         EXPECT_THAT(obj.getValidationReport(EValidationSeverity::EValidationSeverity_Warning), ::testing::Not(::testing::HasSubstr("dummy error msg")));
 
         // will not appear in validation of scene either
-        this->m_scene.validate();
+        std::ignore = this->m_scene.validate();
         EXPECT_THAT(this->m_scene.getValidationReport(EValidationSeverity::EValidationSeverity_Warning), ::testing::Not(::testing::HasSubstr("dummy error msg")));
     }
 

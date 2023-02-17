@@ -115,7 +115,7 @@ namespace ramses
          * @brief Check if resource is valid
          * @return true when resource id has a valid value, false otherwise
          */
-        constexpr bool isValid() const
+        [[nodiscard]] constexpr bool isValid() const
         {
             return *this != Invalid();
         }

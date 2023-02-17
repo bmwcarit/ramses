@@ -161,13 +161,6 @@ namespace ramses_internal
             StreamBufferHandle streamBuffer;
         };
 
-        struct SetStreamBufferState
-        {
-            DisplayHandle display;
-            StreamBufferHandle streamBuffer;
-            bool newState;
-        };
-
         struct CreateExternalBuffer
         {
             DisplayHandle display;
@@ -330,7 +323,6 @@ namespace ramses_internal
             DestroyOffscreenBuffer,
             CreateStreamBuffer,
             DestroyStreamBuffer,
-            SetStreamBufferState,
             CreateExternalBuffer,
             DestroyExternalBuffer,
             SetClearFlags,

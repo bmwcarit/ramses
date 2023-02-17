@@ -10,7 +10,6 @@
 #include "Resource/EffectResource.h"
 #include "glslEffectBlock/GlslToEffectConverter.h"
 #include "GlslLimits.h"
-#include "absl/algorithm/container.h"
 #include <memory>
 
 namespace ramses_internal
@@ -123,7 +122,7 @@ namespace ramses_internal
 
         const EffectInputInformationVector& uniformInputs = glslToEffectConverter.getUniformInputs();
         const EffectInputInformationVector& attributeInputs = glslToEffectConverter.getAttributeInputs();
-        absl::optional<EDrawMode> geomInputType = glslToEffectConverter.getGeometryShaderInputType();
+        const EDrawMode geomInputType = glslToEffectConverter.getGeometryShaderInputType();
 
         m_effectResource = new EffectResource(mergeShaderParts(vertexShaderParts), mergeShaderParts(fragmentShaderParts), mergeShaderParts(geometryShaderParts), geomInputType, uniformInputs, attributeInputs, m_name, cacheFlag);
         return m_effectResource;

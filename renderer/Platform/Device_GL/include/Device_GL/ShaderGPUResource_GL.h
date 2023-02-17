@@ -35,16 +35,16 @@ namespace ramses_internal
         ShaderGPUResource_GL(const EffectResource& effect, ShaderProgramInfo shaderProgramInfo);
         virtual ~ShaderGPUResource_GL() override;
 
-        GLInputLocation     getUniformLocation(DataFieldHandle) const;
-        GLInputLocation     getAttributeLocation(DataFieldHandle) const;
-        TextureSlotInfo     getTextureSlot(DataFieldHandle) const;
+        [[nodiscard]] GLInputLocation     getUniformLocation(DataFieldHandle) const;
+        [[nodiscard]] GLInputLocation     getAttributeLocation(DataFieldHandle) const;
+        [[nodiscard]] TextureSlotInfo     getTextureSlot(DataFieldHandle) const;
 
         bool                getBinaryInfo(UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) const;
 
     private:
         void                preloadVariableLocations(const EffectResource& effect);
-        GLInputLocation     loadUniformLocation(const EffectResource& effect, const EffectInputInformation& input) const;
-        GLInputLocation     loadAttributeLocation(const EffectResource& effect, const EffectInputInformation& input) const;
+        [[nodiscard]] GLInputLocation     loadUniformLocation(const EffectResource& effect, const EffectInputInformation& input) const;
+        [[nodiscard]] GLInputLocation     loadAttributeLocation(const EffectResource& effect, const EffectInputInformation& input) const;
 
         ShaderProgramInfo m_shaderProgramInfo;
 

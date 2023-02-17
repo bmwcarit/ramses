@@ -80,7 +80,7 @@ namespace ramses
         *
         * @return currently set feature level.
         */
-        EFeatureLevel getFeatureLevel() const;
+        [[nodiscard]] EFeatureLevel getFeatureLevel() const;
 
         /**
          * @brief Request a certain type of ramses shell
@@ -139,7 +139,7 @@ namespace ramses
         *
         * @return DLT application id value set in this configuration object
         */
-        const char* getDLTApplicationID() const;
+        [[nodiscard]] const char* getDLTApplicationID() const;
 
         /**
         * @brief Set the application description for DLT
@@ -153,7 +153,7 @@ namespace ramses
         *
         * @return DLT application description set in this configuration object
         */
-        const char* getDLTApplicationDescription() const;
+        [[nodiscard]] const char* getDLTApplicationDescription() const;
 
         /**
         * @brief Enables or disables the periodic log messages provided by the Ramses framework

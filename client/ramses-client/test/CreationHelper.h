@@ -76,7 +76,7 @@ namespace ramses
         }
 
         void destroyAdditionalAllocatedSceneObjects();
-        size_t getAdditionalAllocatedNodeCount() const;
+        [[nodiscard]] size_t getAdditionalAllocatedNodeCount() const;
 
     private:
         Scene* m_scene;

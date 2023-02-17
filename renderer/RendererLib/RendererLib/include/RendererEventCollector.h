@@ -19,8 +19,8 @@ namespace ramses_internal
     public:
         void appendAndConsumePendingEvents(RendererEventVector& rendererEvents, RendererEventVector& sceneControlEvents);
         void dispatchInternalSceneStateEvents(InternalSceneStateEvents& resultEvents);
-        RendererEventVector getRendererEvents() const;
-        RendererEventVector getSceneControlEvents() const;
+        [[nodiscard]] RendererEventVector getRendererEvents() const;
+        [[nodiscard]] RendererEventVector getSceneControlEvents() const;
 
         void addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config = {});
         void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, OffscreenBufferHandle offscreenBufferHandle, UInt8Vector&& pixelData);

@@ -38,12 +38,12 @@ namespace ramses_internal
         MOCK_METHOD(ResourceCacheFlag, getCacheFlag, (), (const, override));
         MOCK_METHOD(const String&, getName, (), (const, override));
 
-        virtual const ResourceContentHash& getHash() const override
+        [[nodiscard]] virtual const ResourceContentHash& getHash() const override
         {
             return m_hash;
         }
 
-        virtual EResourceType getTypeID() const override
+        [[nodiscard]] virtual EResourceType getTypeID() const override
         {
             return m_typeId;
         }

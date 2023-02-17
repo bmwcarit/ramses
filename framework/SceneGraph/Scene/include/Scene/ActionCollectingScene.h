@@ -163,13 +163,13 @@ namespace ramses_internal
         virtual void                        requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) override;
         virtual void                        setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) override;
 
-        const SceneActionCollection& getSceneActionCollection() const;
+        [[nodiscard]] const SceneActionCollection& getSceneActionCollection() const;
         SceneActionCollection& getSceneActionCollection();
 
         void linkData(SceneReferenceHandle providerScene, DataSlotId providerId, SceneReferenceHandle consumerScene, DataSlotId consumerId);
         void unlinkData(SceneReferenceHandle consumerScene, DataSlotId consumerId);
 
-        const SceneReferenceActionVector& getSceneReferenceActions() const;
+        [[nodiscard]] const SceneReferenceActionVector& getSceneReferenceActions() const;
         void resetSceneReferenceActions();
 
     private:

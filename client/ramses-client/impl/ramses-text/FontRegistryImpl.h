@@ -35,7 +35,7 @@ namespace ramses
     public:
         FontRegistryImpl() = default;
 
-        IFontInstance*          getFontInstance(FontInstanceId fontInstanceId) const;
+        [[nodiscard]] IFontInstance*          getFontInstance(FontInstanceId fontInstanceId) const;
 
         FontId                  createFreetype2Font(const char* fontPath);
         FontId                  createFreetype2FontFromFileDescriptor(int fd, size_t offset, size_t length);

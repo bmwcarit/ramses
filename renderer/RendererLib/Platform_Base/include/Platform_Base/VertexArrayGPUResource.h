@@ -22,7 +22,7 @@ namespace ramses_internal
         {
         }
 
-        DeviceResourceHandle getIndexBufferHandle() const
+        [[nodiscard]] DeviceResourceHandle getIndexBufferHandle() const
         {
             return m_indexBufferHandle;
         }

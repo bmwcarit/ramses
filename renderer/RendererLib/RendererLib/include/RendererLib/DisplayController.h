@@ -32,17 +32,17 @@ namespace ramses_internal
         explicit DisplayController(IRenderBackend& renderer, UInt32 samples = 1);
 
         virtual void                    handleWindowEvents() override;
-        virtual Bool                    canRenderNewFrame() const override;
+        [[nodiscard]] virtual Bool                    canRenderNewFrame() const override;
         virtual void                    enableContext() override;
         virtual void                    swapBuffers() override;
         virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) override;
         virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) override;
 
-        virtual DeviceResourceHandle    getDisplayBuffer() const override final;
-        virtual IRenderBackend&         getRenderBackend() const override;
+        [[nodiscard]] virtual DeviceResourceHandle    getDisplayBuffer() const override final;
+        [[nodiscard]] virtual IRenderBackend&         getRenderBackend() const override;
         virtual IEmbeddedCompositingManager& getEmbeddedCompositingManager() override;
-        virtual UInt32                  getDisplayWidth() const override;
-        virtual UInt32                  getDisplayHeight() const override;
+        [[nodiscard]] virtual UInt32                  getDisplayWidth() const override;
+        [[nodiscard]] virtual UInt32                  getDisplayHeight() const override;
 
         virtual void                    readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) override;
 

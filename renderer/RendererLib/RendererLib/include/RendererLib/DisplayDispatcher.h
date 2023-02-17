@@ -50,19 +50,19 @@ namespace ramses_internal
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration);
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration, DisplayHandle display);
 
-        const RendererConfig& getRendererConfig() const;
+        [[nodiscard]] const RendererConfig& getRendererConfig() const;
 
         // needed for EC tests...
         IEmbeddedCompositingManager& getECManager(DisplayHandle display);
         IEmbeddedCompositor& getEC(DisplayHandle display);
 
         // needed for Renderer lifecycle tests...
-        bool hasSystemCompositorController() const;
+        [[nodiscard]] bool hasSystemCompositorController() const;
 
     protected:
         void preprocessCommand(const RendererCommand::Variant& cmd);
         void dispatchCommand(RendererCommand::Variant&& cmd);
-        bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
+        [[nodiscard]] bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
 
         struct Display
         {

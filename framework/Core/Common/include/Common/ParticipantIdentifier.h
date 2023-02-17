@@ -22,8 +22,8 @@ namespace ramses_internal
 
         virtual ~ParticipantIdentifier();
 
-        const Guid& getParticipantId() const;
-        const String& getParticipantName() const;
+        [[nodiscard]] const Guid& getParticipantId() const;
+        [[nodiscard]] const String& getParticipantName() const;
 
         bool operator==(const ParticipantIdentifier& other) const;
 

@@ -24,7 +24,7 @@ namespace ramses_internal
         ~UnixDomainSocket();
 
         int createBoundFileDescriptor();
-        int getBoundFileDescriptor() const;
+        [[nodiscard]] int getBoundFileDescriptor() const;
         int createConnectedFileDescriptor(bool transferOwnership=false);
 
         void cleanup();
@@ -32,12 +32,12 @@ namespace ramses_internal
         static bool IsFileDescriptorForValidSocket(int fileDescriptor);
 
     private:
-        bool            checkSocketFilePath() const;
-        int             createSocketLockFile() const;
+        [[nodiscard]] bool            checkSocketFilePath() const;
+        [[nodiscard]] int             createSocketLockFile() const;
         static int      createAndOpenSocket();
         static int      setCloExecFlagInFD(int socketFileDescriptor);
-        bool            bindSocketToFile() const;
-        bool            connectSocketToFile(int socketFileDescriptor) const;
+        [[nodiscard]] bool            bindSocketToFile() const;
+        [[nodiscard]] bool            connectSocketToFile(int socketFileDescriptor) const;
         socklen_t       fillSockaddrForUnixDomain(sockaddr_un& addrToFill) const;
 
         const String m_xdgRuntimeDir;

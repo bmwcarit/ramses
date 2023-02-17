@@ -11,7 +11,6 @@ RENDERER_MODULE_PER_CONFIG_DYNAMIC(ramses-example-local-dma-offscreenbuffer
     ENABLE_INSTALL      ON
     FILES_SOURCE        src/*
     RESOURCE_FOLDER     res
-    DEPENDENCIES        displaycluster
-                        gbm
+    DEPENDENCIES        gbm
                         libdrm
 )

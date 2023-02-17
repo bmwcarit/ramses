@@ -360,7 +360,7 @@ TEST_F(ARamsesRendererWithDisplay, failsToCreateDmaOffscreenBufferWithUnsupporte
 TEST_F(ARamsesRendererWithDisplay, createsCommandForStreamBufferCreate)
 {
     constexpr ramses::waylandIviSurfaceId_t source{ 123u };
-    const auto streamBuffer = renderer.impl.createStreamBuffer(displayId, source);
+    const auto streamBuffer = renderer.createStreamBuffer(displayId, source);
     EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(ramses_internal::StreamBufferHandle{ streamBuffer.getValue() }, ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::WaylandIviSurfaceId{ source.getValue() }));
     cmdVisitor.visit(commandBuffer);
 }
@@ -368,7 +368,7 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForStreamBufferCreate)
 TEST_F(ARamsesRendererWithDisplay, createsCommandForStreamBufferDestroy)
 {
     constexpr ramses::streamBufferId_t streamBuffer{ 123u };
-    EXPECT_EQ(ramses::StatusOK, renderer.impl.destroyStreamBuffer(displayId, streamBuffer));
+    EXPECT_EQ(ramses::StatusOK, renderer.destroyStreamBuffer(displayId, streamBuffer));
     EXPECT_CALL(cmdVisitor, handleBufferDestroyRequest(ramses_internal::StreamBufferHandle{ streamBuffer.getValue() }, ramses_internal::DisplayHandle{ displayId.getValue() }));
     cmdVisitor.visit(commandBuffer);
 }

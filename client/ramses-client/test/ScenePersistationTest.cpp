@@ -297,6 +297,60 @@ namespace ramses
         m_sceneLoaded->destroy(*loadedCamera);
     }
 
+    TEST_F(ASceneLoadedFromFile, canReadWriteAnEffect)
+    {
+        TestEffects::CreateTestEffectWithAllStages(this->m_scene, "eff");
+
+        doWriteReadCycle();
+
+        auto loadedEffect = this->getObjectForTesting<Effect>("eff");
+        ASSERT_TRUE(loadedEffect);
+
+        // check uniforms
+        EXPECT_EQ(4u, loadedEffect->getUniformInputCount());
+        UniformInput uniform;
+        EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(0u, uniform));
+        EXPECT_STREQ("vs_uniform", uniform.getName());
+        EXPECT_EQ(EEffectInputDataType_Float, uniform.getDataType());
+        EXPECT_EQ(1u, uniform.getElementCount());
+
+        EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(1u, uniform));
+        EXPECT_STREQ("colorRG", uniform.getName());
+        EXPECT_EQ(EEffectInputDataType_Vector2F, uniform.getDataType());
+        EXPECT_EQ(1u, uniform.getElementCount());
+
+        EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(2u, uniform));
+        EXPECT_STREQ("colorBA", uniform.getName());
+        EXPECT_EQ(EEffectInputDataType_Float, uniform.getDataType());
+        EXPECT_EQ(2u, uniform.getElementCount());
+
+        EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(3u, uniform));
+        EXPECT_STREQ("gs_uniform", uniform.getName());
+        EXPECT_EQ(EEffectInputDataType_Float, uniform.getDataType());
+        EXPECT_EQ(1u, uniform.getElementCount());
+
+        // check attributes
+        EXPECT_EQ(3u, loadedEffect->getAttributeInputCount());
+        AttributeInput attrib;
+        EXPECT_EQ(StatusOK, loadedEffect->getAttributeInput(0u, attrib));
+        EXPECT_STREQ("a_position1", attrib.getName());
+        EXPECT_EQ(EEffectInputDataType_Vector3F, attrib.getDataType());
+
+        EXPECT_EQ(StatusOK, loadedEffect->getAttributeInput(1u, attrib));
+        EXPECT_STREQ("a_position2", attrib.getName());
+        EXPECT_EQ(EEffectInputDataType_Float, attrib.getDataType());
+
+        EXPECT_EQ(StatusOK, loadedEffect->getAttributeInput(2u, attrib));
+        EXPECT_STREQ("a_position3", attrib.getName());
+        EXPECT_EQ(EEffectInputDataType_Float, attrib.getDataType());
+
+        // GS
+        EXPECT_TRUE(loadedEffect->hasGeometryShader());
+        EDrawMode gsInputType = EDrawMode_NUMBER_OF_ELEMENTS;
+        EXPECT_EQ(StatusOK, loadedEffect->getGeometryShaderInputType(gsInputType));
+        EXPECT_EQ(EDrawMode_Lines, gsInputType);
+    }
+
     TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearance)
     {
         Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
@@ -310,6 +364,68 @@ namespace ramses
         EXPECT_EQ(appearance->impl.getRenderStateHandle(), loadedAppearance->impl.getRenderStateHandle());
         EXPECT_EQ(appearance->impl.getUniformDataInstance(), loadedAppearance->impl.getUniformDataInstance());
         EXPECT_EQ(appearance->impl.getIScene().getSceneId(), loadedAppearance->impl.getIScene().getSceneId());
+    }
+
+    TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearanceWithGeometryShaderAndRestrictDrawMode)
+    {
+        const Effect* effect = TestEffects::CreateTestEffectWithAllStages(this->m_scene);
+        this->m_scene.createAppearance(*effect, "appearance");
+
+        doWriteReadCycle();
+
+        Appearance* loadedAppearance = this->getObjectForTesting<Appearance>("appearance");
+
+        EDrawMode drawMode = EDrawMode_NUMBER_OF_ELEMENTS;
+        EXPECT_EQ(StatusOK, loadedAppearance->getDrawMode(drawMode));
+        EXPECT_EQ(EDrawMode_Lines, drawMode);
+
+        EDrawMode gsInputType = EDrawMode_NUMBER_OF_ELEMENTS;
+        ASSERT_TRUE(loadedAppearance->getEffect().hasGeometryShader());
+        EXPECT_EQ(StatusOK, loadedAppearance->getEffect().getGeometryShaderInputType(gsInputType));
+        EXPECT_EQ(EDrawMode_Lines, gsInputType);
+
+        // valid draw mode change
+        EXPECT_EQ(StatusOK, loadedAppearance->setDrawMode(EDrawMode_LineStrip));
+
+        // invalid draw mode change
+        EXPECT_NE(StatusOK, loadedAppearance->setDrawMode(EDrawMode_Points));
+    }
+
+    TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearanceWithGeometryShaderAndRestrictDrawMode_usingSameEffect)
+    {
+        const Effect* effect1 = TestEffects::CreateTestEffectWithAllStages(this->m_scene);
+        const Effect* effect2 = TestEffects::CreateTestEffectWithAllStages(this->m_scene);
+        this->m_scene.createAppearance(*effect1, "appearance1");
+        this->m_scene.createAppearance(*effect2, "appearance2");
+
+        doWriteReadCycle();
+
+        Appearance* loadedAppearance1 = this->getObjectForTesting<Appearance>("appearance1");
+        Appearance* loadedAppearance2 = this->getObjectForTesting<Appearance>("appearance2");
+
+        // appearance 1
+        EDrawMode drawMode = EDrawMode_NUMBER_OF_ELEMENTS;
+        EDrawMode gsInputType = EDrawMode_NUMBER_OF_ELEMENTS;
+        EXPECT_EQ(StatusOK, loadedAppearance1->getDrawMode(drawMode));
+        EXPECT_EQ(EDrawMode_Lines, drawMode);
+        ASSERT_TRUE(loadedAppearance1->getEffect().hasGeometryShader());
+        EXPECT_EQ(StatusOK, loadedAppearance1->getEffect().getGeometryShaderInputType(gsInputType));
+        EXPECT_EQ(EDrawMode_Lines, gsInputType);
+
+        // appearance 2
+        EXPECT_EQ(StatusOK, loadedAppearance1->getDrawMode(drawMode));
+        EXPECT_EQ(EDrawMode_Lines, drawMode);
+        ASSERT_TRUE(loadedAppearance1->getEffect().hasGeometryShader());
+        EXPECT_EQ(StatusOK, loadedAppearance1->getEffect().getGeometryShaderInputType(gsInputType));
+        EXPECT_EQ(EDrawMode_Lines, gsInputType);
+
+        // valid draw mode change
+        EXPECT_EQ(StatusOK, loadedAppearance1->setDrawMode(EDrawMode_LineStrip));
+        EXPECT_EQ(StatusOK, loadedAppearance2->setDrawMode(EDrawMode_LineStrip));
+
+        // invalid draw mode change
+        EXPECT_NE(StatusOK, loadedAppearance1->setDrawMode(EDrawMode_Points));
+        EXPECT_NE(StatusOK, loadedAppearance2->setDrawMode(EDrawMode_Points));
     }
 
     TEST_F(ASceneLoadedFromFile, keepingTrackOfsceneObjectIdsAndFindObjectByIdWork)

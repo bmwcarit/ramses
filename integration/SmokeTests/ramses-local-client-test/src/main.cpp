@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
     ramses_internal::ArgumentUInt32 testNrArgument(parser, "tn", "test-nr", 1u);
-    ramses_internal::ArgumentBool disableAutoMapping(parser, "nomap", "disableAutoMapping");
+    ramses_internal::ArgumentBool disableAutoMapping(parser, "nomap", "no-auto-show");
 
     //Ramses client
     ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);

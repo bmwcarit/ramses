@@ -83,7 +83,7 @@ namespace ramses_internal
                 return *reinterpret_cast<Pair*>(keyValuePairMemory);
             }
 
-            const Pair& getKeyValuePair() const
+            [[nodiscard]] const Pair& getKeyValuePair() const
             {
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) uses valid object in keyValuePairMemory
                 return *reinterpret_cast<const Pair*>(keyValuePairMemory);
@@ -464,8 +464,8 @@ namespace ramses_internal
         void initializeLastEntry();
         void destructAll();
         void rehash();
-        size_t calcHashValue(const Key& key) const;
-        HashMapEntry* internalGet(const Key& key) const;
+        [[nodiscard]] size_t calcHashValue(const Key& key) const;
+        [[nodiscard]] HashMapEntry* internalGet(const Key& key) const;
         void internalPut(HashMapEntry* entry, size_t hashValue);
         void internalRemove(HashMapEntry* entry, const size_t hashValue, T* value_old = nullptr);
     };

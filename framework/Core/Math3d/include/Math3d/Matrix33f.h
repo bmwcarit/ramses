@@ -72,7 +72,7 @@ namespace ramses_internal
         bool toRotationEuler(Vector3& rotation, ERotationConvention rotationConvention) const;
 
         constexpr Float& m(UInt32 column, UInt32 row);
-        constexpr const Float& m(UInt32 column, UInt32 row) const;
+        [[nodiscard]] constexpr const Float& m(UInt32 column, UInt32 row) const;
     };
 
     constexpr inline

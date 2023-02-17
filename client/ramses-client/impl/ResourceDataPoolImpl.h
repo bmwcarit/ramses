@@ -44,14 +44,14 @@ namespace ramses
         resourceId_t addTextureCubeData(ETextureFormat format, uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         resourceId_t addEffectData(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name);
 
-        std::string getLastEffectErrorMessages() const;
+        [[nodiscard]] std::string getLastEffectErrorMessages() const;
 
         bool removeResourceData(resourceId_t const& id);
 
         bool addResourceDataFile(std::string const& filename);
         bool forceLoadResourcesFromResourceDataFile(std::string const& filename);
         bool removeResourceDataFile(std::string const& filename);
-        bool saveResourceDataFile(std::string const& filename, ResourceObjects const& resources, bool compress) const;
+        [[nodiscard]] bool saveResourceDataFile(std::string const& filename, ResourceObjects const& resources, bool compress) const;
 
         Resource* createResourceForScene(Scene& scene, resourceId_t const& id);
 

@@ -43,8 +43,8 @@ namespace ramses_internal
         void         deleteControllerSurface(IVIControllerSurface& controllerSurface);
 
     private:
-        IVIControllerSurface* getControllerSurface(WaylandIviSurfaceId iviId) const;
-        IVIControllerScreen*  getControllerScreen(uint32_t screenId) const;
+        [[nodiscard]] IVIControllerSurface* getControllerSurface(WaylandIviSurfaceId iviId) const;
+        [[nodiscard]] IVIControllerScreen*  getControllerScreen(uint32_t screenId) const;
         IVIControllerSurface& getOrCreateControllerSurface(WaylandIviSurfaceId iviId);
         void                  commitAndFlushControllerChanges();
 

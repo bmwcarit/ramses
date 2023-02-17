@@ -105,7 +105,7 @@ public:
         , m_sceneLogic(m_sceneGraphProviderComponent, m_scene, m_resourceComponent, m_myID)
         , m_rendererID(1337)
         , m_arrayResourceRaw(new ArrayResource(EResourceType_IndexArray, 1, EDataType::UInt16, nullptr, ResourceCacheFlag_DoNotCache, String()))
-        , m_effectResourceRaw(new EffectResource(String("foo"), String(), String(), absl::nullopt, {}, {}, String(), ResourceCacheFlag_DoNotCache))
+        , m_effectResourceRaw(new EffectResource(String("foo"), String(), String(), EDrawMode::NUMBER_OF_ELEMENTS, {}, {}, String(), ResourceCacheFlag_DoNotCache))
         , m_textureResourceRaw(new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String()))
         , m_arrayResource(m_arrayResourceRaw)
         , m_effectResource(m_effectResourceRaw)
@@ -1893,7 +1893,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfEffectAddedAndRemov
     this->expectStatistics(EResourceStatisticIndex_Effect, { 1, 6, 6 });
     this->expectStatistics(EResourceStatisticIndex_Texture, { 0, 0, 0 });
 
-    ManagedResource newManRes(new EffectResource(String("f00"), String("bar"), String(), absl::nullopt, {}, {}, String(), ResourceCacheFlag_DoNotCache));
+    ManagedResource newManRes(new EffectResource(String("f00"), String("bar"), String(), EDrawMode::NUMBER_OF_ELEMENTS, {}, {}, String(), ResourceCacheFlag_DoNotCache));
 
     this->expectResourceQueries({ newManRes }, { this->m_effectResource, newManRes });
     this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), newManRes->getHash());

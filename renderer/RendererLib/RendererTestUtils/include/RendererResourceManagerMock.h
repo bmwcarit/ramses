@@ -90,12 +90,12 @@ public:
 
     virtual void referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
     virtual void unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
-    virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
+    [[nodiscard]] virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
     virtual void unreferenceAllResourcesForScene(SceneId sceneId) override;
 
     void expectNoResourceReferencesForScene(SceneId sceneId) const;
     void expectNoResourceReferences() const;
-    int getResourceRefCount(ResourceContentHash resource) const;
+    [[nodiscard]] int getResourceRefCount(ResourceContentHash resource) const;
 
 private:
     std::unordered_map<SceneId, std::unordered_map<ResourceContentHash, int>> m_refCounts;

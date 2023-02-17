@@ -27,24 +27,24 @@ namespace ramses_internal
 
         void registerOptions(CLI::App& cli);
 
-        const String& getWaylandSocketEmbedded() const;
-        const String& getWaylandSocketEmbeddedGroup() const;
-        int getWaylandSocketEmbeddedFD() const;
+        [[nodiscard]] const String& getWaylandSocketEmbedded() const;
+        [[nodiscard]] const String& getWaylandSocketEmbeddedGroup() const;
+        [[nodiscard]] int getWaylandSocketEmbeddedFD() const;
         void setWaylandEmbeddedCompositingSocketName(const String& socket);
         void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
         void setWaylandEmbeddedCompositingSocketFD(int fd);
         void setWaylandDisplayForSystemCompositorController(const String& wd);
-        const String& getWaylandDisplayForSystemCompositorController() const;
+        [[nodiscard]] const String& getWaylandDisplayForSystemCompositorController() const;
         bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
-        uint32_t getWaylandSocketEmbeddedPermissions() const;
+        [[nodiscard]] uint32_t getWaylandSocketEmbeddedPermissions() const;
 
         void enableSystemCompositorControl();
-        Bool getSystemCompositorControlEnabled() const;
+        [[nodiscard]] Bool getSystemCompositorControlEnabled() const;
 
-        std::chrono::microseconds getFrameCallbackMaxPollTime() const;
+        [[nodiscard]] std::chrono::microseconds getFrameCallbackMaxPollTime() const;
         void setFrameCallbackMaxPollTime(std::chrono::microseconds pollTime);
         void setRenderthreadLooptimingReportingPeriod(std::chrono::milliseconds period);
-        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
+        [[nodiscard]] std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
     private:
         String m_waylandSocketEmbedded;
         String m_waylandSocketEmbeddedGroupName;

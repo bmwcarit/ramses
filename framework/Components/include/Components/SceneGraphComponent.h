@@ -100,7 +100,7 @@ namespace ramses_internal
         void disconnectFromNetwork();
 
         // for testing only
-        const ClientSceneLogicBase* getClientSceneLogicForScene(SceneId sceneId) const;
+        [[nodiscard]] const ClientSceneLogicBase* getClientSceneLogicForScene(SceneId sceneId) const;
 
     private:
         void forwardToSceneProviderEventConsumer(SceneReferenceEvent const& event);

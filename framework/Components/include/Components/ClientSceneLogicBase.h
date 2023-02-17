@@ -29,15 +29,15 @@ namespace ramses_internal
 
         void publish(EScenePublicationMode publicationMode);
         void unpublish();
-        bool isPublished() const;
+        [[nodiscard]] bool isPublished() const;
         void addSubscriber(const Guid& newSubscriber);
         void removeSubscriber(const Guid& subscriber);
 
-        std::vector<Guid> getWaitingAndActiveSubscribers() const;
+        [[nodiscard]] std::vector<Guid> getWaitingAndActiveSubscribers() const;
 
         virtual bool flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
 
-        const char* getSceneStateString() const;
+        [[nodiscard]] const char* getSceneStateString() const;
 
     protected:
         enum class ResourceChangeState {

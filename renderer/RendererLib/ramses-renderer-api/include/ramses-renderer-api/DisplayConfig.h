@@ -101,7 +101,7 @@ namespace ramses
         *        either via DisplayConfig::setWindowFullscreen or parsed from command line arguments.
         * @return True if this DisplayConfig is set to use fullscreen window, false otherwise.
         */
-        bool isWindowFullscreen() const;
+        [[nodiscard]] bool isWindowFullscreen() const;
 
         /**
         * @brief Sets window hints/properties to tell the window manager to disable window borders
@@ -157,7 +157,7 @@ namespace ramses
         *
         * @return the current setting of wayland IVI layer ID, returns waylandIviLayerId_t::Invalid() if no value has been set yet
         */
-        waylandIviLayerId_t getWaylandIviLayerID() const;
+        [[nodiscard]] waylandIviLayerId_t getWaylandIviLayerID() const;
 
         /**
         * @brief [Mandatory on Wayland] Set IVI surface ID to use when creating the display window on Wayland.
@@ -177,14 +177,14 @@ namespace ramses
         *
         * @return the current setting of IVI surface ID, returns waylandIviSurfaceId_t::Invalid() if no value has been set yet
         */
-        waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
+        [[nodiscard]] waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
 
         /**
         * @brief Get the current setting of Android native window
         *
         * @return the current setting of Android native window, returns nullptr if no value has been set yet
         */
-        void* getAndroidNativeWindow() const;
+        [[nodiscard]] void* getAndroidNativeWindow() const;
 
         /**
         * @brief [Mandatory on Android] Set native window to use for rendering on Android.
@@ -298,7 +298,7 @@ namespace ramses
         * @return the current setting of the X11 window handle, returns numerical maximum value if no value has been set yet.
         * The returned type is equivalent to \verbatim ::Window \endverbatim from the X11 headers.
         */
-        unsigned long getX11WindowHandle() const;
+        [[nodiscard]] unsigned long getX11WindowHandle() const;
 
         /**
         * @brief [Only for Windows] Set the HWND handle to create a ramses display from an existing HWND window on a Window platform.
@@ -317,7 +317,7 @@ namespace ramses
         *
         * @return the current setting of the Windows window handle, returns nullptr if no value has been set yet
         */
-        void* getWindowsWindowHandle() const;
+        [[nodiscard]] void* getWindowsWindowHandle() const;
 
         /**
         * @brief Set the Wayland display name to connect to.
@@ -334,7 +334,7 @@ namespace ramses
         *
         * @return Wayland display name to use for connection, empty means default
         */
-        const char* getWaylandDisplay() const;
+        [[nodiscard]] const char* getWaylandDisplay() const;
 
         /**
         * @brief   Sets whether async shader/effect compilation and upload should be enabled.
@@ -397,7 +397,7 @@ namespace ramses
         *
         * @return Wayland display name to use for embedded compositing socket
         */
-        const char* getWaylandEmbeddedCompositingSocketName() const;
+        [[nodiscard]] const char* getWaylandEmbeddedCompositingSocketName() const;
 
         /**
         * @brief Request that the embedded compositing display socket belongs to the given group.

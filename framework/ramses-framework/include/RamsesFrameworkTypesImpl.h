@@ -13,13 +13,11 @@
 #include "PlatformAbstraction/Hash.h"
 #include "Collections/StringOutputStream.h"
 #include "Common/StronglyTypedValue.h"
-#include "Utils/StringOutputSpecialWrapper.h"
 #include "PlatformAbstraction/FmtBase.h"
 
-MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::sceneId_t, ramses::sceneId_t);
-MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataConsumerId_t, ramses::dataConsumerId_t);
-MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataProviderId_t, ramses::dataProviderId_t);
-
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::sceneId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataConsumerId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataProviderId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::pickableObjectId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayBufferId_t);

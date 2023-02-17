@@ -18,6 +18,7 @@ WARNING_DISABLE_GCC(-Wsuggest-override)
 WARNING_DISABLE_CLANG(-Wunused-private-field)
 WARNING_DISABLE_CLANG(-Wshadow)
 WARNING_DISABLE_CLANG(-Wimplicit-fallthrough)
+WARNING_DISABLE_CLANG(-Wdeprecated-declarations)
 
 // specify exactly what we expect to exist compiler and library wise. Ensures
 // consistenzt configuration and works around missing feature detection for

@@ -55,10 +55,10 @@ namespace ramses_internal
         void handleEvents() override;
         bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
-        ::Display* getNativeDisplayHandle() const;
-        ::Window getNativeWindowHandle() const;
+        [[nodiscard]] ::Display* getNativeDisplayHandle() const;
+        [[nodiscard]] ::Window getNativeWindowHandle() const;
 
-        bool hasTitle() const override
+        [[nodiscard]] bool hasTitle() const override
         {
             return !m_fullscreen;
         }

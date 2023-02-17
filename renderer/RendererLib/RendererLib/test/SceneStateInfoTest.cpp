@@ -42,7 +42,7 @@ namespace ramses_internal
         SceneStateInfo sceneStateInfo;
 
     private:
-        Bool isSceneKnown(const SceneId scene) const
+        [[nodiscard]] Bool isSceneKnown(const SceneId  scene) const
         {
             SceneIdVector knownScenes;
             sceneStateInfo.getKnownSceneIds(knownScenes);

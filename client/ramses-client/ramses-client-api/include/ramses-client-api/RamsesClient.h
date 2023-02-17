@@ -201,7 +201,7 @@ namespace ramses
         * @param[in] sceneId The id of the scene to get.
         * @return Pointer to the scene if found, nullptr otherwise.
         */
-        const Scene* getScene(sceneId_t sceneId) const;
+        [[nodiscard]] const Scene* getScene(sceneId_t sceneId) const;
 
         /**
         * @copydoc getScene(sceneId_t) const

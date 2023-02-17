@@ -64,6 +64,19 @@ namespace ramses
         */
         virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
 
+
+        /**
+        * @brief This method will be called when the data link between stream buffer and scene's data slot is established.
+        * @details This is a result of #ramses::RendererSceneControl::linkStreamBuffer call.
+        *
+        * @param streamBufferId The ID of stream buffer which is linked as data provider
+        * @param consumerScene The ID of scene where the data consumer slot is
+        * @param consumerId The ID of data consumer where the stream buffer is linked to
+        * @param success True if succeeded, false otherwise - check renderer logs for concrete error message.
+        */
+        virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
+
+
         /**
         * @brief This method will be called when the data link between a data provider and data consumer is established.
         * @details This is a result of #ramses::RendererSceneControl::linkData call.
@@ -237,6 +250,17 @@ namespace ramses
         virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
         {
             (void)externalBufferId;
+            (void)consumerScene;
+            (void)consumerId;
+            (void)success;
+        }
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::streamBufferLinked
+        */
+        virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        {
+            (void)streamBufferId;
             (void)consumerScene;
             (void)consumerId;
             (void)success;

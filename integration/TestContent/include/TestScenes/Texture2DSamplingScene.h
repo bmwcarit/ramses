@@ -54,8 +54,8 @@ namespace ramses_internal
 
         void createTwoQuads(float x);
 
-        ramses::ETextureSamplingMethod getMinSamplingMethod(EState state) const;
-        ramses::ETextureSamplingMethod getMagSamplingMethod(EState state) const;
+        [[nodiscard]] ramses::ETextureSamplingMethod getMinSamplingMethod(EState state) const;
+        [[nodiscard]] ramses::ETextureSamplingMethod getMagSamplingMethod(EState state) const;
 
         const ramses::ArrayResource* m_indexArray;
         const ramses::ArrayResource* m_vertexPositions;

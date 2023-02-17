@@ -25,7 +25,7 @@ namespace ramses_internal
         virtual IWaylandGlobal* createGlobal(const wl_interface *interface, int version, void *data, wl_global_bind_func_t bind) override;
         virtual void dispatchEventLoop() override;
         virtual void flushClients() override;
-        wl_display* get() const; // (AI) TODO - Eliminate, when TextureUploadingAdapter_Wayland does not need the wl_display anymore.
+        [[nodiscard]] wl_display* get() const; // (AI) TODO - Eliminate, when TextureUploadingAdapter_Wayland does not need the wl_display anymore.
 
     private:
         bool addSocketToDisplay(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD);
@@ -33,7 +33,7 @@ namespace ramses_internal
         bool addSocketToDisplayWithName(const String& socketName, const String& socketGroupName, uint32_t socketPermissions);
         bool applyGroupToEmbeddedCompositingSocket(const String& socketFullPath, const String& socketGroupName);
         bool applyPermissionsToEmbeddedCompositingSocket(const String& socketFullPath, uint32_t socketPermissions);
-        String getSocketFullPath(const String& socketName) const;
+        [[nodiscard]] String getSocketFullPath(const String& socketName) const;
 
         wl_display* m_display = nullptr;
     };

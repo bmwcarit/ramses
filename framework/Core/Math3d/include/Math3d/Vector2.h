@@ -59,9 +59,9 @@ namespace ramses_internal
         constexpr Float& operator[](const UInt32 index);
         constexpr const Float& operator[](const UInt32 index) const;
 
-        constexpr Float dot(const Vector2& other) const;
-        Float length() const;
-        Vector2 normalize() const;
+        [[nodiscard]] constexpr Float dot(const Vector2& other) const;
+        [[nodiscard]] Float length() const;
+        [[nodiscard]] Vector2 normalize() const;
 
         friend constexpr Vector2 operator*(const Float scalar, const Vector2&);
     };

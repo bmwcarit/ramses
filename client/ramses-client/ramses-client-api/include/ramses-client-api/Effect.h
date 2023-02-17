@@ -31,14 +31,14 @@ namespace ramses
         *
         * @return Number of uniform inputs
         */
-        uint32_t getUniformInputCount() const;
+        [[nodiscard]] uint32_t getUniformInputCount() const;
 
         /**
         * @brief Gets number of attribute inputs.
         *
         * @return Number of attribute inputs
         */
-        uint32_t getAttributeInputCount() const;
+        [[nodiscard]] uint32_t getAttributeInputCount() const;
 
         /**
         * @brief Gets uniform input at given index.
@@ -105,7 +105,7 @@ namespace ramses
         *
         * @return true if the effect has a geometry shader attached to it, false otherwise
         */
-        bool hasGeometryShader() const;
+        [[nodiscard]] bool hasGeometryShader() const;
 
         /**
         * @brief If the \p effect has a geometry shader attached to it (see #hasGeometryShader) this method
@@ -118,7 +118,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getGeometryShaderInputType(EDrawMode& expectedGeometryInputType);
+        status_t getGeometryShaderInputType(EDrawMode& expectedGeometryInputType) const;
 
         /**
         * @brief Stores internal data for implementation specifics of Effect.

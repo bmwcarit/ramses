@@ -42,7 +42,7 @@ namespace ramses
         * Get the camera of this RenderPass.
         * @return The camera or null if Camera has not been set.
         */
-        const Camera* getCamera() const;
+        [[nodiscard]] const Camera* getCamera() const;
 
         /**
         * @copydoc getCamera() const
@@ -77,7 +77,7 @@ namespace ramses
         * @param[in] renderGroup The RenderGroup to look for
         * @return \c true if the mesh is used in this RenderPass \c false otherwise
         */
-        bool containsRenderGroup(const RenderGroup& renderGroup) const;
+        [[nodiscard]] bool containsRenderGroup(const RenderGroup& renderGroup) const;
 
         /**
         * @brief Gets a render order of given RenderGroup within this RenderPass.
@@ -111,7 +111,7 @@ namespace ramses
         *
         * @return The render target or null if render target has not been set.
         */
-        const RenderTarget* getRenderTarget() const;
+        [[nodiscard]] const RenderTarget* getRenderTarget() const;
 
         /**
         * @brief Set the render order for the render pass.
@@ -132,7 +132,7 @@ namespace ramses
         *
         * @return The render order of this render pass.
         */
-        int32_t getRenderOrder() const;
+        [[nodiscard]] int32_t getRenderOrder() const;
 
         /**
         * @brief Set the clear color for the RenderPass (default: [0,0,0,0])
@@ -168,7 +168,7 @@ namespace ramses
         *
         * @returns clear flags, which is a bitmask of the #ramses::EClearFlags enum
         */
-        uint32_t getClearFlags() const;
+        [[nodiscard]] uint32_t getClearFlags() const;
 
         /**
         * @brief Enable/Disable render pass
@@ -184,7 +184,7 @@ namespace ramses
         *
         * @return Indicates if the render pass is enabled
         */
-        bool isEnabled() const;
+        [[nodiscard]] bool isEnabled() const;
 
         /**
         * @brief Set/unset render once flag - rendering of the render pass only once.
@@ -211,7 +211,7 @@ namespace ramses
         *
         * @return Indicates if the render pass is to be rendered only once
         */
-        bool isRenderOnce() const;
+        [[nodiscard]] bool isRenderOnce() const;
 
         /**
         * @brief Will re-render a render once pass.

@@ -78,6 +78,50 @@ namespace ramses
             assert(effect != nullptr);
             return effect;
         }
+
+        static Effect* CreateTestEffectWithAllStages(Scene& scene, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
+        {
+            const char* vs = R"SHADER(
+                #version 320 es
+                in vec3 a_position1;
+                in float a_position2;
+                in float a_position3;
+                uniform highp float vs_uniform;
+                void main(void)
+                {
+                    gl_Position = vec4(vs_uniform, a_position1.y, a_position2, a_position3);
+                }
+                )SHADER";
+
+            const char* gs = R"SHADER(
+                #version 320 es
+                layout(lines) in;
+                layout(points, max_vertices = 1) out;
+                uniform highp float gs_uniform;
+                void main() {
+                    gl_Position = vec4(gs_uniform, 0.0, 0.0, 1.0);
+                    EmitVertex();
+                }
+                )SHADER";
+
+            const char* fs = R"SHADER(
+                #version 320 es
+                uniform highp vec2 colorRG;
+                uniform highp float colorBA[2];
+                out lowp vec4 colorOut;
+                void main(void)
+                {
+                    colorOut = vec4(colorRG, colorBA[0], colorBA[1]);
+                })SHADER";
+
+            EffectDescription effectDesc;
+            effectDesc.setVertexShader(vs);
+            effectDesc.setFragmentShader(fs);
+            effectDesc.setGeometryShader(gs);
+            Effect* effect = scene.createEffect(effectDesc, cacheFlag, name);
+            assert(effect != nullptr);
+            return effect;
+        }
     };
 }
 

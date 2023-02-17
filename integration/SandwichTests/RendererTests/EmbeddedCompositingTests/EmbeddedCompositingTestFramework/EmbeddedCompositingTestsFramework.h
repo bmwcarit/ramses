@@ -89,7 +89,7 @@ namespace ramses_internal
 
         // This is needed due to the conflict resulting from mandating the possibility to set EC config on both RendererConfig
         // and DisplayConfig, as well as parsing EC config from cmd line to RendererConfig
-        const String&                   getEmbeddedCompositingSocketGroupName() const;
+        [[nodiscard]] const String&                   getEmbeddedCompositingSocketGroupName() const;
 
         const static String             TestEmbeddedCompositingDisplayName;
         const static String             TestAlternateEmbeddedCompositingDisplayName;

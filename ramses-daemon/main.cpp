@@ -16,15 +16,21 @@
 #include "Utils/RamsesLogger.h"
 #include "Utils/StatisticCollection.h"
 #include <memory>
+#include "CLI/CLI.hpp"
 
 
 int main(int argc, const char* argv[])
 {
     using namespace ramses_internal;
 
-    ramses::RamsesFrameworkConfigImpl config(argc, argv);
+    ramses::RamsesFrameworkConfigImpl config(0, nullptr);
     config.setDLTApplicationDescription("ramses-daemon");
     config.setDLTApplicationID("SMGR");
+
+    CLI::App cli;
+    config.registerOptions(cli);
+    CLI11_PARSE(cli, argc, argv);
+
     GetRamsesLogger().initialize(config.loggerConfig, false, true); // no framework used
 
     auto commandExit = std::make_shared<RamshCommandExit>();

@@ -98,6 +98,7 @@
 #include "DataTypeUtils.h"
 #include "RamsesVersion.h"
 #include "Scene/ScenePersistation.h"
+#include "AppearanceUtils.h"
 
 #include "Resource/ArrayResource.h"
 #include "Resource/TextureResource.h"
@@ -1983,7 +1984,10 @@ namespace ramses
         ramses_internal::ResourceHashUsage hashUsage = getClientImpl().getClientApplication().getHashUsage(resource->getHash());
 
         ramses::EffectImpl& pimpl = *new ramses::EffectImpl(hashUsage, *this, name);
-        pimpl.initializeFromFrameworkData(effectRes->getUniformInputs(), effectRes->getAttributeInputs(), effectRes->getGeometryShaderInputType());
+        std::optional<EDrawMode> gsInputType;
+        if (effectRes->getGeometryShaderInputType() != ramses_internal::EDrawMode::NUMBER_OF_ELEMENTS)
+            gsInputType = AppearanceUtils::GetDrawModeFromInternal(effectRes->getGeometryShaderInputType());
+        pimpl.initializeFromFrameworkData(effectRes->getUniformInputs(), effectRes->getAttributeInputs(), gsInputType);
 
         Effect* effect = new Effect(pimpl);
         registerCreatedResourceObject(*effect);

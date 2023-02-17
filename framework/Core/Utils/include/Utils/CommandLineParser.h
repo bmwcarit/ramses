@@ -20,9 +20,9 @@ namespace ramses_internal
     public:
         CommandLineParser(Int argc, char const* const* argv);
 
-        const String& getProgramName() const;
+        [[nodiscard]] const String& getProgramName() const;
         const CommandLineArgument* getOption(const String& shortname, const String& longname, bool canHaveValue, UInt32* searchIndexInOut = nullptr) const;
-        StringVector getNonOptions() const;
+        [[nodiscard]] StringVector getNonOptions() const;
 
 
     private:

@@ -44,7 +44,7 @@ namespace ramses_internal
             m_callback = callback;
         }
 
-        uint32_t getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread) const
+        [[nodiscard]] uint32_t getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread) const
         {
             switch (thread)
             {
@@ -57,7 +57,7 @@ namespace ramses_internal
             }
         }
 
-        ramses::IThreadWatchdogNotification* getCallBack() const
+        [[nodiscard]] ramses::IThreadWatchdogNotification* getCallBack() const
         {
             return m_callback;
         }

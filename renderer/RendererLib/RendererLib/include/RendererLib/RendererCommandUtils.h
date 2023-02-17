@@ -38,7 +38,6 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::DestroyOffscreenBuffer& cmd) { return fmt::format("DestroyOffscreenBuffer (displayId={} OB={})", cmd.display, cmd.offscreenBuffer); }
         inline std::string ToString(const RendererCommand::CreateStreamBuffer& cmd) { return fmt::format("CreateStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
         inline std::string ToString(const RendererCommand::DestroyStreamBuffer& cmd) { return fmt::format("DestroyStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
-        inline std::string ToString(const RendererCommand::SetStreamBufferState& cmd) { return fmt::format("SetStreamBufferState (displayId={} SB={} state={})", cmd.display, cmd.streamBuffer, cmd.newState); }
         inline std::string ToString(const RendererCommand::CreateExternalBuffer& cmd) { return fmt::format("CreateExternalBuffer (displayId={} EB={})", cmd.display, cmd.externalBuffer); }
         inline std::string ToString(const RendererCommand::DestroyExternalBuffer& cmd) { return fmt::format("DestroyExternalBuffer (displayId={} EB={})", cmd.display, cmd.externalBuffer); }
         inline std::string ToString(const RendererCommand::SetClearFlags& cmd) { return fmt::format("SetClearEnabled (displayId={} OB={} flags={})", cmd.display, cmd.offscreenBuffer, cmd.clearFlags); }

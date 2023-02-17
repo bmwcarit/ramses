@@ -35,29 +35,29 @@ namespace ramses_internal
             }
         }
 
-        const DataFieldInfoVector& getDataFields() const
+        [[nodiscard]] const DataFieldInfoVector& getDataFields() const
         {
             return m_fields;
         }
 
-        UInt32 getFieldCount() const
+        [[nodiscard]] UInt32 getFieldCount() const
         {
             return static_cast<UInt32>(m_fields.size());
         }
 
-        const DataFieldInfo& getField(DataFieldHandle id) const
+        [[nodiscard]] const DataFieldInfo& getField(DataFieldHandle id) const
         {
             assert(id < m_fields.size());
             return m_fields[id.asMemoryHandle()];
         }
 
-        UInt32 getFieldOffset(DataFieldHandle id) const
+        [[nodiscard]] UInt32 getFieldOffset(DataFieldHandle id) const
         {
             assert(id < m_fieldOffsets.size());
             return m_fieldOffsets[id.asMemoryHandle()];
         }
 
-        UInt32 getTotalSize() const
+        [[nodiscard]] UInt32 getTotalSize() const
         {
             return m_totalSize;
         }
@@ -67,7 +67,7 @@ namespace ramses_internal
             effectHash = newHash;
         }
 
-        const ResourceContentHash& getEffectHash() const
+        [[nodiscard]] const ResourceContentHash& getEffectHash() const
         {
             return effectHash;
         }

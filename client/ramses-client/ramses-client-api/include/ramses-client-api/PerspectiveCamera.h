@@ -58,7 +58,7 @@ namespace ramses
         *
         * @return Vertical field of view of this camera.
         */
-        float getVerticalFieldOfView() const;
+        [[nodiscard]] float getVerticalFieldOfView() const;
 
         /**
         * @brief Gets the aspect ratio between camera frustum width and height (set via #setFrustum, not viewport).
@@ -67,7 +67,7 @@ namespace ramses
         *
         * @return Aspect ratio of this camera.
         */
-        float getAspectRatio() const;
+        [[nodiscard]] float getAspectRatio() const;
 
     protected:
         /**

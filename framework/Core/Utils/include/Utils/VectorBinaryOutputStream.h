@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         explicit VectorBinaryOutputStream(std::vector<Byte>& vecRef);
 
-        absl::Span<const Byte> asSpan() const;
+        [[nodiscard]] absl::Span<const Byte> asSpan() const;
 
         IOutputStream& write(const void* data, size_t size) override;
     private:

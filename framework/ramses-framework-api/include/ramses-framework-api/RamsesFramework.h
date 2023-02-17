@@ -55,7 +55,7 @@ namespace ramses
         *
         * @return true if connected, false otherwise.
         */
-        bool isConnected() const;
+        [[nodiscard]] bool isConnected() const;
 
         /**
         * @brief Disconnects the RamsesClient from the system

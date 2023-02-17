@@ -23,7 +23,7 @@ namespace ramses_internal
         virtual DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
         virtual void                        releaseDataLayout(DataLayoutHandle handle) override;
 
-        UInt32                              getNumDataLayoutReferences(DataLayoutHandle handle) const;
+        [[nodiscard]] UInt32                              getNumDataLayoutReferences(DataLayoutHandle handle) const;
 
     private:
         struct DataLayoutCacheEntry

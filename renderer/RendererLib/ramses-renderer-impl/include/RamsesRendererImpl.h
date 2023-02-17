@@ -75,7 +75,6 @@ namespace ramses
         streamBufferId_t allocateStreamBuffer();
         streamBufferId_t createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source);
         status_t destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer);
-        status_t setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state);
 
         externalBufferId_t createExternalBuffer(displayId_t display);
         status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalTexture);

@@ -23,6 +23,7 @@ namespace ramses
         MOCK_METHOD(void, sceneStateChanged, (sceneId_t, RendererSceneState), (override));
         MOCK_METHOD(void, offscreenBufferLinked, (displayBufferId_t, sceneId_t, dataConsumerId_t, bool), (override));
         MOCK_METHOD(void, externalBufferLinked, (externalBufferId_t, sceneId_t, dataConsumerId_t, bool), (override));
+        MOCK_METHOD(void, streamBufferLinked, (streamBufferId_t, sceneId_t, dataConsumerId_t, bool), (override));
         MOCK_METHOD(void, dataLinked, (sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t, bool), (override));
         MOCK_METHOD(void, objectsPicked, (sceneId_t, const pickableObjectId_t*, uint32_t), (override));
         MOCK_METHOD(void, dataUnlinked, (sceneId_t, dataConsumerId_t, bool), (override));

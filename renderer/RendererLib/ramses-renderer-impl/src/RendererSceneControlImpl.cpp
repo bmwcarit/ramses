@@ -168,8 +168,7 @@ namespace ramses
                 if (event.offscreenBuffer.isValid())
                     eventHandler.offscreenBufferLinked(displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
                 if (event.streamBuffer.isValid())
-                    m_waylandEvents.push_back(event);
-
+                    eventHandler.streamBufferLinked(streamBufferId_t(event.streamBuffer.asMemoryHandle()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), true);
                 if (event.externalBuffer.isValid())
                     eventHandler.externalBufferLinked(externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
 
@@ -181,8 +180,7 @@ namespace ramses
                 if (event.offscreenBuffer.isValid())
                     eventHandler.offscreenBufferLinked(displayBufferId_t { event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
                 if (event.streamBuffer.isValid())
-                    m_waylandEvents.push_back(event);
-
+                    eventHandler.streamBufferLinked(streamBufferId_t(event.streamBuffer.asMemoryHandle()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), false);
                 if (event.externalBuffer.isValid())
                     eventHandler.externalBufferLinked(externalBufferId_t{ event.externalBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
 
@@ -239,12 +237,6 @@ namespace ramses
             case ramses_internal::ERendererEventType::StreamSurfaceUnavailable:
                 eventHandler.streamAvailabilityChanged(ramses::waylandIviSurfaceId_t(event.streamSourceId.getValue()), false);
                 break;
-            case ramses_internal::ERendererEventType::StreamBufferEnabled:
-                m_waylandEvents.push_back(event);
-                break;
-            case ramses_internal::ERendererEventType::StreamBufferDisabled:
-                m_waylandEvents.push_back(event);
-                break;
             default:
                 assert(false);
                 break;
@@ -254,62 +246,8 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RendererSceneControlImpl::dispatchSpecialEvents(IRendererSceneControlEventHandler_SpecialForWayland& eventHandler)
-    {
-        for (const auto& event : m_waylandEvents)
-        {
-            switch (event.eventType)
-            {
-                case ramses_internal::ERendererEventType::SceneDataBufferLinked:
-                    eventHandler.streamBufferLinked(streamBufferId_t(event.streamBuffer.asMemoryHandle()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), true);
-                    break;
-                case ramses_internal::ERendererEventType::SceneDataBufferLinkFailed:
-                    eventHandler.streamBufferLinked(streamBufferId_t(event.streamBuffer.asMemoryHandle()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), false);
-                    break;
-                case ramses_internal::ERendererEventType::StreamBufferEnabled:
-                    eventHandler.streamBufferEnabled(streamBufferId_t(event.streamBuffer.asMemoryHandle()), true);
-                    break;
-                case ramses_internal::ERendererEventType::StreamBufferDisabled:
-                    eventHandler.streamBufferEnabled(streamBufferId_t(event.streamBuffer.asMemoryHandle()), false);
-                    break;
-                default:
-                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlImpl::dispatchSpecialEvents: skipping unknown type" );
-            }
-
-        }
-        m_waylandEvents.clear();
-        return StatusOK;
-    }
-
     const ramses_internal::RendererCommands& RendererSceneControlImpl::getPendingCommands() const
     {
         return m_pendingRendererCommands;
     }
-
-    ramses::streamBufferId_t RendererSceneControlImpl::createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source)
-    {
-        ramses::streamBufferId_t bufferId = m_renderer.allocateStreamBuffer();
-        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
-        const ramses_internal::StreamBufferHandle bufferHandle{ bufferId.getValue() };
-        const ramses_internal::WaylandIviSurfaceId sourceLL{ source.getValue() };
-        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::CreateStreamBuffer{ displayHandle, bufferHandle, sourceLL });
-        return bufferId;
-    }
-
-    ramses::status_t RendererSceneControlImpl::destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer)
-    {
-        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
-        const ramses_internal::StreamBufferHandle bufferHandle{ streamBuffer.getValue() };
-        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::DestroyStreamBuffer{ displayHandle, bufferHandle });
-        return StatusOK;
-    }
-
-    ramses::status_t RendererSceneControlImpl::setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state)
-    {
-        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
-        const ramses_internal::StreamBufferHandle bufferHandle{ streamBufferId.getValue() };
-        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetStreamBufferState{ displayHandle, bufferHandle, state });
-        return StatusOK;
-    }
-
 }

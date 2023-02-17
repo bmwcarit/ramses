@@ -23,12 +23,12 @@ namespace ramses_internal
 
         virtual void deviceSupportsBinaryShaderFormats(const std::vector<BinaryShaderFormatID>& supportedFormats) = 0;
 
-        virtual bool hasBinaryShader(ResourceContentHash effectHash) const = 0;
-        virtual uint32_t getBinaryShaderSize(ResourceContentHash effectHash) const = 0;
-        virtual BinaryShaderFormatID getBinaryShaderFormat(ResourceContentHash effectHash) const = 0;
+        [[nodiscard]] virtual bool hasBinaryShader(ResourceContentHash effectHash) const = 0;
+        [[nodiscard]] virtual uint32_t getBinaryShaderSize(ResourceContentHash effectHash) const = 0;
+        [[nodiscard]] virtual BinaryShaderFormatID getBinaryShaderFormat(ResourceContentHash effectHash) const = 0;
         virtual void getBinaryShaderData(ResourceContentHash effectHash, UInt8* buffer, UInt32 bufferSize) const = 0;
 
-        virtual bool shouldBinaryShaderBeCached(ResourceContentHash effectHash, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual bool shouldBinaryShaderBeCached(ResourceContentHash effectHash, SceneId sceneId) const = 0;
 
         virtual void storeBinaryShader(ResourceContentHash effectHash, SceneId sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) = 0;
         virtual void binaryShaderUploaded(ResourceContentHash effectHash, Bool success) const = 0;

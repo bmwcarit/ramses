@@ -63,12 +63,12 @@ namespace ramses_internal
         constexpr Float& operator[](const UInt32 index);
         constexpr const Float& operator[](const UInt32 index) const;
 
-        constexpr Float dot(const Vector3& other) const;
-        constexpr Vector3 inverse() const;
-        constexpr Vector3 cross(const Vector3& other) const;
+        [[nodiscard]] constexpr Float dot(const Vector3& other) const;
+        [[nodiscard]] constexpr Vector3 inverse() const;
+        [[nodiscard]] constexpr Vector3 cross(const Vector3& other) const;
 
-        Float length() const;
-        Vector3 normalize() const;
+        [[nodiscard]] Float length() const;
+        [[nodiscard]] Vector3 normalize() const;
 
         friend constexpr Vector3 operator*(const Float scalar, const Vector3&);
     };

@@ -31,7 +31,7 @@ namespace MockResourceHash
     {
         std::unique_ptr<ResourceBase> res;
         if (hash == EffectHash)
-            res = std::make_unique<EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+            res = std::make_unique<EffectResource>("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
         else if (hash == VertArrayHash || hash == VertArrayHash2)
             res = std::make_unique<ArrayResource>(EResourceType_VertexArray, 0, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String());
         else if (hash == IndexArrayHash || hash == IndexArrayHash2 || hash == IndexArrayHash3)

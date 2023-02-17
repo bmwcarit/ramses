@@ -32,7 +32,7 @@ namespace ramses_internal
         };
 
     private:
-        String getEffectNameFromState(UInt32 state) const;
+        [[nodiscard]] String getEffectNameFromState(UInt32 state) const;
         void createGeometry();
         void initInputs();
 

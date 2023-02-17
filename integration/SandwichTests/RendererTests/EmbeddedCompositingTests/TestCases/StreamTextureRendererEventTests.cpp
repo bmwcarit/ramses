@@ -287,7 +287,7 @@ namespace ramses_internal
                 }
             }
 
-            const BoolVector& getStreamAvailabilityChanged() const
+            [[nodiscard]] const BoolVector& getStreamAvailabilityChanged() const
             {
                 return m_streamAvailabilityChangeEvents;
             }

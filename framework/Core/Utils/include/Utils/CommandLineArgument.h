@@ -31,7 +31,7 @@ namespace ramses_internal
             m_name = name;
         }
 
-        const String& getName() const
+        [[nodiscard]] const String& getName() const
         {
             return m_name;
         }
@@ -41,17 +41,17 @@ namespace ramses_internal
             m_hasBeenUsed = true;
         }
 
-        bool hasBeenUsed() const
+        [[nodiscard]] bool hasBeenUsed() const
         {
             return m_hasBeenUsed;
         }
 
-        bool hasValue() const
+        [[nodiscard]] bool hasValue() const
         {
             return !m_value.empty();
         }
 
-        const String& getValue() const
+        [[nodiscard]] const String& getValue() const
         {
             return m_value;
         }

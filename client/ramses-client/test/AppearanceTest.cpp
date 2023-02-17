@@ -26,6 +26,7 @@
 #include "DataObjectImpl.h"
 #include "TextureSamplerImpl.h"
 #include "AppearanceImpl.h"
+#include "AppearanceUtils.h"
 
 namespace ramses
 {
@@ -1272,5 +1273,39 @@ namespace ramses
         EDrawMode mode;
         EXPECT_EQ(StatusOK, appearance->getDrawMode(mode));
         EXPECT_EQ(EDrawMode_LineStrip, mode);
+    }
+
+    TEST(AnAppearanceUtils, ChecksValidGeometryShaderModes)
+    {
+        // valid combinations of appearance draw mode (first) and GS input type (second)
+        const std::initializer_list<std::pair<EDrawMode, EDrawMode>> validDrawModeToGSModeCombinations = {
+            { EDrawMode_Points, EDrawMode_Points },
+            { EDrawMode_Lines, EDrawMode_Lines },
+            { EDrawMode_LineStrip, EDrawMode_Lines },
+            { EDrawMode_LineLoop, EDrawMode_Lines },
+            { EDrawMode_Triangles, EDrawMode_Triangles },
+            { EDrawMode_TriangleStrip, EDrawMode_Triangles },
+            { EDrawMode_TriangleFan, EDrawMode_Triangles }
+        };
+
+        for (int drawModeVal = 0; drawModeVal < EDrawMode_NUMBER_OF_ELEMENTS; ++drawModeVal)
+        {
+            for (int gsInputTypeVal = 0; gsInputTypeVal < EDrawMode_NUMBER_OF_ELEMENTS; ++gsInputTypeVal)
+            {
+                const auto drawMode = static_cast<EDrawMode>(drawModeVal);
+                const auto gsInputType = static_cast<EDrawMode>(gsInputTypeVal);
+
+                // gs input mode restricted to only these types
+                if (gsInputType != EDrawMode_Points && gsInputType != EDrawMode_Lines && gsInputType != EDrawMode_Triangles)
+                    continue;
+
+                const auto it = std::find_if(validDrawModeToGSModeCombinations.begin(), validDrawModeToGSModeCombinations.end(), [&](const auto& modePair) {
+                    return modePair.first == drawMode && modePair.second == gsInputType;
+                    });
+                const bool isValid = (it != validDrawModeToGSModeCombinations.end());
+
+                EXPECT_EQ(isValid, AppearanceUtils::GeometryShaderCompatibleWithDrawMode(gsInputType, drawMode));
+            }
+        }
     }
 }

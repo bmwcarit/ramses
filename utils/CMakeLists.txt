@@ -7,10 +7,7 @@
 #  -------------------------------------------------------------------------
 
 if(ramses-sdk_BUILD_TOOLS)
-    ADD_SUBDIRECTORY(ramses-utils)
     ADD_SUBDIRECTORY(ramses-imgui)
-    ADD_SUBDIRECTORY(ramses-resource-tools)
-    ADD_SUBDIRECTORY(ramses-shader-tools)
     ADD_SUBDIRECTORY(ramses-scene-viewer)
     ADD_SUBDIRECTORY(ramses-stream-viewer)
 endif()

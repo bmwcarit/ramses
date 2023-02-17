@@ -27,7 +27,7 @@ namespace ramses_internal
         virtual void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
 
         virtual void                    releaseDataSlot(DataSlotHandle handle) override;
-        Matrix44f updateMatrixCacheWithLinks(ETransformationMatrixType matrixType, NodeHandle node) const;
+        [[nodiscard]] Matrix44f updateMatrixCacheWithLinks(ETransformationMatrixType matrixType, NodeHandle node) const;
         void      propagateDirtyToConsumers(NodeHandle node) const;
 
     private:

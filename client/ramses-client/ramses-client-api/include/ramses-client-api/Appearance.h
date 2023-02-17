@@ -232,7 +232,9 @@ namespace ramses
 
         /**
         * @brief Sets the draw mode indicating by which primitive the mesh will be rendered
-        * Default draw mode is Triangles.
+        * Default draw mode is #ramses::EDrawMode_Triangles, however if the effect used
+        * has a geometry shader, then the input type declared in the geometry shader is set
+        * as draw mode automatically when #Appearance is created.
         *
         * @param[in] mode Draw mode to be used.
         * @return status == 0 for success, otherwise the returned status can be used
@@ -874,7 +876,7 @@ namespace ramses
         * @param[in] input The effect uniform input to check
         * @return \c true if there is any DataObject bound to the input, false otherwise
         */
-        bool isInputBound(const UniformInput& input) const;
+        [[nodiscard]] bool isInputBound(const UniformInput& input) const;
 
         /**
         * @brief Gets the data object bound to a uniform input.
@@ -882,14 +884,14 @@ namespace ramses
         * @param[in] input The effect uniform input to get the bound data object for
         * @return \c The data object bound the uniform input if existing, otherwise returns nullptr
         */
-        const DataObject* getDataObjectBoundToInput(const UniformInput& input) const;
+        [[nodiscard]] const DataObject* getDataObjectBoundToInput(const UniformInput& input) const;
 
         /**
         * @brief Gets the effect used to create this appearance
         *
         * @return The effect used to create the appearance.
         */
-        const Effect& getEffect() const;
+        [[nodiscard]] const Effect& getEffect() const;
 
     protected:
         /**

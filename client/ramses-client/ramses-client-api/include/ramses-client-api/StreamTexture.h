@@ -45,14 +45,14 @@ namespace ramses
         *
         * @return If forcing of fallback image is currently enabled or not.
         */
-        bool getForceFallbackImage() const;
+        [[nodiscard]] bool getForceFallbackImage() const;
 
         /**
         * @brief Get the stream source id used for compositing on the stream texture
         *
         * @return Stream source id
         */
-        waylandIviSurfaceId_t getStreamSourceId() const;
+        [[nodiscard]] waylandIviSurfaceId_t getStreamSourceId() const;
 
     protected:
         /**

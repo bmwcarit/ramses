@@ -33,7 +33,7 @@ namespace ramses_internal
         virtual ~PlatformWatchdog();
 
         void                      notifyWatchdog();
-        std::chrono::milliseconds calculateTimeout() const;
+        [[nodiscard]] std::chrono::milliseconds calculateTimeout() const;
 
     private:
         const std::chrono::milliseconds m_interval;

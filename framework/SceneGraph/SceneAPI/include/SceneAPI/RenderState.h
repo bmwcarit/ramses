@@ -44,7 +44,6 @@ namespace ramses_internal
         ConstAlpha,
         OneMinusConstAlpha,
         AlphaSaturate,
-        Invalid,
         NUMBER_OF_ELEMENTS
     };
 
@@ -54,7 +53,6 @@ namespace ramses_internal
         FrontFacing,
         BackFacing,
         FrontAndBackFacing,
-        Invalid,
         NUMBER_OF_ELEMENTS
     };
 
@@ -76,7 +74,6 @@ namespace ramses_internal
         NotEqual,
         AlwaysPass,
         NeverPass,
-        Invalid,
         NUMBER_OF_ELEMENTS
     };
 
@@ -177,7 +174,6 @@ namespace ramses_internal
         "ConstAlpha",
         "OneMinusConstAlpha",
         "AlphaSaturate",
-        "Invalid",
     };
 
     static const char* CullModeNames[] =
@@ -186,7 +182,6 @@ namespace ramses_internal
         "FrontFacing",
         "BackFacing",
         "FrontAndBackFacing",
-        "Invalid",
     };
 
     static const char* DepthWriteNames[] =
@@ -206,7 +201,6 @@ namespace ramses_internal
         "NotEqual",
         "Always",
         "Never",
-        "Invalid",
     };
 
     static const char* ScissorTestNames[] =

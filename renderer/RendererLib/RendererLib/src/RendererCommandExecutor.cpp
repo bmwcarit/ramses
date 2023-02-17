@@ -170,12 +170,6 @@ namespace ramses_internal
         m_sceneUpdater.handleBufferDestroyRequest(cmd.streamBuffer);
     }
 
-    void RendererCommandExecutor::operator()(const RendererCommand::SetStreamBufferState& cmd)
-    {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.setStreamBufferState(cmd.streamBuffer, cmd.newState);
-    }
-
     void RendererCommandExecutor::operator()(const RendererCommand::CreateExternalBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
@@ -269,7 +263,7 @@ namespace ramses_internal
     void RendererCommandExecutor::operator()(const RendererCommand::SCAddIviSurfaceToIviLayer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_renderer.systemCompositorAddIviSurfaceToIviLayer(cmd.surface, cmd.layer);
+        std::ignore = m_renderer.systemCompositorAddIviSurfaceToIviLayer(cmd.surface, cmd.layer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviLayerVisibility& cmd)

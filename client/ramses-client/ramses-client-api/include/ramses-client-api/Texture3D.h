@@ -31,28 +31,28 @@ namespace ramses
         *
         * @return Texture width
         */
-        uint32_t getWidth() const;
+        [[nodiscard]] uint32_t getWidth() const;
 
         /**
         * @brief Gets texture height
         *
         * @return Texture height
         */
-        uint32_t getHeight() const;
+        [[nodiscard]] uint32_t getHeight() const;
 
         /**
         * @brief Gets texture depth
         *
         * @return Texture depth
         */
-        uint32_t getDepth() const;
+        [[nodiscard]] uint32_t getDepth() const;
 
         /**
         * @brief Gets texture format
         *
         * @return Texture format
         */
-        ETextureFormat getTextureFormat() const;
+        [[nodiscard]] ETextureFormat getTextureFormat() const;
 
     protected:
         /**

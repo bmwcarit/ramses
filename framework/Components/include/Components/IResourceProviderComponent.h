@@ -34,14 +34,14 @@ namespace ramses_internal
         virtual SceneFileHandle addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ResourceTableOfContents& toc) = 0;
         virtual void loadResourceFromFile(SceneFileHandle handle) = 0;
         virtual void removeResourceFile(SceneFileHandle handle) = 0;
-        virtual bool hasResourceFile(SceneFileHandle handle) const = 0;
+        [[nodiscard]] virtual bool hasResourceFile(SceneFileHandle handle) const = 0;
 
         virtual void reserveResourceCount(uint32_t totalCount) = 0;
 
         virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) = 0;
         virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) = 0;
 
-        virtual bool knowsResource(const ResourceContentHash& hash) const = 0;
+        [[nodiscard]] virtual bool knowsResource(const ResourceContentHash& hash) const = 0;
     };
 }
 

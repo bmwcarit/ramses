@@ -71,7 +71,7 @@ namespace ramses
         *
         * @return Returns true if thread is running (started and not stopped), false otherwise.
         */
-        bool isThreadRunning() const;
+        [[nodiscard]] bool isThreadRunning() const;
 
         /**
         * @brief   Sets the maximum frame rate per second for the update/render loop when in threaded mode.
@@ -106,7 +106,7 @@ namespace ramses
         *
         * @return Maximum frame rate per second
         */
-        float getMaximumFramerate() const;
+        [[nodiscard]] float getMaximumFramerate() const;
 
         /**
         * @brief   Sets the mode of operation for render loop.
@@ -125,7 +125,7 @@ namespace ramses
         *
         * @return The loop mode
         */
-        ELoopMode getLoopMode() const;
+        [[nodiscard]] ELoopMode getLoopMode() const;
 
         /**
         * @brief Sets time limits for time-out of different sections of render and update loop.
@@ -229,7 +229,7 @@ namespace ramses
         * @param displayId The ID of display for which the framebuffer ID is being queried.
         * @return Display's framebuffer ID or invalid ID if display does not exist.
         */
-        displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
+        [[nodiscard]] displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
         /**
         * @brief   Will create an offscreen buffer that can be used to render scenes into (see #ramses::RendererSceneControl::setSceneDisplayBufferAssignment)
@@ -441,6 +441,26 @@ namespace ramses
         */
         status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalBuffer);
 
+        /**
+        * @brief   Creates a buffer for viewing wayland surfaces from the embedded compositor.
+        *          The created buffer can be linked as input to a consumer texture sampler (see #ramses::RendererSceneControl::linkStreamBuffer).
+        *
+        * @param[in] display Id of display that the buffer should be created on.
+        * @param[in] surfaceId Id of the wayland surface that the buffer should render from.
+        * @return Identifier of the created external buffer.
+        */
+        streamBufferId_t createStreamBuffer(displayId_t display, ramses::waylandIviSurfaceId_t surfaceId);
+
+        /**
+        * @brief Will destroy a previously created stream buffer.
+        *        If there are any consumer texture samplers linked to this buffer, these links will be removed.
+        *
+        * @param[in] display id of display which the buffer belongs to
+        * @param[in] bufferId id of buffer to destroy
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t destroyStreamBuffer(displayId_t display, ramses::streamBufferId_t bufferId);
 
         /**
         * @brief   Sets clear flags for a display buffer (display's framebuffer or offscreen buffer).

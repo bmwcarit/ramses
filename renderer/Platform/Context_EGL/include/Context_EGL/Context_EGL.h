@@ -64,7 +64,7 @@ namespace ramses_internal
 
         void* getProcAddress(const char* name) const override;
 
-        EGLDisplay getEglDisplay() const;
+        [[nodiscard]] EGLDisplay getEglDisplay() const;
 
     private:
         bool getEglDisplayFromNativeHandle();
@@ -78,7 +78,7 @@ namespace ramses_internal
         bool createEglSurface();
         bool createEglContext();
 
-        bool isInitialized() const;
+        [[nodiscard]] bool isInitialized() const;
 
         EglSurfaceData m_eglSurfaceData;
         Generic_EGLNativeDisplayType m_nativeDisplay;
