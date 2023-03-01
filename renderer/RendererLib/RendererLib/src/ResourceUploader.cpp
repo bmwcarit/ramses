@@ -27,7 +27,7 @@ namespace ramses_internal
     {
     }
 
-    absl::optional<DeviceResourceHandle> ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize)
+    std::optional<DeviceResourceHandle> ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize)
     {
         ManagedResource res = rd.resource;
         const IResource& resourceObject = *res.get();

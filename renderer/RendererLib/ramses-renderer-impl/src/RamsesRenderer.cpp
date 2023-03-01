@@ -50,23 +50,16 @@ namespace ramses
         return impl.isThreadRunning();
     }
 
-    ramses::status_t RamsesRenderer::setMaximumFramerate(float maximumFramerate)
+    ramses::status_t RamsesRenderer::setFramerateLimit(displayId_t displayId, float fpsLimit)
     {
-        const status_t status = impl.setMaximumFramerate(maximumFramerate);
-        LOG_HL_RENDERER_API1(status, maximumFramerate);
+        const status_t status = impl.setFramerateLimit(displayId, fpsLimit);
+        LOG_HL_RENDERER_API2(status, displayId, fpsLimit);
         return status;
     }
 
-    ramses::status_t RamsesRenderer::setMaximumFramerate(RamsesRenderer& renderer, float maximumFramerate, displayId_t displayId)
+    float RamsesRenderer::getFramerateLimit(displayId_t displayId) const
     {
-        const status_t status = renderer.impl.setMaximumFramerate(maximumFramerate, displayId);
-        LOG_HL_RENDERER_STATIC_API2(status, maximumFramerate, displayId);
-        return status;
-    }
-
-    float RamsesRenderer::getMaximumFramerate() const
-    {
-        return impl.getMaximumFramerate();
+        return impl.getFramerateLimit(displayId);
     }
 
     ramses::status_t RamsesRenderer::setLoopMode(ELoopMode loopMode)
@@ -119,17 +112,10 @@ namespace ramses
         return status;
     }
 
-    displayBufferId_t RamsesRenderer::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount)
+    displayBufferId_t RamsesRenderer::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, EDepthBufferType depthBufferType)
     {
-        const displayBufferId_t bufferId = impl.createOffscreenBuffer(display, width, height, sampleCount, false, EDepthBufferType_DepthStencil);
-        LOG_HL_RENDERER_API4(bufferId, display, width, height, sampleCount);
-        return bufferId;
-    }
-
-    displayBufferId_t RamsesRenderer::createOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, EDepthBufferType depthBufferType)
-    {
-        const displayBufferId_t bufferId = renderer.impl.createOffscreenBuffer(display, width, height, sampleCount, false, depthBufferType);
-        LOG_HL_RENDERER_STATIC_API5(bufferId, display, width, height, sampleCount, depthBufferType);
+        const displayBufferId_t bufferId = impl.createOffscreenBuffer(display, width, height, sampleCount, false, depthBufferType);
+        LOG_HL_RENDERER_API5(bufferId, display, width, height, sampleCount, depthBufferType);
         return bufferId;
     }
 
@@ -164,10 +150,10 @@ namespace ramses
         return impl.destroyStreamBuffer(display, bufferId);
     }
 
-    status_t RamsesRenderer::setDisplayBufferClearFlags(RamsesRenderer& renderer, displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags)
+    status_t RamsesRenderer::setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags)
     {
-        const status_t status = renderer.impl.setDisplayBufferClearFlags(display, displayBuffer, clearFlags);
-        LOG_HL_RENDERER_STATIC_API3(status, display, displayBuffer, clearFlags);
+        const status_t status = impl.setDisplayBufferClearFlags(display, displayBuffer, clearFlags);
+        LOG_HL_RENDERER_API3(status, display, displayBuffer, clearFlags);
         return status;
     }
 
@@ -248,10 +234,10 @@ namespace ramses
         return status;
     }
 
-    displayBufferId_t RamsesRenderer::createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height)
+    displayBufferId_t RamsesRenderer::createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType)
     {
-        const auto bufferId = impl.createOffscreenBuffer(display, width, height, 0u, true, EDepthBufferType_DepthStencil);
-        LOG_HL_RENDERER_API3(bufferId, display, width, height);
+        const auto bufferId = impl.createOffscreenBuffer(display, width, height, 0u, true, depthBufferType);
+        LOG_HL_RENDERER_API4(bufferId, display, width, height, depthBufferType);
         return bufferId;
     }
 
@@ -268,13 +254,6 @@ namespace ramses
     status_t RamsesRenderer::getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const
     {
         return impl.getDmaOffscreenBufferFDAndStride(display, displayBufferId, fd, stride);
-    }
-
-    displayBufferId_t RamsesRenderer::createInterruptibleOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType)
-    {
-        const auto bufferId = renderer.impl.createOffscreenBuffer(display, width, height, 0u, true, depthBufferType);
-        LOG_HL_RENDERER_STATIC_API4(bufferId, display, width, height, depthBufferType);
-        return bufferId;
     }
 
     status_t RamsesRenderer::setSkippingOfUnmodifiedBuffers(bool enable)

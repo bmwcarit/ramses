@@ -203,20 +203,6 @@ TEST_F(ARamsesRenderer, createsCommandForLoggingRenderInfo)
     cmdVisitor.visit(commandBuffer);
 }
 
-TEST_F(ARamsesRenderer, canCreateDisplayWithEmbeddedCompositingSetOnRendererConfig)
-{
-    ramses::RamsesFramework ramsesFramework;
-    ramses::RendererConfig rendererConfig;
-    rendererConfig.setWaylandEmbeddedCompositingSocketName("ec-socket");
-    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer(rendererConfig);
-
-    const ramses::displayId_t displayId = ramsesRenderer->createDisplay({});
-    EXPECT_NE(ramses::displayId_t::Invalid(), displayId);
-
-    EXPECT_CALL(cmdVisitor, createDisplayContext(_, ramses_internal::DisplayHandle{ displayId.getValue() }, _));
-    cmdVisitor.visit(ramsesRenderer->impl.getPendingCommands());
-}
-
 TEST_F(ARamsesRenderer, canCreateDisplayWithEmbeddedCompositingSetOnDisplayConfig)
 {
     ramses::DisplayConfig displayConfig;
@@ -228,26 +214,53 @@ TEST_F(ARamsesRenderer, canCreateDisplayWithEmbeddedCompositingSetOnDisplayConfi
     cmdVisitor.visit(commandBuffer);
 }
 
-TEST_F(ARamsesRenderer, canNotCreateDisplayIfEmbeddedCompositingSetOnBothRendererAndDisplayConfig)
+TEST_F(ARamsesRenderer, displayIsCreatedWithDefaultFramerate)
 {
     ramses::RamsesFramework ramsesFramework;
-    ramses::RendererConfig rendererConfig;
-    rendererConfig.setWaylandEmbeddedCompositingSocketName("ec-socket");
-    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer(rendererConfig);
+    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer({});
+    ramsesRenderer->startThread();
+    const ramses::displayId_t displayId = ramsesRenderer->createDisplay({});
+    ramsesRenderer->flush();
+    EXPECT_NEAR(60.f, ramsesRenderer->getFramerateLimit(displayId), 0.01f);
+    ramsesRenderer->stopThread();
+}
 
-    ramses::DisplayConfig displayConfig;
-    displayConfig.setWaylandEmbeddedCompositingSocketName("ec-socket");
-    const ramses::displayId_t displayId = ramsesRenderer->createDisplay(displayConfig);
-    EXPECT_EQ(ramses::displayId_t::Invalid(), displayId);
+TEST_F(ARamsesRenderer, canSetAndGetFPSLimitOfNonExistingDisplay)
+{
+    ramses::RamsesFramework ramsesFramework;
+    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer({});
 
-    EXPECT_CALL(cmdVisitor, createDisplayContext(_, ramses_internal::DisplayHandle{ displayId.getValue() }, _)).Times(0u);
-    cmdVisitor.visit(ramsesRenderer->impl.getPendingCommands());
+    constexpr ramses::displayId_t futureDisplay{ 22u };
+    EXPECT_NEAR(60.f, ramsesRenderer->getFramerateLimit(futureDisplay), 0.01f);
+
+    EXPECT_EQ(ramses::StatusOK, ramsesRenderer->setFramerateLimit(futureDisplay, 10.f));
+    EXPECT_NEAR(10.f, ramsesRenderer->getFramerateLimit(futureDisplay), 0.01f);
+}
+
+TEST_F(ARamsesRenderer, failsToSetNegativeOrZeroFPSLimit)
+{
+    ramses::RamsesFramework ramsesFramework;
+    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer({});
+
+    constexpr ramses::displayId_t futureDisplay{ 22u };
+    EXPECT_NE(ramses::StatusOK, ramsesRenderer->setFramerateLimit(futureDisplay, 0.f));
+    EXPECT_NE(ramses::StatusOK, ramsesRenderer->setFramerateLimit(futureDisplay, -10.f));
+}
+
+TEST_F(ARamsesRenderer, failsToSetFPSLimitInNonThreadedMode)
+{
+    ramses::RamsesFramework ramsesFramework;
+    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer({});
+    ramsesRenderer->doOneLoop();
+
+    constexpr ramses::displayId_t futureDisplay{ 22u };
+    EXPECT_NE(ramses::StatusOK, ramsesRenderer->setFramerateLimit(futureDisplay, 10.f));
 }
 
 /*
 * Offscreen buffers
 */
-TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate)
+TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithDepthStencilBufferAsDefault)
 {
     EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u, 4u));
     EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_DepthStencilBuffer));
@@ -256,21 +269,21 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate)
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithoutDepthStencilBuffer)
 {
-    EXPECT_NE(ramses::displayBufferId_t::Invalid(), ramses::RamsesRenderer::createOffscreenBuffer(renderer, displayId, 40u, 40u, 4u, ramses::EDepthBufferType_None));
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u, 4u, ramses::EDepthBufferType_None));
     EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_InvalidBuffer));
     cmdVisitor.visit(commandBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithDepthBuffer)
 {
-    EXPECT_NE(ramses::displayBufferId_t::Invalid(), ramses::RamsesRenderer::createOffscreenBuffer(renderer, displayId, 40u, 40u, 4u, ramses::EDepthBufferType_Depth));
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u, 4u, ramses::EDepthBufferType_Depth));
     EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_DepthBuffer));
     cmdVisitor.visit(commandBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithDepthStencilBuffer)
 {
-    EXPECT_NE(ramses::displayBufferId_t::Invalid(), ramses::RamsesRenderer::createOffscreenBuffer(renderer, displayId, 40u, 40u, 4u, ramses::EDepthBufferType_DepthStencil));
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u, 4u, ramses::EDepthBufferType_DepthStencil));
     EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_DepthStencilBuffer));
     cmdVisitor.visit(commandBuffer);
 }
@@ -724,8 +737,8 @@ TEST(ARamsesRendererWithSeparateRendererThread, TSAN_periodicallyDispatchEvents)
 
     renderer.setFrameTimerLimits(std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max());
     renderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
-    renderer.setMaximumFramerate(30.f);
-    renderer.createDisplay({});
+    const auto displayId = renderer.createDisplay({});
+    renderer.setFramerateLimit(displayId, 30.f);
     renderer.flush();
 
     renderer.startThread();
@@ -761,28 +774,28 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingSkippingUnmodifiedBuf
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearFlags_FB)
 {
-    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, displayId, renderer.getDisplayFramebuffer(displayId), ramses::EClearFlags_Color));
+    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(displayId, renderer.getDisplayFramebuffer(displayId), ramses::EClearFlags_Color));
     EXPECT_CALL(cmdVisitor, handleSetClearFlags(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, ramses::EClearFlags_Color));
     cmdVisitor.visit(commandBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearFlags_FBImplicitlyUsingInvalidDisplayBuffer)
 {
-    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, displayId, ramses::displayBufferId_t::Invalid(), ramses::EClearFlags_Color));
+    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(displayId, ramses::displayBufferId_t::Invalid(), ramses::EClearFlags_Color));
     EXPECT_CALL(cmdVisitor, handleSetClearFlags(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, ramses::EClearFlags_Color));
     cmdVisitor.visit(commandBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearFlags_OB)
 {
-    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, displayId, ramses::displayBufferId_t{ 666u }, ramses::EClearFlags_Color));
+    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(displayId, ramses::displayBufferId_t{ 666u }, ramses::EClearFlags_Color));
     EXPECT_CALL(cmdVisitor, handleSetClearFlags(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{ 666u }, ramses::EClearFlags_Color));
     cmdVisitor.visit(commandBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, reportsErrorIfSettingClearFlagsForUnknownDisplay)
 {
-    EXPECT_NE(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, ramses::displayId_t{ 999u }, {}, ramses::EClearFlags_Color));
+    EXPECT_NE(ramses::StatusOK, renderer.setDisplayBufferClearFlags(ramses::displayId_t{ 999u }, {}, ramses::EClearFlags_Color));
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearColor_FB)

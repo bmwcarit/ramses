@@ -21,7 +21,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 15 -ts 0 -cz 8")
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 15 --test-state 0 --cz 8")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
         self.percentageOfWrongPixelsAllowed = 0.01

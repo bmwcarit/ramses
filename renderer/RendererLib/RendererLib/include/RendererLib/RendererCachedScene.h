@@ -9,14 +9,14 @@
 #ifndef RAMSES_RENDERERCACHEDSCENE_H
 #define RAMSES_RENDERERCACHEDSCENE_H
 
-#include "RendererLib/TextureLinkCachedScene.h"
+#include "RendererLib/ResourceCachedScene.h"
 #include "RenderingPassInfo.h"
 
 namespace ramses_internal
 {
     class IResourceDeviceHandleAccessor;
 
-    class RendererCachedScene final : public TextureLinkCachedScene
+    class RendererCachedScene final : public ResourceCachedScene
     {
     public:
         explicit RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());

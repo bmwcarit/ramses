@@ -38,20 +38,20 @@ private:
     bool m_windowClosed = false;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     ramses::RendererSceneControl& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 

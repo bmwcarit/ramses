@@ -8,12 +8,12 @@
 
 // this file is auto-generated - do not modify it
 
-#ifndef @PROJECT_NAME_CAPITAL@BUILDCONFIG_H
-#define @PROJECT_NAME_CAPITAL@BUILDCONFIG_H
+#ifndef RAMSES_BUILDCONFIG_H
+#define RAMSES_BUILDCONFIG_H
 
-namespace @PROJECT_NAME_LOWERCASE@
+namespace ramses_sdk
 {
 @EXPORTED_RAMSES_CONFIG_SYMBOLS@
-} // namespace @PROJECT_NAME_LOWERCASE@
+}
 
-#endif // @PROJECT_NAME_CAPITAL@BUILDCONFIG_H
+#endif

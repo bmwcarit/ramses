@@ -274,12 +274,6 @@ namespace ramses
         return StatusOK;
     }
 
-    RamsesFrameworkImpl& RamsesFrameworkImpl::createImpl(int32_t argc, char const* const* argv)
-    {
-        RamsesFrameworkConfig config(argc, argv);
-        return createImpl(config);
-    }
-
     RamsesFrameworkImpl& RamsesFrameworkImpl::createImpl(const RamsesFrameworkConfig& config)
     {
         ramses_internal::GetRamsesLogger().initialize(config.impl.loggerConfig, false, config.impl.getDltApplicationRegistrationEnabled());
@@ -428,7 +422,7 @@ namespace ramses
     {
         // Create log function outside to work around broken MSVC macro in macro behavior
         auto fun = [](ramses_internal::StringOutputStream& sos) {
-                       sos << "RamsesBuildInfo: Version " << ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING
+                       sos << "RamsesBuildInfo: Version " << ramses_sdk::RAMSES_SDK_RAMSES_VERSION
                            << ", Compiler " << ramses_sdk::RAMSES_SDK_CMAKE_CXX_COMPILER_ID
                            << ", Config " << ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE
                            << ", Asserts "

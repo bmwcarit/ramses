@@ -15,6 +15,7 @@
 #include "CreationHelper.h"
 #include "MockActionCollector.h"
 #include "RamsesFrameworkImpl.h"
+#include "RamsesFrameworkConfigImpl.h"
 #include "MeshNodeImpl.h"
 #include "SceneImpl.h"
 #include "Scene/ClientScene.h"
@@ -25,6 +26,7 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "TestEffects.h"
+#include "CLI/CLI.hpp"
 
 namespace ramses_internal
 {
@@ -66,8 +68,10 @@ namespace ramses
         {
             //disabling the periodic logs is important as otherwise race conditions can occur in the tests that check
             //that the statistic counters are updated (periodic logger resets the counters)
-            static const char* clientArgs[] = { "LocalTestClient", "--log-level=0", "--connection=off", "--no-logp" };
-            static RamsesFrameworkConfig config{ sizeof(clientArgs) / sizeof(char*), clientArgs };
+            static RamsesFrameworkConfig config;
+            CLI::App cli;
+            config.registerOptions(cli);
+            cli.parse("LocalTestClient --log-level=0 --connection=off --no-logp", true);
             return config;
         }
 

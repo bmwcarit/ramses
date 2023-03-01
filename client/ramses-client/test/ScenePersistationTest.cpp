@@ -44,7 +44,6 @@
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-utils.h"
-#include "ramses-hmi-utils.h"
 
 #include "ScenePersistationTest.h"
 #include "CameraNodeImpl.h"
@@ -1458,20 +1457,6 @@ namespace ramses
         EFeatureLevel featureLevel = EFeatureLevel_01;
         EXPECT_FALSE(RamsesClient::GetFeatureLevelFromFile(-1, 0u, 10u, featureLevel));
         EXPECT_FALSE(RamsesClient::GetFeatureLevelFromFile(1, 0u, 0u, featureLevel));
-    }
-
-    TEST_F(ASceneLoadedFromFile, canHandleAllZeroFileOnResourceLoad)
-    {
-        const char* filename = "allzerofile.dat";
-        {
-            ramses_internal::File file(filename);
-            EXPECT_TRUE(file.open(ramses_internal::File::Mode::WriteNew));
-            std::vector<ramses_internal::Char> zerovector(4096);
-            EXPECT_TRUE(file.write(&zerovector[0], zerovector.size()));
-            file.close();
-        }
-
-        EXPECT_FALSE(RamsesHMIUtils::GetResourceDataPoolForClient(m_clientForLoading).addResourceDataFile(filename));
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteTransformDataSlot)

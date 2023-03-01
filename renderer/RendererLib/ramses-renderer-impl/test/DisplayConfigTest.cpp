@@ -372,3 +372,32 @@ TEST_F(ADisplayConfig, cliThrowsErrorsForExtras)
     config.registerOptions(cli);
     EXPECT_THROW(cli.parse(std::vector<std::string>{"--foo"}), CLI::ExtrasError);
 }
+
+TEST_F(ADisplayConfig, cliEcDisplay)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-display"}), CLI::ParseError);
+    cli.parse(std::vector<std::string>{"--ec-display=wse"});
+    EXPECT_STREQ("wse", config.getWaylandEmbeddedCompositingSocketName());
+}
+
+TEST_F(ADisplayConfig, cliEcGroup)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group"}), CLI::ParseError);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group=grp"}), CLI::RequiresError);
+    cli.parse(std::vector<std::string>{"--ec-socket-group=grp", "--ec-display=wse"});
+    EXPECT_STREQ("grp", config.impl.getWaylandSocketEmbeddedGroup());
+}
+
+TEST_F(ADisplayConfig, cliEcPermissions)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions"}), CLI::ParseError);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744"}), CLI::RequiresError);
+    cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744", "--ec-display=wse"});
+    EXPECT_EQ(0744u, config.impl.getWaylandSocketEmbeddedPermissions());
+}

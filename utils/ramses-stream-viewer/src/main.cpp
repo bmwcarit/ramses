@@ -63,8 +63,10 @@ void main(void)
 class StreamSourceViewer
 {
 public:
-    StreamSourceViewer(ramses::RamsesClient& ramsesClient, ramses::sceneId_t sceneId, bool flipY, ramses::EScenePublicationMode publicationMode, uint32_t displayWidth, uint32_t displayHeight)
+    StreamSourceViewer(ramses::RamsesClient& ramsesClient, ramses::RamsesRenderer& ramsesRenderer, ramses::displayId_t display, ramses::sceneId_t sceneId, bool flipY, ramses::EScenePublicationMode publicationMode, uint32_t displayWidth, uint32_t displayHeight)
         : m_ramsesClient(ramsesClient)
+        , m_ramsesRenderer(ramsesRenderer)
+        , m_displayId(display)
     {
         ramses::SceneConfig conf;
         m_scene = m_ramsesClient.createScene(sceneId, conf);
@@ -101,81 +103,132 @@ public:
         m_scene->publish(publicationMode);
     }
 
-    void createMesh(ramses::waylandIviSurfaceId_t streamSource)
+    void handleStreamAvailable(ramses::waylandIviSurfaceId_t streamSource)
     {
-        const auto meshEntry = createMeshEntry(streamSource);
-        addMesh(meshEntry);
-        m_scene->flush();
+        createStreamEntry(streamSource);
     }
 
-    void removeMesh(ramses::waylandIviSurfaceId_t streamSource)
+    void handleStreamUnavailable(ramses::waylandIviSurfaceId_t streamSource)
     {
-        auto iter = std::find_if(m_meshes.begin(), m_meshes.end(), [streamSource](const MeshEntry& e){ return e.streamSource == streamSource;});
-        assert(m_meshes.end() != iter);
+        destroyStreamEntry(streamSource);
+    }
 
-        MeshEntry& meshEntry = *iter;
+    void handleSceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag)
+    {
+        if(sceneId != m_scene->getSceneId())
+            return;
 
-        m_renderGroup->removeMeshNode(*meshEntry.meshNode);
-        m_scene->destroy(*meshEntry.meshNode);
-        m_scene->destroy(*meshEntry.appearance);
-        m_scene->destroy(*meshEntry.geometryBinding);
-        m_scene->destroy(*meshEntry.textureSampler);
-        m_scene->destroy(*meshEntry.streamTexture);
-
-        m_meshes.erase(iter);
-
-        m_scene->flush();
+        auto it = findStreamEntry(sceneVersionTag);
+        assert(it != m_streamEntries.end());
+        createAndLinkStreamBuffer(*it);
     }
 
 private:
-    struct MeshEntry
+    struct StreamEntry
     {
         ramses::waylandIviSurfaceId_t      streamSource{0u};
         ramses::MeshNode*           meshNode = nullptr;
         ramses::Appearance*         appearance = nullptr;
         ramses::GeometryBinding*    geometryBinding = nullptr;
-        ramses::StreamTexture*      streamTexture = nullptr;
         ramses::TextureSampler*     textureSampler = nullptr;
+        ramses::dataConsumerId_t    textureConsumerId;
+        ramses::sceneVersionTag_t   flushVersionTag;
+        ramses::streamBufferId_t    streamBuffer;
     };
+    using StreamEntries=std::vector<StreamEntry>;
 
-    MeshEntry createMeshEntry(ramses::waylandIviSurfaceId_t streamSource)
+    StreamEntries::iterator findStreamEntry(ramses::waylandIviSurfaceId_t streamSource)
     {
-        MeshEntry meshEntry;
-        meshEntry.streamSource = streamSource;
-        meshEntry.streamTexture = m_scene->createStreamTexture(*m_texture, streamSource);
-        meshEntry.textureSampler = m_scene->createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *meshEntry.streamTexture);
+        return std::find_if(m_streamEntries.begin(), m_streamEntries.end(), [streamSource](const auto& e){ return e.streamSource == streamSource;});
+    }
 
-        meshEntry.appearance = m_scene->createAppearance(*m_effect);
+    StreamEntries::iterator findStreamEntry(ramses::sceneVersionTag_t flushTag)
+    {
+        return std::find_if(m_streamEntries.begin(), m_streamEntries.end(), [flushTag](const auto& e){ return e.flushVersionTag == flushTag;});
+    }
 
-        meshEntry.geometryBinding = m_scene->createGeometryBinding(*m_effect);
-        meshEntry.geometryBinding->setIndices(*m_indices);
+    void createStreamEntry(ramses::waylandIviSurfaceId_t streamSource)
+    {
+        assert(m_streamEntries.cend() == findStreamEntry(streamSource));
+
+        StreamEntry streamEntry;
+        streamEntry.streamSource = streamSource;
+        createMesh(streamEntry);
+
+        m_streamEntries.push_back(std::move(streamEntry));
+    }
+
+    void destroyStreamEntry(ramses::waylandIviSurfaceId_t streamSource)
+    {
+        auto it = findStreamEntry(streamSource);
+        assert(it != m_streamEntries.end());
+
+        unlinkAndDestroyStreamBuffer(*it);
+        destroyMesh(*it);
+
+        m_streamEntries.erase(it);
+    }
+
+    void createMesh(StreamEntry& streamEntry)
+    {
+        streamEntry.textureSampler = m_scene->createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *m_texture);
+
+        streamEntry.textureConsumerId = ramses::dataConsumerId_t{m_nextTextureConsumerId++};
+        m_scene->createTextureConsumer(*streamEntry.textureSampler, streamEntry.textureConsumerId);
+
+        streamEntry.appearance = m_scene->createAppearance(*m_effect);
+
+        streamEntry.geometryBinding = m_scene->createGeometryBinding(*m_effect);
+        streamEntry.geometryBinding->setIndices(*m_indices);
         ramses::AttributeInput positionsInput;
         m_effect->findAttributeInput("a_position", positionsInput);
-        meshEntry.geometryBinding->setInputBuffer(positionsInput, *m_vertexPositions);
+        streamEntry.geometryBinding->setInputBuffer(positionsInput, *m_vertexPositions);
 
         ramses::UniformInput textureInput;
         m_effect->findUniformInput("textureSampler", textureInput);
-        meshEntry.appearance->setInputTexture(textureInput, *meshEntry.textureSampler);
+        streamEntry.appearance->setInputTexture(textureInput, *streamEntry.textureSampler);
 
         // create a mesh node to define the triangle with chosen appearance
-        meshEntry.meshNode = m_scene->createMeshNode();
-        meshEntry.meshNode->setAppearance(*meshEntry.appearance);
-        meshEntry.meshNode->setGeometryBinding(*meshEntry.geometryBinding);
+        streamEntry.meshNode = m_scene->createMeshNode();
+        streamEntry.meshNode->setAppearance(*streamEntry.appearance);
+        streamEntry.meshNode->setGeometryBinding(*streamEntry.geometryBinding);
 
-        return meshEntry;
+        m_renderGroup->addMeshNode(*streamEntry.meshNode);
+
+        streamEntry.flushVersionTag = ramses::sceneVersionTag_t{m_nextSceneFlushTag++};
+        m_scene->flush(streamEntry.flushVersionTag);
     }
 
-    void addMesh(const MeshEntry& meshEntry)
+    void destroyMesh(StreamEntry& streamEntry)
     {
-        assert(m_meshes.cend() == std::find_if(m_meshes.cbegin(), m_meshes.cend(), [&meshEntry](const MeshEntry& e){ return e.streamSource == meshEntry.streamSource;}));
+        m_renderGroup->removeMeshNode(*streamEntry.meshNode);
+        m_scene->destroy(*streamEntry.meshNode);
+        m_scene->destroy(*streamEntry.appearance);
+        m_scene->destroy(*streamEntry.geometryBinding);
+        m_scene->destroy(*streamEntry.textureSampler);
 
-        m_meshes.push_back(meshEntry);
-        m_renderGroup->addMeshNode(*meshEntry.meshNode);
+        m_scene->flush();
     }
 
-    using MeshEntries=std::vector<MeshEntry>;
+    void createAndLinkStreamBuffer(StreamEntry& streamEntry)
+    {
+        streamEntry.streamBuffer = m_ramsesRenderer.createStreamBuffer(m_displayId, streamEntry.streamSource);
+        m_ramsesRenderer.getSceneControlAPI()->linkStreamBuffer(streamEntry.streamBuffer, m_scene->getSceneId(), streamEntry.textureConsumerId);
+        m_ramsesRenderer.flush();
+        m_ramsesRenderer.getSceneControlAPI()->flush();
+    }
+
+    void unlinkAndDestroyStreamBuffer(StreamEntry& streamEntry)
+    {
+        m_ramsesRenderer.getSceneControlAPI()->unlinkData(m_scene->getSceneId(), streamEntry.textureConsumerId);
+        m_ramsesRenderer.getSceneControlAPI()->flush();
+        m_ramsesRenderer.destroyStreamBuffer(m_displayId, streamEntry.streamBuffer);
+        m_ramsesRenderer.flush();
+    }
 
     ramses::RamsesClient& m_ramsesClient;
+    ramses::RamsesRenderer& m_ramsesRenderer;
+    ramses::displayId_t m_displayId;
 
     ramses::Scene* m_scene                          = nullptr;
     ramses::RenderPass* m_renderPass                = nullptr;
@@ -184,8 +237,10 @@ private:
     const ramses::ArrayResource* m_indices          = nullptr;
     const ramses::Texture2D* m_texture              = nullptr;
     ramses::Effect* m_effect                        = nullptr;
+    uint32_t m_nextTextureConsumerId                = 0u;
+    uint32_t m_nextSceneFlushTag                    = 0u;
 
-    MeshEntries m_meshes;
+    StreamEntries m_streamEntries;
 };
 
 class RendererEventHandler : public ramses::RendererEventHandlerEmpty
@@ -218,13 +273,18 @@ public:
         if(available)
         {
             std::cout << std::endl << std::endl << "Stream " << streamId.getValue() << " available !" << std::endl;
-            m_sceneCreator.createMesh(streamId);
+            m_sceneCreator.handleStreamAvailable(streamId);
         }
         else
         {
             std::cout << std::endl << std::endl << "Stream " << streamId.getValue() << " unavailable !" << std::endl;
-            m_sceneCreator.removeMesh(streamId);
+            m_sceneCreator.handleStreamUnavailable(streamId);
         }
+    }
+
+    virtual void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag) override
+    {
+        m_sceneCreator.handleSceneFlushed(sceneId, sceneVersionTag);
     }
 
 private:
@@ -272,10 +332,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    renderer->setMaximumFramerate(maxFps);
     renderer->startThread();
 
     const ramses::displayId_t display = renderer->createDisplay(displayConfig);
+    renderer->setFramerateLimit(display, maxFps);
     renderer->flush();
 
     const ramses::sceneId_t sceneId{1u};
@@ -284,7 +344,7 @@ int main(int argc, char* argv[])
     uint32_t width;
     uint32_t height;
     displayConfig.getWindowRectangle(x, y, width, height);
-    StreamSourceViewer sceneCreator(*ramsesClient, sceneId, flipY, ramses::EScenePublicationMode_LocalOnly, width, height);
+    StreamSourceViewer sceneCreator(*ramsesClient, *renderer, display, sceneId, flipY, ramses::EScenePublicationMode_LocalOnly, width, height);
 
     sceneControlAPI->setSceneMapping(sceneId, display);
     sceneControlAPI->setSceneState(sceneId, ramses::RendererSceneState::Rendered);

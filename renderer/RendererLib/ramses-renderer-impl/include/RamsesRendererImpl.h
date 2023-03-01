@@ -96,9 +96,8 @@ namespace ramses
         status_t stopThread();
         bool isThreadRunning() const;
         bool isThreaded() const;
-        status_t setMaximumFramerate(float maximumFramerate);
-        status_t setMaximumFramerate(float maximumFramerate, displayId_t display);
-        float getMaximumFramerate() const;
+        status_t setFramerateLimit(displayId_t displayId, float fpsLimit);
+        float getFramerateLimit(displayId_t displayId) const;
         status_t setLoopMode(ELoopMode loopMode);
         ELoopMode getLoopMode() const;
         status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
@@ -142,7 +141,6 @@ namespace ramses
 
         ramses_internal::ELoopMode                                                  m_loopMode;
         std::unique_ptr<ramses_internal::CommandDispatchingThread>                  m_commandDispatchingThread;
-        float m_maxFramerate = 1000000.f / ramses_internal::DefaultMinFrameDuration.count();
         bool m_diplayThreadUpdating = false;
 
         enum ERendererLoopThreadType

@@ -15,11 +15,11 @@
  * @brief Basic File Loading Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // create a scene and write it to a file
     {
-        ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
+        ramses::RamsesFramework framework;
         ramses::RamsesClient& ramses(*framework.createClient("ramses-example-file-loading"));
         ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic scene loading from file");
         // every scene needs a render pass with camera
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 
     // load the saved file
     {
-        ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
+        ramses::RamsesFramework framework;
         ramses::RamsesClient& ramses(*framework.createClient("ramses-example-file-loading"));
 
         /// [Basic File Loading Example]

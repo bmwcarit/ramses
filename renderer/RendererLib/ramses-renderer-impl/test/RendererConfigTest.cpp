@@ -49,60 +49,9 @@ TEST(ARendererConfig, canSetBinaryShaderCache)
     EXPECT_EQ(&cache, config.impl.getBinaryShaderCache());
 }
 
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketGroup)
+TEST(ARendererConfig, defaultRendererConfigValidates)
 {
     ramses::RendererConfig config;
-
-    config.setWaylandEmbeddedCompositingSocketGroup("permissionGroup");
-    EXPECT_STREQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
-}
-
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketPermissions)
-{
-    ramses::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketPermissions(0660);
-    EXPECT_EQ(0660u, config.impl.getWaylandSocketEmbeddedPermissions());
-}
-
-TEST(ARendererConfig, cannotSetInvalidEmbeddedCompositingSocketPermissions)
-{
-    ramses::RendererConfig config;
-    EXPECT_NE(ramses::StatusOK, config.setWaylandEmbeddedCompositingSocketPermissions(0));
-}
-
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketname)
-{
-    ramses::RendererConfig config;
-
-    config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
-    EXPECT_STREQ("wayland-x123", config.getWaylandEmbeddedCompositingSocketName());
-}
-
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketFD)
-{
-    ramses::RendererConfig config;
-
-    config.setWaylandEmbeddedCompositingSocketFD(23);
-    EXPECT_EQ(23, config.impl.getWaylandSocketEmbeddedFD());
-}
-
-TEST(ARendererConfig, defaultRendererConfigDoesntValidate)
-{
-    ramses::RendererConfig config;
-    EXPECT_NE(ramses::StatusOK, config.validate());
-}
-
-TEST(ARendererConfig, settingEmbeddedCompositingSocketnameValidatesTrue)
-{
-    ramses::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST(ARendererConfig, settingEmbeddedCompositingSocketFDValidatesTrue)
-{
-    ramses::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketFD(23);
     EXPECT_EQ(ramses::StatusOK, config.validate());
 }
 
@@ -119,38 +68,6 @@ TEST(ARendererConfig, setsAndGetsLoopCountPeriod)
     ramses::RendererConfig config;
     EXPECT_EQ(ramses::StatusOK, config.setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds(1234)));
     EXPECT_EQ(std::chrono::milliseconds(1234), config.getRenderThreadLoopTimingReportingPeriod());
-}
-
-TEST(ARendererConfig, cliEcDisplay)
-{
-    ramses::RendererConfig config;
-    CLI::App cli;
-    config.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-display"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--ec-display=wse"});
-    EXPECT_STREQ("wse", config.getWaylandEmbeddedCompositingSocketName());
-}
-
-TEST(ARendererConfig, cliEcGroup)
-{
-    ramses::RendererConfig config;
-    CLI::App cli;
-    config.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group"}), CLI::ParseError);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group=grp"}), CLI::RequiresError);
-    cli.parse(std::vector<std::string>{"--ec-socket-group=grp", "--ec-display=wse"});
-    EXPECT_STREQ("grp", config.impl.getWaylandSocketEmbeddedGroup());
-}
-
-TEST(ARendererConfig, cliEcPermissions)
-{
-    ramses::RendererConfig config;
-    CLI::App cli;
-    config.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions"}), CLI::ParseError);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744"}), CLI::RequiresError);
-    cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744", "--ec-display=wse"});
-    EXPECT_EQ(0744u, config.impl.getWaylandSocketEmbeddedPermissions());
 }
 
 TEST(ARendererConfig, cliIviControl)

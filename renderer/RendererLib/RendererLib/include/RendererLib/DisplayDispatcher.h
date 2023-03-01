@@ -47,8 +47,8 @@ namespace ramses_internal
         void startDisplayThreadsUpdating();
         void stopDisplayThreadsUpdating();
         void setLoopMode(ELoopMode loopMode);
-        void setMinFrameDuration(std::chrono::microseconds minFrameDuration);
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration, DisplayHandle display);
+        std::chrono::microseconds getMinFrameDuration(DisplayHandle display) const;
 
         [[nodiscard]] const RendererConfig& getRendererConfig() const;
 
@@ -98,7 +98,6 @@ namespace ramses_internal
         bool m_threadedDisplays = false;
         bool m_displayThreadsUpdating = true;
         ELoopMode m_loopMode = ELoopMode::UpdateAndRender;
-        std::chrono::microseconds m_generalMinFrameDuration {DefaultMinFrameDuration};
         std::unordered_map<DisplayHandle, std::chrono::microseconds> m_minFrameDurationsPerDisplay;
 
         IThreadAliveNotifier& m_notifier;

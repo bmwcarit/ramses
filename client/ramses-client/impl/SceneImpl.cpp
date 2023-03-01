@@ -108,7 +108,6 @@
 #include "Components/EffectUniformTime.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/TextureMathUtils.h"
-#include "ResourceDataPoolImpl.h"
 #include "Components/FlushTimeInformation.h"
 #include "fmt/format.h"
 
@@ -2045,7 +2044,7 @@ namespace ramses
             return addErrorEntry(fmt::format("Scene::saveToFile failed, could not open file for writing: '{}'", fileName));
 
         const EFeatureLevel featureLevel = m_hlClient.impl.getFramework().getFeatureLevel();
-        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
+        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
 
         ramses_internal::UInt bytesForVersion = 0;
         if (!outputFile.getPos(bytesForVersion))
@@ -2082,16 +2081,6 @@ namespace ramses
         LOG_INFO_P(ramses_internal::CONTEXT_CLIENT, "Scene::saveToFile: done writing '{}'", fileName);
 
         return status;
-    }
-
-    bool SceneImpl::saveResources(std::string const& fileName, bool compress) const
-    {
-        ResourceObjects resources;
-        resources.reserve(m_resources.size());
-        for (auto entry : m_resources)
-            resources.push_back(entry.second);
-
-        return getClientImpl().getResourceDataPool().impl.saveResourceDataFile(fileName, resources, compress);
     }
 
     void SceneImpl::setSceneFileHandle(ramses_internal::SceneFileHandle handle)

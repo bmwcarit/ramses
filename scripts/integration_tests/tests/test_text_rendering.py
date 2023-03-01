@@ -21,7 +21,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 18 -ts 7 -cz 5")
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 18 --test-state 7 --cz 5")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.01

@@ -56,13 +56,6 @@ TEST_F(ARamsesFrameworkConfig, CanSetShellTypeDefault)
     EXPECT_EQ(ERamsesShellType_Default, frameworkConfig.impl.m_shellType);
 }
 
-TEST_F(ARamsesFrameworkConfig, CanEnableRamshFromCommandLine)
-{
-    const char* args[] = { "framework", "--ramsh" };
-    RamsesFrameworkConfig config(2, args);
-    EXPECT_EQ(ERamsesShellType_Console, config.impl.m_shellType);
-}
-
 TEST_F(ARamsesFrameworkConfig, TestSetandGetApplicationInformation)
 {
     const char* application_id = "myap";
@@ -199,6 +192,10 @@ TEST_F(ARamsesFrameworkConfig, cliLogLevel)
     EXPECT_EQ(ramses_internal::ELogLevel::Trace, frameworkConfig.impl.loggerConfig.logLevel.value());
     cli.parse(std::vector<std::string>{"--log-level=1"});
     EXPECT_EQ(ramses_internal::ELogLevel::Fatal, frameworkConfig.impl.loggerConfig.logLevel.value());
+    cli.parse(std::vector<std::string>{"-linfo"});
+    EXPECT_EQ(ramses_internal::ELogLevel::Info, frameworkConfig.impl.loggerConfig.logLevel.value());
+    cli.parse(std::vector<std::string>{"-l0"});
+    EXPECT_EQ(ramses_internal::ELogLevel::Off, frameworkConfig.impl.loggerConfig.logLevel.value());
 }
 
 TEST_F(ARamsesFrameworkConfig, cliLogLevelConsole)

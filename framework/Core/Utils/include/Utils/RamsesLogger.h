@@ -18,7 +18,7 @@
 #include "Collections/String.h"
 #include <mutex>
 #include <memory>
-#include "absl/types/optional.h"
+#include <optional>
 
 namespace ramses_internal
 {
@@ -27,8 +27,8 @@ namespace ramses_internal
     struct RamsesLoggerConfig
     {
         // generic argument applies to all log levels
-        absl::optional<ELogLevel> logLevel;
-        absl::optional<ELogLevel> logLevelConsole;
+        std::optional<ELogLevel> logLevel;
+        std::optional<ELogLevel> logLevelConsole;
         // output specific loglevels can overwrite generic argument
         String logLevelContextsStr;
         String dltAppId = "RAMS";

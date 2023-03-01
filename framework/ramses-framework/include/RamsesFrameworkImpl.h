@@ -47,7 +47,6 @@ namespace ramses
         ~RamsesFrameworkImpl();
 
         static RamsesFrameworkImpl& createImpl(const RamsesFrameworkConfig& config);
-        static RamsesFrameworkImpl& createImpl(int32_t argc, char const* const* argv);
 
         RamsesRenderer* createRenderer(const RendererConfig& config);
         RamsesClient* createClient(const char* applicationName);

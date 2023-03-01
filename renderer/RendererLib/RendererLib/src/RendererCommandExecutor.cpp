@@ -40,13 +40,13 @@ namespace ramses_internal
         m_rendererCommandBuffer.swapCommands(m_tmpCommands);
 
         const auto numCommandsToLog = std::count_if(m_tmpCommands.cbegin(), m_tmpCommands.cend(), [](const auto& cmd) {
-            return !absl::holds_alternative<RendererCommand::UpdateScene>(cmd) && !absl::holds_alternative<RendererCommand::LogInfo>(cmd);
+            return !std::holds_alternative<RendererCommand::UpdateScene>(cmd) && !std::holds_alternative<RendererCommand::LogInfo>(cmd);
         });
         if (numCommandsToLog > 0)
             LOG_INFO_P(CONTEXT_RENDERER, "RendererCommandExecutor executing {} commands, {} commands will be logged, rest is flush/sceneupdate commands", m_tmpCommands.size(), numCommandsToLog);
 
         for (auto& cmd : m_tmpCommands)
-            absl::visit(*this, cmd);
+            std::visit(*this, cmd);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::ScenePublished& cmd)

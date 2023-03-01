@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -18,8 +18,9 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/EmbeddedCompositor_Wayland/*.h
-    FILES_SOURCE            src/*.cpp
+    INCLUDE_PATHS           include
+    SRC_FILES               include/EmbeddedCompositor_Wayland/*.h
+                            src/*.cpp
 
     #==========================================================================
     # dependencies
@@ -34,29 +35,35 @@ ACME_MODULE(
                             WaylandEGLExtensionProcs
 )
 
-ACME_MODULE(
+if (${ramses-sdk_BUILD_TESTS})
+    createModule(
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    EmbeddedCompositor_Wayland_Test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-    ENABLE_INSTALL          ON
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    EmbeddedCompositor_Wayland_Test
+        TYPE                    BINARY
+        ENABLE_INSTALL          ON
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            ../EmbeddedCompositor_Wayland/test/*.cpp
-                            ../EmbeddedCompositor_Wayland/test/*.h
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+        SRC_FILES            ../EmbeddedCompositor_Wayland/test/*.cpp
+                                ../EmbeddedCompositor_Wayland/test/*.h
 
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            EmbeddedCompositor_Wayland
-                            wayland-client
-                            Device_GL
-                            RendererTestUtils
-                            WaylandTestUtils
-                            WaylandUtilities
-)
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            EmbeddedCompositor_Wayland
+                                wayland-client
+                                Device_GL
+                                RendererTestUtils
+                                WaylandTestUtils
+                                WaylandUtilities
+    )
+
+    makeTestFromTarget(
+        TARGET EmbeddedCompositor_Wayland_Test
+        SUFFIX RNDSANDWICHTEST_SWRAST
+        SKIPPABLE)
+endif()

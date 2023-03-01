@@ -41,10 +41,10 @@ private:
 };
 /** \endcond */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-data-buffers-texture"));
     framework.connect();
 

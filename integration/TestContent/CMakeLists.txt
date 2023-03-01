@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+createModule(
     #==========================================================================
     # general module information
     #==========================================================================
@@ -17,13 +17,14 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/TestEffects/*.h
+    INCLUDE_PATHS           include
+    SRC_FILES               include/TestEffects/*.h
                             include/TestScenes/*.h
                             include/TestScenes/TextFake/*.h
                             include/*.h
-    FILES_SOURCE            src/*.cpp
+                            src/*.cpp
                             src/TextFake/*.cpp
-    RESOURCE_FOLDER         res
+    RESOURCE_FOLDERS        res
 
     #==========================================================================
     # dependencies

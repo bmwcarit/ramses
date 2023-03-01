@@ -32,7 +32,7 @@ class TestRendererTwoTargets(test_classes.MultipleConnectionsTest):
         self.renderer2 = self.targets[1].start_default_renderer(ramsesDaemonTarget=self.targets[0])
         self.checkThatApplicationWasStarted(self.renderer2)
         self.addCleanup(self.targets[1].kill_application, self.renderer2)
-        self.testClient = self.targets[0].start_client("ramses-test-client", "-tn 5 -ts 0 -cz 5", ramsesDaemonTarget=self.targets[0])
+        self.testClient = self.targets[0].start_client("ramses-test-client", "--test-nr 5 --test-state 0 --cz 5", ramsesDaemonTarget=self.targets[0])
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.targets[0].kill_application, self.testClient)
 

@@ -47,7 +47,7 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
             format(self.backgroundRendererLayerIviId, self.backgroundRendererSurfaceIviId), nameExtension='background')
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
-        self.testClient3Triangles = self.target.start_client("ramses-test-client", "-tn 21 -ts 0 -cz 5")
+        self.testClient3Triangles = self.target.start_client("ramses-test-client", "--test-br 21 --test-state 0 --cz 5")
         self.checkThatApplicationWasStarted(self.testClient3Triangles)
         self.addCleanup(self.target.kill_application, self.testClient3Triangles)
 

@@ -36,7 +36,7 @@
 #include "Utils/Image.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/Macros.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "RendererLib/SceneResourceUploader.h"
 
 namespace ramses_internal
@@ -398,7 +398,7 @@ namespace ramses_internal
                 auto it = std::remove_if(resourcesForMapping.begin(), resourcesForMapping.end(), [&](const auto& mr)
                 {
                     const auto mrHash = mr->getHash();
-                    return absl::c_find(pendingFlush.resourcesRemoved, mrHash) != pendingFlush.resourcesRemoved.cend();
+                    return std::find(std::cbegin(pendingFlush.resourcesRemoved), std::cend(pendingFlush.resourcesRemoved), mrHash) != pendingFlush.resourcesRemoved.cend();
                 });
                 resourcesForMapping.erase(it, resourcesForMapping.end());
             }
@@ -684,18 +684,18 @@ namespace ramses_internal
 
                     m_modifiedScenesToRerender.put(sceneUsage.first);
                 }
-                // force unlink all consumers using source that became unavailable
-                if (!embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(changedStream).isValid())
-                {
-                    for (const auto streamBuffer : streamUsage.streamBufferUsages)
-                    {
-                        links.clear();
-                        texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
-                        for (const auto& link : links)
-                            m_modifiedScenesToRerender.put(link.consumerSceneId);
 
-                        LOG_INFO_P(CONTEXT_RENDERER, "Unlinking stream buffer handle {} from all consumers due to its source {} became unavailable.", streamBuffer, changedStream);
-                        m_rendererScenes.getSceneLinksManager().handleBufferDestroyedOrSourceUnavailable(streamBuffer);
+                // mark renderables using samplers with linked to stream buffers with changed availability as dirty
+                for (const auto streamBuffer : streamUsage.streamBufferUsages)
+                {
+                    links.clear();
+                    texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
+                    for (const auto& link : links)
+                    {
+                        auto& scene = m_rendererScenes.getScene(link.consumerSceneId);
+                        auto& dataSlot = scene.getDataSlot(link.consumerSlot);
+                        scene.setRenderableResourcesDirtyByTextureSampler(dataSlot.attachedTextureSampler);
+                        m_modifiedScenesToRerender.put(link.consumerSceneId);
                     }
                 }
             }
@@ -1539,15 +1539,6 @@ namespace ramses_internal
         if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(consumerSceneId))
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer to consumer scene " << consumerSceneId << " failed, invalid display or scene not mapped.");
-            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
-            return;
-        }
-
-        assert(m_displayResourceManager);
-        const IRendererResourceManager& resourceManager = *m_displayResourceManager;
-        if (!resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer failed: stream buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }

@@ -34,7 +34,6 @@
 #include "Components/OffsetFileInputStreamContainer.h"
 #include "Resource/IResource.h"
 #include "ClientCommands/PrintSceneList.h"
-#include "ClientCommands/ForceFallbackImage.h"
 #include "ClientCommands/FlushSceneVersion.h"
 #include "SerializationContext.h"
 #include "Utils/BinaryFileOutputStream.h"
@@ -52,7 +51,6 @@
 #include "FrameworkFactoryRegistry.h"
 #include "Ramsh/Ramsh.h"
 #include "DataTypeUtils.h"
-#include "ResourceDataPoolImpl.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/EffectResource.h"
 #include "Resource/TextureResource.h"
@@ -74,20 +72,17 @@ namespace ramses
         , m_framework(framework)
         , m_loadFromFileTaskQueue(framework.getTaskQueue())
         , m_deleteSceneQueue(framework.getTaskQueue())
-        , m_resourceDataPool(*new ResourceDataPoolImpl(*this))
     {
         assert(!framework.isConnected());
 
         m_appLogic.init(framework.getResourceComponent(), framework.getScenegraphComponent());
         m_cmdPrintSceneList = std::make_shared<ramses_internal::PrintSceneList>(*this);
         m_cmdPrintValidation = std::make_shared<ramses_internal::ValidateCommand>(*this);
-        m_cmdForceFallbackImage = std::make_shared<ramses_internal::ForceFallbackImage>(*this);
         m_cmdFlushSceneVersion = std::make_shared<ramses_internal::FlushSceneVersion>(*this);
         m_cmdDumpSceneToFile = std::make_shared<ramses_internal::DumpSceneToFile>(*this);
         m_cmdLogResourceMemoryUsage = std::make_shared<ramses_internal::LogResourceMemoryUsage>(*this);
         framework.getRamsh().add(m_cmdPrintSceneList);
         framework.getRamsh().add(m_cmdPrintValidation);
-        framework.getRamsh().add(m_cmdForceFallbackImage);
         framework.getRamsh().add(m_cmdFlushSceneVersion);
         framework.getRamsh().add(m_cmdDumpSceneToFile);
         framework.getRamsh().add(m_cmdLogResourceMemoryUsage);
@@ -474,7 +469,7 @@ namespace ramses
 
     void RamsesClientImpl::WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream, EFeatureLevel featureLevel)
     {
-        ramses_internal::RamsesVersion::WriteToStream(stream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
+        ramses_internal::RamsesVersion::WriteToStream(stream, ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
     }
 
     bool RamsesClientImpl::GetFeatureLevelFromStream(ramses_internal::IInputStreamContainer& streamContainer, const std::string& desc, EFeatureLevel& detectedFeatureLevel)
@@ -527,7 +522,7 @@ namespace ramses
         if (!ramses_internal::RamsesVersion::MatchesMajorMinor(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT, readVersion))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Version of file " << verboseFileName << " does not match MAJOR.MINOR of this build. Cannot load the file.");
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "SDK version of loader: [" << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << "]; GitHash: [" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << "]");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "SDK version of loader: [" << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << "]; GitHash: [" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << "]");
             return false;
         }
 
@@ -769,16 +764,6 @@ namespace ramses
         addValidationMessage(EValidationSeverity_Info, ramses_internal::String{ msg.release() });
 
         return status;
-    }
-
-    ResourceDataPool& RamsesClientImpl::getResourceDataPool()
-    {
-        return m_resourceDataPool;
-    }
-
-    ResourceDataPool const& RamsesClientImpl::getResourceDataPool() const
-    {
-        return m_resourceDataPool;
     }
 
     ramses_internal::ManagedResource RamsesClientImpl::createManagedArrayResource(uint32_t numElements, EDataType type, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name)

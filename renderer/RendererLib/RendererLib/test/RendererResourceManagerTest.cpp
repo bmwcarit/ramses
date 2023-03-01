@@ -115,7 +115,7 @@ public:
                 EXPECT_EQ(hash, rd.hash);
                 EXPECT_EQ(EResourceType_Effect, rd.type);
 
-                return absl::optional<DeviceResourceHandle>{};
+                return std::optional<DeviceResourceHandle>{};
             }));
 
         if(expectSuccess)
@@ -1081,7 +1081,7 @@ TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasScheduledForUpl
 
     //simulate shader was not uploaded by ResourceUploader (not found in bin shader cache) so it gets uploaded by AsyncEffectUploader
     EXPECT_CALL(*resUploader, uploadResource(Ref(platform.renderBackendMock), _, _)).WillOnce(Invoke([](auto&, const auto&, auto&) {
-        return absl::optional<DeviceResourceHandle>{};
+        return std::optional<DeviceResourceHandle>{};
         }));
 
     EXPECT_CALL(platform.resourceUploadRenderBackendMock.deviceMock, uploadShader(_));
@@ -1121,7 +1121,7 @@ TEST_F(ARendererResourceManager, CanUploadAndUnloadEffectOwnedBySceneThatGetsDes
         EXPECT_EQ(resHash, rd.hash);
         EXPECT_EQ(EResourceType_Effect, rd.type);
 
-        return absl::optional<DeviceResourceHandle>{};
+        return std::optional<DeviceResourceHandle>{};
         }));
 
     //block call to upload shader to simulate scene getting unreferenced while AsyncEffectUploader is still uploading
@@ -1170,7 +1170,7 @@ TEST_F(ARendererResourceManager, DoesNotUnloadEffectThatGetsUnreferencedAndReRef
         EXPECT_EQ(resHash, rd.hash);
         EXPECT_EQ(EResourceType_Effect, rd.type);
 
-        return absl::optional<DeviceResourceHandle>{};
+        return std::optional<DeviceResourceHandle>{};
         }));
 
     //block call to upload shader to simulate scene getting unreferenced while AsyncEffectUploader is still uploading

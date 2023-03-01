@@ -23,7 +23,7 @@
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "Platform_Base/Platform_Base.h"
 #include "Utils/ThreadLocalLogForced.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 
 namespace ramses_internal
 {
@@ -239,7 +239,7 @@ namespace ramses_internal
 
         // FB was marked for re-render but has no shown scenes -> clear it
         const auto& assignedScenes = displayBufferInfo.scenes;
-        const bool hasAnyShownScene = absl::c_any_of(assignedScenes, [](const auto& s) { return s.shown; });
+        const bool hasAnyShownScene = std::any_of(std::cbegin(assignedScenes), std::cend(assignedScenes), [](const auto& s) { return s.shown; });
         if (!hasAnyShownScene)
             m_displayController->clearBuffer(m_frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
@@ -331,7 +331,7 @@ namespace ramses_internal
                 // remove buffer from list of buffers to re-render as soon as we start rendering into it (even if it gets interrupted later on)
                 m_displayBuffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
                 // clear buffer only if we just started rendering into it and no scene shown to keep expected behavior (no scene -> clear buffer)
-                const bool hasAnyShownScene = absl::c_any_of(assignedScenes, [](const auto& s) { return s.shown; });
+                const bool hasAnyShownScene = std::any_of(std::cbegin(assignedScenes), std::cend(assignedScenes), [](const auto& s) { return s.shown; });
                 if (!hasAnyShownScene)
                     m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
                 else

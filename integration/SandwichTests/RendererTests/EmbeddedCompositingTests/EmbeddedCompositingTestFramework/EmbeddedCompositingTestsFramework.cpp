@@ -23,10 +23,9 @@ namespace ramses_internal
     const String EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName = "ramses-ec-display";
     const String EmbeddedCompositingTestsFramework::TestAlternateEmbeddedCompositingDisplayName = "ramses-ec-alternate-display";
 
-    EmbeddedCompositingTestsFramework::EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName)
+    EmbeddedCompositingTestsFramework::EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config)
         : RendererTestsFramework(generateScreenshots, config)
         , m_testForkingController(testForkingController)
-        , m_embeddedCompositingSocketGroupName(embeddedCompositingSocketGroupName)
     {
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("EmbeddedCompositingTestsFramework");
     }
@@ -138,11 +137,6 @@ namespace ramses_internal
     void EmbeddedCompositingTestsFramework::logEmbeddedCompositor(RendererLogContext& logContext)
     {
         getEmbeddedCompositor().logInfos(logContext);
-    }
-
-    const String& EmbeddedCompositingTestsFramework::getEmbeddedCompositingSocketGroupName() const
-    {
-        return m_embeddedCompositingSocketGroupName;
     }
 
     void EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(uint32_t numberOfConnections, bool doResourceUpdate, uint32_t displayIdx)

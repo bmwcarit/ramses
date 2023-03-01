@@ -37,7 +37,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
 
     def impl_test(self):
         # Start client for the 1st time and show scene on the renderer
-        self.testClient1 = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cx -2 -cz 5", nameExtension='1st')
+        self.testClient1 = self.target.start_client("ramses-test-client", "--test-nr 5 --test-state 0 --cx -2 --cz 5", nameExtension='1st')
         self.checkThatApplicationWasStarted(self.testClient1)
         self.renderer.showScene(26)
         self.validateScreenshot(self.renderer, "testClient_disconnectedClient.png")
@@ -50,7 +50,7 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
 
         # Start client for the 2nd time and show scene on the renderer
         watchId = self.renderer.start_watch_stdout()
-        self.testClient2 = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cx -2 -cz 5", nameExtension='2nd')
+        self.testClient2 = self.target.start_client("ramses-test-client", "--test-nr 5 --test-state 0 --cx -2 --cz 5", nameExtension='2nd')
         self.checkThatApplicationWasStarted(self.testClient2)
         self.addCleanup(self.target.kill_application, self.testClient2)
         self.renderer.showScene(26)  # must explicitly trigger new ramp up to rendered

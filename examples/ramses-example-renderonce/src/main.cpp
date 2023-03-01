@@ -18,10 +18,10 @@
 
 static const unsigned RTSize = 512u;
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ argc, argv } };
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-renderonce"));
     framework.connect();
 

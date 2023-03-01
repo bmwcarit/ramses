@@ -14,9 +14,6 @@
 TEST(AInternalRendererConfig, hasDefaultValues)
 {
     ramses_internal::RendererConfig config;
-    EXPECT_EQ(ramses_internal::String(""), config.getWaylandSocketEmbedded());
-    EXPECT_EQ(ramses_internal::String(""), config.getWaylandSocketEmbeddedGroup());
-    EXPECT_EQ(-1, config.getWaylandSocketEmbeddedFD());
     EXPECT_FALSE(config.getSystemCompositorControlEnabled());
     EXPECT_EQ(std::chrono::microseconds{10000u}, config.getFrameCallbackMaxPollTime());
     EXPECT_STREQ("", config.getWaylandDisplayForSystemCompositorController().c_str());
@@ -27,37 +24,6 @@ TEST(AInternalRendererConfig, canEnableSystemCompositorControl)
     ramses_internal::RendererConfig config;
     config.enableSystemCompositorControl();
     EXPECT_TRUE(config.getSystemCompositorControlEnabled());
-}
-
-TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbedded)
-{
-    ramses_internal::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketName("wayland-11");
-    EXPECT_EQ(ramses_internal::String("wayland-11"), config.getWaylandSocketEmbedded());
-}
-
-TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedGroupName)
-{
-    ramses_internal::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketGroup("groupname1");
-    EXPECT_EQ(ramses_internal::String("groupname1"), config.getWaylandSocketEmbeddedGroup());
-
-    config.setWaylandEmbeddedCompositingSocketGroup("group2");
-    EXPECT_EQ(ramses_internal::String("group2"), config.getWaylandSocketEmbeddedGroup());
-}
-
-TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedPermissions)
-{
-    ramses_internal::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketPermissions(0654);
-    EXPECT_EQ(0654u, config.getWaylandSocketEmbeddedPermissions());
-}
-
-TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedFD)
-{
-    ramses_internal::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketFD(42);
-    EXPECT_EQ(42, config.getWaylandSocketEmbeddedFD());
 }
 
 TEST(AInternalRendererConfig, canSetGetMaxFramecallbackPollTime)

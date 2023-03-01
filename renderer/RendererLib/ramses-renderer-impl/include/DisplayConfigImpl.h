@@ -23,7 +23,7 @@ namespace ramses
     class DisplayConfigImpl : public StatusObjectImpl
     {
     public:
-        DisplayConfigImpl(int32_t argc, char const* const* argv);
+        DisplayConfigImpl();
 
         void registerOptions(CLI::App& cli);
         status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);

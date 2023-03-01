@@ -135,7 +135,7 @@ public:
 
     void uploadShader(const  ResourceContentHash& hash, bool expectSuccess = true)
     {
-        const absl::optional<DeviceResourceHandle> unsetDeviceHandle;
+        const std::optional<DeviceResourceHandle> unsetDeviceHandle;
         EXPECT_CALL(*uploader, uploadResource(_, _, _)).WillOnce(Return(unsetDeviceHandle));
 
         if (expectSuccess)

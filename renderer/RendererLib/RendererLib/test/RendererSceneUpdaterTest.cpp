@@ -1625,22 +1625,6 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_OB)
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_SB)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    constexpr StreamBufferHandle buffer{ 123u };
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    createBufferLink(buffer, getSceneId(), DataSlotId{ 1u }, true);
-
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
-
-    unmapScene();
-    destroyDisplay();
-}
-
 TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_EB)
 {
     createDisplayAndExpectSuccess();
@@ -1846,7 +1830,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     WaylandIviSurfaceIdVector changedSources{ source };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1883,7 +1866,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     WaylandIviSurfaceIdVector changedSources{ source };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1895,7 +1877,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavailable_sameSource)
+TEST_F(ARendererSceneUpdater, WillNotUnlinkStreamBuffer_IfStreamSourceBecameAvailabilityChanges_sameSource)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -1920,13 +1902,12 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavail
     WaylandIviSurfaceIdVector changedSources{ source };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
 
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
 
     hideScene(0u);
     hideScene(1u);
@@ -1935,7 +1916,7 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavail
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfOneOfStreamSourcesBecameUnavailabile)
+TEST_F(ARendererSceneUpdater, WillNotUnlinkStreamBuffer_IfOneOfStreamSourcesChangesAvailability)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -1963,15 +1944,12 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfOneOfStreamSourcesBecameU
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source1)).WillOnce(ReturnRef(fakeStreamUsage1));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source2)).WillOnce(ReturnRef(fakeStreamUsage2));
-    // only source2 is unavailable
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source1)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source2)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 1u });
     update();
 
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
 
     hideScene(0u);
     hideScene(1u);

@@ -8,8 +8,6 @@
 
 #include "ramses-client.h"
 #include "ramses-client-api/Scene.h"
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
 #include "TestScenes/HierarchicalRedTrianglesScene.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "TestScenes/TextScene.h"
@@ -24,6 +22,7 @@
 #include "Ramsh/RamshCommandExit.h"
 #include "TestStepCommand.h"
 #include "Ramsh/Ramsh.h"
+#include "CLI/CLI.hpp"
 
 using SceneVector = std::vector<ramses::Scene*>;
 using IntegrationScenePtr = std::unique_ptr<ramses_internal::IntegrationScene>;
@@ -84,8 +83,35 @@ IntegrationScenePtr createSceneAndSetState(
 
 int main(int argc, const char* argv[])
 {
-    ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);
+    CLI::App cli;
+    uint32_t testNr = 5u;
+    uint32_t testState = 1u;
+    float cameraX = 0.f;
+    float cameraY = 0.f;
+    float cameraZ = 0.f;
+    ramses::RamsesFrameworkConfig frameworkConfig;
     frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
+    std::string folder = ".";
+    std::string filename;
+
+    try
+    {
+        cli.add_option("--tn,--test-nr", testNr);
+        cli.add_option("--ts,--test-state", testState);
+        cli.add_option("--cx", cameraX, "Camera position x");
+        cli.add_option("--cy", cameraY, "Camera position y");
+        cli.add_option("--cz", cameraZ, "Camera position z");
+        cli.add_option("--folder", folder);
+        cli.add_option("--filename", filename);
+        frameworkConfig.registerOptions(cli);
+    }
+    catch (const CLI::Error& error)
+    {
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
+
     ramses::RamsesFramework framework(frameworkConfig);
     auto commandExit = std::make_shared<ramses_internal::RamshCommandExit>();
     framework.impl.getRamsh().add(commandExit);
@@ -100,18 +126,10 @@ int main(int argc, const char* argv[])
 
     framework.connect();
 
-    ramses_internal::CommandLineParser parser(argc, argv);
     // Default scene, when no parameters set
     // Used by integration tests which don't expect any particular rendered image
-    ramses_internal::ArgumentUInt32 testNrArgument(parser, "tn", "test-nr", 5u);
-    ramses_internal::ArgumentUInt32 testStateArgument(parser, "ts", "test-state-nr", 1u);
-    ramses_internal::ArgumentFloat testCameraPosXArgument(parser, "cx", "camPosX", 0.0f);
-    ramses_internal::ArgumentFloat testCameraPosYArgument(parser, "cy", "camPosY", 0.0f);
-    ramses_internal::ArgumentFloat testCameraPosZArgument(parser, "cz", "camPosZ", 0.0f);
 
-    ramses_internal::UInt32 testNr = testNrArgument;
-    ramses_internal::UInt32 testState = testStateArgument;
-    ramses_internal::Vector3 cameraPosParam(testCameraPosXArgument, testCameraPosYArgument, testCameraPosZArgument);
+    ramses_internal::Vector3 cameraPosParam(cameraX, cameraY, cameraZ);
 
     std::vector<ramses::Scene*> scenes;
     std::vector<IntegrationScenePtr> integrationScenes;
@@ -188,9 +206,8 @@ int main(int argc, const char* argv[])
     }
     case 13:
     {
-        ramses_internal::ArgumentString folderArgument(parser, "folder", "folder", ".");
         const ramses::sceneId_t sceneId(37u);
-        ramses_internal::FileLoadingScene fileLoadingScene(*ramses, testState, sceneId, cameraPosParam, folderArgument, ramses::RamsesFrameworkConfig(argc, argv), DefaultViewportWidth, DefaultViewportHeight);
+        ramses_internal::FileLoadingScene fileLoadingScene(*ramses, testState, sceneId, cameraPosParam, folder.c_str(), frameworkConfig, DefaultViewportWidth, DefaultViewportHeight);
         scenes.push_back(fileLoadingScene.getCreatedScene());
         break;
     }
@@ -218,9 +235,7 @@ int main(int argc, const char* argv[])
 #endif
     case 19:
     {
-        ramses_internal::ArgumentString folderArgument(parser, "folder", "folder", ".");
-        ramses_internal::ArgumentString fileNameArgument(parser, "fileName", "fileName", ".");
-        ramses_internal::SceneFromPath sceneFromPath(*ramses, folderArgument, fileNameArgument);
+        ramses_internal::SceneFromPath sceneFromPath(*ramses, folder.c_str(), filename.c_str());
         scenes.push_back(sceneFromPath.getCreatedScene());
         break;
     }

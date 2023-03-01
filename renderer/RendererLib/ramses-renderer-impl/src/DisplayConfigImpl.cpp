@@ -7,29 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "DisplayConfigImpl.h"
-#include "CLI/CLI.hpp"
 
 namespace ramses
 {
-    DisplayConfigImpl::DisplayConfigImpl(int32_t argc, char const* const* argv)
+    DisplayConfigImpl::DisplayConfigImpl()
         : StatusObjectImpl()
     {
-        if (argc > 1)
-        {
-            CLI::App cli;
-            m_internalConfig.registerOptions(cli);
-            cli.allow_extras();
-            try
-            {
-                cli.parse(argc, argv);
-            }
-            catch (CLI::ParseError& e)
-            {
-                const auto err = cli.exit(e);
-                if (err != 0)
-                    exit(err);
-            }
-        }
     }
 
     void DisplayConfigImpl::registerOptions(CLI::App& cli)

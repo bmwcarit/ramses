@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -17,7 +17,8 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/Window_Wayland_Test/*.h
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Window_Wayland_Test/*.h
 
     #==========================================================================
     # dependencies

@@ -16,12 +16,7 @@
 namespace ramses
 {
     DisplayConfig::DisplayConfig()
-        : DisplayConfig(0, nullptr)
-    {
-    }
-
-    DisplayConfig::DisplayConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new DisplayConfigImpl(argc, argv))
+        : StatusObject(*new DisplayConfigImpl())
         , impl(static_cast<DisplayConfigImpl&>(StatusObject::impl))
     {
     }

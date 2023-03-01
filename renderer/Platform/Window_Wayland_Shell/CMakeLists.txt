@@ -6,8 +6,8 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF(ramses-sdk_ENABLE_WAYLAND_SHELL)
-    ACME_MODULE(
+if(ramses-sdk_ENABLE_WAYLAND_SHELL)
+    createModule(
         #==========================================================================
         # general module information
         #==========================================================================
@@ -18,36 +18,42 @@ IF(ramses-sdk_ENABLE_WAYLAND_SHELL)
         #==========================================================================
         # files of this module
         #==========================================================================
-        FILES_PRIVATE_HEADER    include/Window_Wayland_Shell/*.h
-        FILES_SOURCE            src/*.cpp
+        INCLUDE_PATHS           include
+        SRC_FILES               include/Window_Wayland_Shell/*.h
+                                src/*.cpp
 
         #==========================================================================
         # dependencies
         #==========================================================================
         DEPENDENCIES            Window_Wayland
     )
-ENDIF()
 
-ACME_MODULE(
+    if (${ramses-sdk_BUILD_TESTS})
+        createModule(
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    Window_Wayland_Shell_Test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
+            #==========================================================================
+            # general module information
+            #==========================================================================
+            NAME                    Window_Wayland_Shell_Test
+            TYPE                    BINARY
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            test/*.cpp
-                            test/*.h
+            #==========================================================================
+            # files of this module
+            #==========================================================================
+            SRC_FILES            test/*.cpp
+                                    test/*.h
 
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            Window_Wayland_Shell
-                            Window_Wayland_Test
-)
+            #==========================================================================
+            # dependencies
+            #==========================================================================
+            DEPENDENCIES            Window_Wayland_Shell
+                                    Window_Wayland_Test
+        )
 
-# This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)
+        makeTestFromTarget(
+            TARGET Window_Wayland_Shell_Test
+            SUFFIX RNDSANDWICHTEST_SWRAST
+            SKIPPABLE)
+    endif()
+
+endif()

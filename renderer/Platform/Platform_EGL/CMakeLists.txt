@@ -16,7 +16,7 @@ if (TARGET Device_EGL_Extension)
     SET(Platfom_EGL_Dependencies ${Platfom_EGL_Dependencies} Device_EGL_Extension)
 endif()
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -28,8 +28,9 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/Platform_EGL/*.h
-    FILES_SOURCE            src/*.cpp
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Platform_EGL/*.h
+                            src/*.cpp
 
     #==========================================================================
     # dependencies

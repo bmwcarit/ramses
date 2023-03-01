@@ -101,34 +101,6 @@ namespace ramses
             return displayId_t::Invalid();
         }
 
-        const auto& internalDisplayConfig = config.impl.getInternalDisplayConfig();
-        const auto ecSetInDisplayConfig = internalDisplayConfig.getWaylandSocketEmbedded() != "" || internalDisplayConfig.getWaylandSocketEmbeddedFD() != -1;
-
-        const auto& rendererConfig = m_displayDispatcher->getRendererConfig();
-        const auto ecSetInRendererConfig = rendererConfig.getWaylandSocketEmbedded() != "" || rendererConfig.getWaylandSocketEmbeddedFD() != -1;
-
-        // For compatibility reasons, it is possible to set config for EC on both Renderer and Display config
-        ramses::DisplayConfig displayConfigWithECParams(config);
-
-        if(ecSetInDisplayConfig && ecSetInRendererConfig)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RamsesRenderer::createDisplay: failed to create display, EC config should be set only via DisplayConfig");
-            return {};
-        }
-        else if (ecSetInRendererConfig)
-        {
-            // If EC params are set on Renderer config, they should be used for EC creation ONLY on 1st display
-            if(m_nextDisplayId == displayId_t{ 0u })
-            {
-                LOG_INFO(CONTEXT_RENDERER, "RamsesRenderer::createDisplay: EC config is set on RendererConfig. It will be used only for creation of 1st display");
-
-                displayConfigWithECParams.setWaylandEmbeddedCompositingSocketName(rendererConfig.getWaylandSocketEmbedded().c_str());
-                displayConfigWithECParams.setWaylandEmbeddedCompositingSocketFD(rendererConfig.getWaylandSocketEmbeddedFD());
-                displayConfigWithECParams.setWaylandEmbeddedCompositingSocketGroup(rendererConfig.getWaylandSocketEmbeddedGroup().c_str());
-                displayConfigWithECParams.setWaylandEmbeddedCompositingSocketPermissions(rendererConfig.getWaylandSocketEmbeddedPermissions());
-            }
-        }
-
         const displayId_t displayId = m_nextDisplayId;
         m_nextDisplayId.getReference() = m_nextDisplayId.getValue() + 1;
         // display's framebuffer is also counted as display buffer together with offscreen buffers
@@ -136,7 +108,7 @@ namespace ramses
         m_displayFramebuffers.insert({ displayId, m_nextDisplayBufferId });
         m_nextDisplayBufferId.getReference() = m_nextDisplayBufferId.getValue() + 1;
 
-        ramses_internal::RendererCommand::CreateDisplay cmd{ ramses_internal::DisplayHandle(displayId.getValue()), displayConfigWithECParams.impl.getInternalDisplayConfig(), m_binaryShaderCache.get() };
+        ramses_internal::RendererCommand::CreateDisplay cmd{ ramses_internal::DisplayHandle(displayId.getValue()), config.impl.getInternalDisplayConfig(), m_binaryShaderCache.get() };
         m_pendingRendererCommands.push_back(std::move(cmd));
 
         return displayId;
@@ -598,36 +570,23 @@ namespace ramses
         return m_rendererLoopThreadType == ERendererLoopThreadType_InRendererOwnThread;
     }
 
-    status_t RamsesRendererImpl::setMaximumFramerate(float maximumFramerate)
+    status_t RamsesRendererImpl::setFramerateLimit(displayId_t displayId, float fpsLimit)
     {
-        if (maximumFramerate <= 0.0f)
-            return addErrorEntry("RamsesRenderer::setMaximumFramerate must specify a positive maximumFramerate!");
+        if (fpsLimit <= 0.0f)
+            return addErrorEntry("RamsesRenderer::setFramerateLimit must specify a positive fpsLimit!");
 
         if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
-            return addErrorEntry("RamsesRenderer::setMaximumFramerate Can not call setMaximumFramerate if doOneLoop is called before because it can only control framerate for rendering thread!");
+            return addErrorEntry("RamsesRenderer::setFramerateLimit cannot call setFramerateLimit if doOneLoop is called before because it can only control framerate when using rendering thread!");
 
-        m_displayDispatcher->setMinFrameDuration(std::chrono::microseconds{ std::lround(1000000 / maximumFramerate) });
-        m_maxFramerate = maximumFramerate;
+        m_displayDispatcher->setMinFrameDuration(std::chrono::microseconds{ std::lround(1000000 / fpsLimit) }, ramses_internal::DisplayHandle{ displayId.getValue() });
 
         return StatusOK;
     }
 
-    status_t RamsesRendererImpl::setMaximumFramerate(float maximumFramerate, displayId_t display)
+    float RamsesRendererImpl::getFramerateLimit(displayId_t displayId) const
     {
-        if (maximumFramerate <= 0.0f)
-            return addErrorEntry("RamsesRenderer::setMaximumFramerate must specify a positive maximumFramerate!");
-
-        if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
-            return addErrorEntry("RamsesRenderer::setMaximumFramerate Can not call setMaximumFramerate if doOneLoop is called before because it can only control framerate for rendering thread!");
-
-        m_displayDispatcher->setMinFrameDuration(std::chrono::microseconds{ std::lround(1000000 / maximumFramerate) }, ramses_internal::DisplayHandle{ display.getValue() });
-
-        return StatusOK;
-    }
-
-    float RamsesRendererImpl::getMaximumFramerate() const
-    {
-        return m_maxFramerate;
+        const auto minFrameDuration = m_displayDispatcher->getMinFrameDuration(ramses_internal::DisplayHandle{ displayId.getValue() });
+        return static_cast<float>(1000000.0 / minFrameDuration.count());
     }
 
     status_t RamsesRendererImpl::setLoopMode(ELoopMode loopMode)

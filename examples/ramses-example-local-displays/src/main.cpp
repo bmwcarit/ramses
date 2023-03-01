@@ -150,16 +150,16 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     return clientScene;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
     framework.connect();
@@ -178,14 +178,14 @@ int main(int argc, char* argv[])
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
     // Create displays and map scenes to them
-    ramses::DisplayConfig displayConfig1(argc, argv);
+    ramses::DisplayConfig displayConfig1;
     const ramses::displayId_t display1 = renderer.createDisplay(displayConfig1);
 
     sceneControlAPI.setSceneMapping(sceneId1, display1);
     sceneControlAPI.setSceneState(sceneId1, ramses::RendererSceneState::Rendered);
     sceneControlAPI.flush();
 
-    ramses::DisplayConfig displayConfig2(argc, argv);
+    ramses::DisplayConfig displayConfig2;
     //ivi surfaces must be unique for every display
     displayConfig2.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(displayConfig1.getWaylandIviSurfaceID().getValue() + 1));
     const ramses::displayId_t display2 = renderer.createDisplay(displayConfig2);
@@ -197,8 +197,8 @@ int main(int argc, char* argv[])
 
     /// [Displays Example]
     /// Refresh first display 60fps but limit second display to 5fps
-    ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display1);
-    ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
+    renderer.setFramerateLimit(display1, 60);
+    renderer.setFramerateLimit(display2, 5);
 
     renderer.startThread();
     renderer.flush();

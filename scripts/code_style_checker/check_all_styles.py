@@ -46,7 +46,6 @@ def main():
 
     binary_files = {
         r'\.res$',
-        r'\.pptx$',
         r'\.png$',
         r'\.PNG$',
         r'\.bmp$',
@@ -56,12 +55,8 @@ def main():
         r'\.bin$',
         r'\.pac$',
         r'\.rex$',
-        r'\.ctm$',
         r'\.tar\.bz2$',
         r'\.jar$',
-        r'\.rgba_astc$',
-        r'\.dds$',
-        r'\.mdzip$',
     }
 
     # These files are not checked at all
@@ -73,11 +68,6 @@ def main():
         r'\.clang-format$',
         r'\.clang-tidy$',
         r'/id_rsa[^\\]*$',
-        # Protobuffer files
-        r'\.pb.h$',
-        r'\.pb.cc$',
-        r'\.proto$',
-        r'\.ptx$',
         r'(^|/)build[^/]*/',
     }
 

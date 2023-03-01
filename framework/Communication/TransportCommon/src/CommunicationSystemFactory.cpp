@@ -8,7 +8,6 @@
 
 #include "TransportCommon/CommunicationSystemFactory.h"
 
-#include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
 

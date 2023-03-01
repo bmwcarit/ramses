@@ -324,19 +324,18 @@ ramses::Scene* createProviderScene(ramses::RamsesClient& client, ramses::sceneId
     return clientScene;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
     framework.connect();
 
-    renderer.setMaximumFramerate(60.0f);
     renderer.startThread();
 
     ramses::sceneId_t consumerSceneId{1u};
@@ -356,7 +355,7 @@ int main(int argc, char* argv[])
 
     SceneStateEventHandler eventHandler(renderer);
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(100, 100, DisplayWidth, DisplayHeight);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();

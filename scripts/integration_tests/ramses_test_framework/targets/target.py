@@ -23,7 +23,6 @@ from ramses_test_framework import helper
 from ramses_test_framework import log
 
 SYSTEM_COMPOSITOR_SCREENSHOT_TIMEOUT = 30
-CUSTOM_DAEMON_PORT = 6001
 DEFAULT_TEST_LAYER = 1000000
 DEFAULT_TEST_SURFACE = 1000000
 
@@ -126,8 +125,7 @@ class Target(with_metaclass(ABCMeta)):
 
     def start_daemon(self, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='SMGR'):
         # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
-        extendedArgs = args + " --port {}".format(CUSTOM_DAEMON_PORT)
-        daemon = self._start_ramses_application("ramses-daemon", extendedArgs, workingDirectory, nameExtension, env, dltAppID)
+        daemon = self._start_ramses_application("ramses-daemon", args, workingDirectory, nameExtension, env, dltAppID)
         daemon.initialisation_message_to_look_for("Ramsh commands registered")
         return daemon
 
@@ -149,7 +147,7 @@ class Target(with_metaclass(ABCMeta)):
         if (waitForDisplayManagerRamsh):
             renderer.initialisation_message_to_look_for("Ramsh commands registered from RendererMate")
         else:
-            renderer.initialisation_message_to_look_for("Ramsh commands registered from RamsesRenderer")
+            renderer.initialisation_message_to_look_for("executing CreateDisplay")
         return renderer
 
     def start_default_renderer(self, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}):
@@ -177,7 +175,6 @@ class Target(with_metaclass(ABCMeta)):
             extendedArgs += " --log-level " + str(self.logLevel)
         extendedArgs += " --log-test "
         # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
-        extendedArgs += " --daemon-port {}".format(CUSTOM_DAEMON_PORT)
         env['DISABLE_CONSOLE_COLORS'] = '1'
         env['DISABLE_RAMSH_INTERACTIVE_MODE'] = '1'
         application = self.start_application(applicationName, extendedArgs, binaryDirectoryOnTarget, nameExtension, env, dltAppID)

@@ -20,10 +20,9 @@ function(createBuildConfig)
   set(TARGET_DIRECTORY ${CMAKE_BINARY_DIR}/BuildConfig)
 
   set(EXPORTED_VARIABLES
-      PROJECT_NAME
       PROJECT_DESCRIPTION
-      PROJECT_URL
-      PROJECT_VERSION_STRING
+      PROJECT_HOMEPAGE_URL
+      RAMSES_VERSION
       PROJECT_VERSION_MAJOR
       PROJECT_VERSION_MINOR
       PROJECT_VERSION_PATCH
@@ -52,10 +51,6 @@ function(createBuildConfig)
       message(FATAL_ERROR "GIT_COMMIT_COUNT and GIT_COMMIT_HASH must be set")
   endif()
 
-  string(REPLACE "-" "_" PROJECT_NAME_NO_DASH ${PROJECT_NAME})
-  string(TOUPPER ${PROJECT_NAME_NO_DASH} PROJECT_NAME_CAPITAL)
-  string(TOLOWER ${PROJECT_NAME_NO_DASH} PROJECT_NAME_LOWERCASE)
-
   set(EXPORTED_RAMSES_CONFIG_SYMBOLS "")
 
   foreach(VAR ${EXPORTED_VARIABLES})
@@ -68,26 +63,26 @@ function(createBuildConfig)
       string(REPLACE "\"" "\\\"" TMP "${TMP}")
       set(ESCAPED_${VAR} "${TMP}")
 
-      set(EXPORTED_RAMSES_CONFIG_SYMBOLS "${EXPORTED_RAMSES_CONFIG_SYMBOLS}\nconst char* const ${PROJECT_NAME_CAPITAL}_${VAR} = \"@ESCAPED_${VAR}@\";")
+      set(EXPORTED_RAMSES_CONFIG_SYMBOLS "${EXPORTED_RAMSES_CONFIG_SYMBOLS}\nconst char* const RAMSES_SDK_${VAR} = \"@ESCAPED_${VAR}@\";")
   endforeach()
 
   foreach(VAR ${EXPORTED_INT_VARIABLES})
       if(DEFINED ${VAR})
-          set(EXPORTED_RAMSES_CONFIG_SYMBOLS "${EXPORTED_RAMSES_CONFIG_SYMBOLS}\nconst int ${PROJECT_NAME_CAPITAL}_${VAR}_INT = @${VAR}@;")
+          set(EXPORTED_RAMSES_CONFIG_SYMBOLS "${EXPORTED_RAMSES_CONFIG_SYMBOLS}\nconst int RAMSES_SDK_${VAR}_INT = @${VAR}@;")
       endif()
       endforeach()
 
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/templates/build-config.h.in
-      ${TARGET_DIRECTORY}/${PROJECT_NAME}-build-config.h.in
+      ${TARGET_DIRECTORY}/ramses-sdk-build-config.h.in
   )
 
   configure_file(
-      ${TARGET_DIRECTORY}/${PROJECT_NAME}-build-config.h.in
-      ${TARGET_DIRECTORY}/${PROJECT_NAME}-build-config.h
+      ${TARGET_DIRECTORY}/ramses-sdk-build-config.h.in
+      ${TARGET_DIRECTORY}/ramses-sdk-build-config.h
   )
 
-  message(STATUS "G ${PROJECT_NAME}BuildConfig.h")
+  message(STATUS "G RamsesBuildConfig.h")
 
   # TODO Violin replace this with a target, using global includes like this is dangerous
   include_directories(${TARGET_DIRECTORY})

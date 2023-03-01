@@ -16,32 +16,44 @@
 #include "TestScenes/FileLoadingScene.h"
 #include "RamsesFrameworkImpl.h"
 #include "TestStepCommand.h"
-#include "Utils/Argument.h"
 #include "Math3d/Vector3.h"
 #include "RendererMate.h"
 #include "Ramsh/Ramsh.h"
+#include "CLI/CLI.hpp"
 
 int main(int argc, const char* argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentUInt32 testNrArgument(parser, "tn", "test-nr", 1u);
-    ramses_internal::ArgumentBool disableAutoMapping(parser, "nomap", "no-auto-show");
+    CLI::App cli;
+    ramses::RamsesFrameworkConfig frameworkConfig;
+    frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
+    ramses::RendererConfig rendererConfig;
+    ramses::DisplayConfig  displayConfig;
+    uint32_t testNr = 1u;
+    bool     disableAutoMapping = false;
+
+    try
+    {
+        cli.add_option("--tn,--test-nr", testNr);
+        cli.add_flag("--no-auto-show", disableAutoMapping);
+        frameworkConfig.registerOptions(cli);
+        rendererConfig.registerOptions(cli);
+        displayConfig.registerOptions(cli);
+    }
+    catch (const CLI::Error& error)
+    {
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
+
 
     //Ramses client
-    ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);
-    frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     ramses::RamsesFramework framework(frameworkConfig);
-
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
-
-    ramses::RendererConfig rendererConfig(argc, argv);
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
-
     framework.connect();
 
-    ramses::DisplayConfig displayConfig(argc, argv);
-
-    if (testNrArgument == 4)
+    if (testNr == 4)
     {
         // Set background color to blue, to distinguish an possible rendered empty frame from the black background
         // of the integration test "test_run_no_initial_black_frame.py".
@@ -56,9 +68,9 @@ int main(int argc, const char* argv[])
     displayConfig.getWindowRectangle(x, x, displayWidth, displayHeight);
 
     ramses::RendererMate rendererMate(renderer.impl, framework.impl);
-    ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping.wasDefined());
+    ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping);
 
-    if (testNrArgument == 1 || testNrArgument == 2)
+    if (testNr == 1 || testNr == 2)
     {
         // host scene contains provider nodes
         const ramses::sceneId_t hostSceneId(12u);
@@ -76,7 +88,7 @@ int main(int argc, const char* argv[])
 
         const ramses::sceneId_t remoteSceneId(67u);
 
-        if (testNrArgument == 1)
+        if (testNr == 1)
         {
             // 'sender' has two scenes, one locally shown, and one distributed remotely
             printf("sender\n");
@@ -102,12 +114,12 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        switch (testNrArgument)
+        switch (testNr)
         {
             case 3:
             {
                 ramses::sceneId_t sceneId(13u);
-                ramses_internal::FileLoadingScene fileLoadingScene(client, ramses_internal::FileLoadingScene::CREATE_SAVE_DESTROY_LOAD_USING_SAME_CLIENT, sceneId, { 0.f, 0.f, 5.f }, ".", ramses::RamsesFrameworkConfig(argc, argv), displayWidth, displayHeight);
+                ramses_internal::FileLoadingScene fileLoadingScene(client, ramses_internal::FileLoadingScene::CREATE_SAVE_DESTROY_LOAD_USING_SAME_CLIENT, sceneId, { 0.f, 0.f, 5.f }, ".", frameworkConfig, displayWidth, displayHeight);
                 ramses::Scene* scene = fileLoadingScene.getCreatedScene();
                 scene->publish();
 

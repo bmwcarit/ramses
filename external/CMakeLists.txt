@@ -23,7 +23,10 @@ IF(ramses-sdk_BUILD_TESTS AND NOT TARGET gmock)
     target_compile_options(gtest PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
     target_compile_options(gmock PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
 
-    ACME_FOLDERIZE_TARGETS(gmock gmock_main gtest gtest_main)
+    folderizeTarget(gmock)
+    folderizeTarget(gmock_main)
+    folderizeTarget(gtest)
+    folderizeTarget(gtest_main)
     message(STATUS "+ googletest (custom)")
 ELSE()
     message(STATUS "+ googletest (external)")
@@ -41,7 +44,7 @@ if (TARGET fmt::fmt)
 else()
     add_subdirectory("fmt")
     target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
-    ACME_FOLDERIZE_TARGET(fmt)
+    folderizeTarget(fmt)
     message(STATUS "+ fmt")
 endif()
 
@@ -57,15 +60,16 @@ else()
         ${CMAKE_CURRENT_SOURCE_DIR}/cli11/include/CLI/*.hpp
         )
     add_custom_target(cli11 SOURCES ${CLI11_HEADER})
-    ACME_FOLDERIZE_TARGET(cli11)
+    folderizeTarget(cli11)
     message(STATUS "+ CLI11")
+    install(DIRECTORY cli11/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
 endif()
 
 
 # abseil library
 function(add_abseil_scope)
     set(BUILD_TESTING OFF)
-    ACME_CURRENT_FOLDER_PATH(folder_base)
+    cmakePathToFolderName(folder_base)
     set(ABSL_IDE_FOLDER "${folder_base}/Abseil")
     set(ABSL_PROPAGATE_CXX_STD ON)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -114,7 +118,7 @@ endforeach()
 #==========================================================================
 # glslang
 #==========================================================================
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -126,15 +130,15 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    INCLUDE_BASE            glslang/glslang
+    INCLUDE_PATHS           glslang/glslang
                             glslang/glslang/MachineIndependent
                             glslang
-    FILES_PRIVATE_HEADER    glslang/glslang/Include/*.h
+    SRC_FILES               glslang/glslang/Include/*.h
                             glslang/glslang/Public/*.h
                             glslang/glslang/OSDependent/*.h
                             glslang/glslang/MachineIndependent/*.h
                             glslang/OGLCompilersDLL/*.h
-    FILES_SOURCE            glslang/glslang/MachineIndependent/*.cpp
+                            glslang/glslang/MachineIndependent/*.cpp
                             glslang/glslang/MachineIndependent/preprocessor/*.cpp
                             glslang/glslang/GenericCodeGen/*.cpp
                             glslang/OGLCompilersDLL/*.cpp
@@ -160,8 +164,8 @@ if(ramses-sdk_TEXT_SUPPORT)
         add_subdirectory(harfbuzz)
         message(STATUS "+ harfbuzz")
 
-
-        ACME_FOLDERIZE_TARGETS(freetype harfbuzz)
+        folderizeTarget(freetype)
+        folderizeTarget(harfbuzz)
 
     endif()
 else()
@@ -191,14 +195,14 @@ IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
         message(STATUS "+ wayland-ivi-extension (system)")
     ELSEIF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-extension")
         IF (wayland-client_FOUND AND wayland-server_FOUND)
-            ACME_MODULE(
+            createModule(
                 NAME                    wayland-ivi-extension
                 TYPE                    STATIC_LIBRARY
                 ENABLE_INSTALL          OFF
 
-                INCLUDE_BASE            wayland-ivi-extension/ivi-extension-protocol
-                FILES_PRIVATE_HEADER    wayland-ivi-extension/ivi-extension-protocol/*.h
-                FILES_SOURCE            wayland-ivi-extension/ivi-extension-protocol/*.c
+                INCLUDE_PATHS           wayland-ivi-extension/ivi-extension-protocol
+                SRC_FILES               wayland-ivi-extension/ivi-extension-protocol/*.h
+                                        wayland-ivi-extension/ivi-extension-protocol/*.c
                 )
         ENDIF()
     ENDIF()
@@ -207,7 +211,7 @@ ENDIF()
 option(ramses-sdk_BUILD_IVI_TEST_APPS "Enable build of ivi test applications" ON)
 if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension) AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-example-client")
     # wayland ivi example/test application
-    ACME_MODULE(
+    createModule(
         #==========================================================================
         # general module information
         #==========================================================================
@@ -218,7 +222,7 @@ if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wa
         #==========================================================================
         # files of this module
         #==========================================================================
-        FILES_SOURCE            wayland-ivi-example-client/gears.c
+        SRC_FILES            wayland-ivi-example-client/gears.c
 
         #==========================================================================
         # dependencies
@@ -229,20 +233,49 @@ if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wa
                                 wayland-egl
                                 wayland-ivi-extension
     )
+
+    # TODO convert this module either to fully C, or fully CXX
+    set_property(TARGET ivi-gears PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
 # wayland zwp-linux-dmabuf-v1 extension protocol
 IF (wayland-client_FOUND AND wayland-server_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-zwp-linux-dmabuf-v1-extension")
-    ACME_MODULE(
+    createModule(
         NAME                    wayland-zwp-linux-dmabuf-v1-extension
         TYPE                    STATIC_LIBRARY
         ENABLE_INSTALL          OFF
 
-        INCLUDE_BASE            wayland-zwp-linux-dmabuf-v1-extension
-        FILES_PRIVATE_HEADER    wayland-zwp-linux-dmabuf-v1-extension/*.h
-        FILES_SOURCE            wayland-zwp-linux-dmabuf-v1-extension/*.c
+        INCLUDE_PATHS           wayland-zwp-linux-dmabuf-v1-extension
+        SRC_FILES               wayland-zwp-linux-dmabuf-v1-extension/*.h
+                                wayland-zwp-linux-dmabuf-v1-extension/*.c
         )
 ENDIF()
+
+if (ramses-sdk_ENABLE_TCP_SUPPORT)
+    add_library(asio INTERFACE)
+    target_include_directories(asio INTERFACE asio/asio/include)
+    # ASIO_USE_TS_EXECUTOR_AS_DEFAULT avoids an internal compiler error for gcc lto build
+    # It restores the any_io_executor type alias to the one used in asio 1.16.1 an earlier
+    target_compile_definitions(asio INTERFACE "-DASIO_USE_TS_EXECUTOR_AS_DEFAULT")
+    message(STATUS "+ asio")
+else()
+    message(STATUS "- asio")
+endif()
+
+
+if(ramses-sdk_BUILD_TOOLS)
+    createModule(
+        NAME                    imgui
+        TYPE                    STATIC_LIBRARY
+        ENABLE_INSTALL          OFF
+
+        INCLUDE_PATHS           imgui
+        SRC_FILES               imgui/*.h
+                                imgui/misc/cpp/*.h
+                                imgui/*.cpp
+                                imgui/misc/cpp/*.cpp
+        )
+endif()
 
 # LZ4 de-/compression library
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)
@@ -260,7 +293,7 @@ IF (lz4_FOUND)
     message(STATUS "+ lz4 (system)")
 ELSE()
   SET(LZ4_DIR lz4)
-  ACME_MODULE(
+  createModule(
 
     #==========================================================================
     # general module information
@@ -272,31 +305,8 @@ ELSE()
     #==========================================================================
     # files of this module
     #==========================================================================
-    INCLUDE_BASE            ${LZ4_DIR}/lib
-    FILES_PRIVATE_HEADER    ${LZ4_DIR}/lib/*.h
-    FILES_SOURCE            ${LZ4_DIR}/lib/*.c
+    INCLUDE_PATHS           ${LZ4_DIR}/lib
+    SRC_FILES               ${LZ4_DIR}/lib/*.h
+                            ${LZ4_DIR}/lib/*.c
     )
 ENDIF()
-
-if (ramses-sdk_ENABLE_TCP_SUPPORT)
-    add_library(asio INTERFACE)
-    target_include_directories(asio INTERFACE asio/asio/include)
-    ACME_INFO("+ asio")
-else()
-    ACME_INFO("- asio")
-endif()
-
-
-if(ramses-sdk_BUILD_TOOLS)
-    ACME_MODULE(
-        NAME                    imgui
-        TYPE                    STATIC_LIBRARY
-        ENABLE_INSTALL          OFF
-
-        INCLUDE_BASE            imgui
-        FILES_PRIVATE_HEADER    imgui/*.h
-                                imgui/misc/cpp/*.h
-        FILES_SOURCE            imgui/*.cpp
-                                imgui/misc/cpp/*.cpp
-        )
-endif()

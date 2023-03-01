@@ -302,7 +302,7 @@ namespace ramses_internal
             String text;
         };
 
-        using Variant = absl::variant<
+        using Variant = std::variant<
             ScenePublished,
             SceneUnpublished,
             ReceiveScene,

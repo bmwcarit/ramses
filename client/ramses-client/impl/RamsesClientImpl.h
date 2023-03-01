@@ -17,7 +17,6 @@
 #include "ramses-client-api/IClientEventHandler.h"
 #include "ramses-client-api/TextureSwizzle.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/ResourceDataPool.h"
 
 // RAMSES framework
 #include "ramses-framework-api/EFeatureLevel.h"
@@ -30,7 +29,6 @@
 #include "Collections/Vector.h"
 #include "RamsesObjectVector.h"
 #include "ClientCommands/ValidateCommand.h"
-#include "ClientCommands/ForceFallbackImage.h"
 #include "ClientCommands/DumpSceneToFile.h"
 #include "ClientCommands/LogResourceMemoryUsage.h"
 #include "PlatformAbstraction/PlatformLock.h"
@@ -47,7 +45,6 @@ namespace ramses_internal
 {
     class IInputStream;
     class PrintSceneList;
-    class ForceFallbackImage;
     class FlushSceneVersion;
     class BinaryFileOutputStream;
     class BinaryFileInputStream;
@@ -142,9 +139,6 @@ namespace ramses
         static bool GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel);
         static bool GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel);
 
-        ResourceDataPool& getResourceDataPool();
-        ResourceDataPool const& getResourceDataPool() const;
-
     private:
         friend class ClientFactory;
         RamsesClientImpl(RamsesFrameworkImpl& ramsesFramework, const char* applicationName);
@@ -212,7 +206,6 @@ namespace ramses
 
         std::shared_ptr<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
         std::shared_ptr<ramses_internal::ValidateCommand> m_cmdPrintValidation;
-        std::shared_ptr<ramses_internal::ForceFallbackImage> m_cmdForceFallbackImage;
         std::shared_ptr<ramses_internal::FlushSceneVersion> m_cmdFlushSceneVersion;
         std::shared_ptr<ramses_internal::DumpSceneToFile> m_cmdDumpSceneToFile;
         std::shared_ptr<ramses_internal::LogResourceMemoryUsage> m_cmdLogResourceMemoryUsage;
@@ -224,8 +217,6 @@ namespace ramses
         ramses_internal::EnqueueOnlyOneAtATimeQueue m_deleteSceneQueue;
 
         std::vector<SceneLoadStatus> m_asyncSceneLoadStatusVec;
-
-        ResourceDataPool m_resourceDataPool;
     };
 
     template <typename T>

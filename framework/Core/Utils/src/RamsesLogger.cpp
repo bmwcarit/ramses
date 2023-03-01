@@ -10,7 +10,6 @@
 #include "Utils/ConsoleLogAppender.h"
 #include "Utils/LogContext.h"
 #include "Utils/LogHelper.h"
-#include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "DltLogAppender/DltLogAppender.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"

@@ -15,16 +15,24 @@
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-framework-api/RamsesFramework.h"
+#include "CLI/CLI.hpp"
 
 
-RendererBundle::RendererBundle(ANativeWindow* nativeWindow, int width, int height,
-                                                 const char* interfaceSelectionIP, const char* daemonIP)
+RendererBundle::RendererBundle(
+    ANativeWindow* nativeWindow,
+    int width,
+    int height,
+    const char* interfaceSelectionIP,
+    const char* daemonIP)
     : m_nativeWindow(nativeWindow)
     , m_cancelDispatchLoop(false)
 {
+    CLI::App cli;
+    ramses::RamsesFrameworkConfig frameworkConfig;
+    frameworkConfig.registerOptions(cli);
     //workaround to ensure that the socket connection is always initiated outbound from Android, inbound connections might be blocked
-    const char* argv[] = {"", "--guid", "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"};
-    ramses::RamsesFrameworkConfig frameworkConfig(3, argv);
+    cli.parse("--guid=FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
+
     frameworkConfig.setInterfaceSelectionIPForTCPCommunication(interfaceSelectionIP);
     frameworkConfig.setDaemonIPForTCPCommunication(daemonIP);
     m_framework.reset(new ramses::RamsesFramework(frameworkConfig));
@@ -38,7 +46,7 @@ RendererBundle::RendererBundle(ANativeWindow* nativeWindow, int width, int heigh
 
     m_autoShowHandler.reset(new SceneStateAutoShowEventHandler(*m_renderer, displayId));
 
-    m_renderer->setMaximumFramerate(60);
+    m_renderer->setFramerateLimit(displayId, 60);
     m_renderer->flush();
 }
 

@@ -16,7 +16,6 @@
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/EffectDescription.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-utils.h"
 #include "RamsesObjectTypeUtils.h"
@@ -28,8 +27,6 @@ namespace ramses_internal
         , m_effect(createTestEffect(state))
         , m_textureCoords(createTextureCoordinates(state))
     {
-        const ramses::waylandIviSurfaceId_t streamSource1(GetStreamTextureSourceId().getValue());
-        const ramses::waylandIviSurfaceId_t streamSource2(GetSecondStreamTextureSourceId().getValue());
         const ramses::Texture2D* fallbackTexture1 = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene);
         const ramses::Texture2D* fallbackTexture2 = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-2.png", m_scene);
 
@@ -39,19 +36,19 @@ namespace ramses_internal
         case SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET:
         case SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH:
         {
-            createQuadWithStreamTexture(-1.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId1, *fallbackTexture1);
+            createQuadWithTextureConsumer(-1.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId1, *fallbackTexture1);
             break;
         }
         case TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES:
         {
-            createQuadWithStreamTexture(-2.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId1, *fallbackTexture1);
-            createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId2, *fallbackTexture2);
+            createQuadWithTextureConsumer(-2.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId1, *fallbackTexture1);
+            createQuadWithTextureConsumer(0.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId2, *fallbackTexture2);
             break;
         }
         case TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE:
         {
-            createQuadWithStreamTexture(-2.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId1, *fallbackTexture1);
-            createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource2, SamplerConsumerId2, *fallbackTexture1);
+            createQuadWithTextureConsumer(-2.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId1, *fallbackTexture1);
+            createQuadWithTextureConsumer(0.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId2, *fallbackTexture1);
             break;
         }
         case TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SWIZZLED_FALLBACK_TEXTURES:
@@ -62,49 +59,34 @@ namespace ramses_internal
             ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, leftTextureSwizzle, "leftSceneFallbackTexture");
             ramses::Texture2D* rightSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, rightTextureSwizzle, "leftSceneFallbackTexture");
 
-            createQuadWithStreamTexture(-2.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId1, *leftSceneFallbackTexture);
-            createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource2, SamplerConsumerId2, *rightSceneFallbackTexture);
+            createQuadWithTextureConsumer(-2.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId1, *leftSceneFallbackTexture);
+            createQuadWithTextureConsumer(0.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId2, *rightSceneFallbackTexture);
             break;
         }
         case SINGLE_STREAM_TEXTURE_ON_THE_LEFT:
         {
             ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, {}, "leftSceneFallbackTexture");
-            createQuadWithStreamTexture(-2.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId1, *leftSceneFallbackTexture);
+            createQuadWithTextureConsumer(-2.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId1, *leftSceneFallbackTexture);
             break;
         }
         case SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_FALLBACK_FROM_LEFT_SCENE:
         {
             ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, {}, "leftSceneFallbackTexture");
-            createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId1, *leftSceneFallbackTexture);
+            createQuadWithTextureConsumer(0.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId1, *leftSceneFallbackTexture);
             break;
         }
         case SINGLE_STREAM_TEXTURE_ON_THE_RIGHT:
         {
-            createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource1, SamplerConsumerId1, *fallbackTexture2);
+            createQuadWithTextureConsumer(0.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId2, *fallbackTexture2);
             break;
         }
         case SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_SECOND_SOURCE_ID_AND_FALLBACK_FROM_LEFT_SCENE:
         {
             ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, {}, "leftSceneFallbackTexture");
-            createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource2, SamplerConsumerId1, *leftSceneFallbackTexture);
+            createQuadWithTextureConsumer(0.0f, -1.0f, 2.0f, 2.0f, SamplerConsumerId2, *leftSceneFallbackTexture);
             break;
         }
         }
-    }
-
-    WaylandIviSurfaceId EmbeddedCompositorScene::GetStreamTextureSourceId()
-    {
-        return EmbeddedSurfaceStreamTextureSourceId;
-    }
-
-    WaylandIviSurfaceId EmbeddedCompositorScene::GetSecondStreamTextureSourceId()
-    {
-        return WaylandIviSurfaceId(EmbeddedSurfaceStreamTextureSourceId.getValue() + 1u);
-    }
-
-    WaylandIviSurfaceId EmbeddedCompositorScene::GetThirdStreamTextureSourceId()
-    {
-        return WaylandIviSurfaceId(EmbeddedSurfaceStreamTextureSourceId.getValue() + 2u);
     }
 
     void EmbeddedCompositorScene::createQuad(float x, float y, float w, float h, ramses::Appearance& appearance)
@@ -143,15 +125,14 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*meshNode);
     }
 
-    ramses::Appearance& EmbeddedCompositorScene::createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::waylandIviSurfaceId_t sourceId, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
+    ramses::Appearance& EmbeddedCompositorScene::createAppearanceWithTextureConsumer(ramses::Scene& scene, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
     {
-        ramses::StreamTexture* streamTexture = scene.createStreamTexture(fallbackTexture, sourceId);
         const ramses::TextureSampler* sampler = scene.createTextureSampler(
                     ramses::ETextureAddressMode_Repeat,
                     ramses::ETextureAddressMode_Repeat,
                     ramses::ETextureSamplingMethod_Nearest,
                     ramses::ETextureSamplingMethod_Nearest,
-                    *streamTexture);
+                    fallbackTexture);
         ramses::Appearance* appearance = scene.createAppearance(m_effect, "triangle appearance");
         scene.createTextureConsumer(*sampler, consumerId);
 
@@ -223,9 +204,9 @@ namespace ramses_internal
         }
     }
 
-    void EmbeddedCompositorScene::createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::waylandIviSurfaceId_t sourceId, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
+    void EmbeddedCompositorScene::createQuadWithTextureConsumer(float xPos, float yPos, float width, float height, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
     {
-        ramses::Appearance& appearance = createAppearanceWithStreamTexture(m_scene, sourceId, consumerId, fallbackTexture);
+        ramses::Appearance& appearance = createAppearanceWithTextureConsumer(m_scene, consumerId, fallbackTexture);
         createQuad(xPos, yPos, width, height, appearance);
     }
 }

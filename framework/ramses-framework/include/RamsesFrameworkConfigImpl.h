@@ -24,7 +24,7 @@ namespace ramses
     class RamsesFrameworkConfigImpl : public StatusObjectImpl
     {
     public:
-        RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv);
+        RamsesFrameworkConfigImpl();
         ~RamsesFrameworkConfigImpl();
 
         void registerOptions(CLI::App& cli);

@@ -491,13 +491,13 @@ bool doProcessing(ramses::displayBufferId_t inputBuffer, ramses::displayBufferId
     return true;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-example-local-dma-offscreenbuffer"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
 
     //Set big enough max frame poll time in order to wait for every frame to finish
     //This is essential to avoid skipping any frames
@@ -513,7 +513,7 @@ int main(int argc, char* argv[])
     SceneStateEventHandler eventHandler(renderer);
 
     //Create display and OBs
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
     displayConfig.setPlatformRenderNode("/dev/dri/renderD128");
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
@@ -560,10 +560,10 @@ int main(int argc, char* argv[])
     //disable clearing for OBs in order to control when does content get overwritten
     //for example, the content of the write OBs (final result after processing) is written to memory
     //on CPU side, so GPU should not clear that content while rendering
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferRead1, ramses::EClearFlags_None);
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferRead2, ramses::EClearFlags_None);
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferWrite1, ramses::EClearFlags_None);
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferWrite2, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead1, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead2, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite1, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite2, ramses::EClearFlags_None);
     renderer.flush();
 
     const ramses::dataConsumerId_t samplerConsumerId(457u);

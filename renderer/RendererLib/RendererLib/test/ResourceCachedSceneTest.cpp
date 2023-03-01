@@ -123,6 +123,15 @@ namespace ramses_internal
             EXPECT_EQ(deviceHandleFromEmbeddedCompositingManager, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
         }
 
+        void updateResourcesAndExpectTexture(TextureSamplerHandle textureSampler, const RenderableVector& updatedRenderables, DeviceResourceHandle expectedTexture)
+        {
+            scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+            scene.updateRenderableVertexArrays(sceneHelper.resourceManager, updatedRenderables);
+            scene.markVertexArraysClean();
+
+            EXPECT_EQ(expectedTexture, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
+        }
+
         void updateRenderableResourcesAndVertexArray(const RenderableVector& renderables, bool dirtyVAOLeft = false)
         {
             scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
@@ -138,6 +147,20 @@ namespace ramses_internal
             sceneHelper.createAndAssignUniformDataInstance(renderable, samplerHandle);
             sceneHelper.createAndAssignVertexDataInstance(renderable);
             sceneHelper.setResourcesToRenderable(renderable);
+
+            return samplerHandle;
+        }
+
+        template<typename FallbackTextureType>
+        TextureSamplerHandle setResourcesAndSamplerWithStreamBuffer(const RenderableHandle renderable, StreamBufferHandle streamBuffer, FallbackTextureType fallbackTexture)
+        {
+            const TextureSamplerHandle samplerHandle = sceneHelper.createTextureSampler(fallbackTexture);
+            sceneHelper.createAndAssignUniformDataInstance(renderable, samplerHandle);
+            sceneHelper.createAndAssignVertexDataInstance(renderable);
+            sceneHelper.setResourcesToRenderable(renderable);
+
+            sceneAllocator.allocateDataSlot({ EDataSlotType_TextureConsumer, DataSlotId{213u}, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), samplerHandle });
+            scene.setTextureSamplerContentSource(samplerHandle, streamBuffer);
 
             return samplerHandle;
         }
@@ -827,6 +850,75 @@ namespace ramses_internal
 
         scene.setForceFallbackImage(sceneHelper.streamTexture, false);
         updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid()); //no change
+    }
+
+    //stream buffers
+    TEST_F(AResourceCachedScene, RenderableWithStreamBufferMarkedDirty_DueToMissingFallbackTextureAndStreamSourceNotAvailable)
+    {
+        const StreamBufferHandle streamBuffer{ 2120u };
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        setResourcesAndSamplerWithStreamBuffer(renderable, streamBuffer, resourceNotUploadedToDevice);
+        EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+        updateRenderableResources();
+        EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
+    }
+
+    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamBuffer_StreamSourceAvailableAndFallbackNotAvailable_UsesCompositedTexture)
+    {
+        const StreamBufferHandle streamBuffer{ 2120u };
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamBuffer(renderable, streamBuffer, resourceNotUploadedToDevice);
+
+        const DeviceResourceHandle compositedTexture{ 325u };
+        EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(compositedTexture));
+        updateResourcesAndExpectTexture(textureSampler, { renderable }, compositedTexture);
+    }
+
+    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamBuffer_StreamSourceAvailableAndFallbackAvailable_UsesCompositedTexture)
+    {
+        const StreamBufferHandle streamBuffer{ 2120u };
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamBuffer(renderable, streamBuffer, MockResourceHash::TextureHash);
+
+        const DeviceResourceHandle compositedTexture{ 325u };
+        EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(compositedTexture));
+        updateResourcesAndExpectTexture(textureSampler, { renderable }, compositedTexture);
+    }
+
+    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamBuffer_StreamSourceNotAvailableAndFallbackAvailable_UsesFallbackTextureResource)
+    {
+        const StreamBufferHandle streamBuffer{ 2120u };
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamBuffer(renderable, streamBuffer, MockResourceHash::TextureHash);
+
+        EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+        updateResourcesAndExpectTexture(textureSampler, { renderable }, DeviceMock::FakeTextureDeviceHandle);
+    }
+
+    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamBuffer_StreamSourceNotAvailableAndFallbackAvailable_UsesFallbackTextureBuffer)
+    {
+        const StreamBufferHandle streamBuffer{ 2120u };
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamBuffer(renderable, streamBuffer, textureBuffer);
+
+        EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+        updateResourcesAndExpectTexture(textureSampler, { renderable }, textureBufferDeviceHandle);
+    }
+
+    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamBuffer_StreamSourceBecomesUnavailable_UsesFallbackTexture)
+    {
+        const StreamBufferHandle streamBuffer{ 2120u };
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamBuffer(renderable, streamBuffer, MockResourceHash::TextureHash);
+
+        const DeviceResourceHandle compositedTexture{ 325u };
+        EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(compositedTexture));
+        updateResourcesAndExpectTexture(textureSampler, { renderable }, compositedTexture);
+
+        scene.setRenderableResourcesDirtyByTextureSampler(textureSampler);
+
+        EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+        updateResourcesAndExpectTexture(textureSampler, { }, DeviceMock::FakeTextureDeviceHandle);
     }
 
     //vertex arrays

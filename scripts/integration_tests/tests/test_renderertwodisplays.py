@@ -27,7 +27,7 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
 
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 2 -ts 0")
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 2 --test-state 0")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 

@@ -11,27 +11,18 @@
 #include "Common/StronglyTypedValue.h"
 #include "Math3d/Vector4.h"
 #include <sstream>
+#include "CLI/CLI.hpp"
 
-namespace CLI
+namespace ramses_internal
 {
-    template <typename BaseT, BaseT _invalid, typename UniqueIdT>
-    inline std::istringstream& operator>>(std::istringstream& is, ramses_internal::StronglyTypedValue<BaseT, _invalid, UniqueIdT>& val)
+    /**
+     * Converts a std::string to a Vector4 for the CLI11 command line parser
+     * (see example https://github.com/CLIUtils/CLI11/blob/main/examples/custom_parse.cpp)
+     */
+    inline bool lexical_cast(const std::string& input, Vector4& val)
     {
-        BaseT v;
-        is >> v;
-        val = ramses_internal::StronglyTypedValue<BaseT, _invalid, UniqueIdT>(v);
-        return is;
-    }
-
-    template <typename BaseT, BaseT _invalid, typename UniqueIdT>
-    inline std::stringstream& operator<<(std::stringstream& os, const ramses_internal::StronglyTypedValue<BaseT, _invalid, UniqueIdT>& val)
-    {
-        os << val.getValue();
-        return os;
-    }
-
-    inline std::istringstream& operator>>(std::istringstream& is, ramses_internal::Vector4& val)
-    {
+        std::istringstream is;
+        is.str(input);
         char separator = 0;
         is >> val.r;
         is >> separator;
@@ -40,9 +31,20 @@ namespace CLI
         is >> val.b;
         is >> separator;
         is >> val.a;
-        return is;
+        return !is.fail() && (is.rdbuf()->in_avail() == 0);
+    }
+
+    /**
+     * Converts a std::string to a StronglyTypedValue for the CLI11 command line parser
+     */
+    template <typename BaseT, BaseT _invalid, typename UniqueIdT>
+    inline bool lexical_cast(const std::string& input, ramses_internal::StronglyTypedValue<BaseT, _invalid, UniqueIdT>& val)
+    {
+        BaseT v;
+        std::istringstream is;
+        is.str(input);
+        is >> v;
+        val = StronglyTypedValue<BaseT, _invalid, UniqueIdT>(v);
+        return !is.fail() && (is.rdbuf()->in_avail() == 0);
     }
 }
-
-// stream operators need to be declared before including CLI/CLI.hpp
-#include "CLI/CLI.hpp"

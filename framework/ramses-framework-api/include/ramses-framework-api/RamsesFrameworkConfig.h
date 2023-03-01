@@ -34,15 +34,6 @@ namespace ramses
         RamsesFrameworkConfig();
 
         /**
-        * @brief Constructor of RamsesFrameworkConfig using command line parameters
-        *
-        * @param[in] argc Number of strings in argv array
-        * @param[in] argv Command line parameters as array of string
-        * @deprecated
-        */
-        RamsesFrameworkConfig(int32_t argc, char const* const* argv);
-
-        /**
         * @brief Destructor of RamsesFrameworkConfig
         */
         ~RamsesFrameworkConfig() override;

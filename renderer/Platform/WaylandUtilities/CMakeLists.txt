@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -18,8 +18,9 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/WaylandUtilities/*.h
-    FILES_SOURCE            src/*.cpp
+    INCLUDE_PATHS           include
+    SRC_FILES               include/WaylandUtilities/*.h
+                            src/*.cpp
 
     #==========================================================================
     # dependencies
@@ -32,7 +33,7 @@ ACME_MODULE(
 
 
 IF (${ramses-sdk_BUILD_TESTS})
-    ACME_MODULE(
+    createModule(
 
         #==========================================================================
         # general module information
@@ -44,9 +45,9 @@ IF (${ramses-sdk_BUILD_TESTS})
         # files of this module
         #==========================================================================
 
-        INCLUDE_BASE            WaylandTestUtils
-        FILES_PRIVATE_HEADER    WaylandTestUtils/*.h
-        FILES_SOURCE            WaylandTestUtils/*.cpp
+        INCLUDE_PATHS           WaylandTestUtils
+        SRC_FILES               WaylandTestUtils/*.h
+                                WaylandTestUtils/*.cpp
 
         #==========================================================================
         # dependencies

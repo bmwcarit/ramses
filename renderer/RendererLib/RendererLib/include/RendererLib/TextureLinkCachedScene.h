@@ -9,11 +9,12 @@
 #ifndef RAMSES_TEXTURELINKCACHEDSCENE_H
 #define RAMSES_TEXTURELINKCACHEDSCENE_H
 
-#include "RendererLib/ResourceCachedScene.h"
+#include "RendererLib/DataReferenceLinkCachedScene.h"
+#include "RendererAPI/Types.h"
 
 namespace ramses_internal
 {
-    class TextureLinkCachedScene : public ResourceCachedScene
+    class TextureLinkCachedScene : public DataReferenceLinkCachedScene
     {
     public:
         explicit TextureLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
@@ -29,6 +30,7 @@ namespace ramses_internal
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, StreamBufferHandle streamBuffer);
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, ExternalBufferHandle externalTexture);
         void restoreTextureSamplerFallbackValue(TextureSamplerHandle sampler);
+        const TextureSampler& getFallbackTextureSampler(TextureSamplerHandle sampler) const;
 
     protected:
         HashMap<TextureSamplerHandle, TextureSampler> m_fallbackTextureSamplers;

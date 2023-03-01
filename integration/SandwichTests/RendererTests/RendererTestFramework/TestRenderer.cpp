@@ -154,9 +154,9 @@ namespace ramses_internal
     {
         ramses::displayBufferId_t offscreenBufferId;
         if (interruptible)
-            offscreenBufferId = ramses::RamsesRenderer::createInterruptibleOffscreenBuffer(*m_renderer, displayId, width, height, depthBufferType);
+            offscreenBufferId = m_renderer->createInterruptibleOffscreenBuffer(displayId, width, height, depthBufferType);
         else
-            offscreenBufferId = ramses::RamsesRenderer::createOffscreenBuffer(*m_renderer, displayId, width, height, sampleCount, depthBufferType);
+            offscreenBufferId = m_renderer->createOffscreenBuffer(displayId, width, height, sampleCount, depthBufferType);
         m_renderer->flush();
 
         ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
@@ -194,7 +194,7 @@ namespace ramses_internal
 
     void TestRenderer::setClearFlags(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, uint32_t clearFlags)
     {
-        m_renderer->setDisplayBufferClearFlags(*m_renderer, displayId, buffer, clearFlags);
+        m_renderer->setDisplayBufferClearFlags(displayId, buffer, clearFlags);
         m_renderer->flush();
     }
 

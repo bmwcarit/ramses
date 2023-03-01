@@ -22,7 +22,7 @@ namespace ramses_internal
     bool RamshCommandPrintBuildConfig::executeInput(const std::vector<std::string>&)
     {
         LOG_INFO(CONTEXT_RAMSH,
-            "VERSION_STRING = "     << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << "\n" <<
+            "VERSION_STRING = "     << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << "\n" <<
             "GIT_COMMIT_COUNT = "   << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << "\n" <<
             "GIT_COMMIT_HASH = "    << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << "\n" <<
             "BUILD_TYPE = "         << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE << "\n" <<

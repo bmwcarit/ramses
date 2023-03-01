@@ -36,7 +36,7 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
         self.validateScreenshot(self.rendererbackground, "black_rgb.png", useSystemCompositorForScreenshot=False)
 
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
-        self.application = self.target.start_renderer(applicationName, args="--ivi-surface {} -tn 4".format(self.testSurface), automap=True)
+        self.application = self.target.start_renderer(applicationName, args="--ivi-surface {} --test-nr 4".format(self.testSurface), automap=True)
 
         self.checkThatApplicationWasStarted(self.application)
         self.addCleanup(self.target.kill_application, self.application)

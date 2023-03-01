@@ -13,7 +13,6 @@
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/TextureSwizzle.h"
 #include "ramses-client-api/SceneObjectIterator.h"
-#include "ramses-hmi-utils.h"
 #include "ramses-utils.h"
 
 #include "Texture2DImpl.h"
@@ -1243,67 +1242,5 @@ namespace ramses
         EXPECT_NE(obj1, obj2);
         EXPECT_EQ(StatusOK, this->m_scene.destroy(*obj2));
         EXPECT_EQ(this->m_scene.getResource(id), nullptr);
-    }
-
-    TEST_F(AResourceTestClient, statisticCounterIsUpdatedWhenAddingToPoolViaFileAndCreatingForScene)
-    {
-        const float data[2 * 2] = { 1, 2, 3, 4 };
-        auto res = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
-        auto hash = res->getResourceId();
-
-        EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(m_scene, "testfile.ramres", false));
-
-        m_scene.destroy(*res);
-        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
-        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-        this->getFramework().impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
-
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-        EXPECT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(client).addResourceDataFile("testfile.ramres"));
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-        Scene& scene(*client.createScene(sceneId_t{ 0xf00 }));
-        auto res2 = RamsesHMIUtils::GetResourceDataPoolForClient(client).createResourceForScene(scene, hash);
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-        {
-            auto managedRes = client.impl.getClientApplication().loadResource(res2->impl.getLowlevelResourceHash());
-            EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
-            EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-            scene.destroy(*res2);
-            EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-        }
-        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-        this->getFramework().impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
-    }
-
-    TEST_F(AResourceTestClient, statisticCounterIsUpdatedWhenAddingToPoolViaDataAndCreatingForScene)
-    {
-        const float data[2 * 2] = { 1, 2, 3, 4 };
-        auto hash = RamsesHMIUtils::GetResourceDataPoolForClient(client).addArrayResourceData(EDataType::Vector2F, 2, data);
-        EXPECT_NE(hash, resourceId_t::Invalid());
-        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-        this->getFramework().impl.getStatisticCollection().nextTimeInterval();
-        auto res = RamsesHMIUtils::GetResourceDataPoolForClient(client).createResourceForScene(this->getScene(), hash);
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-        this->getScene().destroy(*res);
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-        EXPECT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(client).removeResourceData(hash));
-        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
-
-        this->getFramework().impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
     }
 }

@@ -44,7 +44,7 @@ namespace ramses_internal
             TestCorrectBufferRelease,
         };
 
-        bool renderAndCheckOneSharedMemoryFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, ETriangleColor color, WaylandIviSurfaceId streamTextureSourceId, UInt32& frameCount, const String& expectedImageName);
+        bool renderAndCheckOneSharedMemoryFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, ETriangleColor color, WaylandIviSurfaceId waylandSurfaceIviId, UInt32& frameCount, const String& expectedImageName);
         bool checkFreeBufferState(EmbeddedCompositingTestsFramework& testFramework, const ramses_internal::String& bufferFreeState);
 
         static constexpr uint32_t DisplayWidth = IntegrationScene::DefaultViewportWidth;

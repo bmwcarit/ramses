@@ -11,7 +11,7 @@
 
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/RendererEvent.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 
 namespace ramses_internal
 {
@@ -62,7 +62,7 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::ConfirmationEcho& cmd) { return fmt::format("ConfirmationEcho (display={} text={})", cmd.display, cmd.text); }
         inline std::string ToString(const RendererCommand::Variant& var)
         {
-            return absl::visit([&](const auto& c) { return RendererCommandUtils::ToString(c); }, var);
+            return std::visit([&](const auto& c) { return RendererCommandUtils::ToString(c); }, var);
         }
 
         template <typename T>
@@ -80,7 +80,7 @@ namespace ramses_internal
         }
         inline RendererCommand::Variant Copy(const RendererCommand::Variant& var)
         {
-            return absl::visit([&](const auto& c) { return RendererCommandUtils::CreateVariantFrom(c); }, var);
+            return std::visit([&](const auto& c) { return RendererCommandUtils::CreateVariantFrom(c); }, var);
         }
 
         template <typename T>
@@ -145,22 +145,22 @@ namespace ramses_internal
         }
         inline RendererEvent GenerateFailEventForCommand(const RendererCommand::Variant& var)
         {
-            return absl::visit([&](const auto& c) { return RendererCommandUtils::GenerateFailEventForCommand(c); }, var);
+            return std::visit([&](const auto& c) { return RendererCommandUtils::GenerateFailEventForCommand(c); }, var);
         }
 
         inline void AddAndConsolidateCommandToStash(RendererCommand::Variant&& cmd, RendererCommands& commands)
         {
             // never filter publish or confirmation echo
-            if (absl::holds_alternative<RendererCommand::ScenePublished>(cmd))
+            if (std::holds_alternative<RendererCommand::ScenePublished>(cmd))
             {
                 commands.push_back(std::move(cmd));
             }
             // strike out unpublish of published scene
-            else if (absl::holds_alternative<RendererCommand::SceneUnpublished>(cmd))
+            else if (std::holds_alternative<RendererCommand::SceneUnpublished>(cmd))
             {
-                const auto sceneId = absl::get<RendererCommand::SceneUnpublished>(cmd).scene;
-                const auto it = absl::c_find_if(commands, [sceneId](const auto& c) {
-                    return absl::holds_alternative<RendererCommand::ScenePublished>(c) && absl::get<RendererCommand::ScenePublished>(c).scene == sceneId;
+                const auto sceneId = std::get<RendererCommand::SceneUnpublished>(cmd).scene;
+                const auto it = std::find_if(std::cbegin(commands), std::cend(commands), [sceneId](const auto& c) {
+                    return std::holds_alternative<RendererCommand::ScenePublished>(c) && std::get<RendererCommand::ScenePublished>(c).scene == sceneId;
                 });
                 if (it != commands.end())
                     commands.erase(it);
@@ -169,14 +169,14 @@ namespace ramses_internal
             }
             // do not stash single time commands and frame profiler
             else if (
-                absl::holds_alternative<RendererCommand::LogInfo>(cmd) ||
-                absl::holds_alternative<RendererCommand::LogStatistics>(cmd))
+                std::holds_alternative<RendererCommand::LogInfo>(cmd) ||
+                std::holds_alternative<RendererCommand::LogStatistics>(cmd))
             {
             }
             // keep always just the last cmd of all other types
             else
             {
-                const auto it = absl::c_find_if(commands, [&cmd](const auto& c) {
+                const auto it = std::find_if(std::begin(commands), std::end(commands), [&cmd](const auto& c) {
                     return c.index() == cmd.index();
                 });
                 if (it != commands.end())

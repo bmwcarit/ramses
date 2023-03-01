@@ -17,7 +17,7 @@ namespace ramses_internal
     void RendererCommandVisitorMock::visit(const RendererCommands& cmds)
     {
         for (const auto& c : cmds)
-            absl::visit(*this, c);
+            std::visit(*this, c);
     }
 
     void RendererCommandVisitorMock::visit(RendererCommandBuffer& buffer)

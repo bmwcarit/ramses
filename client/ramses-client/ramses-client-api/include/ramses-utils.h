@@ -208,6 +208,24 @@ namespace ramses
          *
          */
         static Scene* LoadSceneFromMemory(RamsesClient& client, std::unique_ptr<unsigned char[]> data, size_t size, bool localOnly);
+
+        /**
+         * @brief Dumps all objects of a scene which do not contribute to the visual appearance of the scene on screen.
+         * This includes disabled RenderPass-es, invisible MeshNode-s, client resources which are not used by the scene, and so on.
+         * The output is in text form, starts with a list of all unrequired objects and their names and concludes with a
+         * statistic (number of unrequired objects out of all objects of that type)
+         *
+         * @param[in] scene the source scene
+         */
+        static void DumpUnrequiredSceneObjects(const Scene& scene);
+
+        /**
+         * @brief As #DumpUnrequiredSceneObjects but write to given stream.
+         *
+         * @param[in] scene the source scene
+         * @param[out] out stream to write to
+         */
+        static void DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out);
     };
 
     inline Scene* RamsesUtils::LoadSceneFromMemory(RamsesClient& client, std::unique_ptr<unsigned char[]> data, size_t size, bool localOnly)

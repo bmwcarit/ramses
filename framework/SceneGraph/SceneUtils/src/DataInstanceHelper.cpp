@@ -71,7 +71,7 @@ namespace ramses_internal
     template <typename T>
     void setInstanceFieldData(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, const DataInstanceValueVariant& value)
     {
-        const T typedValue = absl::get<T>(value);
+        const T typedValue = std::get<T>(value);
         ISceneDataArrayAccessor::SetDataArray<T>(&scene, dataInstance, dataField, 1u, &typedValue);
     }
 

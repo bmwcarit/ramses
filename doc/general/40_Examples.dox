@@ -65,12 +65,13 @@ A render target can be assigned to a render pass, so the pass renders its meshes
 The render target can be then used as texture input in a following render pass.
 @snippet ramses-example-basic-rendertarget/src/main.cpp Basic Rendertarget Example
 
-## Basic Compositing
-This code creates a stream-texture that consists of a fallback texture and an id for mapping
-to a render-target. The renderer can replace the fallback texture by the content
-of a render-target, when the render-target is connected to the renderer. The id is an integer to identify the
-render-target.
-@snippet ramses-example-basic-compositing/src/main.cpp Basic Compositing Example
+## Local Compositing
+This example shows how to replace a texture with an ivi surface that is provided to the embedded wayland compositor by a wayland client.
+The example code creates a stream buffer that gets linked to a texture consumer. The renderer replaces the texture consumer
+by the content of a wayland surface when the wayland surface is connected to the renderer's embedded compositor. The ivi surface id
+is an integer to identify the wayland surface according to ivi application protocol.
+
+@snippet ramses-example-local-compositing/src/main.cpp Local Compositing Example
 
 ## Data Buffers (vertices)
 This example creates a scene with a shape. Some of the shape's vertices

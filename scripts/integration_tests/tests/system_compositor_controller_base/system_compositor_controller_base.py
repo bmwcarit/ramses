@@ -94,7 +94,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["renderer"]))
 
         # Start client
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 10 -ts 0 -cz 5")
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 10 --test-state 0 --cz 5")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 

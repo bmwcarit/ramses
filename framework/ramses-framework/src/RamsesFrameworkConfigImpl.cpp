@@ -8,7 +8,6 @@
 
 #include "RamsesFrameworkConfigImpl.h"
 #include "Utils/LoggingUtils.h"
-#include "Utils/Argument.h"
 #include "Watchdog/PlatformWatchdog.h"
 #include "TransportCommon/EConnectionProtocol.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
@@ -24,30 +23,13 @@ namespace ramses
     static bool gHasTCPComm = false;
 #endif
 
-    RamsesFrameworkConfigImpl::RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv)
+    RamsesFrameworkConfigImpl::RamsesFrameworkConfigImpl()
         : StatusObjectImpl()
         , m_shellType(ERamsesShellType_Default)
         , m_periodicLogsEnabled(true)
         , m_usedProtocol(gHasTCPComm ? EConnectionProtocol::TCP : EConnectionProtocol::Fake)
         , m_enableProtocolVersionOffset(false)
     {
-        m_programName = (argc >= 1) ? argv[0] : "";
-        if (argc > 1)
-        {
-            CLI::App cli;
-            registerOptions(cli);
-            cli.allow_extras();
-            try
-            {
-                cli.parse(argc, argv);
-            }
-            catch (CLI::ParseError& e)
-            {
-                const auto err = cli.exit(e);
-                if (err != 0)
-                    exit(err);
-            }
-        }
     }
 
     RamsesFrameworkConfigImpl::~RamsesFrameworkConfigImpl() = default;
@@ -185,7 +167,7 @@ namespace ramses
             {"debug", ELogLevel::Debug},
             {"trace", ELogLevel::Trace},
         };
-        logger->add_option("--log-level", loggerConfig.logLevel, "Log level for all contexts (both console and dlt)")
+        logger->add_option("-l,--log-level", loggerConfig.logLevel, "Log level for all contexts (both console and dlt)")
             ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));
         logger->add_option("--log-level-console", loggerConfig.logLevelConsole, "Log level for all contexts (console only)")
             ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));

@@ -107,7 +107,7 @@ namespace ramses_internal
         : id(id_.isValid() ? id_ : Guid(TestRandom::Get(255, std::numeric_limits<size_t>::max())))
         , state(state_)
     {
-        ramses::RamsesFrameworkConfigImpl config(0, nullptr);
+        ramses::RamsesFrameworkConfigImpl config;
         config.enableProtocolVersionOffset();
 
         commSystem = CommunicationSystemFactory::ConstructCommunicationSystem(config, ParticipantIdentifier(id, name), frameworkLock, statisticCollection);

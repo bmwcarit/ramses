@@ -117,9 +117,9 @@ or the platform doesn't support embedded compositing the default texture
 ## Example
 
 The following code show the usage of the embedded compositing API in RAMSES. It
-creates a 2D quad which uses StreamTexture as its face.
+creates a 2D quad which uses stream buffer as its face.
 
-@ref ramses-example-basic-compositing/src/main.cpp
-@snippet ramses-example-basic-compositing/src/main.cpp Basic Compositing Example
+@ref ramses-example-local-compositing/src/main.cpp
+@snippet ramses-example-local-compositing/src/main.cpp Local Compositing Example
 
 */

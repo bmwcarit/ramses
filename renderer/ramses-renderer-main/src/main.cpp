@@ -122,7 +122,6 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         displayConfig.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(displayConfig.getWaylandIviSurfaceID().getValue() + i));
         renderer.createDisplay(displayConfig);
     }
-    renderer.setMaximumFramerate(60);
     renderer.flush();
     renderer.startThread();
 

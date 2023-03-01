@@ -10,7 +10,6 @@
 
 #include "ramses-renderer-api/RendererConfig.h"
 
-#include "Utils/Argument.h"
 #include "ResourceStressTestSceneArray.h"
 #include "RenderExecutor.h"
 
@@ -29,9 +28,9 @@ namespace ramses_internal
 
     ResourceStressTests::ResourceStressTests(const StressTestConfig& config)
         : m_testConfig(config)
-        , m_framework{ ramses::RamsesFrameworkConfig{ config.argc, config.argv } }
+        , m_framework{config.frameworkConfig}
         , m_client(*m_framework.createClient("resource-stress-tests"))
-        , m_testRenderer(m_framework, ramses::RendererConfig(config.argc, config.argv))
+        , m_testRenderer(m_framework, config.rendererConfig)
         , m_displays(config.displayCount)
         , m_sceneSetsPerDisplay(config.sceneSetsPerDisplay)
     {
@@ -50,7 +49,7 @@ namespace ramses_internal
         {
             const auto displayWidth = FirstDisplayWidth >> i;
             const auto displayHeight = FirstDisplayHeight >> i;
-            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, uint32_t(i), config.argc, config.argv);
+            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, uint32_t(i), config.displayConfig);
 
             // Offscreen buffers can be smaller, to make the tests run faster
             const auto obWidth = displayWidth / 10;
@@ -204,7 +203,8 @@ namespace ramses_internal
 
     void ResourceStressTests::setRendererFPS(uint32_t rendererFPS)
     {
-        m_testRenderer.setFPS(rendererFPS);
+        for (const auto& display : m_displays)
+            m_testRenderer.setFPS(display.displayId, rendererFPS);
     }
 
     Int32 ResourceStressTests::recreateResourcesEveryFrame(uint32_t sceneFpsLimit)

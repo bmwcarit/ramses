@@ -32,7 +32,7 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
                                                    args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland")
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 10 -ts {} -cz 5".format(self._testSceneState))
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 10 --test-state {} --cz 5".format(self._testSceneState))
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
         self.flushname = 44

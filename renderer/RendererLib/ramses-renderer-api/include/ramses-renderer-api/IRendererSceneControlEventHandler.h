@@ -207,8 +207,8 @@ namespace ramses
         *        which is passed to ramses::RendererSceneControl when the scene is rendered (see ramses::RendererSceneControl::handlePickEvent).
         *
         * @param[in] sceneId ID of scene to which the picked objects belong.
-        * @param[in] pickedObjects Pointer to first ID of the picked objects array.
-        *        This array is valid only for the time of calling this method.
+        * @param[in] pickedObjects Pointer to first ID of the picked objects array, this array is valid only for the time of calling this method.
+        *                          Picked objects are sorted from closest to farthest w.r.t. their assigned camera.
         * @param[in] pickedObjectsCount Number of picked object IDs in the \c pickedObjects array.
         */
         virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) = 0;

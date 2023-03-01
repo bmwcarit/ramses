@@ -33,11 +33,11 @@ namespace ramses_internal
     TEST_F(ARamsesVersion, canParseCurrentVersion)
     {
         BinaryOutputStream out;
-        RamsesVersion::WriteToStream(out, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, ramses::EFeatureLevel_Latest);
+        RamsesVersion::WriteToStream(out, ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, ramses::EFeatureLevel_Latest);
         BinaryInputStream in(out.getData());
         EXPECT_TRUE(RamsesVersion::ReadFromStream(in, info, featureLevel));
 
-        EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, info.versionString.c_str());
+        EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, info.versionString.c_str());
         EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, info.gitHash.c_str());
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR)), info.major);
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR)), info.minor);
@@ -49,13 +49,13 @@ namespace ramses_internal
         {
             File fOut("ramsesVersionTest");
             BinaryFileOutputStream out(fOut);
-            RamsesVersion::WriteToStream(out, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, ramses::EFeatureLevel_Latest);
+            RamsesVersion::WriteToStream(out, ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, ramses::EFeatureLevel_Latest);
         }
         File fIn("ramsesVersionTest");
         BinaryFileInputStream in(fIn);
         EXPECT_TRUE(RamsesVersion::ReadFromStream(in, info, featureLevel));
 
-        EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, info.versionString.c_str());
+        EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, info.versionString.c_str());
         EXPECT_STREQ(::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, info.gitHash.c_str());
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR)), info.major);
         EXPECT_EQ(static_cast<UInt32>(std::atoi(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR)), info.minor);

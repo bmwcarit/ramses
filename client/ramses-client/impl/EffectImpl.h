@@ -20,6 +20,8 @@
 #include "SceneUtils/DataLayoutCreationHelper.h"
 #include "SceneAPI/RenderState.h"
 
+#include <optional>
+
 namespace ramses
 {
     class EffectInputImpl;

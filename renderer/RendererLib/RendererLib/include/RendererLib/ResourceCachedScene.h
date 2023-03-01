@@ -9,8 +9,7 @@
 #ifndef RAMSES_RESOURCECACHEDSCENE_H
 #define RAMSES_RESOURCECACHEDSCENE_H
 
-#include "RendererAPI/Types.h"
-#include "RendererLib/DataReferenceLinkCachedScene.h"
+#include "RendererLib/TextureLinkCachedScene.h"
 
 namespace ramses_internal
 {
@@ -24,7 +23,7 @@ namespace ramses_internal
     };
     using VertexArrayCache = std::vector<VertexArrayCacheEntry>;
 
-    class ResourceCachedScene : public DataReferenceLinkCachedScene
+    class ResourceCachedScene : public TextureLinkCachedScene
     {
     public:
         explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
@@ -99,6 +98,7 @@ namespace ramses_internal
         Bool updateTextureSamplerResourceAsRenderBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
         Bool updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
         Bool updateTextureSamplerResourceAsStreamTexture(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, const StreamTextureHandle streamTextureHandle, DeviceResourceHandle& deviceHandleInOut);
+        bool updateTextureSamplerResourceAsStreamBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, const StreamBufferHandle streamBuffer, const TextureSampler& fallbackSamplerData, DeviceResourceHandle& deviceHandleInOut);
 
         DeviceHandleVector         m_effectDeviceHandleCache;
         VertexArrayCache           m_vertexArrayCache;

@@ -18,7 +18,7 @@ file(GLOB
 add_library(ramses-renderer-api INTERFACE)
 target_include_directories(ramses-renderer-api INTERFACE ${RAMSES_RENDERER_API_INCLUDE_BASE})
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -31,36 +31,36 @@ ACME_MODULE(
     # files of this module
     #==========================================================================
 
-    FILES_PRIVATE_HEADER    ramses-renderer-api/include/*.h
+    SRC_FILES               ramses-renderer-api/include/*.h
                             ramses-renderer-api/include/ramses-renderer-api/*.h
 
     # This needs to be fixed in upcoming story regarding renderer lib
     # Not possible to solve now, without splitting in two libs (which is the correct solution)
-    INCLUDE_BASE            ramses-renderer-impl/include
-    FILES_PRIVATE_HEADER    ramses-renderer-impl/include/*.h
-    FILES_SOURCE            ${RAMSES_RENDERER_FILES_SOURCE}
+    INCLUDE_PATHS           ramses-renderer-impl/include
+    SRC_FILES               ramses-renderer-impl/include/*.h
+                            ${RAMSES_RENDERER_FILES_SOURCE}
 
-    INCLUDE_BASE            RendererAPI/include
-    FILES_PRIVATE_HEADER    RendererAPI/include/RendererAPI/*.h
-    FILES_SOURCE            RendererAPI/src/*.cpp
+    INCLUDE_PATHS           RendererAPI/include
+    SRC_FILES               RendererAPI/include/RendererAPI/*.h
+                            RendererAPI/src/*.cpp
 
-    INCLUDE_BASE            Platform_Base/include
-    FILES_PRIVATE_HEADER    Platform_Base/include/Platform_Base/*.h
-    FILES_SOURCE            Platform_Base/src/*.cpp
+    INCLUDE_PATHS           Platform_Base/include
+    SRC_FILES               Platform_Base/include/Platform_Base/*.h
+                            Platform_Base/src/*.cpp
 
-    INCLUDE_BASE            RendererCommands/include
-    FILES_PRIVATE_HEADER    RendererCommands/include/RendererCommands/*.h
-    FILES_SOURCE            RendererCommands/src/*.cpp
+    INCLUDE_PATHS           RendererCommands/include
+    SRC_FILES               RendererCommands/include/RendererCommands/*.h
+                            RendererCommands/src/*.cpp
 
-    INCLUDE_BASE            RendererFramework/include
-    FILES_PRIVATE_HEADER    RendererFramework/include/RendererFramework/*.h
+    INCLUDE_PATHS           RendererFramework/include
+    SRC_FILES               RendererFramework/include/RendererFramework/*.h
                             RendererFramework/include/*.h
-    FILES_SOURCE            RendererFramework/src/*.cpp
+                            RendererFramework/src/*.cpp
 
-    INCLUDE_BASE            RendererLib/include
-    FILES_PRIVATE_HEADER    RendererLib/include/RendererLib/*.h
+    INCLUDE_PATHS           RendererLib/include
+    SRC_FILES               RendererLib/include/RendererLib/*.h
                             RendererLib/include/*.h
-    FILES_SOURCE            RendererLib/src/*.cpp
+                            RendererLib/src/*.cpp
 
     #==========================================================================
     # dependencies
@@ -93,14 +93,14 @@ endif()
 
 set(ramses-shared-lib-renderer-MIXIN
     ${ramses-shared-lib-renderer-MIXIN}
-    INCLUDE_BASE ${RAMSES_RENDERER_API_INCLUDE_BASE}
-    FILES_SOURCE ${RAMSES_RENDERER_FILES_SOURCE}
+    INCLUDE_PATHS ${RAMSES_RENDERER_API_INCLUDE_BASE}
+    SRC_FILES ${RAMSES_RENDERER_FILES_SOURCE}
     DEPENDENCIES  ramses-renderer-lib
     CACHE INTERNAL "")
 
 
 IF (${ramses-sdk_BUILD_TESTS})
-    ACME_MODULE(
+    createModule(
 
         #==========================================================================
         # general module information
@@ -112,9 +112,9 @@ IF (${ramses-sdk_BUILD_TESTS})
         # files of this module
         #==========================================================================
 
-        INCLUDE_BASE            RendererTestUtils/include
-        FILES_PRIVATE_HEADER    RendererTestUtils/include/*.h
-        FILES_SOURCE            RendererTestUtils/src/*.cpp
+        INCLUDE_PATHS           RendererTestUtils/include
+        SRC_FILES               RendererTestUtils/include/*.h
+                                RendererTestUtils/src/*.cpp
 
         #==========================================================================
         # dependencies
@@ -124,36 +124,42 @@ IF (${ramses-sdk_BUILD_TESTS})
     )
 ENDIF()
 
-ACME_MODULE(
+if (${ramses-sdk_BUILD_TESTS})
+    createModule(
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    ramses-renderer-lib-test
-    TYPE                    TEST
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    ramses-renderer-lib-test
+        TYPE                    BINARY
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            RendererFramework/test/*.cpp
-                            RendererFramework/test/*.h
-                            RendererAPI/test/*.cpp
-                            RendererAPI/test/*.h
-                            RendererLib/test/*.cpp
-                            RendererLib/test/*.h
-                            ShaderLanguage_Base/test/*.cpp
-                            ShaderLanguage_Base/test/*.h
-                            RendererCommands/test/*.cpp
-                            RendererCommands/test/*.h
-                            ramses-renderer-impl/test/*.h
-                            ramses-renderer-impl/test/*.cpp
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+        SRC_FILES            RendererFramework/test/*.cpp
+                                RendererFramework/test/*.h
+                                RendererAPI/test/*.cpp
+                                RendererAPI/test/*.h
+                                RendererLib/test/*.cpp
+                                RendererLib/test/*.h
+                                ShaderLanguage_Base/test/*.cpp
+                                ShaderLanguage_Base/test/*.h
+                                RendererCommands/test/*.cpp
+                                RendererCommands/test/*.h
+                                ramses-renderer-impl/test/*.h
+                                ramses-renderer-impl/test/*.cpp
 
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            ramses-renderer-lib
-                            ramses-client
-                            ramses-gmock-main
-                            RendererTestUtils
-                            FrameworkTestUtils
-)
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            ramses-renderer-lib
+                                ramses-client
+                                ramses-gmock-main
+                                RendererTestUtils
+                                FrameworkTestUtils
+    )
+
+    makeTestFromTarget(
+        TARGET ramses-renderer-lib-test
+        SUFFIX UNITTEST)
+endif()

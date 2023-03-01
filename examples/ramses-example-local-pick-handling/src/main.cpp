@@ -16,7 +16,6 @@
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "RamsesObjectTypeUtils.h"
 #include <unordered_set>
 #include <thread>
 #include <iostream>
@@ -108,20 +107,20 @@ private:
 };
 /** \endcond */
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(150, 150, DisplayWidth, DisplayHeight);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();

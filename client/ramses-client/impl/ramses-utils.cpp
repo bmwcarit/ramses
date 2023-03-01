@@ -30,9 +30,11 @@
 #include "Math3d/ProjectionParams.h"
 #include "Utils/File.h"
 #include "Utils/LogMacros.h"
+#include "SceneDumper.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "lodepng.h"
+#include <iostream>
 
 namespace ramses
 {
@@ -357,6 +359,22 @@ namespace ramses
             return false;
 
         return true;
+    }
+
+    void RamsesUtils::DumpUnrequiredSceneObjects(const Scene& scene)
+    {
+        LOG_INFO_F(ramses_internal::CONTEXT_CLIENT, [&](ramses_internal::StringOutputStream& output) {
+            SceneDumper sceneDumper{ scene.impl };
+            sceneDumper.dumpUnrequiredObjects(output);
+            });
+    }
+
+    void RamsesUtils::DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out)
+    {
+        ramses_internal::StringOutputStream output;
+        SceneDumper sceneDumper{ scene.impl };
+        sceneDumper.dumpUnrequiredObjects(output);
+        out << output.release();
     }
 }
 

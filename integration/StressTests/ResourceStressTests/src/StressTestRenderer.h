@@ -26,10 +26,10 @@ namespace ramses_internal
         StressTestRenderer(ramses::RamsesFramework& framework, const ramses::RendererConfig& config);
         ~StressTestRenderer();
 
-        ramses::displayId_t createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, int32_t argc = 0, const char* argv[] = nullptr);
+        ramses::displayId_t createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, const ramses::DisplayConfig& config);
         ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptable);
         void startLooping();
-        void setFPS(uint32_t fpsAsInteger);
+        void setFPS(ramses::displayId_t display, uint32_t fpsAsInteger);
         void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
         void setSkippingOfUnmodifiedBuffers(bool enabled);
 

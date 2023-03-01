@@ -27,6 +27,9 @@ namespace ramses_internal
         grp->add_flag("--ivi-visible,!--no-ivi-visible", m_startVisibleIvi, "set IVI surface visible when created");
         grp->add_option("--ivi-layer", m_waylandIviLayerID, "set id of IVI layer the display surface will be added to")->type_name("LAYER");
         grp->add_option("--ivi-surface", m_waylandIviSurfaceID, "set id of IVI surface the display will be composited on")->type_name("SURFACE");
+        auto* ec  = grp->add_option("--ec-display", m_waylandSocketEmbedded, "set wayland display (socket name) that is created by the embedded compositor")->type_name("NAME");
+        grp->add_option("--ec-socket-group", m_waylandSocketEmbeddedGroupName, "group name for wayland display socket")->needs(ec)->type_name("NAME");
+        grp->add_option("--ec-socket-permissions", m_waylandSocketEmbeddedPermissions, "file permissions for wayland display socket")->needs(ec)->type_name("MODE");
         grp->add_option("--clear", m_clearColor, "set clear color (rgba)");
     }
 

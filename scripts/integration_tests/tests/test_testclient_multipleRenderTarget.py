@@ -21,7 +21,7 @@ class TestMultiplRenderTargets(test_classes.OnSelectedTargetsTest):
         self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 16")
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 16")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 

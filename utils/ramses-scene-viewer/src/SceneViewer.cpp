@@ -13,7 +13,6 @@
 #include "ramses-client.h"
 #include "ramses-utils.h"
 
-#include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
 #include "ImguiClientHelper.h"
@@ -24,7 +23,6 @@
 #include "RamsesFrameworkConfigImpl.h"
 
 #include "PlatformAbstraction/PlatformThread.h"
-#include "ramses-hmi-utils.h"
 #include <fstream>
 #include "Utils/Image.h"
 #include "Utils/File.h"
@@ -239,12 +237,12 @@ namespace ramses_internal
             // dump unused objects
             const std::string unrequiredObjectsReportFilePath = m_validationOutput + m_sceneName + "_unrequObjsReport.txt";
             std::ofstream unrequObjsOfstream(unrequiredObjectsReportFilePath);
-            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(scene, unrequObjsOfstream);
+            ramses::RamsesUtils::DumpUnrequiredSceneObjectsToFile(scene, unrequObjsOfstream);
         }
 
         if (m_guiMode == GuiMode::Off)
         {
-            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(scene);
+            ramses::RamsesUtils::DumpUnrequiredSceneObjects(scene);
         }
     }
 }

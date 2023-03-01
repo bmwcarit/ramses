@@ -147,11 +147,9 @@ namespace ramses
         *          however if the new link fails it is undefined whether previous link was discarded or not.
         *          Note: To unlink stream buffer use #unlinkData as with any other type of data linking.
         *
-        *          Additionally, for successful linking of stream buffer content must be already available on the corresponding
-        *          wayland ivi surface. This can be monitored by handling #ramses::IRendererSceneControlEventHandler::streamAvailabilityChanged.
-        *
-        *          If a wayland ivi surface becomes unavailable, e.g., the wayland client destroys the surface or attaches null buffer to it, all
-        *          stream buffers created for that ivi surface id get unlinked from linked texture consumers - without generating unlink event.
+        *          A stream buffer can be linked successfully regardless of whether content from the wayland surface is available at the time
+        *          of linking. If content from the wayland surface is - or becomes - unavailable the linked texture consumers use the original
+        *          texture samplers' content before linking.
         *
         *          #ramses::IRendererSceneControlEventHandler::streamBufferLinked will be emitted after stream buffer linked to consumer.
         *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.

@@ -120,7 +120,6 @@ namespace ramses
         EScenePublicationMode getPublicationModeSetFromSceneConfig() const;
 
         status_t saveToFile(const char* fileName, bool compress) const;
-        bool saveResources(std::string const& fileName, bool compress) const;
 
         PerspectiveCamera*  createPerspectiveCamera(const char* name);
         OrthographicCamera* createOrthographicCamera(const char* name);

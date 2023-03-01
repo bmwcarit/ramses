@@ -22,9 +22,10 @@
 using namespace ramses_internal;
 
 const float RendererTestUtils::DefaultMaxAveragePercentPerPixel = 0.2f;
-absl::optional<std::chrono::microseconds> RendererTestUtils::MaxFrameCallbackPollingTime;
-absl::optional<ramses_internal::String> RendererTestUtils::WaylandDisplayForSystemCompositorController;
-std::vector<const char*> RendererTestUtils::CommandLineArgs{};
+std::optional<std::chrono::microseconds> RendererTestUtils::MaxFrameCallbackPollingTime;
+std::optional<ramses_internal::String> RendererTestUtils::WaylandDisplayForSystemCompositorController;
+std::unique_ptr<ramses::RendererConfig> RendererTestUtils::defaultRendererConfig = std::make_unique<ramses::RendererConfig>();
+std::unique_ptr<ramses::DisplayConfig> RendererTestUtils::defaultDisplayConfig = std::make_unique<ramses::DisplayConfig>();
 
 namespace
 {
@@ -139,7 +140,7 @@ void RendererTestUtils::DestroyDisplayImmediate(ramses::RamsesRenderer& renderer
 
 ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
 {
-    ramses::RendererConfig rendererConfig(static_cast<int32_t>(CommandLineArgs.size()), CommandLineArgs.data());
+    ramses::RendererConfig rendererConfig(*defaultRendererConfig);
     ramses_internal::RendererConfig& internalRendererConfig = const_cast<ramses_internal::RendererConfig&>(rendererConfig.impl.getInternalRendererConfig());
 
     if (WaylandDisplayForSystemCompositorController.has_value())
@@ -159,9 +160,10 @@ void RendererTestUtils::SetWaylandDisplayForSystemCompositorControllerForAllTest
     WaylandDisplayForSystemCompositorController = wd;
 }
 
-void RendererTestUtils::SetCommandLineParamsForAllTests(const int argc, char const* const* argv)
+void RendererTestUtils::SetDefaultConfigForAllTests(const ramses::RendererConfig& rendererConfig, const ramses::DisplayConfig& displayConfig)
 {
-    CommandLineArgs.assign(argv, argv + argc);
+    defaultRendererConfig = std::make_unique<ramses::RendererConfig>(rendererConfig);
+    defaultDisplayConfig = std::make_unique<ramses::DisplayConfig>(displayConfig);
 }
 
 void RendererTestUtils::SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::microseconds time)
@@ -171,7 +173,7 @@ void RendererTestUtils::SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::m
 
 ramses::DisplayConfig RendererTestUtils::CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible)
 {
-    ramses::DisplayConfig displayConfig(static_cast<int32_t>(CommandLineArgs.size()), CommandLineArgs.data());
+    ramses::DisplayConfig displayConfig(*defaultDisplayConfig);
     displayConfig.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(firstIviSurfaceId + iviSurfaceIdOffset));
 
     if(iviWindowStartVisible)

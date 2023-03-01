@@ -23,7 +23,7 @@ int main(int argc, const char* argv[])
 {
     using namespace ramses_internal;
 
-    ramses::RamsesFrameworkConfigImpl config(0, nullptr);
+    ramses::RamsesFrameworkConfigImpl config;
     config.setDLTApplicationDescription("ramses-daemon");
     config.setDLTApplicationID("SMGR");
 
@@ -39,7 +39,7 @@ int main(int argc, const char* argv[])
     ramsh.start();
 
     LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Starting Ramses Daemon");
-    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING <<
+    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: " << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION <<
              " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT);
 
     PlatformLock frameworkLock;

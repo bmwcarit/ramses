@@ -12,7 +12,7 @@
 #include "RendererLib/AsyncEffectUploader.h"
 #include "PlatformMock.h"
 #include "Utils/ThreadLocalLog.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "Watchdog/ThreadAliveNotifierMock.h"
 #include <thread>
 #include <memory>
@@ -117,9 +117,9 @@ namespace ramses_internal
             }
 
             EXPECT_EQ(resultShaders.size(), effectsToUpload.size());
-            EXPECT_TRUE(absl::c_all_of(effectsToUpload, [&](const auto& e)
+            EXPECT_TRUE(std::all_of(std::cbegin(effectsToUpload), std::cend(effectsToUpload), [&](const auto& e)
                 {
-                    return absl::c_find_if(resultShaders, [&e](const auto& u) {return e->getHash() == u.first; }) != resultShaders.cend();
+                    return std::find_if(std::cbegin(resultShaders), std::cend(resultShaders), [&e](const auto& u) {return e->getHash() == u.first; }) != resultShaders.cend();
                 }));
         }
 

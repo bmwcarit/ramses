@@ -24,9 +24,9 @@ namespace ramses_internal
         m_framework.destroyRenderer(m_renderer);
     }
 
-    ramses::displayId_t StressTestRenderer::createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, int32_t argc, const char* argv[])
+    ramses::displayId_t StressTestRenderer::createDisplay(uint32_t offsetX, uint32_t width, uint32_t height, uint32_t displayIndex, const ramses::DisplayConfig& config)
     {
-        ramses::DisplayConfig displayConfig(argc, argv);
+        ramses::DisplayConfig displayConfig(config);
         displayConfig.setWindowRectangle(offsetX + 50, 50, width, height);
 
         const auto iviSurfaceId = displayConfig.getWaylandIviSurfaceID();
@@ -63,10 +63,10 @@ namespace ramses_internal
         m_renderer.startThread();
     }
 
-    void StressTestRenderer::setFPS(uint32_t fpsAsInteger)
+    void StressTestRenderer::setFPS(ramses::displayId_t display, uint32_t fpsAsInteger)
     {
         const float fpsAsFloatBecauseWhyNot = static_cast<float>(fpsAsInteger);
-        m_renderer.setMaximumFramerate(fpsAsFloatBecauseWhyNot);
+        m_renderer.setFramerateLimit(display, fpsAsFloatBecauseWhyNot);
     }
 
     void StressTestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)

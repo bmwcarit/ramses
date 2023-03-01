@@ -22,7 +22,7 @@
 #include "RendererMock.h"
 #include "ComponentMocks.h"
 #include "TestSceneHelper.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "Utils/ThreadLocalLog.h"
 
 using namespace ramses_internal;
@@ -997,7 +997,7 @@ TEST_P(ARenderer, takeMultipleScreenshotsOfADisplayOverritesPreviousScreenshot)
 
     auto screenshots1 = renderer.dispatchProcessedScreenshots();
     ASSERT_EQ(1u, screenshots1.size());
-    const auto& screenshots1FB = absl::c_find_if(screenshots1, [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
+    const auto& screenshots1FB = std::find_if(std::cbegin(screenshots1), std::cend(screenshots1), [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
     ASSERT_NE(screenshots1.cend(), screenshots1FB);
 
     // check that screenshot request got deleted

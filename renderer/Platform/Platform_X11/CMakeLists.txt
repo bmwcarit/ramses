@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -23,8 +23,9 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/Platform_X11/*.h
-    FILES_SOURCE            src/*.cpp
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Platform_X11/*.h
+                            src/*.cpp
 
     #==========================================================================
     # dependencies
@@ -33,25 +34,31 @@ ACME_MODULE(
                             Platform_EGL
 )
 
-ACME_MODULE(
+if (${ramses-sdk_BUILD_TESTS})
+    createModule(
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    platform-x11-test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    platform-x11-test
+        TYPE                    BINARY
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            test/*.cpp
-                            test/*.h
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+        SRC_FILES            test/*.cpp
+                                test/*.h
 
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            platform-x11-egl-es-3-0
-                            ramses-gmock-main
-                            RendererTestUtils
-)
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            platform-x11-egl-es-3-0
+                                ramses-gmock-main
+                                RendererTestUtils
+    )
+
+    makeTestFromTarget(
+        TARGET platform-x11-test
+        SUFFIX RNDSANDWICHTEST_SWRAST
+        SKIPPABLE)
+endif()
