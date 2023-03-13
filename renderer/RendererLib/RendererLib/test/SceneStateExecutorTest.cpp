@@ -164,8 +164,6 @@ namespace ramses_internal
         SceneStateExecutor sceneStateExecutor;
     };
 
-    constexpr SceneId ASceneStateExecutor::sceneId;
-
     TEST_F(ASceneStateExecutor, canPublishUnknownScene)
     {
         const SceneId sceneIdForUnknownScene(1u);

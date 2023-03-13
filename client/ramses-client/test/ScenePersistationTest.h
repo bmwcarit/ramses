@@ -15,27 +15,22 @@
 #include "SceneImpl.h"
 #include "RamsesObjectTypeUtils.h"
 #include "RamsesClientImpl.h"
+#include "RamsesFrameworkConfigImpl.h"
 
 namespace ramses
 {
-    class ASceneAndAnimationSystemLoadedFromFile : public LocalTestClientWithSceneAndAnimationSystem, public ::testing::Test
+    class ASceneLoadedFromFile : public LocalTestClientWithScene, public ::testing::Test
     {
     public:
-        explicit ASceneAndAnimationSystemLoadedFromFile(uint32_t animationSystemCreationFlags = EAnimationSystemFlags_Default)
-            : LocalTestClientWithSceneAndAnimationSystem(animationSystemCreationFlags)
+        ASceneLoadedFromFile()
+            : LocalTestClientWithScene()
             , m_clientForLoading(*m_frameworkForLoader.createClient("client"))
             , m_sceneLoaded(nullptr)
-            , m_animationSystemLoaded(nullptr)
         {
             m_frameworkForLoader.impl.getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
         }
 
-        ~ASceneAndAnimationSystemLoadedFromFile()
-        {
-        }
-
         using ObjectTypeHistogram = ramses_internal::HashMap< ERamsesObjectType, uint32_t >;
-
 
         void fillObjectTypeHistorgramFromObjectVector(ObjectTypeHistogram& counter, const RamsesObjectVector& objects)
         {
@@ -138,9 +133,18 @@ namespace ramses
 
                 EXPECT_EQ(origSceneSizeInfo, loadedSceneSizeInfo);
             }
+        }
 
-            m_animationSystemLoaded = RamsesUtils::TryConvert<AnimationSystem>(*m_sceneLoaded->findObjectByName("animation system"));
-            ASSERT_TRUE(nullptr != m_animationSystemLoaded);
+        void saveSceneWithFeatureLevelToFile(EFeatureLevel featureLevel, const char* fileName)
+        {
+            RamsesFrameworkConfig config;
+            config.impl.setFeatureLevelNoCheck(featureLevel);
+            RamsesFramework someFramework{ config };
+            RamsesClient* someClient = someFramework.createClient("someClient");
+
+            ramses::Scene* scene = someClient->createScene(sceneId_t{ 123u });
+            const status_t status = scene->saveToFile(fileName, false);
+            EXPECT_EQ(StatusOK, status);
         }
 
         template<typename T>
@@ -157,43 +161,18 @@ namespace ramses
             return specificObject;
         }
 
-        template<typename T>
-        T* getAnimationObjectForTesting(const char* name)
-        {
-            RamsesObject* objectPerName = this->m_animationSystemLoaded->findObjectByName(name);
-            EXPECT_TRUE(objectPerName != nullptr);
-            if (!objectPerName)
-                return nullptr;
-            EXPECT_STREQ(name, objectPerName->getName());
-
-            T* specificObject = RamsesUtils::TryConvert<T>(*objectPerName);
-            EXPECT_TRUE(nullptr != specificObject);
-            return specificObject;
-        }
-
         ramses::RamsesFramework m_frameworkForLoader;
         ramses::RamsesClient& m_clientForLoading;
         ramses::Scene* m_sceneLoaded;
-        ramses::AnimationSystem* m_animationSystemLoaded;
     };
 
-    class ASceneAndAnimationSystemLoadedFromFileWithDefaultRenderPass : public ASceneAndAnimationSystemLoadedFromFile
+    class ASceneLoadedFromFileWithDefaultRenderPass : public ASceneLoadedFromFile
     {
-    public:
-        ASceneAndAnimationSystemLoadedFromFileWithDefaultRenderPass()
-            : ASceneAndAnimationSystemLoadedFromFile(0)
-        {
-        }
     };
 
     template <typename T>
-    class ASceneAndAnimationSystemLoadedFromFileTemplated : public ASceneAndAnimationSystemLoadedFromFile
+    class ASceneLoadedFromFileTemplated : public ASceneLoadedFromFile
     {
-    public:
-        ASceneAndAnimationSystemLoadedFromFileTemplated()
-            : ASceneAndAnimationSystemLoadedFromFile(0)
-        {
-        }
     };
 
 }

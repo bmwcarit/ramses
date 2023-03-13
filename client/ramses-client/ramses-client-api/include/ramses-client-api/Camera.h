@@ -81,7 +81,7 @@ namespace ramses
         *
         * @return horizontal offset of the viewport in pixels
         */
-        int32_t getViewportX() const;
+        [[nodiscard]] int32_t getViewportX() const;
 
         /**
         * @brief   Returns the vertical offset of the viewport in pixels relative to lower left corner of destination render buffer.
@@ -90,7 +90,7 @@ namespace ramses
         *
         * @return vertical offset of the viewport in pixels
         */
-        int32_t getViewportY() const;
+        [[nodiscard]] int32_t getViewportY() const;
 
         /**
         * @brief   Returns the viewport width in pixels
@@ -99,7 +99,7 @@ namespace ramses
         *
         * @return viewport width in pixels
         */
-        uint32_t getViewportWidth() const;
+        [[nodiscard]] uint32_t getViewportWidth() const;
 
         /**
         * @brief   Returns the viewport height in pixels
@@ -108,7 +108,7 @@ namespace ramses
         *
         * @return viewport height in pixels
         */
-        uint32_t getViewportHeight() const;
+        [[nodiscard]] uint32_t getViewportHeight() const;
 
         /**
         * @brief   Returns the left plane of the camera frustum
@@ -117,7 +117,7 @@ namespace ramses
         *
         * @return the left plane of the Camera
         */
-        float getLeftPlane() const;
+        [[nodiscard]] float getLeftPlane() const;
 
         /**
         * @brief   Returns the right plane of the camera frustum
@@ -126,7 +126,7 @@ namespace ramses
         *
         * @return the right plane of the #Camera
         */
-        float getRightPlane() const;
+        [[nodiscard]] float getRightPlane() const;
 
         /**
         * @brief   Returns the bottom plane of the camera frustum
@@ -135,7 +135,7 @@ namespace ramses
         *
         * @return the bottom plane of the #Camera
         */
-        float getBottomPlane() const;
+        [[nodiscard]] float getBottomPlane() const;
 
         /**
         * @brief   Returns the top plane of the camera frustum
@@ -144,7 +144,7 @@ namespace ramses
         *
         * @return the top plane of the #Camera
         */
-        float getTopPlane() const;
+        [[nodiscard]] float getTopPlane() const;
 
         /**
         * @brief Returns the near plane of the camera frustum
@@ -153,7 +153,7 @@ namespace ramses
         *
         * @return the near plane of the #Camera
         */
-        float getNearPlane() const;
+        [[nodiscard]] float getNearPlane() const;
 
         /**
         * @brief Returns the far plane of the camera frustum
@@ -162,7 +162,7 @@ namespace ramses
         *
         * @return the far plane of the #Camera
         */
-        float getFarPlane() const;
+        [[nodiscard]] float getFarPlane() const;
 
         /**
         * @brief Gets projection matrix based on camera parameters.
@@ -251,19 +251,19 @@ namespace ramses
         * @brief Checks if there is a #ramses::DataObject bound to viewport offset (see #bindViewportOffset).
         * @return True if there is any #ramses::DataObject bound, false otherwise.
         */
-        bool isViewportOffsetBound() const;
+        [[nodiscard]] bool isViewportOffsetBound() const;
 
         /**
         * @brief Checks if there is a #ramses::DataObject bound to viewport size (see #bindViewportSize).
         * @return True if there is any #ramses::DataObject bound, false otherwise.
         */
-        bool isViewportSizeBound() const;
+        [[nodiscard]] bool isViewportSizeBound() const;
 
         /**
         * @brief Checks if there is a #ramses::DataObject bound to viewport size (see #bindFrustumPlanes).
         * @return True if there is any #ramses::DataObject bound, false otherwise.
         */
-        bool isFrustumPlanesBound() const;
+        [[nodiscard]] bool isFrustumPlanesBound() const;
 
         /**
         * Stores internal data for implementation specifics of Camera.

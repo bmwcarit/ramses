@@ -40,7 +40,7 @@ namespace ramses_internal
     public:
         virtual ~IDevice() {}
 
-        virtual EDeviceTypeId                getDeviceTypeId() const = 0;
+        [[nodiscard]] virtual EDeviceTypeId                getDeviceTypeId() const = 0;
 
         // data
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Float*      value) = 0;
@@ -102,7 +102,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    allocateTexture3D           (UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
         virtual DeviceResourceHandle    allocateTextureCube         (UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) = 0;
         virtual DeviceResourceHandle    allocateExternalTexture     () = 0;
-        virtual DeviceResourceHandle    getEmptyExternalTexture     () const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle    getEmptyExternalTexture     () const = 0;
 
         virtual void                    bindTexture                 (DeviceResourceHandle handle) = 0;
         virtual void                    generateMipmaps             (DeviceResourceHandle handle) = 0;
@@ -110,7 +110,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    uploadStreamTexture2D       (DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) = 0;
         virtual void                    deleteTexture               (DeviceResourceHandle handle) = 0;
         virtual void                    activateTexture             (DeviceResourceHandle handle, DataFieldHandle field) = 0;
-        virtual int                     getTextureAddress           (DeviceResourceHandle handle) const = 0;
+        [[nodiscard]] virtual int                     getTextureAddress           (DeviceResourceHandle handle) const = 0;
 
         // Render buffers/targets
         virtual DeviceResourceHandle    uploadRenderBuffer          (uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount) = 0;
@@ -123,7 +123,7 @@ namespace ramses_internal
 
         virtual void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) = 0;
 
-        virtual DeviceResourceHandle    getFramebufferRenderTarget  () const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle    getFramebufferRenderTarget  () const = 0;
         virtual DeviceResourceHandle    uploadRenderTarget          (const DeviceHandleVector& renderBuffers) = 0;
         virtual void                    activateRenderTarget        (DeviceResourceHandle handle) = 0;
         virtual void                    deleteRenderTarget          (DeviceResourceHandle handle) = 0;
@@ -139,15 +139,15 @@ namespace ramses_internal
         // read back data, statistics, info
         virtual void readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;
 
-        virtual uint32_t getTotalGpuMemoryUsageInKB() const = 0;
+        [[nodiscard]] virtual uint32_t getTotalGpuMemoryUsageInKB() const = 0;
         virtual uint32_t getAndResetDrawCallCount() = 0;
 
         virtual void    validateDeviceStatusHealthy() const = 0;
-        virtual bool    isDeviceStatusHealthy() const = 0;
+        [[nodiscard]] virtual bool    isDeviceStatusHealthy() const = 0;
         virtual void    getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const = 0;
-        virtual bool    isExternalTextureExtensionSupported() const = 0;
+        [[nodiscard]] virtual bool    isExternalTextureExtensionSupported() const = 0;
 
-        virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const = 0;
+        [[nodiscard]] virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const = 0;
     };
 }
 

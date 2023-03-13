@@ -24,14 +24,14 @@ namespace ramses_internal
 
         virtual bool init() override;
 
-        Bool canRenderNewFrame() const override;
+        [[nodiscard]] Bool canRenderNewFrame() const override;
         void handleEvents() override;
         void frameRendered() override;
 
-        wl_display* getNativeDisplayHandle() const;
-        wl_egl_window* getNativeWindowHandle() const;
+        [[nodiscard]] wl_display* getNativeDisplayHandle() const;
+        [[nodiscard]] wl_egl_window* getNativeWindowHandle() const;
 
-        bool hasTitle() const override
+        [[nodiscard]] bool hasTitle() const override
         {
             return false;
         }

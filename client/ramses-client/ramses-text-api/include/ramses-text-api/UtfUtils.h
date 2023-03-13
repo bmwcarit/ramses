@@ -10,7 +10,7 @@
 #define RAMSES_UTFUTILS_H
 
 #include "ramses-framework-api/APIExport.h"
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace ramses

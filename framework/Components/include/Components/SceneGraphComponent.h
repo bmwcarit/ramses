@@ -12,19 +12,20 @@
 #include "ISceneGraphProviderComponent.h"
 #include "ISceneGraphConsumerComponent.h"
 
-#include "PlatformAbstraction/PlatformLock.h"
-#include "Collections/Pair.h"
 #include "ISceneGraphSender.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/SceneSizeInformation.h"
-#include "Collections/HashMap.h"
 #include "TransportCommon/IConnectionStatusListener.h"
-#include "Collections/HashSet.h"
-#include "Utils/IPeriodicLogSupplier.h"
-#include "ISceneProviderEventConsumer.h"
 #include "TransportCommon/ServiceHandlerInterfaces.h"
-#include <unordered_map>
+#include "ISceneProviderEventConsumer.h"
 #include "ERendererToClientEventType.h"
+#include "ramses-framework-api/EFeatureLevel.h"
+#include "Utils/IPeriodicLogSupplier.h"
+#include "PlatformAbstraction/PlatformLock.h"
+#include "Collections/HashMap.h"
+#include "Collections/HashSet.h"
+#include "Collections/Pair.h"
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -46,7 +47,13 @@ namespace ramses_internal
                                       public IPeriodicLogSupplier
     {
     public:
-        SceneGraphComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, IResourceProviderComponent& res, PlatformLock& frameworkLock);
+        SceneGraphComponent(
+            const Guid& myID,
+            ICommunicationSystem& communicationSystem,
+            IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier,
+            IResourceProviderComponent& res,
+            PlatformLock& frameworkLock,
+            ramses::EFeatureLevel featureLevel);
         virtual ~SceneGraphComponent() override;
 
         virtual void setSceneRendererHandler(ISceneRendererHandler* sceneRendererHandler) override;
@@ -82,7 +89,7 @@ namespace ramses_internal
         // ISceneRendererServiceHandler
         virtual void handleInitializeScene(const SceneId& sceneId, const Guid& providerID) override;
         virtual void handleSceneUpdate(const SceneId& sceneId, absl::Span<const Byte> actionData, const Guid& providerID) override;
-        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID) override;
+        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, ramses::EFeatureLevel featureLevel) override;
         virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) override;
         virtual void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) override;
 
@@ -93,7 +100,7 @@ namespace ramses_internal
         void disconnectFromNetwork();
 
         // for testing only
-        const ClientSceneLogicBase* getClientSceneLogicForScene(SceneId sceneId) const;
+        [[nodiscard]] const ClientSceneLogicBase* getClientSceneLogicForScene(SceneId sceneId) const;
 
     private:
         void forwardToSceneProviderEventConsumer(SceneReferenceEvent const& event);
@@ -115,6 +122,8 @@ namespace ramses_internal
         SceneEventConsumerMap m_sceneEventConsumers;
 
         IResourceProviderComponent& m_resourceComponent;
+
+        ramses::EFeatureLevel m_featureLevel = ramses::EFeatureLevel_01;
 
         struct ReceivedScene
         {

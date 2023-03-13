@@ -33,28 +33,28 @@ namespace ramses
         *
         * @return Texture width
         */
-        uint32_t getWidth() const;
+        [[nodiscard]] uint32_t getWidth() const;
 
         /**
         * @brief Gets texture height
         *
         * @return Texture height
         */
-        uint32_t getHeight() const;
+        [[nodiscard]] uint32_t getHeight() const;
 
         /**
         * @brief Gets texture format
         *
         * @return Texture format
         */
-        ETextureFormat getTextureFormat() const;
+        [[nodiscard]] ETextureFormat getTextureFormat() const;
 
         /**
         * @brief Gets swizzle description
         *
         * @return Swizzle Description
         */
-        const TextureSwizzle& getTextureSwizzle() const;
+        [[nodiscard]] const TextureSwizzle& getTextureSwizzle() const;
 
     protected:
         /**

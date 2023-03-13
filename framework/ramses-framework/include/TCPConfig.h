@@ -20,18 +20,18 @@ namespace ramses
     public:
         TCPConfig();
 
-        uint16_t getPort(bool isDaemon = false) const;
-        const ramses_internal::String& getIPAddress() const;
-        uint16_t getDaemonPort() const;
-        const ramses_internal::String& getDaemonIPAddress() const;
+        [[nodiscard]] uint16_t getPort(bool isDaemon = false) const;
+        [[nodiscard]] const ramses_internal::String& getIPAddress() const;
+        [[nodiscard]] uint16_t getDaemonPort() const;
+        [[nodiscard]] const ramses_internal::String& getDaemonIPAddress() const;
 
         void setPort(uint16_t port);
         void setIPAddress(const ramses_internal::String& ipAddress);
         void setDaemonPort(uint16_t port);
         void setDaemonIPAddress(const ramses_internal::String& ipAddress);
 
-        std::chrono::milliseconds getAliveInterval() const;
-        std::chrono::milliseconds getAliveTimeout() const;
+        [[nodiscard]] std::chrono::milliseconds getAliveInterval() const;
+        [[nodiscard]] std::chrono::milliseconds getAliveTimeout() const;
         void setAliveInterval(std::chrono::milliseconds interval);
         void setAliveTimeout(std::chrono::milliseconds timeout);
 

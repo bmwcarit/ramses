@@ -20,15 +20,12 @@
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/PickableObject.h"
@@ -94,13 +91,6 @@ namespace ramses
         GeometryBinding* geomBinding = impl.createGeometryBinding(effect, name);
         LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(geomBinding), LOG_API_RAMSESOBJECT_STRING(effect), name);
         return geomBinding;
-    }
-
-    StreamTexture* Scene::createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name)
-    {
-        StreamTexture* tex = impl.createStreamTexture(fallbackTexture, source, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(tex), LOG_API_RAMSESOBJECT_STRING(fallbackTexture), source, name);
-        return tex;
     }
 
     Node* Scene::createNode(const char* name)
@@ -179,20 +169,6 @@ namespace ramses
     int32_t Scene::getUniformTimeMs() const
     {
         return impl.getUniformTimeMs();
-    }
-
-    AnimationSystem* Scene::createAnimationSystem(uint32_t flags, const char* name)
-    {
-        AnimationSystem* animationSystem = impl.createAnimationSystem(flags, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystem), flags, name);
-        return animationSystem;
-    }
-
-    AnimationSystemRealTime* Scene::createRealTimeAnimationSystem(uint32_t flags, const char* name)
-    {
-        AnimationSystemRealTime* animationSystemRealtime = impl.createRealTimeAnimationSystem(flags, name);
-        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(animationSystemRealtime), flags, name);
-        return animationSystemRealtime;
     }
 
     ArrayBuffer* Scene::createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name /*= nullptr*/)
@@ -359,19 +335,6 @@ namespace ramses
     {
         TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, texture2DBuffer, name);
         LOG_HL_CLIENT_API7(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, anisotropyLevel, LOG_API_RAMSESOBJECT_STRING(texture2DBuffer), name);
-        return texSampler;
-    }
-
-    TextureSampler* Scene::createTextureSampler(
-        ETextureAddressMode wrapUMode,
-        ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod minSamplingMethod,
-        ETextureSamplingMethod magSamplingMethod,
-        const StreamTexture& streamTexture,
-        const char* name)
-    {
-        TextureSampler* texSampler = impl.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, streamTexture, name);
-        LOG_HL_CLIENT_API6(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, LOG_API_RAMSESOBJECT_STRING(streamTexture), name);
         return texSampler;
     }
 

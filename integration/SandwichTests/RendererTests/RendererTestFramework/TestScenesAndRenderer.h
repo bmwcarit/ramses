@@ -36,14 +36,14 @@ namespace ramses_internal
         ramses::status_t validateScene(ramses::sceneId_t sceneId);
         const char*      getValidationReport(ramses::sceneId_t sceneId);
 
-        const TestScenes& getScenesRegistry() const;
-        TestScenes& getScenesRegistry();
+        [[nodiscard]] const TestScenes& getScenesRegistry() const;
+        [[nodiscard]] TestScenes& getScenesRegistry();
 
-        const ramses::RamsesClient& getClient() const;
-        ramses::RamsesClient& getClient();
+        [[nodiscard]] const ramses::RamsesClient& getClient() const;
+        [[nodiscard]] ramses::RamsesClient& getClient();
 
-        const TestRenderer& getTestRenderer() const;
-        TestRenderer& getTestRenderer();
+        [[nodiscard]] const TestRenderer& getTestRenderer() const;
+        [[nodiscard]] TestRenderer& getTestRenderer();
 
     private:
         ramses::RamsesFramework m_ramsesFramework;
@@ -62,7 +62,7 @@ namespace ramses_internal
         virtual void dataUnlinked(ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
         virtual void sceneReferenceStateChanged(ramses::SceneReference&, ramses::RendererSceneState) override {}
 
-        virtual bool waitCondition() const = 0;
+        [[nodiscard]] virtual bool waitCondition() const = 0;
     };
 }
 

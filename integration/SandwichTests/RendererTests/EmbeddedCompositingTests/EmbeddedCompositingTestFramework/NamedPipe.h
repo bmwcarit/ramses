@@ -103,7 +103,7 @@ namespace ramses_internal
             return readExactBytesFromPipe(destinationPointer, totalBytesToRead);
         }
 
-        const String& getName() const
+        [[nodiscard]] const String& getName() const
         {
             return m_pipeName;
         }

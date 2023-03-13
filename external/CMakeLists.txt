@@ -5,6 +5,12 @@ endif(POLICY CMP0054)
 
 find_package(PkgConfig)
 
+function(ensureSubmoduleExists SUBMOD_NAME)
+    if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${SUBMOD_NAME}")
+        message(FATAL_ERROR "Missing submodule /external/${SUBMOD_NAME}. Please fetch Git submodules! (see build documentation)")
+    endif()
+endfunction()
+
 # Ensure all external dependencies are built as static libs when not explicitly specified
 # otherwise using ramses will lead to issues when BUILD_SHARED_LIBS in ON
 set(BUILD_SHARED_LIBS OFF)
@@ -23,10 +29,13 @@ IF(ramses-sdk_BUILD_TESTS AND NOT TARGET gmock)
     target_compile_options(gtest PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
     target_compile_options(gmock PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-field-initializers>)
 
-    ACME_FOLDERIZE_TARGETS(gmock gmock_main gtest gtest_main)
-    ACME_INFO("+ googletest (custom)")
+    folderizeTarget(gmock)
+    folderizeTarget(gmock_main)
+    folderizeTarget(gtest)
+    folderizeTarget(gtest_main)
+    message(STATUS "+ googletest (custom)")
 ELSE()
-    ACME_INFO("+ googletest (external)")
+    message(STATUS "+ googletest (external)")
 ENDIF()
 
 add_library(ramses-gmock INTERFACE)
@@ -37,18 +46,18 @@ target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 
 # fmt string formatting library
 if (TARGET fmt::fmt)
-    ACME_INFO("+ fmt (existing target)")
+    message(STATUS "+ fmt (existing target)")
 else()
     add_subdirectory("fmt")
     target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
-    ACME_FOLDERIZE_TARGET(fmt)
-    ACME_INFO("+ fmt")
+    folderizeTarget(fmt)
+    message(STATUS "+ fmt")
 endif()
 
 
 # CLI11 command line parsing library
 if (TARGET CLI11::CLI11)
-    ACME_INFO("+ CLI11 (existing target)")
+    message(STATUS "+ CLI11 (existing target)")
 else()
     add_subdirectory(cli11)
 
@@ -57,15 +66,16 @@ else()
         ${CMAKE_CURRENT_SOURCE_DIR}/cli11/include/CLI/*.hpp
         )
     add_custom_target(cli11 SOURCES ${CLI11_HEADER})
-    ACME_FOLDERIZE_TARGET(cli11)
-    ACME_INFO("+ CLI11")
+    folderizeTarget(cli11)
+    message(STATUS "+ CLI11")
+    install(DIRECTORY cli11/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
 endif()
 
 
 # abseil library
 function(add_abseil_scope)
     set(BUILD_TESTING OFF)
-    ACME_CURRENT_FOLDER_PATH(folder_base)
+    cmakePathToFolderName(folder_base)
     set(ABSL_IDE_FOLDER "${folder_base}/Abseil")
     set(ABSL_PROPAGATE_CXX_STD ON)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -93,7 +103,7 @@ function(add_abseil_scope)
         set_target_properties(absl_random_internal_randen_hwaes_impl PROPERTIES COMPILE_OPTIONS "${randen_hwaes_impl_CXX_FLAGS}")
     endif()
 
-    ACME_INFO("+ abseil")
+    message(STATUS "+ abseil")
 endfunction()
 add_abseil_scope()
 
@@ -114,7 +124,7 @@ endforeach()
 #==========================================================================
 # glslang
 #==========================================================================
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -126,103 +136,47 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    INCLUDE_BASE            glslang/glslang
+    INCLUDE_PATHS           glslang/glslang
                             glslang/glslang/MachineIndependent
                             glslang
-    FILES_PRIVATE_HEADER    glslang/glslang/Include/*.h
+    SRC_FILES               glslang/glslang/Include/*.h
                             glslang/glslang/Public/*.h
                             glslang/glslang/OSDependent/*.h
                             glslang/glslang/MachineIndependent/*.h
                             glslang/OGLCompilersDLL/*.h
-    FILES_SOURCE            glslang/glslang/MachineIndependent/*.cpp
+                            glslang/glslang/MachineIndependent/*.cpp
                             glslang/glslang/MachineIndependent/preprocessor/*.cpp
                             glslang/glslang/GenericCodeGen/*.cpp
                             glslang/OGLCompilersDLL/*.cpp
                             glslang-os-dep/GenericSingleThreaded/ossource.cpp
                             )
-IF("${TARGET_OS}" STREQUAL "Integrity")
-    # prevent error because __inline not allowed in c++ code
-    TARGET_COMPILE_DEFINITIONS(ramses-glslang PRIVATE "-D__inline=inline")
-ENDIF()
 
-# TODO (MacOS) find out why linking against the platform freetype doesn't work on Darwin
-IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
-    SET(ramses-sdk_ALLOW_PLATFORM_FREETYPE OFF)
-ENDIF()
 
-# find freetype with harfbuzz support
-IF (ramses-sdk_ALLOW_PLATFORM_FREETYPE)
-    find_package(FreetypeAndHarfbuzz QUIET)
-ENDIF()
-IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
+if(ramses-sdk_TEXT_SUPPORT)
+    # find freetype with harfbuzz support
+    if (ramses-sdk_ALLOW_PLATFORM_FREETYPE)
+        find_package(FreetypeAndHarfbuzz QUIET)
+    endif()
+    if (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
+        set(SKIP_INSTALL_ALL ON)
 
-    # Don't install anything from Freetype and Harfbuzz, manual install later
-    # Reason: the libraries are not meant to be build as submodule together
-    set(SKIP_INSTALL_ALL ON)
+        # no 'd' suffix on debug libs
+        set(DISABLE_FORCE_DEBUG_POSTFIX TRUE)
 
-    # no 'd' suffix on debug libs
-    set(DISABLE_FORCE_DEBUG_POSTFIX TRUE)
+        add_subdirectory(freetype)
+        message(STATUS "+ freetype")
 
-    # newer harfbuzz versions use include (FindFreetype): provide an adhoc find script
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake"
-        "set(FREETYPE_INCLUDE_DIRS \"${CMAKE_CURRENT_SOURCE_DIR}/freetype\" \"${CMAKE_CURRENT_SOURCE_DIR}/freetype/include\")\n"
-        "set(FREETYPE_LIBRARIES freetype)\n"
-        "set(FREETYPE_FOUND TRUE)\n")
+        set(HB_BUILD_SUBSET OFF)
+        add_subdirectory(harfbuzz)
+        message(STATUS "+ harfbuzz")
 
-    # enable freetype in harfbuzz
-    set(HB_HAVE_FREETYPE ON CACHE BOOL "Enable freetype interop helpers" FORCE)
+        folderizeTarget(freetype)
+        folderizeTarget(harfbuzz)
 
-    # save and restore module search path
-    set(OLD_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_MODULE_PATH})
-
-    # Checking the availability of the functions below by harfbuzz does not work, because
-    # check_function_exists() checks against an existing platform freetype library.
-    # The freetype version from external does not support those functions, so set them to off manually:
-    set(HAVE_FT_GET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
-    set(HAVE_FT_SET_VAR_BLEND_COORDINATES OFF CACHE BOOL "" FORCE)
-    set(HAVE_FT_DONE_MM_VAR OFF CACHE BOOL "" FORCE)
-    set(HB_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-
-    ADD_SUBDIRECTORY(harfbuzz)
-    ACME_INFO("+ harfbuzz")
-
-    IF("${TARGET_OS}" STREQUAL "Integrity")
-        # define __restrict to nothing because not known to integrity compiler
-        TARGET_COMPILE_DEFINITIONS(harfbuzz PRIVATE "-D__restrict=")
-    ENDIF()
-
-    # remove find script again
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindFreetype.cmake")
-
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake"
-        "set(HARFBUZZ_INCLUDE_DIRS \"${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz\" \"${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz/include\")\n"
-        "set(HARFBUZZ_LIBRARIES harfbuzz)\n"
-        "set(HARFBUZZ_FOUND TRUE)\n")
-
-    # config and include freetype
-    foreach (inc "${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz/src" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz" "${CMAKE_CURRENT_BINARY_DIR}/harfbuzz/src")
-        if (EXISTS "${inc}")
-            target_include_directories(harfbuzz INTERFACE ${inc})
-        endif()
-    endforeach()
-    ADD_SUBDIRECTORY(freetype)
-    set(CMAKE_MODULE_PATH ${OLD_CMAKE_MODULE_PATH})
-
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake")
-
-    target_include_directories(freetype INTERFACE "freetype/include")
-
-    ACME_FOLDERIZE_TARGETS(freetype harfbuzz)
-    foreach (tgt dist harfbuzz-subset hb-ot-tag main test-buffer-serialize test-size-params test-size-params test-test test-unicode-ranges test-would-substitute)
-        if (TARGET ${tgt})
-            ACME_FOLDERIZE_TARGETS(${tgt})
-            set_target_properties(${tgt} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
-        endif()
-    endforeach()
-
-    ACME_INFO("+ freetype")
-ENDIF()
+    endif()
+else()
+    message(STATUS "- harfbuzz/freetype (text support disabled)")
+endif()
 
 # try to find automotive-dlt (if not already available)
 IF (ramses-sdk_ENABLE_DLT AND NOT automotive-dlt_FOUND)
@@ -230,10 +184,10 @@ IF (ramses-sdk_ENABLE_DLT AND NOT automotive-dlt_FOUND)
 ENDIF()
 IF (ramses-sdk_ENABLE_DLT AND automotive-dlt_FOUND)
     SET(ramses-sdk_HAS_DLT TRUE CACHE BOOL "dlt found" FORCE)
-    ACME_INFO("+ automotive-dlt (platform)")
+    message(STATUS "+ automotive-dlt (platform)")
 ELSEIF()
     SET(ramses-sdk_HAS_DLT FALSE CACHE BOOL "dlt found" FORCE)
-    ACME_INFO("- automotive-dlt")
+    message(STATUS "- automotive-dlt")
 ENDIF()
 
 # try find wayland libs for following targets
@@ -244,17 +198,17 @@ FIND_PACKAGE(wayland-server QUIET)
 IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
     FIND_PACKAGE(wayland-ivi-extension QUIET)
     IF (wayland-ivi-extension_FOUND)
-        ACME_INFO("+ wayland-ivi-extension (system)")
+        message(STATUS "+ wayland-ivi-extension (system)")
     ELSEIF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-extension")
         IF (wayland-client_FOUND AND wayland-server_FOUND)
-            ACME_MODULE(
+            createModule(
                 NAME                    wayland-ivi-extension
                 TYPE                    STATIC_LIBRARY
                 ENABLE_INSTALL          OFF
 
-                INCLUDE_BASE            wayland-ivi-extension/ivi-extension-protocol
-                FILES_PRIVATE_HEADER    wayland-ivi-extension/ivi-extension-protocol/*.h
-                FILES_SOURCE            wayland-ivi-extension/ivi-extension-protocol/*.c
+                INCLUDE_PATHS           wayland-ivi-extension/ivi-extension-protocol
+                SRC_FILES               wayland-ivi-extension/ivi-extension-protocol/*.h
+                                        wayland-ivi-extension/ivi-extension-protocol/*.c
                 )
         ENDIF()
     ENDIF()
@@ -263,7 +217,7 @@ ENDIF()
 option(ramses-sdk_BUILD_IVI_TEST_APPS "Enable build of ivi test applications" ON)
 if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension) AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-example-client")
     # wayland ivi example/test application
-    ACME_MODULE(
+    createModule(
         #==========================================================================
         # general module information
         #==========================================================================
@@ -274,7 +228,7 @@ if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wa
         #==========================================================================
         # files of this module
         #==========================================================================
-        FILES_SOURCE            wayland-ivi-example-client/gears.c
+        SRC_FILES            wayland-ivi-example-client/gears.c
 
         #==========================================================================
         # dependencies
@@ -285,20 +239,49 @@ if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wa
                                 wayland-egl
                                 wayland-ivi-extension
     )
+
+    # TODO convert this module either to fully C, or fully CXX
+    set_property(TARGET ivi-gears PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
 # wayland zwp-linux-dmabuf-v1 extension protocol
 IF (wayland-client_FOUND AND wayland-server_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-zwp-linux-dmabuf-v1-extension")
-    ACME_MODULE(
+    createModule(
         NAME                    wayland-zwp-linux-dmabuf-v1-extension
         TYPE                    STATIC_LIBRARY
-        ENABLE_INSTALL          ${ramses-sdk_INSTALL_STATIC_LIBS}
+        ENABLE_INSTALL          OFF
 
-        INCLUDE_BASE            wayland-zwp-linux-dmabuf-v1-extension
-        FILES_PRIVATE_HEADER    wayland-zwp-linux-dmabuf-v1-extension/*.h
-        FILES_SOURCE            wayland-zwp-linux-dmabuf-v1-extension/*.c
+        INCLUDE_PATHS           wayland-zwp-linux-dmabuf-v1-extension
+        SRC_FILES               wayland-zwp-linux-dmabuf-v1-extension/*.h
+                                wayland-zwp-linux-dmabuf-v1-extension/*.c
         )
 ENDIF()
+
+if (ramses-sdk_ENABLE_TCP_SUPPORT)
+    add_library(asio INTERFACE)
+    target_include_directories(asio INTERFACE asio/asio/include)
+    # ASIO_USE_TS_EXECUTOR_AS_DEFAULT avoids an internal compiler error for gcc lto build
+    # It restores the any_io_executor type alias to the one used in asio 1.16.1 an earlier
+    target_compile_definitions(asio INTERFACE "-DASIO_USE_TS_EXECUTOR_AS_DEFAULT")
+    message(STATUS "+ asio")
+else()
+    message(STATUS "- asio")
+endif()
+
+
+if(ramses-sdk_BUILD_TOOLS)
+    createModule(
+        NAME                    imgui
+        TYPE                    STATIC_LIBRARY
+        ENABLE_INSTALL          OFF
+
+        INCLUDE_PATHS           imgui
+        SRC_FILES               imgui/*.h
+                                imgui/misc/cpp/*.h
+                                imgui/*.cpp
+                                imgui/misc/cpp/*.cpp
+        )
+endif()
 
 # LZ4 de-/compression library
 OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)
@@ -313,10 +296,10 @@ IF (ramses-sdk_ALLOW_PLATFORM_LZ4)
 ENDIF()
 
 IF (lz4_FOUND)
-    ACME_INFO("+ lz4 (system)")
+    message(STATUS "+ lz4 (system)")
 ELSE()
   SET(LZ4_DIR lz4)
-  ACME_MODULE(
+  createModule(
 
     #==========================================================================
     # general module information
@@ -328,31 +311,132 @@ ELSE()
     #==========================================================================
     # files of this module
     #==========================================================================
-    INCLUDE_BASE            ${LZ4_DIR}/lib
-    FILES_PRIVATE_HEADER    ${LZ4_DIR}/lib/*.h
-    FILES_SOURCE            ${LZ4_DIR}/lib/*.c
+    INCLUDE_PATHS           ${LZ4_DIR}/lib
+    SRC_FILES               ${LZ4_DIR}/lib/*.h
+                            ${LZ4_DIR}/lib/*.c
     )
 ENDIF()
 
-if (ramses-sdk_ENABLE_TCP_SUPPORT)
-    add_library(asio INTERFACE)
-    target_include_directories(asio INTERFACE asio/asio/include)
-    ACME_INFO("+ asio")
-else()
-    ACME_INFO("- asio")
+
+
+################################################
+################   Google Benchmark  ###########
+################################################
+
+#project specific setup for google benchmark
+if(ramses-sdk_BUILD_TESTS AND NOT TARGET benchmark::benchmark)
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE INTERNAL "")
+    set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE INTERNAL "")
+    set(BENCHMARK_ENABLE_INSTALL OFF CACHE INTERNAL "")
+
+    ensureSubmoduleExists(google-benchmark)
+
+    add_subdirectory(google-benchmark)
+
+    folderizeTarget(benchmark)
+    folderizeTarget(benchmark_main)
 endif()
 
+add_library(ramses-google-benchmark-main INTERFACE)
+target_link_libraries(ramses-google-benchmark-main INTERFACE benchmark_main)
+add_library(ramses::google-benchmark-main ALIAS ramses-google-benchmark-main)
 
-if(ramses-sdk_BUILD_TOOLS)
-    ACME_MODULE(
-        NAME                    imgui
-        TYPE                    STATIC_LIBRARY
-        ENABLE_INSTALL          OFF
+################################################
+################     Lua      ##################
+################################################
 
-        INCLUDE_BASE            imgui
-        FILES_PRIVATE_HEADER    imgui/*.h
-                                imgui/misc/cpp/*.h
-        FILES_SOURCE            imgui/*.cpp
-                                imgui/misc/cpp/*.cpp
-        )
+if(NOT TARGET lua)
+    ensureSubmoduleExists(lua)
+
+    # Collect all source and header files
+    file(GLOB LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.c)
+    file(GLOB LUA_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.h)
+
+    # Remove luac from the list, because it contains a main function
+    list(REMOVE_ITEM LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua.c)
+
+    set_source_files_properties(${LUA_SOURCE} PROPERTIES LANGUAGE CXX)
+
+    # Create library for lua
+    add_library(lua STATIC ${LUA_SOURCE} ${LUA_HEADER})
+
+    # This is required for Lua on Android to suppress a false-positive fortification trigger when
+    # the garbage collector is invoked
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+        target_compile_options(lua PRIVATE -fno-stack-protector -U_FORTIFY_SOURCE)
+    endif()
+
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        # We compile lua as c++ even though it has .c files. convince clang to just do it without complaining
+        target_compile_options(lua PRIVATE -x c++)
+    endif()
+
+    target_include_directories(lua
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lua>
+    )
+
+    folderizeTarget(lua)
+endif()
+
+add_library(lua::lua ALIAS lua)
+
+################################################
+################     Sol      ##################
+################################################
+
+if(NOT TARGET sol2)
+    set(SOL2_LUA_VERSION "5.1.1" CACHE STRING "" FORCE)
+    set(INSTALL_SOL2 OFF CACHE INTERNAL "")
+
+    ensureSubmoduleExists(sol)
+
+    # TODO Violin remove EXCLUDE_FROM_ALL when upgrading to the next official sol version
+    # Currently its's needed because otherwise sol is installed automatically and also
+    # lands in the packaged version of ramses
+    add_subdirectory(sol EXCLUDE_FROM_ALL)
+
+    # Ensure sol is expecting c++ compiled lua
+    target_compile_definitions(sol2 INTERFACE
+        # we compile lua with c++, make sol not use extern C etc
+        SOL_USING_CXX_LUA=1
+        # catch and redirect exception to user handler func instead of
+        # prapagating them directly through lua
+        SOL_EXCEPTIONS_ALWAYS_UNSAFE=1
+        # check if types are numbers before using them as numbers
+        SOL_SAFE_NUMERICS=1
+        # ensure sol calls luaL_checkstack to avoid stack overflows
+        SOL_SAFE_STACK_CHECK=1
+        # Make sure Debug flags are equivalent to Release flags in terms of behavior
+        SOL_IN_DEBUG_DETECTED=0
+    )
+endif()
+
+################################################
+################ Flatbuffers  ##################
+################################################
+
+if(NOT TARGET flatbuffers)
+    # Don't build flatbuf targets we don't need
+    set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
+    set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "" FORCE)
+
+    # Only add flatc target if flatbuffers header generation needed
+    if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+        set(FLATBUFFERS_BUILD_FLATC ON CACHE BOOL "Build flatbuffers compiler" FORCE)
+    else()
+        set(FLATBUFFERS_BUILD_FLATC OFF CACHE BOOL "Build flatbuffers compiler" FORCE)
+    endif()
+
+    ensureSubmoduleExists(flatbuffers)
+
+    add_subdirectory(flatbuffers)
+    folderizeTarget(flatbuffers)
+endif()
+
+add_library(ramses::flatbuffers ALIAS flatbuffers)
+
+if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+    folderizeTarget(flatc)
 endif()

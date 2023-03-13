@@ -28,17 +28,17 @@ namespace ramses_internal
         WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, int version, uint32_t id);
         ~WaylandSurface() override;
 
-        virtual IWaylandBuffer* getWaylandBuffer() const override;
-        virtual bool hasPendingBuffer() const override;
+        [[nodiscard]] virtual IWaylandBuffer* getWaylandBuffer() const override;
+        [[nodiscard]] virtual bool hasPendingBuffer() const override;
         virtual void setShellSurface(IWaylandShellSurface* shellSurface) override;
-        virtual bool hasShellSurface() const override;
-        virtual const String& getSurfaceTitle() const override;
+        [[nodiscard]] virtual bool hasShellSurface() const override;
+        [[nodiscard]] virtual const String& getSurfaceTitle() const override;
         virtual void setIviSurface(IWaylandIVISurface* iviSurface) override;
-        virtual bool hasIviSurface() const override;
-        virtual WaylandIviSurfaceId getIviSurfaceId() const override;
-        virtual uint32_t getNumberOfCommitedFrames() const override;
+        [[nodiscard]] virtual bool hasIviSurface() const override;
+        [[nodiscard]] virtual WaylandIviSurfaceId getIviSurfaceId() const override;
+        [[nodiscard]] virtual uint32_t getNumberOfCommitedFrames() const override;
         virtual void resetNumberOfCommitedFrames() override;
-        virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const override;
+        [[nodiscard]] virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const override;
         virtual void sendFrameCallbacks(UInt32 time) override;
         virtual void logInfos(RendererLogContext& context) const override;
         virtual void bufferDestroyed(IWaylandBuffer& buffer) override;
@@ -53,7 +53,7 @@ namespace ramses_internal
         virtual void surfaceSetBufferTransform(IWaylandClient& client, int32_t transform) override;
         virtual void surfaceSetBufferScale(IWaylandClient& client, int32_t scale) override;
         virtual void surfaceDamageBuffer(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) override;
-        virtual WaylandClientCredentials getClientCredentials() const override;
+        [[nodiscard]] virtual WaylandClientCredentials getClientCredentials() const override;
         virtual bool dispatchBufferTypeChanged() override;
 
     private:

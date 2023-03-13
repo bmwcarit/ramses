@@ -13,7 +13,6 @@
 #include "ramses-client.h"
 #include "ramses-utils.h"
 
-#include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
 #include "ImguiClientHelper.h"
@@ -21,14 +20,14 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-framework-api/RamsesFramework.h"
+#include "RamsesFrameworkConfigImpl.h"
 
 #include "PlatformAbstraction/PlatformThread.h"
-#include "RendererLib/RendererConfigUtils.h"
-#include "ramses-hmi-utils.h"
 #include <fstream>
 #include "Utils/Image.h"
 #include "Utils/File.h"
 #include "SceneSetup.h"
+#include "CLI/CLI.hpp"
 
 
 namespace ramses_internal
@@ -42,128 +41,70 @@ namespace ramses_internal
         const int ErrorScreenshot = 5;
         const int ErrorDisplay    = 6;
 
-        void setPreferredSize(ramses::DisplayConfig& cfg, const ramses::Scene& scene, const std::vector<const char*>& args)
+        void setPreferredSize(ramses::DisplayConfig& cfg, const ramses::Scene& scene)
         {
-            const auto custom = std::find_if(args.begin(), args.end(), [](const std::string& arg) { return arg == "-w" || arg == "-h"; });
-            if (custom == args.end())
+            ramses::SceneObjectIterator it(scene, ramses::ERamsesObjectType_RenderPass);
+            ramses::RamsesObject*       obj = nullptr;
+            while (nullptr != (obj = it.getNext()))
             {
-                ramses::SceneObjectIterator it(scene, ramses::ERamsesObjectType_RenderPass);
-                ramses::RamsesObject*       obj = nullptr;
-                while (nullptr != (obj = it.getNext()))
+                auto* rp = static_cast<ramses::RenderPass*>(obj);
+                if (!rp->getRenderTarget())
                 {
-                    auto* rp = static_cast<ramses::RenderPass*>(obj);
-                    if (!rp->getRenderTarget())
+                    auto* camera = rp->getCamera();
+                    if (camera)
                     {
-                        auto* camera = rp->getCamera();
-                        if (camera)
-                        {
-                            const auto width  = camera->getViewportWidth();
-                            const auto height = camera->getViewportHeight();
-                            cfg.setWindowRectangle(0, 0, width, height);
-                        }
+                        const auto width  = camera->getViewportWidth();
+                        const auto height = camera->getViewportHeight();
+                        cfg.setWindowRectangle(0, 0, width, height);
                     }
                 }
             }
         }
     }
 
-    SceneViewer::SceneViewer(int argc, char* argv[])
-        : m_parser(argc, argv)
-        , m_helpArgument(m_parser, "help", "help", "Print this help")
-        , m_scenePathAndFileArgument(m_parser, "s", "scene", String(), "Scene path+file")
-        , m_noValidation(m_parser, "nv", "no-validation", "Disable scene validation")
-        , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
-        , m_screenshotFile(m_parser, "x", "screenshot-file", {}, "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
-        , m_noSkub(m_parser, "ns", "no-skub", "Disable skub, render also when no changes")
-        , m_guiModeArgument(m_parser, "gui", "gui", "on", "Inspection Gui display mode [off|on|overlay|only]")
-        , m_frameworkConfig(argc, argv)
-        , m_rendererConfig(argc, argv)
-        , m_displayConfig(argc, argv)
-        , m_args(argv, argv + argc)
+    SceneViewer::SceneViewer()
     {
-        GetRamsesLogger().initialize(m_parser, String(), String(), false, true);
-        m_frameworkConfig.setPeriodicLogsEnabled(false);
+        // set default configuration
+        m_frameworkConfig.setPeriodicLogInterval(std::chrono::seconds(0));
         m_frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
         m_displayConfig.setResizable(true);
     }
 
+    void SceneViewer::registerOptions(CLI::App& cli)
+    {
+        cli.description("Loads and views a RAMSES scene from file");
+        const std::map<std::string, GuiMode> modes{{"on", GuiMode::On}, {"overlay", GuiMode::Overlay}, {"off", GuiMode::Off}, {"only", GuiMode::Only}};
+        cli.add_option("-s,--scene,scene", m_sceneName, "Scene file to load")->check(CLI::ExistingFile)->required();
+        auto gui = cli.add_option("--gui", m_guiMode, "Inspection Gui display mode")->transform(CLI::CheckedTransformer(modes));
+        cli.add_flag("--no-validation", m_noValidation, "Disable scene validation (faster startup for complex scenes)");
+        cli.add_option("--output", m_validationOutput, "Directory Path were validation output should be saved");
+        auto screenshot = cli.add_option("-x,--screenshot", m_screenshotFile, "Stores a screenshot of the scene to the given filename and exits");
+        cli.add_flag("--no-skub", m_noSkub, "Disable skub (skip unmodified buffers). Render unchanged frames.");
+
+        m_frameworkConfig.registerOptions(cli);
+        m_rendererConfig.registerOptions(cli);
+        m_displayConfig.registerOptions(cli);
+        m_width = cli.get_option("--width");
+        m_height = cli.get_option("--height");
+        screenshot->excludes("--fullscreen")->excludes(gui);
+    }
+
     int SceneViewer::run()
     {
-        const bool helpRequested = m_helpArgument;
-        String scenePathAndFile = m_scenePathAndFileArgument;
-
-        if (helpRequested)
-        {
-            printUsage();
-            return 0;
-        }
-
-        if (scenePathAndFile.empty())
-        {
-            LOG_ERROR(CONTEXT_CLIENT,
-                      "A scene file including path has to be specified by option "
-                      << m_scenePathAndFileArgument.getHelpString());
-            return ErrorUsage;
-        }
-
-        if (m_screenshotFile.hasValue() && m_displayConfig.isWindowFullscreen())
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Screenshot in fullscreen mode is not supported");
-            return ErrorUsage;
-        }
-
+        GetRamsesLogger().initialize(m_frameworkConfig.impl.loggerConfig, false, true);
+        const String scenePathAndFile = m_sceneName.c_str();
         const File sceneFile(scenePathAndFile);
-        if (!sceneFile.exists())
-        {
-            // try with extension
-            scenePathAndFile += ".ramses";
-        }
-
         m_sceneName = sceneFile.getFileName().stdRef();
         return loadAndRenderScene(scenePathAndFile);
     }
 
-    void SceneViewer::printUsage() const
-    {
-        const std::string argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString() + m_guiModeArgument.getHelpString();
-        const String& programName = m_parser.getProgramName();
-        LOG_INFO(CONTEXT_CLIENT,
-                "\nUsage: " << programName << " [options] -s <sceneFileName>\n"
-                "Loads and views a RAMSES scene from the files <sceneFileName>.ramses / <sceneFileName>.ramres\n"
-                "Arguments:\n" << argumentHelpString);
-
-        ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
-    }
-
-    SceneViewer::GuiMode SceneViewer::getGuiMode() const
-    {
-        if (m_screenshotFile.hasValue())
-        {
-            return GuiMode::Off;
-        }
-
-        const String guiMode = m_guiModeArgument;
-        GuiMode retval = GuiMode::Invalid;
-        if (guiMode == "on")
-            retval = GuiMode::On;
-        else if (guiMode == "overlay")
-            retval = GuiMode::Overlay;
-        else if (guiMode == "off")
-            retval = GuiMode::Off;
-        else if (guiMode == "only")
-            retval = GuiMode::Only;
-        else
-            LOG_ERROR_P(CONTEXT_CLIENT, "Invalid Gui mode: {}", guiMode);
-        return retval;
-    }
-
     int SceneViewer::loadAndRenderScene(const String& sceneFile)
     {
-        const GuiMode guiMode = getGuiMode();
-        if (guiMode == GuiMode::Invalid)
-        {
+        ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_01;
+        if (!ramses::RamsesClient::GetFeatureLevelFromFile(sceneFile.c_str(), featureLevel))
             return ErrorUsage;
-        }
+
+        m_frameworkConfig.setFeatureLevel(featureLevel);
         ramses::RamsesFramework framework(m_frameworkConfig);
 
         auto client = framework.createClient("ramses-scene-viewer");
@@ -198,7 +139,12 @@ namespace ramses_internal
             validateContent(*loadedScene);
         }
 
-        setPreferredSize(m_displayConfig, *loadedScene, m_args);
+        const bool customWidth = m_width ? (m_width->count() > 0) : false;
+        const bool customHeight = m_height ? (m_height->count() > 0) : false;
+        if (!customHeight && !customWidth)
+        {
+            setPreferredSize(m_displayConfig, *loadedScene);
+        }
         int32_t winX = 0;
         int32_t winY = 0;
         uint32_t winWidth = 0u;
@@ -219,7 +165,7 @@ namespace ramses_internal
         }
 
         std::unique_ptr<ISceneSetup> sceneSetup;
-        switch (guiMode)
+        switch (m_guiMode)
         {
         case GuiMode::On:
             sceneSetup = std::make_unique<OffscreenSetup>(imguiHelper, renderer, loadedScene, displayId, winWidth, winHeight);
@@ -229,7 +175,6 @@ namespace ramses_internal
             break;
         case GuiMode::Overlay:
         case GuiMode::Off:
-        case GuiMode::Invalid:
             sceneSetup = std::make_unique<FramebufferSetup>(imguiHelper, renderer, loadedScene, displayId);
             break;
         }
@@ -238,10 +183,9 @@ namespace ramses_internal
         SceneViewerGui gui(*loadedScene, sceneFile.stdRef(), imguiHelper);
         gui.setSceneTexture(sceneSetup->getTextureSampler(), winWidth, winHeight);
 
-        const String screenshotFile = m_screenshotFile;
-        if (!screenshotFile.empty())
+        if (!m_screenshotFile.empty())
         {
-            if (!imguiHelper.saveScreenshot(screenshotFile.stdRef(), sceneSetup->getOffscreenBuffer(), 0, 0, winWidth, winHeight))
+            if (!imguiHelper.saveScreenshot(m_screenshotFile, sceneSetup->getOffscreenBuffer(), 0, 0, winWidth, winHeight))
             {
                 LOG_ERROR(CONTEXT_CLIENT, "Failure when saving screenshot");
                 return ErrorScreenshot;
@@ -259,7 +203,7 @@ namespace ramses_internal
             {
                 loadedScene->flush();
                 imguiHelper.dispatchEvents();
-                if (guiMode != GuiMode::Off)
+                if (m_guiMode != GuiMode::Off)
                 {
                     ImGui::NewFrame();
                     gui.draw();
@@ -281,26 +225,24 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_CLIENT, "Scene validate failed: " << scene.getStatusMessage(validateStatus));
         }
 
-        const auto guiMode = getGuiMode();
-        const auto reportLevel = (guiMode == GuiMode::Off) ? ramses::EValidationSeverity_Info : ramses::EValidationSeverity_Warning;
+        const auto reportLevel = (m_guiMode == GuiMode::Off) ? ramses::EValidationSeverity_Info : ramses::EValidationSeverity_Warning;
         LOG_INFO(CONTEXT_CLIENT, "Scene validation report: " << scene.getValidationReport(reportLevel));
 
-        if (m_validationUnrequiredObjectsDirectoryArgument.wasDefined() && m_validationUnrequiredObjectsDirectoryArgument.hasValue())
+        if (!m_validationOutput.empty())
         {
             // dump scene verification
-            const std::string basePath = ramses_internal::String(m_validationUnrequiredObjectsDirectoryArgument).c_str();
-            const std::string validationFilePath = basePath + m_sceneName + "_validationReport.txt";
+            const std::string validationFilePath = m_validationOutput + m_sceneName + "_validationReport.txt";
             std::ofstream validationFile(validationFilePath);
             validationFile << scene.getValidationReport(ramses::EValidationSeverity_Info) << std::endl;
             // dump unused objects
-            const std::string unrequiredObjectsReportFilePath = basePath + m_sceneName + "_unrequObjsReport.txt";
+            const std::string unrequiredObjectsReportFilePath = m_validationOutput + m_sceneName + "_unrequObjsReport.txt";
             std::ofstream unrequObjsOfstream(unrequiredObjectsReportFilePath);
-            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(scene, unrequObjsOfstream);
+            ramses::RamsesUtils::DumpUnrequiredSceneObjectsToFile(scene, unrequObjsOfstream);
         }
 
-        if (guiMode == GuiMode::Off)
+        if (m_guiMode == GuiMode::Off)
         {
-            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(scene);
+            ramses::RamsesUtils::DumpUnrequiredSceneObjects(scene);
         }
     }
 }

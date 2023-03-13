@@ -21,9 +21,9 @@ namespace ramses_internal
 
         virtual ~ResourceUploadRenderBackend() override = default;
 
-        virtual IContext& getContext() const override;
+        [[nodiscard]] virtual IContext& getContext() const override;
 
-        virtual IDevice& getDevice() const override;
+        [[nodiscard]] virtual IDevice& getDevice() const override;
 
     private:
         IContext& m_context;

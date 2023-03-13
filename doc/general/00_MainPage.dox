@@ -72,16 +72,6 @@ in the same process, the connection will be established over a network protocol 
 Ramses offers some additional features and concepts which are specific to distributed rendering and designed to make it easier
 to share, link, composit visually demanding content in a environment with strict timing and performance constraints.
 
-## The DCSM protocol
-
-<!-- TODO Violin we need to explain more explicitly what DCSM offers - just network? Also local? What are the use cases?
-We need to document this from a user's point of view! -->
-
-The DCSM (Display Cluster State Management) is an additional protocol and API layer which resides both on the client and the renderer components.
-It is designed to give a fine-grained control over the state of content other than just showing and hiding it. See @ref DCSMProtocol "the section on DCSM"
-for a general overview of the DCSM features. The @ref SceneReferencing "scene referencing" explains how to let scenes reference other scenes and control their
-state remotely.
-
 ## Compositing
 
 In addition to distributing 3D scenes, Ramses can composite other OpenGL native applications using the Wayland protocol. The Wayland protocol enables efficient compositing

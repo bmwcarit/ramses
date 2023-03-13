@@ -25,14 +25,14 @@ namespace ramses
         *
         * @returns width in pixels
         */
-        uint32_t getWidth() const;
+        [[nodiscard]] uint32_t getWidth() const;
 
         /**
         * @brief Returns the height of the RenderTarget in pixels
         *
         * @returns height in pixels
         */
-        uint32_t getHeight() const;
+        [[nodiscard]] uint32_t getHeight() const;
 
         /**
         * Stores internal data for implementation specifics of RenderTarget.

@@ -6,8 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_DYNAMIC(ramses-example-local-scene-referencing
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
-    FILES_SOURCE            src/*.cpp
+expandModuleByPlatform(
+    NAME                ramses-example-local-scene-referencing
+    TYPE                BINARY
+    LINKED_TYPE         DYNAMIC
+    ENABLE_INSTALL      ON
+    SRC_FILES           src/*
 )

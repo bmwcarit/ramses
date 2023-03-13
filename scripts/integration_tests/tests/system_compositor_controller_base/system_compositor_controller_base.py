@@ -18,8 +18,8 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
 
     @with_ramses_process_check
     def impl_setUp(self):
-        if not self.target.systemCompositorControllerSupported:
-            self.skipTest("System compositor controller support is not configured for this target")
+        if not self.target.systemCompositorScreenshotSupported:
+            self.skipTest("System compositor controller screenshot support is not configured for this target")
 
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.008
         self.percentageOfWrongPixelsAllowed = 0.001
@@ -44,7 +44,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.expectedSurfaceIds = set(self.target.ivi_control.getSurfaceIds())
 
         # Start black background renderer
-        self.rendererbackground = self.target.start_default_renderer("--waylandIviSurfaceID {}".format(self.testSurfaceIVIIds["rendererbackground"]),
+        self.rendererbackground = self.target.start_default_renderer("--ivi-surface {}".format(self.testSurfaceIVIIds["rendererbackground"]),
                                                                      nameExtension="bg")
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
@@ -84,7 +84,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
 
         # Start renderer
-        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {} --waylandIviSurfaceID {}".
+        self.renderer = self.target.start_default_renderer("--ivi-layer {} --ivi-surface {}".
                                                            format(self.testLayer, self.testSurfaceIVIIds["renderer"]))
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.save_application_output, self.renderer)
@@ -94,7 +94,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["renderer"]))
 
         # Start client
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 10 -ts 0 -cz 5")
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 10 --test-state 0 --cz 5")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 

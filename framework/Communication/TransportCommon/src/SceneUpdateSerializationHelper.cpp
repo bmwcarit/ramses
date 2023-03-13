@@ -140,7 +140,6 @@ namespace ramses_internal
                 os << flushInfos.sizeInfo.streamTextureCount;
                 os << flushInfos.sizeInfo.dataSlotCount;
                 os << flushInfos.sizeInfo.dataBufferCount;
-                os << flushInfos.sizeInfo.animationSystemCount;
                 os << flushInfos.sizeInfo.textureBufferCount;
                 os << flushInfos.sizeInfo.pickableObjectCount;
                 os << flushInfos.sizeInfo.sceneReferenceCount;
@@ -198,7 +197,6 @@ namespace ramses_internal
                 is >> infos.sizeInfo.streamTextureCount;
                 is >> infos.sizeInfo.dataSlotCount;
                 is >> infos.sizeInfo.dataBufferCount;
-                is >> infos.sizeInfo.animationSystemCount;
                 is >> infos.sizeInfo.textureBufferCount;
                 is >> infos.sizeInfo.pickableObjectCount;
                 is >> infos.sizeInfo.sceneReferenceCount;

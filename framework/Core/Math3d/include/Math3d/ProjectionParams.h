@@ -59,9 +59,9 @@ namespace ramses_internal
         bool operator==(const ProjectionParams& other) const;
         bool operator!=(const ProjectionParams& other) const;
 
-        ECameraProjectionType getProjectionType() const;
+        [[nodiscard]] ECameraProjectionType getProjectionType() const;
 
-        bool isValid() const;
+        [[nodiscard]] bool isValid() const;
 
         // frustum planes
         Float leftPlane;

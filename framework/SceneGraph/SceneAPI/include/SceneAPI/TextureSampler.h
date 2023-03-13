@@ -65,7 +65,7 @@ namespace ramses_internal
         ResourceContentHash  textureResource;
         MemoryHandle         contentHandle = InvalidMemoryHandle;
 
-        bool isRenderBuffer() const
+        [[nodiscard]] bool isRenderBuffer() const
         {
             switch (contentType)
             {

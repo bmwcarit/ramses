@@ -28,3 +28,15 @@
 [submodule "external/cli11"]
 	url = https://github.com/CLIUtils/CLI11.git
 	path = external/cli11
+[submodule "external/google-benchmark"]
+    path = external/google-benchmark
+    url = https://github.com/google/benchmark.git
+[submodule "external/flatbuffers"]
+    path = external/flatbuffers
+    url = https://github.com/google/flatbuffers.git
+[submodule "external/lua"]
+    path = external/lua
+    url = https://github.com/lua/lua.git
+[submodule "external/sol"]
+    path = external/sol
+    url = https://github.com/ThePhD/sol2.git

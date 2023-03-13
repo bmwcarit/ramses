@@ -16,7 +16,7 @@
 namespace ramses
 {
     template <typename ObjectType>
-    class RamsesObjectTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class RamsesObjectTest : public LocalTestClientWithScene, public testing::Test
     {
     };
 
@@ -93,7 +93,7 @@ namespace ramses
         const RamsesObject& obj = this->template createObject<TypeParam>("object");
 
         EXPECT_STREQ("", obj.getValidationReport());
-        obj.validate();
+        std::ignore = obj.validate();
         EXPECT_STRNE("", obj.getValidationReport());
     }
 
@@ -102,7 +102,7 @@ namespace ramses
         const RamsesObject& obj = this->template createObject<TypeParam>("object");
 
         EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy"));
-        obj.validate();
+        std::ignore = obj.validate();
         const ramses_internal::String validationReport = obj.getValidationReport(EValidationSeverity_Info);
 
         EXPECT_THAT(validationReport.stdRef(), ::testing::HasSubstr(RamsesObjectTypeUtils::GetRamsesObjectTypeName(obj.getType())));
@@ -116,11 +116,11 @@ namespace ramses
         // simulate some API usage error
         EXPECT_NE(StatusOK, obj.impl.addErrorEntry("dummy error msg"));
 
-        obj.validate();
+        std::ignore = obj.validate();
         EXPECT_THAT(obj.getValidationReport(EValidationSeverity::EValidationSeverity_Warning), ::testing::Not(::testing::HasSubstr("dummy error msg")));
 
         // will not appear in validation of scene either
-        this->m_scene.validate();
+        std::ignore = this->m_scene.validate();
         EXPECT_THAT(this->m_scene.getValidationReport(EValidationSeverity::EValidationSeverity_Warning), ::testing::Not(::testing::HasSubstr("dummy error msg")));
     }
 
@@ -129,15 +129,15 @@ namespace ramses
         RamsesObject& obj = this->template createObject<TypeParam>("object");
         const RamsesObject& constObj = obj;
 
-        if (constObj.getType() != ERamsesObjectType_SplineStepBool)
+        if (constObj.getType() != ERamsesObjectType_PerspectiveCamera)
         {
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(obj));
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepBool>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<PerspectiveCamera>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<PerspectiveCamera>(constObj));
         }
         else
         {
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(obj));
-            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<SplineStepInt32>(constObj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<OrthographicCamera>(obj));
+            EXPECT_TRUE(nullptr == RamsesUtils::TryConvert<OrthographicCamera>(constObj));
         }
     }
 

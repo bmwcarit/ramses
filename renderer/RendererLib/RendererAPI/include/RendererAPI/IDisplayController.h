@@ -21,7 +21,6 @@ namespace ramses_internal
     class Matrix44f;
     class Vector3;
     class Vector4;
-    class WarpingMeshData;
     class ProjectionParams;
     class FrameTimer;
 
@@ -31,22 +30,19 @@ namespace ramses_internal
         virtual ~IDisplayController() {};
 
         virtual void                    handleWindowEvents() = 0;
-        virtual Bool                    canRenderNewFrame() const = 0;
+        [[nodiscard]] virtual Bool                    canRenderNewFrame() const = 0;
         virtual void                    enableContext() = 0;
         virtual void                    swapBuffers() = 0;
         virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) = 0;
-        virtual void                    executePostProcessing() = 0;
         virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) = 0;
 
-        virtual DeviceResourceHandle    getDisplayBuffer() const = 0;
-        virtual IRenderBackend&         getRenderBackend() const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle    getDisplayBuffer() const = 0;
+        [[nodiscard]] virtual IRenderBackend&         getRenderBackend() const = 0;
         virtual IEmbeddedCompositingManager& getEmbeddedCompositingManager() = 0;
-        virtual UInt32                  getDisplayWidth() const = 0;
-        virtual UInt32                  getDisplayHeight() const = 0;
+        [[nodiscard]] virtual UInt32                  getDisplayWidth() const = 0;
+        [[nodiscard]] virtual UInt32                  getDisplayHeight() const = 0;
 
         virtual void                    readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) = 0;
-        virtual Bool                    isWarpingEnabled() const = 0;
-        virtual void                    setWarpingMeshData(const WarpingMeshData& warpingMeshData) = 0;
 
         virtual void                    validateRenderingStatusHealthy() const = 0;
     };

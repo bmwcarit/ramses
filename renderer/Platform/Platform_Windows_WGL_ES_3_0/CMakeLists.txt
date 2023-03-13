@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -23,8 +23,9 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/Platform_Windows_WGL_ES_3_0/*.h
-    FILES_SOURCE            src/*.cpp
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Platform_Windows_WGL_ES_3_0/*.h
+                            src/*.cpp
 
     #==========================================================================
     # dependencies

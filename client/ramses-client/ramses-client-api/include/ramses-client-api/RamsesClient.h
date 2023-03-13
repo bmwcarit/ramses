@@ -97,7 +97,7 @@ namespace ramses
         * at offset.
         *
         * @param[in] fd Open and readable filedescriptor.
-        * @param[in] offset Absolute starting position of ramses scenen within fd.
+        * @param[in] offset Absolute starting position of ramses scene within fd.
         * @param[in] length Size of the scene data within fd.
         * @param[in] localOnly Marks the scene to be loaded as valid for local only
         *                      optimization. This has the same effect as calling
@@ -124,7 +124,7 @@ namespace ramses
         *
         * @param[in] sceneId The sceneId to use for the returned scene.
         * @param[in] fd Open and readable filedescriptor.
-        * @param[in] offset Absolute starting position of ramses scenen within fd.
+        * @param[in] offset Absolute starting position of ramses scene within fd.
         * @param[in] length Size of the scene data within fd.
         * @param[in] localOnly Marks the scene to be loaded as valid for local only
         *                      optimization. This has the same effect as calling
@@ -154,6 +154,26 @@ namespace ramses
         status_t loadSceneFromFileAsync(const char* fileName, bool localOnly = false);
 
         /**
+        * Attempts to parse feature level from a Ramses scene file.
+        *
+        * @param[in] fileName file path to Ramses scene file
+        * @param[out] detectedFeatureLevel feature level detected in given file (valid only if parsing successful!)
+        * @return true if parsing was successful, false otherwise.
+        */
+        static bool GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel);
+
+        /**
+        * Attempts to parse feature level from a Ramses scene file.
+        *
+        * @param[in] fd open and readable file descriptor
+        * @param[in] offset absolute starting position of ramses scene within \c fd
+        * @param[in] length size of the scene data within \c fd
+        * @param[out] detectedFeatureLevel feature level detected in given file (valid only if parsing successful!)
+        * @return true if parsing was successful, false otherwise.
+        */
+        static bool GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel);
+
+        /**
         * @brief Destroys the given Scene. The reference of Scene is invalid after this call
         *
         * @param[in] scene The Scene to destroy
@@ -181,7 +201,7 @@ namespace ramses
         * @param[in] sceneId The id of the scene to get.
         * @return Pointer to the scene if found, nullptr otherwise.
         */
-        const Scene* getScene(sceneId_t sceneId) const;
+        [[nodiscard]] const Scene* getScene(sceneId_t sceneId) const;
 
         /**
         * @copydoc getScene(sceneId_t) const

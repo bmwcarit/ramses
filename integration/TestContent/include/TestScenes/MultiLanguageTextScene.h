@@ -9,6 +9,8 @@
 #ifndef RAMSES_MULTILANGUAGETEXTSCENE_H
 #define RAMSES_MULTILANGUAGETEXTSCENE_H
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 #include "TextScene_Base.h"
 
 namespace ramses_internal
@@ -25,4 +27,5 @@ namespace ramses_internal
     };
 }
 
+#endif
 #endif

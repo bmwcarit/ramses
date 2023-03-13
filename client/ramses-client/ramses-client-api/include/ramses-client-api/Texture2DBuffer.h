@@ -51,7 +51,7 @@ namespace ramses
         *
         * @return number of mipmap levels
         */
-        uint32_t getMipLevelCount() const;
+        [[nodiscard]] uint32_t getMipLevelCount() const;
 
         /**
         * @brief Returns the size of a specific mipmap level in texels
@@ -70,14 +70,14 @@ namespace ramses
         * @param[in] mipLevel   The mipMap level of which the size will be returned
         * @return Size of data in bytes for given mip level, 0 if mipLevel invalid
         */
-        uint32_t getMipLevelDataSizeInBytes(uint32_t mipLevel) const;
+        [[nodiscard]] uint32_t getMipLevelDataSizeInBytes(uint32_t mipLevel) const;
 
         /**
         * @brief Returns the texel format provided at creation
         *
         * @return The texel format provided at creation
         */
-        ETextureFormat getTexelFormat() const;
+        [[nodiscard]] ETextureFormat getTexelFormat() const;
 
         /**
         * @brief Copies the data of a single mip-level into a user-provided buffer.

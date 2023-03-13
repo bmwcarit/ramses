@@ -18,9 +18,7 @@ namespace ramses
     class SystemCompositorController;
     class DisplayConfig;
     class IRendererEventHandler;
-    class WarpingMeshData;
     class RendererSceneControl;
-    class DcsmContentControl;
 
     /**
     * @brief RamsesRenderer is the main renderer component which provides API to configure
@@ -73,42 +71,37 @@ namespace ramses
         *
         * @return Returns true if thread is running (started and not stopped), false otherwise.
         */
-        bool isThreadRunning() const;
+        [[nodiscard]] bool isThreadRunning() const;
 
         /**
         * @brief   Sets the maximum frame rate per second for the update/render loop when in threaded mode.
         * @details The parameter is of type float in order to specify any desired frame time (e.g. below 1 FPS).
-        *          The same maximum frame rate will be applied to all displays.
         *          This function can only be used in threaded mode (#startThread).
         *          The default value is 60 FPS.
-        * @param maximumFramerate The maximum frame rate per second to set for the render loop.
+        *
+        *          Note that FPS limit can be set also for a display that was not yet created internally
+        *          (i.e. #ramses::IRendererEventHandler::displayCreated event has not been dispatched yet),
+        *          this makes it easier to set a FPS limit on a display right after creation without having to wait
+        *          for the result. If setting FPS limit on display which was previously destroyed this method
+        *          will return #ramses::StatusOK but will have no effect.
+        * @param displayId The ID of the display the framerate should be applied to. The default value is 60 FPS.
+        * @param fpsLimit The maximum frame rate per second to set for the render loop.
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setMaximumFramerate(float maximumFramerate);
+        status_t setFramerateLimit(displayId_t displayId, float fpsLimit);
 
         /**
-        * @brief   Sets the maximum frame rate per second for the update/render loop when in threaded mode for given display
-        * @details The maximumFramerate parameter is of type float in order to specify any desired frame time (e.g. below 1 FPS).
-        *          The maximum frame rate will be applied to the display thread responsible for given display id.
-        *          This function can only be used in threaded mode (#startThread).
-        *          The default value is 60 FPS.
-        * @param renderer The renderer to apply the value to. This api is added in static fashion for ABI compatibility.
-        * @param maximumFramerate The maximum frame rate per second to set for the render loop.
-        * @param displayId The display id the framerate should be applied to.
+        * @brief   Get the maximum frame rate per second set for given display using #setFramerateLimit.
+        * @details This method returns the FPS limit set by user using #setFramerateLimit, or the default (60 FPS)
+        *          if not modified by user. In both cases regardless if the display exists or not.
         *
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        static status_t setMaximumFramerate(RamsesRenderer& renderer, float maximumFramerate, displayId_t displayId);
-
-        /**
-        * @brief Get the current value for maximum frame rate per second currently set (#setMaximumFramerate).
+        * @param displayId The ID of the display to query the maximum framerate.
         *
-        * @return Maximum frame rate per second
+        * @return The FPS limit for given display set by user or default FPS limit.
         */
-        float getMaximumFramerate() const;
+        [[nodiscard]] float getFramerateLimit(displayId_t displayId) const;
 
         /**
         * @brief   Sets the mode of operation for render loop.
@@ -127,7 +120,7 @@ namespace ramses
         *
         * @return The loop mode
         */
-        ELoopMode getLoopMode() const;
+        [[nodiscard]] ELoopMode getLoopMode() const;
 
         /**
         * @brief Sets time limits for time-out of different sections of render and update loop.
@@ -231,12 +224,12 @@ namespace ramses
         * @param displayId The ID of display for which the framebuffer ID is being queried.
         * @return Display's framebuffer ID or invalid ID if display does not exist.
         */
-        displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
+        [[nodiscard]] displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
         /**
         * @brief   Will create an offscreen buffer that can be used to render scenes into (see #ramses::RendererSceneControl::setSceneDisplayBufferAssignment)
         *          and can be linked as input to a consumer texture sampler (see #ramses::RendererSceneControl::linkOffscreenBuffer).
-        * @details The created offscreen buffer always has color, depth and stencil buffer attached.
+        * @details The created offscreen buffer always has a color buffer. Depth/stencil buffer can be configured (depth/stencil combined is attached by default).
         *          A multisampled buffer will be created if sampleCount greater than 0, note that the value is just a hint for the device,
         *          the actual number of samples might be different depending on device driver implementation.
         *          If the number of samples exceeds device capabilities the number of samples it will be clamped to its
@@ -246,29 +239,12 @@ namespace ramses
         * @param[in] width width of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] height height of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] sampleCount Optional sample count for MSAA. Default value is 0 for no MSAA.
+        * @param[in] depthBufferType Optional setting to configure depth and stencil buffers, default is depth/stencil buffer will be created in addition to color buffer.
         * @return Identifier of the created offscreen buffer.
         *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u);
-
-        /**
-        * @brief Will create an offscreen buffer that can be used to render scenes into (see #ramses::RendererSceneControl::setSceneDisplayBufferAssignment)
-        *        and can be linked as input to a consumer texture sampler (see #ramses::RendererSceneControl::linkOffscreenBuffer).
-        *
-        *        The created offscreen buffer always has a color buffer, but depth and stencil buffers can be configured.
-        *
-        * @param[in] renderer The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility.
-        * @param[in] display id of display for which the buffer should be created
-        * @param[in] width width of the buffer to be created (has to be higher than 0 and lower than 4096)
-        * @param[in] height height of the buffer to be created (has to be higher than 0 and lower than 4096)
-        * @param[in] sampleCount Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the offscreen buffer.
-        * @param[in] depthBufferType Optional setting to configure depth and stencil buffers.
-        * @return Identifier of the created offscreen buffer.
-        *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
-        *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
-        */
-        static displayBufferId_t createOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
+        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
 
         /**
         * @brief     Additional API to create an offscreen buffer as interruptible. (see #createOffscreenBuffer)
@@ -285,44 +261,17 @@ namespace ramses
         *            it is not guaranteed anymore that it will be fully rendered every frame.
         *            Essentially it is rendered with lower priority.
         *
-        *            The created offscreen buffer always has color, depth and stencil buffers.
+        *            The created offscreen buffer always has a color buffer. Depth/stencil buffer can be configured (depth/stencil combined is attached by default).
         *
         * @param[in] display  Id of display for which the buffer should be created
         * @param[in] width    Width of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] height   Height of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] depthBufferType Optional setting to configure depth and stencil buffers, default is depth/stencil buffer will be created in addition to color buffer.
         * @return Identifier of the created offscreen buffer.
         *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        displayBufferId_t createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height);
-
-        /**
-        * @brief     Additional API to create an offscreen buffer as interruptible.
-        *            This allows the renderer to interrupt rendering of scenes to such offscreen buffer
-        *            if the time budget for rendering is exceeded within a frame (see #setFrameTimerLimits).
-        *            The rendering continues next frame starting from the interruption point.
-        *
-        *            The renderer creates two render targets on GPU (front and back) for every
-        *            interruptible offscreen buffer. It then renders into the back render target
-        *            of the offscreen buffer, while it is possible to read the content of front render target
-        *            with content from previous frame (or older if interrupted for several frames).
-        *
-        *            Note that whenever a scene gets assigned to interruptible offscreen buffer,
-        *            it is not guaranteed anymore that it will be fully rendered every frame.
-        *            Essentially it is rendered with lower priority.
-        *
-        *            The created offscreen buffer always has a color buffer, but depth and stencil buffers can be configured.
-        *
-        * @param[in] renderer The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility.
-        * @param[in] display  Id of display for which the buffer should be created
-        * @param[in] width    Width of the buffer to be created (has to be higher than 0 and lower than 4096)
-        * @param[in] height   Height of the buffer to be created (has to be higher than 0 and lower than 4096)
-        * @param[in] depthBufferType Optional setting to configure depth and stencil buffers.
-        * @return Identifier of the created offscreen buffer.
-        *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
-        *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
-        */
-        static displayBufferId_t createInterruptibleOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
+        displayBufferId_t createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
 
         /**
         * @brief     Additional API to create an offscreen buffer using DMA buffer for internal storage. (see #createOffscreenBuffer)
@@ -444,15 +393,25 @@ namespace ramses
         status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalBuffer);
 
         /**
-        * @brief Will query the OpenGL texture Id for the external texture used for a created external buffer.
+        * @brief   Creates a buffer for viewing wayland surfaces from the embedded compositor.
+        *          The created buffer can be linked as input to a consumer texture sampler (see #ramses::RendererSceneControl::linkStreamBuffer).
+        *
+        * @param[in] display Id of display that the buffer should be created on.
+        * @param[in] surfaceId Id of the wayland surface that the buffer should render from.
+        * @return Identifier of the created external buffer.
+        */
+        streamBufferId_t createStreamBuffer(displayId_t display, ramses::waylandIviSurfaceId_t surfaceId);
+
+        /**
+        * @brief Will destroy a previously created stream buffer.
+        *        If there are any consumer texture samplers linked to this buffer, these links will be removed.
         *
         * @param[in] display id of display which the buffer belongs to
-        * @param[in] externalBuffer id of buffer to query OpenGL texture ID for
-        * @param[out] textureGlId On success the OpenGL texture ID of the underlying external texture is written to this variable. On failure
-        *             the current value stored is not affected. The return value of the function must be checked for success before using this value.
-        * @return true for success, false otherwise, e.g., if the buffer was not created yet, failed creation or was already destroyed.
+        * @param[in] bufferId id of buffer to destroy
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
         */
-        bool getExternalBufferGlId(displayId_t display, externalBufferId_t externalBuffer, uint32_t& textureGlId) const;
+        status_t destroyStreamBuffer(displayId_t display, ramses::streamBufferId_t bufferId);
 
         /**
         * @brief   Sets clear flags for a display buffer (display's framebuffer or offscreen buffer).
@@ -461,7 +420,6 @@ namespace ramses
         *          There is no event callback for this operation, the change can be assumed to be effective
         *          in the next frame rendered after flushed.
         *
-        * @param[in] renderer The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility.
         * @param[in] display Id of display that the buffer to set clearing belongs to.
         * @param[in] displayBuffer Id of display buffer to set clearing,
         *                          if #ramses::displayBufferId_t::Invalid() is passed then the clearing is set for display's framebuffer.
@@ -470,7 +428,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        static status_t setDisplayBufferClearFlags(RamsesRenderer& renderer, displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
+        status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
 
         /**
         * @brief   Sets clear color of a display buffer (display's framebuffer or offscreen buffer).
@@ -554,8 +512,6 @@ namespace ramses
         *          Scene control API has its own independent flush and event dispatching,
         *          see #ramses::RendererSceneControl for details.
         *
-        *          Obtaining the #ramses::RendererSceneControl will disallow usage of different type of scene control
-        *          (#ramses::DcsmContentControl).
         *          #RamsesRenderer is owner of the #ramses::RendererSceneControl API and the pointer
         *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
         *          without destroying the #RamsesRenderer.
@@ -563,29 +519,6 @@ namespace ramses
         * @return Pointer to scene control API, or nullptr on error
         */
         RendererSceneControl* getSceneControlAPI();
-
-        /**
-        * @brief Create #ramses::DcsmContentControl to control content states
-        * @details #ramses::DcsmContentControl can be used to control content states (a DCSM content is an abstraction
-        *          for a scene). In addition #ramses::DcsmContentControl handles content states in the DCSM protocol
-        *          context, it is essentially a combination of renderer scene control API and #ramses::DcsmConsumer.
-        *          There can be only a single instance of #ramses::DcsmContentControl within #RamsesRenderer. Calling
-        *          this method more than once will fail.
-        *          This method will return nullptr in case an internal policy disallows controlling of scenes
-        *          through this API - this could mean that there is another, incompatible scene control
-        *          mechanism in use.
-        *          #ramses::DcsmContentControl has its own event dispatching mechanism,
-        *          see #ramses::DcsmContentControl for details.
-        *
-        *          Obtaining the #ramses::DcsmContentControl will disallow usage of different type of scene control
-        *          (#ramses::RendererSceneControl).
-        *          #RamsesRenderer is owner of the #ramses::DcsmContentControl API and the pointer
-        *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
-        *          without destroying the #RamsesRenderer.
-        *
-        * @return Pointer to #ramses::DcsmContentControl, or nullptr on error
-        */
-        DcsmContentControl* createDcsmContentControl();
 
         /////////////////////////////////////////////////
         //      System Compositor API
@@ -643,17 +576,6 @@ namespace ramses
         /////////////////////////////////////////////////
         //      End of System Compositor API
         /////////////////////////////////////////////////
-
-        /**
-        * @brief Updates the warping mesh for the warping postprocessing based on the new config.
-        * @details Display must be created with warping enabled in order for this operation to succeed.
-        *
-        * @param[in] displayId id of display to update.
-        * @param[in] newWarpingMeshData Holds the geometry needed to create the mesh for display warping.
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
 
         /**
         * @brief Most RamsesRenderer methods push commands to an internal queue which is submitted

@@ -35,18 +35,6 @@ namespace ramses_internal
         // scene
         CreateScene,
 
-        // dcsm
-        DcsmRegisterContent,
-        DcsmCanvasSizeChange,
-        DcsmContentStateChange,
-        DcsmContentAvailable,
-        DcsmContentDescription,
-        DcsmCategoryContentSwitchRequest,
-        DcsmRequestUnregisterContent,
-        DcsmForceUnregisterContent,
-        DcsmUpdateContentMetadata,
-        DcsmContentStatus,
-
         NUM_ELEMENTS
     };
 
@@ -64,16 +52,6 @@ namespace ramses_internal
         "RendererEvent",
         "Alive",
         "CreateScene",
-        "DcsmRegisterContent",
-        "DcsmCanvasSizeChange",
-        "DcsmContentStatusChange",
-        "DcsmContentAvailable",
-        "DcsmContentDescription",
-        "DcsmCategoryContentSwitchRequest",
-        "DcsmRequestUnregisterContent",
-        "DcsmForceUnregisterContent",
-        "DcsmUpdateContentMetadata",
-        "DcsmContentStatus",
     };
 
     inline IOutputStream& operator<<(IOutputStream& outputStream, EMessageId messageId)

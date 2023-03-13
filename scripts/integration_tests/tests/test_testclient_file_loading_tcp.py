@@ -23,7 +23,7 @@ class TestClientFileLoadingTcp(test_classes.OnAllDefaultTargetsTest):
         self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.client = self.target.start_client("ramses-test-client", "-tn 13 -ts 0 -cz 5 -folder {}".format(self.target.tmpDir))
+        self.client = self.target.start_client("ramses-test-client", "--test-nr 13 --test-state 0 --cz 5 --folder {}".format(self.target.tmpDir))
         self.checkThatApplicationWasStarted(self.client)
         self.addCleanup(self.target.kill_application, self.client)
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.01

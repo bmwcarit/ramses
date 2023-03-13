@@ -56,8 +56,8 @@ namespace ramses_internal
         constexpr bool operator==(const Vector4i& other) const;
         constexpr bool operator!=(const Vector4i& other) const;
 
-        constexpr Int32 dot(const Vector4i& other) const;
-        Float length() const;
+        [[nodiscard]] constexpr Int32 dot(const Vector4i& other) const;
+        [[nodiscard]] Float length() const;
 
         constexpr Int32& operator[](const UInt32 index);
         constexpr const Int32& operator[](const UInt32 index) const;

@@ -20,7 +20,6 @@
 #include "TestScenes/TextScene.h"
 #include "TestScenes/MultiLanguageTextScene.h"
 #include "TestScenes/AntiAliasingScene.h"
-#include "TestScenes/AnimatedTrianglesScene.h"
 #include "TestScenes/ArrayInputScene.h"
 #include "TestScenes/GeometryInstanceScene.h"
 #include "TestScenes/RenderTargetScene.h"
@@ -91,6 +90,7 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(RenderGroupTest_RenderOrder, *this, "RenderGroupTest_RenderOrder");
     testFramework.createTestCaseWithDefaultDisplay(RenderGroupTest_RenderOrderWithNestedGroups, *this, "RenderGroupTest_RenderOrderWithNestedGroups");
 
+#if defined(RAMSES_TEXT_ENABLED)
     testFramework.createTestCaseWithDefaultDisplay(TextTest_SimpleText, *this, "TextTest_SimpleText");
     testFramework.createTestCaseWithDefaultDisplay(TextTest_DeletedTextsAndNode, *this, "TextTest_DeletedTextsAndNode");
     testFramework.createTestCaseWithDefaultDisplay(TextTest_DifferentLanguages, *this, "TextTest_DifferentLanguages");
@@ -98,6 +98,7 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(TextTest_FontCascade, *this, "TextTest_FontCascade");
     testFramework.createTestCaseWithDefaultDisplay(TextTest_FontCascadeWithVerticalOffset, *this, "TextTest_FontCascadeWithVerticalOffset");
     testFramework.createTestCaseWithDefaultDisplay(TextTest_Shaping, *this, "TextTest_Shaping");
+#endif
 
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_None, *this, "RenderPassClear_None");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_Color, *this, "RenderPassClear_Color");
@@ -107,8 +108,6 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_ColorDepth, *this, "RenderPassClear_ColorDepth");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_StencilDepth, *this, "RenderPassClear_StencilDepth");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassClear_ColorStencilDepth, *this, "RenderPassClear_ColorStencilDepth");
-
-    testFramework.createTestCaseWithDefaultDisplay(AnimationTest_AnimatedScene, *this, "AnimationTest_AnimatedScene");
 
     testFramework.createTestCaseWithDefaultDisplay(ArrayInputTest_ArrayInputVec4, *this, "ArrayInputTest_ArrayInputVec4");
     testFramework.createTestCaseWithDefaultDisplay(ArrayInputTest_ArrayInputInt32, *this, "ArrayInputTest_ArrayInputInt32");
@@ -149,8 +148,6 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(EulerRotationConventions, *this, "EulerRotationConventions");
 
     testFramework.createTestCaseWithDefaultDisplay(Display_SetClearColor, *this, "Display_SetClearColor").m_displayConfigs.front().setClearColor(0.5f, 0.25f, 0.75f, 1.f);
-
-    testFramework.createTestCaseWithDefaultDisplay(FrameProfiler_Show, *this, "RendererTest_FrameProfiler");
 
     RenderingTestCase& testCase = testFramework.createTestCaseWithDefaultDisplay(AntiAliasingTest_MSAA4, *this, "AntiAliasingTest_MSAA4");
     testCase.m_displayConfigs.front().setMultiSampling(4u);
@@ -268,6 +265,7 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
     case RenderGroupTest_RenderOrderWithNestedGroups:
         return runBasicTest<RenderPassScene>(testFramework, RenderPassScene::NESTED_GROUPS, "RenderPassScene_PassesWithDifferentRenderOrder");
 
+#if defined(RAMSES_TEXT_ENABLED)
     case TextTest_SimpleText:
         return runBasicTest<TextScene>(testFramework, TextScene::EState_INITIAL, "TextScene_SimpleText");
     case TextTest_DeletedTextsAndNode:
@@ -282,10 +280,7 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         return runBasicTest<TextScene>(testFramework, TextScene::EState_SHAPING, "TextScene_Shaping");
     case TextTest_DifferentLanguages:
         return runBasicTest<MultiLanguageTextScene>(testFramework, MultiLanguageTextScene::EState_INITIAL, "MultiLanguageScene_MultiLanguageText");
-
-
-    case AnimationTest_AnimatedScene:
-        return runBasicTest<AnimatedTrianglesScene>(testFramework, AnimatedTrianglesScene::ANIMATION_POINT4, "AnimatedTriangleScene_AnimatedScene");
+#endif
 
     case AntiAliasingTest_MSAA4:
         return runBasicTest<AntiAliasingScene>(testFramework, AntiAliasingScene::MSAA_4_STATE, "AntiAliasingScene_MSAAx4", 2.5f);
@@ -374,23 +369,6 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         return runBasicTest<DataBufferScene>(testFramework, DataBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
     case Display_SetClearColor:
         return testFramework.renderAndCompareScreenshot("Display_SetClearColor", 0u, 0.4f);
-    case FrameProfiler_Show:
-    {
-        testFramework.getTestRenderer().toggleRendererFrameProfiler();
-        bool res = !runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles",
-            RendererTestUtils::DefaultMaxAveragePercentPerPixel, Vector3{ 0.f }, false);
-        testFramework.getTestRenderer().toggleRendererFrameProfiler();
-        res &= runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
-
-        // another cycle with different graph properties
-        testFramework.getTestRenderer().toggleRendererFrameProfiler(33u, 80u);
-        res &= !runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles",
-            RendererTestUtils::DefaultMaxAveragePercentPerPixel, Vector3{ 0.f }, false);
-        testFramework.getTestRenderer().toggleRendererFrameProfiler();
-        res &= runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
-
-        return res;
-    }
     case GeometryShaderGlslV320_PointsInTriangleStripOut:
         return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL320_POINTS_IN_TRIANGLE_STRIP_OUT, "GeometryShaderScene_PointsInTriangleStripOut", 0.f);
     case GeometryShaderGlslV320_PointsInLineStripOut:

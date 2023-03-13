@@ -34,7 +34,7 @@ namespace ramses_internal
     class EmbeddedCompositingTestsFramework: public RendererTestsFramework
     {
     public:
-        EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName);
+        EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config);
 
         //control test app lifecycle
         void                            startTestApplication(uint32_t testAppIdx = 0u);
@@ -87,10 +87,6 @@ namespace ramses_internal
         String                          getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            logEmbeddedCompositor(RendererLogContext& logContext);
 
-        // This is needed due to the conflict resulting from mandating the possibility to set EC config on both RendererConfig
-        // and DisplayConfig, as well as parsing EC config from cmd line to RendererConfig
-        const String&                   getEmbeddedCompositingSocketGroupName() const;
-
         const static String             TestEmbeddedCompositingDisplayName;
         const static String             TestAlternateEmbeddedCompositingDisplayName;
 
@@ -104,7 +100,6 @@ namespace ramses_internal
         TestForkingController& m_testForkingController;
         TestApplicationSurfaceId m_nextSurfaceId = TestApplicationSurfaceId(0);
         TestApplicationShellSurfaceId m_nextShellSurfaceId = TestApplicationShellSurfaceId(0);
-        const String m_embeddedCompositingSocketGroupName;
     };
 }
 

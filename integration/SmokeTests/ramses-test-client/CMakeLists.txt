@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+createModule(
 
     #==========================================================================
     # general module information
@@ -18,9 +18,9 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/*.h
-    FILES_SOURCE            src/*.cpp
-    RESOURCE_FOLDER         ../../TestContent/res
+    SRC_FILES               include/*.h
+                            src/*.cpp
+    RESOURCE_FOLDERS        ../../TestContent/res
 
     #==========================================================================
     # dependencies

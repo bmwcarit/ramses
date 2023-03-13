@@ -48,7 +48,7 @@ namespace ramses
         * @return true if there is binary shader for the Effect Id
         *         false otherwise
         */
-        virtual bool hasBinaryShader(effectId_t effectId) const override;
+        [[nodiscard]] virtual bool hasBinaryShader(effectId_t effectId) const override;
 
         /**
         * @brief Get the binary shader size in bytes for the Effect with the given Effect Id.
@@ -56,7 +56,7 @@ namespace ramses
         * @return size in bytes for the Effect with the given Effect Id
         *         0 if there is no binary shader in the cache for the Effect with the Effect Id.
         */
-        virtual uint32_t getBinaryShaderSize(effectId_t effectId) const override;
+        [[nodiscard]] virtual uint32_t getBinaryShaderSize(effectId_t effectId) const override;
 
         /**
         * @brief Get the binary shader format for the Effect with the given Effect Id.
@@ -64,7 +64,7 @@ namespace ramses
         * @return binary shader format for the Effect with the given Effect Id.
         *         0 if there is no binary shader in the cache for the Effect with the Effect Id.
         */
-        virtual binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const override;
+        [[nodiscard]] virtual binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const override;
 
         /**
          * @brief      Returns for a specific effect whether it should be cached.
@@ -75,7 +75,7 @@ namespace ramses
          * @param[in]  sceneId  ID of scene that uses the effect
          * @return     true if the effect should be cached, false otherwise.
          */
-        virtual bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const override;
+        [[nodiscard]] virtual bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const override;
 
         /**
         * @brief Get the binary shader data for the Effect with the given Effect Id.

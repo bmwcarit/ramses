@@ -20,8 +20,8 @@ namespace ramses_internal
     public:
         virtual ~IResourceUploadRenderBackend() {};
 
-        virtual IContext&                       getContext() const = 0;
-        virtual IDevice&                        getDevice() const = 0;
+        [[nodiscard]] virtual IContext&                       getContext() const = 0;
+        [[nodiscard]] virtual IDevice&                        getDevice() const = 0;
     };
 }
 

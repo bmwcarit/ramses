@@ -90,7 +90,7 @@ protected:
         eventCollector.appendAndConsumePendingEvents(dummy, dummy);
     }
 
-    std::string logOutput() const
+    [[nodiscard]] std::string logOutput() const
     {
         StringOutputStream strstr;
         statistics.writeStatsToStream(strstr);

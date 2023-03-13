@@ -30,7 +30,7 @@ namespace ramses_internal
         }
 
     private:
-        Int32 getRenderingPassRenderOrder(const RenderingPassInfo& pass) const
+        [[nodiscard]] Int32 getRenderingPassRenderOrder(const RenderingPassInfo& pass) const
         {
             assert((ERenderingPassType::RenderPass == pass.getType() && m_scene.isRenderPassAllocated(pass.getRenderPassHandle()))
                 || (ERenderingPassType::BlitPass == pass.getType() && m_scene.isBlitPassAllocated(pass.getBlitPassHandle())));

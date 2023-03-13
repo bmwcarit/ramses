@@ -69,13 +69,13 @@ namespace ramses
         * @brief Get the currently requested state for this scene reference.
         * @return The state of the reference.
         */
-        RendererSceneState getRequestedState() const;
+        [[nodiscard]] RendererSceneState getRequestedState() const;
 
         /**
         * @brief Get the sceneId of the referenced scene.
         * @return The scene id of the referenced scene
         */
-        sceneId_t getReferencedSceneId() const;
+        [[nodiscard]] sceneId_t getReferencedSceneId() const;
 
         /**
         * @brief Request callbacks (#ramses::IClientEventHandler::sceneReferenceFlushed) to be triggered whenever a flush

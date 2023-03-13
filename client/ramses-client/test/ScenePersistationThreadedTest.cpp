@@ -18,11 +18,9 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/ArrayResource.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-utils.h"
-#include "ramses-hmi-utils.h"
 
 #include "ClientEventHandlerMock.h"
 #include "TestEffects.h"
@@ -50,18 +48,6 @@ namespace ramses
                 ASSERT_EQ(StatusOK, scene->saveToFile(sceneFilename.c_str(), false));
             }
 
-            static void SaveResourcesOfSceneToFile(sceneId_t sceneId, const ramses_internal::String& resourceFilename)
-            {
-                RamsesFramework framework;
-                RamsesClient& client(*framework.createClient("RamsesFileCreator"));
-
-                Scene* scene = CreateScene(client, sceneId);
-
-                ASSERT_TRUE(scene != nullptr);
-
-                ASSERT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(*scene, resourceFilename.c_str(), false));
-            }
-
         private:
             static Scene* CreateScene(RamsesClient& client, sceneId_t sceneId)
             {
@@ -73,12 +59,6 @@ namespace ramses
 
                 RenderGroup* renderGroup   = scene->createRenderGroup("a rendergroup");
                 renderGroup->addMeshNode(*scene->createMeshNode(), 3);
-
-                // stream texture
-                uint8_t data[4] = { 0u };
-                MipLevelData mipLevelData(sizeof(data), data);
-                Texture2D* fallbackTexture = scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
-                scene->createStreamTexture(*fallbackTexture, waylandIviSurfaceId_t(3), "resourceName");
 
                 //appearance
                 Effect* effect = TestEffects::CreateTestEffect(*scene);
@@ -102,11 +82,6 @@ namespace ramses
 
     static const char* sceneFile = "ARamsesFileLoadedInSeveralThread_1.ramscene";
     static const char* otherSceneFile = "ARamsesFileLoadedInSeveralThread_2.ramscene";
-//    static const char* nonexistingSceneFile = "this_file_should_really_not_exist.ramscene";
-
-    static const char* resFile = "ARamsesFileLoadedInSeveralThread_1.ramres";
-    static const char* otherResFile = "ARamsesFileLoadedInSeveralThread_2.ramres";
-    //static const char* nonexistingResFile = "this_file_should_really_not_exist.ramres";
 
     class ARamsesFileLoadedInSeveralThread : public ::testing::Test
     {
@@ -151,15 +126,12 @@ namespace ramses
         {
             RamsesFileCreator::SaveSceneToFile(sceneId_t(123u), sceneFile);
             RamsesFileCreator::SaveSceneToFile(sceneId_t(124u), otherSceneFile);
-            RamsesFileCreator::SaveResourcesOfSceneToFile(sceneId_t(125u), resFile);
         }
 
         static void TearDownTestCase()
         {
             File(sceneFile).remove();
             File(otherSceneFile).remove();
-            File(resFile).remove();
-            File(otherResFile).remove();
         }
     };
 
@@ -167,18 +139,6 @@ namespace ramses
     {
         EXPECT_CALL(eventHandler, sceneFileLoadSucceeded(StrEq(sceneFile), _));
         EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile));
-        ASSERT_TRUE(waitForNumClientEvents(1));
-
-        ASSERT_TRUE(loadedScene != nullptr);
-        EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
-    }
-
-    TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadSceneParallelToSynchronousResourceLoad)
-    {
-        EXPECT_CALL(eventHandler, sceneFileLoadSucceeded(StrEq(sceneFile), _));
-        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile));
-        EXPECT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(client).addResourceDataFile(resFile));
-
         ASSERT_TRUE(waitForNumClientEvents(1));
 
         ASSERT_TRUE(loadedScene != nullptr);

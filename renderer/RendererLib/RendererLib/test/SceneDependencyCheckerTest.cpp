@@ -19,7 +19,7 @@ class ASceneDependencyChecker : public ::testing::Test
 public:
     ramses_internal::SceneDependencyChecker dependencyChecker;
 
-    Bool checkSceneOrder(SceneId sceneFirst, SceneId sceneSecond, const SceneIdVector& sceneList) const
+    [[nodiscard]] Bool checkSceneOrder(SceneId  sceneFirst, SceneId  sceneSecond, const SceneIdVector&  sceneList) const
     {
         Bool foundFirst = false;
         for (size_t i = 0; i < sceneList.size(); i++)

@@ -25,7 +25,7 @@ namespace ramses
         *
         * @return Name of the object
         */
-        const char* getName() const;
+        [[nodiscard]] const char* getName() const;
 
         /**
         * @brief Changes the name of the object.
@@ -41,7 +41,7 @@ namespace ramses
         *
         * @return Type of the object, see ERamsesObjectType enum for possible values.
         */
-        ERamsesObjectType getType() const;
+        [[nodiscard]] ERamsesObjectType getType() const;
 
         /**
         * @brief Checks if the object is of given type.
@@ -49,7 +49,7 @@ namespace ramses
         * @param[in] type Type to check against.
         * @return True if object is of given type, ie. it can be converted to given type.
         */
-        bool isOfType(ERamsesObjectType type) const;
+        [[nodiscard]] bool isOfType(ERamsesObjectType type) const;
 
         /**
         * Stores internal data for implementation specifics of RamsesObject.

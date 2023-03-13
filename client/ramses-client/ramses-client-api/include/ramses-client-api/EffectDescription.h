@@ -104,29 +104,29 @@ namespace ramses
         * @brief Gets vertex shader code.
         * @return Vertex shader source code. Empty string if not previously set.
         */
-        const char*        getVertexShader() const;
+        [[nodiscard]] const char*        getVertexShader() const;
         /**
         * @brief Gets fragment shader code that is currently set.
         * @return Fragment shader source code. Empty string if not previously set.
         */
-        const char*        getFragmentShader() const;
+        [[nodiscard]] const char*        getFragmentShader() const;
         /**
         * @brief Gets geometry shader code that is currently set.
         * @return Geometry shader source code. Empty string if not previously set.
         */
-        const char*        getGeometryShader() const;
+        [[nodiscard]] const char*        getGeometryShader() const;
 
         /**
         * @brief Gets number of compiler defines.
         * @return Number of compiler defines that were previously added.
         */
-        uint32_t             getNumberOfCompilerDefines() const;
+        [[nodiscard]] uint32_t             getNumberOfCompilerDefines() const;
         /**
         * @brief Gets compiler define.
         * @param[in] index Index of define to retrieve.
         * @return Compiler define for given index. nullptr if not previously set.
         */
-        const char*        getCompilerDefine(uint32_t index) const;
+        [[nodiscard]] const char*        getCompilerDefine(uint32_t index) const;
 
         /**
         * @brief Stores internal data for implementation specifics of EffectDescription.

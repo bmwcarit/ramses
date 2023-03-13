@@ -12,7 +12,6 @@
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "Texture2DImpl.h"
 #include "Texture3DImpl.h"
 #include "TextureCubeImpl.h"
@@ -21,7 +20,6 @@
 #include "RenderBufferImpl.h"
 #include "Texture2DBufferImpl.h"
 #include "RenderTargetImpl.h"
-#include "StreamTextureImpl.h"
 #include "SceneImpl.h"
 #include "Scene/ClientScene.h"
 #include "TextureUtils.h"
@@ -104,14 +102,6 @@ namespace ramses
         return setTextureDataInternal(ERamsesObjectType_RenderBuffer, ramses_internal::TextureSampler::ContentType::RenderBuffer, {}, texture.impl.getRenderBufferHandle().asMemoryHandle());
     }
 
-    status_t TextureSamplerImpl::setTextureData(const StreamTexture& texture)
-    {
-        if (!getSceneImpl().containsSceneObject(texture.impl))
-            return addErrorEntry("TextureSampler::setTextureData failed, stream texture is not from the same scene as this sampler.");
-
-        return setTextureDataInternal(ERamsesObjectType_StreamTexture, ramses_internal::TextureSampler::ContentType::StreamTexture, {}, texture.impl.getHandle().asMemoryHandle());
-    }
-
     status_t TextureSamplerImpl::setTextureDataInternal(ERamsesObjectType textureType,
         ramses_internal::TextureSampler::ContentType contentType,
         ramses_internal::ResourceContentHash textureHash,
@@ -187,7 +177,6 @@ namespace ramses
         switch (m_textureType)
         {
             case ERamsesObjectType_Texture2D:
-            case ERamsesObjectType_StreamTexture:
             case ERamsesObjectType_RenderBuffer:
             case ERamsesObjectType_Texture2DBuffer: return ramses_internal::EDataType::TextureSampler2D;
             case ERamsesObjectType_Texture3D: return ramses_internal::EDataType::TextureSampler3D;
@@ -245,7 +234,7 @@ namespace ramses
             contentStatus = validateTextureBuffer(ramses_internal::TextureBufferHandle(sampler.contentHandle));
             break;
         case ramses_internal::TextureSampler::ContentType::StreamTexture:
-            contentStatus = validateStreamTexture(ramses_internal::StreamTextureHandle(sampler.contentHandle));
+            assert(false);
             break;
         case ramses_internal::TextureSampler::ContentType::ExternalTexture:
             contentStatus = StatusOK;
@@ -307,32 +296,6 @@ namespace ramses
 
         if (!foundTextureBuffer)
             return addValidationMessage(EValidationSeverity_Error, "Texture Sampler is using a TextureBuffer which does not exist");
-
-        return status;
-    }
-
-    ramses::status_t TextureSamplerImpl::validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle) const
-    {
-        status_t status = StatusOK;
-        bool foundStreamTexture = false;
-
-        const bool isStreamTextureValid = getIScene().isStreamTextureAllocated(streamTextureHandle);
-        if (isStreamTextureValid)
-        {
-            RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_StreamTexture);
-            while (const StreamTexture* streamTexture = iter.getNext<StreamTexture>())
-            {
-                if (streamTextureHandle == streamTexture->impl.getHandle())
-                {
-                    foundStreamTexture = true;
-                    status = addValidationOfDependentObject(streamTexture->impl);
-                    break;
-                }
-            }
-        }
-
-        if (!foundStreamTexture)
-            return addValidationMessage(EValidationSeverity_Error, "Texture Sampler is using a StreamTexture which does not exist");
 
         return status;
     }

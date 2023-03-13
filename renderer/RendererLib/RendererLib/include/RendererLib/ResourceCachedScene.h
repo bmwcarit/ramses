@@ -9,13 +9,11 @@
 #ifndef RAMSES_RESOURCECACHEDSCENE_H
 #define RAMSES_RESOURCECACHEDSCENE_H
 
-#include "RendererAPI/Types.h"
-#include "RendererLib/DataReferenceLinkCachedScene.h"
+#include "RendererLib/TextureLinkCachedScene.h"
 
 namespace ramses_internal
 {
     class IResourceDeviceHandleAccessor;
-    class IEmbeddedCompositingManager;
 
     struct VertexArrayCacheEntry
     {
@@ -24,7 +22,7 @@ namespace ramses_internal
     };
     using VertexArrayCache = std::vector<VertexArrayCacheEntry>;
 
-    class ResourceCachedScene : public DataReferenceLinkCachedScene
+    class ResourceCachedScene : public TextureLinkCachedScene
     {
     public:
         explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
@@ -39,14 +37,11 @@ namespace ramses_internal
         virtual void                        releaseDataInstance         (DataInstanceHandle dataInstanceHandle) override;
         virtual TextureSamplerHandle        allocateTextureSampler      (const TextureSampler& sampler, TextureSamplerHandle handle) override;
         virtual void                        releaseTextureSampler       (TextureSamplerHandle handle) override;
-        virtual void                        releaseStreamTexture        (StreamTextureHandle handle) override;
 
         // Renderable data (stuff required for rendering)
         virtual void                        setRenderableDataInstance   (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
         virtual void                        setDataResource             (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
         virtual void                        setDataTextureSamplerHandle (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
-
-        virtual void                        setForceFallbackImage       (StreamTextureHandle streamTextureHandle, Bool forceFallbackImage) override;
 
         virtual RenderTargetHandle          allocateRenderTarget        (RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
         virtual BlitPassHandle              allocateBlitPass            (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
@@ -63,10 +58,9 @@ namespace ramses_internal
         const DeviceHandleVector&           getCachedHandlesForBlitPassRenderTargets() const;
         const BoolVector&                   getVertexArraysDirtinessFlags() const;
 
-        void updateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager);
+        void updateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor);
         void updateRenderablesResourcesDirtiness();
         void setRenderableResourcesDirtyByTextureSampler(TextureSamplerHandle textureSamplerHandle) const;
-        void setRenderableResourcesDirtyByStreamTexture(StreamTextureHandle streamTextureHandle) const;
 
         bool hasDirtyVertexArrays() const;
         void markVertexArraysClean();
@@ -90,15 +84,15 @@ namespace ramses_internal
         static Bool CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash);
 
         Bool checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
-        Bool checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, RenderableHandle renderable);
+        Bool checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         bool checkGeometryResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         void checkAndUpdateRenderTargetResources(const IResourceDeviceHandleAccessor& resourceAccessor);
         void checkAndUpdateBlitPassResources(const IResourceDeviceHandleAccessor& resourceAccessor);
 
-        Bool updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, TextureSamplerHandle sampler);
+        Bool updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler);
         Bool updateTextureSamplerResourceAsRenderBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
         Bool updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
-        Bool updateTextureSamplerResourceAsStreamTexture(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, const StreamTextureHandle streamTextureHandle, DeviceResourceHandle& deviceHandleInOut);
+        bool updateTextureSamplerResourceAsStreamBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const StreamBufferHandle streamBuffer, const TextureSampler& fallbackSamplerData, DeviceResourceHandle& deviceHandleInOut);
 
         DeviceHandleVector         m_effectDeviceHandleCache;
         VertexArrayCache           m_vertexArrayCache;

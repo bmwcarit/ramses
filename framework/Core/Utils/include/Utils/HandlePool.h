@@ -27,10 +27,10 @@ namespace ramses_internal
         // Creation/Deletion
         HANDLE                          acquire(HANDLE handle = InvalidMemoryHandle());
         void                            release(HANDLE handle);
-        bool                            isAcquired(HANDLE handle) const;
-        UInt32                          getNumberOfAcquired() const;
+        [[nodiscard]] bool                            isAcquired(HANDLE handle) const;
+        [[nodiscard]] UInt32                          getNumberOfAcquired() const;
 
-        UInt32                          size() const;
+        [[nodiscard]] UInt32                          size() const;
         void                            resize(UInt32 size);
 
         static HANDLE                   InvalidMemoryHandle();

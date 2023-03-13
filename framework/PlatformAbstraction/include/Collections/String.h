@@ -97,7 +97,7 @@ namespace ramses_internal
         RNODISCARD const std::string& stdRef() const;
         RNODISCARD std::string& stdRef();
 
-        static constexpr const size_t npos = std::string::npos;
+        static constexpr auto npos = std::string::npos;
 
     private:
         std::string m_string;

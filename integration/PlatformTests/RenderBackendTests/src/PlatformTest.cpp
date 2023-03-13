@@ -94,7 +94,7 @@ namespace ramses_internal
                     }
             )SHADER";
 
-            EffectResource effect(vertexShader, fragmentShader, "", absl::nullopt, {}, {}, "", ResourceCacheFlag_DoNotCache);
+            EffectResource effect(vertexShader, fragmentShader, "", EDrawMode::NUMBER_OF_ELEMENTS, {}, {}, "", ResourceCacheFlag_DoNotCache);
             EXPECT_TRUE(device.isDeviceStatusHealthy());
             auto resource = device.uploadShader(effect);
             EXPECT_NE(nullptr, resource);

@@ -18,6 +18,6 @@ MODULE_WITH_SHARED_LIBRARY(
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/*.h
-    FILES_SOURCE            src/*.cpp
+    SRC_FILES               include/*.h
+                            src/*.cpp
 )

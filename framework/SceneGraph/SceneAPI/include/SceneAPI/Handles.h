@@ -65,9 +65,6 @@ namespace ramses_internal
     struct DataBufferHandleTag {};
     using DataBufferHandle = TypedMemoryHandle<DataBufferHandleTag>;
 
-    struct AnimationSystemHandleTag {};
-    using AnimationSystemHandle = TypedMemoryHandle<AnimationSystemHandleTag>;
-
     struct TextureBufferHandleTag {};
     using TextureBufferHandle = TypedMemoryHandle<TextureBufferHandleTag>;
 

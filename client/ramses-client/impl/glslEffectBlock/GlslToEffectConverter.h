@@ -16,7 +16,6 @@
 #include "SceneAPI/EFixedSemantics.h"
 #include "Resource/EffectInputInformation.h"
 #include "SceneAPI/RenderState.h"
-#include "absl/types/optional.h"
 
 namespace ramses_internal
 {
@@ -32,7 +31,7 @@ namespace ramses_internal
         const EffectInputInformationVector& getUniformInputs() const;
         const EffectInputInformationVector& getAttributeInputs() const;
 
-        absl::optional<EDrawMode> getGeometryShaderInputType() const;
+        EDrawMode getGeometryShaderInputType() const;
 
     private:
         enum class EShaderStage
@@ -49,7 +48,7 @@ namespace ramses_internal
         EffectInputInformationVector m_uniformInputs;
         EffectInputInformationVector m_attributeInputs;
 
-        absl::optional<EDrawMode> m_geometryShaderInputType;
+        EDrawMode m_geometryShaderInputType = EDrawMode::NUMBER_OF_ELEMENTS;
 
         bool parseLinkerObjectsForStage(const TIntermNode* node, EShaderStage stage);
         const glslang::TIntermSequence* getLinkerObjectSequence(const TIntermNode* node) const;

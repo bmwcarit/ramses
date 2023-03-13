@@ -10,6 +10,7 @@
 #include "ramses-renderer-api/BinaryShaderCache.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "RendererConfigImpl.h"
+#include "CLI/CLI.hpp"
 
 TEST(ARendererConfig, hasDefaultValuesUponConstruction)
 {
@@ -19,7 +20,6 @@ TEST(ARendererConfig, hasDefaultValuesUponConstruction)
 
     const ramses_internal::RendererConfig& internalConfig = config.impl.getInternalRendererConfig();
 
-    EXPECT_EQ(defaultConfig.getKPIFileName(), internalConfig.getKPIFileName());
     EXPECT_EQ(defaultConfig.getFrameCallbackMaxPollTime(), internalConfig.getFrameCallbackMaxPollTime());
     EXPECT_EQ(defaultConfig.getRenderThreadLoopTimingReportingPeriod(), internalConfig.getRenderThreadLoopTimingReportingPeriod());
     EXPECT_EQ(defaultConfig.getSystemCompositorControlEnabled(), internalConfig.getSystemCompositorControlEnabled());
@@ -49,60 +49,9 @@ TEST(ARendererConfig, canSetBinaryShaderCache)
     EXPECT_EQ(&cache, config.impl.getBinaryShaderCache());
 }
 
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketGroup)
+TEST(ARendererConfig, defaultRendererConfigValidates)
 {
     ramses::RendererConfig config;
-
-    config.setWaylandEmbeddedCompositingSocketGroup("permissionGroup");
-    EXPECT_STREQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
-}
-
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketPermissions)
-{
-    ramses::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketPermissions(0660);
-    EXPECT_EQ(0660u, config.impl.getWaylandSocketEmbeddedPermissions());
-}
-
-TEST(ARendererConfig, cannotSetInvalidEmbeddedCompositingSocketPermissions)
-{
-    ramses::RendererConfig config;
-    EXPECT_NE(ramses::StatusOK, config.setWaylandEmbeddedCompositingSocketPermissions(0));
-}
-
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketname)
-{
-    ramses::RendererConfig config;
-
-    config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
-    EXPECT_STREQ("wayland-x123", config.getWaylandEmbeddedCompositingSocketName());
-}
-
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketFD)
-{
-    ramses::RendererConfig config;
-
-    config.setWaylandEmbeddedCompositingSocketFD(23);
-    EXPECT_EQ(23, config.impl.getWaylandSocketEmbeddedFD());
-}
-
-TEST(ARendererConfig, defaultRendererConfigDoesntValidate)
-{
-    ramses::RendererConfig config;
-    EXPECT_NE(ramses::StatusOK, config.validate());
-}
-
-TEST(ARendererConfig, settingEmbeddedCompositingSocketnameValidatesTrue)
-{
-    ramses::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST(ARendererConfig, settingEmbeddedCompositingSocketFDValidatesTrue)
-{
-    ramses::RendererConfig config;
-    config.setWaylandEmbeddedCompositingSocketFD(23);
     EXPECT_EQ(ramses::StatusOK, config.validate());
 }
 
@@ -119,4 +68,23 @@ TEST(ARendererConfig, setsAndGetsLoopCountPeriod)
     ramses::RendererConfig config;
     EXPECT_EQ(ramses::StatusOK, config.setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds(1234)));
     EXPECT_EQ(std::chrono::milliseconds(1234), config.getRenderThreadLoopTimingReportingPeriod());
+}
+
+TEST(ARendererConfig, cliIviControl)
+{
+    ramses::RendererConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--ivi-control"});
+    EXPECT_TRUE(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled());
+    cli.parse(std::vector<std::string>{"--no-ivi-control"});
+    EXPECT_FALSE(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled());
+}
+
+TEST(ARendererConfig, cliThrowsErrorsForExtras)
+{
+    ramses::RendererConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--foo"}), CLI::ExtrasError);
 }

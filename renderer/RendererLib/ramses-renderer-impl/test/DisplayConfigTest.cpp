@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "DisplayConfigImpl.h"
+#include "CLI/CLI.hpp"
 
 class ADisplayConfig : public ::testing::Test
 {
@@ -28,7 +29,6 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
 
     EXPECT_EQ(defaultDisplayConfig.getFullscreenState(), displayConfig.getFullscreenState());
     EXPECT_EQ(defaultDisplayConfig.getBorderlessState(), displayConfig.getBorderlessState());
-    EXPECT_EQ(defaultDisplayConfig.isWarpingEnabled(), displayConfig.isWarpingEnabled());
     EXPECT_EQ(defaultDisplayConfig.getKeepEffectsUploaded(), displayConfig.getKeepEffectsUploaded());
 
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingSampleCount(), displayConfig.getAntialiasingSampleCount());
@@ -122,22 +122,10 @@ TEST_F(ADisplayConfig, setsAndGetsMultisampling)
     EXPECT_EQ(2u, sampleCount);
 }
 
-TEST_F(ADisplayConfig, enablesWarping)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableWarpingPostEffect());
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().isWarpingEnabled());
-}
-
 TEST_F(ADisplayConfig, disablesKeepingOfEffectsInVRAM)
 {
     EXPECT_EQ(ramses::StatusOK, config.keepEffectsUploaded(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
-}
-
-TEST_F(ADisplayConfig, setsNativeDisplayID)
-{
-    EXPECT_EQ(ramses::StatusOK, config.setIntegrityRGLDeviceUnit(2u));
-    EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getIntegrityRGLDeviceUnit().getValue());
 }
 
 TEST_F(ADisplayConfig, setsWindowIVIVisible)
@@ -181,9 +169,9 @@ TEST_F(ADisplayConfig, IsValidUponConstruction)
 
 TEST_F(ADisplayConfig, canBeCopyConstructed)
 {
-    config.enableWarpingPostEffect();
+    config.setResizable(true);
     const ramses::DisplayConfig otherConfig(config);
-    EXPECT_TRUE(otherConfig.impl.getInternalDisplayConfig().isWarpingEnabled());
+    EXPECT_TRUE(otherConfig.impl.getInternalDisplayConfig().isResizable());
 }
 
 TEST_F(ADisplayConfig, setClearColor)
@@ -203,13 +191,13 @@ TEST_F(ADisplayConfig, setClearColor)
 
 TEST_F(ADisplayConfig, setDepthStencilBufferType)
 {
-    EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setDepthStencilBufferType(config, ramses::EDepthBufferType_Depth));
+    EXPECT_EQ(ramses::StatusOK, config.setDepthStencilBufferType(ramses::EDepthBufferType_Depth));
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, config.impl.getInternalDisplayConfig().getDepthStencilBufferType());
 }
 
 TEST_F(ADisplayConfig, setAsyncEffectUploadEnabled)
 {
-    EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setAsyncEffectUploadEnabled(config, false));
+    EXPECT_EQ(ramses::StatusOK, config.setAsyncEffectUploadEnabled(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().isAsyncEffectUploadEnabled());
 }
 
@@ -269,4 +257,147 @@ TEST_F(ADisplayConfig, canSetResourceUploadBatchSize)
     EXPECT_EQ(1u, config.impl.getResourceUploadBatchSize());
     EXPECT_NE(ramses::StatusOK, config.setResourceUploadBatchSize(0));
     EXPECT_EQ(1u, config.impl.getResourceUploadBatchSize());
+}
+
+TEST_F(ADisplayConfig, cliWindowRectangle)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--xpos=5", "--ypos=10", "--width=420", "--height=998"});
+    int32_t x = 0u;
+    int32_t y = 0u;
+    uint32_t w = 0u;
+    uint32_t h = 0u;
+    config.impl.getWindowRectangle(x, y, w, h);
+    EXPECT_EQ(5, x);
+    EXPECT_EQ(10, y);
+    EXPECT_EQ(420u, w);
+    EXPECT_EQ(998u, h);
+}
+
+TEST_F(ADisplayConfig, cliFullscreen)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--fullscreen"});
+    EXPECT_TRUE(config.isWindowFullscreen());
+    config.setWindowFullscreen(false);
+    cli.parse(std::vector<std::string>{"-f"});
+    EXPECT_TRUE(config.isWindowFullscreen());
+}
+
+TEST_F(ADisplayConfig, cliBorderless)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--borderless"});
+    EXPECT_TRUE(config.impl.getInternalDisplayConfig().getBorderlessState());
+}
+
+TEST_F(ADisplayConfig, cliResizable)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--resizable"});
+    EXPECT_TRUE(config.impl.getInternalDisplayConfig().isResizable());
+}
+
+TEST_F(ADisplayConfig, cliDeleteEffects)
+{
+    EXPECT_TRUE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--delete-effects"});
+    EXPECT_FALSE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
+}
+
+TEST_F(ADisplayConfig, cliMsaa)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--msaa"}), CLI::ParseError);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--msaa=7"}), CLI::ParseError);
+    EXPECT_EQ(1u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
+    cli.parse(std::vector<std::string>{"--msaa=2"});
+    EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
+    cli.parse(std::vector<std::string>{"--msaa=4"});
+    EXPECT_EQ(4u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
+    cli.parse(std::vector<std::string>{"--msaa=8"});
+    EXPECT_EQ(8u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
+}
+
+TEST_F(ADisplayConfig, cliIviVisible)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse(std::vector<std::string>{"--ivi-visible"});
+    EXPECT_TRUE(config.impl.getInternalDisplayConfig().getStartVisibleIvi());
+    cli.parse(std::vector<std::string>{"--no-ivi-visible"});
+    EXPECT_FALSE(config.impl.getInternalDisplayConfig().getStartVisibleIvi());
+}
+
+TEST_F(ADisplayConfig, cliIviLayer)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ivi-layer"}), CLI::ParseError);
+    cli.parse(std::vector<std::string>{"--ivi-layer=42"});
+    EXPECT_EQ(42u, config.impl.getInternalDisplayConfig().getWaylandIviLayerID().getValue());
+}
+
+TEST_F(ADisplayConfig, cliIviSurface)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ivi-surface"}), CLI::ParseError);
+    cli.parse(std::vector<std::string>{"--ivi-surface=78"});
+    EXPECT_EQ(78u, config.impl.getInternalDisplayConfig().getWaylandIviSurfaceID().getValue());
+}
+
+TEST_F(ADisplayConfig, cliClear)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--clear"}), CLI::ParseError);
+    cli.parse(std::vector<std::string>{"--clear=1,0,0.4,0.7"});
+    EXPECT_FLOAT_EQ(1.f, config.impl.getInternalDisplayConfig().getClearColor()[0]);
+    EXPECT_FLOAT_EQ(0.f, config.impl.getInternalDisplayConfig().getClearColor()[1]);
+    EXPECT_FLOAT_EQ(0.4f, config.impl.getInternalDisplayConfig().getClearColor()[2]);
+    EXPECT_FLOAT_EQ(0.7f, config.impl.getInternalDisplayConfig().getClearColor()[3]);
+}
+
+TEST_F(ADisplayConfig, cliThrowsErrorsForExtras)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--foo"}), CLI::ExtrasError);
+}
+
+TEST_F(ADisplayConfig, cliEcDisplay)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-display"}), CLI::ParseError);
+    cli.parse(std::vector<std::string>{"--ec-display=wse"});
+    EXPECT_STREQ("wse", config.getWaylandEmbeddedCompositingSocketName());
+}
+
+TEST_F(ADisplayConfig, cliEcGroup)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group"}), CLI::ParseError);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-group=grp"}), CLI::RequiresError);
+    cli.parse(std::vector<std::string>{"--ec-socket-group=grp", "--ec-display=wse"});
+    EXPECT_STREQ("grp", config.impl.getWaylandSocketEmbeddedGroup());
+}
+
+TEST_F(ADisplayConfig, cliEcPermissions)
+{
+    CLI::App cli;
+    config.registerOptions(cli);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions"}), CLI::ParseError);
+    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744"}), CLI::RequiresError);
+    cli.parse(std::vector<std::string>{"--ec-socket-permissions=0744", "--ec-display=wse"});
+    EXPECT_EQ(0744u, config.impl.getWaylandSocketEmbeddedPermissions());
 }

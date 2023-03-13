@@ -6,10 +6,6 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF(ramses-sdk_BUILD_DEMOS)
-    ADD_SUBDIRECTORY(ramses-text-layout-demo)
-    ADD_SUBDIRECTORY(ramses-text-shadow-demo)
-    ADD_SUBDIRECTORY(ramses-dcsm-list)
-    ADD_SUBDIRECTORY(android)
-    ADD_SUBDIRECTORY(ramses-dcsm-scene-references-demo)
-ENDIF()
+if(ramses-sdk_BUILD_DEMOS)
+    add_subdirectory(android)
+endif()

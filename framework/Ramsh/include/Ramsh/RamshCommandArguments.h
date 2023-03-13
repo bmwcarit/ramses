@@ -39,7 +39,7 @@ namespace ramses_internal
 
         // from RamshCommand
         bool executeInput(const std::vector<std::string>& in) override;
-        std::string descriptionString() const override;
+        [[nodiscard]] std::string descriptionString() const override;
 
         virtual ~RamshCommandArgsBase() override
         {

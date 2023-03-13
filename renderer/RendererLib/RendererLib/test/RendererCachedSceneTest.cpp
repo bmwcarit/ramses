@@ -44,7 +44,7 @@ namespace ramses_internal
 
     TEST_F(ARendererCachedScene, HasEmptyRenderPassCacheForEmptyScene)
     {
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(0u, orderedPasses.size());
@@ -54,7 +54,7 @@ namespace ramses_internal
     {
         const RenderPassHandle pass = sceneHelper.createRenderPassWithCamera();
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(1u, orderedPasses.size());
@@ -65,7 +65,7 @@ namespace ramses_internal
     {
         const RenderPassHandle pass = sceneHelper.createRenderPassWithCamera();
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, {});
     }
@@ -75,7 +75,7 @@ namespace ramses_internal
         const RenderPassHandle pass = sceneHelper.createRenderPassWithCamera();
         scene.addRenderGroupToRenderPass(pass, sceneAllocator.allocateRenderGroup(), 1);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, {});
     }
@@ -87,7 +87,7 @@ namespace ramses_internal
         const RenderableHandle rend1 = sceneHelper.createRenderable(group);
         const RenderableHandle rend2 = sceneHelper.createRenderable(group);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
@@ -104,7 +104,7 @@ namespace ramses_internal
         const RenderableHandle rend1 = sceneHelper.createRenderable(group);
         const RenderableHandle rend2 = sceneHelper.createRenderable(nestedGroup);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
@@ -120,14 +120,14 @@ namespace ramses_internal
 
         const RenderableHandle rend2 = sceneHelper.createRenderable();
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         ASSERT_FALSE(contains_c(renderables, rend2));
 
         scene.addRenderableToRenderGroup(group, rend2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         EXPECT_EQ(2u, renderables.size());
         EXPECT_TRUE(contains_c(renderables, rend2));
@@ -142,14 +142,14 @@ namespace ramses_internal
         const RenderGroupHandle nestedGroup = sceneAllocator.allocateRenderGroup();
         const RenderableHandle rend2 = sceneHelper.createRenderable(nestedGroup);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         ASSERT_FALSE(contains_c(renderables, rend2));
 
         scene.addRenderGroupToRenderGroup(group, nestedGroup, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         EXPECT_EQ(2u, renderables.size());
         EXPECT_TRUE(contains_c(renderables, rend2));
@@ -167,7 +167,7 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass, group1, 0);
         scene.addRenderGroupToRenderPass(pass, group2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
@@ -183,11 +183,11 @@ namespace ramses_internal
         const RenderableHandle rend2 = sceneHelper.createRenderable(group);
         const RenderableHandle rend3 = sceneHelper.createRenderable(group);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         sceneHelper.removeRenderable(rend2, group);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
@@ -208,11 +208,11 @@ namespace ramses_internal
         scene.addRenderableToRenderGroup(group, rend3, 0);
         scene.addRenderGroupToRenderPass(pass, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderableFromRenderGroup(group, rend2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
@@ -235,11 +235,11 @@ namespace ramses_internal
         scene.addRenderGroupToRenderGroup(group, nestedGroup, 0);
         scene.addRenderGroupToRenderPass(pass, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderGroupFromRenderGroup(group, nestedGroup);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables = scene.getOrderedRenderablesForPass(pass);
         EXPECT_EQ(2u, renderables.size());
@@ -252,11 +252,11 @@ namespace ramses_internal
     {
         const RenderPassHandle pass = sceneHelper.createRenderPassWithCamera();
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.releaseRenderPass(pass);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(0u, orderedPasses.size());
@@ -272,11 +272,11 @@ namespace ramses_internal
         sceneHelper.createRenderable(group);
         sceneHelper.createRenderable(nestedGroup);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.releaseRenderPass(pass);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, {});
     }
@@ -293,12 +293,12 @@ namespace ramses_internal
         scene.addRenderableToRenderGroup(group, rend3, 0);
         scene.addRenderGroupToRenderPass(pass, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderGroupFromRenderPass(pass, group);
         scene.releaseRenderGroup(group);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, {});
     }
@@ -310,7 +310,7 @@ namespace ramses_internal
         scene.setRenderPassRenderOrder(pass1, 0);
         scene.setRenderPassRenderOrder(pass2, 1);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(2u, orderedPasses.size());
@@ -329,7 +329,7 @@ namespace ramses_internal
         const RenderableHandle rend2 = sceneHelper.createRenderable(group1, group2);
         const RenderableHandle rend3 = sceneHelper.createRenderable(group1);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(3u, renderables1.size());
@@ -360,7 +360,7 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group1, 0);
         scene.addRenderGroupToRenderPass(pass2, group2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(3u, renderables1.size());
@@ -388,7 +388,7 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group, 0);
         scene.addRenderGroupToRenderPass(pass2, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(3u, renderables1.size());
@@ -414,7 +414,7 @@ namespace ramses_internal
 
         sceneHelper.removeRenderable(rend2, group1, group2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -446,13 +446,13 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group1, 0);
         scene.addRenderGroupToRenderPass(pass2, group2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderableFromRenderGroup(group1, rend2);
         scene.removeRenderableFromRenderGroup(group2, rend2);
         scene.releaseRenderable(rend2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -481,12 +481,12 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group, 0);
         scene.addRenderGroupToRenderPass(pass2, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderableFromRenderGroup(group, rend2);
         scene.releaseRenderable(rend2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -512,7 +512,7 @@ namespace ramses_internal
 
         scene.setRenderableVisibility(rend2, EVisibilityMode::Invisible);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -538,7 +538,7 @@ namespace ramses_internal
 
         scene.setRenderableVisibility(rend2, EVisibilityMode::Off);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -570,11 +570,11 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group1, 0);
         scene.addRenderGroupToRenderPass(pass2, group2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.setRenderableVisibility(rend2, EVisibilityMode::Invisible);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -606,11 +606,11 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group1, 0);
         scene.addRenderGroupToRenderPass(pass2, group2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.setRenderableVisibility(rend2, EVisibilityMode::Off);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -639,11 +639,11 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group, 0);
         scene.addRenderGroupToRenderPass(pass2, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.setRenderableVisibility(rend2, EVisibilityMode::Invisible);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -672,11 +672,11 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group, 0);
         scene.addRenderGroupToRenderPass(pass2, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.setRenderableVisibility(rend2, EVisibilityMode::Off);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderableVector& renderables1 = scene.getOrderedRenderablesForPass(pass1);
         EXPECT_EQ(2u, renderables1.size());
@@ -700,7 +700,7 @@ namespace ramses_internal
         scene.setRenderPassRenderOrder(pass2, 1);
         scene.setRenderPassRenderOrder(pass3, -1);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(pass3, orderedPasses[0].getRenderPassHandle());
@@ -715,7 +715,7 @@ namespace ramses_internal
 
         scene.setRenderPassEnabled(pass2, false);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         ASSERT_TRUE(1u == orderedPasses.size());
@@ -728,10 +728,10 @@ namespace ramses_internal
         const RenderPassHandle pass2 = sceneHelper.createRenderPassWithCamera();
 
         scene.setRenderPassEnabled(pass2, false);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.setRenderPassEnabled(pass2, true);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         ASSERT_TRUE(2u == orderedPasses.size());
@@ -756,7 +756,7 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass, group2, 5);
         scene.addRenderGroupToRenderPass(pass, group3, -3);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, { rend3, rend1, rend2 });
     }
@@ -774,7 +774,7 @@ namespace ramses_internal
         scene.addRenderableToRenderGroup(group, rend3, -3);
         scene.addRenderGroupToRenderPass(pass, group, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, { rend3, rend1, rend2 });
     }
@@ -798,7 +798,7 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group1, 0);
         scene.addRenderGroupToRenderPass(pass2, group2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass1, { rend3, rend1, rend2 });
         expectOrderedRenderablesInPass(pass2, { rend1, rend3, rend2 });
@@ -823,12 +823,12 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass1, group1, 0);
         scene.addRenderGroupToRenderPass(pass2, group2, 0);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderableFromRenderGroup(group2, rend2);
         scene.addRenderableToRenderGroup(group2, rend2, -500);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass1, { rend3, rend1, rend2 });
         expectOrderedRenderablesInPass(pass2, { rend2, rend1, rend3 });
@@ -849,12 +849,12 @@ namespace ramses_internal
         scene.addRenderGroupToRenderPass(pass, group1, 1);
         scene.addRenderGroupToRenderPass(pass, group2, 2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderGroupFromRenderPass(pass, group2);
         scene.addRenderGroupToRenderPass(pass, group2, -2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, { rend2, rend3, rend1 });
     }
@@ -878,12 +878,12 @@ namespace ramses_internal
         scene.setRenderPassRenderOrder(pass1, 2);
         scene.setRenderPassRenderOrder(pass2, 1);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.removeRenderGroupFromRenderPass(pass2, group2);
         scene.addRenderGroupToRenderPass(pass1, group2, -2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass1, { rend2, rend3, rend1 });
         expectOrderedRenderablesInPass(pass2, {});
@@ -929,7 +929,7 @@ namespace ramses_internal
         const DataInstanceHandle dataInstance6 = sceneAllocator.allocateDataInstance(layout3);
         scene.setRenderableDataInstance(rend6, ERenderableDataSlotType_Geometry, dataInstance6);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, { rend2, rend5, rend3, rend6, rend1, rend4 });
     }
@@ -976,7 +976,7 @@ namespace ramses_internal
         const DataInstanceHandle dataInstance6 = sceneAllocator.allocateDataInstance(layout3);
         scene.setRenderableDataInstance(rend6, ERenderableDataSlotType_Geometry, dataInstance6);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         expectOrderedRenderablesInPass(pass, { rend3, rend1, rend2, rend5, rend6, rend4 });
     }
@@ -1008,7 +1008,7 @@ namespace ramses_internal
         const DataInstanceHandle dataInstance3 = sceneAllocator.allocateDataInstance(layout1);
         scene.setRenderableDataInstance(rend3, ERenderableDataSlotType_Geometry, dataInstance3);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         // but are not grouped together because they are from different groups
         expectOrderedRenderablesInPass(pass, { rend1, rend2, rend3 });
@@ -1051,7 +1051,7 @@ namespace ramses_internal
         scene.setRenderableDataInstance(rend1, ERenderableDataSlotType_Geometry, effect1geometry1);
 
         // group by effect and geometry within effect groups
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         expectOrderedRenderablesInPass(pass, { rend1, rend3, rend5, rend6, rend2, rend4 });
     }
 
@@ -1068,7 +1068,7 @@ namespace ramses_internal
         scene.addChildToNode(transformNode, rendNode);
         scene.setTranslation(transform, Vector3(1, 2, 3));
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         scene.updateRenderableWorldMatrices();
 
         const Matrix44f expectedWorldMatrix = scene.updateMatrixCache(ETransformationMatrixType_World, rendNode);
@@ -1089,7 +1089,7 @@ namespace ramses_internal
         scene.addChildToNode(transformNode, rendNode);
         scene.setTranslation(transform, Vector3(1, 2, 3));
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         scene.updateRenderableWorldMatricesWithLinks();
 
         const Matrix44f expectedWorldMatrix = scene.updateMatrixCache(ETransformationMatrixType_World, rendNode);
@@ -1107,7 +1107,7 @@ namespace ramses_internal
         scene.setRenderPassRenderOrder(pass2, 1);
         scene.setRenderPassRenderOrder(pass3, 2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& sortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(3u, sortedPasses.size());
@@ -1129,7 +1129,7 @@ namespace ramses_internal
         scene.setBlitPassRenderOrder(pass2, 1);
         scene.setBlitPassRenderOrder(pass3, 2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& sortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(3u, sortedPasses.size());
@@ -1151,7 +1151,7 @@ namespace ramses_internal
         scene.setRenderPassRenderOrder(renderPass, 1);
         scene.setBlitPassRenderOrder(blitPass2, 2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& sortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(3u, sortedPasses.size());
@@ -1168,7 +1168,7 @@ namespace ramses_internal
         const RenderPassHandle renderPass = sceneHelper.createRenderPassWithCamera();
         scene.setRenderPassRenderOrder(renderPass, 1);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         //allocate blit passes and update cache
         const BlitPassHandle blitPass1 = sceneHelper.createBlitPassWithDummyRenderBuffers();
@@ -1176,7 +1176,7 @@ namespace ramses_internal
         scene.setBlitPassRenderOrder(blitPass1, 0);
         scene.setBlitPassRenderOrder(blitPass2, 2);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& sortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(3u, sortedPasses.size());
@@ -1197,10 +1197,10 @@ namespace ramses_internal
         scene.setBlitPassRenderOrder(blitPass1, 0);
         scene.setRenderPassRenderOrder(renderPass, 1);
         scene.setBlitPassRenderOrder(blitPass2, 2);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.releaseBlitPass(blitPass2);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& sortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(2u, sortedPasses.size());
@@ -1219,10 +1219,10 @@ namespace ramses_internal
         scene.setBlitPassRenderOrder(blitPass1, 0);
         scene.setRenderPassRenderOrder(renderPass, 1);
         scene.setBlitPassRenderOrder(blitPass2, 2);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         scene.setBlitPassRenderOrder(blitPass2, -200);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& sortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(3u, sortedPasses.size());
@@ -1243,11 +1243,11 @@ namespace ramses_internal
         scene.setBlitPassRenderOrder(blitPass1, 0);
         scene.setRenderPassRenderOrder(renderPass, 1);
         scene.setBlitPassRenderOrder(blitPass2, 2);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         //disable blit pass
         scene.setBlitPassEnabled(blitPass2, false);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& sortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(2u, sortedPasses.size());
@@ -1258,7 +1258,7 @@ namespace ramses_internal
 
         //re-enable blit pass
         scene.setBlitPassEnabled(blitPass2, true);
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& resortedPasses = scene.getSortedRenderingPasses();
         ASSERT_EQ(3u, resortedPasses.size());
@@ -1270,7 +1270,7 @@ namespace ramses_internal
     {
         sceneAllocator.allocateRenderPass();
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_TRUE(orderedPasses.empty());
@@ -1281,16 +1281,16 @@ namespace ramses_internal
         const RenderPassHandle pass = sceneHelper.createRenderPassWithCamera();
         scene.setRenderPassRenderOnce(pass, true);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
 
         scene.markAllRenderOncePassesAsRendered();
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
     }
 
@@ -1301,14 +1301,14 @@ namespace ramses_internal
         scene.setRenderPassRenderOnce(pass, true);
         scene.setRenderPassEnabled(pass, false);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_TRUE(orderedPasses.empty());
 
         scene.setRenderPassEnabled(pass, false);
         scene.setRenderPassRenderOnce(pass, true);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
     }
 
@@ -1318,21 +1318,21 @@ namespace ramses_internal
         scene.setRenderPassEnabled(pass, false);
         scene.setRenderPassRenderOnce(pass, true);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_TRUE(orderedPasses.empty());
 
         scene.setRenderPassEnabled(pass, true);
 
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
 
         scene.markAllRenderOncePassesAsRendered();
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
     }
 
@@ -1342,30 +1342,30 @@ namespace ramses_internal
         scene.setRenderPassRenderOnce(pass, true);
 
         // render and mark as rendered
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
         scene.markAllRenderOncePassesAsRendered();
 
         // expect not in cached list
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
 
         // retrigger
         scene.retriggerRenderPassRenderOnce(pass);
 
         // expect in cached list
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
 
         // till marked as rendered
         scene.markAllRenderOncePassesAsRendered();
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
     }
 
@@ -1377,7 +1377,7 @@ namespace ramses_internal
         scene.setRenderPassRenderOnce(pass2, true);
 
         // render and mark as rendered
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(2u, orderedPasses.size());
         EXPECT_EQ(pass1, orderedPasses[0].getRenderPassHandle());
@@ -1385,21 +1385,21 @@ namespace ramses_internal
         scene.markAllRenderOncePassesAsRendered();
 
         // expect not in cached list
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
 
         // retrigger all
         scene.retriggerAllRenderOncePasses();
 
         // expect in cached list
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(2u, orderedPasses.size());
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(2u, orderedPasses.size());
 
         // till marked as rendered
         scene.markAllRenderOncePassesAsRendered();
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
     }
 
@@ -1423,16 +1423,16 @@ namespace ramses_internal
         scene.retriggerRenderPassRenderOnce(pass);
 
         // now render and expect render only till marked as really rendered - ie. render 'once'
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_EQ(1u, orderedPasses.size());
         EXPECT_EQ(pass, orderedPasses[0].getRenderPassHandle());
 
         scene.markAllRenderOncePassesAsRendered();
-        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         EXPECT_TRUE(orderedPasses.empty());
     }
 }

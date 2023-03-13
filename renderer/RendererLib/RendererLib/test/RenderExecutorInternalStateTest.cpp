@@ -16,7 +16,6 @@
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererEventCollector.h"
 #include "Math3d/Matrix44f.h"
-#include "EmbeddedCompositingManagerMock.h"
 #include "SceneAllocateHelper.h"
 #include <limits>
 
@@ -187,8 +186,7 @@ namespace ramses_internal
         m_scene.setRotation(renderableTransform, Vector3(1, 2, 3), ERotationConvention::Legacy_ZYX);
 
         NiceMock<ResourceDeviceHandleAccessorMock> resourceAccessor;
-        NiceMock<EmbeddedCompositingManagerMock> embeddedCompositingManager;
-        m_scene.updateRenderablesAndResourceCache(resourceAccessor, embeddedCompositingManager);
+        m_scene.updateRenderablesAndResourceCache(resourceAccessor);
         m_scene.updateRenderableWorldMatrices();
 
         m_executorState.setRenderable(renderable);

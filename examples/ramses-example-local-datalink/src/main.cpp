@@ -27,27 +27,10 @@
  * @brief Local Data Link Example
  */
 
-class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+class RendererAndSceneStateEventHandler : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    void windowClosed(ramses::displayId_t /*displayId*/) override
-    {
-        m_windowClosed = true;
-    }
-
-    bool isWindowClosed() const
-    {
-        return m_windowClosed;
-    }
-
-private:
-    bool m_windowClosed = false;
-};
-
-class SceneStateEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
-{
-public:
-    SceneStateEventHandler(ramses::RendererSceneControl& sceneControlApi, ramses::RamsesRenderer& renderer)
+    RendererAndSceneStateEventHandler(ramses::RendererSceneControl& sceneControlApi, ramses::RamsesRenderer& renderer)
         : m_sceneControlApi(sceneControlApi)
         , m_renderer(renderer)
     {
@@ -63,6 +46,17 @@ public:
         scenesWithCreatedProviderOrConsumer.insert(sceneId);
     }
 
+    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    {
+        if (state == ramses::RendererSceneState::Ready)
+            mappedScenes.insert(sceneId);
+    }
+
+    void waitForSceneReady(ramses::sceneId_t sceneId)
+    {
+        waitUntilOrTimeout([&] { return mappedScenes.count(sceneId) != 0; });
+    }
+
     void waitForDataProviderOrConsumerCreated(ramses::sceneId_t sceneId)
     {
         while (scenesWithCreatedProviderOrConsumer.find(sceneId) == scenesWithCreatedProviderOrConsumer.end())
@@ -72,10 +66,35 @@ public:
         }
     }
 
+    void windowClosed(ramses::displayId_t) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
 private:
+    bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction)
+    {
+        const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };
+        while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
+        {
+            m_renderer.doOneLoop();
+            m_renderer.dispatchEvents(*this);
+            m_sceneControlApi.dispatchEvents(*this);
+        }
+
+        return conditionFunction();
+    }
+
     ramses::RendererSceneControl& m_sceneControlApi;
     ramses::RamsesRenderer& m_renderer;
+    std::unordered_set<ramses::sceneId_t> mappedScenes;
     std::unordered_set<ramses::sceneId_t> scenesWithCreatedProviderOrConsumer;
+    bool m_windowClosed = false;
 };
 
 // Helper struct for triangle scene
@@ -259,18 +278,18 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
     return sceneInfo;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-datalink-example"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
@@ -343,7 +362,10 @@ int main(int argc, char* argv[])
 
     sceneControlAPI.flush();
 
-    SceneStateEventHandler eventHandler(sceneControlAPI, renderer);
+    RendererAndSceneStateEventHandler eventHandler(sceneControlAPI, renderer);
+    eventHandler.waitForSceneReady(triangleSceneId);
+    eventHandler.waitForSceneReady(quadSceneId);
+    eventHandler.waitForSceneReady(quadSceneId2);
     eventHandler.waitForDataProviderOrConsumerCreated(triangleSceneId);
     eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId);
     eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId2);
@@ -363,10 +385,9 @@ int main(int argc, char* argv[])
     // run animation
     uint32_t textureId = 0;
     uint64_t timeStamp = 0u;
-    RendererEventHandler rendererEventHandler;
-    while (!rendererEventHandler.isWindowClosed())
+    while (!eventHandler.isWindowClosed())
     {
-        renderer.dispatchEvents(rendererEventHandler);
+        renderer.dispatchEvents(eventHandler);
         if (timeStamp % 100 == 0)
         {
             textureId = (1 - textureId);

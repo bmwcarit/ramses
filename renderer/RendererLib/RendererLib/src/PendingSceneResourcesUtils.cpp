@@ -12,7 +12,6 @@
 #include "RendererLib/FrameTimer.h"
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/GeometryDataBuffer.h"
-#include "SceneAPI/StreamTexture.h"
 
 namespace ramses_internal
 {
@@ -35,9 +34,6 @@ namespace ramses_internal
                 break;
             case ESceneResourceAction_DestroyRenderBuffer:
                 wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateRenderBuffer);
-                break;
-            case ESceneResourceAction_DestroyStreamTexture:
-                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateStreamTexture);
                 break;
             case ESceneResourceAction_DestroyBlitPass:
                 wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateBlitPass);
@@ -97,12 +93,6 @@ namespace ramses_internal
                 break;
             case ESceneResourceAction_DestroyRenderBuffer:
                 resourceManager.unloadRenderTargetBuffer(RenderBufferHandle(handle), scene.getSceneId());
-                break;
-            case ESceneResourceAction_CreateStreamTexture:
-                resourceManager.uploadStreamTexture(StreamTextureHandle(handle), WaylandIviSurfaceId(scene.getStreamTexture(StreamTextureHandle(handle)).source), scene.getSceneId());
-                break;
-            case ESceneResourceAction_DestroyStreamTexture:
-                resourceManager.unloadStreamTexture(StreamTextureHandle(handle), scene.getSceneId());
                 break;
             case ESceneResourceAction_CreateBlitPass:
                 SceneResourceUploader::UploadBlitPassRenderTargets(scene, BlitPassHandle(handle), resourceManager);

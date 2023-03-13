@@ -70,7 +70,7 @@ namespace ramses
         * @brief Getter for retrieving the underlying value
         * @returns The underlying value of the object
         */
-        constexpr BaseType getValue() const
+        [[nodiscard]] constexpr BaseType getValue() const
         {
             return m_value;
         }
@@ -88,7 +88,7 @@ namespace ramses
         * @brief Predicate to check value is unequal to Invalid() value
         * @returns true when valid (i.e. not Invalid()), false otherwise
         */
-        constexpr bool isValid() const
+        [[nodiscard]] constexpr bool isValid() const
         {
             return m_value != _invalid;
         }

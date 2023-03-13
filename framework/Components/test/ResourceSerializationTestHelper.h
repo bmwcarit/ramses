@@ -124,7 +124,7 @@ namespace ramses_internal
             frag[i] = 'b';
             geom[i] = 'c';
         }
-        EffectResource* resource = new EffectResource(vert, frag, geom, absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
+        EffectResource* resource = new EffectResource(vert, frag, geom, EDrawMode::Points, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
         return resource;
     }
 
@@ -134,6 +134,7 @@ namespace ramses_internal
         EXPECT_STREQ(a.getVertexShader(), b.getVertexShader());
         EXPECT_STREQ(a.getFragmentShader(), b.getFragmentShader());
         EXPECT_STREQ(a.getGeometryShader(), b.getGeometryShader());
+        EXPECT_EQ(a.getGeometryShaderInputType(), b.getGeometryShaderInputType());
     }
 }
 

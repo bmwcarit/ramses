@@ -88,6 +88,7 @@ private:
         RenderGroupTest_RenderOrder,
         RenderGroupTest_RenderOrderWithNestedGroups,
 
+#if defined(RAMSES_TEXT_ENABLED)
         TextTest_SimpleText,
         TextTest_DeletedTextsAndNode,
         TextTest_DifferentLanguages,
@@ -95,6 +96,7 @@ private:
         TextTest_FontCascade,
         TextTest_FontCascadeWithVerticalOffset,
         TextTest_Shaping,
+#endif
 
         AnimationTest_AnimatedScene,
 
@@ -147,9 +149,7 @@ private:
         GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut,
         GeometryShaderGlslV310Extension_TrianglesInPointsOut,
 
-        EulerRotationConventions,
-
-        FrameProfiler_Show
+        EulerRotationConventions
     };
 };
 

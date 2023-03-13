@@ -29,8 +29,8 @@ namespace ramses_internal
     class EmbeddedCompositingTests
     {
     public:
-        EmbeddedCompositingTests(TestForkingController& testForkingController, const StringVector& filterIn, const StringVector& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName)
-            : m_testFramework(generateScreenshots, testForkingController, config, embeddedCompositingSocketGroupName)
+        EmbeddedCompositingTests(TestForkingController& testForkingController, const StringVector& filterIn, const StringVector& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
+            : m_testFramework(generateScreenshots, testForkingController, config)
             , m_embeddedCompositingTestsWithFD()
         {
             m_singleStreamTextureTests.setUpEmbeddedCompositingTestCases(m_testFramework);

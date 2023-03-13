@@ -8,8 +8,6 @@
 
 #include <gtest/gtest.h>
 
-#include "ramses-client-api/AnimationSystemRealTime.h"
-#include "ramses-client-api/AnimationSystem.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -38,7 +36,6 @@
 #include "ramses-client-api/DataVector2i.h"
 #include "ramses-client-api/DataVector3i.h"
 #include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
@@ -47,7 +44,6 @@
 #include "SceneImpl.h"
 #include "ClientTestUtils.h"
 #include "RamsesObjectTestTypes.h"
-#include "AnimationSystemImpl.h"
 #include "NodeImpl.h"
 #include "MeshNodeImpl.h"
 #include "CameraNodeImpl.h"
@@ -59,7 +55,6 @@
 #include "RenderTargetImpl.h"
 #include "TextureSamplerImpl.h"
 #include "DataObjectImpl.h"
-#include "StreamTextureImpl.h"
 #include "ArrayBufferImpl.h"
 #include "Texture2DBufferImpl.h"
 #include "PickableObjectImpl.h"
@@ -77,10 +72,10 @@ namespace ramses
     using namespace testing;
 
     template <typename ObjectType>
-    class SceneOwnershipTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
+    class SceneOwnershipTest : public LocalTestClientWithScene, public testing::Test
     {
     public:
-        SceneOwnershipTest() : LocalTestClientWithSceneAndAnimationSystem()
+        SceneOwnershipTest() : LocalTestClientWithScene()
         {
         }
 
@@ -280,6 +275,7 @@ namespace ramses
         RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
         TypeParam& objTyped = static_cast<TypeParam&>(*obj);
         ASSERT_TRUE(obj);
+
         this->client.destroy(objTyped);
         RamsesObject* sn = this->client.findSceneByName("objectName");
         ASSERT_FALSE(sn);

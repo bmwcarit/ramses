@@ -7,9 +7,13 @@
 //  -------------------------------------------------------------------------
 
 #include "SceneViewer.h"
+#include "CLI/CLI.hpp"
 
 int main(int argc, char* argv[])
 {
-    ramses_internal::SceneViewer sceneViewer(argc, argv);
+    CLI::App cli;
+    ramses_internal::SceneViewer sceneViewer;
+    sceneViewer.registerOptions(cli);
+    CLI11_PARSE(cli, argc, argv);
     return sceneViewer.run();
 }

@@ -33,19 +33,19 @@ namespace ramses_internal
         RendererCachedScene&       createScene(const SceneInfo& sceneInfo);
         void                       destroyScene(SceneId sceneID);
 
-        Bool                       hasScene(SceneId sceneID) const;
-        const RendererCachedScene& getScene(SceneId sceneID) const;
+        [[nodiscard]] Bool                       hasScene(SceneId sceneID) const;
+        [[nodiscard]] const RendererCachedScene& getScene(SceneId sceneID) const;
         RendererCachedScene&       getScene(SceneId sceneID);
 
-        const StagingInfo&         getStagingInfo(SceneId sceneID) const;
+        [[nodiscard]] const StagingInfo&         getStagingInfo(SceneId sceneID) const;
         StagingInfo&               getStagingInfo(SceneId sceneID);
 
-        const SceneLinksManager&   getSceneLinksManager() const;
+        [[nodiscard]] const SceneLinksManager&   getSceneLinksManager() const;
         SceneLinksManager&         getSceneLinksManager();
 
-        HashMap<SceneId, RendererSceneInfo>::ConstIterator begin() const;
-        HashMap<SceneId, RendererSceneInfo>::ConstIterator end() const;
-        size_t size() const;
+        [[nodiscard]] HashMap<SceneId, RendererSceneInfo>::ConstIterator begin() const;
+        [[nodiscard]] HashMap<SceneId, RendererSceneInfo>::ConstIterator end() const;
+        [[nodiscard]] size_t size() const;
 
     private:
         HashMap<SceneId, RendererSceneInfo> m_rendererSceneInfos;

@@ -36,7 +36,7 @@ namespace ramses
         * @param[in] fontInstanceId The id of font instance
         * @return The font instance object
         */
-        virtual IFontInstance* getFontInstance(FontInstanceId fontInstanceId) const = 0;
+        [[nodiscard]] virtual IFontInstance* getFontInstance(FontInstanceId fontInstanceId) const = 0;
     };
 }
 

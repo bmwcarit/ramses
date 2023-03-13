@@ -19,14 +19,14 @@ namespace ramses_internal
     public:
         LogContext(const char* name, const char* id);
 
-        const char* getContextName() const;
-        const char* getContextId() const;
+        [[nodiscard]] const char* getContextName() const;
+        [[nodiscard]] const char* getContextId() const;
 
         void setLogLevel(const ELogLevel logLevel);
-        ELogLevel getLogLevel() const;
+        [[nodiscard]] ELogLevel getLogLevel() const;
 
         void setUserData(void* dataPtr);
-        void* getUserData() const;
+        [[nodiscard]] void* getUserData() const;
 
         void disableSetLogLevel();
     private:

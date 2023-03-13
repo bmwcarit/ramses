@@ -18,7 +18,7 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Resource/EffectResource.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include <chrono>
 
 namespace ramses_internal
@@ -209,7 +209,7 @@ namespace ramses_internal
         {
             // effect not found in cache, schedule for upload in uploader thread
             assert(rd.type == EResourceType_Effect);
-            assert(absl::c_find_if(m_effectsToUpload, [&](const auto& e){ return e->getHash() == rd.hash;}) == m_effectsToUpload.cend());
+            assert(std::find_if(std::cbegin(m_effectsToUpload), std::cend(m_effectsToUpload), [&](const auto& e){ return e->getHash() == rd.hash;}) == m_effectsToUpload.cend());
             m_effectsToUpload.push_back(pResource->convertTo<const EffectResource>());
             m_resources.setResourceScheduledForUpload(rd.hash);
         }

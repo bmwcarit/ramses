@@ -23,7 +23,7 @@ namespace ramses_internal
         virtual void resourceDestroyed() = 0;
         virtual void surfaceWasDeleted() = 0;
         virtual void bufferWasSetToSurface(IWaylandBuffer* buffer) = 0;
-        virtual WaylandIviSurfaceId getIviId() const = 0;
+        [[nodiscard]] virtual WaylandIviSurfaceId getIviId() const = 0;
     };
 }
 

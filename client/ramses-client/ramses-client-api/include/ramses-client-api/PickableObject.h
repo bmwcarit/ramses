@@ -49,7 +49,7 @@ namespace ramses
         * @return The geometry buffer.
         *
         **/
-        const ArrayBuffer& getGeometryBuffer() const;
+        [[nodiscard]] const ArrayBuffer& getGeometryBuffer() const;
 
         /**
         *
@@ -58,7 +58,7 @@ namespace ramses
         * @return The PickableObject's camera, nullptr if no camera assigned.
         *
         **/
-        const Camera* getCamera() const;
+        [[nodiscard]] const Camera* getCamera() const;
 
         /**
         *
@@ -81,7 +81,7 @@ namespace ramses
         * @return The PickableObject's user ID
         *
         **/
-        pickableObjectId_t getPickableObjectId() const;
+        [[nodiscard]] pickableObjectId_t getPickableObjectId() const;
 
         /**
         *
@@ -112,7 +112,7 @@ namespace ramses
         *
         * @return Indicates if the PickableObject is enabled
         */
-        bool isEnabled() const;
+        [[nodiscard]] bool isEnabled() const;
 
         /**
         * Stores internal data for implementation specifics of PickableObject.

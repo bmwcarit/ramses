@@ -14,12 +14,13 @@
 #include "SceneAPI/PixelRectangle.h"
 #include "SceneAPI/TextureSamplerStates.h"
 #include "SceneAPI/StreamTexture.h"
-#include "Animation/AnimationSystemDescriber.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
 #include "Math3d/Matrix22f.h"
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
+#include "Math3d/Vector2.h"
+#include "Math3d/Vector2i.h"
 
 namespace ramses_internal
 {
@@ -41,7 +42,6 @@ namespace ramses_internal
         RecreateDataLayouts(             source, collector);
         RecreateDataInstances(           source, collector);
         RecreateCameras(                 source, collector);
-        RecreateAnimationSystems(        source, collector);
         RecreateRenderGroups(            source, collector);
         RecreateRenderPasses(            source, collector);
         RecreateBlitPasses(              source, collector);
@@ -341,22 +341,6 @@ namespace ramses_internal
                         break;
                     }
                 }
-            }
-        }
-    }
-
-    void SceneDescriber::RecreateAnimationSystems(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        // send all animation systems
-        for (auto animId = AnimationSystemHandle(0); animId < source.getAnimationSystemCount(); ++animId)
-        {
-            if (source.isAnimationSystemAllocated(animId))
-            {
-                // animation system
-                const IAnimationSystem* animSystem = source.getAnimationSystem(animId);
-                assert(animSystem != nullptr);
-                collector.addAnimationSystem(animId, animSystem->getFlags(), animSystem->getTotalSizeInformation());
-                AnimationSystemDescriber::DescribeAnimationSystem(*animSystem, collector, animId);
             }
         }
     }

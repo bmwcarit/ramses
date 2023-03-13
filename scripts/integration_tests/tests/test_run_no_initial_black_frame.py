@@ -21,19 +21,22 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
 
     @with_ramses_process_check
     def impl_setUp(self):
+        if not self.target.systemCompositorScreenshotSupported:
+            self.skipTest("System compositor controller screenshot support is not configured for this target")
+
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.008  # allows +/- 2 for rgb values (needed e.g. for ufo driver)
 
         self.testSurface = 101
 
         # Start black background renderer
-        self.rendererbackground = self.target.start_default_renderer("--wayland-socket-embedded wayland-12")
+        self.rendererbackground = self.target.start_default_renderer("--ec-display wayland-12")
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
         self.rendererbackground.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
         self.validateScreenshot(self.rendererbackground, "black_rgb.png", useSystemCompositorForScreenshot=False)
 
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
-        self.application = self.target.start_renderer(applicationName, args="-sid {} -tn 4".format(self.testSurface), automap=True)
+        self.application = self.target.start_renderer(applicationName, args="--ivi-surface {} --test-nr 4".format(self.testSurface), automap=True)
 
         self.checkThatApplicationWasStarted(self.application)
         self.addCleanup(self.target.kill_application, self.application)

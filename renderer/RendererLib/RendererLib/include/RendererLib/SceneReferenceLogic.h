@@ -42,7 +42,7 @@ namespace ramses_internal
         virtual void update() override;
 
         void extractAndSendSceneReferenceEvents(RendererEventVector& events);
-        bool hasAnyReferencedScenes() const;
+        [[nodiscard]] bool hasAnyReferencedScenes() const;
 
     private:
         void updateReferencedScenes();
@@ -50,7 +50,7 @@ namespace ramses_internal
         void cleanupReleasedReferences();
         void executePendingActions();
         void consolidateExpirationState(SceneId masterSceneId, RendererEventVector& events);
-        SceneId findMasterSceneForReferencedScene(SceneId sceneId) const;
+        [[nodiscard]] SceneId findMasterSceneForReferencedScene(SceneId sceneId) const;
 
         enum class ExpirationState
         {

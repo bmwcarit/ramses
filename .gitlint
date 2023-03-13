@@ -1,0 +1,80 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+# Available rules:
+#
+#   T1: title-max-length
+#   T2: title-trailing-whitespace
+#   T3: title-trailing-punctuation (disabled)
+#   T4: title-hard-tab
+#   T5: title-must-not-contain-word (disabled)
+#   T6: title-leading-whitespace
+#   T7: title-match-regex (disabled)
+#   B1: body-max-line-length
+#   B2: body-trailing-whitespace
+#   B3: body-hard-tab
+#   B4: body-first-line-empty
+#   B5: body-min-length (disabled)
+#   B6: body-is-missing (disabled)
+#   B7: body-changed-file-mention (disabled)
+#
+# See http://jorisroovers.github.io/gitlint/rules/ for a full description.
+
+[general]
+ignore=T3,T5,T7,B1,B5,B6,B7
+
+# verbosity should be a value between 1 and 3, the commandline -v flags take precedence over this
+verbosity = 3
+
+ignore-merge-commits=true
+
+# Enable debug mode (prints more output). Disabled by default.
+# debug=true
+
+[title-max-length]
+line-length=90
+
+# [title-must-not-contain-word]
+# Comma-separated list of words that should not occur in the title. Matching is case
+# insensitive. It's fine if the keyword occurs as part of a larger word (so "WIPING"
+# will not cause a violation, but "WIP: my title" will.
+# words=wip
+
+# [title-match-regex]
+# python like regex (https://docs.python.org/2/library/re.html) that the
+# commit-msg title must be matched to.
+# Note that the regex can contradict with other rules if not used correctly
+# (e.g. title-must-not-contain-word).
+# regex=^US[0-9]*
+
+[body-max-line-length]
+line-length=80
+
+# [body-min-length]
+# min-length=5
+
+# [body-is-missing]
+# Whether to ignore this rule on merge commits (which typically only have a title)
+# default = True
+# ignore-merge-commits=false
+
+# [body-changed-file-mention]
+# List of files that need to be explicitly mentioned in the body when they are changed
+# This is useful for when developers often erroneously edit certain files or git submodules.
+# By specifying this rule, developers can only change the file when they explicitly reference
+# it in the commit message.
+# files=gitlint/rules.py,README.md
+
+# Custom rules
+# [soft-body-max-line-length]
+# line-length=80
+
+# [body-match-regex]
+# python like regex (https://docs.python.org/2/library/re.html) that the
+# commit-msg body must be matched to.
+# regex=(?i)ISSUE-[0-9]*

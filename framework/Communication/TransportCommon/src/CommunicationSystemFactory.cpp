@@ -8,7 +8,6 @@
 
 #include "TransportCommon/CommunicationSystemFactory.h"
 
-#include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
 
@@ -65,15 +64,6 @@ namespace ramses_internal
         std::unique_ptr<IDiscoveryDaemon> constructedDaemon;
         switch(config.getUsedProtocol())
         {
-            case EConnectionProtocol::SomeIP_HU:
-            {
-                break;
-            }
-            case EConnectionProtocol::SomeIP_IC:
-            {
-            }
-                break;
-
             case EConnectionProtocol::TCP:
             {
 #if defined(HAS_TCP_COMM)
@@ -82,10 +72,8 @@ namespace ramses_internal
             }
                 break;
 
-            case EConnectionProtocol::Fake:
-#if defined(HAS_FALLBACK_FAKE_COMMUNICATION_SYSTEM)
+            case EConnectionProtocol::Off:
                 constructedDaemon = std::make_unique<FakeDiscoveryDaemon>();
-#endif
                 break;
 
             case EConnectionProtocol::Invalid:
@@ -109,16 +97,14 @@ namespace ramses_internal
             return ConstructTCPConnectionManager(config, participantIdentifier, frameworkLock, statisticCollection);
         }
 #endif
-#if defined(HAS_FALLBACK_FAKE_COMMUNICATION_SYSTEM)
-        case EConnectionProtocol::Fake:
+        case EConnectionProtocol::Off:
         {
             LOG_INFO(CONTEXT_COMMUNICATION, "Using no connection system");
             return std::make_unique<FakeConnectionSystem>();
         }
-#endif
         default:
-            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol() << ". Ensure that a SomeIP stack, TCP or the fake connection system is enabled.");
-            assert(false && "Unable to construct connection system for given protocol. Ensure that a SomeIP stack, TCP or the fake connection system is enabled.");
+            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol() << ". Ensure that TCP or the fake connection system is enabled.");
+            assert(false && "Unable to construct connection system for given protocol. Ensure that TCP or the fake connection system is enabled.");
             return nullptr;
         }
     }

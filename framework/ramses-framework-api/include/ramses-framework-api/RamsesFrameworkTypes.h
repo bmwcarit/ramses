@@ -10,7 +10,7 @@
 #define RAMSES_RAMSESFRAMEWORKTYPES_H
 
 #include "ramses-framework-api/StronglyTypedValue.h"
-#include "stdint.h"
+#include <cstdint>
 #include <limits>
 #include <string>
 
@@ -115,7 +115,7 @@ namespace ramses
          * @brief Check if resource is valid
          * @return true when resource id has a valid value, false otherwise
          */
-        constexpr bool isValid() const
+        [[nodiscard]] constexpr bool isValid() const
         {
             return *this != Invalid();
         }
@@ -261,6 +261,15 @@ namespace ramses
         EClearFlags_Stencil   = 1 << 2,
 
         EClearFlags_All       = EClearFlags_Color | EClearFlags_Depth | EClearFlags_Stencil
+    };
+
+    /**
+    * @brief Supported connection systems for distributed rendering
+    */
+    enum class EConnectionSystem : uint32_t
+    {
+        TCP,
+        Off
     };
 }
 

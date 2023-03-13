@@ -42,7 +42,6 @@ namespace ramses_internal
             auto displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
             displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);
             displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
-            displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
             testFramework.createDisplay(displayConfig);
 
             testFramework.startTestApplication();
@@ -67,7 +66,6 @@ namespace ramses_internal
             auto displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
             displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);
             displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
-            displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
             testFramework.createDisplay(displayConfig);
 
             testFramework.startTestApplication();
@@ -92,7 +90,6 @@ namespace ramses_internal
             auto displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
             displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);
             displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
-            displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
             testFramework.createDisplay(displayConfig);
 
             testFramework.startTestApplication();

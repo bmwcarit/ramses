@@ -36,8 +36,8 @@ namespace ramses_internal
         void join();
 
         void cancel();
-        bool isRunning() const;
-        bool joinable() const;
+        [[nodiscard]] bool isRunning() const;
+        [[nodiscard]] bool joinable() const;
 
         static void Sleep(uint32_t msec);
 

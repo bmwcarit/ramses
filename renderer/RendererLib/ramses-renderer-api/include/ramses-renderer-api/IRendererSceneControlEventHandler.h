@@ -53,7 +53,6 @@ namespace ramses
         */
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         /**
         * @brief This method will be called when the data link between external buffer and scene's data slot is established.
         * @details This is a result of #ramses::RendererSceneControl::linkExternalBuffer call.
@@ -64,7 +63,19 @@ namespace ramses
         * @param success True if succeeded, false otherwise - check renderer logs for concrete error message.
         */
         virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
-#endif
+
+
+        /**
+        * @brief This method will be called when the data link between stream buffer and scene's data slot is established.
+        * @details This is a result of #ramses::RendererSceneControl::linkStreamBuffer call.
+        *
+        * @param streamBufferId The ID of stream buffer which is linked as data provider
+        * @param consumerScene The ID of scene where the data consumer slot is
+        * @param consumerId The ID of data consumer where the stream buffer is linked to
+        * @param success True if succeeded, false otherwise - check renderer logs for concrete error message.
+        */
+        virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
+
 
         /**
         * @brief This method will be called when the data link between a data provider and data consumer is established.
@@ -196,8 +207,8 @@ namespace ramses
         *        which is passed to ramses::RendererSceneControl when the scene is rendered (see ramses::RendererSceneControl::handlePickEvent).
         *
         * @param[in] sceneId ID of scene to which the picked objects belong.
-        * @param[in] pickedObjects Pointer to first ID of the picked objects array.
-        *        This array is valid only for the time of calling this method.
+        * @param[in] pickedObjects Pointer to first ID of the picked objects array, this array is valid only for the time of calling this method.
+        *                          Picked objects are sorted from closest to farthest w.r.t. their assigned camera.
         * @param[in] pickedObjectsCount Number of picked object IDs in the \c pickedObjects array.
         */
         virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) = 0;
@@ -233,7 +244,6 @@ namespace ramses
             (void)success;
         }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::externalBufferLinked
         */
@@ -244,7 +254,17 @@ namespace ramses
             (void)consumerId;
             (void)success;
         }
-#endif
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::streamBufferLinked
+        */
+        virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        {
+            (void)streamBufferId;
+            (void)consumerScene;
+            (void)consumerId;
+            (void)success;
+        }
 
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataLinked

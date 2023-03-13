@@ -17,7 +17,6 @@
 #include "RendererLib/RendererInterruptState.h"
 #include "RendererLib/DisplaySetup.h"
 #include "RendererLib/DisplayEventHandler.h"
-#include "FrameProfileRenderer.h"
 #include "MemoryStatistics.h"
 #include "Collections/Vector.h"
 #include "Collections/HashMap.h"
@@ -35,7 +34,6 @@ namespace ramses_internal
     class RendererEventCollector;
     class FrameTimer;
     class SceneExpirationMonitor;
-    class WarpingMeshData;
 
     class Renderer
     {
@@ -59,22 +57,21 @@ namespace ramses_internal
 
         void                        assignSceneToDisplayBuffer  (SceneId sceneId, DeviceResourceHandle buffer, Int32 globalSceneOrder);
         void                        unassignScene               (SceneId sceneId);
-        DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId) const;
-        Bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
-        Int32                       getSceneGlobalOrder         (SceneId sceneId) const;
+        [[nodiscard]] DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId) const;
+        [[nodiscard]] Bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
+        [[nodiscard]] Int32                       getSceneGlobalOrder         (SceneId sceneId) const;
         void                        setSceneShown               (SceneId sceneId, Bool show);
 
         virtual void                markBufferWithSceneForRerender(SceneId sceneId);
 
-        const IDisplayController&   getDisplayController() const;
+        [[nodiscard]] const IDisplayController&   getDisplayController() const;
         IDisplayController&         getDisplayController();
-        bool                        hasDisplayController() const;
-        const DisplaySetup&         getDisplaySetup() const;
+        [[nodiscard]] bool                        hasDisplayController() const;
+        [[nodiscard]] const DisplaySetup&         getDisplaySetup() const;
         void                        createDisplayContext(const DisplayConfig& displayConfig);
         void                        destroyDisplayContext();
 
         DisplayEventHandler&        getDisplayEventHandler();
-        void                        setWarpingMeshData(const WarpingMeshData& meshData);
 
         virtual void                setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
         virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
@@ -82,12 +79,10 @@ namespace ramses_internal
         void                        scheduleScreenshot(DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
         std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots();
 
-        Bool                        hasAnyBufferWithInterruptedRendering() const;
+        [[nodiscard]] Bool                        hasAnyBufferWithInterruptedRendering() const;
         void                        resetRenderInterruptState();
 
-        FrameProfileRenderer&       getFrameProfileRenderer();
-
-        Bool hasSystemCompositorController() const;
+        [[nodiscard]] Bool hasSystemCompositorController() const;
         void updateSystemCompositorController() const;
         void systemCompositorListIviSurfaces() const;
         void systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) const;
@@ -95,7 +90,7 @@ namespace ramses_internal
         void systemCompositorSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) const;
         void systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const;
         void systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const;
-        Bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
+        [[nodiscard]] Bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const;
 
@@ -139,8 +134,6 @@ namespace ramses_internal
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;
         SceneExpirationMonitor&                m_expirationMonitor;
-
-        std::unique_ptr<FrameProfileRenderer> m_frameProfileRenderer;
 
         // temporary containers kept to avoid re-allocations
         std::vector<SceneId> m_tempScenesToRender;

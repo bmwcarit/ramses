@@ -15,7 +15,6 @@
 #include "Scene/EScenePublicationMode.h"
 #include "Components/SceneUpdate.h"
 #include "RendererLib/DisplayConfig.h"
-#include "RendererLib/WarpingMeshData.h"
 #include "Collections/String.h"
 #include "Math3d/Vector2.h"
 #include "PlatformAbstraction/VariantWrapper.h"
@@ -162,13 +161,6 @@ namespace ramses_internal
             StreamBufferHandle streamBuffer;
         };
 
-        struct SetStreamBufferState
-        {
-            DisplayHandle display;
-            StreamBufferHandle streamBuffer;
-            bool newState;
-        };
-
         struct CreateExternalBuffer
         {
             DisplayHandle display;
@@ -200,12 +192,6 @@ namespace ramses_internal
             DisplayHandle display;
             uint32_t width;
             uint32_t height;
-        };
-
-        struct UpdateWarpingData
-        {
-            DisplayHandle display;
-            WarpingMeshData data;
         };
 
         struct ReadPixels
@@ -310,33 +296,13 @@ namespace ramses_internal
             uint32_t limitForPendingFlushesForceUnsubscribe;
         };
 
-        struct FrameProfiler_Toggle
-        {
-            bool toggle;
-        };
-
-        struct FrameProfiler_TimingGraphHeight
-        {
-            uint32_t height;
-        };
-
-        struct FrameProfiler_CounterGraphHeight
-        {
-            uint32_t height;
-        };
-
-        struct FrameProfiler_RegionFilterFlags
-        {
-            uint32_t flags;
-        };
-
         struct ConfirmationEcho
         {
             DisplayHandle display;
             String text;
         };
 
-        using Variant = absl::variant<
+        using Variant = std::variant<
             ScenePublished,
             SceneUnpublished,
             ReceiveScene,
@@ -357,13 +323,11 @@ namespace ramses_internal
             DestroyOffscreenBuffer,
             CreateStreamBuffer,
             DestroyStreamBuffer,
-            SetStreamBufferState,
             CreateExternalBuffer,
             DestroyExternalBuffer,
             SetClearFlags,
             SetClearColor,
             SetExterallyOwnedWindowSize,
-            UpdateWarpingData,
             ReadPixels,
             SetSkippingOfUnmodifiedBuffers,
             LogStatistics,
@@ -380,10 +344,6 @@ namespace ramses_internal
             SetLimits_FrameBudgets,
             SetLimits_FlushesForceApply,
             SetLimits_FlushesForceUnsubscribe,
-            FrameProfiler_Toggle,
-            FrameProfiler_TimingGraphHeight,
-            FrameProfiler_CounterGraphHeight,
-            FrameProfiler_RegionFilterFlags,
             ConfirmationEcho
         >;
     }

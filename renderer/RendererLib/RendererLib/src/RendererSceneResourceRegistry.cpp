@@ -18,7 +18,6 @@ namespace ramses_internal
     {
         assert(m_renderBuffers.size() == 0u);
         assert(m_renderTargets.size() == 0u);
-        assert(m_streamTextures.size() == 0u);
         assert(m_blitPasses.size() == 0u);
         assert(m_dataBuffers.size() == 0u);
         assert(m_textureBuffers.size() == 0u);
@@ -112,38 +111,10 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllBlitPasses(BlitPassHandleVector& blitPasses) const
     {
         assert(blitPasses.empty());
-        blitPasses.reserve(m_streamTextures.size());
+        blitPasses.reserve(m_blitPasses.size());
         for(const auto& blitPass : m_blitPasses)
         {
             blitPasses.push_back(blitPass.key);
-        }
-    }
-
-    void RendererSceneResourceRegistry::addStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source)
-    {
-        assert(!m_streamTextures.contains(handle));
-        m_streamTextures.put(handle, { source });
-    }
-
-    void RendererSceneResourceRegistry::removeStreamTexture(StreamTextureHandle handle)
-    {
-        assert(m_streamTextures.contains(handle));
-        m_streamTextures.remove(handle);
-    }
-
-    WaylandIviSurfaceId RendererSceneResourceRegistry::getStreamTextureSourceId(StreamTextureHandle handle) const
-    {
-        assert(m_streamTextures.contains(handle));
-        return *m_streamTextures.get(handle);
-    }
-
-    void RendererSceneResourceRegistry::getAllStreamTextures(StreamTextureHandleVector& streamTextures) const
-    {
-        assert(streamTextures.empty());
-        streamTextures.reserve(m_streamTextures.size());
-        for(const auto& streamTexture : m_streamTextures)
-        {
-            streamTextures.push_back(streamTexture.key);
         }
     }
 
@@ -277,9 +248,6 @@ namespace ramses_internal
             {
                 result += texBuffer.value.size;
             }
-            break;
-        case ESceneResourceType_StreamTexture:
-            // TODO Violin add stream texture memory
             break;
         default:
             assert(false && "Invalid scene resource type");

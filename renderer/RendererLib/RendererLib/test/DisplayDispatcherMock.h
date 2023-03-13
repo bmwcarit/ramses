@@ -38,7 +38,7 @@ namespace ramses_internal
         MOCK_TYPE<DisplayBundleMock>* getDisplayBundleMock(DisplayHandle display);
         template <template<typename> class MOCK_TYPE = ::testing::StrictMock>
         MOCK_TYPE<DisplayThreadMock>* getDisplayThreadMock(DisplayHandle display);
-        DisplayHandleVector getDisplays() const;
+        [[nodiscard]] DisplayHandleVector getDisplays() const;
 
         RendererCommands m_expectedBroadcastCommandsForNewDisplays;
         RendererCommands m_expectedCommandsForNextCreatedDisplay;

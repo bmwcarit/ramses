@@ -27,14 +27,14 @@ namespace ramses
          *
          * @return true if this Node has at least one child Node, false otherwise.
          */
-        bool hasChild() const;
+        [[nodiscard]] bool hasChild() const;
 
         /**
         * @brief Gets the number of child Nodes of this node.
         *
         * @return Number of child Nodes of this Node.
         */
-        uint32_t getChildCount() const;
+        [[nodiscard]] uint32_t getChildCount() const;
 
         /**
         * @brief Gets child node at provided index.
@@ -46,7 +46,7 @@ namespace ramses
         */
         Node* getChild(uint32_t index);
         /** @copydoc getChild(uint32_t) */
-        const Node* getChild(uint32_t index) const;
+        [[nodiscard]] const Node* getChild(uint32_t index) const;
 
         /**
         * @brief Adds child Node to this node.
@@ -81,7 +81,7 @@ namespace ramses
         *
         * @return true if Node has a parent Node, false otherwise.
         */
-        bool hasParent() const;
+        [[nodiscard]] bool hasParent() const;
 
         /**
         * @brief Gets parent Node of this Node.
@@ -90,7 +90,7 @@ namespace ramses
         */
         Node* getParent();
         /** @copydoc getParent() */
-        const Node* getParent() const;
+        [[nodiscard]] const Node* getParent() const;
 
         /**
         * @brief Sets parent Node for this node.
@@ -325,7 +325,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        EVisibilityMode getVisibility() const;
+        [[nodiscard]] EVisibilityMode getVisibility() const;
 
         /**
         * Stores internal data for implementation specifics of Node.

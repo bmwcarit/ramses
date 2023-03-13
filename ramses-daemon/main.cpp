@@ -16,14 +16,22 @@
 #include "Utils/RamsesLogger.h"
 #include "Utils/StatisticCollection.h"
 #include <memory>
+#include "CLI/CLI.hpp"
 
 
 int main(int argc, const char* argv[])
 {
     using namespace ramses_internal;
 
-    ramses::RamsesFrameworkConfigImpl config(argc, argv);
-    GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false, true); // no framework used
+    ramses::RamsesFrameworkConfigImpl config;
+    config.setDLTApplicationDescription("ramses-daemon");
+    config.setDLTApplicationID("SMGR");
+
+    CLI::App cli;
+    config.registerOptions(cli);
+    CLI11_PARSE(cli, argc, argv);
+
+    GetRamsesLogger().initialize(config.loggerConfig, false, true); // no framework used
 
     auto commandExit = std::make_shared<RamshCommandExit>();
     RamshStandardSetup ramsh(ramses::ERamsesShellType_Console, "Daemon");
@@ -31,7 +39,7 @@ int main(int argc, const char* argv[])
     ramsh.start();
 
     LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Starting Ramses Daemon");
-    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING <<
+    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: " << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION <<
              " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT);
 
     PlatformLock frameworkLock;

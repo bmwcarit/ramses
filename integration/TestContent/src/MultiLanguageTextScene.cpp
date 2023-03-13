@@ -6,6 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 #include "TestScenes/MultiLanguageTextScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
@@ -102,3 +104,5 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*textArabic, 1);
     }
 }
+
+#endif

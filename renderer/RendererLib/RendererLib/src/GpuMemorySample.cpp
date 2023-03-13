@@ -44,8 +44,7 @@ namespace ramses_internal
             increaseSceneMemUsageForSceneDataBuffer(sceneId, sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_DataBuffer));
             increaseSceneMemUsageForSceneTextureBuffer(sceneId,
                 sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_TextureBuffer) +
-                sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_RenderBuffer_ReadWrite) +
-                sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_StreamTexture));
+                sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_RenderBuffer_ReadWrite));
         }
 
         for (OffscreenBufferHandle i(0); i < resourceManager->m_offscreenBuffers.getTotalCount(); ++i)

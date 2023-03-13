@@ -60,7 +60,7 @@ namespace ramses
         * @brief Gets the first index of indices array that will be used for rendering.
         * @return the first index of indices array that will be used for rendering.
         */
-        uint32_t getStartIndex() const;
+        [[nodiscard]] uint32_t getStartIndex() const;
 
         /**
         * @brief Sets the offset of the first vertex to use from each vertex array
@@ -76,7 +76,7 @@ namespace ramses
         * @brief Gets the first vertex of vertex arrays that will be used for rendering.
         * @return the first index of indices array that will be used for rendering.
         */
-        uint32_t getStartVertex() const;
+        [[nodiscard]] uint32_t getStartVertex() const;
 
         /**
         * @brief Sets the number of indices that will be used for rendering.
@@ -91,13 +91,13 @@ namespace ramses
         * @brief Gets the number of indices that will be used for rendering.
         * @return the number of indices that will be used for rendering.
         */
-        uint32_t getIndexCount() const;
+        [[nodiscard]] uint32_t getIndexCount() const;
 
         /**
         * @brief Returns the appearance.
         * @return The appearance, null on failure or if none is set.
         */
-        const Appearance* getAppearance() const;
+        [[nodiscard]] const Appearance* getAppearance() const;
 
         /**
         * @brief Removes the Appearance and GeometryBinding previously set to the MeshNode.
@@ -117,7 +117,7 @@ namespace ramses
         * @brief Returns the geometry binding.
         * @return The geometry binding, null on failure or if none is set.
         */
-        const GeometryBinding* getGeometryBinding() const;
+        [[nodiscard]] const GeometryBinding* getGeometryBinding() const;
 
         /**
         * @brief Returns the geometry binding.
@@ -141,7 +141,7 @@ namespace ramses
         *        by the renderer.
         * @return the number of instances of this mesh drawn on rendering.
         */
-        uint32_t getInstanceCount() const;
+        [[nodiscard]] uint32_t getInstanceCount() const;
 
         /**
         * Stores internal data for implementation specifics of MeshNode.

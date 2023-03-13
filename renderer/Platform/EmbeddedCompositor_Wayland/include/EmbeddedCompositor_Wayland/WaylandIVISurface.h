@@ -25,10 +25,10 @@ namespace ramses_internal
     public:
         WaylandIVISurface(IWaylandClient& client, INativeWaylandResource& iviApplicationConnectionResource, WaylandIviSurfaceId iviSurfaceId, IWaylandSurface* surface, uint32_t id, EmbeddedCompositor_Wayland& compositor);
         ~WaylandIVISurface() override;
-        bool wasSuccessfullyInitialized() const;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
         virtual void surfaceWasDeleted() override;
         virtual void bufferWasSetToSurface(IWaylandBuffer* buffer) override;
-        virtual WaylandIviSurfaceId getIviId() const override;
+        [[nodiscard]] virtual WaylandIviSurfaceId getIviId() const override;
         virtual void resourceDestroyed() override;
 
     private:

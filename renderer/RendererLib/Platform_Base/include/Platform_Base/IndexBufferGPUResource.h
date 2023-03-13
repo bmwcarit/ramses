@@ -22,7 +22,7 @@ namespace ramses_internal
         {
         }
 
-        UInt32 getElementSizeInBytes() const
+        [[nodiscard]] UInt32 getElementSizeInBytes() const
         {
             return m_elementSizeInBytes;
         }

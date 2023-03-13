@@ -63,7 +63,7 @@ TEST_F(AGlslEffect, canParseBasicShaders)
 
     EXPECT_EQ(0u, res->getUniformInputs().size());
     EXPECT_EQ(0u, res->getAttributeInputs().size());
-    EXPECT_FALSE(res->getGeometryShaderInputType().has_value());
+    EXPECT_EQ(EDrawMode::NUMBER_OF_ELEMENTS, res->getGeometryShaderInputType());
     EXPECT_EQ(String(), res->getName());
 }
 
@@ -75,7 +75,7 @@ TEST_F(AGlslEffect, canParseBasicShaders_WithGeometryShader)
 
     EXPECT_EQ(0u, res->getUniformInputs().size());
     EXPECT_EQ(0u, res->getAttributeInputs().size());
-    EXPECT_EQ(EDrawMode::Points, *res->getGeometryShaderInputType());
+    EXPECT_EQ(EDrawMode::Points, res->getGeometryShaderInputType());
     EXPECT_EQ(String(), res->getName());
 }
 
@@ -96,7 +96,7 @@ TEST_F(AGlslEffect, canParseGeometryShaderWithTriangles)
 
     EXPECT_EQ(0u, res->getUniformInputs().size());
     EXPECT_EQ(0u, res->getAttributeInputs().size());
-    EXPECT_EQ(EDrawMode::Triangles, *res->getGeometryShaderInputType());
+    EXPECT_EQ(EDrawMode::Triangles, res->getGeometryShaderInputType());
     EXPECT_EQ(String(), res->getName());
 }
 
@@ -303,7 +303,7 @@ TEST_F(AGlslEffect, acceptsGLSLESShaders_Version310esWithGeometryShaderExtension
     GlslEffect ge(vertexShader, fragmentShader, geometryShader, emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
-    EXPECT_EQ(EDrawMode::Points, *res->getGeometryShaderInputType());
+    EXPECT_EQ(EDrawMode::Points, res->getGeometryShaderInputType());
 
     EXPECT_TRUE(res);
 }

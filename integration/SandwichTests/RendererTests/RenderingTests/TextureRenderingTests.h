@@ -86,7 +86,6 @@ private:
         SamplerTest_ChangeData_TextureBufferToClientTexture,
         SamplerTest_ChangeData_ClientTextureToTextureBuffer,
         SamplerTest_ChangeData_ClientTextureToRenderBuffer,
-        SamplerTest_ChangeData_ClientTextureToStreamTexture
     };
 };
 

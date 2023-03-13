@@ -34,7 +34,7 @@ namespace ramses
         void     removeObject(RamsesObject& object);
         void     reserveAdditionalGeneralCapacity(uint32_t additionalCount);
         void     reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount);
-        uint32_t getNumberOfObjects(ERamsesObjectType type) const;
+        [[nodiscard]] uint32_t getNumberOfObjects(ERamsesObjectType type) const;
 
         void     getObjectsOfType(RamsesObjectVector& objects, ERamsesObjectType ofType) const;
 
@@ -44,18 +44,18 @@ namespace ramses
         const RamsesObject* findObjectByName(const char* name) const;
         RamsesObject*       findObjectByName(const char* name);
 
-        const SceneObject* findObjectById(sceneObjectId_t id) const;
+        [[nodiscard]] const SceneObject* findObjectById(sceneObjectId_t id) const;
         SceneObject* findObjectById(sceneObjectId_t id);
 
 
         void setNodeDirty(NodeImpl& node, bool dirty);
-        bool isNodeDirty(const NodeImpl& node) const;
+        [[nodiscard]] bool isNodeDirty(const NodeImpl& node) const;
 
-        const NodeImplSet& getDirtyNodes() const;
+        [[nodiscard]] const NodeImplSet& getDirtyNodes() const;
         void               clearDirtyNodes();
 
     private:
-        bool containsObject(const RamsesObject& object) const;
+        [[nodiscard]] bool containsObject(const RamsesObject& object) const;
         void trackSceneObjectById(RamsesObject& object);
 
         using ObjectNameMap = ramses_internal::HashMap<ramses_internal::String, RamsesObject *>;

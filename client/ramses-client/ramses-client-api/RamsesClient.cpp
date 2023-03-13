@@ -79,6 +79,20 @@ namespace ramses
         return status;
     }
 
+    bool RamsesClient::GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel)
+    {
+        const bool ret = RamsesClientImpl::GetFeatureLevelFromFile(fileName, detectedFeatureLevel);
+        LOG_HL_CLIENT_STATIC_API1(ret, fileName);
+        return ret;
+    }
+
+    bool RamsesClient::GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel)
+    {
+        const bool ret = RamsesClientImpl::GetFeatureLevelFromFile(fd, offset, length, detectedFeatureLevel);
+        LOG_HL_CLIENT_STATIC_API3(ret, fd, offset, length);
+        return ret;
+    }
+
     const Scene* RamsesClient::findSceneByName(const char* name) const
     {
         return impl.findSceneByName(name);

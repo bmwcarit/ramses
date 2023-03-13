@@ -31,14 +31,14 @@ namespace ramses
         *
         * @return Number of uniform inputs
         */
-        uint32_t getUniformInputCount() const;
+        [[nodiscard]] uint32_t getUniformInputCount() const;
 
         /**
         * @brief Gets number of attribute inputs.
         *
         * @return Number of attribute inputs
         */
-        uint32_t getAttributeInputCount() const;
+        [[nodiscard]] uint32_t getAttributeInputCount() const;
 
         /**
         * @brief Gets uniform input at given index.
@@ -101,12 +101,11 @@ namespace ramses
         status_t findAttributeInput(EEffectAttributeSemantic attributeSemantic, AttributeInput& attributeInput) const;
 
         /**
-        * @brief Returns whether the \p effect has a geometry shader attached to it.
+        * @brief Checks if the \p effect has a geometry shader attached to it.
         *
-        * @param[in] effect effect to check for existance of geometry shader
         * @return true if the effect has a geometry shader attached to it, false otherwise
         */
-        static bool hasGeometryShader(const Effect& effect);
+        [[nodiscard]] bool hasGeometryShader() const;
 
         /**
         * @brief If the \p effect has a geometry shader attached to it (see #hasGeometryShader) this method
@@ -115,12 +114,11 @@ namespace ramses
         *
         * See also #ramses::Appearance::setDrawMode().
         *
-        * @param[in] effect effect to check for geometry input type
         * @param[out] expectedGeometryInputType geometry type expected by the geometry shader of /p effect
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        static status_t getGeometryShaderInputType(const Effect& effect, EDrawMode& expectedGeometryInputType);
+        status_t getGeometryShaderInputType(EDrawMode& expectedGeometryInputType) const;
 
         /**
         * @brief Stores internal data for implementation specifics of Effect.

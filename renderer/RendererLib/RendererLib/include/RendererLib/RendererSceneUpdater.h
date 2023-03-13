@@ -12,7 +12,6 @@
 #include "RendererAPI/Types.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "SceneAPI/SceneId.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/BufferLinks.h"
 #include "RendererLib/FrameTimer.h"
@@ -75,7 +74,6 @@ namespace ramses_internal
         virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) override;
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) override;
-        virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) override;
         virtual bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) override;
         virtual bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) override;
         virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
@@ -105,7 +103,7 @@ namespace ramses_internal
         void updateScenes();
 
         void processScreenshotResults();
-        bool hasPendingFlushes(SceneId sceneId) const;
+        [[nodiscard]] bool hasPendingFlushes(SceneId sceneId) const;
         void setSceneReferenceLogicHandler(ISceneReferenceLogic& sceneRefLogic);
 
     protected:
@@ -124,12 +122,12 @@ namespace ramses_internal
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
         bool markClientAndSceneResourcesForReupload(SceneId sceneId);
 
-        UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
+        void updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo);
-        UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
+        void applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo);
 
-        bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
+        [[nodiscard]] bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
 
         void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
         void consolidateResourceDataForMapping(SceneId sceneID);
@@ -141,7 +139,7 @@ namespace ramses_internal
         void handleECStreamAvailabilityChanges();
         void uploadAndUnloadVertexArrays();
         void updateScenesResourceCache();
-        void updateScenesRendererAnimations();
+        void updateScenesShaderAnimations();
         void updateScenesTransformationCache();
         void updateScenesDataLinks();
         void updateScenesStates();
@@ -154,7 +152,7 @@ namespace ramses_internal
         void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
         void logMissingResources(const PendingData& pendingData, SceneId sceneId) const;
         void logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const;
-        uint32_t getNumberOfPendingNonEmptyFlushes(SceneId sceneId) const;
+        [[nodiscard]] uint32_t getNumberOfPendingNonEmptyFlushes(SceneId sceneId) const;
 
         DisplayHandle m_display;
 
@@ -167,8 +165,6 @@ namespace ramses_internal
         SceneExpirationMonitor&                           m_expirationMonitor;
         ISceneReferenceLogic*                             m_sceneReferenceLogic = nullptr;
         IRendererResourceCache*                           m_rendererResourceCache = nullptr;
-
-        AnimationSystemFactory                            m_animationSystemFactory;
 
         std::unique_ptr<IRendererResourceManager> m_displayResourceManager;
         std::unique_ptr<AsyncEffectUploader> m_asyncEffectUploader;

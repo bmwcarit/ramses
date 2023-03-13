@@ -58,8 +58,9 @@ def check_api_export_symbols(filename, clean_file_contents):
                 if firstWord != "RAMSES_API":
                     common.log_warning("check_api_export_symbols", filename, line_number + 1, "Public symbol not exported as RAMSES_API: " + firstWord)
     else:
-        # Will find occurances of RAMSES_API surrounded by space(s)
-        RAMSES_API_re = re.compile(r'(?<!\w)(RAMSES_API)\s')
+        # Will find occurances of 'RAMSES_API' (whole word) but not containing 'template' (whole word),
+        # template instantiations can be in a non-API-header files.
+        RAMSES_API_re = re.compile(r'^(?!.*\b(template)\b).*\b(API)\b')
         for symbol_match in re.finditer(RAMSES_API_re, clean_file_contents):
             line_number = clean_file_contents[:symbol_match.start()].count("\n")
             common.log_warning("check_api_export_symbols", filename, line_number + 1,

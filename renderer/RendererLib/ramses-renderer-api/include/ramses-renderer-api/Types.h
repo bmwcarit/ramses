@@ -9,7 +9,7 @@
 #ifndef RAMSES_RENDERERAPI_TYPES_H
 #define RAMSES_RENDERERAPI_TYPES_H
 
-#include <stdint.h>
+#include <cstdint>
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 namespace ramses

@@ -415,20 +415,6 @@ namespace ramses_internal
         m_creator.removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
     }
 
-    AnimationSystemHandle ActionCollectingScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
-    {
-        auto handle = ResourceChangeCollectingScene::addAnimationSystem(animationSystem, externalHandle);
-        m_creator.addAnimationSystem(handle, animationSystem->getFlags(), animationSystem->getTotalSizeInformation());
-        return handle;
-    }
-
-    void ActionCollectingScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        // SceneAction must be created first because animationSystemID is deleted with next call!
-        m_creator.removeAnimationSystem(animSystemHandle);
-        ResourceChangeCollectingScene::removeAnimationSystem(animSystemHandle);
-    }
-
     ramses_internal::RenderPassHandle ActionCollectingScene::allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle handle /*= InvalidRenderPassHandle*/)
     {
         const RenderPassHandle handleActual = ResourceChangeCollectingScene::allocateRenderPass(renderGroupCount, handle);

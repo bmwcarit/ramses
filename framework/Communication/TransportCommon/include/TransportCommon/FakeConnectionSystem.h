@@ -36,13 +36,7 @@ namespace ramses_internal
             return fake;
         }
 
-        virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() override
-        {
-            static FakeConnectionStatusUpdateNotifier fake;
-            return fake;
-        }
-
-        virtual bool broadcastNewScenesAvailable(const SceneInfoVector& /*newScenes*/) override
+        virtual bool broadcastNewScenesAvailable(const SceneInfoVector& /*newScenes*/, ramses::EFeatureLevel) override
         {
             return true;
         }
@@ -52,7 +46,7 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendScenesAvailable(const Guid& /*to*/, const SceneInfoVector& /*availableScenes*/) override
+        virtual bool sendScenesAvailable(const Guid& /*to*/, const SceneInfoVector& /*availableScenes*/, ramses::EFeatureLevel) override
         {
             return true;
         }
@@ -82,79 +76,11 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendDcsmBroadcastOfferContent(ContentID /*contentID*/, Category, ETechnicalContentType /*technicalContentType*/, const std::string&) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmOfferContent(const Guid& /*to*/, ContentID /*contentID*/, Category, ETechnicalContentType /*technicalContentType*/, const std::string&) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmContentDescription(const Guid& /*to*/, ContentID /*contentID*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmContentReady(const Guid& /*to*/, ContentID /*contentID*/) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmContentEnableFocusRequest(const Guid& /*to*/, ContentID /*contentID*/, int32_t ) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmContentDisableFocusRequest(const Guid& /*to*/, ContentID /*contentID*/, int32_t) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID /*contentID*/) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID /*contentID*/) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmCanvasSizeChange(const Guid& /*to*/, ContentID /*contentID*/, const CategoryInfo& /*sizeinfo*/, AnimationInformation) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmContentStateChange(const Guid& /*to*/, ContentID /*contentID*/, EDcsmState /*status*/, const CategoryInfo&, AnimationInformation) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmContentStatus(const Guid& /*to*/, ContentID /*contentID*/, uint64_t /*messageid*/, std::vector<Byte> const& /*message*/) override
-        {
-            return true;
-        }
-
-        virtual bool sendDcsmUpdateContentMetadata(const Guid& /*to*/, ContentID /*contentID*/, const DcsmMetadata& /*metadata*/) override
-        {
-            return true;
-        }
-
         virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* /*handler*/) override
         {
         }
 
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* /*handler*/) override
-        {
-        }
-
-        virtual void setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* /*handler*/) override
-        {
-        }
-
-        virtual void setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* /*handler*/) override
         {
         }
 

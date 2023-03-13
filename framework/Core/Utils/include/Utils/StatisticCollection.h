@@ -77,7 +77,7 @@ namespace ramses_internal
             }
         }
 
-        constexpr size_t maxSize() const noexcept
+        [[nodiscard]] constexpr size_t maxSize() const noexcept
         {
             return N;
         }
@@ -116,7 +116,7 @@ namespace ramses_internal
                 m_counter = newValue;
         }
 
-        DataType getCounterValue() const
+        [[nodiscard]] DataType getCounterValue() const
         {
             return m_counter.load();
         }
@@ -161,7 +161,7 @@ namespace ramses_internal
         virtual void resetSummaries();
         virtual void nextTimeInterval();
 
-        UInt32 getNumberTimeIntervalsSinceLastSummaryReset() const;
+        [[nodiscard]] UInt32 getNumberTimeIntervalsSinceLastSummaryReset() const;
 
     protected:
         UInt32 m_numberTimeIntervalsSinceLastSummaryReset;

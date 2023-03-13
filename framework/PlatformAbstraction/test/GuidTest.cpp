@@ -134,7 +134,7 @@ namespace ramses_internal
     TEST(GuidTest, HashGuid)
     {
         Guid guid(54321);
-        guid.toString();
+        EXPECT_EQ("0000-00000000D431", guid.toString());
         Guid guid2(guid);
 
         EXPECT_EQ(HashValue(guid), HashValue(guid2));

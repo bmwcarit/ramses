@@ -17,9 +17,9 @@
 #include "ramses-client-api/IClientEventHandler.h"
 #include "ramses-client-api/TextureSwizzle.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/ResourceDataPool.h"
 
 // RAMSES framework
+#include "ramses-framework-api/EFeatureLevel.h"
 #include "Utils/LogContext.h"
 #include "SceneFactory.h"
 #include "ClientApplicationLogic.h"
@@ -29,7 +29,6 @@
 #include "Collections/Vector.h"
 #include "RamsesObjectVector.h"
 #include "ClientCommands/ValidateCommand.h"
-#include "ClientCommands/ForceFallbackImage.h"
 #include "ClientCommands/DumpSceneToFile.h"
 #include "ClientCommands/LogResourceMemoryUsage.h"
 #include "PlatformAbstraction/PlatformLock.h"
@@ -46,7 +45,6 @@ namespace ramses_internal
 {
     class IInputStream;
     class PrintSceneList;
-    class ForceFallbackImage;
     class FlushSceneVersion;
     class BinaryFileOutputStream;
     class BinaryFileInputStream;
@@ -136,11 +134,10 @@ namespace ramses
         ramses_internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name, std::string& errorMessages);
 
         void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const;
-        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName);
-        static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream);
-
-        ResourceDataPool& getResourceDataPool();
-        ResourceDataPool const& getResourceDataPool() const;
+        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName, EFeatureLevel featureLevel);
+        static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream, EFeatureLevel featureLevel);
+        static bool GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel);
+        static bool GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel);
 
     private:
         friend class ClientFactory;
@@ -199,6 +196,8 @@ namespace ramses
 
         status_t validateScenes() const;
 
+        static bool GetFeatureLevelFromStream(ramses_internal::IInputStreamContainer& streamContainer, const std::string& desc, EFeatureLevel& detectedFeatureLevel);
+
         RamsesClient* m_hlClient = nullptr;
         ramses_internal::ClientApplicationLogic m_appLogic;
         ramses_internal::SceneFactory     m_sceneFactory;
@@ -207,7 +206,6 @@ namespace ramses
 
         std::shared_ptr<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
         std::shared_ptr<ramses_internal::ValidateCommand> m_cmdPrintValidation;
-        std::shared_ptr<ramses_internal::ForceFallbackImage> m_cmdForceFallbackImage;
         std::shared_ptr<ramses_internal::FlushSceneVersion> m_cmdFlushSceneVersion;
         std::shared_ptr<ramses_internal::DumpSceneToFile> m_cmdDumpSceneToFile;
         std::shared_ptr<ramses_internal::LogResourceMemoryUsage> m_cmdLogResourceMemoryUsage;
@@ -219,8 +217,6 @@ namespace ramses
         ramses_internal::EnqueueOnlyOneAtATimeQueue m_deleteSceneQueue;
 
         std::vector<SceneLoadStatus> m_asyncSceneLoadStatusVec;
-
-        ResourceDataPool m_resourceDataPool;
     };
 
     template <typename T>

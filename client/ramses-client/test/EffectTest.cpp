@@ -60,13 +60,13 @@ namespace ramses
 
     TEST_F(AnEffect, hasNoGeometryShaderWhenNotCreatedWithSuch)
     {
-        EXPECT_FALSE(Effect::hasGeometryShader(*sharedTestState->effect));
+        EXPECT_FALSE(sharedTestState->effect->hasGeometryShader());
     }
 
     TEST_F(AnEffect, reportsErrorWhenAskedForGeometryInputType_ButNoGeometryShaderProvided)
     {
         EDrawMode mode;
-        EXPECT_NE(StatusOK, Effect::getGeometryShaderInputType(*sharedTestState->effect, mode));
+        EXPECT_NE(StatusOK, sharedTestState->effect->getGeometryShaderInputType(mode));
     }
 
     TEST_F(AnEffect, reportsErrorWhenAskingForNonExistingUniformInput)
@@ -504,8 +504,9 @@ namespace ramses
         Effect* effect = sharedTestState->getScene().createEffect(effectDesc);
 
         ASSERT_NE(nullptr, effect);
+        EXPECT_TRUE(effect->hasGeometryShader());
         EDrawMode geometryShaderInput;
-        EXPECT_EQ(StatusOK, Effect::getGeometryShaderInputType(*effect, geometryShaderInput));
+        EXPECT_EQ(StatusOK, effect->getGeometryShaderInputType(geometryShaderInput));
         EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Points);
     }
 
@@ -526,8 +527,9 @@ namespace ramses
 
         Effect* effect = sharedTestState->getScene().createEffect(effectDesc);
         ASSERT_NE(nullptr, effect);
+        EXPECT_TRUE(effect->hasGeometryShader());
         EDrawMode geometryShaderInput;
-        EXPECT_EQ(StatusOK, Effect::getGeometryShaderInputType(*effect, geometryShaderInput));
+        EXPECT_EQ(StatusOK, effect->getGeometryShaderInputType(geometryShaderInput));
         EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Lines);
     }
 
@@ -549,7 +551,33 @@ namespace ramses
         Effect* effect = sharedTestState->getScene().createEffect(effectDesc);
         ASSERT_NE(nullptr, effect);
         EDrawMode geometryShaderInput;
-        EXPECT_EQ(StatusOK, Effect::getGeometryShaderInputType(*effect, geometryShaderInput));
+        EXPECT_EQ(StatusOK, effect->getGeometryShaderInputType(geometryShaderInput));
+        EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Triangles);
+    }
+
+    TEST_F(AnEffectWithGeometryShader, providesExpectedGeometryInputType_whenMultipleIdenticalEffectsCreated)
+    {
+        EffectDescription effectDesc;
+        effectDesc.setVertexShader(m_vertShader);
+        effectDesc.setFragmentShader(m_fragShader);
+        effectDesc.setGeometryShader(R"SHADER(
+            #version 320 es
+            layout(triangles) in;
+            layout(points, max_vertices = 1) out;
+            void main() {
+                gl_Position = vec4(0.0);
+                EmitVertex();
+            }
+            )SHADER");
+
+        Effect* effect1 = sharedTestState->getScene().createEffect(effectDesc);
+        Effect* effect2 = sharedTestState->getScene().createEffect(effectDesc);
+        ASSERT_NE(nullptr, effect1);
+        ASSERT_NE(nullptr, effect2);
+        EDrawMode geometryShaderInput;
+        EXPECT_EQ(StatusOK, effect1->getGeometryShaderInputType(geometryShaderInput));
+        EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Triangles);
+        EXPECT_EQ(StatusOK, effect2->getGeometryShaderInputType(geometryShaderInput));
         EXPECT_EQ(geometryShaderInput, EDrawMode::EDrawMode_Triangles);
     }
 }

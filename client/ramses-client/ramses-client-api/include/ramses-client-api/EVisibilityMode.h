@@ -9,7 +9,7 @@
 #ifndef RAMSES_EVISIBILITYMODE_H
 #define RAMSES_EVISIBILITYMODE_H
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace ramses
 {

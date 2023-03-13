@@ -28,7 +28,7 @@ public:
         m_windowClosed = true;
     }
 
-    bool isWindowClosed() const
+    [[nodiscard]] bool isWindowClosed() const
     {
         return m_windowClosed;
     }
@@ -221,19 +221,19 @@ ramses::Scene* createSceneMaster(ramses::RamsesClient& client, ramses::sceneId_t
  * @example ramses-example-local-scene-referencing/src/main.cpp
  * @brief Example for controlling scene state and data linking of scenes via scene referencing instead of renderer API.
  */
-int main(int argc, char* argv[])
+int main()
 {
     // create a renderer and a client locally, open a display
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ExampleSceneReferencing"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 

@@ -125,12 +125,6 @@ namespace ramses_internal
         destroyDisplayController(displayController);
     }
 
-    TEST_F(ADisplayController, canBeCreatedAndDestroyedWithWarping)
-    {
-        IDisplayController& displayController = createDisplayControllerWithWarping();
-        destroyDisplayControllerWithWarping(displayController);
-    }
-
     TEST_F(ADisplayController, readsPixelsFromFramebuffer)
     {
         IDisplayController& displayController = createDisplayController();

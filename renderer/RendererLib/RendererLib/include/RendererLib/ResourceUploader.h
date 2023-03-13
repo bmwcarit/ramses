@@ -25,7 +25,7 @@ namespace ramses_internal
     public:
         explicit ResourceUploader(bool asyncEffectUploadEnabled, IBinaryShaderCache* binaryShaderCache = nullptr);
 
-        virtual absl::optional<DeviceResourceHandle> uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize) override;
+        virtual std::optional<DeviceResourceHandle> uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize) override;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) override;
         void                         storeShaderInBinaryShaderCache(IRenderBackend& renderBackend, DeviceResourceHandle deviceHandle, const ResourceContentHash& hash, SceneId sceneid) override;
 

@@ -56,14 +56,14 @@ namespace ramses
         return impl.findAttributeInput(attributeSemantic, attributeInput.impl);
     }
 
-    bool Effect::hasGeometryShader(const Effect& effect)
+    bool Effect::hasGeometryShader() const
     {
-        return effect.impl.hasGeometryShader();
+        return impl.hasGeometryShader();
     }
 
-    status_t Effect::getGeometryShaderInputType(const Effect& effect, EDrawMode& inputType)
+    status_t Effect::getGeometryShaderInputType(EDrawMode& expectedGeometryInputType) const
     {
-        return effect.impl.getGeometryShaderInputType(inputType);
+        return impl.getGeometryShaderInputType(expectedGeometryInputType);
     }
 
     status_t Effect::findUniformInput(const char* inputName, UniformInput& uniformInput) const

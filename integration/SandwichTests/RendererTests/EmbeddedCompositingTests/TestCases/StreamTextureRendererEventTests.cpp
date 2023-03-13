@@ -19,7 +19,6 @@ namespace ramses_internal
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
         displayConfig.setWindowRectangle(0u, 0u, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
-        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
 
         testFramework.createTestCase(SurfaceAvailableEventGeneratedWhenBufferAttached, *this, "SurfaceAvailableEventGeneratedWhenBufferAttached").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(SurfaceUnavailableEventGeneratedWhenBufferDetached, *this, "SurfaceUnavailableEventGeneratedWhenBufferDetached").m_displayConfigs.push_back(displayConfig);
@@ -45,8 +44,8 @@ namespace ramses_internal
 
     bool StreamTextureRendererEventTests::runTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
-        Bool testResultValue = true;
-        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
+        bool testResultValue = true;
+        constexpr WaylandIviSurfaceId waylandSurfaceIviId1{571u};
 
         switch(testCase.m_id)
         {
@@ -54,17 +53,17 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
+            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, waylandSurfaceIviId1);
 
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
+            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, waylandSurfaceIviId1);
 
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
+            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, waylandSurfaceIviId1);
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, true);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
@@ -75,14 +74,14 @@ namespace ramses_internal
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, true);
 
             testFramework.sendDetachBufferFromSurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, false);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, false);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
@@ -94,14 +93,14 @@ namespace ramses_internal
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, true);
 
             testFramework.sendDestroySurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, false);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, false);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
@@ -113,14 +112,14 @@ namespace ramses_internal
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, true);
 
             testFramework.sendDestroyIVISurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, false);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, false);
 
             testFramework.sendDestroySurfaceToTestApplication(surfaceId);
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -133,14 +132,14 @@ namespace ramses_internal
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, true);
 
             testFramework.killTestApplication();
             testFramework.waitUntilNumberOfCompositorConnections(0, true);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, false);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, false);
 
             break;
         }
@@ -150,14 +149,14 @@ namespace ramses_internal
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
             testFramework.sendDetachBufferFromSurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
 
-            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
+            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, waylandSurfaceIviId1);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
@@ -169,16 +168,16 @@ namespace ramses_internal
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
             testFramework.renderOneFrame(); //to process the event
 
             testFramework.sendDetachBufferFromSurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
 
-            const BoolVector events = renderAndGetSurfaceAvailabilityChangeEvents(testFramework, streamTextureSourceId);
+            const BoolVector events = renderAndGetSurfaceAvailabilityChangeEvents(testFramework, waylandSurfaceIviId1);
 
             testResultValue &= (2u == events.size()
                                 && true == events[0]
@@ -195,20 +194,20 @@ namespace ramses_internal
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
             testFramework.renderOneFrame(); //to process the event
 
             testFramework.sendDetachBufferFromSurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
             testFramework.renderOneFrame(); //to process the event
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
 
-            const BoolVector events = renderAndGetSurfaceAvailabilityChangeEvents(testFramework, streamTextureSourceId);
+            const BoolVector events = renderAndGetSurfaceAvailabilityChangeEvents(testFramework, waylandSurfaceIviId1);
             testResultValue &= (3u == events.size()
                                 && true == events[0]
                                 && false == events[1]
@@ -224,17 +223,17 @@ namespace ramses_internal
         case SurfaceAvailableEventGeneratedWhenBufferAttached_NoSceneAvailable:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
+            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, waylandSurfaceIviId1);
 
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
+            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, waylandSurfaceIviId1);
 
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
+            testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, waylandSurfaceIviId1);
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, true);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
@@ -244,14 +243,14 @@ namespace ramses_internal
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, true);
 
             testFramework.sendDetachBufferFromSurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
-            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, false);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(waylandSurfaceIviId1, false);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
@@ -287,7 +286,7 @@ namespace ramses_internal
                 }
             }
 
-            const BoolVector& getStreamAvailabilityChanged() const
+            [[nodiscard]] const BoolVector& getStreamAvailabilityChanged() const
             {
                 return m_streamAvailabilityChangeEvents;
             }

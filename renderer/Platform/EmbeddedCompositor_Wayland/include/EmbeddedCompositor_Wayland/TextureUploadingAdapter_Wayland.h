@@ -33,8 +33,8 @@ namespace ramses_internal
             DmabufEglImage(TextureUploadingAdapter_Wayland& parent, EGLImage eglImage, GLenum textureTarget);
             ~DmabufEglImage();
 
-            EGLImage getEglImage() const;
-            GLenum getTextureTarget() const;
+            [[nodiscard]] EGLImage getEglImage() const;
+            [[nodiscard]] GLenum getTextureTarget() const;
 
         private:
             TextureUploadingAdapter_Wayland& m_parent;

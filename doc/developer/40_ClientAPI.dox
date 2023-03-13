@@ -28,7 +28,7 @@ memory management strategy implemented in the RAMSES framework.
 Another direct result is the mandatory use of factories to create (and
 destroy) all framework managed data structures.
 
-All objects created by one of the client API factories (RamsesClient, Scene or AnimationSystem)
+All objects created by one of the client API factories (RamsesClient or Scene)
 are owned by the object containing the factory and must be destroyed with the corresponding destroy() function.
 Using an object after passing it to a destroy() function is an application bug.
 Destroying the factory automatically destroys all its managed objects.

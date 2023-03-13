@@ -13,6 +13,7 @@
 #include "ApiRamshCommandMock.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Utils/LogMacros.h"
+#include "CLI/CLI.hpp"
 
 using namespace ramses;
 using namespace testing;
@@ -25,18 +26,12 @@ TEST(ARamsesFramework, canDefaultConstruct)
 
 TEST(ARamsesFramework, canConstructFromConfig)
 {
-    const char* argv[] = {"", "-guid", "0000-000000000123"};
-    RamsesFrameworkConfig config(3, argv);
+    RamsesFrameworkConfig config;
+    CLI::App cli;
+    config.registerOptions(cli);
+    cli.parse("--guid=0000-000000000123");
     RamsesFramework fw(config);
     EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x123);
-}
-
-
-TEST(ARamsesFramework, canConstructWithArgcArgv)
-{
-    const char* argv[] = {"", "-guid", "0000-000000000124"};
-    RamsesFramework fw(3, argv);
-    EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x124);
 }
 
 TEST(ARamsesFramework, isNotConnectedInitially)
@@ -77,8 +72,8 @@ namespace
         explicit PartialApiRamshCommandMock(const std::string& kw_)
             : kw(kw_)
         {}
-        const std::string& keyword() const override { return kw; }
-        const std::string& help() const override { return helpText; }
+        [[nodiscard]] const std::string& keyword() const override { return kw; }
+        [[nodiscard]] const std::string& help() const override { return helpText; }
         std::string kw;
         std::string helpText{"text"};
     };

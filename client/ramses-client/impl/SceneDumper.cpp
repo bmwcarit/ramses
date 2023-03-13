@@ -15,7 +15,6 @@
 #include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/TextureSampler.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderGroup.h"
@@ -32,7 +31,6 @@
 #include "GeometryBindingImpl.h"
 #include "Texture2DBufferImpl.h"
 #include "ObjectIteratorImpl.h"
-#include "StreamTextureImpl.h"
 #include "RamsesClientImpl.h"
 #include "RenderBufferImpl.h"
 #include "RenderTargetImpl.h"
@@ -68,11 +66,6 @@ namespace ramses
         return impl.getTextureBufferHandle();
     }
 
-    template <> ramses_internal::StreamTextureHandle SceneDumper::GetHandle(const StreamTextureImpl& impl)
-    {
-        return impl.getHandle();
-    }
-
     template <class ObjectType, class ObjectImplType, class HandleType>
     void SceneDumper::setupMap(ramses_internal::HashMap<HandleType, const ObjectImplType*>& map)
     {
@@ -99,9 +92,6 @@ namespace ramses
     void SceneDumper::dumpUnrequiredObjects(ramses_internal::StringOutputStream& output)
     {
         setupMaps();
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationObject);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystem);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystemRealTime);
 
         RenderPassSet requiredRenderPasses = markRequiredScreenRenderPasses();
         while (requiredRenderPasses.size() > 0)
@@ -122,7 +112,6 @@ namespace ramses
             markRequiredRenderTargets(requiredRenderPasses);
             RenderBufferSet requiredRenderBuffers = markRequiredRenderBuffer(requiredTextureSamplers);
             markRequiredTextureBuffer(requiredTextureSamplers);
-            markRequiredStreamTextures(requiredTextureSamplers);
 
             requiredRenderPasses = getRequiredRenderPasses(requiredRenderBuffers);
         }
@@ -142,7 +131,6 @@ namespace ramses
         addToMap<TextureSamplerExternal, TextureSamplerImpl, ramses_internal::TextureSamplerHandle>(m_textureSamplerHandleToObjectMap);
         setupMap<RenderBuffer, RenderBufferImpl, ramses_internal::RenderBufferHandle>(m_renderBufferHandleToObjectMap);
         setupMap<Texture2DBuffer, Texture2DBufferImpl, ramses_internal::TextureBufferHandle>(m_textureBufferHandleToObjectMap);
-        setupMap<StreamTexture, StreamTextureImpl, ramses_internal::StreamTextureHandle>(m_streamTextureHandleToObjectMap);
 
         setupResourceMap();
         setupRenderPassMap();
@@ -212,16 +200,6 @@ namespace ramses
                               << blitPassData.sourceRenderBuffer << " !!!");
                 assert(false);
             }
-        }
-    }
-
-    void SceneDumper::markAllObjectsOfTypeAsRequired(ERamsesObjectType objectType)
-    {
-        RamsesObjectVector objects;
-        m_objectRegistry.getObjectsOfType(objects, objectType);
-        for (auto object : objects)
-        {
-            m_requiredObjects.put(&object->impl);
         }
     }
 
@@ -583,40 +561,6 @@ namespace ramses
                 }
             }
         }
-    }
-
-    SceneDumper::StreamTextureSet
-    SceneDumper::markRequiredStreamTextures(const TextureSamplerSet& requiredTextureSamplers)
-    {
-        SceneDumper::StreamTextureSet                                  requiredStreamTextures;
-        ramses_internal::HashSet<ramses_internal::ResourceContentHash> requiredTextureResourceHashes;
-        for (auto textureSampler : requiredTextureSamplers)
-        {
-            const auto sampler = textureSampler->getIScene().getTextureSampler(textureSampler->getTextureSamplerHandle());
-            if (ramses_internal::TextureSampler::ContentType::StreamTexture == sampler.contentType && ramses_internal::StreamTextureHandle::Invalid() != sampler.contentHandle)
-            {
-                const ramses_internal::StreamTextureHandle streamTextureHandle(sampler.contentHandle);
-                const StreamTextureImpl** streamTexture = m_streamTextureHandleToObjectMap.get(streamTextureHandle);
-
-                if (nullptr != streamTexture)
-                {
-                    assert(*streamTexture);
-                    if (addToRequiredObjects(**streamTexture))
-                    {
-                        requiredStreamTextures.put(*streamTexture);
-                    }
-                }
-                else
-                {
-                    LOG_ERROR(ramses_internal::CONTEXT_CLIENT,
-                              "SceneDumper::getRequiredStreamTextures Could not lookup stream texture handle: "
-                                  << streamTextureHandle << " !!!");
-                    assert(false);
-                }
-            }
-        }
-
-        return requiredStreamTextures;
     }
 
     void SceneDumper::addNodeWithAllParentNodes(const NodeImpl* node)

@@ -21,9 +21,9 @@ namespace ramses_internal
     public:
         LogMessage(const LogContext& context, ELogLevel logLevel, const StringOutputStream& stream);
 
-        const StringOutputStream& getStream() const;
-        const LogContext& getContext() const;
-        ELogLevel getLogLevel() const;
+        [[nodiscard]] const StringOutputStream& getStream() const;
+        [[nodiscard]] const LogContext& getContext() const;
+        [[nodiscard]] ELogLevel getLogLevel() const;
 
     private:
         const LogContext& m_context;

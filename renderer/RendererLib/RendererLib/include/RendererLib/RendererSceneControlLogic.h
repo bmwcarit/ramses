@@ -94,9 +94,9 @@ namespace ramses_internal
             BufferAssignmentInfo assignmentInfo;
         };
 
-        ESceneStateInternal getCurrentSceneState(SceneId sceneId) const;
-        ESceneStateInternal getTargetSceneState(SceneId sceneId) const;
-        ESceneStateCommand getLastSceneStateCommandWaitingForReply(SceneId sceneId) const;
+        [[nodiscard]] ESceneStateInternal getCurrentSceneState(SceneId sceneId) const;
+        [[nodiscard]] ESceneStateInternal getTargetSceneState(SceneId sceneId) const;
+        [[nodiscard]] ESceneStateCommand getLastSceneStateCommandWaitingForReply(SceneId sceneId) const;
         void goToTargetState(SceneId sceneId);
         void goToMappedAndAssignedState(SceneId sceneId);
         void setCurrentSceneState(SceneId sceneId, ESceneStateInternal state);

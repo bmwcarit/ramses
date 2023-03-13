@@ -118,7 +118,7 @@ TEST_F(AClientApplicationLogic, triesToGetRequestedResourceFromResourceComponent
     const ResourceContentHash dummyResourceHash(44u, 0);
     ON_CALL(resourceComponent, getResource(_)).WillByDefault(Return(ManagedResource()));
     EXPECT_CALL(resourceComponent, getResource(dummyResourceHash));
-    logic.getResource(dummyResourceHash);
+    EXPECT_EQ(ManagedResource(), logic.getResource(dummyResourceHash));
 }
 
 TEST_F(AClientApplicationLogic, triesToGetHashUsageFromResourceComponent)
@@ -126,7 +126,7 @@ TEST_F(AClientApplicationLogic, triesToGetHashUsageFromResourceComponent)
     const ResourceContentHash dummyResourceHash(44u, 0);
     ON_CALL(resourceComponent, getResourceHashUsage(_)).WillByDefault(Return(ResourceHashUsage()));
     EXPECT_CALL(resourceComponent, getResourceHashUsage(dummyResourceHash));
-    logic.getHashUsage(dummyResourceHash);
+    EXPECT_FALSE(logic.getHashUsage(dummyResourceHash).isValid());
 }
 
 TEST_F(AClientApplicationLogic, addsAndRemovesResourceFilesFromComponent)
@@ -183,7 +183,7 @@ class AClientApplicationLogicWithRealComponents : public ::testing::Test
 public:
     AClientApplicationLogicWithRealComponents()
         : resComp(stats, fwlock)
-        , sceneComp(clientId, commSystem, connStatusUpdateNotifier, resComp, fwlock)
+        , sceneComp(clientId, commSystem, connStatusUpdateNotifier, resComp, fwlock, ramses::EFeatureLevel_Latest)
         , logic(clientId, fwlock)
     {
         logic.init(resComp, sceneComp);
@@ -220,13 +220,13 @@ TEST_F(AClientApplicationLogicWithRealComponents, keepsResourcesAliveForNewSubsc
         auto hashUsage = logic.getHashUsage(hash);
 
         // use texture2d
-        auto stHandle = clientScene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, hash);
+        const auto dataSlotHandle = clientScene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, hash, {} });
 
         sceneComp.handleSubscribeScene(sceneId, renderer1);
         EXPECT_TRUE(logic.flush(sceneId, {}, {}));
 
-        // release stream texture along with its texture2d (by leaving scope)
-        clientScene.releaseStreamTexture(stHandle);
+        // release data slot along with its texture2d (by leaving scope)
+        clientScene.releaseDataSlot(dataSlotHandle);
     }
 
     EXPECT_EQ(resComp.getResource(hash).get(), res);
@@ -250,7 +250,7 @@ TEST_F(AClientApplicationLogicWithRealComponents, keepsAlsoOldResourcesAliveForN
         auto hashUsage = logic.getHashUsage(hash);
 
         // use texture2d
-        auto stHandle = clientScene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, hash);
+        const auto dataSlotHandle = clientScene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, hash, {} });
 
         sceneComp.handleSubscribeScene(sceneId, renderer1);
         EXPECT_TRUE(logic.flush(sceneId, {}, {}));
@@ -260,12 +260,12 @@ TEST_F(AClientApplicationLogicWithRealComponents, keepsAlsoOldResourcesAliveForN
         auto hashUsage2 = logic.getHashUsage(hash2);
 
         // use texture2d
-        clientScene.allocateStreamTexture(WaylandIviSurfaceId{ 2u }, hash2);
+        clientScene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(1u), {}, {}, hash2, {} });
 
         EXPECT_TRUE(logic.flush(sceneId, {}, {}));
 
-        // release first stream texture along with its texture2d (by leaving scope)
-        clientScene.releaseStreamTexture(stHandle);
+        // release first data slot along with its texture2d (by leaving scope)
+        clientScene.releaseDataSlot(dataSlotHandle);
     }
 
     EXPECT_EQ(resComp.getResource(hash).get(), res);

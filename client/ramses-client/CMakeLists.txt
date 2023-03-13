@@ -11,19 +11,52 @@ file(GLOB
     impl/*.cpp
     impl/glslEffectBlock/*.cpp
     impl/ClientCommands/*.cpp
-    ramses-client-api/*.cpp
-    impl/ramses-text/*.cpp
-    ramses-text-api/*.cpp)
+    ramses-client-api/*.cpp)
+
 file(GLOB
     RAMSES_CLIENT_API_INCLUDE_BASE
-    ramses-client-api/include
-    ramses-text-api/include)
-
+    ramses-client-api/include)
 
 add_library(ramses-client-api INTERFACE)
-target_include_directories(ramses-client-api INTERFACE ${RAMSES_CLIENT_API_INCLUDE_BASE})
 
-ACME_MODULE(
+if(ramses-sdk_TEXT_SUPPORT)
+    set(client_text_dependencies
+        freetype
+        harfbuzz)
+    set(client_text_includes
+        impl/ramses-text/*.h
+        ramses-text-api/include/*.h
+        ramses-text-api/include/ramses-text-api/*.h
+    )
+
+    file(GLOB
+        RAMSES_CLIENT_TEXT_FILES_SOURCE
+        impl/ramses-text/*.cpp
+        ramses-text-api/*.cpp)
+    file(GLOB RAMSES_CLIENT_TEXT_API_INCLUDE_BASE
+        ramses-text-api/include)
+    file(GLOB
+        RAMSES_CLIENT_TEXT_TEST_FILES_SOURCE
+        test/text/*.cpp)
+    file(GLOB
+        RAMSES_CLIENT_TEXT_TEST_FILES_INCLUDES
+        test/text/*.h)
+
+    target_compile_definitions(ramses-client-api INTERFACE RAMSES_TEXT_ENABLED)
+else()
+    set(client_text_dependencies "")
+    set(client_text_includes "")
+
+    set(RAMSES_CLIENT_TEXT_FILES_SOURCE "")
+    set(RAMSES_CLIENT_TEXT_API_INCLUDE_BASE "")
+    set(RAMSES_CLIENT_TEXT_TEST_FILES_SOURCE "")
+    set(RAMSES_CLIENT_TEXT_TEST_FILES_INCLUDES "")
+
+endif()
+
+target_include_directories(ramses-client-api INTERFACE ${RAMSES_CLIENT_API_INCLUDE_BASE} ${RAMSES_CLIENT_TEXT_API_INCLUDE_BASE})
+
+createModule(
 
     #==========================================================================
     # general module information
@@ -35,62 +68,71 @@ ACME_MODULE(
     #==========================================================================
     # files of this module
     #==========================================================================
-    INCLUDE_BASE            impl
-    FILES_PRIVATE_HEADER    impl/*.h
+    INCLUDE_PATHS           impl
+    SRC_FILES               impl/*.h
                             impl/glslEffectBlock/*.h
                             impl/ClientCommands/*.h
                             ramses-client-api/include/*.h
                             ramses-client-api/include/ramses-client-api/*.h
-    FILES_SOURCE            ${RAMSES_CLIENT_FILES_SOURCE}
-                            impl/ramses-text/*.h
-                            ramses-text-api/include/*.h
-                            ramses-text-api/include/ramses-text-api/*.h
+                            ${RAMSES_CLIENT_FILES_SOURCE}
+                            ${RAMSES_CLIENT_TEXT_FILES_SOURCE}
+                            ${client_text_includes}
     #==========================================================================
     # dependencies
     #==========================================================================
     DEPENDENCIES            ramses-client-api
                             ramses-framework
                             ramses-glslang
-                            freetype
-                            harfbuzz
+                            ${client_text_dependencies}
 )
 
-INSTALL(DIRECTORY ramses-client-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
-INSTALL(DIRECTORY ramses-text-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+install(DIRECTORY ramses-client-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+if(ramses-sdk_TEXT_SUPPORT)
+    install(DIRECTORY ramses-text-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-client PRIVATE "-Wsuggest-override")
 endif()
 
-ACME_MODULE(
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    ramses-client-test
-    TYPE                    TEST
+if (${ramses-sdk_BUILD_TESTS})
+    createModule(
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    INCLUDE_BASE            test
-    FILES_PRIVATE_HEADER    test/*.h
-                            test/ClientCommands/*.h
-    FILES_SOURCE            test/*.cpp
-                            test/ClientCommands/*.cpp
-    RESOURCE_FOLDER         test/res
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    ramses-client-test
+        TYPE                    BINARY
 
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            ramses-client
-                            FrameworkTestUtils
-                            ramses-gmock-main
-)
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+        INCLUDE_PATHS           test
+        SRC_FILES               test/*.h
+                                test/ClientCommands/*.h
+                                ${RAMSES_CLIENT_TEXT_TEST_FILES_INCLUDES}
+                                test/*.cpp
+                                ${RAMSES_CLIENT_TEXT_TEST_FILES_SOURCE}
+                                test/ClientCommands/*.cpp
+        RESOURCE_FOLDERS        test/res
+
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            ramses-client
+                                FrameworkTestUtils
+                                ramses-gmock-main
+    )
+
+    makeTestFromTarget(
+        TARGET ramses-client-test
+        SUFFIX UNITTEST)
+endif()
 
 set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}
-    INCLUDE_BASE ${RAMSES_CLIENT_API_INCLUDE_BASE}
-    FILES_SOURCE ${RAMSES_CLIENT_FILES_SOURCE}
+    INCLUDE_PATHS ${RAMSES_CLIENT_API_INCLUDE_BASE} ${RAMSES_CLIENT_TEXT_API_INCLUDE_BASE}
+    SRC_FILES ${RAMSES_CLIENT_FILES_SOURCE} ${RAMSES_CLIENT_TEXT_FILES_SOURCE}
     DEPENDENCIES  ramses-client
     CACHE INTERNAL "")

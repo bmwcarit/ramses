@@ -159,7 +159,7 @@ namespace ramses
         * @param[in] textId Id of the text line object to get
         * @return A pointer to the text line object, or nullptr on failure
         */
-        TextLine const*         getTextLine(TextLineId textId) const;
+        [[nodiscard]] TextLine const*         getTextLine(TextLineId textId) const;
 
         /**
         * @brief Get a (non-const) pointer to a (previously created) text line object

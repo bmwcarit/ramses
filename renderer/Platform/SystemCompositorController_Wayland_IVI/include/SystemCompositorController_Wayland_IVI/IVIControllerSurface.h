@@ -35,7 +35,7 @@ namespace ramses_internal
         void                      sendStats();
         void                      destroy();
         ivi_controller_surface*   getNativeWaylandControllerSurface();
-        const WaylandIviSurfaceId getIVIId() const;
+        [[nodiscard]] const WaylandIviSurfaceId getIVIId() const;
 
     private:
         static void HandleVisibilityCallback(void*                   data,

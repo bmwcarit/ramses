@@ -40,15 +40,6 @@ namespace ramses_internal
 
     void CommandDispatchingThread::run()
     {
-#ifdef __ghs__
-#   ifdef RAMSES_RENDER_THREAD_PRIORITY
-        setThreadPriorityIntegrity(RAMSES_RENDER_THREAD_PRIORITY, "renderer command dispatching thread");
-#   endif
-#   ifdef RAMSES_RENDER_THREAD_CORE_BINDING
-        setThreadCoreBindingIntegrity(RAMSES_RENDER_THREAD_CORE_BINDING, "renderer command dispatching thread");
-#   endif
-#endif
-
         while (!isCancelRequested())
         {
             m_tmpCommands.clear();

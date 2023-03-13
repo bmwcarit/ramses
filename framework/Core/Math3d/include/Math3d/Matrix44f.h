@@ -83,11 +83,11 @@ namespace ramses_internal
         constexpr bool operator!=(const Matrix44f& other) const;
 
         constexpr Float& m(const UInt32 i, const UInt32 j);
-        constexpr const Float& m(const UInt32 i, const UInt32 j) const;
-        constexpr Matrix44f transpose() const;
-        constexpr Float determinant() const;
-        constexpr Matrix44f inverse() const;
-        Vector3 rotate(const Vector3& point) const;
+        [[nodiscard]] constexpr const Float& m(const UInt32 i, const UInt32 j) const;
+        [[nodiscard]] constexpr Matrix44f transpose() const;
+        [[nodiscard]] constexpr Float determinant() const;
+        [[nodiscard]] constexpr Matrix44f inverse() const;
+        [[nodiscard]] Vector3 rotate(const Vector3& point) const;
     };
 
     inline IOutputStream& operator<<(IOutputStream& stream, const Matrix44f& value)

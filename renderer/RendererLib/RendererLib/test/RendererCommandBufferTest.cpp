@@ -26,7 +26,6 @@ protected:
 
     const SceneId sceneId{ 12u };
     const SceneInfo sceneInfo{ sceneId, "testScene" };
-    const WarpingMeshData warpingData;
     const DisplayHandle displayHandle{ 1u };
     const DisplayConfig displayConfig;
     const OffscreenBufferHandle obHandle{ 6u };
@@ -58,7 +57,6 @@ void ARendererCommandBuffer::fillBufferWithCommands(RendererCommandBuffer& buffe
     buffer.enqueueCommand(RendererCommand::SetExterallyOwnedWindowSize{ displayHandle, 1u, 2u});
     buffer.enqueueCommand(RendererCommand::CreateStreamBuffer{ displayHandle, streamBuffer, source });
     buffer.enqueueCommand(RendererCommand::DestroyStreamBuffer{ displayHandle, streamBuffer });
-    buffer.enqueueCommand(RendererCommand::SetStreamBufferState{ displayHandle, streamBuffer, true});
     buffer.enqueueCommand(RendererCommand::LinkStreamBuffer{ streamBuffer, consumerSceneId, consumerId });
     buffer.enqueueCommand(RendererCommand::SCListIviSurfaces{});
     buffer.enqueueCommand(RendererCommand::SCSetIviSurfaceVisibility{ source, true });
@@ -87,7 +85,6 @@ void ARendererCommandBuffer::expectFilledBufferVisits()
     EXPECT_CALL(visitor, handleSetExternallyOwnedWindowSize(displayHandle, 1u, 2u));
     EXPECT_CALL(visitor, handleBufferCreateRequest(streamBuffer, displayHandle, source));
     EXPECT_CALL(visitor, handleBufferDestroyRequest(streamBuffer, displayHandle));
-    EXPECT_CALL(visitor, setStreamBufferState(streamBuffer, displayHandle, true));
     EXPECT_CALL(visitor, handleBufferToSceneDataLinkRequest(streamBuffer, consumerSceneId, consumerId));
     EXPECT_CALL(visitor, systemCompositorListIviSurfaces());
     EXPECT_CALL(visitor, systemCompositorSetIviSurfaceVisibility(source, true));

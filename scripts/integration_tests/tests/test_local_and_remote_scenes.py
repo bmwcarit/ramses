@@ -28,7 +28,7 @@ class TestLocalAndRemoteScenes(test_classes.MultipleConnectionsTest):
         self.addCleanup(self.targets[0].kill_application, self.sender)
 
         applicationName = "ramses-local-client-test-{}".format(self.targets[1].defaultPlatform)
-        self.receiver = self.targets[1].start_renderer(applicationName, args='--wayland-socket-embedded wayland-13 -tn 2',
+        self.receiver = self.targets[1].start_renderer(applicationName, args='--ec-display wayland-13 --test-nr 2',
                                                        nameExtension='receiver', ramsesDaemonTarget=self.targets[0])
         self.checkThatApplicationWasStarted(self.receiver)
         self.addCleanup(self.targets[1].kill_application, self.receiver)

@@ -22,9 +22,6 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/SceneExpirationMonitor.h"
-#include "Animation/AnimationSystem.h"
-#include "Animation/ActionCollectingAnimationSystem.h"
-#include "Scene/SceneDataBinding.h"
 #include "ComponentMocks.h"
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererResourceCacheMock.h"
@@ -368,17 +365,6 @@ protected:
 
     }
 
-    void expectStreamBufferEvent(StreamBufferHandle handle, bool expectedState)
-    {
-        RendererEventVector events;
-        RendererEventVector dummy;
-        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
-        ASSERT_EQ(events.size(), 1u);
-
-        EXPECT_EQ(events[0].streamBuffer, handle);
-        EXPECT_EQ(events[0].eventType, expectedState ? ERendererEventType::StreamBufferEnabled : ERendererEventType::StreamBufferDisabled);
-    }
-
     void performFlush(UInt32 sceneIndex = 0u, SceneVersionTag version = SceneVersionTag::Invalid(), const SceneSizeInformation* sizeInfo = nullptr, const FlushTimeInformation& timeInfo = {}, const SceneReferenceActionVector& sceneRefActions = {})
     {
         ActionCollectingScene& scene = *stagingScene[sceneIndex];
@@ -545,30 +531,27 @@ protected:
         scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), 0u, 0u, 0u);
     }
 
-    void setRenderableStreamTexture(UInt32 sceneIndex = 0u)
+    DataSlotId createRenderableWithTextureConsumer(UInt32 sceneIndex = 0u)
     {
-        IScene& scene = *stagingScene[sceneIndex];
-        scene.setDataTextureSamplerHandle(uniformDataInstanceHandle, DataFieldHandle(0u), samplerHandle);
-        performFlush(sceneIndex);
-    }
-
-    void createSamplerWithStreamTexture(UInt32 sceneIndex = 0u)
-    {
-        IScene& scene = *stagingScene[sceneIndex];
-        scene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, ResourceContentHash::Invalid(), streamTextureHandle);
-        scene.allocateTextureSampler({ {}, streamTextureHandle }, samplerHandle);
-    }
-
-    void createRenderableAndResourcesWithStreamTexture(UInt32 sceneIndex = 0u)
-    {
+        expectVertexArrayUploaded(sceneIndex);
         expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, sceneIndex);
         createRenderable(sceneIndex, false, true);
         setRenderableResources(sceneIndex);
+        update();
 
-        createSamplerWithStreamTexture(sceneIndex);
-        setRenderableStreamTexture(sceneIndex);
+        IScene& scene = *stagingScene[sceneIndex];
+        scene.allocateTextureSampler({ {}, MockResourceHash::TextureHash }, samplerHandle);
+        scene.setDataTextureSamplerHandle(uniformDataInstanceHandle, DataFieldHandle(0u), samplerHandle);
+        const DataSlotId consumerId(getNextFreeDataSlotIdForDataLinking());
+        scene.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), samplerHandle });
 
-        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadStreamTexture(streamTextureHandle, _, getSceneId(sceneIndex)));
+        expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, sceneIndex);
+        performFlush(sceneIndex);
+        update();
+
+        expectSceneEvent(ERendererEventType::SceneDataSlotConsumerCreated);
+
+        return consumerId;
     }
 
     void removeRenderableResources(UInt32 sceneIndex = 0u)
@@ -925,59 +908,6 @@ protected:
         EXPECT_CALL(renderer, markBufferWithSceneForRerender(_)).Times(0u);
     }
 
-    AnimationHandle createRealTimeActiveAnimation(UInt32 sceneIndex = 0u)
-    {
-        const AnimationSystemHandle animationSystemHandle(10u);
-
-        ActionCollectingScene& scene = *stagingScene[sceneIndex];
-        IAnimationSystem* animationSystem = new ActionCollectingAnimationSystem(EAnimationSystemFlags_RealTime, scene.getSceneActionCollection(), AnimationSystemSizeInformation());
-        scene.addAnimationSystem(animationSystem, animationSystemHandle);
-
-        const NodeHandle nodeHandle1 = scene.allocateNode();
-        const TransformHandle transHandle1 = scene.allocateTransform(nodeHandle1);
-
-        const SplineHandle splineHandle1 = animationSystem->allocateSpline(ESplineKeyType_Basic, EDataTypeID_Vector3f);
-        animationSystem->setSplineKeyBasicVector3f(splineHandle1, 0u, Vector3(111.f, -999.f, 66.f));
-        animationSystem->setSplineKeyBasicVector3f(splineHandle1, 100000u, Vector3(11.f, -99.f, 666.f));
-
-        using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
-        const DataBindHandle dataBindHandle1 = animationSystem->allocateDataBinding(scene, ContainerTraitsClass::TransformNode_Rotation, transHandle1.asMemoryHandle(), InvalidMemoryHandle);
-
-        const AnimationInstanceHandle animInstHandle1 = animationSystem->allocateAnimationInstance(splineHandle1, EInterpolationType_Linear, EVectorComponent_All);
-        animationSystem->addDataBindingToAnimationInstance(animInstHandle1, dataBindHandle1);
-
-        const auto animationHandle = animationSystem->allocateAnimation(animInstHandle1);
-
-        const UInt64 systemTime = PlatformTime::GetMillisecondsAbsolute();
-        animationSystem->setAnimationStartTime(animationHandle, systemTime);
-        animationSystem->setAnimationStopTime(animationHandle, systemTime + 100000u);
-
-        performFlush();
-        update();
-
-        PlatformThread::Sleep(1u);
-        update();
-        EXPECT_TRUE(rendererScenes.getScene(scene.getSceneId()).getAnimationSystem(animationSystemHandle)->hasActiveAnimations());
-
-        return animationHandle;
-    }
-
-    void stopAnimation(AnimationHandle animationHandle, UInt32 sceneIndex = 0)
-    {
-        const AnimationSystemHandle animationSystemHandle(10u);
-
-        IScene& scene = *stagingScene[sceneIndex];
-        IAnimationSystem& animationSystem = *scene.getAnimationSystem(animationSystemHandle);
-
-        const UInt64 systemTime = PlatformTime::GetMillisecondsAbsolute();
-        animationSystem.setAnimationStopTime(animationHandle, systemTime);
-        performFlush();
-        PlatformThread::Sleep(1u);
-        update();
-
-        EXPECT_FALSE(rendererScenes.getScene(scene.getSceneId()).getAnimationSystem(animationSystemHandle)->hasActiveAnimations());
-    }
-
     DataSlotId getNextFreeDataSlotIdForDataLinking()
     {
         return DataSlotId(dataSlotIdForDataLinking.getReference()++);
@@ -1004,7 +934,6 @@ protected:
 
         EXPECT_CALL(*renderer.m_displayController, handleWindowEvents());
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).WillOnce(Return(true));
-        EXPECT_CALL(*renderer.m_displayController, executePostProcessing());
         EXPECT_CALL(*renderer.m_displayController, swapBuffers());
 
         EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(getSceneId(sceneIdx))), _, nullptr)).WillOnce(
@@ -1037,7 +966,6 @@ protected:
 
         EXPECT_CALL(*renderer.m_displayController, handleWindowEvents());
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).WillOnce(Return(true));
-        EXPECT_CALL(*renderer.m_displayController, executePostProcessing()).Times(AnyNumber());
         EXPECT_CALL(*renderer.m_displayController, swapBuffers()).Times(AnyNumber());
         EXPECT_CALL(*renderer.m_displayController, renderScene(_, _, _)).Times(AnyNumber());
 
@@ -1074,7 +1002,6 @@ protected:
     const DataInstanceHandle geometryDataInstanceHandle{ 1 };
 
     const TextureSamplerHandle samplerHandle{ 2 };
-    const StreamTextureHandle streamTextureHandle{ 0 };
 
     std::vector<std::unique_ptr<ActionCollectingScene>> stagingScene;
     DataSlotId dataSlotIdForDataLinking{9911u};

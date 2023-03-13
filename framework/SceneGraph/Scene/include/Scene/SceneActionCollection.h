@@ -47,10 +47,10 @@ namespace ramses_internal
         SceneActionCollection& operator=(SceneActionCollection&&) noexcept = default;
 #endif
 
-        SceneActionCollection copy() const;
+        [[nodiscard]] SceneActionCollection copy() const;
 
         void clear();
-        bool empty() const;
+        [[nodiscard]] bool empty() const;
         void reserveAdditionalCapacity(UInt additionalDataCapacity, UInt additionalSceneActionsInformationCapacity);
 
         void append(const SceneActionCollection& other);
@@ -92,29 +92,29 @@ namespace ramses_internal
         void addRawSceneActionInformation(ESceneActionId type, UInt32 offset);
 
         // blob read access
-        const std::vector<Byte>& collectionData() const;
+        [[nodiscard]] const std::vector<Byte>& collectionData() const;
 
         // reading
         class Iterator;
         class SceneActionReader;
 
-        UInt32 numberOfActions() const;
+        [[nodiscard]] UInt32 numberOfActions() const;
 
-        Iterator begin() const;
-        Iterator end() const;
+        [[nodiscard]] Iterator begin() const;
+        [[nodiscard]] Iterator end() const;
 
-        SceneActionReader front() const;
-        SceneActionReader back() const;
+        [[nodiscard]] SceneActionReader front() const;
+        [[nodiscard]] SceneActionReader back() const;
         SceneActionReader operator[](UInt actionIndex) const;
 
         // read classes
         class SceneActionReader
         {
         public:
-            ESceneActionId type() const;
-            UInt32 size() const;
-            const Byte* data() const;
-            UInt32 offsetInCollection() const;
+            [[nodiscard]] ESceneActionId type() const;
+            [[nodiscard]] UInt32 size() const;
+            [[nodiscard]] const Byte* data() const;
+            [[nodiscard]] UInt32 offsetInCollection() const;
 
             // concrete types
             void read(String& str);
@@ -138,7 +138,7 @@ namespace ramses_internal
             // get pointer to written array of bytes and increment reader position
             void readWithoutCopy(const Byte*& data, UInt32& size);
 
-            bool isFullyRead() const;
+            [[nodiscard]] bool isFullyRead() const;
 
         private:
             friend SceneActionCollection;
@@ -150,7 +150,7 @@ namespace ramses_internal
             void readFromByteBlob(T& value);
             void readFromByteBlob(void* data, size_t size);
 
-            UInt32 offsetForIndex(UInt idx) const;
+            [[nodiscard]] UInt32 offsetForIndex(UInt idx) const;
 
             const SceneActionCollection* m_collection;
             UInt m_actionIndex;

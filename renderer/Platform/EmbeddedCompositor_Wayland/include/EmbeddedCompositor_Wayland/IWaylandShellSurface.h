@@ -33,7 +33,7 @@ namespace ramses_internal
         virtual void shellSurfaceSetTitle(IWaylandClient& client, const char* title) = 0;
         virtual void shellSurfaceSetClass(IWaylandClient& client, const char* className) = 0;
         virtual void surfaceWasDeleted() = 0;
-        virtual const String& getTitle() const = 0;
+        [[nodiscard]] virtual const String& getTitle() const = 0;
 
     };
 }

@@ -25,8 +25,6 @@ namespace ramses_internal
             TwoDisplaysWithCompositingOnFirstDisplayOnly,
             TwoDisplaysWithCompositingOnSecondDisplayOnly,
             TwoDisplaysWithCompositingOnBothDisplays,
-            SingleDisplayWithCompositing_SetOnRendererConfig,
-            TwoDisplaysWithCompositingOnFirstDisplayOnly_SetOnRendererConfig,
         };
 
 

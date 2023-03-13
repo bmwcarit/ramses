@@ -25,27 +25,27 @@ namespace ramses_internal
         {
         }
 
-        Bool isInterrupted() const
+        [[nodiscard]] Bool isInterrupted() const
         {
             return IsInterrupted(m_executorState);
         }
 
-        Bool isInterrupted(DeviceResourceHandle displayBuffer) const
+        [[nodiscard]] Bool isInterrupted(DeviceResourceHandle displayBuffer) const
         {
             return displayBuffer == m_displayBuffer;
         }
 
-        Bool isInterrupted(DeviceResourceHandle displayBuffer, SceneId sceneId) const
+        [[nodiscard]] Bool isInterrupted(DeviceResourceHandle displayBuffer, SceneId sceneId) const
         {
             return displayBuffer == m_displayBuffer && sceneId == m_sceneId;
         }
 
-        const SceneRenderExecutionIterator& getExecutorState() const
+        [[nodiscard]] const SceneRenderExecutionIterator& getExecutorState() const
         {
             return m_executorState;
         }
 
-        DeviceResourceHandle getInterruptedDisplayBuffer() const
+        [[nodiscard]] DeviceResourceHandle getInterruptedDisplayBuffer() const
         {
             return m_displayBuffer;
         }

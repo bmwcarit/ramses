@@ -28,12 +28,12 @@ namespace ramses_internal
 
         virtual void dispatchStateChangesOfSources(WaylandIviSurfaceIdVector& streamsWithAvailabilityChanged, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams) = 0;
         virtual void processClientRequests() = 0;
-        virtual Bool hasUpdatedContentFromStreamSourcesToUpload() const = 0;
+        [[nodiscard]] virtual Bool hasUpdatedContentFromStreamSourcesToUpload() const = 0;
         virtual void uploadResourcesAndGetUpdates(StreamSourceUpdates& updatedStreams) = 0;
         virtual void notifyClients() = 0;
-        virtual DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(WaylandIviSurfaceId source) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(WaylandIviSurfaceId source) const = 0;
 
-        virtual Bool hasRealCompositor() const = 0; //TODO Mohamed: remove this as soon as EC dummy is removed
+        [[nodiscard]] virtual Bool hasRealCompositor() const = 0; //TODO Mohamed: remove this as soon as EC dummy is removed
     };
 }
 

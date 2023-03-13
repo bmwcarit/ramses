@@ -16,8 +16,6 @@
 #include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/RenderGroupUtils.h"
-#include "Animation/AnimationSystem.h"
-#include "Scene/SceneDataBinding.h"
 #include <array>
 
 namespace ramses_internal
@@ -181,19 +179,6 @@ namespace ramses_internal
             scene.requestSceneReferenceState(sceneRef, RendererSceneState::Ready);
             scene.requestSceneReferenceFlushNotifications(sceneRef, true);
             scene.setSceneReferenceRenderOrder(sceneRef, -13);
-
-            AnimationSystem& animationSystem = *new AnimationSystem{ EAnimationSystemFlags_Default, AnimationSystemSizeInformation{} };
-            scene.addAnimationSystem(&animationSystem, animSystem);
-            animationSystem.allocateSpline(ESplineKeyType_Basic, EDataTypeID_Vector3f, spline);
-            animationSystem.setSplineKeyBasicVector3f(spline, 99u, Vector3(111.f, -999.f, 66.f));
-            using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
-            animationSystem.allocateDataBinding(scene, ContainerTraitsClass::TransformNode_Rotation, t1.asMemoryHandle(), InvalidMemoryHandle, dataBind);
-            animationSystem.allocateAnimationInstance(spline, EInterpolationType_Linear, EVectorComponent_All, animInstance);
-            animationSystem.addDataBindingToAnimationInstance(animInstance, dataBind);
-            animationSystem.allocateAnimation(animInstance, animation);
-            animationSystem.setAnimationProperties(animation, 2.f, Animation::EAnimationFlags_Relative, 0u, 0u);
-            animationSystem.setAnimationStartTime(animation, 5000u);
-            animationSystem.setAnimationStopTime(animation, 10000u);
         }
 
         const SCENE& getScene() const
@@ -222,7 +207,6 @@ namespace ramses_internal
             CheckDataSlotsEquivalentTo<OTHERSCENE>(otherScene);
             CheckPickableObjectsEquivalentTo<OTHERSCENE>(otherScene);
             CheckSceneReferencesEquivalentTo<OTHERSCENE>(otherScene);
-            CheckAnimationsEquivalentTo<OTHERSCENE>(otherScene);
         }
 
         template <typename OTHERSCENE>
@@ -622,12 +606,6 @@ namespace ramses_internal
             EXPECT_TRUE(sr.flushNotifications);
         }
 
-        template <typename OTHERSCENE>
-        void CheckAnimationsEquivalentTo(const OTHERSCENE& otherScene) const
-        {
-            EXPECT_TRUE(otherScene.isAnimationSystemAllocated(animSystem));
-        }
-
         SCENE                       scene;
 
         const ResourceContentHash   indexArrayHash                  {111u, 0};
@@ -697,11 +675,6 @@ namespace ramses_internal
         const SceneReferenceHandle   sceneRef                       { 70u };
         const WaylandIviSurfaceId    streamSource                   { 71u };
         const SceneId                sceneRefSceneId                { 123 };
-        const AnimationSystemHandle  animSystem                     { 210u };
-        const SplineHandle           spline                         { 211u };
-        const DataBindHandle         dataBind                       { 212u };
-        const AnimationInstanceHandle animInstance                  { 213u };
-        const AnimationHandle        animation                      { 214u };
     };
 }
 

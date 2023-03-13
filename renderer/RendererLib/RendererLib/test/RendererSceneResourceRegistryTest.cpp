@@ -26,14 +26,12 @@ TEST_F(ARendererSceneResourceRegistry, doesNotContainAnythingInitially)
     RenderBufferHandleVector rbs;
     RenderTargetHandleVector rts;
     BlitPassHandleVector bps;
-    StreamTextureHandleVector sts;
     DataBufferHandleVector dbs;
     TextureBufferHandleVector tbs;
 
     registry.getAllRenderBuffers(rbs);
     registry.getAllRenderTargets(rts);
     registry.getAllBlitPasses(bps);
-    registry.getAllStreamTextures(sts);
     registry.getAllDataBuffers(dbs);
     registry.getAllTextureBuffers(tbs);
 
@@ -41,7 +39,6 @@ TEST_F(ARendererSceneResourceRegistry, doesNotContainAnythingInitially)
     EXPECT_TRUE(rbs.empty());
     EXPECT_TRUE(rts.empty());
     EXPECT_TRUE(bps.empty());
-    EXPECT_TRUE(sts.empty());
     EXPECT_TRUE(dbs.empty());
     EXPECT_TRUE(tbs.empty());
 }
@@ -106,32 +103,6 @@ TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveBlitPass)
     registry.removeBlitPass(bp);
     registry.getAllBlitPasses(bps);
     EXPECT_TRUE(bps.empty());
-}
-
-TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveStreamTexture)
-{
-    const StreamTextureHandle st(13u);
-    const WaylandIviSurfaceId source(666u);
-    registry.addStreamTexture(st, source);
-
-    StreamTextureHandleVector sts;
-    registry.getAllStreamTextures(sts);
-    ASSERT_EQ(1u, sts.size());
-    EXPECT_EQ(st, sts[0]);
-    sts.clear();
-
-    registry.removeStreamTexture(st);
-    registry.getAllStreamTextures(sts);
-    EXPECT_TRUE(sts.empty());
-}
-
-TEST_F(ARendererSceneResourceRegistry, canGetStreamTextureData)
-{
-    const StreamTextureHandle st(13u);
-    const WaylandIviSurfaceId source(666u);
-    registry.addStreamTexture(st, source);
-    EXPECT_EQ(source, registry.getStreamTextureSourceId(st));
-    registry.removeStreamTexture(st);
 }
 
 TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveDataBuffers)

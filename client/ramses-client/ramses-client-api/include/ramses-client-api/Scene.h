@@ -11,7 +11,6 @@
 
 #include "ramses-client-api/ClientObject.h"
 #include "ramses-client-api/TextureEnums.h"
-#include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/MipLevelData.h"
@@ -32,8 +31,6 @@ namespace ramses
     class GeometryBinding;
     class SceneImpl;
     class RamsesClientImpl;
-    class AnimationSystem;
-    class AnimationSystemRealTime;
     class RenderGroup;
     class RenderPass;
     class RenderBuffer;
@@ -57,7 +54,6 @@ namespace ramses
     class DataVector2i;
     class DataVector3i;
     class DataVector4i;
-    class StreamTexture;
     class Texture2D;
     class Texture3D;
     class TextureCube;
@@ -116,14 +112,14 @@ namespace ramses
         * @return true, if scene is currently published.
         * @return false, if scene is currently not published.
         */
-        bool isPublished() const;
+        [[nodiscard]] bool isPublished() const;
 
         /**
         * @brief Returns scene id defined at scene creation time
         *
         * @return Scene id.
         */
-        sceneId_t getSceneId() const;
+        [[nodiscard]] sceneId_t getSceneId() const;
 
         /**
         * @brief Saves all scene contents to a file.
@@ -169,16 +165,6 @@ namespace ramses
         * @return A pointer to the created GeometryBinding, null on failure
         */
         GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = nullptr);
-
-        /**
-        * @brief Create a Stream Texture
-        *
-        * @param[in] fallbackTexture Texture2D used as a fallback texture.
-        * @param[in] source Stream source identifier
-        * @param[in] name The name of the Stream Texture.
-        * @return A pointer to the created Stream Texture, null on failure.
-        */
-        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name = nullptr);
 
         /**
         * @brief Creates a scene graph node.
@@ -275,7 +261,7 @@ namespace ramses
         *
         * @return time in milliseconds, value range is 0 .. std::numeric_limits<int32_t>::max() (~24 days)
         */
-        int32_t getUniformTimeMs() const;
+        [[nodiscard]] int32_t getUniformTimeMs() const;
 
         /**
         * @brief Get an object from the scene by name
@@ -296,7 +282,7 @@ namespace ramses
         * @param[in] id The id of the object to get.
         * @return Pointer to the object if found, nullptr otherwise.
         */
-        const SceneObject* findObjectById(sceneObjectId_t id) const;
+        [[nodiscard]] const SceneObject* findObjectById(sceneObjectId_t id) const;
 
         /**
         * @copydoc findObjectById(sceneObjectId_t id) const
@@ -491,24 +477,6 @@ namespace ramses
             const char* name = nullptr);
 
         /**
-        * @brief Creates a texture sampler object.
-        * @param[in] wrapUMode texture wrap mode for u axis.
-        * @param[in] wrapVMode texture wrap mode for v axis.
-        * @param[in] minSamplingMethod texture min sampling method.
-        * @param[in] magSamplingMethod texture mag sampling method. Must be set to either Nearest or Linear.
-        * @param[in] streamTexture StreamTexture to be used with this sampler object.
-        * @param[in] name Optional name of the object.
-        * @return Pointer to the created TextureSampler, null on failure.
-        */
-        TextureSampler* createTextureSampler(
-            ETextureAddressMode wrapUMode,
-            ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod minSamplingMethod,
-            ETextureSamplingMethod magSamplingMethod,
-            const StreamTexture& streamTexture,
-            const char* name = nullptr);
-
-        /**
         * @brief Creates a multisampled texture sampler object.
         * @param[in] renderBuffer RenderBuffer to be used with this sampler object. The render buffer must be multisampled and have access mode of read/write.
         * @param[in] name Optional name of the object.
@@ -668,7 +636,7 @@ namespace ramses
          *
          * @return A string containing the GLSL error messages of the last effect
          */
-        std::string getLastEffectErrorMessages() const;
+        [[nodiscard]] std::string getLastEffectErrorMessages() const;
 
         /**
         * @brief Create a new #ramses::ArrayBuffer. The created object is a mutable buffer object that can be used as index or
@@ -890,38 +858,6 @@ namespace ramses
         status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t dataId);
 
         /**
-        * @brief Create a new animation system. The animation system will be
-        * updated on renderer side after calls to AnimationSystem::setTime().
-        * The animation system is not automatically updated on client side.
-        * If live updates of animated values are needed on client side, provide
-        * the creation flag EAnimationSystemFlags_ClientSideProcessing. Calls to
-        * AnimationSystem::setTime() then also update the animation systems
-        * client side state.
-        *
-        * @param[in] flags Optional creation flags for the animation system.
-        * @param[in] name The optional name of the created animation system.
-        * @return A reference to the created animation system.
-        */
-        AnimationSystem* createAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
-
-        /**
-        * @brief Create a new animation system that is designed to work with system
-        * time. The animation system will be updated automatically every frame on
-        * renderer side using its system time. The animation system is not
-        * automatically updated on client side. If live updates of animated values
-        * are needed on client side, provide the creation flag
-        * EAnimationSystemFlags_ClientSideProcessing, and make sure to call
-        * AnimationSystem::updateLocalTime() before accessing any values. Calls
-        * to AnimationSystem::updateLocalTime() are also mandatory before any
-        * client side changes to the state of the animation system.
-        *
-        * @param[in] flags Optional creation flags for the animation system.
-        * @param[in] name The optional name of the created animation system.
-        * @return A reference to the created animation system.
-        */
-        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
-
-        /**
         * @brief Creates a new SceneReference object.
         * @details The SceneReference object references a scene, which might be unknown
         *          to this RamsesClient, but is or expected to be known to the RamsesRenderer subscribed to this scene.
@@ -1000,7 +936,7 @@ namespace ramses
         * @param[in] id The resource id of the resource to get.
         * @return Pointer to the resource if found, nullptr otherwise.
         */
-        const Resource* getResource(resourceId_t id) const;
+        [[nodiscard]] const Resource* getResource(resourceId_t id) const;
 
         /**
         * @copydoc getResource(resourceId_t id) const

@@ -43,9 +43,9 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, ramses::EFeatureLevel_Latest)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.broadcastNewScenesAvailable(newScenes));
+        EXPECT_TRUE(sender.broadcastNewScenesAvailable(newScenes, ramses::EFeatureLevel_Latest));
         ASSERT_TRUE(waitForEvent());
     }
 
@@ -91,9 +91,9 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, ramses::EFeatureLevel_Latest)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendScenesAvailable(receiverId, newScenes));
+        EXPECT_TRUE(sender.sendScenesAvailable(receiverId, newScenes, ramses::EFeatureLevel_Latest));
         ASSERT_TRUE(waitForEvent());
     }
 

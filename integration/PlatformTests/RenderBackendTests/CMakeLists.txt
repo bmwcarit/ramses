@@ -6,14 +6,14 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(RenderBackendTests
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
-
-    FILES_PRIVATE_HEADER    src/*.h
-    FILES_SOURCE            src/*.cpp
-
-    DEPENDENCIES            RendererTestUtils
+expandModuleByPlatform(
+    NAME            RenderBackendTests
+    TYPE            BINARY
+    LINKED_TYPE     STATIC
+    ENABLE_INSTALL  ON
+    SRC_FILES       src/*.h
+                    src/*.cpp
+    DEPENDENCIES    RendererTestUtils
 )
 
 # Tests which are supposed to be run in the gate build job
@@ -23,20 +23,24 @@ SET(GATE_PLATFORMS
 )
 
 IF (ramses-sdk_BUILD_TESTS)
-    FOREACH(TEST_PLATFORM ${RENDERER_CONFIG_LIST})
+    foreach(TEST_PLATFORM ${PLATFORM_LIST})
         IF(TARGET platform-${TEST_PLATFORM})
-            ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
-                RNDSANDWICHTEST
-                -lid 3
+            makeTestFromTarget(
+                TARGET RenderBackendTests-${TEST_PLATFORM}
+                SUFFIX RNDSANDWICHTEST
+                EXTRA_ARGS --ivi-layer 3
+                SKIPPABLE
             )
             # These tests don't work specifically on the build slaves, because binary shaders are not supported there
             SET(GATE_FILTER "-ADeviceSupportingBinaryShaders*:ADeviceSupportingGeometryShaders*")
 
             LIST(FIND GATE_PLATFORMS ${TEST_PLATFORM} _INDEX)
             IF(NOT ${_INDEX} LESS 0)
-                ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
-                    RNDSANDWICHTEST_SWRAST
-                    --gtest_filter=${GATE_FILTER} -lid 3
+                makeTestFromTarget(
+                    TARGET RenderBackendTests-${TEST_PLATFORM}
+                    SUFFIX RNDSANDWICHTEST_SWRAST
+                    EXTRA_ARGS --gtest_filter=${GATE_FILTER} --ivi-layer 3
+                    SKIPPABLE
                 )
             ENDIF()
         ENDIF()

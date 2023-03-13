@@ -53,28 +53,31 @@ namespace ramses_internal
 
     TEST_F(AEffectResource, canBeCreatedWithName)
     {
-        EffectResource effect("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "myname", ResourceCacheFlag(0u));
+        EffectResource effect("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, EffectInputInformationVector(), EffectInputInformationVector(), "myname", ResourceCacheFlag(0u));
         EXPECT_EQ(String("myname"), effect.getName());
+        EXPECT_EQ(EDrawMode::NUMBER_OF_ELEMENTS, effect.getGeometryShaderInputType());
     }
 
     TEST_F(AEffectResource, canBeCreatedWithShaders)
     {
-        EffectResource effect("verttext", "fragtext", "geomtext", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag(0u));
+        EffectResource effect("verttext", "fragtext", "geomtext", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag(0u));
         EXPECT_STREQ("verttext", effect.getVertexShader());
         EXPECT_STREQ("fragtext", effect.getFragmentShader());
         EXPECT_STREQ("geomtext", effect.getGeometryShader());
+        EXPECT_EQ(EDrawMode::Lines, effect.getGeometryShaderInputType());
     }
 
     TEST_F(AEffectResource, canBeCreatedWithInputs)
     {
-        EffectResource effect("", "", "", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
         EXPECT_EQ(uniformInputs, effect.getUniformInputs());
         EXPECT_EQ(attributeInputs, effect.getAttributeInputs());
+        EXPECT_EQ(EDrawMode::NUMBER_OF_ELEMENTS, effect.getGeometryShaderInputType());
     }
 
     TEST_F(AEffectResource, canGetInputsByName)
     {
-        EffectResource effect("", "", "", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect("", "", "", EDrawMode::NUMBER_OF_ELEMENTS, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
 
         EXPECT_EQ(DataFieldHandle(1), effect.getUniformDataFieldHandleByName("uni B"));
         EXPECT_EQ(DataFieldHandle::Invalid(), effect.getUniformDataFieldHandleByName("does not exist"));
@@ -85,50 +88,50 @@ namespace ramses_internal
 
     TEST_F(AEffectResource, sameParametersGiveSameHash)
     {
-        EffectResource effect1("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
-        EffectResource effect2("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect1("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect2("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
         EXPECT_EQ(effect1.getHash(), effect2.getHash());
     }
 
     TEST_F(AEffectResource, differentVertexShaderResultsInDifferentHash)
     {
-        EffectResource effect1("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
-        EffectResource effect2("XXX", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect1("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect2("XXX", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
         EXPECT_NE(effect1.getHash(), effect2.getHash());
     }
 
     TEST_F(AEffectResource, differentFragmentShaderResultsInDifferentHash)
     {
-        EffectResource effect1("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
-        EffectResource effect2("asd", "XXX", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect1("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect2("asd", "XXX", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
         EXPECT_NE(effect1.getHash(), effect2.getHash());
     }
 
     TEST_F(AEffectResource, differentGeometryShaderResultsInDifferentHash)
     {
-        EffectResource effect1("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
-        EffectResource effect2("asd", "def", "XXX", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect1("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect2("asd", "def", "XXX", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
         EXPECT_NE(effect1.getHash(), effect2.getHash());
     }
 
     TEST_F(AEffectResource, differentUniformInputResultsInDifferentHash)
     {
-        EffectResource effect1("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
-        EffectResource effect2("asd", "def", "xyz", absl::nullopt, EffectInputInformationVector(), attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect1("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect2("asd", "def", "xyz", EDrawMode::Lines, EffectInputInformationVector(), attributeInputs, "", ResourceCacheFlag(0u));
         EXPECT_NE(effect1.getHash(), effect2.getHash());
     }
 
     TEST_F(AEffectResource, differentAttributeInputResultsInDifferentHash)
     {
-        EffectResource effect1("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
-        EffectResource effect2("asd", "def", "xyz", absl::nullopt, uniformInputs, EffectInputInformationVector(), "", ResourceCacheFlag(0u));
+        EffectResource effect1("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effect2("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, EffectInputInformationVector(), "", ResourceCacheFlag(0u));
         EXPECT_NE(effect1.getHash(), effect2.getHash());
     }
 
     TEST_F(AEffectResource, differentNameDoesNotChangeHash)
     {
-        EffectResource effect1("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "some name", ResourceCacheFlag(0u));
-        EffectResource effect2("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "different name", ResourceCacheFlag(0u));
+        EffectResource effect1("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "some name", ResourceCacheFlag(0u));
+        EffectResource effect2("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "different name", ResourceCacheFlag(0u));
         EXPECT_EQ(effect1.getHash(), effect2.getHash());
     }
 
@@ -136,7 +139,7 @@ namespace ramses_internal
 
     TEST_F(AEffectResource, hasCorrectTypeAfterSerializeAndDeserialize)
     {
-        EffectResource effectBefore("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
+        EffectResource effectBefore("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(0u));
         std::unique_ptr<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
         ASSERT_TRUE(effectAfter);
 
@@ -145,7 +148,7 @@ namespace ramses_internal
 
     TEST_F(AEffectResource, isEqualAfterSerializeAndDeserialize)
     {
-        EffectResource effectBefore("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "", ResourceCacheFlag(15u));
+        EffectResource effectBefore("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "", ResourceCacheFlag(15u));
         std::unique_ptr<EffectResource> effectAfter(serializeDeserialize(effectBefore, ""));
         ASSERT_TRUE(effectAfter);
 
@@ -159,7 +162,7 @@ namespace ramses_internal
 
     TEST_F(AEffectResource, hasNameProvidedToSerializeAfterSerializeAndDeserialize)
     {
-        EffectResource effectBefore("asd", "def", "xyz", absl::nullopt, uniformInputs, attributeInputs, "some name", ResourceCacheFlag(0u));
+        EffectResource effectBefore("asd", "def", "xyz", EDrawMode::Lines, uniformInputs, attributeInputs, "some name", ResourceCacheFlag(0u));
         std::unique_ptr<EffectResource> effectAfter(serializeDeserialize(effectBefore, "different name"));
         ASSERT_TRUE(effectAfter);
 

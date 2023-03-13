@@ -31,7 +31,7 @@ namespace ramses_internal
             return *this;
         }
 
-        virtual EStatus getState() const override
+        [[nodiscard]] virtual EStatus getState() const override
         {
             return EStatus::Ok;
         }

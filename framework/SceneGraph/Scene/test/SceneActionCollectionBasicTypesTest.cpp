@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneVersionTag.h"
-#include "Animation/AnimationCommon.h"
 
 namespace ramses_internal
 {
@@ -40,10 +39,6 @@ namespace ramses_internal
     template<> const DataInstanceHandle        ASceneActionCollectionBasicTypes<DataInstanceHandle>::m_value = DataInstanceHandle();
     template<> const CameraHandle              ASceneActionCollectionBasicTypes<CameraHandle>::m_value = CameraHandle();
     template<> const RenderStateHandle         ASceneActionCollectionBasicTypes<RenderStateHandle>::m_value = RenderStateHandle();
-    template<> const SplineHandle              ASceneActionCollectionBasicTypes<SplineHandle>::m_value = SplineHandle();
-    template<> const AnimationHandle           ASceneActionCollectionBasicTypes<AnimationHandle>::m_value = AnimationHandle();
-    template<> const AnimationInstanceHandle   ASceneActionCollectionBasicTypes<AnimationInstanceHandle>::m_value = AnimationInstanceHandle();
-    template<> const DataBindHandle            ASceneActionCollectionBasicTypes<DataBindHandle>::m_value = DataBindHandle();
     template<> const RenderPassHandle          ASceneActionCollectionBasicTypes<RenderPassHandle>::m_value = RenderPassHandle();
     template<> const TextureSamplerHandle      ASceneActionCollectionBasicTypes<TextureSamplerHandle>::m_value = TextureSamplerHandle();
     template<> const RenderTargetHandle        ASceneActionCollectionBasicTypes<RenderTargetHandle>::m_value = RenderTargetHandle();
@@ -70,10 +65,6 @@ namespace ramses_internal
         DataInstanceHandle,
         CameraHandle,
         RenderStateHandle,
-        SplineHandle,
-        AnimationHandle,
-        AnimationInstanceHandle,
-        DataBindHandle,
         RenderPassHandle,
         TextureSamplerHandle,
         RenderTargetHandle,

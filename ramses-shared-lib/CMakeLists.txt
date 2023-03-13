@@ -10,18 +10,21 @@ ADD_DEFINITIONS(-DRAMSES_LINK_SHARED_EXPORT)
 
 if (ramses-sdk_BUILD_FULL_SHARED_LIB)
 
-    RENDERER_MODULE_PER_CONFIG_STATIC(ramses-shared-lib
-        TYPE                    SHARED_LIBRARY
-        ENABLE_INSTALL          ON
-
+    expandModuleByPlatform(
+        NAME            ramses-shared-lib
+        TYPE            SHARED_LIBRARY
+        LINKED_TYPE     STATIC
+        ENABLE_INSTALL  ON
         ${ramses-shared-lib-MIXIN}
         ${ramses-shared-lib-renderer-MIXIN}
-        )
+    )
 
-    foreach(lib-suffix ${RENDERER_CONFIG_LIST})
+    # TODO Remove this, can be made part of the function call which creates the shared lib
+    foreach(lib-suffix ${PLATFORM_LIST})
         set(tgt "ramses-shared-lib-${lib-suffix}")
         if (TARGET ${tgt})
             set_target_properties(${tgt} PROPERTIES RAMSES_VERSION "${ramses-sdk_VERSION}")
+            target_link_libraries(${tgt} PUBLIC CLI11)
         endif()
     endforeach()
 
@@ -32,7 +35,7 @@ if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
     # build shared library without renderer
     SET(ramses-sdk_CLIENT_ONLY_LIB_NAME "ramses-shared-lib-client-only")
 
-    ACME_MODULE(
+    createModule(
         NAME                    ${ramses-sdk_CLIENT_ONLY_LIB_NAME}
         TYPE                    SHARED_LIBRARY
         ENABLE_INSTALL          ON
@@ -41,9 +44,10 @@ if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
         )
 
     set_target_properties(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PROPERTIES RAMSES_VERSION "${ramses-sdk_VERSION}")
+    target_link_libraries(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PUBLIC CLI11)
 
     SET_TARGET_PROPERTIES(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
     GET_TARGET_PROPERTY(MYMODULE_SOVERSION ${ramses-sdk_CLIENT_ONLY_LIB_NAME} SOVERSION)
-    ACME_INFO("    setting shared library version to ${MYMODULE_SOVERSION}")
+    message(STATUS "    setting shared library version to ${MYMODULE_SOVERSION}")
 
 endif()

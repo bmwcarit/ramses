@@ -9,9 +9,7 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/DisplayConfig.h"
-#include "RendererLib/RendererConfigUtils.h"
-#include "Utils/CommandLineParser.h"
-
+#include "CLI/CLI.hpp"
 
 class AInternalDisplayConfig : public ::testing::Test
 {
@@ -28,10 +26,8 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(480u, m_config.getDesiredWindowHeight());
     EXPECT_EQ(0, m_config.getWindowPositionX());
     EXPECT_EQ(0, m_config.getWindowPositionY());
-    EXPECT_FALSE(m_config.isWarpingEnabled());
     EXPECT_TRUE(m_config.getKeepEffectsUploaded());
     EXPECT_TRUE(!m_config.getWaylandIviLayerID().isValid());
-    EXPECT_TRUE(!m_config.getIntegrityRGLDeviceUnit().isValid());
     EXPECT_FALSE(m_config.getStartVisibleIvi());
     EXPECT_FALSE(m_config.isResizable());
     EXPECT_EQ(0u, m_config.getGPUMemoryCacheSize());
@@ -47,9 +43,6 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId()));
     EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId(15562)));
     EXPECT_EQ(10u, m_config.getResourceUploadBatchSize());
-
-    // this value is used in HL API, so test that value does not change unnoticed
-    EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
 }
 
 TEST_F(AInternalDisplayConfig, setAndGetValues)
@@ -78,14 +71,8 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     m_config.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(102u));
     EXPECT_EQ(102u, m_config.getWaylandIviLayerID().getValue());
 
-    m_config.setIntegrityRGLDeviceUnit(ramses_internal::IntegrityRGLDeviceUnit(33u));
-    EXPECT_EQ(33u, m_config.getIntegrityRGLDeviceUnit().getValue());
-
     m_config.setStartVisibleIvi(true);
     EXPECT_TRUE(m_config.getStartVisibleIvi());
-
-    m_config.setWarpingEnabled(true);
-    EXPECT_TRUE(m_config.isWarpingEnabled());
 
     m_config.setKeepEffectsUploaded(false);
     EXPECT_FALSE(m_config.getKeepEffectsUploaded());
@@ -135,67 +122,6 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     EXPECT_EQ(0, m_config.getScenePriority(ramses_internal::SceneId(15562 + 1)));
     EXPECT_EQ(1u, m_config.getScenePriorities().size());
     EXPECT_EQ(-1, m_config.getScenePriorities().at(ramses_internal::SceneId(15562)));
-}
-
-TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
-{
-    static const ramses_internal::Char* args[] =
-    {
-        "app",
-        "-x", "10",
-        "-y", "11",
-        "-w", "12",
-        "-h", "13",
-        "-f",
-        "-bl",
-        "-warp",
-        "-de",
-        "-aa", "MSAA",
-        "-as", "4",
-        "-lid", "101",
-        "-sid", "1001",
-        "-rglDeviceUnit", "42",
-        "-startVisible",
-        "-resizableWindow",
-        "-off"
-    };
-    ramses_internal::CommandLineParser parser(sizeof(args) / sizeof(ramses_internal::Char*), args);
-
-    ramses_internal::DisplayConfig config;
-    ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, config);
-
-    EXPECT_EQ(10, config.getWindowPositionX());
-    EXPECT_EQ(11, config.getWindowPositionY());
-    EXPECT_EQ(12u, config.getDesiredWindowWidth());
-    EXPECT_EQ(13u, config.getDesiredWindowHeight());
-
-    EXPECT_TRUE(config.getFullscreenState());
-    EXPECT_TRUE(config.getBorderlessState());
-    EXPECT_TRUE(config.isWarpingEnabled());
-
-    EXPECT_EQ(4u, config.getAntialiasingSampleCount());
-    EXPECT_EQ(101u, config.getWaylandIviLayerID().getValue());
-    EXPECT_EQ(1001u, config.getWaylandIviSurfaceID().getValue());
-    EXPECT_EQ(42u, config.getIntegrityRGLDeviceUnit().getValue());
-    EXPECT_TRUE(config.getStartVisibleIvi());
-    EXPECT_TRUE(config.isWarpingEnabled());
-    EXPECT_FALSE(config.getKeepEffectsUploaded());
-    EXPECT_TRUE(config.isResizable());
-}
-
-TEST_F(AInternalDisplayConfig, willUseMSAA2IfMSAAMethodSpecifiedWithoutSamples)
-{
-    static const char* args[] =
-    {
-        "app",
-        "-aa", "MSAA",
-    };
-    ramses_internal::CommandLineParser parser(sizeof(args) / sizeof(char*), args);
-
-    ramses_internal::DisplayConfig config;
-    ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, config);
-
-    EXPECT_EQ(2u, config.getAntialiasingSampleCount());
 }
 
 TEST_F(AInternalDisplayConfig, canBeCompared)

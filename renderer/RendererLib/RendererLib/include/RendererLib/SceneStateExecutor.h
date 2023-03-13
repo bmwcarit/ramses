@@ -39,34 +39,34 @@ namespace ramses_internal
         void setRendered                      (SceneId sceneId);
         void setHidden                        (SceneId sceneId);
 
-        Bool checkIfCanBePublished            (SceneId sceneId) const;
-        Bool checkIfCanBeUnpublished          (SceneId sceneId) const;
-        Bool checkIfCanBeSubscriptionRequested(SceneId sceneId) const;
-        Bool checkIfCanBeSubscriptionPending  (SceneId sceneId) const;
-        Bool checkIfCanBeSubscribed           (SceneId sceneId) const;
-        Bool checkIfCanBeUnsubscribed         (SceneId sceneId) const;
-        Bool checkIfCanBeMapRequested         (SceneId sceneId) const;
-        Bool checkIfCanBeMapped               (SceneId sceneId) const;
-        Bool checkIfCanBeUnmapped             (SceneId sceneId) const;
-        Bool checkIfCanBeRenderedRequested    (SceneId sceneId) const;
-        Bool checkIfCanBeShown                (SceneId sceneId) const;
-        Bool checkIfCanBeHidden               (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBePublished            (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeUnpublished          (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeSubscriptionRequested(SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeSubscriptionPending  (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeSubscribed           (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeUnsubscribed         (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeMapRequested         (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeMapped               (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeUnmapped             (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeRenderedRequested    (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeShown                (SceneId sceneId) const;
+        [[nodiscard]] Bool checkIfCanBeHidden               (SceneId sceneId) const;
 
-        ESceneState getSceneState(SceneId sceneId) const;
-        EScenePublicationMode getScenePublicationMode(SceneId sceneId) const;
+        [[nodiscard]] ESceneState getSceneState(SceneId sceneId) const;
+        [[nodiscard]] EScenePublicationMode getScenePublicationMode(SceneId sceneId) const;
 
     private:
         void rollBackToUnsubscribedAndTriggerIndirectEvents(ESceneState sceneState, SceneId sceneId);
 
-        Bool canBeSubscriptionRequested(SceneId sceneId) const;
-        Bool canBeUnsubscribed         (SceneId sceneId) const;
-        Bool canBeMapRequested         (SceneId sceneId) const;
-        Bool canBeMappingAndUploading  (SceneId sceneId) const;
-        Bool canBeMapped               (SceneId sceneId) const;
-        Bool canBeUnmapped             (SceneId sceneId) const;
-        Bool canBeRenderedRequested    (SceneId sceneId) const;
-        Bool canBeShown                (SceneId sceneId) const;
-        Bool canBeHidden               (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeSubscriptionRequested(SceneId sceneId) const;
+        [[nodiscard]] Bool canBeUnsubscribed         (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeMapRequested         (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeMappingAndUploading  (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeMapped               (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeUnmapped             (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeRenderedRequested    (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeShown                (SceneId sceneId) const;
+        [[nodiscard]] Bool canBeHidden               (SceneId sceneId) const;
 
         const Renderer&               m_renderer;
         RendererEventCollector&       m_rendererEventCollector;

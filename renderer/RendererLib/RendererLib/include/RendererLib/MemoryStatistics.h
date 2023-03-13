@@ -29,7 +29,7 @@ namespace ramses_internal
         void reset();
 
     private:
-        UInt64 getCurrentMemoryUsageInMBytes() const;
+        [[nodiscard]] UInt64 getCurrentMemoryUsageInMBytes() const;
 
         std::vector<GpuMemorySample> m_memorySamples;
     };

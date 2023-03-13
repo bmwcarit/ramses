@@ -24,6 +24,7 @@
 #include "SceneAPI/TextureEnums.h"
 #include "Resource/TextureMetaInfo.h"
 #include <string>
+#include "SceneAPI/Handles.h"
 
 
 namespace ramses
@@ -35,6 +36,7 @@ namespace ramses
 namespace ramses_internal
 {
     class TextureResource;
+    class IScene;
 
     namespace imgui
     {
@@ -57,6 +59,8 @@ namespace ramses_internal
         };
 
         void PreviewImage(const Image& img, const ImVec2& size);
+
+        void RenderState(IScene& scene, RenderStateHandle hnd);
 
         std::string SaveToPng(const Byte*                data,
                               UInt                       size,

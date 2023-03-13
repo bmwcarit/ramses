@@ -15,7 +15,7 @@ namespace ramses
     TEST(ARamsesVersion, hasExpectedValues)
     {
         const RamsesVersion version = GetRamsesVersion();
-        EXPECT_STREQ(ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, version.string);
+        EXPECT_STREQ(ramses_sdk::RAMSES_SDK_RAMSES_VERSION, version.string);
         EXPECT_EQ(ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT, version.major);
         EXPECT_EQ(ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT, version.minor);
         EXPECT_EQ(ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH_INT, version.patch);

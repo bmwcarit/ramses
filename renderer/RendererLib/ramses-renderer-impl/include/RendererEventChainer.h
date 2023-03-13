@@ -41,12 +41,6 @@ namespace ramses
             m_handler2.framebufferPixelsRead(pixelData, pixelDataSize, displayId, displayBuffer, result);
         }
 
-        virtual void warpingMeshDataUpdated(displayId_t displayId, ERendererEventResult result) override
-        {
-            m_handler1.warpingMeshDataUpdated(displayId, result);
-            m_handler2.warpingMeshDataUpdated(displayId, result);
-        }
-
         virtual void displayCreated(displayId_t displayId, ERendererEventResult result) override
         {
             m_handler1.displayCreated(displayId, result);
@@ -89,13 +83,12 @@ namespace ramses
             m_handler2.windowMoved(displayId, posX, posY);
         }
 
-        virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override
+        virtual void renderThreadLoopTimings(displayId_t displayId, std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override
         {
-            m_handler1.renderThreadLoopTimings(maximumLoopTime, averageLooptime);
-            m_handler2.renderThreadLoopTimings(maximumLoopTime, averageLooptime);
+            m_handler1.renderThreadLoopTimings(displayId, maximumLoopTime, averageLooptime);
+            m_handler2.renderThreadLoopTimings(displayId, maximumLoopTime, averageLooptime);
         }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         virtual void externalBufferCreated(displayId_t displayId, externalBufferId_t externalBufferId, uint32_t textureGlId, ERendererEventResult result) override
         {
             m_handler1.externalBufferCreated(displayId, externalBufferId, textureGlId, result);
@@ -107,7 +100,6 @@ namespace ramses
             m_handler1.externalBufferDestroyed(displayId, externalBufferId, result);
             m_handler2.externalBufferDestroyed(displayId, externalBufferId, result);
         }
-#endif
 
     private:
         IRendererEventHandler& m_handler1;
@@ -147,13 +139,17 @@ namespace ramses
             m_handler2.offscreenBufferLinked(providerOffscreenBuffer, consumerScene, consumerId, result);
         }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         virtual void externalBufferLinked(externalBufferId_t providerExternalBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, bool result) override
         {
             m_handler1.externalBufferLinked(providerExternalBuffer, consumerScene, consumerId, result);
             m_handler2.externalBufferLinked(providerExternalBuffer, consumerScene, consumerId, result);
         }
-#endif
+
+        virtual void streamBufferLinked(streamBufferId_t providerStreamBuffer, sceneId_t consumerScene, dataConsumerId_t consumerId, bool result) override
+        {
+            m_handler1.streamBufferLinked(providerStreamBuffer, consumerScene, consumerId, result);
+            m_handler2.streamBufferLinked(providerStreamBuffer, consumerScene, consumerId, result);
+        }
 
         virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool result) override
         {

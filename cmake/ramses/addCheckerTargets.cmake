@@ -6,17 +6,17 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF (ramses-sdk_PYTHON3 AND CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+if (ramses-sdk_PYTHON3 AND CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     file(GLOB_RECURSE CHECKER_SCRIPTS ${PROJECT_SOURCE_DIR}/scripts/code_style_checker/*.py)
 
-    ADD_CUSTOM_TARGET(CHECK_CODE_STYLE
+    add_custom_target(CHECK_CODE_STYLE
         COMMAND ${ramses-sdk_PYTHON3} ${PROJECT_SOURCE_DIR}/scripts/code_style_checker/check_all_styles.py
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/scripts/code_style_checker
         SOURCES ${CHECKER_SCRIPTS}
         )
-    SET_PROPERTY(TARGET CHECK_CODE_STYLE PROPERTY FOLDER "CMakePredefinedTargets")
-    ACME_INFO("+ CHECK_CODE_STYLE")
+    set_property(TARGET CHECK_CODE_STYLE PROPERTY FOLDER "CMakePredefinedTargets")
+    message(STATUS "+ CHECK_CODE_STYLE")
 
-ELSE()
-    ACME_INFO("- CHECK_CODE_STYLE [missing python]")
-ENDIF()
+else()
+    message(STATUS "- CHECK_CODE_STYLE [missing python]")
+endif()

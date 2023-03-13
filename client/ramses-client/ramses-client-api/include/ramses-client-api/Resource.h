@@ -23,7 +23,7 @@ namespace ramses
          * @brief Get resource Id.
          * @return the Id of the resource.
          */
-        resourceId_t getResourceId() const;
+        [[nodiscard]] resourceId_t getResourceId() const;
 
         /**
         * Stores internal data for implementation specifics of Resource.

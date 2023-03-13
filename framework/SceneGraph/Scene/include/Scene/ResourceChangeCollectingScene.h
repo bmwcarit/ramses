@@ -19,8 +19,8 @@ namespace ramses_internal
     public:
         explicit ResourceChangeCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
 
-        const SceneResourceActionVector&    getSceneResourceActions() const;
-        bool                                haveResourcesChanged() const;
+        [[nodiscard]] const SceneResourceActionVector&    getSceneResourceActions() const;
+        [[nodiscard]] bool                                haveResourcesChanged() const;
         void                                resetResourceChanges();
 
         // functions which affect client resources
@@ -37,10 +37,6 @@ namespace ramses_internal
         virtual DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
         virtual void                        setDataSlotTexture(DataSlotHandle providerHandle, const ResourceContentHash& texture) override;
         virtual void                        releaseDataSlot(DataSlotHandle handle) override;
-
-        // functions which both affect client and scene resources
-        virtual StreamTextureHandle         allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
-        virtual void                        releaseStreamTexture(StreamTextureHandle handle) override;
 
         // functions which affect scene resources
         virtual RenderTargetHandle          allocateRenderTarget(RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;

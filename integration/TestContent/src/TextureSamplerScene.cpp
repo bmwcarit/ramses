@@ -141,14 +141,6 @@ namespace ramses_internal
             m_sampler->setTextureData(*buffer);
             break;
         }
-        case EState::EState_SetStreamTexture:
-        {
-            const ramses::MipLevelData mipLevelData[] = { { sizeof(rgb8), rgb8 } };
-            const ramses::Texture2D* fallbackTexture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, 1, mipLevelData, false);
-            const auto texture = m_scene.createStreamTexture(*fallbackTexture, ramses::waylandIviSurfaceId_t(666));
-            m_sampler->setTextureData(*texture);
-            break;
-        }
 
         case EState_SetTextureSampler:
         {

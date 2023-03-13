@@ -64,7 +64,7 @@ namespace ramses_internal
         virtual void stopUpdating() = 0;
         virtual void setLoopMode(ELoopMode loopMode) = 0;
         virtual void setMinFrameDuration(std::chrono::microseconds minLoopPeriod) = 0;
-        virtual uint32_t getFrameCounter() const = 0;
+        [[nodiscard]] virtual uint32_t getFrameCounter() const = 0;
     };
 
     class DisplayThread final : public IDisplayThread, private Runnable

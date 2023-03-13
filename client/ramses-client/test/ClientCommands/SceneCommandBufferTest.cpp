@@ -20,10 +20,6 @@ namespace ramses_internal
         class MockSceneCommandVisitor
         {
         public:
-            void operator()(const SceneCommandForceFallback& cmd)
-            {
-                handleSceneCommandForceFallback(cmd);
-            }
             void operator()(const SceneCommandFlushSceneVersion& cmd)
             {
                 handleSceneCommandFlushSceneVersion(cmd);
@@ -41,7 +37,6 @@ namespace ramses_internal
                 handleSceneCommandLogResourceMemoryUsage(cmd);
             }
 
-            MOCK_METHOD(void, handleSceneCommandForceFallback, (const SceneCommandForceFallback&));
             MOCK_METHOD(void, handleSceneCommandFlushSceneVersion, (const SceneCommandFlushSceneVersion&));
             MOCK_METHOD(void, handleSceneCommandValidationRequest, (const SceneCommandValidationRequest&));
             MOCK_METHOD(void, handleSceneCommandDumpSceneToFile, (const SceneCommandDumpSceneToFile&), (const));
@@ -51,11 +46,6 @@ namespace ramses_internal
     }
 
     // local comparison operators
-    static bool operator==(const SceneCommandForceFallback& a, const SceneCommandForceFallback& b)
-    {
-        return a.streamTextureName == b.streamTextureName && a.forceFallback == b.forceFallback;
-    }
-
     static bool operator==(const SceneCommandFlushSceneVersion& a, const SceneCommandFlushSceneVersion& b)
     {
         return a.sceneVersion == b.sceneVersion;
@@ -87,11 +77,6 @@ namespace ramses_internal
     TEST_F(ASceneCommandBuffer, canUseAllCommands)
     {
         InSequence seq;
-        {
-            SceneCommandForceFallback cmd{"foo", true};
-            buffer.enqueueCommand(cmd);
-            EXPECT_CALL(visitor, handleSceneCommandForceFallback(cmd));
-        }
         {
             SceneCommandFlushSceneVersion cmd{12345u};
             buffer.enqueueCommand(cmd);
@@ -138,14 +123,13 @@ namespace ramses_internal
 
         std::thread t1([&]() {
                            setupDoneBarrier.wait();
-                           buffer.enqueueCommand(SceneCommandForceFallback{"foo", true});
+                           buffer.enqueueCommand(SceneCommandValidationRequest{ramses::EValidationSeverity_Error, "bar"});
                            buffer.enqueueCommand(SceneCommandFlushSceneVersion{12345u});
                            writersDoneBarrier.wait();
                            allDone.wait();
                        });
         std::thread t2([&]() {
                            setupDoneBarrier.wait();
-                           buffer.enqueueCommand(SceneCommandValidationRequest{ramses::EValidationSeverity_Error, "bar"});
                            buffer.enqueueCommand(SceneCommandDumpSceneToFile{"somename", false});
                            buffer.enqueueCommand(SceneCommandLogResourceMemoryUsage{});
                            writersDoneBarrier.wait();
@@ -154,9 +138,8 @@ namespace ramses_internal
         std::thread t3([&]() {
                            Sequence seqT1;
                            Sequence seqT2;
-                           EXPECT_CALL(visitor, handleSceneCommandForceFallback(SceneCommandForceFallback{"foo", true})).InSequence(seqT1);
+                           EXPECT_CALL(visitor, handleSceneCommandValidationRequest(SceneCommandValidationRequest{ramses::EValidationSeverity_Error, "bar"})).InSequence(seqT1);
                            EXPECT_CALL(visitor, handleSceneCommandFlushSceneVersion(SceneCommandFlushSceneVersion{12345u})).InSequence(seqT1);
-                           EXPECT_CALL(visitor, handleSceneCommandValidationRequest(SceneCommandValidationRequest{ramses::EValidationSeverity_Error, "bar"})).InSequence(seqT2);
                            EXPECT_CALL(visitor, handleSceneCommandDumpSceneToFile(SceneCommandDumpSceneToFile{"somename", false})).InSequence(seqT2);
                            EXPECT_CALL(visitor, handleSceneCommandLogResourceMemoryUsage(SceneCommandLogResourceMemoryUsage{})).InSequence(seqT2);
                            setupDoneBarrier.wait();

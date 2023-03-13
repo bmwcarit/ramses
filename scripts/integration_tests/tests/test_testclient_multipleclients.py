@@ -21,10 +21,10 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.renderer = self.target.start_default_renderer()
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient1 = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cx 2 -cz 5", nameExtension='1')
+        self.testClient1 = self.target.start_client("ramses-test-client", "--test-nr 5 --test-state 0 --cx 2 --cz 5", nameExtension='1')
         self.checkThatApplicationWasStarted(self.testClient1)
         self.addCleanup(self.target.kill_application, self.testClient1)
-        self.testClient2 = self.target.start_client("ramses-test-client", "-tn 4 -ts 0 -cx -2 -cz 5", nameExtension='2')
+        self.testClient2 = self.target.start_client("ramses-test-client", "--test-nr 4 --test-state 0 --cx -2 --cz 5", nameExtension='2')
         self.checkThatApplicationWasStarted(self.testClient2)
         self.addCleanup(self.target.kill_application, self.testClient2)
 

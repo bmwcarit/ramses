@@ -14,9 +14,6 @@
 #include "Scene/ResourceChangeCollectingScene.h"
 #include "Scene/DataLayoutCachedScene.h"
 #include <vector>
-#include "Animation/AnimationSystemFactory.h"
-#include "AnimationAPI/IAnimationSystem.h"
-#include "Animation/AnimationSystem.h"
 
 using namespace testing;
 
@@ -139,19 +136,6 @@ namespace ramses_internal
         auto allocateF = std::bind(&TypeParam::allocateTextureSampler, &this->m_scene, sampler, TextureSamplerHandle{});
         auto releaseF = std::bind(&TypeParam::releaseTextureSampler, &this->m_scene, std::placeholders::_1);
         this->runTest(allocateF, releaseF, this->m_scene.getTextureSamplers());
-    }
-
-    TYPED_TEST(AnIteratableScene, CanIterateOverAnimationSystems)
-    {
-        AnimationSystemFactory animSystemFactory(EAnimationSystemOwner_Renderer);
-
-        auto allocateF = [&]() {
-            IAnimationSystem* animSystem = animSystemFactory.createAnimationSystem(EAnimationSystemFlags_FullProcessing, AnimationSystemSizeInformation());
-            return this->m_scene.addAnimationSystem(animSystem);
-        };
-
-        auto releaseF = std::bind(&TypeParam::removeAnimationSystem, &this->m_scene, std::placeholders::_1);
-        this->runTest(allocateF, releaseF, this->m_scene.getAnimationSystems());
     }
 
     TYPED_TEST(AnIteratableScene, CanIterateOverRenderGroups)

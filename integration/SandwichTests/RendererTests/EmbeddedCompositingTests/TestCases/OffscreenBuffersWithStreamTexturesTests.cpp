@@ -18,7 +18,6 @@ namespace ramses_internal
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
         displayConfig.setWindowRectangle(0u, 0u, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
-        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
 
         testFramework.createTestCase(CanUseStreamTextureInASceneMappedToOffscreenBuffer, *this, "CanUseStreamTextureInASceneMappedToOffscreenBuffer").m_displayConfigs.push_back(displayConfig);
     }
@@ -27,30 +26,35 @@ namespace ramses_internal
     {
         Bool testResultValue = true;
 
-        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
+        constexpr WaylandIviSurfaceId waylandSurfaceIviId1{409u};
+        const auto streamBuffer = testFramework.createStreamBuffer(0u, ramses::waylandIviSurfaceId_t{ waylandSurfaceIviId1.getValue()});
 
         switch(testCase.m_id)
         {
         case CanUseStreamTextureInASceneMappedToOffscreenBuffer:
         {
-            const auto sceneIdProvider = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, 256u, 256u);
-            const auto sceneIdConsumer = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
+            const auto sceneIdStreamConsumerOffscreenBufferProvider = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, 256u, 256u);
+            const auto sceneIdOffscreenBufferConsumer = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
+
+            testFramework.createBufferDataLink(streamBuffer, sceneIdStreamConsumerOffscreenBufferProvider, EmbeddedCompositorScene::SamplerConsumerId1);
 
             const auto offscreenBuffer = testFramework.createOffscreenBuffer(0, 256, 256, false);
-            testFramework.assignSceneToDisplayBuffer(sceneIdProvider, offscreenBuffer);
-            testFramework.createBufferDataLink(offscreenBuffer, sceneIdConsumer, TextureLinkScene::DataConsumerId);
+            testFramework.assignSceneToDisplayBuffer(sceneIdStreamConsumerOffscreenBufferProvider, offscreenBuffer);
+            testFramework.createBufferDataLink(offscreenBuffer, sceneIdOffscreenBufferConsumer, TextureLinkScene::DataConsumerId);
 
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_CanUseStreamTextureInASceneMappedToOffscreenBuffer");
             break;
         }
         default:
             assert(false);
         }
+
+        testFramework.destroyStreamBuffer(0u, streamBuffer);
 
         LOG_INFO(CONTEXT_RENDERER, "OffscreenBuffersWithStreamTexturesTests::runEmbeddedCompositingTestCase waiting until client test application has terminated ...");
         testFramework.stopTestApplicationAndWaitUntilDisconnected();

@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         WaylandCompositorConnection(IWaylandClient& client, uint32_t version, uint32_t id, IEmbeddedCompositor_Wayland& embeddedCompositor);
         virtual ~WaylandCompositorConnection() override;
-        bool wasSuccessfullyInitialized() const;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
 
         virtual void resourceDestroyed() override;
         virtual void compositorCreateSurface(IWaylandClient& client, uint32_t id) override;

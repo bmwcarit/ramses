@@ -16,6 +16,11 @@
 #include "Math3d/Vector4.h"
 #include <unordered_map>
 
+namespace CLI
+{
+    class App;
+}
+
 namespace ramses_internal
 {
     class DisplayConfig
@@ -23,96 +28,92 @@ namespace ramses_internal
     public:
         DisplayConfig() {}
 
-        Bool getFullscreenState() const;
+        void registerOptions(CLI::App& cli);
+
+        [[nodiscard]] Bool getFullscreenState() const;
         void setFullscreenState(Bool state);
 
-        Bool getBorderlessState() const ;
+        [[nodiscard]] Bool getBorderlessState() const ;
         void setBorderlessState(Bool state);
 
-        UInt32 getAntialiasingSampleCount() const;
+        [[nodiscard]] UInt32 getAntialiasingSampleCount() const;
         void setAntialiasingSampleCount(UInt32 samples);
 
-        UInt32 getDesiredWindowWidth() const;
+        [[nodiscard]] UInt32 getDesiredWindowWidth() const;
         void setDesiredWindowWidth(UInt32 width);
 
-        UInt32 getDesiredWindowHeight() const;
+        [[nodiscard]] UInt32 getDesiredWindowHeight() const;
         void setDesiredWindowHeight(UInt32 height);
 
-        Int32 getWindowPositionX() const;
+        [[nodiscard]] Int32 getWindowPositionX() const;
         void setWindowPositionX(Int32 posx);
 
-        Int32 getWindowPositionY() const;
+        [[nodiscard]] Int32 getWindowPositionY() const;
         void setWindowPositionY(Int32 posy);
 
-        WaylandIviLayerId getWaylandIviLayerID() const;
+        [[nodiscard]] WaylandIviLayerId getWaylandIviLayerID() const;
         void setWaylandIviLayerID(WaylandIviLayerId waylandIviLayerID);
 
-        WaylandIviSurfaceId getWaylandIviSurfaceID() const;
+        [[nodiscard]] WaylandIviSurfaceId getWaylandIviSurfaceID() const;
         void setWaylandIviSurfaceID(WaylandIviSurfaceId waylandIviSurfaceID);
 
         void setWaylandDisplay(const String& waylandDisplay);
-        const String& getWaylandDisplay() const;
-
-        IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const;
-        void setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit);
+        [[nodiscard]] const String& getWaylandDisplay() const;
 
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
-        WindowsWindowHandle getWindowsWindowHandle() const;
+        [[nodiscard]] WindowsWindowHandle getWindowsWindowHandle() const;
 
         void setX11WindowHandle(X11WindowHandle x11WindowHandle);
-        X11WindowHandle getX11WindowHandle() const;
+        [[nodiscard]] X11WindowHandle getX11WindowHandle() const;
 
-        AndroidNativeWindowPtr getAndroidNativeWindow() const;
+        [[nodiscard]] AndroidNativeWindowPtr getAndroidNativeWindow() const;
         void setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr);
 
-        Bool getStartVisibleIvi() const;
+        [[nodiscard]] Bool getStartVisibleIvi() const;
         void setStartVisibleIvi(bool startVisible);
 
-        Bool isWarpingEnabled() const;
-        void setWarpingEnabled(Bool enabled);
-
-        Bool getKeepEffectsUploaded() const;
+        [[nodiscard]] Bool getKeepEffectsUploaded() const;
         void setKeepEffectsUploaded(Bool enable);
 
-        Bool isResizable() const;
+        [[nodiscard]] Bool isResizable() const;
         void setResizable(Bool resizable);
 
-        UInt64 getGPUMemoryCacheSize() const;
+        [[nodiscard]] UInt64 getGPUMemoryCacheSize() const;
         void setGPUMemoryCacheSize(UInt64 size);
 
         void setClearColor(const Vector4& clearColor);
-        const Vector4& getClearColor() const;
+        [[nodiscard]] const Vector4& getClearColor() const;
 
         void setDepthStencilBufferType(ERenderBufferType depthStencilBufferType);
-        ERenderBufferType getDepthStencilBufferType() const;
+        [[nodiscard]] ERenderBufferType getDepthStencilBufferType() const;
 
         void setAsyncEffectUploadEnabled(bool enabled);
-        bool isAsyncEffectUploadEnabled() const;
+        [[nodiscard]] bool isAsyncEffectUploadEnabled() const;
 
         void setWaylandEmbeddedCompositingSocketName(const String& socket);
-        const String& getWaylandSocketEmbedded() const;
+        [[nodiscard]] const String& getWaylandSocketEmbedded() const;
 
         void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
-        const String& getWaylandSocketEmbeddedGroup() const;
+        [[nodiscard]] const String& getWaylandSocketEmbeddedGroup() const;
 
         void setWaylandEmbeddedCompositingSocketFD(int fd);
-        int getWaylandSocketEmbeddedFD() const;
+        [[nodiscard]] int getWaylandSocketEmbeddedFD() const;
 
         bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
-        uint32_t getWaylandSocketEmbeddedPermissions() const;
+        [[nodiscard]] uint32_t getWaylandSocketEmbeddedPermissions() const;
 
         void setPlatformRenderNode(const String& renderNode);
-        const String& getPlatformRenderNode() const;
+        [[nodiscard]] const String& getPlatformRenderNode() const;
 
         void setSwapInterval(int32_t interval);
-        int32_t getSwapInterval() const;
+        [[nodiscard]] int32_t getSwapInterval() const;
 
         void setScenePriority(SceneId sceneId, int32_t priority);
-        int32_t getScenePriority(SceneId sceneId) const;
-        const std::unordered_map<SceneId, int32_t>& getScenePriorities() const;
+        [[nodiscard]] int32_t getScenePriority(SceneId sceneId) const;
+        [[nodiscard]] const std::unordered_map<SceneId, int32_t>& getScenePriorities() const;
 
         void setResourceUploadBatchSize(uint32_t batchSize);
-        uint32_t getResourceUploadBatchSize() const;
+        [[nodiscard]] uint32_t getResourceUploadBatchSize() const;
 
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
@@ -120,7 +121,6 @@ namespace ramses_internal
     private:
         Bool m_fullscreen = false;
         Bool m_borderless = false;
-        Bool m_warpingEnabled = false;
         Bool m_resizable = false;
 
         UInt32 m_desiredWindowWidth = 1280;
@@ -130,7 +130,6 @@ namespace ramses_internal
 
         WaylandIviLayerId m_waylandIviLayerID;
         WaylandIviSurfaceId m_waylandIviSurfaceID;
-        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         WindowsWindowHandle m_windowsWindowHandle;
         X11WindowHandle m_x11WindowHandle;
         AndroidNativeWindowPtr m_androidNativeWindowPtr;

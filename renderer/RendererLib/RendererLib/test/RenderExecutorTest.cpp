@@ -9,7 +9,6 @@
 #include "renderer_common_gmock_header.h"
 #include "RendererResourceManagerMock.h"
 #include "RenderBackendMock.h"
-#include "EmbeddedCompositingManagerMock.h"
 #include "RenderExecutor.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/Renderer.h"
@@ -176,7 +175,7 @@ public:
         , fieldProjMatrix         (fakeEffectInputs.fieldProjMatrix        )
     {
         InputIndexVector referencedInputs;
-        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
         uniformLayout = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(scene, fakeEffectInputs.uniformInputs, referencedInputs, MockResourceHash::EffectHash, DataLayoutHandle(0u));
 
         DataFieldInfoVector dataFields(3u);
@@ -195,7 +194,6 @@ protected:
     };
 
     StrictMock<RenderBackendStrictMock> renderer;
-    NiceMock<EmbeddedCompositingManagerMock> embeddedCompositingManager;
     StrictMock<DeviceMock>& device;
     NiceMock<RendererResourceManagerMock> resourceManager;
 
@@ -265,7 +263,7 @@ protected:
         return pass;
     }
 
-    TransformHandle findTransformForNode(NodeHandle node) const
+    [[nodiscard]] TransformHandle findTransformForNode(NodeHandle  node) const
     {
         for (TransformHandle transform(0u); transform < scene.getTransformCount(); ++transform)
         {
@@ -295,7 +293,7 @@ protected:
         // explicit preallocation needed because here we use DataLayoutCreationHelper which allocates inside,
         // we cannot use scene allocation helper
         MemoryHandle nextHandle = std::max(scene.getDataInstanceCount(), scene.getDataLayoutCount());
-        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 3u, nextHandle + 3u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 3u, nextHandle + 3u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
         dataRef1 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField1, EDataType::Float, DataLayoutHandle(nextHandle), DataInstanceHandle(nextHandle));
         dataRef2 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField2, EDataType::Float, DataLayoutHandle(nextHandle + 1u), DataInstanceHandle(nextHandle + 1u));
         dataRefMatrix22f = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefFieldMatrix22f, EDataType::Matrix22F, DataLayoutHandle(nextHandle + 2u), DataInstanceHandle(nextHandle + 2u));
@@ -516,7 +514,7 @@ protected:
 
     void updateScenes(const RenderableVector& renderablesWithUpdatedVAOs)
     {
-        scene.updateRenderablesAndResourceCache(resourceManager, embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(resourceManager);
         scene.updateRenderableVertexArrays(resourceManager, renderablesWithUpdatedVAOs);
         scene.markVertexArraysClean();
         scene.updateRenderableWorldMatrices();

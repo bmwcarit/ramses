@@ -17,7 +17,7 @@
  * @example ramses-example-text-basic/src/main.cpp
  * @brief Minimal text example. Shows the string "Hello World!" on the screen.
  */
-int main(int argc, char* argv[])
+int main()
 {
     /// [Basic Text Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     const uint32_t displayWidth(1280);
     const uint32_t displayHeight(480);
 
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& client(*framework.createClient("ExampleTextBasic"));
 
     ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u));

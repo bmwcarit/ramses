@@ -28,7 +28,7 @@ namespace ramses_internal
             // preallocate mempools for scene with explicit mempools
             SceneSizeInformation sizeInfo{ MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed,
                 MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed,
-                MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed };
+                MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed };
             scene.preallocateSceneSize(sizeInfo);
         }
 
@@ -285,12 +285,6 @@ namespace ramses_internal
         this->expectResources({ hash1 });
     }
 
-    TYPED_TEST(AResourceUtils, createdStreamTextureAddsFallbackTexture)
-    {
-        this->scene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, hash1, this->template getNextHandle<StreamTextureHandle>());
-        this->expectResources({ hash1 });
-    }
-
     TYPED_TEST(AResourceUtils, createdStreamTextureDoesNotMarkFallbackTextureAsNewIfItWasAlreadyUsedInScene)
     {
         const RenderableHandle renderable = this->createRenderable();
@@ -299,15 +293,6 @@ namespace ramses_internal
 
         this->scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, hash1, this->template getNextHandle<StreamTextureHandle>());
         this->expectResources({ hash1 });
-    }
-
-    TYPED_TEST(AResourceUtils, destroyedStreamTextureRemovesFallbackTexture)
-    {
-        const StreamTextureHandle handle = this->scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, hash1, this->template getNextHandle<StreamTextureHandle>());
-        this->expectResources({ hash1 });
-
-        this->scene.releaseStreamTexture(handle);
-        this->expectResources({});
     }
 
     TYPED_TEST(AResourceUtils, destroyedStreamTextureDoesNotRemoveFallbackTextureIfItIsStillUsedInScene)

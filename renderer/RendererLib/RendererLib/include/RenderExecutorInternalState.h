@@ -73,12 +73,12 @@ namespace ramses_internal
             }
         }
 
-        const STATETYPE& getState() const
+        [[nodiscard]] const STATETYPE& getState() const
         {
             return m_state;
         }
 
-        Bool hasChanged() const
+        [[nodiscard]] Bool hasChanged() const
         {
             return m_changed;
         }
@@ -101,25 +101,25 @@ namespace ramses_internal
     public:
         RenderExecutorInternalState(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
 
-        IDevice&                   getDevice() const;
+        [[nodiscard]] IDevice&                   getDevice() const;
 
         void                       setScene(const RendererCachedScene& scene);
-        const RendererCachedScene& getScene() const;
+        [[nodiscard]] const RendererCachedScene& getScene() const;
         RenderingContext&          getRenderingContext();
 
-        const Matrix44f&           getProjectionMatrix() const;
-        const Vector3&             getCameraWorldPosition() const;
-        const Matrix44f&           getViewMatrix() const;
-        const Matrix44f&           getModelMatrix() const;
-        const Matrix44f&           getModelViewMatrix() const;
-        const Matrix44f&           getModelViewProjectionMatrix() const;
+        [[nodiscard]] const Matrix44f&           getProjectionMatrix() const;
+        [[nodiscard]] const Vector3&             getCameraWorldPosition() const;
+        [[nodiscard]] const Matrix44f&           getViewMatrix() const;
+        [[nodiscard]] const Matrix44f&           getModelMatrix() const;
+        [[nodiscard]] const Matrix44f&           getModelViewMatrix() const;
+        [[nodiscard]] const Matrix44f&           getModelViewProjectionMatrix() const;
 
         void                       setCamera(CameraHandle camera);
 
         void                       setRenderable(RenderableHandle renderable);
-        RenderableHandle           getRenderable() const;
+        [[nodiscard]] RenderableHandle           getRenderable() const;
 
-        Bool hasExceededTimeBudgetForRendering() const;
+        [[nodiscard]] Bool hasExceededTimeBudgetForRendering() const;
 
         CachedState < DeviceResourceHandle >    shaderDeviceHandle;
         DeviceResourceHandle                    vertexArrayDeviceHandle;

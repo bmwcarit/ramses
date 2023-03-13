@@ -35,6 +35,7 @@ namespace ramses_internal
         {
             const glslang::TLayoutGeometry prim = geomShader->getInputPrimitive();
 
+            // only basic 'variant' (i.e. no strip/fan) of a primitive is allowed as GS input declaration
             switch (prim)
             {
             case glslang::ElgPoints:
@@ -81,7 +82,7 @@ namespace ramses_internal
         return m_attributeInputs;
     }
 
-    absl::optional<EDrawMode> GlslToEffectConverter::getGeometryShaderInputType() const
+    EDrawMode GlslToEffectConverter::getGeometryShaderInputType() const
     {
         return m_geometryShaderInputType;
     }

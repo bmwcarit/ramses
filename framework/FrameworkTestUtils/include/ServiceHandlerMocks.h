@@ -15,7 +15,6 @@
 #include "SceneReferencing/SceneReferenceEvent.h"
 #include "TransportCommon/ServiceHandlerInterfaces.h"
 #include "Components/ISceneProviderEventConsumer.h"
-#include "Components/CategoryInfo.h"
 
 namespace ramses_internal
 {
@@ -36,40 +35,13 @@ namespace ramses_internal
         SceneRendererServiceHandlerMock();
         virtual ~SceneRendererServiceHandlerMock() override;
 
-        MOCK_METHOD(void, handleNewScenesAvailable, (const SceneInfoVector& newScenes, const Guid& providerID), (override));
+        MOCK_METHOD(void, handleNewScenesAvailable, (const SceneInfoVector& newScenes, const Guid& providerID, ramses::EFeatureLevel featureLevel), (override));
         MOCK_METHOD(void, handleScenesBecameUnavailable, (const SceneInfoVector& unavailableScenes, const Guid& providerID), (override));
 
         MOCK_METHOD(void, handleSceneNotAvailable, (const SceneId& sceneId, const Guid& providerID), (override));
 
         MOCK_METHOD(void, handleInitializeScene, (const SceneId& sceneId, const Guid& providerID), (override));
         MOCK_METHOD(void, handleSceneUpdate, (const SceneId& sceneId, absl::Span<const Byte> actionData, const Guid& providerID), (override));
-    };
-
-    class DcsmProviderServiceHandlerMock : public IDcsmProviderServiceHandler
-    {
-    public:
-        DcsmProviderServiceHandlerMock();
-        virtual ~DcsmProviderServiceHandlerMock() override;
-
-        MOCK_METHOD(void, handleCanvasSizeChange, (ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID), (override));
-        MOCK_METHOD(void, handleContentStateChange, (ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID), (override));
-        MOCK_METHOD(void, handleContentStatus, (ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID), (override));
-    };
-
-    class DcsmConsumerServiceHandlerMock : public IDcsmConsumerServiceHandler
-    {
-    public:
-        DcsmConsumerServiceHandlerMock();
-        virtual ~DcsmConsumerServiceHandlerMock() override;
-
-        MOCK_METHOD(void, handleOfferContent, (ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleContentDescription, (ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleContentReady, (ContentID contentID, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleContentEnableFocusRequest, (ContentID contentID, int32_t focusRequest, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleContentDisableFocusRequest, (ContentID contentID, int32_t focusRequest, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleRequestStopOfferContent, (ContentID contentID, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleForceStopOfferContent, (ContentID contentID, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleUpdateContentMetadata, (ContentID contentID, DcsmMetadata metadata, const Guid& providerID), (override));
     };
 }
 

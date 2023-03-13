@@ -22,12 +22,12 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
         # The test needs 3 displays on wayland in order to use a display as a dummy black background
         # those wayland ivi surface ids depend on workaround in standalone renderer that increments the ivi surface id by 1 for every created display
         self.displaysIviSurfaceIds = [DEFAULT_TEST_SURFACE, DEFAULT_TEST_SURFACE + 1, DEFAULT_TEST_SURFACE + 2]
-        self.renderer = self.target.start_default_renderer("--numDisplays 3 -sid {0}".format(self.displaysIviSurfaceIds[0]))
+        self.renderer = self.target.start_default_renderer("--displays 3 --ivi-surface {0}".format(self.displaysIviSurfaceIds[0]))
         self.renderer.send_ramsh_command("skub 0", waitForRendererConfirmation=True)
 
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 2 -ts 0")
+        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 2 --test-state 0")
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 

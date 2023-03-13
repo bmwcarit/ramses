@@ -8,7 +8,6 @@
 
 #include "gtest/gtest.h"
 #include "ClientTestUtils.h"
-#include "ramses-client-api/SplineLinearVector3f.h"
 #include "ramses-client-api/Node.h"
 #include "SceneAPI/IScene.h"
 #include "Scene/SceneActionCollection.h"
@@ -17,7 +16,7 @@
 namespace ramses
 {
     using namespace testing;
-    class ADistributedScene : public LocalTestClientWithSceneAndAnimationSystem, public ::testing::Test
+    class ADistributedScene : public LocalTestClientWithScene, public ::testing::Test
     {
     public:
         ADistributedScene()
@@ -50,11 +49,6 @@ namespace ramses
             Node* node = m_scene.createNode("node");
             Node* nodeTrans = m_scene.createNode("nodetrans");
             nodeTrans->setParent(*node);
-
-            // do random animation stuff
-            SplineLinearVector3f* spline = animationSystem.createSplineLinearVector3f("spline");
-            AnimatedProperty* prop = animationSystem.createAnimatedProperty(*nodeTrans, EAnimatedProperty_Translation);
-            animationSystem.createAnimation(*prop, *spline, "anim");
         }
 
         void expectActionListsEqual(const ramses_internal::SceneActionCollection& list1, const ramses_internal::SceneActionCollection& list2) const

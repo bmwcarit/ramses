@@ -44,22 +44,22 @@ namespace ramses_internal
         void registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const Vector4& clearColor, Bool isOffscreenBuffer, Bool isInterruptible);
         void unregisterDisplayBuffer(DeviceResourceHandle displayBuffer);
 
-        const DisplayBufferInfo& getDisplayBuffer(DeviceResourceHandle displayBuffer) const;
+        [[nodiscard]] const DisplayBufferInfo& getDisplayBuffer(DeviceResourceHandle displayBuffer) const;
 
         void setDisplayBufferToBeRerendered(DeviceResourceHandle displayBuffer, Bool rerender);
 
         void                 assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, Int32 sceneOrder);
         void                 unassignScene(SceneId sceneId);
-        DeviceResourceHandle findDisplayBufferSceneIsAssignedTo(SceneId sceneId) const;
+        [[nodiscard]] DeviceResourceHandle findDisplayBufferSceneIsAssignedTo(SceneId sceneId) const;
         void                 setSceneShown(SceneId sceneId, Bool show);
         void                 setClearFlags(DeviceResourceHandle displayBuffer, uint32_t clearFlags);
         void                 setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor);
         void                 setDisplayBufferSize(DeviceResourceHandle displayBuffer, uint32_t width, uint32_t height);
 
-        const DeviceHandleVector& getNonInterruptibleOffscreenBuffersToRender() const;
-        const DeviceHandleVector& getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle interruptedDisplayBuffer) const;
+        [[nodiscard]] const DeviceHandleVector& getNonInterruptibleOffscreenBuffersToRender() const;
+        [[nodiscard]] const DeviceHandleVector& getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle interruptedDisplayBuffer) const;
 
-        const DisplayBuffersMap& getDisplayBuffers() const;
+        [[nodiscard]] const DisplayBuffersMap& getDisplayBuffers() const;
 
     private:
         AssignedSceneInfo& findSceneInfo(SceneId sceneId, DeviceResourceHandle displayBuffer);

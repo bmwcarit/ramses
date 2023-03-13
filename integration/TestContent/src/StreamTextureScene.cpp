@@ -16,7 +16,6 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/StreamTexture.h"
 #include <array>
 
 namespace ramses_internal
@@ -114,17 +113,16 @@ namespace ramses_internal
         m_root->setRotation(35.264385f, 45.000427f, -0.000427f); // rotate the cube onto one corner
     }
 
-    void StreamTextureScene::addPngQuad(const char* pngFilePath, const float* vertexPositionsArray, ramses::waylandIviSurfaceId_t surfaceId, ramses::Node* parentNode, const char* streamTextureName, bool forcefallback)
+    void StreamTextureScene::addPngQuad(const char* pngFilePath, const float* vertexPositionsArray, ramses::waylandIviSurfaceId_t, ramses::Node* parentNode, const char*, bool)
     {
+        //TODO Mohamed: is this needed at all?
         const ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng(pngFilePath, m_scene);
-        ramses::StreamTexture* streamTexture = m_scene.createStreamTexture(*texture, surfaceId, streamTextureName);
-        streamTexture->forceFallbackImage(forcefallback);
         const ramses::TextureSampler* sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureSamplingMethod_Nearest,
             ramses::ETextureSamplingMethod_Nearest,
-            *streamTexture);
+            *texture);
 
         ramses::Appearance* appearance = m_scene.createAppearance(*m_effect, "triangle appearance");
 

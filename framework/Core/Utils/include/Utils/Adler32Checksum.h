@@ -17,7 +17,7 @@ namespace ramses_internal
     {
     public:
 
-        UInt32 getResult() const
+        [[nodiscard]] UInt32 getResult() const
         {
             return (m_b << 16) | m_a;
         }

@@ -109,7 +109,7 @@ namespace ramses_internal
                 wl_display_disconnect(display);
             }
 
-            int getProtocolErrorCode() const
+            [[nodiscard]] int getProtocolErrorCode() const
             {
                 return m_protocolErrorCode;
             }

@@ -24,8 +24,8 @@ namespace ramses_internal
     class RendererStatistics
     {
     public:
-        Float  getFps() const;
-        UInt32 getDrawCallsPerFrame() const;
+        [[nodiscard]] Float  getFps() const;
+        [[nodiscard]] UInt32 getDrawCallsPerFrame() const;
 
         void sceneRendered(SceneId sceneId);
         void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency);

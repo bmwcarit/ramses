@@ -77,13 +77,11 @@ namespace ramses_internal
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyOffscreenBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateStreamBuffer{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyStreamBuffer{ cmdDisplay, {} }));
-        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetStreamBufferState{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateExternalBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyExternalBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearFlags{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearColor{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetExterallyOwnedWindowSize{ cmdDisplay, {}, {} }));
-        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::UpdateWarpingData{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::ReadPixels{ cmdDisplay, {}, {}, {}, {}, {}, {}, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::ConfirmationEcho{ cmdDisplay, {} }));
         // broadcast commands
@@ -104,10 +102,6 @@ namespace ramses_internal
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::SetLimits_FrameBudgets{}));
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::SetLimits_FlushesForceApply{}));
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::SetLimits_FlushesForceUnsubscribe{}));
-        EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_Toggle{}));
-        EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_TimingGraphHeight{}));
-        EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_CounterGraphHeight{}));
-        EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_RegionFilterFlags{}));
     }
 
     TEST_F(ASceneDisplayTracker, returnsInvalidDisplayIfNoOwnership)

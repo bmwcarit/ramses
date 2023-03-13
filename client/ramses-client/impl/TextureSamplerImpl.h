@@ -27,7 +27,6 @@ namespace ramses
     class TextureCube;
     class Texture2DBuffer;
     class RenderBuffer;
-    class StreamTexture;
     class Resource;
 
     class TextureSamplerImpl final : public SceneObjectImpl
@@ -60,7 +59,6 @@ namespace ramses
         status_t setTextureData(const TextureCube& texture);
         status_t setTextureData(const Texture2DBuffer& texture);
         status_t setTextureData(const RenderBuffer& texture);
-        status_t setTextureData(const StreamTexture& texture);
 
         ramses_internal::TextureSamplerHandle getTextureSamplerHandle() const;
         ramses_internal::EDataType getTextureDataType() const;
@@ -73,7 +71,6 @@ namespace ramses
             ramses_internal::MemoryHandle contentHandle);
 
         status_t validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle) const;
-        status_t validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle) const;
         status_t validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle) const;
         status_t validateResource(const Resource* resource) const;
 

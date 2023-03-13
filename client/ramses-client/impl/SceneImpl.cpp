@@ -17,19 +17,15 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
-#include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -65,11 +61,6 @@
 #include "NodeImpl.h"
 #include "AppearanceImpl.h"
 #include "GeometryBindingImpl.h"
-#include "StreamTextureImpl.h"
-#include "AnimationSystemImpl.h"
-#include "AnimationAPI/IAnimationSystem.h"
-#include "Animation/ActionCollectingAnimationSystem.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "SerializationContext.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
@@ -105,6 +96,7 @@
 #include "DataTypeUtils.h"
 #include "RamsesVersion.h"
 #include "Scene/ScenePersistation.h"
+#include "AppearanceUtils.h"
 
 #include "Resource/ArrayResource.h"
 #include "Resource/TextureResource.h"
@@ -114,7 +106,6 @@
 #include "Components/EffectUniformTime.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/TextureMathUtils.h"
-#include "ResourceDataPoolImpl.h"
 #include "Components/FlushTimeInformation.h"
 #include "fmt/format.h"
 
@@ -262,15 +253,6 @@ namespace ramses
             case ERamsesObjectType_GeometryBinding:
                 status = createAndDeserializeObjectImpls<GeometryBinding, GeometryBindingImpl>(inStream, serializationContext, count);
                 break;
-            case ERamsesObjectType_StreamTexture:
-                status = createAndDeserializeObjectImpls<StreamTexture, StreamTextureImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_AnimationSystem:
-                status = createAndDeserializeObjectImpls<AnimationSystem, AnimationSystemImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_AnimationSystemRealTime:
-                status = createAndDeserializeObjectImpls<AnimationSystemRealTime, AnimationSystemImpl>(inStream, serializationContext, count);
-                break;
             case ERamsesObjectType_RenderGroup:
                 status = createAndDeserializeObjectImpls<RenderGroup, RenderGroupImpl>(inStream, serializationContext, count);
                 break;
@@ -390,7 +372,6 @@ namespace ramses
         {
             const ERamsesObjectType type = static_cast<ERamsesObjectType>(i);
             if (RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_SceneObject)
-                && !RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_AnimationObject)
                 && RamsesObjectTypeUtils::IsConcreteType(type))
             {
                 objectCount[i] = 0u;
@@ -407,7 +388,6 @@ namespace ramses
         {
             const ERamsesObjectType type = static_cast<ERamsesObjectType>(i);
             if (RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_SceneObject)
-                && !RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ERamsesObjectType_AnimationObject)
                 && RamsesObjectTypeUtils::IsConcreteType(type))
             {
                 ramses_internal::StringOutputStream msg;
@@ -476,22 +456,6 @@ namespace ramses
         return new AppearanceImpl(*this, name);
     }
 
-    StreamTexture* SceneImpl::createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name)
-    {
-        if (this != &fallbackTexture.impl.getSceneImpl())
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createStreamTexture failed, fallbackTexture is not from this scene.");
-            return nullptr;
-        }
-
-        StreamTextureImpl& pimpl = *new StreamTextureImpl( *this, name);
-        pimpl.initializeFrameworkData(source, fallbackTexture.impl);
-        StreamTexture* texture = new StreamTexture(pimpl);
-        registerCreatedObject(*texture);
-
-        return texture;
-    }
-
     GeometryBinding* SceneImpl::createGeometryBinding(const Effect& effect, const char* name)
     {
         if (this != &effect.impl.getSceneImpl())
@@ -535,10 +499,6 @@ namespace ramses
         case ERamsesObjectType_MeshNode:
             returnStatus = destroyMeshNode(RamsesObjectTypeUtils::ConvertTo<MeshNode>(object));
             break;
-        case ERamsesObjectType_AnimationSystem:
-        case ERamsesObjectType_AnimationSystemRealTime:
-            returnStatus = destroyAnimationSystem(RamsesObjectTypeUtils::ConvertTo<AnimationSystem>(object));
-            break;
         case ERamsesObjectType_DataFloat:
         case ERamsesObjectType_DataVector2f:
         case ERamsesObjectType_DataVector3f:
@@ -566,7 +526,6 @@ namespace ramses
         case ERamsesObjectType_RenderPass:
         case ERamsesObjectType_BlitPass:
         case ERamsesObjectType_RenderBuffer:
-        case ERamsesObjectType_StreamTexture:
         case ERamsesObjectType_DataBufferObject:
         case ERamsesObjectType_Texture2DBuffer:
             returnStatus = destroyObject(object);
@@ -1036,29 +995,6 @@ namespace ramses
             name);
     }
 
-    ramses::TextureSampler* SceneImpl::createTextureSampler(
-        ETextureAddressMode wrapUMode,
-        ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod minSamplingMethod,
-        ETextureSamplingMethod magSamplingMethod,
-        const StreamTexture& streamTexture,
-        const char* name)
-    {
-        if (!containsSceneObject(streamTexture.impl))
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, streamTexture is not from this scene.");
-            return nullptr;
-        }
-
-        return createTextureSamplerImpl(
-            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, 1u,
-            ERamsesObjectType_StreamTexture,
-            ramses_internal::TextureSampler::ContentType::StreamTexture,
-            ramses_internal::ResourceContentHash::Invalid(),
-            streamTexture.impl.getHandle().asMemoryHandle(),
-            name);
-    }
-
     ramses::TextureSamplerMS* SceneImpl::createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name)
     {
         if (!containsSceneObject(renderBuffer.impl))
@@ -1426,9 +1362,9 @@ namespace ramses
 
     status_t SceneImpl::createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id)
     {
-        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D && sampler.impl.getTextureType() != ERamsesObjectType_StreamTexture)
+        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D)
         {
-            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture or StreamTexture can be used for linking..");
+            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture can be used for linking..");
         }
 
         return createTextureConsumerImpl(sampler, id);
@@ -1520,57 +1456,6 @@ namespace ramses
     int32_t SceneImpl::getUniformTimeMs() const
     {
         return ramses_internal::EffectUniformTime::GetMilliseconds(getIScene().getEffectTimeSync());
-    }
-
-    AnimationSystem* SceneImpl::createAnimationSystem(uint32_t flags, const char* name)
-    {
-        uint32_t creationFlags = ramses_internal::EAnimationSystemFlags_Default;
-        if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
-        {
-            creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
-        }
-        if ((flags & EAnimationSystemFlags_SynchronizedClock) != 0)
-        {
-            LOG_WARN(CONTEXT_CLIENT, "Scene::createAnimationSystem: flag EAnimationSystemFlags_SynchronizedClock is relevant only for real-time animation system, it will be ignored");
-        }
-
-        AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystem, name);
-        AnimationSystem* animationSystem = new AnimationSystem(pimpl);
-        registerCreatedObject(*animationSystem);
-        return animationSystem;
-    }
-
-    AnimationSystemRealTime* SceneImpl::createRealTimeAnimationSystem(uint32_t flags, const char* name)
-    {
-        uint32_t creationFlags = ramses_internal::EAnimationSystemFlags_RealTime;
-        if ((flags & EAnimationSystemFlags_ClientSideProcessing) != 0)
-        {
-            creationFlags |= ramses_internal::EAnimationSystemFlags_FullProcessing;
-        }
-        if ((flags & EAnimationSystemFlags_SynchronizedClock) != 0)
-        {
-            creationFlags |= ramses_internal::EAnimationSystemFlags_SynchronizedClock;
-        }
-
-        AnimationSystemImpl& pimpl = createAnimationSystemImpl(creationFlags, ERamsesObjectType_AnimationSystemRealTime, name);
-        AnimationSystemRealTime* animationSystem = new AnimationSystemRealTime(pimpl);
-        registerCreatedObject(*animationSystem);
-        return animationSystem;
-    }
-
-    AnimationSystemImpl& SceneImpl::createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name)
-    {
-        ramses_internal::AnimationSystemFactory animSystemFactory(ramses_internal::EAnimationSystemOwner_Client, &m_scene.getSceneActionCollection());
-        ramses_internal::IAnimationSystem* ianimationSystem =
-            animSystemFactory.createAnimationSystem(flags, ramses_internal::AnimationSystemSizeInformation());
-        AnimationSystemImpl& pimpl = *new AnimationSystemImpl(*this, type, name);
-        pimpl.initializeFrameworkData(*ianimationSystem);
-        return pimpl;
-    }
-
-    status_t SceneImpl::destroyAnimationSystem(AnimationSystem& animationSystem)
-    {
-        return destroyObject(animationSystem);
     }
 
     RamsesObjectRegistry& SceneImpl::getObjectRegistry()
@@ -2053,7 +1938,10 @@ namespace ramses
         ramses_internal::ResourceHashUsage hashUsage = getClientImpl().getClientApplication().getHashUsage(resource->getHash());
 
         ramses::EffectImpl& pimpl = *new ramses::EffectImpl(hashUsage, *this, name);
-        pimpl.initializeFromFrameworkData(effectRes->getUniformInputs(), effectRes->getAttributeInputs(), effectRes->getGeometryShaderInputType());
+        std::optional<EDrawMode> gsInputType;
+        if (effectRes->getGeometryShaderInputType() != ramses_internal::EDrawMode::NUMBER_OF_ELEMENTS)
+            gsInputType = AppearanceUtils::GetDrawModeFromInternal(effectRes->getGeometryShaderInputType());
+        pimpl.initializeFromFrameworkData(effectRes->getUniformInputs(), effectRes->getAttributeInputs(), gsInputType);
 
         Effect* effect = new Effect(pimpl);
         registerCreatedResourceObject(*effect);
@@ -2110,7 +1998,8 @@ namespace ramses
         if (!outputFile.isOpen())
             return addErrorEntry(fmt::format("Scene::saveToFile failed, could not open file for writing: '{}'", fileName));
 
-        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
+        const EFeatureLevel featureLevel = m_hlClient.impl.getFramework().getFeatureLevel();
+        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
 
         ramses_internal::UInt bytesForVersion = 0;
         if (!outputFile.getPos(bytesForVersion))
@@ -2147,16 +2036,6 @@ namespace ramses
         LOG_INFO_P(ramses_internal::CONTEXT_CLIENT, "Scene::saveToFile: done writing '{}'", fileName);
 
         return status;
-    }
-
-    bool SceneImpl::saveResources(std::string const& fileName, bool compress) const
-    {
-        ResourceObjects resources;
-        resources.reserve(m_resources.size());
-        for (auto entry : m_resources)
-            resources.push_back(entry.second);
-
-        return getClientImpl().getResourceDataPool().impl.saveResourceDataFile(fileName, resources, compress);
     }
 
     void SceneImpl::setSceneFileHandle(ramses_internal::SceneFileHandle handle)

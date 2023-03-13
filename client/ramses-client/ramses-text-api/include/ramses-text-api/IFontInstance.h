@@ -10,7 +10,7 @@
 #define RAMSES_TEXT_IFONTINSTANCE_H
 
 #include "ramses-text-api/GlyphMetrics.h"
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <unordered_set>
 
@@ -32,7 +32,7 @@ namespace ramses
         * @param[in] character The UTF32 char code of the character
         * @return True if the character is supported, false otherwise
         */
-        virtual bool supportsCharacter(char32_t character) const = 0;
+        [[nodiscard]] virtual bool supportsCharacter(char32_t character) const = 0;
 
         /**
         * @brief Get all characters that are supported (mapped to a glyph) by IFontInstance
@@ -44,19 +44,19 @@ namespace ramses
         * @brief Get the line height of the font instance
         * @return Line height (in rasterized texels of glyphs)
         */
-        virtual int getHeight() const = 0;
+        [[nodiscard]] virtual int getHeight() const = 0;
 
         /**
         * @brief Get the line ascender of the font instance (see Freetype2 docs)
         * @return Line ascender (in rasterized texels of glyphs)
         */
-        virtual int getAscender() const = 0;
+        [[nodiscard]] virtual int getAscender() const = 0;
 
         /**
         * @brief Get the line descender of the font instance (see Freetype2 docs)
         * @return Line descender (in rasterized texels of glyphs)
         */
-        virtual int getDescender() const = 0;
+        [[nodiscard]] virtual int getDescender() const = 0;
 
         /**
         * @brief Load the glyphs metrics for all characters in a string and appends them to the provided vector of GLYPHS

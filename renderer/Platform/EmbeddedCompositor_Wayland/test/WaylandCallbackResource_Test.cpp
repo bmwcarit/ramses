@@ -56,7 +56,7 @@ namespace ramses_internal
                 wl_display_disconnect(display);
             }
 
-            bool getCallbackReceived() const
+            [[nodiscard]] bool getCallbackReceived() const
             {
                 return m_callbackReceived;
             }

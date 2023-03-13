@@ -15,10 +15,10 @@
  * @brief Basic Render Groups Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-rendergroups"));
     framework.connect();
 

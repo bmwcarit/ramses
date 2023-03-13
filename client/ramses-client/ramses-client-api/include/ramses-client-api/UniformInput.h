@@ -31,20 +31,20 @@ namespace ramses
         *
         * @return Effect input data type
         */
-        EEffectInputDataType getDataType() const;
+        [[nodiscard]] EEffectInputDataType getDataType() const;
 
         /**
         * @brief Returns the effect input semantics.
         *
         * @return Effect input semantics
         */
-        EEffectUniformSemantic getSemantics() const;
+        [[nodiscard]] EEffectUniformSemantic getSemantics() const;
 
         /**
         * @brief Returns the number of elements that are assigned to this effect input
         * @return the element count or 0 if not initialized
         */
-        uint32_t getElementCount() const;
+        [[nodiscard]] uint32_t getElementCount() const;
     };
 }
 

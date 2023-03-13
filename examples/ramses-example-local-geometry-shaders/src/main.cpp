@@ -28,7 +28,7 @@ public:
         m_windowClosed = true;
     }
 
-    bool isWindowClosed() const
+    [[nodiscard]] bool isWindowClosed() const
     {
         return m_windowClosed;
     }
@@ -37,20 +37,20 @@ private:
     bool m_windowClosed = false;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     ramses::RendererSceneControl& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 
@@ -108,31 +108,6 @@ int main(int argc, char* argv[])
     meshNode->setGeometryBinding(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
-
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(4000u, 360.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(0.5f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime();
-    sequence->start();
 
     appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
 

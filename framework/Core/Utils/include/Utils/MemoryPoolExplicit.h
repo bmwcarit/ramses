@@ -33,21 +33,21 @@ namespace ramses_internal
         void                            release(HANDLE handle);
 
         // Access
-        UInt32                          getTotalCount() const;
-        bool                            isAllocated(HANDLE handle) const;
+        [[nodiscard]] UInt32                          getTotalCount() const;
+        [[nodiscard]] bool                            isAllocated(HANDLE handle) const;
 
         // Access to actual memory
         OBJECTTYPE*                     getMemory(HANDLE handle);
-        const OBJECTTYPE*               getMemory(HANDLE handle) const;
+        [[nodiscard]] const OBJECTTYPE*               getMemory(HANDLE handle) const;
 
         void                            preallocateSize(UInt32 size);
 
         iterator                        begin();
         iterator                        end();
-        const_iterator                  begin() const;
-        const_iterator                  end() const;
-        const_iterator                  cbegin() const;
-        const_iterator                  cend() const;
+        [[nodiscard]] const_iterator                  begin() const;
+        [[nodiscard]] const_iterator                  end() const;
+        [[nodiscard]] const_iterator                  cbegin() const;
+        [[nodiscard]] const_iterator                  cend() const;
 
         static_assert(std::is_move_constructible<OBJECTTYPE>::value && std::is_move_assignable<OBJECTTYPE>::value, "OBJECTTYPE must be movable");
     protected:

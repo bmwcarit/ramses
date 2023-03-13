@@ -149,11 +149,6 @@ namespace ramses_internal
         static constexpr DisplayHandle DisplayId{ 0u };
     };
 
-    constexpr SceneId ASceneReferenceLogicWithSceneUpdater::MasterSceneId;
-    constexpr SceneId ASceneReferenceLogicWithSceneUpdater::RefSceneId;
-    constexpr SceneReferenceHandle ASceneReferenceLogicWithSceneUpdater::RefSceneHandle;
-    constexpr DisplayHandle ASceneReferenceLogicWithSceneUpdater::DisplayId;
-
     TEST_F(ASceneReferenceLogicWithSceneUpdater, requestsReferencedSceneStateChangeAlwaysInSameUpdateLoopWithFlushApplied)
     {
         m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Rendered);

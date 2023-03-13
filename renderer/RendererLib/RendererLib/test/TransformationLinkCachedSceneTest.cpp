@@ -371,8 +371,8 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         providerScene.releaseDataSlot(providerSceneProviderSlotHandle);
 
@@ -383,8 +383,8 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenConsumerSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         consumer1Scene.releaseDataSlot(consumer1SceneConsumerSlotHandle);
 
@@ -395,8 +395,8 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderTransformationChanges)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         const Vector3 newRootTranslation(1.f);
         providerScene.setTranslation(providerSceneRootTransform, newRootTranslation);
@@ -409,8 +409,8 @@ namespace ramses_internal
     {
         linkConsumer1SceneToProviderScene();
 
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         setAllTranslations(true);
         const Vector3 rotation{ 10.f, 20.f, 30.f };
@@ -426,8 +426,8 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSceneRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         rendererScenes.destroyScene(providerScene.getSceneId());
 

@@ -17,7 +17,7 @@ class LocalAndRemoteRendererTest(test_classes.OnSelectedTargetsTest):
     @with_ramses_process_check
     def impl_setUp(self):
         standAloneRendererIviSurfaceId = DEFAULT_TEST_SURFACE + 1
-        self.standAloneRenderer = self.target.start_default_renderer(args='-sid {0}'.format(standAloneRendererIviSurfaceId))
+        self.standAloneRenderer = self.target.start_default_renderer(args='--ivi-surface {0}'.format(standAloneRendererIviSurfaceId))
         self.checkThatApplicationWasStarted(self.standAloneRenderer)
         self.addCleanup(self.target.kill_application, self.standAloneRenderer)
 
