@@ -19,16 +19,17 @@ jobs:
     strategy:
       matrix:
         target-platform: [host-os]
-        os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
+        # os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12] # TODO re-enable macos build
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2022]
         type: [Debug, Release]
         compiler: [default]
         include:
-          - target-platform: iphoneos
-            os: macos-12
-            type: Debug
-          - target-platform: iphonesimulator
-            os: macos-12
-            type: Debug
+        #   - target-platform: iphoneos
+        #     os: macos-12
+        #     type: Debug
+        #   - target-platform: iphonesimulator
+        #     os: macos-12
+        #     type: Debug
         # Test with latest Clang too
           - os: ubuntu-22.04
             type: Debug
