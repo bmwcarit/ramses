@@ -15,6 +15,7 @@
 WARNINGS_PUSH
 WARNING_DISABLE_LINUX(-Wold-style-cast)
 WARNING_DISABLE_GCC(-Wsuggest-override)
+WARNING_DISABLE_GCC(-Wmaybe-uninitialized)
 WARNING_DISABLE_CLANG(-Wunused-private-field)
 WARNING_DISABLE_CLANG(-Wshadow)
 WARNING_DISABLE_CLANG(-Wimplicit-fallthrough)

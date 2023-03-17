@@ -22,7 +22,7 @@ project(ramses-sdk
 )
 
 # build options
-option(ramses-sdk_WARNINGS_AS_ERRORS "If on, warnings are treated as errors during build." OFF)
+option(ramses-sdk_WARNINGS_AS_ERRORS "If on, warnings are treated as errors during build." ON)
 # TODO Building tests should be off when building ramses externally
 option(ramses-sdk_BUILD_TESTS "Build ramses tests." ON)
 option(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke tests." ON) # TODO document how this interacts with the above option
