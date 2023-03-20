@@ -80,11 +80,9 @@ public:
         EXPECT_TRUE(!resourceManager.getResourcesInUseByScene(sceneId) || !contains_c(*resourceManager.getResourcesInUseByScene(sceneId), hash));
     }
 
-    void expectStreamUsedBy(WaylandIviSurfaceId source, const std::unordered_map<SceneId, StreamTextureHandleVector>& sceneUsage, const std::vector<StreamBufferHandle>& sbUsage)
+    void expectStreamUsedBy(WaylandIviSurfaceId source, const std::vector<StreamBufferHandle>& sbUsage)
     {
-        const auto& usage = resourceManager.getStreamUsage(source);
-        EXPECT_EQ(sceneUsage, usage.sceneUsages);
-        EXPECT_EQ(sbUsage, usage.streamBufferUsages);
+        EXPECT_THAT(sbUsage, ::testing::UnorderedElementsAreArray(resourceManager.getStreamUsage(source)));
     }
 
     void expectResourceUploaded(const ResourceContentHash& hash, EResourceType type, DeviceResourceHandle resultDeviceHandle = ResourceUploaderMock::FakeResourceDeviceHandle)
@@ -318,53 +316,31 @@ TEST_F(ARendererResourceManager, deletesNoLongerNeededResourcesWhenSceneDestroye
     Mock::VerifyAndClearExpectations(&platform.renderBackendMock);
 }
 
-TEST_F(ARendererResourceManager, callsEmbeddedCompositingManagerForUploadingAndUnloadingStreamTexture)
-{
-    const StreamTextureHandle handle(1);
-    const WaylandIviSurfaceId source(2);
-    EXPECT_CALL(embeddedCompositingManager, refStream(source));
-    resourceManager.uploadStreamTexture(handle, source, fakeSceneId);
-    expectStreamUsedBy(source, { { fakeSceneId, { handle } } }, {});
-
-    EXPECT_CALL(embeddedCompositingManager, unrefStream(source));
-    resourceManager.unloadStreamTexture(handle, fakeSceneId);
-    expectStreamUsedBy(source, {}, {});
-}
-
-TEST_F(ARendererResourceManager, keepsTrackOfStreamUsageByScenesAndStreamBuffers)
+TEST_F(ARendererResourceManager, keepsTrackOfStreamUsageByStreamBuffers)
 {
     constexpr WaylandIviSurfaceId source{ 666u };
     constexpr WaylandIviSurfaceId source2{ 667u };
     constexpr SceneId scene1{ 13u };
     constexpr SceneId scene2{ 14u };
-    constexpr StreamTextureHandle tex1{ 111u };
-    constexpr StreamTextureHandle tex2{ 112u };
-    constexpr StreamTextureHandle tex3{ 113u };
     constexpr StreamBufferHandle sb1{ 21u };
     constexpr StreamBufferHandle sb2{ 22u };
     constexpr StreamBufferHandle sb3{ 23u };
 
-    EXPECT_CALL(embeddedCompositingManager, refStream(source)).Times(5);
+    EXPECT_CALL(embeddedCompositingManager, refStream(source)).Times(2);
     EXPECT_CALL(embeddedCompositingManager, refStream(source2));
-    resourceManager.uploadStreamTexture(tex1, source, scene1);
-    resourceManager.uploadStreamTexture(tex2, source, scene1);
-    resourceManager.uploadStreamTexture(tex3, source, scene2);
     resourceManager.uploadStreamBuffer(sb1, source);
     resourceManager.uploadStreamBuffer(sb2, source);
     resourceManager.uploadStreamBuffer(sb3, source2);
-    expectStreamUsedBy(source, { { scene1, { tex1, tex2 } }, { scene2, { tex3 } } }, { sb1, sb2 });
-    expectStreamUsedBy(source2, {}, { sb3 });
+    expectStreamUsedBy(source, { sb1, sb2 });
+    expectStreamUsedBy(source2, { sb3 });
 
-    EXPECT_CALL(embeddedCompositingManager, unrefStream(source)).Times(5);
+    EXPECT_CALL(embeddedCompositingManager, unrefStream(source)).Times(2);
     EXPECT_CALL(embeddedCompositingManager, unrefStream(source2));
-    resourceManager.unloadStreamTexture(tex1, scene1);
-    resourceManager.unloadStreamTexture(tex2, scene1);
-    resourceManager.unloadStreamTexture(tex3, scene2);
     resourceManager.unloadStreamBuffer(sb1);
     resourceManager.unloadStreamBuffer(sb2);
     resourceManager.unloadStreamBuffer(sb3);
-    expectStreamUsedBy(source, {}, {});
-    expectStreamUsedBy(source2, {}, {});
+    expectStreamUsedBy(source, {});
+    expectStreamUsedBy(source2, {});
 
     resourceManager.unloadAllSceneResourcesForScene(scene1);
     resourceManager.unloadAllSceneResourcesForScene(scene2);
@@ -1287,12 +1263,6 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_)).Times(2u);
     resourceManager.uploadBlitPassRenderTargets(blitPassHandle, bufferHandles[0], bufferHandles[1], fakeSceneId);
 
-    // upload stream texture
-    const StreamTextureHandle streamTextureHandle(1);
-    const WaylandIviSurfaceId source(2);
-    EXPECT_CALL(embeddedCompositingManager, refStream(source));
-    resourceManager.uploadStreamTexture(streamTextureHandle, source, fakeSceneId);
-
     //upload index data buffer
     const DataBufferHandle indexDataBufferHandle(123u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateIndexBuffer(_, _));
@@ -1321,7 +1291,6 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     // unload all scene resources
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_)).Times(3);
-    EXPECT_CALL(embeddedCompositingManager, unrefStream(source));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteIndexBuffer(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteVertexBuffer(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(_));

@@ -11,11 +11,11 @@
 
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/EVisibilityMode.h"
-#include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/SceneReference.h"
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/TextureSwizzle.h"
+#include "ramses-framework-api/EDataType.h"
 
 // internal
 #include "ClientObjectImpl.h"
@@ -84,7 +84,6 @@ namespace ramses
     class TextureSampler;
     class TextureSamplerMS;
     class TextureSamplerExternal;
-    class StreamTexture;
     class Texture2D;
     class Texture3D;
     class TextureCube;
@@ -127,7 +126,6 @@ namespace ramses
         Appearance*         createAppearance(const Effect& effect, const char* name);
         AppearanceImpl*     createAppearanceImpl(const char* name);
 
-        StreamTexture*      createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name);
         GeometryBinding*    createGeometryBinding(const Effect& effect, const char* name);
 
         Node*               createNode(const char* name);
@@ -185,14 +183,6 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             uint32_t anisotropyLevel,
             const Texture2DBuffer& textureBuffer,
-            const char* name);
-
-        ramses::TextureSampler* createTextureSampler(
-            ETextureAddressMode wrapUMode,
-            ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod minSamplingMethod,
-            ETextureSamplingMethod magSamplingMethod,
-            const StreamTexture& streamTexture,
             const char* name);
 
         ramses::TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);

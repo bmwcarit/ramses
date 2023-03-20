@@ -21,7 +21,7 @@
 #include "GeometryBindingImpl.h"
 #include "ArrayBufferImpl.h"
 #include "Resource/EffectResource.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 #include "SceneAPI/EDataType.h"
 #include "SceneAPI/ResourceContentHash.h"
 

@@ -76,9 +76,6 @@ namespace ramses_internal
         virtual void                 uploadExternalBuffer(ExternalBufferHandle bufferHandle) override;
         virtual void                 unloadExternalBuffer(ExternalBufferHandle bufferHandle) override;
 
-        virtual void                 uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) override;
-        virtual void                 unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId) override;
-
         virtual void                 uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId) override;
         virtual void                 unloadBlitPassRenderTargets(BlitPassHandle blitPass, SceneId sceneId) override;
 
@@ -148,8 +145,6 @@ namespace ramses_internal
         std::unordered_map<WaylandIviSurfaceId, StreamUsage> m_streamUsages;
 
         friend class RendererLogger;
-        // TODO Violin remove this after KPI monitor is reworked
-        friend class GpuMemorySample;
     };
 }
 

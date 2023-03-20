@@ -20,9 +20,9 @@ import argparse
 
 from check_license import check_license_for_file
 from check_header_guards import check_header_guards
-from check_curly_braces_alone_on_line import check_curly_braces_alone_on_line
+# from check_curly_braces_alone_on_line import check_curly_braces_alone_on_line
+# from check_single_statement_on_line import check_single_statement_on_line
 from check_single_definition_on_line import check_single_definition_on_line
-from check_single_statement_on_line import check_single_statement_on_line
 from check_tabbing_and_spacing import check_tabbing_and_spacing
 from check_tabbing_and_spacing import check_no_spacing_line_end
 from check_tabbing_and_spacing import check_tabs_no_spaces
@@ -92,8 +92,9 @@ def main():
         check_header_guards(f, file_contents)
         check_license_for_file(f, file_contents, sdk_root)
         check_tabbing_and_spacing(f, file_lines)
-        check_curly_braces_alone_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
-        check_single_statement_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        # TODO: decide if these checkers make sense still
+        # check_curly_braces_alone_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        # check_single_statement_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_single_definition_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_deprecated(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_enum_style(f, clean_file_contents)

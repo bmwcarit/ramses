@@ -38,7 +38,7 @@ TEST_F(ASceneFactory, cannotCreateTwoScenesWithTheSameId)
 
 TEST_F(ASceneFactory, createsSceneWithProvidedOptions)
 {
-    const SceneSizeInformation sizeInfo(1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u, 17u, 18u, 19u);
+    const SceneSizeInformation sizeInfo(1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u, 17u, 18u);
     const SceneId sceneId(456u);
     const SceneInfo sceneInfo(sceneId, "sceneName");
     Scene* scene = static_cast<Scene*>(factory.createScene(sceneInfo));

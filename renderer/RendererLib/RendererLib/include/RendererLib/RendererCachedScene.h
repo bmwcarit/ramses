@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         explicit RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
-        void updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager);
+        void updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor);
         void updateRenderableWorldMatrices();
         void updateRenderableWorldMatricesWithLinks();
 

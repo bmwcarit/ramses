@@ -6,10 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF(ramses-sdk_BUILD_SMOKE_TESTS)
-    ADD_SUBDIRECTORY(TestContent)
-    ADD_SUBDIRECTORY(SandwichTests)
-    ADD_SUBDIRECTORY(SmokeTests)
-    ADD_SUBDIRECTORY(StressTests)
-    ADD_SUBDIRECTORY(PlatformTests)
-ENDIF()
+if(ramses-sdk_BUILD_TESTS AND ramses-sdk_BUILD_SMOKE_TESTS)
+    add_subdirectory(TestContent)
+    add_subdirectory(SandwichTests)
+    add_subdirectory(SmokeTests)
+    add_subdirectory(StressTests)
+    add_subdirectory(PlatformTests)
+endif()

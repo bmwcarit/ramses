@@ -90,13 +90,9 @@ namespace ramses_internal
             EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
         }
 
-        void updateRenderableResources(bool withStreamTexture = false, bool dirtyVAOLeft = false)
+        void updateRenderableResources(bool dirtyVAOLeft = false)
         {
-            if (withStreamTexture)
-            {
-                EXPECT_CALL(sceneHelper.embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-            }
-            scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+            scene.updateRenderableResources(sceneHelper.resourceManager);
             scene.updateRenderableVertexArrays(sceneHelper.resourceManager, {});
             if(!dirtyVAOLeft)
                 scene.markVertexArraysClean();
@@ -113,19 +109,9 @@ namespace ramses_internal
             EXPECT_EQ(DeviceMock::FakeTextureDeviceHandle, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
         }
 
-        void updateResourcesAndExpectCompositedTextureHandle(const TextureSamplerHandle textureSampler, const DeviceResourceHandle deviceHandleFromEmbeddedCompositingManager, const RenderableVector& updatedRenderables)
-        {
-            EXPECT_CALL(sceneHelper.embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(deviceHandleFromEmbeddedCompositingManager));
-            scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
-            scene.updateRenderableVertexArrays(sceneHelper.resourceManager, updatedRenderables);
-            scene.markVertexArraysClean();
-
-            EXPECT_EQ(deviceHandleFromEmbeddedCompositingManager, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
-        }
-
         void updateResourcesAndExpectTexture(TextureSamplerHandle textureSampler, const RenderableVector& updatedRenderables, DeviceResourceHandle expectedTexture)
         {
-            scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+            scene.updateRenderableResources(sceneHelper.resourceManager);
             scene.updateRenderableVertexArrays(sceneHelper.resourceManager, updatedRenderables);
             scene.markVertexArraysClean();
 
@@ -134,21 +120,10 @@ namespace ramses_internal
 
         void updateRenderableResourcesAndVertexArray(const RenderableVector& renderables, bool dirtyVAOLeft = false)
         {
-            scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+            scene.updateRenderableResources(sceneHelper.resourceManager);
             scene.updateRenderableVertexArrays(sceneHelper.resourceManager, renderables);
             if(!dirtyVAOLeft)
                 scene.markVertexArraysClean();
-        }
-
-        TextureSamplerHandle setResourcesAndSamplerWithStreamTexture(const RenderableHandle renderable, WaylandIviSurfaceId sourceId, ResourceContentHash fallbackTexture)
-        {
-            sceneAllocator.allocateStreamTexture(sourceId, fallbackTexture, sceneHelper.streamTexture);
-            const TextureSamplerHandle samplerHandle = sceneHelper.createTextureSampler(sceneHelper.streamTexture);
-            sceneHelper.createAndAssignUniformDataInstance(renderable, samplerHandle);
-            sceneHelper.createAndAssignVertexDataInstance(renderable);
-            sceneHelper.setResourcesToRenderable(renderable);
-
-            return samplerHandle;
         }
 
         template<typename FallbackTextureType>
@@ -560,7 +535,7 @@ namespace ramses_internal
         scene.releaseDataInstance(geomDataInstance);
         scene.allocateDataInstance(layoutHandle, geomDataInstance);
 
-        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderableResources(sceneHelper.resourceManager);
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
     }
 
@@ -687,169 +662,6 @@ namespace ramses_internal
         const DeviceResourceHandle deviceHandleDst = scene.getCachedHandlesForBlitPassRenderTargets()[indexToCache + 1u];
         EXPECT_EQ(DeviceMock::FakeBlitPassRenderTargetDeviceHandle, deviceHandleSrc);
         EXPECT_EQ(DeviceMock::FakeBlitPassRenderTargetDeviceHandle, deviceHandleDst);
-    }
-
-    //Stream texture tests for dirtiness of renderables
-    TEST_F(AResourceCachedScene, CanExplicitlyMarkDirtyRenderableUsingStreamTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-        updateRenderableResources(true);
-        EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
-
-        scene.setRenderableResourcesDirtyByStreamTexture(sceneHelper.streamTexture);
-        scene.updateRenderablesResourcesDirtiness();
-        EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-    }
-
-    TEST_F(AResourceCachedScene, RenderableWithStreamTextureMarkedDirty_BySettingForceFallbackImage)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-        updateRenderableResources(true);
-        EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        scene.updateRenderablesResourcesDirtiness();
-        EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-    }
-
-    TEST_F(AResourceCachedScene, RenderableWithStreamTextureMarkedDirty_ByUnsettingForceFallbackImage)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-        updateRenderableResources(true);
-        EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
-
-        //set force fallback, update and expect clean
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateRenderableResources(true);
-        EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
-
-        //unset
-        scene.setForceFallbackImage(sceneHelper.streamTexture, false);
-        scene.updateRenderablesResourcesDirtiness();
-        EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-    }
-
-    TEST_F(AResourceCachedScene, RenderableWithStreamTextureMarkedDirty_DueToMissingFallbackTextureAndStreamSourceNotAvailable)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        setResourcesAndSamplerWithStreamTexture(renderable, {}, resourceNotUploadedToDevice);
-        updateRenderableResources(true);
-        EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-    }
-
-    TEST_F(AResourceCachedScene, RenderableWithStreamTextureMarkedDirty_DueToMissingFallbackTextureAndForceFallbackIsSet)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, resourceNotUploadedToDevice);
-
-        updateResourcesAndExpectCompositedTextureHandle(textureSampler, DeviceMock::FakeTextureDeviceHandle, {renderable});
-        expectRenderableResourcesClean(renderable);
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateRenderableResources(true);
-        EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-    }
-
-    //Stream texture tests for getting correct device handles
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceAvailableAndFallbackNotAvailable_UsesCompositedTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, ResourceContentHash::Invalid());
-
-        updateResourcesAndExpectCompositedTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager, { renderable });
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceAvailableAndFallbackAvailable_UsesCompositedTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        updateResourcesAndExpectCompositedTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager, { renderable });
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceNotAvailableAndFallbackAvailable_UsesFallbackTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid());
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceBecomesUnavailable_UsesFallbackTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        updateResourcesAndExpectCompositedTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager, { renderable });
-
-        scene.setRenderableResourcesDirtyByStreamTexture(sceneHelper.streamTexture);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid());
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_StreamSourceAvailableAndFallbackAvailable_UsesFallbackTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager);
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_StreamSourceNotAvailableAndFallbackAvailable_UsesFallbackTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid());
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_AfterSourceAlreadyAvailable_UsesFallbackTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        updateResourcesAndExpectCompositedTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager, { renderable });
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager);
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_AfterSourceNotAvailable_UsesFallbackTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid());
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid()); //no change
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsUnset_SourceAvailable_UsesCompositedTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager);
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, false);
-        updateResourcesAndExpectCompositedTextureHandle(textureSampler, deviceHandleNotKnownToResourceManager, { renderable });
-    }
-
-    TEST_F(AResourceCachedScene, CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsUnset_SourceNotAvailable_UsesFallbackTexture)
-    {
-        const RenderableHandle renderable = sceneHelper.createRenderable();
-        const TextureSamplerHandle textureSampler = setResourcesAndSamplerWithStreamTexture(renderable, {}, MockResourceHash::TextureHash);
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, true);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid());
-
-        scene.setForceFallbackImage(sceneHelper.streamTexture, false);
-        updateResourcesAndExpectFallbackTextureHandle(textureSampler, DeviceResourceHandle::Invalid()); //no change
     }
 
     //stream buffers
@@ -1002,7 +814,7 @@ namespace ramses_internal
         sceneHelper.setResourcesToRenderable(renderable, false, true);
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u, 0u, 0u);
 
-        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderableResources(sceneHelper.resourceManager);
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
         expectRenderableVertexArrayDirty(renderable);
 
@@ -1031,7 +843,7 @@ namespace ramses_internal
 
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, resourceNotUploadedToDevice, DataBufferHandle::Invalid(), 0u, 0u, 0u);
 
-        scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        scene.updateRenderableResources(sceneHelper.resourceManager);
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
         expectRenderableVertexArrayDirty(renderable);
     }
@@ -1092,12 +904,12 @@ namespace ramses_internal
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
 
         sceneHelper.setResourcesToRenderable(renderable, false);
-        updateRenderableResources(false, true);
+        updateRenderableResources(true);
         expectRenderableResourcesDirty(renderable);
         expectRenderableVertexArrayDirty(renderable);
 
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u, 0u, 0u);
-        updateRenderableResources(false, true);
+        updateRenderableResources(true);
         //stays dirty
         expectRenderableResourcesDirty(renderable);
         expectRenderableVertexArrayDirty(renderable);

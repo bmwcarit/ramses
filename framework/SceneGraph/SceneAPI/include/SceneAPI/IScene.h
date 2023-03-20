@@ -22,7 +22,6 @@
 #include "SceneAPI/MipMapSize.h"
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/RendererSceneState.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "SceneAPI/ERotationConvention.h"
 
 #include "Collections/HashMap.h"
@@ -50,7 +49,6 @@ namespace ramses_internal
     struct TextureSamplerStates;
     struct TextureBuffer;
     struct GeometryDataBuffer;
-    struct StreamTexture;
     struct RenderBuffer;
     struct BlitPass;
     struct PickableObject;
@@ -282,14 +280,6 @@ namespace ramses_internal
         [[nodiscard]] virtual bool                        isRenderBufferAllocated         (RenderBufferHandle handle) const = 0;
         [[nodiscard]] virtual UInt32                      getRenderBufferCount            () const = 0;
         [[nodiscard]] virtual const RenderBuffer&         getRenderBuffer                 (RenderBufferHandle handle) const = 0;
-
-        // Stream textures
-        virtual StreamTextureHandle         allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) = 0;
-        virtual void                        releaseStreamTexture            (StreamTextureHandle streamTextureHandle) = 0;
-        [[nodiscard]] virtual bool                        isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const = 0;
-        [[nodiscard]] virtual UInt32                      getStreamTextureCount           () const = 0;
-        virtual void                        setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) = 0;
-        [[nodiscard]] virtual const StreamTexture&        getStreamTexture                (StreamTextureHandle streamTextureHandle) const = 0;
 
         // Data buffers
         virtual DataBufferHandle            allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) = 0;

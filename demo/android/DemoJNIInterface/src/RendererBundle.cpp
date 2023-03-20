@@ -15,7 +15,6 @@
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-framework-api/RamsesFramework.h"
-#include "CLI/CLI.hpp"
 
 
 RendererBundle::RendererBundle(
@@ -27,11 +26,9 @@ RendererBundle::RendererBundle(
     : m_nativeWindow(nativeWindow)
     , m_cancelDispatchLoop(false)
 {
-    CLI::App cli;
     ramses::RamsesFrameworkConfig frameworkConfig;
-    frameworkConfig.registerOptions(cli);
     //workaround to ensure that the socket connection is always initiated outbound from Android, inbound connections might be blocked
-    cli.parse("--guid=FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
+    frameworkConfig.setParticipantGuid(0xffffffffffffffffu);
 
     frameworkConfig.setInterfaceSelectionIPForTCPCommunication(interfaceSelectionIP);
     frameworkConfig.setDaemonIPForTCPCommunication(daemonIP);

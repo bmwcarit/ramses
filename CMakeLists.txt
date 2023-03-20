@@ -21,22 +21,62 @@ project(ramses-sdk
     LANGUAGES       C CXX
 )
 
-# TODO(tobias) must be here because used inside platformConfig, rework order of all options to solve properly
+# build options
 option(ramses-sdk_WARNINGS_AS_ERRORS "If on, warnings are treated as errors during build." OFF)
+option(ramses-sdk_DISABLE_LOGIC "Disable ramses logic - an optional component for scripting and animation." OFF)
+# TODO Building tests should be off when building ramses externally
+option(ramses-sdk_BUILD_TESTS "Build ramses tests." ON)
+option(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke tests." ON) # TODO document how this interacts with the above option
+option(ramses-sdk_BUILD_EXAMPLES "Build examples." ON)
+option(ramses-sdk_BUILD_TOOLS "Build tool binaries." ON)
+option(ramses-sdk_BUILD_DEMOS "Build demos." ON)
+option(ramses-sdk_BUILD_DAEMON "Build the ramses daemon." ON)
+option(ramses-sdk_TEXT_SUPPORT "Enable/disable the ramses text API." ON)
+option(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client-only shared library." OFF)
+option(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per-renderer shared libraries." ON)
+option(ramses-sdk_BUILD_DOCS "Build documentation (if Doxygen and Dot are found on the build host)." ON)
+option(ramses-sdk_ENABLE_WAYLAND_IVI "Build a version of ramses renderer which uses wayland-ivi surfaces." ON)
+option(ramses-sdk_ENABLE_WAYLAND_SHELL "Build a version of ramses renderer which uses wayland-shell surfaces." ON)
+option(ramses-sdk_ENABLE_TCP_SUPPORT "Enable use of TCP communication." ON)
+option(ramses-sdk_ENABLE_DLT "Enable DLT logging support." ON)
+option(ramses-sdk_USE_LINUX_DEV_PTP "Enable support for synchronized PTP time on Linux." OFF)
+option(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization enabled (supported only on some platforms)." OFF)
+option(ramses-sdk_ENABLE_COVERAGE "Build with code coverage enabled (gcc: gcov, clang: source based coverage)." OFF)
+option(ramses-sdk_USE_CCACHE "Enable ccache when configured and available" OFF)
+
 set(ramses-sdk_CPP_VERSION "17" CACHE STRING "Set used c++ version, must be 17 or 20")
 
+# find options
+option(ramses-sdk_ALLOW_PLATFORM_FREETYPE "Enable to search for platform provided freetype and harfbuzz." ON)
+option(ramses-sdk_ALLOW_CUSTOM_FREETYPE "Allow usage of custom freetype and harfbuzz if platform provided one was not found." ON)
+
+set(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
+set_property(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
+
+set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING "Optional folder prefix for targets in visual studio.")
+
+set(ramses-sdk_ENABLE_SANITIZER "" CACHE STRING "Enable build with a clang sanitizer.")
+set_property(CACHE ramses-sdk_ENABLE_SANITIZER PROPERTY STRINGS "" "ubsan" "tsan" "asan" "asan+ubsan")
+
+set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING "Set a custom prefix for target folders in Visual Studio. If not set, will be set based on project's relative path.")
+set(ramses-sdk_USE_LINKER_OVERWRITE "" CACHE STRING "Specify used linker (gcc/clang only).")
+set(ramses-sdk_CPACK_GENERATOR "TGZ" CACHE STRING "CPack package type (default: TGZ).")
+set(ramses-sdk_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}" CACHE STRING "Ramses version" FORCE)
+
+message(STATUS "RAMSES_VERSION=${RAMSES_VERSION}")
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 include(cmake/ramses/setCmakePolicies.cmake NO_POLICY_SCOPE)  # we want to propagate policy settings out!
 include(cmake/ramses/platformDetection.cmake)
 include(cmake/ramses/platformConfig.cmake)
 include(cmake/ramses/getGitInformation.cmake)
 include(cmake/ramses/externaltools.cmake)
-include(cmake/ramses/tools.cmake)
 include(cmake/ramses/folderize.cmake)
 include(cmake/ramses/testConfig.cmake)
 include(cmake/ramses/buildConfig.cmake)
 include(cmake/ramses/createTarget.cmake)
-include(cmake/ramses/addSubdirectories.cmake)
+include(cmake/ramses/addSubdirectory.cmake)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -56,46 +96,7 @@ else ()
     endif ()
 endif ()
 
-message(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, TargetOS ${TARGET_OS}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS} c++${ramses-sdk_CPP_VERSION}")
-
-# find options
-option(ramses-sdk_ALLOW_PLATFORM_FREETYPE "Enable to search for platform provided freetype and harfbuzz." ON)
-option(ramses-sdk_ALLOW_CUSTOM_FREETYPE "Allow usage of custom freetype and harfbuzz if platform provided one was not found." ON)
-
-# build options
-# TODO Building tests should be off when building ramses externally
-option(ramses-sdk_BUILD_TESTS "Build ramses tests." ON)
-option(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke tests." ON) # TODO document how this interacts with the above option
-option(ramses-sdk_BUILD_EXAMPLES "Build examples." ON)
-option(ramses-sdk_BUILD_TOOLS "Build tool binaries." ON)
-option(ramses-sdk_BUILD_DEMOS "Build demos." ON)
-option(ramses-sdk_TEXT_SUPPORT "Enable/disable the ramses text API." ON)
-option(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client-only shared library." OFF)
-option(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per-renderer shared libraries." ON)
-option(ramses-sdk_BUILD_DOCS "Build documentation (if Doxygen and Dot are found on the build host)." ON)
-option(ramses-sdk_ENABLE_WAYLAND_IVI "Build a version of ramses renderer which uses wayland-ivi surfaces." ON)
-option(ramses-sdk_ENABLE_WAYLAND_SHELL "Build a version of ramses renderer which uses wayland-shell surfaces." ON)
-option(ramses-sdk_ENABLE_TCP_SUPPORT "Enable use of TCP communication." ON)
-option(ramses-sdk_ENABLE_FALLBACK_FAKE_COMMUNICATION_SYSTEM "Allow fake communication system." ON) # TODO Document or delete this option
-option(ramses-sdk_ENABLE_DLT "Enable DLT logging support." ON)
-option(ramses-sdk_USE_LINUX_DEV_PTP "Enable support for synchronized PTP time on Linux." OFF)
-option(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization enabled (supported only on some platforms)." OFF)
-option(ramses-sdk_ENABLE_COVERAGE "Build with code coverage enabled (gcc: gcov, clang: source based coverage)." OFF)
-
-set(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
-set_property(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
-
-set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING "Optional folder prefix for targets in visual studio.")
-
-set(ramses-sdk_ENABLE_SANITIZER "" CACHE STRING "Enable build with a clang sanitizer.")
-set_property(CACHE ramses-sdk_ENABLE_SANITIZER PROPERTY STRINGS "" "ubsan" "tsan" "asan" "asan+ubsan")
-
-set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING "Set a custom prefix for target folders in Visual Studio. If not set, will be set based on project's relative path.")
-set(ramses-sdk_USE_LINKER_OVERWRITE "" CACHE STRING "Specify used linker (gcc/clang only).")
-set(ramses-sdk_CPACK_GENERATOR "TGZ" CACHE STRING "CPack package type (default: TGZ).")
-set(ramses-sdk_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}" CACHE STRING "Ramses version" FORCE)
-
-message(STATUS "RAMSES_VERSION=${RAMSES_VERSION}")
+message(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS} c++${ramses-sdk_CPP_VERSION}")
 
 set(ramses-sdk_VERSION_DIR "ramses-${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}")
 if (ramses-sdk_USE_VERSIONED_BINARIES)
@@ -134,62 +135,57 @@ set(RAMSES_INSTALL_RUNTIME_PATH     "${ramses-sdk_BINARY_DIR_BASE}")
 set(RAMSES_INSTALL_LIBRARY_PATH     lib)
 set(RAMSES_INSTALL_RESOURCES_PATH   "${ramses-sdk_BINARY_DIR_BASE}/res")
 
-addSubdirectories(
-    CONTENT AUTO external
-            ON   framework
+createBuildConfig()
 
-            ON   client/ramses-client
+addSubdirectory(MODE AUTO PATH external)
+addSubdirectory(MODE ON PATH framework)
 
-            ON   ramses-daemon
+addSubdirectory(MODE ON PATH client/ramses-client)
 
-            ON   renderer/RendererLib
+addSubdirectory(MODE ON PATH renderer/RendererLib)
 
-            # Auxilary platform components
-            AUTO renderer/Platform/WaylandEGLExtensionProcs
-            AUTO renderer/Platform/WaylandUtilities
-            AUTO renderer/Platform/SystemCompositorController_Wayland_IVI
+addSubdirectory(MODE AUTO PATH renderer/Platform/WaylandEGLExtensionProcs)
+addSubdirectory(MODE AUTO PATH renderer/Platform/WaylandUtilities)
+addSubdirectory(MODE AUTO PATH renderer/Platform/SystemCompositorController_Wayland_IVI)
 
-            # Window Components
-            AUTO renderer/Platform/Window_Windows
-            AUTO renderer/Platform/Window_Wayland
+addSubdirectory(MODE AUTO PATH renderer/Platform/Window_Windows)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Window_Wayland)
 
-            # Context Components
-            AUTO renderer/Platform/Context_WGL
-            AUTO renderer/Platform/Context_EGL
+addSubdirectory(MODE AUTO PATH renderer/Platform/Context_WGL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Context_EGL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Device_GL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Device_EGL_Extension)
 
-            # Device Components
-            AUTO renderer/Platform/Device_GL
-            AUTO renderer/Platform/Device_EGL_Extension
+# TODO Mohamed: those components should be possible to move before window components (have less deps)
+addSubdirectory(MODE AUTO PATH renderer/Platform/EmbeddedCompositor_Wayland)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Window_Wayland_Test)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Window_Wayland_IVI)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Window_Wayland_Shell)
 
-            # Other Components
-            # TODO Mohamed: those components should be possible to move before window components (have less deps)
-            AUTO renderer/Platform/EmbeddedCompositor_Wayland
-            AUTO renderer/Platform/Window_Wayland_Test
-            AUTO renderer/Platform/Window_Wayland_IVI
-            AUTO renderer/Platform/Window_Wayland_Shell
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Windows_WGL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Windows_WGL_4_2_core)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Windows_WGL_4_5)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Windows_WGL_ES_3_0)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_EGL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Wayland_EGL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Wayland_IVI_EGL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Wayland_Shell_EGL)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_X11)
+addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Android)
 
-            # Platforms
-            AUTO renderer/Platform/Platform_Windows_WGL
-            AUTO renderer/Platform/Platform_Windows_WGL_4_2_core
-            AUTO renderer/Platform/Platform_Windows_WGL_4_5
-            AUTO renderer/Platform/Platform_Windows_WGL_ES_3_0
-            AUTO renderer/Platform/Platform_EGL
-            AUTO renderer/Platform/Platform_Wayland_EGL
-            AUTO renderer/Platform/Platform_Wayland_IVI_EGL
-            AUTO renderer/Platform/Platform_Wayland_Shell_EGL
-            AUTO renderer/Platform/Platform_X11
-            AUTO renderer/Platform/Platform_Android
-
-            AUTO ramses-shared-lib
-            AUTO renderer/ramses-renderer-main
-            AUTO examples
-            AUTO integration
-            AUTO utils
-            AUTO demo
-)
+addSubdirectory(MODE AUTO PATH ramses-shared-lib)
+addSubdirectory(MODE AUTO PATH utils)
+if(ramses-sdk_BUILD_DAEMON)
+    addSubdirectory(MODE ON PATH ramses-daemon)
+endif()
+if(ramses-sdk_BUILD_TOOLS)
+    addSubdirectory(MODE AUTO PATH renderer/ramses-renderer-main)
+endif()
+addSubdirectory(MODE AUTO PATH examples)
+addSubdirectory(MODE AUTO PATH integration)
+addSubdirectory(MODE AUTO PATH demo)
 
 include(cmake/ramses/createPackage.cmake)
-
 include(cmake/ramses/addCheckerTargets.cmake)
 
 if (ramses-sdk_BUILD_DOCS)

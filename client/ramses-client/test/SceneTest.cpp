@@ -19,8 +19,7 @@
 #include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
-#include "ramses-client-api/StreamTexture.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-utils.h"
 
@@ -31,7 +30,6 @@
 #include "BlitPassImpl.h"
 #include "TextureSamplerImpl.h"
 #include "Texture2DImpl.h"
-#include "StreamTextureImpl.h"
 #include "ClientTestUtils.h"
 #include "SimpleSceneTopology.h"
 #include "Components/FlushTimeInformation.h"
@@ -292,22 +290,6 @@ namespace ramses
         ASSERT_TRUE(nullptr != renderBuffer);
 
         TextureSamplerMS* textureSampler = m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
-        EXPECT_TRUE(nullptr == textureSampler);
-
-        client.destroy(anotherScene);
-    }
-
-    TEST_F(AScene, failsToCreateTextureSamplerWhenStreamTextureIsFromAnotherScene)
-    {
-        Scene& anotherScene = *client.createScene(sceneId_t(12u));
-        uint8_t data[4] = { 0u };
-        MipLevelData mipLevelData(sizeof(data), data);
-        const Texture2D& fallbackTexture = *anotherScene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "");
-
-        StreamTexture* streamTexture = anotherScene.createStreamTexture(fallbackTexture, waylandIviSurfaceId_t(1), "testStreamTexture");
-        ASSERT_TRUE(nullptr != streamTexture);
-
-        TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *streamTexture);
         EXPECT_TRUE(nullptr == textureSampler);
 
         client.destroy(anotherScene);
@@ -1144,31 +1126,6 @@ namespace ramses
         EXPECT_NE(StatusOK, m_scene.updateTextureProvider(*texture, dataProviderId_t(1u)));
     }
 
-    TEST_F(AScene, canCreateStreamTextureWithFallbackTextureAndStreamSource)
-    {
-        const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
-        const waylandIviSurfaceId_t source(1);
-        StreamTexture* streamTexture = this->m_scene.createStreamTexture(texture2D, source, "testStreamTexture");
-
-        ASSERT_NE(static_cast<StreamTexture*>(nullptr), streamTexture);
-        EXPECT_EQ(source, streamTexture->impl.getStreamSource());
-        EXPECT_EQ(texture2D.impl.getLowlevelResourceHash(), streamTexture->impl.getFallbackTextureHash());
-    }
-
-    TEST_F(AScene, cannotCreateStreamTextureWithFallbackTextureFromDifferentScene)
-    {
-        const uint8_t data[4 * 10 * 12] = {};
-        MipLevelData mipLevelData(sizeof(data), data);
-
-        Scene& anotherScene(*client.createScene(sceneId_t{ 0xf00 }));
-
-        Texture2D* anotherTexture = anotherScene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
-        ASSERT_TRUE(nullptr != anotherTexture);
-
-        StreamTexture* streamTexture = this->m_scene.createStreamTexture(*anotherTexture, waylandIviSurfaceId_t(0), "StreamTexture");
-        EXPECT_TRUE(nullptr == streamTexture);
-    }
-
     TEST_F(AScene, canCreateTextureSamplerForTexture2DWithDefaultAnisotropyLevel)
     {
         const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
@@ -1589,14 +1546,16 @@ namespace ramses
 
     TEST_F(AScene, returnsFalseOnFlushWhenResourcesAreMissing)
     {
-        m_creationHelper.createObjectOfType<StreamTexture>("meh");
+        m_creationHelper.createObjectOfType<Appearance>("meh");
         EXPECT_EQ(StatusOK, m_scene.flush()); // test legal scene state => flush success
-        m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("fallbackTex")));
+        m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("appearance effect")));
         m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("meh")));
         EXPECT_EQ(StatusOK, m_scene.flush()); // resource is deleted, but nobody needs it => flush success
 
-        m_creationHelper.createObjectOfType<StreamTexture>("meh2");
-        m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("fallbackTex")));
+        auto* appearnace = m_creationHelper.createObjectOfType<Appearance>("meh2");
+        auto* mesh = m_creationHelper.createObjectOfType<MeshNode>("meh3");
+        mesh->setAppearance(*appearnace);
+        m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("appearance effect")));
         EXPECT_NE(StatusOK, m_scene.flush()); // test scene with resource missing => flush failed
     }
 

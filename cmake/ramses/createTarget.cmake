@@ -18,7 +18,7 @@ function(setSharedTargetProperties)
         ${ARGN}
     )
 
-    if(${TARGET_UNPARSED_ARGUMENTS})
+    if(TARGET_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unparsed setSharedTargetProperties properties: '${TARGET_UNPARSED_ARGUMENTS}'")
     endif()
 
@@ -86,7 +86,7 @@ function(createModule)
     )
 
     # Check for configuration errors
-    if(${MODULE_UNPARSED_ARGUMENTS})
+    if(MODULE_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unparsed createModule properties: '${MODULE_UNPARSED_ARGUMENTS}'")
     endif()
 
@@ -206,7 +206,7 @@ function(expandModuleByPlatform)
         "SRC_FILES;INCLUDE_PATHS;DEPENDENCIES;RESOURCE_FOLDERS"
         ${ARGN}
     )
-    if(${MODULE_UNPARSED_ARGUMENTS})
+    if(MODULE_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unparsed expandModuleByPlatform properties: '${MODULE_UNPARSED_ARGUMENTS}'")
     endif()
 

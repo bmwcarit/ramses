@@ -55,7 +55,6 @@ namespace ramses_internal
     ConnectionSystemTestDaemon::ConnectionSystemTestDaemon(const std::function<void(ramses::RamsesFrameworkConfigImpl&)>& configModifier)
     {
         ramses::RamsesFrameworkConfigImpl config;
-        config.enableProtocolVersionOffset();
         if (configModifier)
             configModifier(config);
         daemon = CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection);

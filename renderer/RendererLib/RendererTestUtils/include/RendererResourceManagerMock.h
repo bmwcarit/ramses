@@ -61,8 +61,6 @@ public:
     MOCK_METHOD(void, unloadOffscreenBuffer, (OffscreenBufferHandle bufferHandle), (override));
     MOCK_METHOD(void, uploadStreamBuffer, (StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId), (override));
     MOCK_METHOD(void, unloadStreamBuffer, (StreamBufferHandle bufferHandle), (override));
-    MOCK_METHOD(void, uploadStreamTexture, (StreamTextureHandle bufferHandle, WaylandIviSurfaceId source, SceneId sceneId), (override));
-    MOCK_METHOD(void, unloadStreamTexture, (StreamTextureHandle bufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadBlitPassRenderTargets, (BlitPassHandle, RenderBufferHandle, RenderBufferHandle, SceneId), (override));
     MOCK_METHOD(void, unloadBlitPassRenderTargets, (BlitPassHandle, SceneId), (override));
     MOCK_METHOD(void, uploadDataBuffer, (DataBufferHandle dataBufferHandle, EDataBufferType dataBufferType, EDataType dataType, UInt32 elementCount, SceneId sceneId), (override));

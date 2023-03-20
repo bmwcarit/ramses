@@ -21,7 +21,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <iostream>
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 
 constexpr const char* const vertexShader = R"##(
@@ -307,9 +307,9 @@ int main(int argc, char* argv[])
     {
         cli.add_option("--fps", maxFps, "Frames per second")->default_val(maxFps);
         cli.add_flag("-y,--flip-y", flipY, "flip received stream vertically (on y-axis)");
-        config.registerOptions(cli);
-        rendererConfig.registerOptions(cli);
-        displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
     }
     catch (const CLI::Error& error)
     {

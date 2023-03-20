@@ -18,7 +18,9 @@ namespace ramses_internal
     enum class ESceneActionId : uint32_t
     {
         // nodes
-        SetTransformComponent = 0,
+        SetTranslation = 0,
+        SetRotation,
+        SetScaling,
         AllocateNode,
         ReleaseNode,
         AllocateTransform,
@@ -46,11 +48,6 @@ namespace ramses_internal
         SetDataMatrix22fArray,
         SetDataMatrix33fArray,
         SetDataMatrix44fArray,
-
-        // Stream Texture
-        AllocateStreamTexture,
-        ReleaseStreamTexture,
-        SetForceFallback,
 
         // Data Buffer
         AllocateDataBuffer,
@@ -210,7 +207,9 @@ case ENUMVALUE: return #ENUMVALUE
         switch (type)
         {
             // nodes
-            CreateNameForEnumID(ESceneActionId::SetTransformComponent);
+            CreateNameForEnumID(ESceneActionId::SetTranslation);
+            CreateNameForEnumID(ESceneActionId::SetRotation);
+            CreateNameForEnumID(ESceneActionId::SetScaling);
             CreateNameForEnumID(ESceneActionId::AllocateNode);
             CreateNameForEnumID(ESceneActionId::ReleaseNode);
             CreateNameForEnumID(ESceneActionId::AllocateTransform);
@@ -238,11 +237,6 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId::SetDataMatrix22fArray);
             CreateNameForEnumID(ESceneActionId::SetDataMatrix33fArray);
             CreateNameForEnumID(ESceneActionId::SetDataMatrix44fArray);
-
-            // Stream texture
-            CreateNameForEnumID(ESceneActionId::AllocateStreamTexture);
-            CreateNameForEnumID(ESceneActionId::ReleaseStreamTexture);
-            CreateNameForEnumID(ESceneActionId::SetForceFallback);
 
             // Data Buffer
             CreateNameForEnumID(ESceneActionId::AllocateDataBuffer);

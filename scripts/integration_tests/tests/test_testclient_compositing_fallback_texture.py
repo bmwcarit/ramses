@@ -16,25 +16,17 @@ class TestCompositingFallbackTexture(test_classes.OnAllDefaultTargetsTest):
 
     @with_ramses_process_check
     def impl_setUp(self):
-        self.ramsesDaemon = self.target.start_daemon()
-        self.checkThatApplicationWasStarted(self.ramsesDaemon)
-        self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        self.renderer = self.target.start_default_renderer()
+        applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
+        self.renderer = self.target.start_renderer(applicationName=applicationName,
+                                                   args="--ec-display wayland-10 --ec-socket-group mgu_wayland --test-nr 10 --test-state 0")
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 10 --test-state 0 --cz 5")
-        self.checkThatApplicationWasStarted(self.testClient)
-        self.addCleanup(self.target.kill_application, self.testClient)
         self.percentageOfWrongPixelsAllowed = 0.01
 
     def impl_tearDown(self):
-        self.target.kill_application(self.testClient)
         self.target.kill_application(self.renderer)
-        self.target.kill_application(self.ramsesDaemon)
         log.info("all applications killed")
-        self.save_application_output(self.testClient)
         self.save_application_output(self.renderer)
-        self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 
     def impl_test(self):

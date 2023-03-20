@@ -6,21 +6,19 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-SET( LinuxInput_FOUND FALSE)
+set( LinuxInput_FOUND FALSE)
 
-IF (TARGET_OS MATCHES "Linux")
-
-    FIND_PATH(LinuxInput_INCLUDE_DIRS linux/input.h
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    find_path(LinuxInput_INCLUDE_DIRS linux/input.h
         /usr/include
     )
 
-    IF(LinuxInput_INCLUDE_DIRS)
+    if(LinuxInput_INCLUDE_DIRS)
         SET(LinuxInput_FOUND TRUE)
-    ENDIF()
+    endif()
 
-    MARK_AS_ADVANCED(
+    mark_as_advanced(
         LinuxInput_INCLUDE_DIRS
         LinuxInput_FOUND
     )
-
-ENDIF()
+endif()

@@ -15,4 +15,5 @@ expandModuleByPlatform(
     DEPENDENCIES            ramses-client
                             ramses-renderer-lib
                             ramses-imgui
+                            ramses-cli
 )

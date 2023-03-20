@@ -18,7 +18,6 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/ArrayResource.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-utils.h"
@@ -60,12 +59,6 @@ namespace ramses
 
                 RenderGroup* renderGroup   = scene->createRenderGroup("a rendergroup");
                 renderGroup->addMeshNode(*scene->createMeshNode(), 3);
-
-                // stream texture
-                uint8_t data[4] = { 0u };
-                MipLevelData mipLevelData(sizeof(data), data);
-                Texture2D* fallbackTexture = scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
-                scene->createStreamTexture(*fallbackTexture, waylandIviSurfaceId_t(3), "resourceName");
 
                 //appearance
                 Effect* effect = TestEffects::CreateTestEffect(*scene);

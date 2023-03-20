@@ -127,7 +127,7 @@ namespace ramses_internal
         EReadFromPipeStatus readExactBytesFromPipe(void *writingLocation, ssize_t totalBytesToRead) const
         {
             ssize_t bytesRemaining = totalBytesToRead;
-            uint8_t* currentWritingLocation = reinterpret_cast<uint8_t*>(writingLocation);
+            uint8_t* currentWritingLocation = static_cast<uint8_t*>(writingLocation);
 
             while (true)
             {

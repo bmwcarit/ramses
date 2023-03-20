@@ -33,7 +33,6 @@ namespace ramses_internal
             "CXX_FLAGS_RELEASE = "  << ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS_RELEASE << "\n" <<
             "BUILD_SYSTEM_NAME = "  << ::ramses_sdk::RAMSES_SDK_CMAKE_SYSTEM_NAME << "\n" <<
             "CMAKE_VERSION = "      << ::ramses_sdk::RAMSES_SDK_CMAKE_VERSION << "\n" <<
-            "TARGET_OS = "          << ::ramses_sdk::RAMSES_SDK_TARGET_OS << "\n" <<
             "BUILD_ENV_INFO = "     << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL << "\n"
             );
         return true;

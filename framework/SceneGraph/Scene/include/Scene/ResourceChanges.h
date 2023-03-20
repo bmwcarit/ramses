@@ -27,9 +27,6 @@ namespace ramses_internal
         ESceneResourceAction_CreateRenderTarget,
         ESceneResourceAction_DestroyRenderTarget,
 
-        ESceneResourceAction_CreateStreamTexture,
-        ESceneResourceAction_DestroyStreamTexture,
-
         ESceneResourceAction_CreateBlitPass,
         ESceneResourceAction_DestroyBlitPass,
 
@@ -106,8 +103,6 @@ namespace ramses_internal
         "DestroyRenderBuffer",
         "CreateRenderTarget",
         "DestroyRenderTarget",
-        "CreateStreamTexture",
-        "DestroyStreamTexture",
         "CreateBlitPass",
         "DestroyBlitPass",
         "CreateDataBuffer",

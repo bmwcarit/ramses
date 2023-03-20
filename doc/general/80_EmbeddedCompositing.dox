@@ -98,20 +98,10 @@ This works via API in `DisplayConfig` : \ref ramses::DisplayConfig::setWaylandEm
 
 ## Embedded Compositing API
 
-The only type available for RAMSES clients to facilitate embedded compositing is
-\ref ramses::StreamTexture. The notion behind the StreamTexture is that
-- objects of this type can be used the same way and in the same places the
-  normal Texture2D is used
-- only the platform (pre)defined surface IDs can be used as its source (see type
-  \ref ramses::waylandIviSurfaceId_t)
-- if the surface is not available or the platform doesn't support embedded
-  compositing the default fallback texture is used.
-
-To create the StreamTexture object one needs to call
-#ramses::Scene::createStreamTexture. The argument `source` is an ID of a surface
-which will be used for nested compositing. In case that surface is not available
-or the platform doesn't support embedded compositing the default texture
-(ie. `fallbackTexture`) will be used.
+In order to show content from a wayland surface connected to the embeddded compositor data linking must be used. A 2D texture sampler
+from the client needs to act as a texture consumer, where it consumes content from a buffer of type \ref ramses::streamBufferId_t created
+on the renderer side. If content is not available on the surface the renderer would fallback to the original
+texture for the texture sampler. All mechanisms and rules of texture linking apply to stream buffers.
 
 
 ## Example

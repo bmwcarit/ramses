@@ -11,7 +11,6 @@
 #include "TestScenes/HierarchicalRedTrianglesScene.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "TestScenes/TextScene.h"
-#include "TestScenes/StreamTextureScene.h"
 #include "TestScenes/MultiLanguageTextScene.h"
 #include "TestScenes/FileLoadingScene.h"
 #include "TestScenes/MultiTypeLinkScene.h"
@@ -22,7 +21,7 @@
 #include "Ramsh/RamshCommandExit.h"
 #include "TestStepCommand.h"
 #include "Ramsh/Ramsh.h"
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 using SceneVector = std::vector<ramses::Scene*>;
 using IntegrationScenePtr = std::unique_ptr<ramses_internal::IntegrationScene>;
@@ -103,7 +102,7 @@ int main(int argc, const char* argv[])
         cli.add_option("--cz", cameraZ, "Camera position z");
         cli.add_option("--folder", folder);
         cli.add_option("--filename", filename);
-        frameworkConfig.registerOptions(cli);
+        ramses::registerOptions(cli, frameworkConfig);
     }
     catch (const CLI::Error& error)
     {
@@ -193,12 +192,6 @@ int main(int argc, const char* argv[])
         integrationScenes.push_back(std::move(integrationScene4));
         break;
     }
-    case 10:
-    {
-        auto integrationScene = createSceneAndSetState<ramses_internal::StreamTextureScene>(*ramses, scenes, testState, ramses::sceneId_t(34u), cameraPosParam);
-        integrationScenes.push_back(std::move(integrationScene));
-        break;
-    }
     case 11:
     {
         // do not occupy, should be an empty scene
@@ -250,13 +243,6 @@ int main(int argc, const char* argv[])
     {
         // for IVI layer test with custom resolution
         auto integrationScene = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, testState, ramses::sceneId_t(26u), cameraPosParam, 640u, 480u);
-        integrationScenes.push_back(std::move(integrationScene));
-        break;
-    }
-    case 22:
-    {
-        // for SC test with custom resolution
-        auto integrationScene = createSceneAndSetState<ramses_internal::StreamTextureScene>(*ramses, scenes, testState, ramses::sceneId_t(34u), cameraPosParam, 150u, 200u);
         integrationScenes.push_back(std::move(integrationScene));
         break;
     }

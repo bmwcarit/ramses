@@ -1720,16 +1720,27 @@ TEST_F(ARendererSceneUpdater, appliesBigPendingWithinOneUpdate)
 // Tests for marking scenes as modified
 /////////////////////////////////////////////
 
-TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsNotUpdated)
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamBufferStateIsNotUpdated)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
-    createRenderableAndResourcesWithStreamTexture();
 
-    expectStreamTextureUploaded();
-    expectVertexArrayUploaded();
+    constexpr StreamBufferHandle streamBuffer{ 13u };
+
+    const auto dataSlotId = createRenderableWithTextureConsumer();
+    createBufferLink(streamBuffer, getSceneId(0u), dataSlotId);
+    update();
+
+    expectRenderableResourcesClean();
+
+    constexpr WaylandIviSurfaceId source{ 12u };
+    const StreamUsage fakeStreamUsage{ {}, { streamBuffer} };
+    const WaylandIviSurfaceIdVector changedSources{ source };
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(streamBuffer));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
     update();
     expectRenderableResourcesClean();
 
@@ -1742,36 +1753,6 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
 
     hideScene();
     unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdated_usedByScenes)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene();
-    mapScene(0u);
-    mapScene(1u);
-    showScene(0u);
-    showScene(1u);
-
-    constexpr WaylandIviSurfaceId source{ 12u };
-    constexpr StreamTextureHandle tex1{ 13u };
-    constexpr StreamTextureHandle tex2{ 14u };
-    const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
-
-    StreamSourceUpdates updates{ {source, 1u } };
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-
-    expectModifiedScenesReportedToRenderer({ 0u, 1u });
-    update();
-
-    hideScene(0u);
-    hideScene(1u);
-    unmapScene(0u);
-    unmapScene(1u);
     destroyDisplay();
 }
 
@@ -1788,7 +1769,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     constexpr WaylandIviSurfaceId source{ 12u };
     constexpr StreamBufferHandle sb1{ 13u };
     constexpr StreamBufferHandle sb2{ 14u };
-    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+    const StreamUsage fakeStreamUsage{ sb1, sb2 };
 
     // link both SBs to scenes
     const auto dataSlotId1 = createTextureConsumer(0u);
@@ -1800,35 +1781,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     StreamSourceUpdates updates{ {source, 1u } };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
     EXPECT_CALL(renderer.m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-
-    expectModifiedScenesReportedToRenderer({ 0u, 1u });
-    update();
-
-    hideScene(0u);
-    hideScene(1u);
-    unmapScene(0u);
-    unmapScene(1u);
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityChanged_usedByScenes)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene();
-    mapScene(0u);
-    mapScene(1u);
-    showScene(0u);
-    showScene(1u);
-
-    constexpr WaylandIviSurfaceId source{ 12u };
-    constexpr StreamTextureHandle tex1{ 13u };
-    constexpr StreamTextureHandle tex2{ 14u };
-    const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
-
-    WaylandIviSurfaceIdVector changedSources{ source };
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
@@ -1854,7 +1806,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     constexpr WaylandIviSurfaceId source{ 12u };
     constexpr StreamBufferHandle sb1{ 13u };
     constexpr StreamBufferHandle sb2{ 14u };
-    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+    const StreamUsage fakeStreamUsage{ sb1, sb2 };
 
     // link both SBs to scenes
     const auto dataSlotId1 = createTextureConsumer(0u);
@@ -1890,7 +1842,7 @@ TEST_F(ARendererSceneUpdater, WillNotUnlinkStreamBuffer_IfStreamSourceBecameAvai
     constexpr WaylandIviSurfaceId source{ 12u };
     constexpr StreamBufferHandle sb1{ 13u };
     constexpr StreamBufferHandle sb2{ 14u };
-    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+    const StreamUsage fakeStreamUsage{ sb1, sb2 };
 
     // link both SBs to scenes
     const auto dataSlotId1 = createTextureConsumer(0u);

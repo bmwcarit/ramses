@@ -10,7 +10,7 @@
 #define RAMSES_ARRAYBUFFER_H
 
 #include "ramses-client-api/SceneObject.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 
 namespace ramses
 {

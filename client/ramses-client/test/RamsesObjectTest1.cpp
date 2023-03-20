@@ -12,7 +12,6 @@
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
-#include "ramses-client-api/StreamTexture.h"
 
 #include "ramses-utils.h"
 #include "RamsesObjectTestTypes.h"

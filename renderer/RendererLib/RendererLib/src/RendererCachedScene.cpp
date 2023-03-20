@@ -155,9 +155,9 @@ namespace ramses_internal
         return m_passRenderableOrder[pass.asMemoryHandle()];
     }
 
-    void RendererCachedScene::updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager)
+    void RendererCachedScene::updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor)
     {
-        updateRenderableResources(resourceAccessor, embeddedCompositingManager);
+        updateRenderableResources(resourceAccessor);
         updatePassRenderableSorting();
     }
 

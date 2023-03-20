@@ -19,12 +19,10 @@
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/Texture2DBuffer.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "StreamTextureImpl.h"
 #include "TextureSamplerImpl.h"
 #include "RenderBufferImpl.h"
 #include "Texture2DImpl.h"
@@ -213,28 +211,6 @@ namespace ramses
         EXPECT_EQ(nullptr, sampler);
     }
 
-    TEST_F(TextureSamplerTest, createSamplerForStreamTexture)
-    {
-        const StreamTexture& streamTexture = createObject<StreamTexture>();
-        const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, streamTexture);
-
-        ASSERT_NE(static_cast<TextureSampler*>(nullptr), sampler);
-        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
-        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
-        EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
-        EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMagSamplingMethod());
-        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
-        EXPECT_EQ(ERamsesObjectType_StreamTexture, sampler->getTextureType());
-
-
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
-        const ramses_internal::StreamTextureHandle streamTextureHandle = streamTexture.impl.getHandle();
-
-        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
-        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::StreamTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
-        EXPECT_EQ(streamTextureHandle.asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
-    }
-
     TEST_F(TextureSamplerTest, reportsErrorWhenValidatedWithInvalidTexture2D)
     {
         Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
@@ -307,17 +283,6 @@ namespace ramses
         EXPECT_EQ(StatusOK, sampler->validate());
 
         EXPECT_EQ(StatusOK, m_scene.destroy(renderBuffer));
-        EXPECT_NE(StatusOK, sampler->validate());
-    }
-
-    TEST_F(TextureSamplerTest, reportsErrorWhenValidatedWithInvalidStreamTexture)
-    {
-        StreamTexture& streamTexture = createObject<StreamTexture>();
-        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, streamTexture);
-        ASSERT_TRUE(nullptr != sampler);
-        EXPECT_EQ(StatusOK, sampler->validate());
-
-        EXPECT_EQ(StatusOK, m_scene.destroy(streamTexture));
         EXPECT_NE(StatusOK, sampler->validate());
     }
 
@@ -456,29 +421,6 @@ namespace ramses
         EXPECT_EQ(buffer.impl.getRenderBufferHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
     }
 
-    TEST_F(TextureSamplerTest, setTextureDataToStreamTexture)
-    {
-        const Texture2D& texture2D = createObject<Texture2D>();
-        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture2D, 1u);
-        ASSERT_NE(nullptr, sampler);
-
-        const StreamTexture& texture = createObject<StreamTexture>();
-        EXPECT_EQ(StatusOK, sampler->setTextureData(texture));
-
-        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapUMode());
-        EXPECT_EQ(ETextureAddressMode_Clamp, sampler->getWrapVMode());
-        EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMinSamplingMethod());
-        EXPECT_EQ(ETextureSamplingMethod_Linear, sampler->getMagSamplingMethod());
-        EXPECT_EQ(1u, sampler->getAnisotropyLevel());
-        EXPECT_EQ(ERamsesObjectType_StreamTexture, sampler->getTextureType());
-
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
-        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
-        EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
-        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::StreamTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
-        EXPECT_EQ(texture.impl.getHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
-    }
-
     TEST_F(TextureSamplerTest, failsToSetTextureDataToSamplerMarkedAsConsumer)
     {
         const auto& texture2D = createObject<Texture2D>();
@@ -495,8 +437,6 @@ namespace ramses
         EXPECT_NE(StatusOK, sampler->setTextureData(textureBuffer));
         const auto& renderBuffer = createObject<RenderBuffer>();
         EXPECT_NE(StatusOK, sampler->setTextureData(renderBuffer));
-        const auto& streamTexture = createObject<StreamTexture>();
-        EXPECT_NE(StatusOK, sampler->setTextureData(streamTexture));
     }
 
     TEST_F(TextureSamplerTest, failsToSetTextureDataFromOtherSceneThanSampler)
@@ -516,7 +456,5 @@ namespace ramses
         EXPECT_NE(StatusOK, sampler->setTextureData(textureBuffer));
         const auto& renderBuffer = *creationHelper.createObjectOfType<RenderBuffer>(nullptr);
         EXPECT_NE(StatusOK, sampler->setTextureData(renderBuffer));
-        const auto& streamTexture = *creationHelper.createObjectOfType<StreamTexture>(nullptr);
-        EXPECT_NE(StatusOK, sampler->setTextureData(streamTexture));
     }
 }

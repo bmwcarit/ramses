@@ -25,7 +25,6 @@
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/RenderBuffer.h"

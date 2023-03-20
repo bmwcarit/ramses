@@ -20,7 +20,6 @@ namespace ramses
     class TextureCube;
     class Texture2DBuffer;
     class RenderBuffer;
-    class StreamTexture;
 
     /**
      * @brief The TextureSampler holds a texture and its sampling parameters
@@ -97,8 +96,6 @@ namespace ramses
         status_t setTextureData(const Texture2DBuffer& dataSource);
         /// @copybrief setTextureData(const Texture2D&)
         status_t setTextureData(const RenderBuffer& dataSource);
-        /// @copybrief setTextureData(const Texture2D&)
-        status_t setTextureData(const StreamTexture& dataSource);
 
         /**
         * Stores internal data for implementation specifics of TextureSampler.

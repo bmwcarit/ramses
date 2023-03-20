@@ -1229,14 +1229,14 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_S
     ManagedResource manRes(res);
     ResourceInfo info(res);
 
-    scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
+    scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, { 111, 111 }, {} });
     EXPECT_CALL(resourceComponent, knowsResource(_)).WillOnce(Return(true));
     EXPECT_CALL(resourceComponent, resolveResources(_)).Times(2).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
     EXPECT_CALL(resourceComponent, getResourceInfo(_)).WillOnce(ReturnRef(info));
 
     EXPECT_TRUE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 
-    scene.allocateStreamTexture(WaylandIviSurfaceId(124u), { 222, 222 }, StreamTextureHandle{ 1 });
+    scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, { 222, 222 }, {} });
     EXPECT_CALL(resourceComponent, resolveResources(_)).WillOnce(Return(ManagedResourceVector{}));
     EXPECT_FALSE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 }
@@ -1255,13 +1255,13 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_D
     ManagedResource manRes(res);
     ResourceInfo info(res);
 
-    scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
+    scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, { 111, 111 }, {} });
     EXPECT_CALL(resourceComponent, knowsResource(_)).WillOnce(Return(true));
     EXPECT_CALL(resourceComponent, resolveResources(_)).Times(1).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
     EXPECT_CALL(resourceComponent, getResourceInfo(_)).WillOnce(ReturnRef(info));
     EXPECT_TRUE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 
-    scene.allocateStreamTexture(WaylandIviSurfaceId(124u), { 222, 222 }, StreamTextureHandle{ 1 });
+    scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, { 222, 222 }, {} });
     EXPECT_CALL(resourceComponent, resolveResources(_)).WillOnce(Return(ManagedResourceVector{}));
     EXPECT_FALSE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 }

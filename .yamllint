@@ -17,6 +17,10 @@ ignore: |
     /external/cli11/
     /external/harfbuzz/
     /external/freetype/
+    /external/flatbuffers/
+    /external/sol/
+    /external/google-benchmark/
+    /external/lua/
 
 rules:
     line-length: disable

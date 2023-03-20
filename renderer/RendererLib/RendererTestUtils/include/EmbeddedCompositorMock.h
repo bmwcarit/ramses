@@ -14,7 +14,6 @@
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererAPI/ITextureUploadingAdapter.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {

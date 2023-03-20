@@ -61,7 +61,7 @@ namespace ramses_internal
     class Device_EGL_Extension: public IDeviceExtension
     {
     public:
-        explicit Device_EGL_Extension(Context_EGL& context, const String& renderNode);
+        explicit Device_EGL_Extension(Context_EGL& context, std::string_view renderNode);
         virtual ~Device_EGL_Extension() override;
 
         bool init();

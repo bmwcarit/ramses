@@ -268,7 +268,6 @@ namespace ramses
         m_communicationSystem->disconnectServices();
 
         m_connected = false;
-        LOG_INFO(CONTEXT_SMOKETEST, "RamsesFrameworkImpl::disconnect end of disconnect");
         LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::disconnect: done ok");
 
         return StatusOK;
@@ -277,8 +276,6 @@ namespace ramses
     RamsesFrameworkImpl& RamsesFrameworkImpl::createImpl(const RamsesFrameworkConfig& config)
     {
         ramses_internal::GetRamsesLogger().initialize(config.impl.loggerConfig, false, config.impl.getDltApplicationRegistrationEnabled());
-
-        const ramses_internal::String& participantName = GetParticipantName(config);
 
         ramses_internal::Guid myGuid = config.impl.getUserProvidedGuid();
         if (!myGuid.isValid())
@@ -295,7 +292,7 @@ namespace ramses
                 myGuid = Guid(dis(gen));
             }
         }
-        ramses_internal::ParticipantIdentifier participantAddress(myGuid, participantName);
+        ramses_internal::ParticipantIdentifier participantAddress(myGuid, config.impl.getParticipantName());
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: " << participantAddress.getParticipantName() << " guid:" << participantAddress.getParticipantId() <<
                  " stack: " << config.impl.getUsedProtocol());
@@ -323,45 +320,6 @@ namespace ramses
         return *impl;
     }
 
-    ramses_internal::String RamsesFrameworkImpl::GetParticipantName(const RamsesFrameworkConfig& config)
-    {
-        String participantName;
-
-        // use executable name
-        const ramses_internal::String& programName = config.impl.getProgramName();
-        if (programName.size() > 0)
-        {
-            participantName = programName;
-            size_t slash = participantName.rfind('/');
-            if (slash == String::npos)
-            {
-                slash = participantName.rfind('\\');
-            }
-            if (slash != String::npos)
-            {
-                participantName = participantName.substr(slash + 1, participantName.size() - slash - 1);
-            }
-        }
-        else
-        {
-            participantName = String("clientName");
-        }
-
-        // use communication user
-        participantName += "_";
-
-        if (config.impl.getUsedProtocol() == EConnectionProtocol::TCP)
-        {
-            participantName += "TCP";
-        }
-        else
-        {
-            participantName += "UnknownComm";
-        }
-
-        return participantName;
-    }
-
     void RamsesFrameworkImpl::SetConsoleLogLevel(ELogLevel logLevel)
     {
         GetRamsesLogger().setConsoleLogLevelProgrammatically(GetELogLevelInternal(logLevel));
@@ -370,30 +328,6 @@ namespace ramses
     void RamsesFrameworkImpl::SetLogHandler(const LogHandlerFunc& logHandlerFunc)
     {
         GetRamsesLogger().setLogHandler(logHandlerFunc);
-    }
-
-    ramses_internal::ELogLevel RamsesFrameworkImpl::GetELogLevelInternal(ELogLevel logLevel)
-    {
-        switch (logLevel)
-        {
-        case ramses::ELogLevel::Off:
-            return ramses_internal::ELogLevel::Off;
-        case ramses::ELogLevel::Fatal:
-            return ramses_internal::ELogLevel::Fatal;
-        case ramses::ELogLevel::Error:
-            return ramses_internal::ELogLevel::Error;
-        case ramses::ELogLevel::Warn:
-            return ramses_internal::ELogLevel::Warn;
-        case ramses::ELogLevel::Info:
-            return ramses_internal::ELogLevel::Info;
-        case ramses::ELogLevel::Debug:
-            return ramses_internal::ELogLevel::Debug;
-        case ramses::ELogLevel::Trace:
-            return ramses_internal::ELogLevel::Trace;
-        }
-
-        assert(false);
-        return ramses_internal::ELogLevel::Off;
     }
 
     void RamsesFrameworkImpl::LogEnvironmentVariableIfSet(const ramses_internal::String& envVarName)

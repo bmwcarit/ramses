@@ -1,0 +1,39 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2023 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+---
+include:
+  - .*
+
+exclude:
+  # exclude all external
+  - ^external/
+
+sort-order:
+  # run on tests first because tests tend to take long due to googletest macros
+  - pattern: /test/
+    priority: 10
+
+check-filter:
+  - check: cppcoreguidelines-pro-type-reinterpret-cast
+    include:
+      - ^framework/
+      - ^client/
+  # false positives on clang-12 related to google test matchers
+  - check: clang-analyzer-cplusplus.NewDeleteLeaks
+    pattern: Potential leak of memory pointed to by field 'shared'
+    exclude:
+      - /test/.*Test.cpp$
+      - ^renderer/RendererLib/RendererLib/test/RendererSceneUpdaterTest_Resources.cpp$
+      - ^renderer/RendererLib/RendererLib/test/TestSceneHelper.h$
+      - ^renderer/RendererLib/RendererLib/test/RendererSceneUpdaterTest.h$
+      - ^renderer/RendererLib/RendererTestUtils/src/RendererResourceManagerMock.cpp$
+
+remove-duplicate-sources: true
+remove-duplicate-reports: true
+filter-headers: true

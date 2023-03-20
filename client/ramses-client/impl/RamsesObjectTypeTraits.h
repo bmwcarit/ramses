@@ -101,7 +101,6 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(DataVector2i, ERamsesObjectType_DataVector2i, ERamsesObjectType_DataObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(DataVector3i, ERamsesObjectType_DataVector3i, ERamsesObjectType_DataObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(DataVector4i, ERamsesObjectType_DataVector4i, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(StreamTexture, ERamsesObjectType_StreamTexture, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RamsesObject, ERamsesObjectType_RamsesObject, ERamsesObjectType_Invalid, false);
     DEFINE_RAMSES_OBJECT_TRAITS(ClientObject, ERamsesObjectType_ClientObject, ERamsesObjectType_RamsesObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(SceneObject, ERamsesObjectType_SceneObject, ERamsesObjectType_ClientObject, false);
@@ -175,7 +174,6 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector2i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector3i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_StreamTexture)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneReference)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerExternal)
     DEFINE_RAMSES_OBJECT_TRAITS_LIST_END()

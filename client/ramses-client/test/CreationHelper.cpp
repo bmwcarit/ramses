@@ -124,7 +124,7 @@ namespace ramses
     }
     template <> Appearance* CreationHelper::createObjectOfType<Appearance>(const char* name)
     {
-        return m_scene->createAppearance(*TestEffects::CreateTestEffect(*m_scene), name);
+        return m_scene->createAppearance(*TestEffects::CreateTestEffect(*m_scene, "appearance effect"), name);
     }
     template <> Texture2D* CreationHelper::createObjectOfType<Texture2D>(const char* name)
     {
@@ -246,14 +246,6 @@ namespace ramses
     template <> DataVector4i* CreationHelper::createObjectOfType<DataVector4i>(const char* name)
     {
         return m_scene->createDataVector4i(name);
-    }
-    template <> StreamTexture* CreationHelper::createObjectOfType<StreamTexture>(const char* name)
-    {
-        uint8_t data[4] = { 0u };
-        MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* fallback = m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "fallbackTex");
-        StreamTexture* streamTexture = m_scene->createStreamTexture(*fallback, waylandIviSurfaceId_t(0), name);
-        return streamTexture;
     }
 
     template <> ArrayBuffer* CreationHelper::createObjectOfType<ArrayBuffer>(const char* name)

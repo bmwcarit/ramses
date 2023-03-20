@@ -33,17 +33,17 @@ namespace ramses
     struct TextLine
     {
         /// Mesh node that represents the text
-        MeshNode*                meshNode = nullptr;
+        MeshNode*           meshNode = nullptr;
         /// Index to the atlas page containing the glyphs
-        std::size_t                   atlasPage = std::numeric_limits<std::size_t>::max();
+        std::size_t         atlasPage = std::numeric_limits<std::size_t>::max();
         /// Glyph metrics of the original string characters
-        GlyphMetricsVector       glyphs;
+        GlyphMetricsVector  glyphs;
         /// Stores vertex data for the text line quads
         ArrayBuffer*        positions = nullptr;
         /// Stores texture coordinate data for the text line quads
         ArrayBuffer*        textureCoordinates = nullptr;
         /// Stores index data for the text line quads
-        ArrayBuffer*         indices = nullptr;
+        ArrayBuffer*        indices = nullptr;
     };
 
     static_assert(std::is_move_constructible<TextLine>::value, "TextLine must be movable");

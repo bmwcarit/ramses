@@ -23,7 +23,7 @@ namespace ramses_internal
         getArgument<1>().setDefaultValue(false);
         getArgument<2>().setDefaultValue(NodeHandle::Invalid().asMemoryHandle());
 
-        getArgument<0>().setDescription("topic (display|scene|stream|res|queue|links|ec|events|all)");
+        getArgument<0>().setDescription("topic (display|scene|res|queue|links|ec|events|all)");
         getArgument<1>().setDescription("verbose mode");
         getArgument<2>().setDescription("node Id filter");
 
@@ -47,8 +47,6 @@ namespace ramses_internal
             return ERendererLogTopic::Displays;
         if (topicName == String("scene"))
             return ERendererLogTopic::SceneStates;
-        if (topicName == String("stream"))
-            return ERendererLogTopic::StreamTextures;
         if (topicName == String("res"))
             return ERendererLogTopic::Resources;
         if (topicName == String("queue"))

@@ -498,11 +498,8 @@ namespace ramses_internal
                 {
                     m_renderer.getStatistics().streamTextureUpdated(updatedSource.first, updatedSource.second);
                     const auto& streamUsage = m_displayResourceManager->getStreamUsage(updatedSource.first);
-                    // mark all scenes with stream textures using updated source as modified
-                    for (const auto& sceneUsage : streamUsage.sceneUsages)
-                        m_modifiedScenesToRerender.put(sceneUsage.first);
                     // mark all scenes linked as consumer to updated source as modified
-                    for (const auto streamBuffer : streamUsage.streamBufferUsages)
+                    for (const auto streamBuffer : streamUsage)
                     {
                         links.clear();
                         texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
@@ -586,7 +583,7 @@ namespace ramses_internal
 
             if (pendingFlush.versionTag.isValid())
             {
-                LOG_INFO(CONTEXT_SMOKETEST, "Named flush applied on scene " << rendererScene.getSceneId() <<
+                LOG_DEBUG(CONTEXT_SMOKETEST, "Named flush applied on scene " << rendererScene.getSceneId() <<
                     " with sceneVersionTag " << pendingFlush.versionTag);
                 m_rendererEventCollector.addSceneFlushEvent(ERendererEventType::SceneFlushed, sceneID, pendingFlush.versionTag);
             }
@@ -675,18 +672,8 @@ namespace ramses_internal
             for (const auto changedStream : streamsWithAvailabilityChanged)
             {
                 const auto& streamUsage = m_displayResourceManager->getStreamUsage(changedStream);
-                // mark renderables using stream texture with changed availability as dirty
-                for (const auto& sceneUsage : streamUsage.sceneUsages)
-                {
-                    const auto& rendererScene = m_rendererScenes.getScene(sceneUsage.first);
-                    for (const auto sceneTex : sceneUsage.second)
-                        rendererScene.setRenderableResourcesDirtyByStreamTexture(sceneTex);
-
-                    m_modifiedScenesToRerender.put(sceneUsage.first);
-                }
-
                 // mark renderables using samplers with linked to stream buffers with changed availability as dirty
-                for (const auto streamBuffer : streamUsage.streamBufferUsages)
+                for (const auto streamBuffer : streamUsage)
                 {
                     links.clear();
                     texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
@@ -768,9 +755,8 @@ namespace ramses_internal
             // update resource cache only if scene is actually rendered
             if (m_sceneStateExecutor.getSceneState(sceneId) == ESceneState::Rendered)
             {
-                const IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController().getEmbeddedCompositingManager();
                 RendererCachedScene& rendererScene = *(sceneIt.value.scene);
-                rendererScene.updateRenderablesAndResourceCache(*m_displayResourceManager, embeddedCompositingManager);
+                rendererScene.updateRenderablesAndResourceCache(*m_displayResourceManager);
             }
         }
     }

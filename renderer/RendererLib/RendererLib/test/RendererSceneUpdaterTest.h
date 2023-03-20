@@ -531,30 +531,27 @@ protected:
         scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), 0u, 0u, 0u);
     }
 
-    void setRenderableStreamTexture(UInt32 sceneIndex = 0u)
+    DataSlotId createRenderableWithTextureConsumer(UInt32 sceneIndex = 0u)
     {
-        IScene& scene = *stagingScene[sceneIndex];
-        scene.setDataTextureSamplerHandle(uniformDataInstanceHandle, DataFieldHandle(0u), samplerHandle);
-        performFlush(sceneIndex);
-    }
-
-    void createSamplerWithStreamTexture(UInt32 sceneIndex = 0u)
-    {
-        IScene& scene = *stagingScene[sceneIndex];
-        scene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, ResourceContentHash::Invalid(), streamTextureHandle);
-        scene.allocateTextureSampler({ {}, streamTextureHandle }, samplerHandle);
-    }
-
-    void createRenderableAndResourcesWithStreamTexture(UInt32 sceneIndex = 0u)
-    {
+        expectVertexArrayUploaded(sceneIndex);
         expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, sceneIndex);
         createRenderable(sceneIndex, false, true);
         setRenderableResources(sceneIndex);
+        update();
 
-        createSamplerWithStreamTexture(sceneIndex);
-        setRenderableStreamTexture(sceneIndex);
+        IScene& scene = *stagingScene[sceneIndex];
+        scene.allocateTextureSampler({ {}, MockResourceHash::TextureHash }, samplerHandle);
+        scene.setDataTextureSamplerHandle(uniformDataInstanceHandle, DataFieldHandle(0u), samplerHandle);
+        const DataSlotId consumerId(getNextFreeDataSlotIdForDataLinking());
+        scene.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), samplerHandle });
 
-        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadStreamTexture(streamTextureHandle, _, getSceneId(sceneIndex)));
+        expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, sceneIndex);
+        performFlush(sceneIndex);
+        update();
+
+        expectSceneEvent(ERendererEventType::SceneDataSlotConsumerCreated);
+
+        return consumerId;
     }
 
     void removeRenderableResources(UInt32 sceneIndex = 0u)
@@ -1005,7 +1002,6 @@ protected:
     const DataInstanceHandle geometryDataInstanceHandle{ 1 };
 
     const TextureSamplerHandle samplerHandle{ 2 };
-    const StreamTextureHandle streamTextureHandle{ 0 };
 
     std::vector<std::unique_ptr<ActionCollectingScene>> stagingScene;
     DataSlotId dataSlotIdForDataLinking{9911u};

@@ -129,12 +129,10 @@ createModule(
                             ../external/lodepng/lodepng.cpp
 
     DEPENDENCIES            ramses-framework-api
-                            CLI11
                             ramses-common-base
                             lz4
                             fmt::fmt
                             ramses-abseil
-                            CLI11::CLI11
     # conditional values
     ${ramses-framework-TCP_MIXIN}
     ${ramses-framework-DLT_MIXIN}
@@ -146,13 +144,6 @@ if (ramses-sdk_ENABLE_TCP_SUPPORT)
   target_compile_definitions(ramses-framework PUBLIC "-DHAS_TCP_COMM=1")
 else()
   message(STATUS "- TCP communication system support disabled")
-endif()
-
-if (ramses-sdk_ENABLE_FALLBACK_FAKE_COMMUNICATION_SYSTEM)
-  message(STATUS "+ Fallback fake communication system enabled")
-  target_compile_definitions(ramses-framework PUBLIC "-DHAS_FALLBACK_FAKE_COMMUNICATION_SYSTEM=1")
-else()
-  message(STATUS "- Fallback fake communication system disabled")
 endif()
 
 if (ramses-sdk_HAS_DLT)

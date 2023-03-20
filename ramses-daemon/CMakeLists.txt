@@ -7,15 +7,10 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    ramses-daemon
     TYPE                    BINARY
     ENABLE_INSTALL          ON
-
     SRC_FILES               main.cpp
-
     DEPENDENCIES            ramses-framework
+                            ramses-cli
 )

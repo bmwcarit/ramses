@@ -9,7 +9,6 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/DisplayConfig.h"
-#include "CLI/CLI.hpp"
 
 class AInternalDisplayConfig : public ::testing::Test
 {
@@ -32,7 +31,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_FALSE(m_config.isResizable());
     EXPECT_EQ(0u, m_config.getGPUMemoryCacheSize());
     EXPECT_EQ(ramses_internal::Vector4(0.f,0.f,0.f,1.f), m_config.getClearColor());
-    EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
+    EXPECT_EQ("", m_config.getWaylandDisplay());
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthStencilBuffer, m_config.getDepthStencilBufferType());
     EXPECT_TRUE(m_config.isAsyncEffectUploadEnabled());
     EXPECT_EQ(ramses_internal::String(""), m_config.getWaylandSocketEmbedded());
@@ -91,7 +90,7 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, m_config.getDepthStencilBufferType());
 
     m_config.setWaylandDisplay("ramses display");
-    EXPECT_STREQ("ramses display", m_config.getWaylandDisplay().c_str());
+    EXPECT_EQ("ramses display", m_config.getWaylandDisplay());
 
     m_config.setAsyncEffectUploadEnabled(false);
     EXPECT_FALSE(m_config.isAsyncEffectUploadEnabled());

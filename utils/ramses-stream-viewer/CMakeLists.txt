@@ -12,5 +12,5 @@ expandModuleByPlatform(
     LINKED_TYPE     STATIC
     ENABLE_INSTALL  ON
     SRC_FILES       src/*
-    DEPENDENCIES    ramses-client
+    DEPENDENCIES    ramses-client ramses-cli
 )

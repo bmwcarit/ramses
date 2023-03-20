@@ -15,7 +15,6 @@
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureSamplerStates.h"
 #include "SceneAPI/EDataType.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Resource/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 #include <unordered_map>
@@ -27,11 +26,7 @@ namespace ramses_internal
     class IRendererResourceCache;
     enum class EDataBufferType : UInt8;
 
-    struct StreamUsage
-    {
-        std::unordered_map<SceneId, StreamTextureHandleVector> sceneUsages;
-        std::vector<StreamBufferHandle> streamBufferUsages;
-    };
+    using StreamUsage = std::vector<StreamBufferHandle>;
 
     class IRendererResourceManager : public IResourceDeviceHandleAccessor
     {
@@ -52,9 +47,6 @@ namespace ramses_internal
         virtual void             unloadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId) = 0;
         virtual void             uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) = 0;
         virtual void             unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) = 0;
-
-        virtual void             uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) = 0;
-        virtual void             unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId) = 0;
 
         virtual void             uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId) = 0;
         virtual void             unloadBlitPassRenderTargets(BlitPassHandle blitPass, SceneId sceneId) = 0;

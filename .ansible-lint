@@ -6,7 +6,9 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-function(ramses_glob_target_sources target bind_type expr)
-    file(GLOB out ${expr} ${ARGN})
-    target_sources(${target} ${bind_type} ${out})
-endfunction()
+skip_list:
+  - '106'  # Role name ramses-windows-build does not match ``^[a-z][a-z0-9_]+$`` pattern
+  - '204'  # TODO(tobias)  Lines should be no longer than 160 chars
+  - '301'  # Commands should not change things if nothing needs doing
+  - experimental  # all rules tagged as experimental
+use_default_rules: true

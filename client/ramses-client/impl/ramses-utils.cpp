@@ -405,7 +405,6 @@ namespace ramses
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/SceneReference.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
@@ -461,5 +460,4 @@ INSTANTIATE_CONVERT_TEMPLATE(DataVector3i)
 INSTANTIATE_CONVERT_TEMPLATE(DataVector4i)
 INSTANTIATE_CONVERT_TEMPLATE(ArrayBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2DBuffer)
-INSTANTIATE_CONVERT_TEMPLATE(StreamTexture)
 INSTANTIATE_CONVERT_TEMPLATE(SceneReference)

@@ -30,7 +30,6 @@
 #include "Texture3DImpl.h"
 #include "Texture2DBufferImpl.h"
 #include "TextureCubeImpl.h"
-#include "StreamTextureImpl.h"
 #include "TextureSamplerImpl.h"
 #include "DataObjectImpl.h"
 #include "RamsesClientImpl.h"
@@ -269,23 +268,6 @@ namespace ramses_internal
                 if (renderBufferHandle == renderBuffer->impl.getRenderBufferHandle())
                 {
                     return renderBuffer;
-                }
-            }
-        }
-        return nullptr;
-    }
-
-    const ramses::StreamTexture* SceneViewerGui::findStreamTexture(ramses_internal::StreamTextureHandle handle) const
-    {
-        const bool isAllocated = m_scene.impl.getIScene().isStreamTextureAllocated(handle);
-        if (isAllocated)
-        {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_StreamTexture);
-            while (const ramses::StreamTexture* streamTexture = iter.getNext<ramses::StreamTexture>())
-            {
-                if (handle == streamTexture->impl.getHandle())
-                {
-                    return streamTexture;
                 }
             }
         }
@@ -540,9 +522,6 @@ namespace ramses_internal
                 break;
             case ramses::ERamsesObjectType_TextureCube:
                 drawTextureCube(static_cast<ramses::TextureCubeImpl&>(obj));
-                break;
-            case ramses::ERamsesObjectType_StreamTexture:
-                drawStreamTexture(static_cast<ramses::StreamTextureImpl&>(obj));
                 break;
             case ramses::ERamsesObjectType_TextureSampler:
             case ramses::ERamsesObjectType_TextureSamplerMS:
@@ -1384,7 +1363,7 @@ namespace ramses_internal
             ImGui::Text("MipMap:");
             ImGui::BulletText("width:%u height:%u", it->width, it->height);
             ImGui::BulletText("area: x:%d y:%d w:%d h:%d", it->usedRegion.x, it->usedRegion.y, it->usedRegion.width, it->usedRegion.height);
-            ImGui::BulletText("size (kB): %lu", it->data.size() / 1024);
+            ImGui::BulletText("size (kB): %" PRIu32, static_cast<uint32_t>(it->data.size() / 1024));
         }
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
@@ -1409,27 +1388,6 @@ namespace ramses_internal
         });
     }
 
-    void SceneViewerGui::drawStreamTexture(ramses::StreamTextureImpl& obj)
-    {
-        ImGui::Text("StreamSourceId: %u", obj.getStreamSource().getValue());
-        bool forceFallback = obj.getForceFallbackImage();
-        if (ImGui::Checkbox("Force fallback image", &forceFallback))
-            obj.forceFallbackImage(forceFallback);
-
-        const ramses::Texture2D* fallbackTexture = findTexture2D(obj.getFallbackTextureHash());
-        ImGui::Text("FallbackTexture:");
-        ImGui::SameLine();
-        if (fallbackTexture != nullptr)
-            draw(fallbackTexture->impl);
-        else
-            ImGui::Text("missing");
-
-        drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
-            const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
-            return (sampler.contentType == TextureSampler::ContentType::StreamTexture) && (sampler.contentHandle == obj.getHandle());
-        });
-    }
-
     void SceneViewerGui::drawTextureSampler(ramses::TextureSamplerImpl& obj)
     {
         const auto* slot = findDataSlot(obj.getTextureSamplerHandle());
@@ -1447,7 +1405,6 @@ namespace ramses_internal
         ramses::Resource* resource = nullptr;
         const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(obj.getTextureSamplerHandle());
         const ramses::RenderBuffer* rb = nullptr;
-        const ramses::StreamTexture* streamTexture = nullptr;
         const ramses::Texture2DBuffer* textureBuffer = nullptr;
         switch (sampler.contentType)
         {
@@ -1472,13 +1429,6 @@ namespace ramses_internal
                 draw(textureBuffer->impl);
             else
                 ImGui::Text("TextureBuffer missing");
-            break;
-        case TextureSampler::ContentType::StreamTexture:
-            streamTexture = findStreamTexture(StreamTextureHandle(sampler.contentHandle));
-            if (streamTexture != nullptr)
-                draw(streamTexture->impl);
-            else
-                ImGui::Text("StreamTexture missing");
             break;
         case TextureSampler::ContentType::ExternalTexture:
             // no details
@@ -1647,9 +1597,9 @@ namespace ramses_internal
 
     void SceneViewerGui::drawSceneReference(ramses::SceneReferenceImpl& obj)
     {
-        ImGui::Text("ReferencedScene: %lu", obj.getReferencedSceneId().getValue());
-        ImGui::Text("RequestedState: %s", EnumToString(ramses::SceneReferenceImpl::GetInternalSceneReferenceState(obj.getRequestedState())));
-        ImGui::Text("ReportedState: %s", EnumToString(ramses::SceneReferenceImpl::GetInternalSceneReferenceState(obj.getReportedState())));
+        ImGui::TextUnformatted(fmt::format("ReferencedScene: {}", obj.getReferencedSceneId().getValue()).c_str());
+        ImGui::TextUnformatted(fmt::format("RequestedState: {}", EnumToString(ramses::SceneReferenceImpl::GetInternalSceneReferenceState(obj.getRequestedState()))).c_str());
+        ImGui::TextUnformatted(fmt::format("ReportedState: {}", EnumToString(ramses::SceneReferenceImpl::GetInternalSceneReferenceState(obj.getReportedState()))).c_str());
     }
 
     void SceneViewerGui::drawDataSlot(const ramses_internal::DataSlot& obj)
@@ -1832,13 +1782,14 @@ namespace ramses_internal
         if (isOpen)
         {
             m_resourceInfo->reloadIfEmpty();
-            ImGui::Text("Total: %lu resources", m_resourceInfo->totalResources());
+            ImGui::TextUnformatted(fmt::format("Total: {} resources", m_resourceInfo->totalResources()).c_str());
             const auto used = m_resourceInfo->totalResources() - m_resourceInfo->unavailable();
-            ImGui::Text("In use: %lu resources with %u kB (compressed: %u kB)", used, m_resourceInfo->decompressedSize() / 1024U, m_resourceInfo->compressedSize() / 1024U);
-            ImGui::Text("Not loaded: %u resources", m_resourceInfo->unavailable());
+            ImGui::TextUnformatted(fmt::format("In use: {} resources with {} kB (compressed: {} kB)",
+                used, m_resourceInfo->decompressedSize() / 1024U, m_resourceInfo->compressedSize() / 1024U).c_str());
+            ImGui::TextUnformatted(fmt::format("Not loaded: {} resources", m_resourceInfo->unavailable()).c_str());
             ImGui::Separator();
             auto displayLimit = m_resourceInfo->getDisplayLimit();
-            ImGui::Text("Size of %d biggest resources: %u kB", displayLimit, m_resourceInfo->getDisplayedSize() / 1024U);
+            ImGui::TextUnformatted(fmt::format("Size of {} biggest resources: {} kB", displayLimit, m_resourceInfo->getDisplayedSize() / 1024U).c_str());
 
             auto orderCriteria = m_resourceInfo->getOrderCriteriaIndex();
             if (ImGui::Combo("Order Criteria", &orderCriteria, m_resourceInfo->orderCriteriaItems.data(), static_cast<int>(m_resourceInfo->orderCriteriaItems.size())))
@@ -1849,7 +1800,7 @@ namespace ramses_internal
             {
                 m_resourceInfo->setDisplayLimit(displayLimit);
             }
-            ImGui::Text("Resources sorted by %s (decending):", m_resourceInfo->orderCriteriaItems[m_resourceInfo->getOrderCriteriaIndex()]);
+            ImGui::TextUnformatted(fmt::format("Resources sorted by {} (decending):", m_resourceInfo->orderCriteriaItems[m_resourceInfo->getOrderCriteriaIndex()]).c_str());
             for (auto it : *m_resourceInfo)
             {
                 draw(it->impl);

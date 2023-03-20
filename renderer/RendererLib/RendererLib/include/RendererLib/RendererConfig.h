@@ -13,11 +13,6 @@
 #include "Collections/String.h"
 #include <chrono>
 
-namespace CLI
-{
-    class App;
-}
-
 namespace ramses_internal
 {
     class RendererConfig
@@ -25,10 +20,8 @@ namespace ramses_internal
     public:
         RendererConfig() {}
 
-        void registerOptions(CLI::App& cli);
-
-        void setWaylandDisplayForSystemCompositorController(const String& wd);
-        [[nodiscard]] const String& getWaylandDisplayForSystemCompositorController() const;
+        void setWaylandDisplayForSystemCompositorController(std::string_view wd);
+        [[nodiscard]] std::string_view getWaylandDisplayForSystemCompositorController() const;
 
         void enableSystemCompositorControl();
         [[nodiscard]] Bool getSystemCompositorControlEnabled() const;

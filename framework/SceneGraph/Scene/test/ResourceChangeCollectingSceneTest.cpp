@@ -136,57 +136,6 @@ namespace ramses_internal
         EXPECT_EQ(0u, sceneResourceActions.size());
     }
 
-    TEST_F(AResourceChangeCollectingScene, createdStreamTextureCollectsBothSceneResourceActionAndFallbackTexture)
-    {
-        const ResourceContentHash fallbackTex(1u, 2u);
-        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, fallbackTex);
-
-        ASSERT_EQ(1u, sceneResourceActions.size());
-        EXPECT_EQ(handle, sceneResourceActions[0].handle);
-        EXPECT_EQ(ESceneResourceAction_CreateStreamTexture, sceneResourceActions[0].action);
-        expectSameSceneResourceChangesWhenExtractedFromScene();
-    }
-
-    TEST_F(AResourceChangeCollectingScene, createdStreamTextureDoesNotMarkFallbackTextureAsNewIfItWasAlreadyUsedInScene)
-    {
-        const ResourceContentHash fallbackTex(1u, 2u);
-        scene.allocateTextureSampler({ {}, fallbackTex });
-        expectSameSceneResourceChangesWhenExtractedFromScene();
-        scene.resetResourceChanges();
-
-        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, fallbackTex);
-
-        ASSERT_EQ(1u, sceneResourceActions.size());
-        EXPECT_EQ(handle, sceneResourceActions[0].handle);
-        EXPECT_EQ(ESceneResourceAction_CreateStreamTexture, sceneResourceActions[0].action);
-    }
-
-    TEST_F(AResourceChangeCollectingScene, destroyedStreamTextureCollectsBothSceneResourceActionAndFallbackTexture)
-    {
-        const ResourceContentHash fallbackTex(1u, 2u);
-        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, fallbackTex);
-        scene.resetResourceChanges();
-
-        scene.releaseStreamTexture(handle);
-        ASSERT_EQ(1u, sceneResourceActions.size());
-        EXPECT_EQ(handle, sceneResourceActions[0].handle);
-        EXPECT_EQ(ESceneResourceAction_DestroyStreamTexture, sceneResourceActions[0].action);
-    }
-
-    TEST_F(AResourceChangeCollectingScene, destroyedStreamTextureDoesNotMarkFallbackTextureAsRemovedIfItIsStillUsedInScene)
-    {
-        const ResourceContentHash fallbackTex(1u, 2u);
-        scene.allocateTextureSampler({ {}, fallbackTex });
-        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, fallbackTex);
-        expectSameSceneResourceChangesWhenExtractedFromScene();
-        scene.resetResourceChanges();
-
-        scene.releaseStreamTexture(handle);
-        ASSERT_EQ(1u, sceneResourceActions.size());
-        EXPECT_EQ(handle, sceneResourceActions[0].handle);
-        EXPECT_EQ(ESceneResourceAction_DestroyStreamTexture, sceneResourceActions[0].action);
-    }
-
     TEST_F(AResourceChangeCollectingScene, createdBlitPassIsTracked)
     {
         const BlitPassHandle handle = scene.allocateBlitPass(RenderBufferHandle(0u), RenderBufferHandle(1u));
@@ -487,19 +436,5 @@ namespace ramses_internal
 
         scene.releaseDataSlot(dataSlot);
         EXPECT_FALSE(scene.haveResourcesChanged());
-    }
-
-    TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenAllocatingAStreamTexture)
-    {
-        scene.allocateStreamTexture(WaylandIviSurfaceId{0u}, { 123, 0 });
-        EXPECT_TRUE(scene.haveResourcesChanged());
-    }
-
-    TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenReleasingAStreamTexture)
-    {
-        auto streamTex = scene.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, { 123, 0 });
-        scene.resetResourceChanges();
-        scene.releaseStreamTexture(streamTex);
-        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 }

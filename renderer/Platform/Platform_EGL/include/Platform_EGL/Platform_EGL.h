@@ -61,8 +61,8 @@ namespace ramses_internal
 
         bool createDeviceExtension(const DisplayConfig& displayConfig) override
         {
-            const auto& platformRenderNode = displayConfig.getPlatformRenderNode();
-            if(platformRenderNode == "")
+            const auto platformRenderNode = displayConfig.getPlatformRenderNode();
+            if (platformRenderNode.empty())
                 return true;
 
 #ifdef DEVICE_EGL_EXTENSION_SUPPORTED

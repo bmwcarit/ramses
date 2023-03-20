@@ -59,9 +59,6 @@ namespace ramses_internal
     struct DataSlotHandleTag {};
     using DataSlotHandle = TypedMemoryHandle<DataSlotHandleTag>;
 
-    struct StreamTextureTag {};
-    using StreamTextureHandle = TypedMemoryHandle<StreamTextureTag>;
-
     struct DataBufferHandleTag {};
     using DataBufferHandle = TypedMemoryHandle<DataBufferHandleTag>;
 

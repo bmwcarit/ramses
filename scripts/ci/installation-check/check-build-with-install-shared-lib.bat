@@ -1,0 +1,56 @@
+::  -------------------------------------------------------------------------
+::  Copyright (C) 2023 BMW AG
+::  -------------------------------------------------------------------------
+::  This Source Code Form is subject to the terms of the Mozilla Public
+::  License, v. 2.0. If a copy of the MPL was not distributed with this
+::  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+::  -------------------------------------------------------------------------
+
+@ECHO OFF
+
+:: check number of arguments
+IF "%~5"=="" (
+    ECHO "Usage: %~n0 <config> <build-dir> <install-dir> <generator> <glversion>"
+    EXIT /B 1
+)
+IF NOT "%~6"=="" (
+    ECHO "Usage: %~n0 <config> <build-dir> <install-dir> <generator> <glversion>"
+    EXIT /B 1
+)
+
+SET BUILD_CONFIG=%1
+SET TEST_DIR=%2
+SET INSTALL_DIR=%~3
+SET CMAKE_GENERATOR=%4
+SET GL_VERSION=%5
+SET CURRENT_WORKING_DIRECTORY=%cd%
+SET SCRIPT_DIR=%~dp0
+
+echo "++++ Create test environment for install check of shared lib (%BUILD_CONFIG%, %GL_VERSION%) ++++"
+
+:: test here
+rd /S /Q %TEST_DIR%
+mkdir %TEST_DIR%
+cd %TEST_DIR%
+
+:: run cmake config
+echo "++++ Build with cmake config for install check of shared lib++++"
+cd %TEST_DIR%
+rd /S /Q test-cmake.config
+mkdir test-cmake.config
+cd  test-cmake.config
+
+SET PATH=%INSTALL_DIR%/bin;%PATH%
+
+cmake -G%CMAKE_GENERATOR% -DCMAKE_PREFIX_PATH="%INSTALL_DIR%/lib" -DRAMSES_RENDERER_PLATFORM="WINDOWS" -DGL_VERSION="%GL_VERSION%" --build test-cmake.config %SCRIPT_DIR%/shared-lib-check/
+cmake --build . --config %BUILD_CONFIG% --target run-all
+
+::check for errors
+IF /I "%ERRORLEVEL%" NEQ "0" (
+    cd %CURRENT_WORKING_DIRECTORY%
+    ECHO %~n0: build failed
+    EXIT /B 1
+)
+
+echo "++++ build check done for install check of shared lib++++"
+cd %CURRENT_WORKING_DIRECTORY%

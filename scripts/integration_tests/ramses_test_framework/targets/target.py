@@ -173,7 +173,9 @@ class Target(with_metaclass(ABCMeta)):
             extendedArgs += " --dlt-app-id " + dltAppID
         if "--log-level" not in args:
             extendedArgs += " --log-level " + str(self.logLevel)
-        extendedArgs += " --log-test "
+        if "--log-level-console" not in args:
+            extendedArgs += " --log-level-console=debug "
+        extendedArgs += " --log-context=RSMT:debug "
         # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
         env['DISABLE_CONSOLE_COLORS'] = '1'
         env['DISABLE_RAMSH_INTERACTIVE_MODE'] = '1'

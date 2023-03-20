@@ -38,7 +38,6 @@ function(createBuildConfig)
       CMAKE_VERSION
       GIT_COMMIT_COUNT
       GIT_COMMIT_HASH
-      TARGET_OS
       BUILD_ENV_VERSION_INFO_FULL
   )
 

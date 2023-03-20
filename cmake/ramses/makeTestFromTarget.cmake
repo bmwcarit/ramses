@@ -16,7 +16,7 @@ function(makeTestFromTarget)
     )
 
     # If not specified, the test is assumed to be a unit test
-    if (${TEST_SUFFIX} STREQUAL "")
+    if (TEST_SUFFIX STREQUAL "")
         message(FATAL_ERROR "makeTestFromTarget: SUFFIX not specified for '${TEST_TARGET}'")
     endif()
 

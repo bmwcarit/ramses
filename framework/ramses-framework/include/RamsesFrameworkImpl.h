@@ -75,11 +75,9 @@ namespace ramses
 
     private:
         RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress);
-        static ramses_internal::String GetParticipantName(const RamsesFrameworkConfig& config);
         static void LogEnvironmentVariableIfSet(const ramses_internal::String& envVarName);
         static void LogAvailableCommunicationStacks();
         static void LogBuildInformation();
-        static ramses_internal::ELogLevel GetELogLevelInternal(ramses::ELogLevel logLevel);
 
         // the framework-wide mutex that is used by all framework-base classes to synchronize access to shared resource
         // has to be used by all logic, component, etc classes

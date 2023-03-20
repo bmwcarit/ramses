@@ -239,14 +239,6 @@ namespace ramses_internal
         [[nodiscard]] virtual UInt32                      getRenderBufferCount            () const override;
         [[nodiscard]] virtual const RenderBuffer&         getRenderBuffer                 (RenderBufferHandle handle) const override;
 
-        // stream texture
-        virtual StreamTextureHandle         allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
-        virtual void                        releaseStreamTexture            (StreamTextureHandle streamTextureHandle) override;
-        [[nodiscard]] virtual bool                        isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const override;
-        [[nodiscard]] virtual UInt32                      getStreamTextureCount           () const override;
-        virtual void                        setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) override;
-        [[nodiscard]] virtual const StreamTexture&        getStreamTexture                (StreamTextureHandle streamTextureHandle) const override;
-
         // Data buffers
         virtual DataBufferHandle            allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) override;
         virtual void                        releaseDataBuffer               (DataBufferHandle handle) override;

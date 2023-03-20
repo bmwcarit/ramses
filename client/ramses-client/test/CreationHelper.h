@@ -55,7 +55,6 @@ namespace ramses
     class DataVector2i;
     class DataVector3i;
     class DataVector4i;
-    class StreamTexture;
     class PickableObject;
     class SceneReference;
 
@@ -120,7 +119,6 @@ namespace ramses
     template <> DataVector2i*              CreationHelper::createObjectOfType<DataVector2i             >(const char* name);
     template <> DataVector3i*              CreationHelper::createObjectOfType<DataVector3i             >(const char* name);
     template <> DataVector4i*              CreationHelper::createObjectOfType<DataVector4i             >(const char* name);
-    template <> StreamTexture*             CreationHelper::createObjectOfType<StreamTexture            >(const char* name);
     template <> ArrayBuffer*               CreationHelper::createObjectOfType<ArrayBuffer              >(const char* name);
     template <> Texture2DBuffer*           CreationHelper::createObjectOfType<Texture2DBuffer          >(const char* name);
     template <> PickableObject*            CreationHelper::createObjectOfType<PickableObject           >(const char* name);

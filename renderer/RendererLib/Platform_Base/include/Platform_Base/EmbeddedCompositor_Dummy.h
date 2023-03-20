@@ -10,7 +10,6 @@
 #define RAMSES_EMBEDDEDCOMPOSITOR_DUMMY_H
 
 #include "RendererAPI/IEmbeddedCompositor.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {

@@ -14,13 +14,13 @@ add_library(ramses-common-base INTERFACE)
 # add platform specific libraries
 
 
-IF (("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin"))
+if (("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin"))
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)
     set(CMAKE_USE_WIN32_THREADS_INIT 0)
     set(CMAKE_USE_PTHREADS_INIT 1)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
-ELSE ()
+else ()
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     target_link_libraries(ramses-common-base INTERFACE Threads::Threads)

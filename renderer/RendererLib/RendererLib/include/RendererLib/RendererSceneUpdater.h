@@ -45,8 +45,6 @@ namespace ramses_internal
     class RendererSceneUpdater : public IRendererSceneUpdater, public IRendererSceneStateControl
     {
         friend class RendererLogger;
-        //TODO (Violin) remove this after KPI Monitor is reworked
-        friend class GpuMemorySample;
 
     public:
         RendererSceneUpdater(

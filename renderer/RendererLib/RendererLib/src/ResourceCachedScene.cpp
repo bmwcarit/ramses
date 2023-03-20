@@ -8,7 +8,6 @@
 
 #include "RendererLib/ResourceCachedScene.h"
 #include "RendererLib/IResourceDeviceHandleAccessor.h"
-#include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "RendererLib/TextureLinkCachedScene.h"
 #include "Utils/ThreadLocalLogForced.h"
 
@@ -111,12 +110,6 @@ namespace ramses_internal
         TextureLinkCachedScene::releaseTextureSampler(handle);
     }
 
-    void ResourceCachedScene::releaseStreamTexture(StreamTextureHandle handle)
-    {
-        setRenderableResourcesDirtyByStreamTexture(handle);
-        TextureLinkCachedScene::releaseStreamTexture(handle);
-    }
-
     void ResourceCachedScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
     {
         TextureLinkCachedScene::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
@@ -139,14 +132,6 @@ namespace ramses_internal
     {
         TextureLinkCachedScene::setDataTextureSamplerHandle(dataInstanceHandle, field, samplerHandle);
         setDataInstanceDirtyFlag(dataInstanceHandle, true);
-    }
-
-    void ResourceCachedScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, Bool forceFallbackImage)
-    {
-        LOG_DEBUG(CONTEXT_RENDERER, "ResourceCachedScene::setForceFallbackImage(): setting force fallback to :" << forceFallbackImage << " for stream texture :" << streamTextureHandle.asMemoryHandle()
-                  << " with source id :" << getStreamTexture(streamTextureHandle).source);
-        TextureLinkCachedScene::setForceFallbackImage(streamTextureHandle, forceFallbackImage);
-        setRenderableResourcesDirtyByStreamTexture(streamTextureHandle);
     }
 
     RenderTargetHandle ResourceCachedScene::allocateRenderTarget(RenderTargetHandle targetHandle)
@@ -245,7 +230,7 @@ namespace ramses_internal
         return CheckAndUpdateDeviceHandle(resourceAccessor, m_effectDeviceHandleCache[renderable.asMemoryHandle()], effectHash);
     }
 
-    Bool ResourceCachedScene::checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, RenderableHandle renderable)
+    Bool ResourceCachedScene::checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
     {
         const DataInstanceHandle dataInstance = getRenderable(renderable).dataInstances[ERenderableDataSlotType_Uniforms];
         if (!dataInstance.isValid())
@@ -262,7 +247,7 @@ namespace ramses_internal
             {
                 const TextureSamplerHandle sampler = getDataTextureSamplerHandle(dataInstance, dataField);
                 if (!sampler.isValid() || !isTextureSamplerAllocated(sampler) ||
-                    !updateTextureSamplerResource(resourceAccessor, embeddedCompositingManager, sampler))
+                    !updateTextureSamplerResource(resourceAccessor, sampler))
                 {
                     return false;
                 }
@@ -367,7 +352,7 @@ namespace ramses_internal
         m_blitPassesDirty = false;
     }
 
-    Bool ResourceCachedScene::updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, TextureSamplerHandle sampler)
+    Bool ResourceCachedScene::updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler)
     {
         assert(sampler.asMemoryHandle() < m_deviceHandleCacheForTextures.size());
         const TextureSampler& samplerData = getTextureSampler(sampler);
@@ -381,13 +366,11 @@ namespace ramses_internal
         case TextureSampler::ContentType::RenderBuffer:
         case TextureSampler::ContentType::RenderBufferMS:
             return updateTextureSamplerResourceAsRenderBuffer(resourceAccessor, RenderBufferHandle(samplerData.contentHandle), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
-        case TextureSampler::ContentType::StreamTexture:
-            return updateTextureSamplerResourceAsStreamTexture(resourceAccessor, embeddedCompositingManager, StreamTextureHandle(samplerData.contentHandle), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
         case TextureSampler::ContentType::OffscreenBuffer:
             m_deviceHandleCacheForTextures[sampler.asMemoryHandle()] = resourceAccessor.getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle(samplerData.contentHandle));
             return true;
         case TextureSampler::ContentType::StreamBuffer:
-            return updateTextureSamplerResourceAsStreamBuffer(resourceAccessor, embeddedCompositingManager, StreamBufferHandle{ samplerData.contentHandle }, getFallbackTextureSampler(sampler), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
+            return updateTextureSamplerResourceAsStreamBuffer(resourceAccessor, StreamBufferHandle{ samplerData.contentHandle }, getFallbackTextureSampler(sampler), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
         case TextureSampler::ContentType::ExternalTexture:
         {
             if (samplerData.contentHandle == InvalidMemoryHandle)
@@ -423,37 +406,7 @@ namespace ramses_internal
         return textureDeviceHandle.isValid();
     }
 
-    Bool ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, const StreamTextureHandle streamTextureHandle, DeviceResourceHandle& deviceHandleInOut)
-    {
-        assert(isStreamTextureAllocated(streamTextureHandle));
-        const StreamTexture& streamTexture = getStreamTexture(streamTextureHandle);
-        const WaylandIviSurfaceId source(streamTexture.source);
-        const DeviceResourceHandle streamTextureDeviceHandle = embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(source);
-        if (streamTexture.forceFallbackTexture)
-        {
-            LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using fallback texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source << " because force fallback is set");
-            return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, streamTexture.fallbackTexture);
-        }
-        else if (!streamTextureDeviceHandle.isValid())
-        {
-            LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using fallback texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source << " because stream source not available");
-            return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, streamTexture.fallbackTexture);
-        }
-        else
-        {
-            LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using composited texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source);
-        }
-
-
-        deviceHandleInOut = streamTextureDeviceHandle;
-
-        return true;
-    }
-
-    bool ResourceCachedScene::updateTextureSamplerResourceAsStreamBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, const StreamBufferHandle streamBuffer, const TextureSampler& fallbackSamplerData, DeviceResourceHandle& deviceHandleInOut)
+    bool ResourceCachedScene::updateTextureSamplerResourceAsStreamBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const StreamBufferHandle streamBuffer, const TextureSampler& fallbackSamplerData, DeviceResourceHandle& deviceHandleInOut)
     {
         const auto compositedTexture = resourceAccessor.getStreamBufferDeviceHandle(streamBuffer);
         if(compositedTexture.isValid())
@@ -468,8 +421,6 @@ namespace ramses_internal
             return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, fallbackSamplerData.textureResource);
         case TextureSampler::ContentType::TextureBuffer:
             return updateTextureSamplerResourceAsTextureBuffer(resourceAccessor, TextureBufferHandle(fallbackSamplerData.contentHandle), deviceHandleInOut);
-        case TextureSampler::ContentType::StreamTexture:
-            return updateTextureSamplerResourceAsStreamTexture(resourceAccessor, embeddedCompositingManager, StreamTextureHandle(fallbackSamplerData.contentHandle), deviceHandleInOut);
         case TextureSampler::ContentType::RenderBuffer:
         case TextureSampler::ContentType::RenderBufferMS:
         case TextureSampler::ContentType::OffscreenBuffer:
@@ -489,7 +440,7 @@ namespace ramses_internal
         return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, hash);
     }
 
-    void ResourceCachedScene::updateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager)
+    void ResourceCachedScene::updateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor)
     {
         updateRenderablesResourcesDirtiness();
 
@@ -500,7 +451,7 @@ namespace ramses_internal
             if (m_renderableResourcesDirty[renderableAsIndex] && renderableIt.second->visibilityMode != EVisibilityMode::Off)
             {
                 if (checkAndUpdateEffectResource(resourceAccessor, renderable) &&
-                    checkAndUpdateTextureResources(resourceAccessor, embeddedCompositingManager, renderable) &&
+                    checkAndUpdateTextureResources(resourceAccessor, renderable) &&
                     checkGeometryResources(resourceAccessor, renderable))
                 {
                     setRenderableResourcesDirtyFlag(renderable, false);
@@ -633,20 +584,6 @@ namespace ramses_internal
         const UInt32 indexIntoCache = textureSamplerHandle.asMemoryHandle();
         assert(indexIntoCache < m_deviceHandleCacheForTextures.size());
         m_deviceHandleCacheForTextures[indexIntoCache] = DeviceResourceHandle::Invalid();
-    }
-
-    void ResourceCachedScene::setRenderableResourcesDirtyByStreamTexture(StreamTextureHandle streamTextureHandle) const
-    {
-        LOG_DEBUG(CONTEXT_RENDERER, "ResourceCachedScene::setRenderableResourcesDirtyByStreamTexture(): state change for stream texture :" << streamTextureHandle.asMemoryHandle()
-                  << " with source id :" << getStreamTexture(streamTextureHandle).source);
-
-        const auto& textureSamplers = getTextureSamplers();
-        for (const auto& texSamplerIt : textureSamplers)
-        {
-            const TextureSampler& sampler = *texSamplerIt.second;
-            if (sampler.contentType == TextureSampler::ContentType::StreamTexture && streamTextureHandle.asMemoryHandle() == sampler.contentHandle)
-                setRenderableResourcesDirtyByTextureSampler(texSamplerIt.first);
-        }
     }
 
     bool ResourceCachedScene::hasDirtyVertexArrays() const

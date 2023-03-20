@@ -1026,7 +1026,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.setRenderPassCamera(pass, camera);
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
@@ -1042,7 +1042,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.setRenderPassRenderOnce(pass, true);
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
@@ -1054,7 +1054,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     EXPECT_EQ(pass, passesToRender[0].getRenderPassHandle());
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);

@@ -6,10 +6,10 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_CLIENT_DATATYPEUTILS_H
-#define RAMSES_CLIENT_DATATYPEUTILS_H
+#ifndef RAMSES_FRAMEWORK_DATATYPEUTILS_H
+#define RAMSES_FRAMEWORK_DATATYPEUTILS_H
 
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 #include "SceneAPI/EDataType.h"
 #include "SceneAPI/EDataBufferType.h"
 #include <cassert>

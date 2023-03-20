@@ -33,11 +33,6 @@ namespace ramses
     {
     }
 
-    void RendererConfig::registerOptions(CLI::App& cli)
-    {
-        impl.registerOptions(cli);
-    }
-
     ramses::status_t RendererConfig::setBinaryShaderCache(IBinaryShaderCache& cache)
     {
         const status_t status = impl.setBinaryShaderCache(cache);
@@ -66,12 +61,12 @@ namespace ramses
         return status;
     }
 
-    status_t RendererConfig::setSystemCompositorWaylandDisplay(const char* waylandDisplay)
+    status_t RendererConfig::setSystemCompositorWaylandDisplay(std::string_view waylandDisplay)
     {
         return impl.setSystemCompositorWaylandDisplay(waylandDisplay);
     }
 
-    const char* RendererConfig::getSystemCompositorWaylandDisplay() const
+    std::string_view RendererConfig::getSystemCompositorWaylandDisplay() const
     {
         return impl.getSystemCompositorWaylandDisplay();
     }

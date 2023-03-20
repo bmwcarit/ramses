@@ -11,7 +11,7 @@
 
 #include "SceneObjectImpl.h"
 #include "SceneAPI/Handles.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 
 namespace ramses
 {

@@ -9,7 +9,6 @@
 #ifndef RAMSES_SCENEACTIONCOLLECTIONCREATOR_H
 #define RAMSES_SCENEACTIONCOLLECTIONCREATOR_H
 
-#include "TransformPropertyType.h"
 #include "Scene/SceneActionCollection.h"
 #include "SceneAPI/ERenderableDataSlotType.h"
 #include "SceneAPI/RenderState.h"
@@ -27,7 +26,6 @@
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/RendererSceneState.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "SceneAPI/ERotationConvention.h"
 #include "Scene/ResourceChanges.h"
 #include "Resource/TextureMetaInfo.h"
@@ -99,7 +97,9 @@ namespace ramses_internal
         void removeChildFromNode(NodeHandle parent, NodeHandle child);
 
         // Transformation
-        void setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue, ERotationConvention rotationConvention);
+        void setTranslation(TransformHandle node, const Vector3& newValue);
+        void setRotation(TransformHandle node, const Vector3& newValue, ERotationConvention rotationConvention);
+        void setScaling(TransformHandle node, const Vector3& newValue);
 
         void allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);
         void releaseDataLayout(DataLayoutHandle layoutHandle);
@@ -170,11 +170,6 @@ namespace ramses_internal
         // Render buffers
         void allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle);
         void releaseRenderBuffer(RenderBufferHandle handle);
-
-        // Stream textures
-        void allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle);
-        void releaseStreamTexture(StreamTextureHandle streamTextureHandle);
-        void setStreamTextureForceFallback(StreamTextureHandle streamTextureHandle, bool forceFallbackImage);
 
         // Data buffers
         void allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle);

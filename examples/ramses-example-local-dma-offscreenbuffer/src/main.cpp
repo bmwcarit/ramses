@@ -54,7 +54,6 @@
  */
 
 //parameters to control the example
-static constexpr ramses::waylandIviSurfaceId_t CompositingSurfaceId{ 789u };
 static constexpr uint32_t OffscreenBufferWidth = 200u;
 static constexpr uint32_t OffscreenBufferHeight = 200u;
 static constexpr uint32_t DisplayWidth = 800u;
@@ -265,7 +264,7 @@ ramses::MeshNode& createQuadWithTexture(ramses::Scene& scene, ramses::Effect& ef
     return *meshNode;
 }
 
-ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, ramses::waylandIviSurfaceId_t streamId, const std::string& processingOutputSamplerName)
+ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const std::string& processingOutputSamplerName)
 {
     //scene consists of two quads with textures
     //the left quad is stream tex input rendered as is
@@ -286,12 +285,12 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
 
     // Create fallback texture to show when sampler not linked to an offscreen buffer
     ramses::Texture2D& fallbackTexture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-dma-offscreenbuffer-fallback.png", *clientScene);
-    ramses::StreamTexture& streamTexture = *clientScene->createStreamTexture(fallbackTexture, streamId, "main scene composited tex sampler");
     ramses::TextureSampler& streamtextureSampler = *clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat,
                                                                                 ramses::ETextureAddressMode_Repeat,
                                                                                 ramses::ETextureSamplingMethod_Linear,
                                                                                 ramses::ETextureSamplingMethod_Linear,
-                                                                                streamTexture,
+                                                                                fallbackTexture,
+                                                                                1u,
                                                                                 "mainSceneStreamTexSampler");
 
     auto& meshCompositedTexture = createQuadWithTexture(*clientScene, effect, streamtextureSampler);
@@ -313,7 +312,7 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
     return *clientScene;
 }
 
-ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, ramses::waylandIviSurfaceId_t streamId)
+ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
 {
     //scene consists of one quad with a the stream texture that fills whole OB where scene is rendered
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "source scene");
@@ -332,12 +331,12 @@ ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t
 
     // Create fallback texture to show when sampler not linked to an offscreen buffer
     ramses::Texture2D& fallbackTexture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-dma-offscreenbuffer-fallback.png", *clientScene);
-    ramses::StreamTexture& streamTexture = *clientScene->createStreamTexture(fallbackTexture, streamId, "source composited tex sampler");
     ramses::TextureSampler& streamtextureSampler = *clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat,
                                                                                ramses::ETextureAddressMode_Repeat,
                                                                                ramses::ETextureSamplingMethod_Linear,
                                                                                ramses::ETextureSamplingMethod_Linear,
-                                                                               streamTexture,
+                                                                               fallbackTexture,
+                                                                               1u,
                                                                                "source stream tex sampler");
 
     auto& meshCompositedTexture = createQuadWithTexture(*clientScene, effect, streamtextureSampler);
@@ -570,7 +569,7 @@ int main()
 
     const ramses::sceneId_t mainSceneId{1u};
     const std::string& processingOutputSamplerName = "processingOutputTexSampler";
-    ramses::Scene& mainScene = createMainScene(client, mainSceneId, CompositingSurfaceId, processingOutputSamplerName);
+    ramses::Scene& mainScene = createMainScene(client, mainSceneId, processingOutputSamplerName);
     const ramses::TextureSampler& processingOutputSampler = *ramses::RamsesUtils::TryConvert<ramses::TextureSampler>(*mainScene.findObjectByName(processingOutputSamplerName.c_str()));
     mainScene.createTextureConsumer(processingOutputSampler, samplerConsumerId);
 
@@ -582,7 +581,7 @@ int main()
     eventHandler.waitForSceneState(mainSceneId, ramses::RendererSceneState::Rendered);
 
     const ramses::sceneId_t sourceSceneId{2u};
-    ramses::Scene& sourceScene = createSourceScene(client, sourceSceneId, CompositingSurfaceId);
+    ramses::Scene& sourceScene = createSourceScene(client, sourceSceneId);
     sourceScene.flush();
     sourceScene.publish();
 

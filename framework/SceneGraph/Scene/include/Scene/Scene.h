@@ -19,7 +19,6 @@
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/TextureBuffer.h"
 #include "SceneAPI/GeometryDataBuffer.h"
-#include "SceneAPI/StreamTexture.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/RenderTarget.h"
 #include "SceneAPI/BlitPass.h"
@@ -47,7 +46,6 @@ namespace ramses_internal
     {
     public:
         using RenderableMemoryPool      = MEMORYPOOL<Renderable         , RenderableHandle>;
-        using StreamTextureMemoryPool   = MEMORYPOOL<StreamTexture      , StreamTextureHandle>;
         using NodeMemoryPool            = MEMORYPOOL<TopologyNode       , NodeHandle>;
         using CameraMemoryPool          = MEMORYPOOL<Camera             , CameraHandle>;
         using RenderStateMemoryPool     = MEMORYPOOL<RenderState        , RenderStateHandle>;
@@ -294,15 +292,6 @@ namespace ramses_internal
         [[nodiscard]] virtual const RenderBuffer&     getRenderBuffer                 (RenderBufferHandle handle) const override final;
         [[nodiscard]] const RenderBufferMemoryPool&   getRenderBuffers                () const;
 
-        // Stream textures
-        virtual StreamTextureHandle     allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
-        virtual void                    releaseStreamTexture            (StreamTextureHandle streamTextureHandle) override;
-        [[nodiscard]] virtual bool                    isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const override final;
-        [[nodiscard]] virtual UInt32                  getStreamTextureCount           () const override final;
-        virtual void                    setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) override;
-        [[nodiscard]] virtual const StreamTexture&    getStreamTexture                (StreamTextureHandle streamTextureHandle) const override final;
-        [[nodiscard]] const StreamTextureMemoryPool&  getStreamTextures               () const;
-
         // Data buffers
         virtual DataBufferHandle        allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) override;
         virtual void                    releaseDataBuffer               (DataBufferHandle handle) override;
@@ -368,7 +357,6 @@ namespace ramses_internal
         RenderTargetMemoryPool      m_renderTargets;
         RenderBufferMemoryPool      m_renderBuffers;
         TextureSamplerMemoryPool    m_textureSamplers;
-        StreamTextureMemoryPool     m_streamTextures;
         DataBufferMemoryPool        m_dataBuffers;
         TextureBufferMemoryPool     m_textureBuffers;
         DataSlotMemoryPool          m_dataSlots;
@@ -436,12 +424,6 @@ namespace ramses_internal
     inline bool SceneT<MEMORYPOOL>::isRenderBufferAllocated(RenderBufferHandle handle) const
     {
         return m_renderBuffers.isAllocated(handle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    inline bool SceneT<MEMORYPOOL>::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_streamTextures.isAllocated(streamTextureHandle);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -645,13 +627,6 @@ namespace ramses_internal
     const typename SceneT<MEMORYPOOL>::RenderBufferMemoryPool& SceneT<MEMORYPOOL>::getRenderBuffers() const
     {
         return m_renderBuffers;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    inline
-    const typename SceneT<MEMORYPOOL>::StreamTextureMemoryPool& SceneT<MEMORYPOOL>::getStreamTextures() const
-    {
-        return m_streamTextures;
     }
 
     template <template<typename, typename> class MEMORYPOOL>

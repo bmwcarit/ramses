@@ -10,7 +10,6 @@
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/IContext.h"
-#include "SceneAPI/StreamTexture.h"
 #include "RendererLib/RendererLogger.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/RendererSceneUpdater.h"
@@ -76,9 +75,6 @@ namespace ramses_internal
         case ERendererLogTopic::SceneStates:
             LogSceneStates(updater, context);
             break;
-        case ERendererLogTopic::StreamTextures:
-            LogStreamTextures(updater, context);
-            break;
         case ERendererLogTopic::Resources:
             LogClientResources(updater, context);
             LogSceneResources(updater, context);
@@ -101,7 +97,6 @@ namespace ramses_internal
         case ERendererLogTopic::All:
             LogDisplays(updater, context);
             LogSceneStates(updater, context);
-            LogStreamTextures(updater, context);
             LogClientResources(updater, context);
             LogSceneResources(updater, context);
             LogRenderQueue(updater, context);
@@ -502,17 +497,6 @@ namespace ramses_internal
                 context.unindent();
             }
 
-            const auto& streamTextures = scene.getStreamTextures();
-            const auto streamTextureCount = std::count_if(streamTextures.cbegin(), streamTextures.cend(), [](const auto&) {return true; });
-            context << "Stream textures: " << streamTextureCount << RendererLogContext::NewLine;
-            if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
-            {
-                context.indent();
-                for (const auto& st : streamTextures)
-                    context << st.first << " [sourceId " << st.second->source << "]" << RendererLogContext::NewLine;
-                context.unindent();
-            }
-
             context.unindent();
 
             context.unindent();
@@ -706,134 +690,6 @@ namespace ramses_internal
                 executor.logScene(renderScene);
             }
         }
-    }
-
-    void RendererLogger::LogStreamTextures(const RendererSceneUpdater& updater, RendererLogContext& context)
-    {
-        if (!updater.m_renderer.hasDisplayController())
-        {
-            context << RendererLogContext::NewLine << "Skipping stream textures section due to missing display controller!" << RendererLogContext::NewLine;
-            return;
-        }
-
-        StartSection("RENDERER STREAM TEXTURES", context);
-        SceneIdVector knownSceneIds;
-        updater.m_sceneStateExecutor.m_scenesStateInfo.getKnownSceneIds(knownSceneIds);
-
-        for(const auto sceneId : knownSceneIds)
-        {
-            if (updater.m_rendererScenes.hasScene(sceneId))
-            {
-                RendererCachedScene& scene = updater.m_rendererScenes.getScene(sceneId);
-
-                context << "Scene [id: " << scene.getSceneId() << "; Name: " << scene.getName() << "]" << RendererLogContext::NewLine << RendererLogContext::NewLine;
-                context.indent();
-
-                const UInt32 numberOfStreamTextures = scene.getStreamTextureCount();
-                for (StreamTextureHandle streamTextureHandle(0); streamTextureHandle < numberOfStreamTextures; ++streamTextureHandle )
-                {
-                    if(scene.isStreamTextureAllocated(streamTextureHandle))
-                    {
-                        const StreamTexture& streamTex = scene.getStreamTexture(streamTextureHandle);
-                        const WaylandIviSurfaceId streamSource(streamTex.source);
-                        Bool contentAvailable = false;
-                        DeviceResourceHandle streamDeviceHandle;
-                        DeviceResourceHandle fallbackDeviceHandle;
-
-                        const IRendererResourceManager& resourceManager = *updater.m_displayResourceManager;
-                        const IEmbeddedCompositingManager& embeddedCompositingManager = updater.m_renderer.getDisplayController().getEmbeddedCompositingManager();
-                        const IEmbeddedCompositor& embeddedCompositor                 = updater.m_renderer.getDisplayController().getRenderBackend().getEmbeddedCompositor();
-
-                        contentAvailable |= embeddedCompositor.isContentAvailableForStreamTexture(streamSource);
-                        DeviceResourceHandle tempResourceHandle = embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamSource);
-                        if(tempResourceHandle.isValid())
-                        {
-                            streamDeviceHandle = tempResourceHandle;
-                        }
-
-                        tempResourceHandle = resourceManager.getResourceDeviceHandle(streamTex.fallbackTexture);
-                        if(tempResourceHandle.isValid())
-                        {
-                            fallbackDeviceHandle = tempResourceHandle;
-                        }
-
-                        std::vector<TextureSamplerHandle> samplerList;
-                        for (TextureSamplerHandle i(0); i < scene.getTextureSamplerCount(); i++)
-                        {
-                            if (scene.isTextureSamplerAllocated(i) && scene.getTextureSampler(i).contentType == TextureSampler::ContentType::StreamTexture && scene.getTextureSampler(i).contentHandle == streamTextureHandle.asMemoryHandle())
-                            {
-                                samplerList.push_back(i);
-                            }
-                        }
-
-                        context << "StreamTexture [handle: " << streamTextureHandle << "]" << RendererLogContext::NewLine;
-                        context.indent();
-                        {
-                            context << "Source:               " << streamSource.getValue() << RendererLogContext::NewLine;
-                            if(streamDeviceHandle.isValid())
-                            {
-                                context << "Device handle:        " << streamDeviceHandle.asMemoryHandle() << RendererLogContext::NewLine;
-                            }
-                            else
-                            {
-                                context << "Device handle:        invalid" << RendererLogContext::NewLine;
-                            }
-                            context << "Content is available: " << (contentAvailable ? "yes" : "no") << RendererLogContext::NewLine;
-                            context << RendererLogContext::NewLine;
-
-                            // Fallback section
-                            context << "FallbackTexture" << RendererLogContext::NewLine;
-                            context.indent();
-                            context << "Fallback is forced: " << (streamTex.forceFallbackTexture ? "yes" : "no") << RendererLogContext::NewLine;
-                            if(fallbackDeviceHandle.isValid())
-                            {
-                                context << "Device handle:      " << fallbackDeviceHandle.asMemoryHandle() << RendererLogContext::NewLine;
-                            }
-                            else
-                            {
-                                context << "Device handle:      invalid" << RendererLogContext::NewLine;
-                            }
-                            context << "Hash:               " << streamTex.fallbackTexture << RendererLogContext::NewLine;
-                            context.unindent();
-                        }
-                        context << RendererLogContext::NewLine;
-
-                        // Sampler section
-                        if(samplerList.empty())
-                        {
-                            context << "No sampler associated with this stream texture" << RendererLogContext::NewLine;
-                        }
-                        else
-                        {
-                            context << "Sampler using this stream texture" << RendererLogContext::NewLine;
-                            context.indent();
-                            for(const auto& sampler: samplerList)
-                            {
-                                DeviceResourceHandle samplerDeviceHandle = scene.getCachedHandlesForTextureSamplers()[sampler.asMemoryHandle()];
-                                context << RendererLogContext::NewLine;
-                                context << "Sampler [handle: " << sampler.asMemoryHandle() << "]" << RendererLogContext::NewLine;
-                                context.indent();
-                                if(samplerDeviceHandle.isValid())
-                                {
-                                    context << "Device handle:    " << samplerDeviceHandle.asMemoryHandle() << RendererLogContext::NewLine;
-                                }
-                                else
-                                {
-                                    context << "Device handle:    invalid" << RendererLogContext::NewLine;
-                                }
-                                context.unindent();
-                            }
-                            context.unindent();
-                        }
-                        context << RendererLogContext::NewLine;
-
-                        context.unindent();
-                    }
-                }
-                context.unindent();
-            }
-        }
-        EndSection("RENDERER STREAM TEXTURES", context);
     }
 
     void RendererLogger::LogReferencedScenes(const RendererSceneUpdater& updater, RendererLogContext& context)
@@ -1225,11 +1081,9 @@ namespace ramses_internal
             sos << "\n";
             updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);
             sos << "\n";
-            updater.m_renderer.getMemoryStatistics().writeMemoryUsageSummaryToString(sos);
         }));
 
         updater.m_renderer.getStatistics().reset();
         updater.m_renderer.getProfilerStatistics().resetFrameTimings();
-        updater.m_renderer.getMemoryStatistics().reset();
     }
 }

@@ -38,10 +38,6 @@ namespace ramses_internal
         virtual void                        setDataSlotTexture(DataSlotHandle providerHandle, const ResourceContentHash& texture) override;
         virtual void                        releaseDataSlot(DataSlotHandle handle) override;
 
-        // functions which both affect client and scene resources
-        virtual StreamTextureHandle         allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
-        virtual void                        releaseStreamTexture(StreamTextureHandle handle) override;
-
         // functions which affect scene resources
         virtual RenderTargetHandle          allocateRenderTarget(RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
         virtual void                        releaseRenderTarget(RenderTargetHandle handle) override;

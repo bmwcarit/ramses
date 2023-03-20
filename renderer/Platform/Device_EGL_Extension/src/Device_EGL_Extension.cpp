@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    Device_EGL_Extension::Device_EGL_Extension(Context_EGL& context, const String& renderNode)
+    Device_EGL_Extension::Device_EGL_Extension(Context_EGL& context, std::string_view renderNode)
         : m_resourceMapper(context.getResources())
         , m_eglExtensionProcs(context.getEglDisplay())
         , m_renderNode(renderNode)

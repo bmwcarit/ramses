@@ -34,7 +34,6 @@
 #include "ramses-client-api/DataVector2i.h"
 #include "ramses-client-api/DataVector3i.h"
 #include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/ArrayBuffer.h"
@@ -60,7 +59,6 @@
 #include "PickableObjectImpl.h"
 #include "RenderBufferImpl.h"
 #include "RenderTargetImpl.h"
-#include "StreamTextureImpl.h"
 #include "MeshNodeImpl.h"
 #include "ArrayBufferImpl.h"
 #include "Texture2DBufferImpl.h"
@@ -243,28 +241,6 @@ namespace ramses
         EXPECT_EQ(StatusOK, loadedCamera->validate());
 
         m_sceneLoaded->destroy(*loadedCamera);
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteStreamTexture)
-    {
-        uint8_t data[4] = { 0u };
-        MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* fallbackTexture = this->m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
-
-        StreamTexture* streamTexture                   = this->m_scene.createStreamTexture(*fallbackTexture, waylandIviSurfaceId_t(3), "resourceName");
-        StreamTexture* streamTextureWithForcedFallback = this->m_scene.createStreamTexture(*fallbackTexture, waylandIviSurfaceId_t(4), "resourceName2");
-        streamTextureWithForcedFallback->forceFallbackImage(true);
-
-        this->doWriteReadCycle();
-
-        const StreamTexture* loadedStreamTexture                   = this->getObjectForTesting<StreamTexture>("resourceName");
-        const StreamTexture* loadedStreamTextureWithForcedFallback = this->getObjectForTesting<StreamTexture>("resourceName2");
-
-        EXPECT_EQ(streamTexture->impl.getStreamSource(), loadedStreamTexture->impl.getStreamSource());
-        EXPECT_EQ(streamTexture->impl.getFallbackTextureHash(), loadedStreamTexture->impl.getFallbackTextureHash());
-        EXPECT_EQ(fallbackTexture->impl.getLowlevelResourceHash(), loadedStreamTexture->impl.getFallbackTextureHash());
-        EXPECT_FALSE(loadedStreamTexture->impl.getForceFallbackImage());
-        EXPECT_TRUE(loadedStreamTextureWithForcedFallback->impl.getForceFallbackImage());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteAnOrthographicCamera)

@@ -26,7 +26,6 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "TestEffects.h"
-#include "CLI/CLI.hpp"
 
 namespace ramses_internal
 {
@@ -69,9 +68,9 @@ namespace ramses
             //disabling the periodic logs is important as otherwise race conditions can occur in the tests that check
             //that the statistic counters are updated (periodic logger resets the counters)
             static RamsesFrameworkConfig config;
-            CLI::App cli;
-            config.registerOptions(cli);
-            cli.parse("LocalTestClient --log-level=0 --connection=off --no-logp", true);
+            config.setLogLevel(ramses::ELogLevel::Off);
+            config.setConnectionSystem(ramses::EConnectionSystem::Off);
+            config.setPeriodicLogInterval(std::chrono::seconds(0));
             return config;
         }
 

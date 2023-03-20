@@ -53,7 +53,6 @@ namespace ramses_internal
 
     private:
         const ramses::RenderBuffer* findRenderBuffer(ramses_internal::RenderBufferHandle handle) const;
-        const ramses::StreamTexture* findStreamTexture(ramses_internal::StreamTextureHandle handle) const;
         const ramses::Texture2DBuffer* findTextureBuffer(ramses_internal::TextureBufferHandle handle) const;
         const ramses::TextureSampler* findTextureSampler(ramses_internal::TextureSamplerHandle handle) const;
         const ramses::ArrayBuffer* findDataBuffer(ramses_internal::DataBufferHandle handle) const;
@@ -106,7 +105,6 @@ namespace ramses_internal
         void drawTexture3D(ramses::Texture3DImpl& obj);
         void drawTexture2DBuffer(ramses::Texture2DBufferImpl& obj);
         void drawTextureCube(ramses::TextureCubeImpl& obj);
-        void drawStreamTexture(ramses::StreamTextureImpl& obj);
         void drawTextureSampler(ramses::TextureSamplerImpl& obj);
         void drawArrayResource(ramses::ArrayResourceImpl& obj);
         void drawArrayBuffer(ramses::ArrayBufferImpl& obj);

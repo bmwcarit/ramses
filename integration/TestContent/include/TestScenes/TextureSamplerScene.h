@@ -34,7 +34,6 @@ namespace ramses_internal
             EState_SetClientTexture,
             EState_SetTextureBuffer,
             EState_SetRenderBuffer,
-            EState_SetStreamTexture,
             EState_NoTextureSampler,
             EState_SetTextureSampler,
         };

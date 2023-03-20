@@ -118,7 +118,7 @@ namespace ramses
         *                 constructor of the text cache.
         * @return The glyph metrics vector created
         */
-        GlyphMetricsVector      getPositionedGlyphs(const std::u32string& str, FontInstanceId font);
+        GlyphMetricsVector getPositionedGlyphs(const std::u32string& str, FontInstanceId font);
 
         /**
         * @brief Create and get glyph metrics for a string using a list of font instances and offsets
@@ -132,7 +132,7 @@ namespace ramses
         *                 constructor of the text cache. Also see docs of FontInstanceOffsets
         * @return The glyph metrics created
         */
-        GlyphMetricsVector      getPositionedGlyphs(const std::u32string& str, const FontInstanceOffsets& fontOffsets);
+        GlyphMetricsVector getPositionedGlyphs(const std::u32string& str, const FontInstanceOffsets& fontOffsets);
 
         /**
         * @brief Create the scene objects, e.g., mesh and appearance...etc, needed for rendering a text line (represented by glyph metrics).
@@ -152,28 +152,28 @@ namespace ramses
         * @param[in] effect The effect used for creating the appearance of the text line and rendering the meshes
         * @return Id of the text line created
         */
-        TextLineId              createTextLine(const GlyphMetricsVector& glyphs, const Effect& effect);
+        TextLineId createTextLine(const GlyphMetricsVector& glyphs, const Effect& effect);
 
         /**
         * @brief Get a const pointer to a (previously created) text line object
         * @param[in] textId Id of the text line object to get
         * @return A pointer to the text line object, or nullptr on failure
         */
-        [[nodiscard]] TextLine const*         getTextLine(TextLineId textId) const;
+        [[nodiscard]] TextLine const* getTextLine(TextLineId textId) const;
 
         /**
         * @brief Get a (non-const) pointer to a (previously created) text line object
         * @param[in] textId Id of the text line object to get
         * @return A pointer to the text line object, or nullptr on failure
         */
-        TextLine*               getTextLine(TextLineId textId);
+        TextLine* getTextLine(TextLineId textId);
 
         /**
         * @brief Delete an existing text line object
         * @param[in] textId Id of the text line object to delete
         * @return True on success, false otherwise
         */
-        bool                    deleteTextLine(TextLineId textId);
+        bool deleteTextLine(TextLineId textId);
 
         /**
         * @brief Check if provided GlyphMetricsVector contains at least one renderable glyph
@@ -182,7 +182,7 @@ namespace ramses
         * @param[in] glyphMetrics GlyphMetrics to be checked
         * @ return True if the provided vector contains at least one renderable glyph
         */
-        static bool             ContainsRenderableGlyphs(const GlyphMetricsVector& glyphMetrics);
+        static bool ContainsRenderableGlyphs(const GlyphMetricsVector& glyphMetrics);
 
         /**
         * @brief Apply character tracking (positive or negative) to each glyph in provided GlyphMetricsVector.
@@ -197,7 +197,7 @@ namespace ramses
         * @param[in] trackingFactor factor of tracking intensity (higher --> bigger tracking effect)
         * @param[in] fontSize size of the font that contains the glyphs to be tracked
         */
-        static void             ApplyTrackingToGlyphs(GlyphMetricsVector& glyphMetrics, int32_t trackingFactor, int32_t fontSize);
+        static void ApplyTrackingToGlyphs(GlyphMetricsVector& glyphMetrics, int32_t trackingFactor, int32_t fontSize);
 
         /**
         * Stores internal data for implementation specifics of TextCache.

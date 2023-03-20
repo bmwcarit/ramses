@@ -13,7 +13,6 @@
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/RenderBuffer.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "APILoggingMacros.h"
 
 // internal
@@ -95,13 +94,6 @@ namespace ramses
     }
 
     status_t TextureSampler::setTextureData(const RenderBuffer& dataSource)
-    {
-        const status_t status = impl.setTextureData(dataSource);
-        LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(dataSource));
-        return status;
-    }
-
-    status_t TextureSampler::setTextureData(const StreamTexture& dataSource)
     {
         const status_t status = impl.setTextureData(dataSource);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(dataSource));

@@ -25,7 +25,6 @@ namespace ramses
     public:
         DisplayConfigImpl();
 
-        void registerOptions(CLI::App& cli);
         status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
         status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
         status_t setFullscreen(bool fullscreen);
@@ -37,8 +36,8 @@ namespace ramses
         waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
         status_t setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID);
         waylandIviLayerId_t getWaylandIviLayerID() const;
-        status_t setWaylandDisplay(const char* waylandDisplay);
-        const char* getWaylandDisplay() const;
+        status_t setWaylandDisplay(std::string_view waylandDisplay);
+        std::string_view getWaylandDisplay() const;
         void* getAndroidNativeWindow() const;
         status_t setAndroidNativeWindow(void * nativeWindowPtr);
         status_t setWindowIviVisible(bool visible);
@@ -54,20 +53,20 @@ namespace ramses
         void*    getWindowsWindowHandle() const;
         status_t setAsyncEffectUploadEnabled(bool enabled);
 
-        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
-        const char* getWaylandSocketEmbeddedGroup() const;
+        status_t setWaylandEmbeddedCompositingSocketGroup(std::string_view groupname);
+        std::string_view getWaylandSocketEmbeddedGroup() const;
 
         status_t setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
         uint32_t getWaylandSocketEmbeddedPermissions() const;
 
-        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
-        const char* getWaylandEmbeddedCompositingSocketName() const;
+        status_t setWaylandEmbeddedCompositingSocketName(std::string_view socketname);
+        std::string_view getWaylandEmbeddedCompositingSocketName() const;
 
         status_t setWaylandEmbeddedCompositingSocketFD(int fd);
         int getWaylandSocketEmbeddedFD() const;
 
-        status_t setPlatformRenderNode(const char* renderNode);
-        const char* getPlatformRenderNode() const;
+        status_t setPlatformRenderNode(std::string_view renderNode);
+        std::string_view getPlatformRenderNode() const;
 
         status_t setSwapInterval(int32_t interval);
         int32_t  getSwapInterval() const;

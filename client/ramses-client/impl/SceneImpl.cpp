@@ -17,7 +17,6 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -62,7 +61,6 @@
 #include "NodeImpl.h"
 #include "AppearanceImpl.h"
 #include "GeometryBindingImpl.h"
-#include "StreamTextureImpl.h"
 #include "SerializationContext.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
@@ -254,9 +252,6 @@ namespace ramses
                 break;
             case ERamsesObjectType_GeometryBinding:
                 status = createAndDeserializeObjectImpls<GeometryBinding, GeometryBindingImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_StreamTexture:
-                status = createAndDeserializeObjectImpls<StreamTexture, StreamTextureImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_RenderGroup:
                 status = createAndDeserializeObjectImpls<RenderGroup, RenderGroupImpl>(inStream, serializationContext, count);
@@ -461,22 +456,6 @@ namespace ramses
         return new AppearanceImpl(*this, name);
     }
 
-    StreamTexture* SceneImpl::createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name)
-    {
-        if (this != &fallbackTexture.impl.getSceneImpl())
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createStreamTexture failed, fallbackTexture is not from this scene.");
-            return nullptr;
-        }
-
-        StreamTextureImpl& pimpl = *new StreamTextureImpl( *this, name);
-        pimpl.initializeFrameworkData(source, fallbackTexture.impl);
-        StreamTexture* texture = new StreamTexture(pimpl);
-        registerCreatedObject(*texture);
-
-        return texture;
-    }
-
     GeometryBinding* SceneImpl::createGeometryBinding(const Effect& effect, const char* name)
     {
         if (this != &effect.impl.getSceneImpl())
@@ -547,7 +526,6 @@ namespace ramses
         case ERamsesObjectType_RenderPass:
         case ERamsesObjectType_BlitPass:
         case ERamsesObjectType_RenderBuffer:
-        case ERamsesObjectType_StreamTexture:
         case ERamsesObjectType_DataBufferObject:
         case ERamsesObjectType_Texture2DBuffer:
             returnStatus = destroyObject(object);
@@ -1017,29 +995,6 @@ namespace ramses
             name);
     }
 
-    ramses::TextureSampler* SceneImpl::createTextureSampler(
-        ETextureAddressMode wrapUMode,
-        ETextureAddressMode wrapVMode,
-        ETextureSamplingMethod minSamplingMethod,
-        ETextureSamplingMethod magSamplingMethod,
-        const StreamTexture& streamTexture,
-        const char* name)
-    {
-        if (!containsSceneObject(streamTexture.impl))
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, streamTexture is not from this scene.");
-            return nullptr;
-        }
-
-        return createTextureSamplerImpl(
-            wrapUMode, wrapVMode, ETextureAddressMode_Clamp, minSamplingMethod, magSamplingMethod, 1u,
-            ERamsesObjectType_StreamTexture,
-            ramses_internal::TextureSampler::ContentType::StreamTexture,
-            ramses_internal::ResourceContentHash::Invalid(),
-            streamTexture.impl.getHandle().asMemoryHandle(),
-            name);
-    }
-
     ramses::TextureSamplerMS* SceneImpl::createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name)
     {
         if (!containsSceneObject(renderBuffer.impl))
@@ -1407,9 +1362,9 @@ namespace ramses
 
     status_t SceneImpl::createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id)
     {
-        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D && sampler.impl.getTextureType() != ERamsesObjectType_StreamTexture)
+        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D)
         {
-            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture or StreamTexture can be used for linking..");
+            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture can be used for linking..");
         }
 
         return createTextureConsumerImpl(sampler, id);

@@ -8,16 +8,9 @@
 
 #include "RendererLib/RendererConfig.h"
 #include "Collections/StringOutputStream.h"
-#include "CLI/CLI.hpp"
 
 namespace ramses_internal
 {
-    void RendererConfig::registerOptions(CLI::App& cli)
-    {
-        auto* grp = cli.add_option_group("Renderer Options");
-        grp->add_flag("--ivi-control,!--no-ivi-control", m_systemCompositorEnabled, "enable system compositor IVI controller");
-    }
-
     void RendererConfig::enableSystemCompositorControl()
     {
         m_systemCompositorEnabled = true;
@@ -38,12 +31,12 @@ namespace ramses_internal
         m_frameCallbackMaxPollTime = pollTime;
     }
 
-    void RendererConfig::setWaylandDisplayForSystemCompositorController(const String& wd)
+    void RendererConfig::setWaylandDisplayForSystemCompositorController(std::string_view wd)
     {
-        m_waylandDisplayForSystemCompositorController = wd;
+        m_waylandDisplayForSystemCompositorController = String(wd);
     }
 
-    const String &RendererConfig::getWaylandDisplayForSystemCompositorController() const
+    std::string_view RendererConfig::getWaylandDisplayForSystemCompositorController() const
     {
         return m_waylandDisplayForSystemCompositorController;
     }

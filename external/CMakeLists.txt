@@ -5,6 +5,12 @@ endif(POLICY CMP0054)
 
 find_package(PkgConfig)
 
+function(ensureSubmoduleExists SUBMOD_NAME)
+    if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${SUBMOD_NAME}")
+        message(FATAL_ERROR "Missing submodule /external/${SUBMOD_NAME}. Please fetch Git submodules! (see build documentation)")
+    endif()
+endfunction()
+
 # Ensure all external dependencies are built as static libs when not explicitly specified
 # otherwise using ramses will lead to issues when BUILD_SHARED_LIBS in ON
 set(BUILD_SHARED_LIBS OFF)
@@ -62,7 +68,6 @@ else()
     add_custom_target(cli11 SOURCES ${CLI11_HEADER})
     folderizeTarget(cli11)
     message(STATUS "+ CLI11")
-    install(DIRECTORY cli11/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
 endif()
 
 
@@ -115,21 +120,10 @@ foreach(lib
 endforeach()
 
 
-#==========================================================================
-# glslang
-#==========================================================================
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    ramses-glslang
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           glslang/glslang
                             glslang/glslang/MachineIndependent
                             glslang
@@ -212,21 +206,10 @@ option(ramses-sdk_BUILD_IVI_TEST_APPS "Enable build of ivi test applications" ON
 if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension) AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-example-client")
     # wayland ivi example/test application
     createModule(
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    ivi-gears
         TYPE                    BINARY
         ENABLE_INSTALL          ON
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
         SRC_FILES            wayland-ivi-example-client/gears.c
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            EGL
                                 OpenGL
                                 wayland-client
@@ -294,19 +277,136 @@ IF (lz4_FOUND)
 ELSE()
   SET(LZ4_DIR lz4)
   createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    lz4
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           ${LZ4_DIR}/lib
     SRC_FILES               ${LZ4_DIR}/lib/*.h
                             ${LZ4_DIR}/lib/*.c
     )
 ENDIF()
+
+# Ramses logic specific dependencies
+if(NOT ramses-sdk_DISABLE_LOGIC)
+    ################################################
+    ################   Google Benchmark  ###########
+    ################################################
+
+    #project specific setup for google benchmark
+    if(ramses-sdk_BUILD_TESTS AND NOT TARGET benchmark::benchmark)
+        set(BENCHMARK_ENABLE_TESTING OFF CACHE INTERNAL "")
+        set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE INTERNAL "")
+        set(BENCHMARK_ENABLE_INSTALL OFF CACHE INTERNAL "")
+
+        ensureSubmoduleExists(google-benchmark)
+
+        add_subdirectory(google-benchmark)
+
+        folderizeTarget(benchmark)
+        folderizeTarget(benchmark_main)
+    endif()
+
+    add_library(ramses-google-benchmark-main INTERFACE)
+    target_link_libraries(ramses-google-benchmark-main INTERFACE benchmark_main)
+    add_library(ramses::google-benchmark-main ALIAS ramses-google-benchmark-main)
+
+    ################################################
+    ################     Lua      ##################
+    ################################################
+
+    if(NOT TARGET lua)
+        ensureSubmoduleExists(lua)
+
+        # Collect all source and header files
+        file(GLOB LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.c)
+        file(GLOB LUA_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.h)
+
+        # Remove luac from the list, because it contains a main function
+        list(REMOVE_ITEM LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua.c)
+
+        set_source_files_properties(${LUA_SOURCE} PROPERTIES LANGUAGE CXX)
+
+        # Create library for lua
+        add_library(lua STATIC ${LUA_SOURCE} ${LUA_HEADER})
+
+        # This is required for Lua on Android to suppress a false-positive fortification trigger when
+        # the garbage collector is invoked
+        if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+            target_compile_options(lua PRIVATE -fno-stack-protector -U_FORTIFY_SOURCE)
+        endif()
+
+        if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+            # We compile lua as c++ even though it has .c files. convince clang to just do it without complaining
+            target_compile_options(lua PRIVATE -x c++)
+        endif()
+
+        target_include_directories(lua
+            PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lua>
+        )
+
+        folderizeTarget(lua)
+    endif()
+
+    add_library(lua::lua ALIAS lua)
+
+    ################################################
+    ################     Sol      ##################
+    ################################################
+
+    if(NOT TARGET sol2)
+        set(SOL2_LUA_VERSION "5.1.1" CACHE STRING "" FORCE)
+        set(INSTALL_SOL2 OFF CACHE INTERNAL "")
+
+        ensureSubmoduleExists(sol)
+
+        # TODO Violin remove EXCLUDE_FROM_ALL when upgrading to the next official sol version
+        # Currently its's needed because otherwise sol is installed automatically and also
+        # lands in the packaged version of ramses
+        add_subdirectory(sol EXCLUDE_FROM_ALL)
+
+        # Ensure sol is expecting c++ compiled lua
+        target_compile_definitions(sol2 INTERFACE
+            # we compile lua with c++, make sol not use extern C etc
+            SOL_USING_CXX_LUA=1
+            # catch and redirect exception to user handler func instead of
+            # prapagating them directly through lua
+            SOL_EXCEPTIONS_ALWAYS_UNSAFE=1
+            # check if types are numbers before using them as numbers
+            SOL_SAFE_NUMERICS=1
+            # ensure sol calls luaL_checkstack to avoid stack overflows
+            SOL_SAFE_STACK_CHECK=1
+            # Make sure Debug flags are equivalent to Release flags in terms of behavior
+            SOL_IN_DEBUG_DETECTED=0
+        )
+    endif()
+
+    ################################################
+    ################ Flatbuffers  ##################
+    ################################################
+
+    if(NOT TARGET flatbuffers)
+        # Don't build flatbuf targets we don't need
+        set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
+        set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "" FORCE)
+
+        # Only add flatc target if flatbuffers header generation needed
+        if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+            set(FLATBUFFERS_BUILD_FLATC ON CACHE BOOL "Build flatbuffers compiler" FORCE)
+        else()
+            set(FLATBUFFERS_BUILD_FLATC OFF CACHE BOOL "Build flatbuffers compiler" FORCE)
+        endif()
+
+        ensureSubmoduleExists(flatbuffers)
+
+        add_subdirectory(flatbuffers)
+        folderizeTarget(flatbuffers)
+    endif()
+
+    add_library(ramses::flatbuffers ALIAS flatbuffers)
+
+    if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+        folderizeTarget(flatc)
+    endif()
+endif()

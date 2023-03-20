@@ -19,6 +19,7 @@
 #include <mutex>
 #include <memory>
 #include <optional>
+#include <map>
 
 namespace ramses_internal
 {
@@ -30,10 +31,9 @@ namespace ramses_internal
         std::optional<ELogLevel> logLevel;
         std::optional<ELogLevel> logLevelConsole;
         // output specific loglevels can overwrite generic argument
-        String logLevelContextsStr;
+        std::map<String, ELogLevel> logLevelContexts; // TODO: std::unordered_map<std::string, ELogLevel>
         String dltAppId = "RAMS";
         String dltAppDescription = "RAMS-DESC";
-        bool enableSmokeTestContext = false;
     };
 
     struct LogContextInformation
@@ -80,6 +80,7 @@ namespace ramses_internal
         static const ELogLevel LogLevelDefault_Contexts = ELogLevel::Info;
         static const ELogLevel LogLevelDefault_Console = ELogLevel::Info;
 
+        void applyContextFilter(const String& context, ELogLevel logLevel);
 
         static void UpdateConsoleLogLevelFromDefine(ELogLevel& loglevel);
         static void UpdateConsoleLogLevelFromEnvVar(ELogLevel& loglevel);

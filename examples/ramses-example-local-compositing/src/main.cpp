@@ -16,7 +16,7 @@
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 #include <cstdio>
 #include <thread>
@@ -118,9 +118,9 @@ int main(int argc, char* argv[])
     {
         cli.add_option("--stream-buffer-ivi-id", surfaceId.getReference(), "set ivi surface id for the stream buffer")->default_val(1u);
 
-        config.registerOptions(cli);
-        rendererConfig.registerOptions(cli);
-        displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
     }
     catch (const CLI::Error& error)
     {

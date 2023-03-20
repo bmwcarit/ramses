@@ -15,7 +15,6 @@
 #include "SceneAPI/RendererSceneState.h"
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/SceneVersionTag.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererLib/EMouseEventType.h"
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyCode.h"

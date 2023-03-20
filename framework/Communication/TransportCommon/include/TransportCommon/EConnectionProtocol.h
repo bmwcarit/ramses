@@ -16,14 +16,14 @@ namespace ramses_internal
     enum class EConnectionProtocol
     {
         TCP,
-        Fake,
+        Off,
         Invalid, // must be last
     };
 
     static const char* ConectionProtocolNames[] =
     {
         "TCP",
-        "Fake",
+        "Off",
         "Invalid"
     };
 }

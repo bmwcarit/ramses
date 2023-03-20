@@ -7,17 +7,9 @@
 #  -------------------------------------------------------------------------
 
 MODULE_WITH_SHARED_LIBRARY(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    ramses-example-text-languages
     TYPE                    BINARY
     ENABLE_INSTALL          OFF    # disabled installation to save space in release tarball
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     SRC_FILES               src/main.cpp
     RESOURCE_FOLDERS        res
 )

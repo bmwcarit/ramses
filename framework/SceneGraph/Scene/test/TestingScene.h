@@ -93,12 +93,8 @@ namespace ramses_internal
             scene.allocateDataInstance(scene.allocateDataLayout({ ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I}, ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I} },
                                                                 ResourceContentHash::Invalid()), cameraDataInstance);
 
-            scene.allocateStreamTexture(streamSource, ResourceContentHash(234, 0), streamTexture);
-            scene.setForceFallbackImage(streamTexture, true);
-
             scene.allocateTextureSampler({ samplerStates, textureHash }, samplerWithTextureResource);
             scene.allocateTextureSampler({ samplerStates, renderBuffer }, samplerWithRenderBuffer);
-            scene.allocateTextureSampler({ samplerStates, streamTexture }, samplerWithStreamTexture);
             scene.allocateTextureSampler({ samplerStates, texture2DBuffer }, samplerWithTextureBuffer);
             scene.allocateTextureSampler({ samplerStates, TextureSampler::ContentType::ExternalTexture, ResourceContentHash::Invalid(), InvalidMemoryHandle }, samplerWithExternalTexture);
 
@@ -201,7 +197,6 @@ namespace ramses_internal
             CheckRenderPassesEquivalentTo<OTHERSCENE>(otherScene);
             CheckBlitPassesEquivalentTo<OTHERSCENE>(otherScene);
             CheckRenderBuffersAndTargetsEquivalentTo<OTHERSCENE>(otherScene);
-            CheckStreamTexturesEquivalentTo<OTHERSCENE>(otherScene);
             CheckDataBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckTextureBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckDataSlotsEquivalentTo<OTHERSCENE>(otherScene);
@@ -391,7 +386,6 @@ namespace ramses_internal
         {
             EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithTextureResource));
             EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithRenderBuffer));
-            EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithStreamTexture));
             EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithTextureBuffer));
             EXPECT_EQ(samplerStates.m_addressModeU, otherScene.getTextureSampler(samplerWithTextureResource).states.m_addressModeU);
             EXPECT_EQ(samplerStates.m_addressModeV, otherScene.getTextureSampler(samplerWithTextureResource).states.m_addressModeV);
@@ -402,11 +396,9 @@ namespace ramses_internal
 
             EXPECT_EQ(textureHash, otherScene.getTextureSampler(samplerWithTextureResource).textureResource);
             EXPECT_EQ(renderBuffer.asMemoryHandle(), otherScene.getTextureSampler(samplerWithRenderBuffer).contentHandle);
-            EXPECT_EQ(streamTexture.asMemoryHandle(), otherScene.getTextureSampler(samplerWithStreamTexture).contentHandle);
             EXPECT_EQ(texture2DBuffer.asMemoryHandle(), otherScene.getTextureSampler(samplerWithTextureBuffer).contentHandle);
             EXPECT_EQ(TextureSampler::ContentType::ClientTexture, otherScene.getTextureSampler(samplerWithTextureResource).contentType);
             EXPECT_EQ(TextureSampler::ContentType::RenderBuffer, otherScene.getTextureSampler(samplerWithRenderBuffer).contentType);
-            EXPECT_EQ(TextureSampler::ContentType::StreamTexture, otherScene.getTextureSampler(samplerWithStreamTexture).contentType);
             EXPECT_EQ(TextureSampler::ContentType::TextureBuffer, otherScene.getTextureSampler(samplerWithTextureBuffer).contentType);
         }
 
@@ -503,15 +495,6 @@ namespace ramses_internal
 
             EXPECT_EQ(1u, otherScene.getRenderTargetRenderBufferCount(renderTarget));
             EXPECT_EQ(renderBuffer, otherScene.getRenderTargetRenderBuffer(renderTarget, 0u));
-        }
-
-        template <typename OTHERSCENE>
-        void CheckStreamTexturesEquivalentTo(const OTHERSCENE& otherScene) const
-        {
-            EXPECT_TRUE(otherScene.isStreamTextureAllocated(streamTexture));
-            EXPECT_EQ(streamSource, otherScene.getStreamTexture(streamTexture).source);
-            EXPECT_EQ(ResourceContentHash(234, 0), otherScene.getStreamTexture(streamTexture).fallbackTexture);
-            EXPECT_TRUE(otherScene.getStreamTexture(streamTexture).forceFallbackTexture);
         }
 
         template <typename OTHERSCENE>
@@ -645,7 +628,6 @@ namespace ramses_internal
         const RenderTargetHandle     renderTarget                   {45u};
         const RenderBufferHandle     renderBuffer                   {46u};
         const RenderBufferHandle     renderBuffer2                  {47u};
-        const StreamTextureHandle    streamTexture                  {47u};
         const RenderPassHandle       renderPass                     {49u};
         const BlitPassHandle         blitPass                       {50u};
         const RenderStateHandle      renderState                    {51u};
@@ -655,7 +637,6 @@ namespace ramses_internal
         const DataInstanceHandle     geometryData                   {56u};
         const TextureSamplerHandle   samplerWithTextureResource     {57u};
         const TextureSamplerHandle   samplerWithRenderBuffer        {58u};
-        const TextureSamplerHandle   samplerWithStreamTexture       {59u};
         const TextureSamplerHandle   samplerWithTextureBuffer       {60u};
         const TextureSamplerHandle   samplerWithExternalTexture     {61u};
         const DataSlotHandle         transformDataSlot              {58u};
@@ -673,7 +654,6 @@ namespace ramses_internal
         const PickableObjectHandle   pickableHandle                 { 68u };
         const PickableObjectId       pickableId                     { 69u };
         const SceneReferenceHandle   sceneRef                       { 70u };
-        const WaylandIviSurfaceId    streamSource                   { 71u };
         const SceneId                sceneRefSceneId                { 123 };
     };
 }

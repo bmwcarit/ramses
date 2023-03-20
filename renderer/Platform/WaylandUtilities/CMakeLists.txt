@@ -7,24 +7,12 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    WaylandUtilities
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/WaylandUtilities/*.h
                             src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ramses-renderer-lib
                             LinuxInput
                             wayland-server
@@ -34,24 +22,11 @@ createModule(
 
 IF (${ramses-sdk_BUILD_TESTS})
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    WaylandTestUtils
         TYPE                    STATIC_LIBRARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
-
         INCLUDE_PATHS           WaylandTestUtils
         SRC_FILES               WaylandTestUtils/*.h
                                 WaylandTestUtils/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            WaylandUtilities
                                 ramses-gmock
     )

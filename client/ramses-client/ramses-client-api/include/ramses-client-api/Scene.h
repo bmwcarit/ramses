@@ -12,10 +12,9 @@
 #include "ramses-client-api/ClientObject.h"
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/EScenePublicationMode.h"
-#include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/TextureSwizzle.h"
-
+#include "ramses-framework-api/EDataType.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 #include <string>
@@ -54,7 +53,6 @@ namespace ramses
     class DataVector2i;
     class DataVector3i;
     class DataVector4i;
-    class StreamTexture;
     class Texture2D;
     class Texture3D;
     class TextureCube;
@@ -166,16 +164,6 @@ namespace ramses
         * @return A pointer to the created GeometryBinding, null on failure
         */
         GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = nullptr);
-
-        /**
-        * @brief Create a Stream Texture
-        *
-        * @param[in] fallbackTexture Texture2D used as a fallback texture.
-        * @param[in] source Stream source identifier
-        * @param[in] name The name of the Stream Texture.
-        * @return A pointer to the created Stream Texture, null on failure.
-        */
-        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name = nullptr);
 
         /**
         * @brief Creates a scene graph node.
@@ -485,24 +473,6 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const Texture2DBuffer& texture2DBuffer,
             uint32_t anisotropyLevel = 1,
-            const char* name = nullptr);
-
-        /**
-        * @brief Creates a texture sampler object.
-        * @param[in] wrapUMode texture wrap mode for u axis.
-        * @param[in] wrapVMode texture wrap mode for v axis.
-        * @param[in] minSamplingMethod texture min sampling method.
-        * @param[in] magSamplingMethod texture mag sampling method. Must be set to either Nearest or Linear.
-        * @param[in] streamTexture StreamTexture to be used with this sampler object.
-        * @param[in] name Optional name of the object.
-        * @return Pointer to the created TextureSampler, null on failure.
-        */
-        TextureSampler* createTextureSampler(
-            ETextureAddressMode wrapUMode,
-            ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod minSamplingMethod,
-            ETextureSamplingMethod magSamplingMethod,
-            const StreamTexture& streamTexture,
             const char* name = nullptr);
 
         /**

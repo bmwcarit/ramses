@@ -7,24 +7,12 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    SystemCompositorController_Wayland_IVI
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/SystemCompositorController_Wayland_IVI/*.h
                             src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ramses-renderer-lib
                             WaylandUtilities
                             wayland-ivi-extension
@@ -33,22 +21,10 @@ createModule(
 
 if (${ramses-sdk_BUILD_TESTS})
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    SystemCompositorController_Wayland_IVI_Test
         TYPE                    BINARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
         SRC_FILES            test/*.cpp
                                 test/*.h
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            SystemCompositorController_Wayland_IVI
                                 WaylandTestUtils
                                 RendererTestUtils

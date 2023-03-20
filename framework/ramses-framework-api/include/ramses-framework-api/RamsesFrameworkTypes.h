@@ -262,6 +262,15 @@ namespace ramses
 
         EClearFlags_All       = EClearFlags_Color | EClearFlags_Depth | EClearFlags_Stencil
     };
+
+    /**
+    * @brief Supported connection systems for distributed rendering
+    */
+    enum class EConnectionSystem : uint32_t
+    {
+        TCP,
+        Off
+    };
 }
 
 #endif

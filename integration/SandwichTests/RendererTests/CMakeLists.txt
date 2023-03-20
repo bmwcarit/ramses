@@ -26,7 +26,7 @@ expandModuleByPlatform(
 
     ${RendererTests-resources_MIXIN}
 
-    DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
+    DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils ramses-cli
 )
 
 expandModuleByPlatform(
@@ -49,8 +49,10 @@ expandModuleByPlatform(
 
     DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
                             ramses-gmock-main
+                            ramses-cli
 )
 
+# TODO Fix this...
 if(TARGET RendererLifecycleTests-windows-wgl-4-2-core)
     target_sources(RendererLifecycleTests-windows-wgl-4-2-core PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
     folderizeTarget(RendererLifecycleTests-windows-wgl-4-2-core)
@@ -71,44 +73,44 @@ if(TARGET RendererLifecycleTests-x11-egl-es-3-0)
     folderizeTarget(RendererLifecycleTests-x11-egl-es-3-0)
 endif()
 
-# TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
-createModule(
-    NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
+if(TARGET platform-wayland-ivi-egl-es-3-0)
+    createModule(
+        NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
+        TYPE                    BINARY
+        ENABLE_INSTALL          ON
 
-    INCLUDE_PATHS           RendererTestFramework
-                            EmbeddedCompositingTests
-                            EmbeddedCompositingTests/EmbeddedCompositingTestFramework
-                            EmbeddedCompositingTests/TestWaylandApplication
-                            EmbeddedCompositingTests/TestCases
+        INCLUDE_PATHS           RendererTestFramework
+                                EmbeddedCompositingTests
+                                EmbeddedCompositingTests/EmbeddedCompositingTestFramework
+                                EmbeddedCompositingTests/TestWaylandApplication
+                                EmbeddedCompositingTests/TestCases
 
-    SRC_FILES               EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.h
-                            EmbeddedCompositingTests/TestWaylandApplication/*.h
-                            EmbeddedCompositingTests/TestCases/*.h
+        SRC_FILES               EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.h
+                                EmbeddedCompositingTests/TestWaylandApplication/*.h
+                                EmbeddedCompositingTests/TestCases/*.h
 
-                            RendererTestFramework/*.cpp
-                            EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.cpp
-                            EmbeddedCompositingTests/TestWaylandApplication/*.cpp
-                            EmbeddedCompositingTests/TestCases/*.cpp
+                                RendererTestFramework/*.cpp
+                                EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.cpp
+                                EmbeddedCompositingTests/TestWaylandApplication/*.cpp
+                                EmbeddedCompositingTests/TestCases/*.cpp
 
-    ${RendererTests-resources_MIXIN}
+        ${RendererTests-resources_MIXIN}
 
-    DEPENDENCIES            ramses-renderer-lib
-                            platform-wayland-ivi-egl-es-3-0
-                            TestContent
-                            FrameworkTestUtils
-                            RendererTestUtils
-                            WaylandUtilities
-)
+        DEPENDENCIES            ramses-renderer-lib
+                                platform-wayland-ivi-egl-es-3-0
+                                TestContent
+                                FrameworkTestUtils
+                                RendererTestUtils
+                                WaylandUtilities
+                                ramses-cli
+    )
 
-# TODO(tobias/mohamed) Disable test broken by newer ubuntu 18.04 packages
-if(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0)
+    # TODO(tobias/mohamed) Disable test broken by newer ubuntu 18.04 packages
     makeTestFromTarget(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
             SUFFIX RNDSANDWICHTEST_SWRAST
             EXTRA_ARGS --ivi-layer 3 --ivi-control --filter-out ShowStreamTextureAfterChangingSurfaceSize
             SKIPPABLE
-            )
+    )
 endif()
 
 expandModuleByPlatform(
@@ -132,6 +134,7 @@ expandModuleByPlatform(
                             FrameworkTestUtils
                             RendererTestUtils
                             Device_EGL_Extension
+                            ramses-cli
 )
 
 # Tests which are supposed to be run with valgrind

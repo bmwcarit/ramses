@@ -27,8 +27,7 @@ namespace ramses
         : StatusObjectImpl()
         , m_shellType(ERamsesShellType_Default)
         , m_periodicLogsEnabled(true)
-        , m_usedProtocol(gHasTCPComm ? EConnectionProtocol::TCP : EConnectionProtocol::Fake)
-        , m_enableProtocolVersionOffset(false)
+        , m_usedProtocol(gHasTCPComm ? EConnectionProtocol::TCP : EConnectionProtocol::Off)
     {
     }
 
@@ -48,27 +47,14 @@ namespace ramses
         return m_featureLevel;
     }
 
-    void RamsesFrameworkConfigImpl::enableProtocolVersionOffset()
-    {
-        m_enableProtocolVersionOffset = true;
-    }
-
     uint32_t RamsesFrameworkConfigImpl::getProtocolVersion() const
     {
-        if (m_enableProtocolVersionOffset)
-        {
-            const uint32_t protocolVersionOffset = 99u;
-            return RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR + protocolVersionOffset;
-        }
-        else
-        {
-            return RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR;
-        }
+        return RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR;
     }
 
-    const ramses_internal::String& RamsesFrameworkConfigImpl::getProgramName() const
+    const ramses_internal::String& RamsesFrameworkConfigImpl::getParticipantName() const
     {
-        return m_programName;
+        return m_participantName;
     }
 
     EConnectionProtocol RamsesFrameworkConfigImpl::getUsedProtocol() const
@@ -115,69 +101,6 @@ namespace ramses
         return StatusOK;
     }
 
-    void RamsesFrameworkConfigImpl::registerOptions(CLI::App& cli)
-    {
-        auto* fw = cli.add_option_group("Framework Options");
-        auto* logger = cli.add_option_group("Logger Options");
-
-        std::map<std::string, EConnectionProtocol> mapConn{{"tcp", EConnectionProtocol::TCP}, {"off", EConnectionProtocol::Fake}};
-        fw->add_option("--connection", m_usedProtocol, "Connection system")->transform(CLI::CheckedTransformer(mapConn, CLI::ignore_case))->default_val(m_usedProtocol);
-
-        fw->add_flag_function(
-            "--ramsh,!--no-ramsh",
-            [&](std::int64_t count) {
-                if (count > 0)
-                {
-                    m_shellType = ERamsesShellType_Console;
-                }
-                if (count < 0)
-                {
-                    m_shellType = ERamsesShellType_None;
-                }
-            },
-            "Enable Ramses Shell");
-        fw->add_option_function<std::string>(
-            "--guid", [&](const std::string& guid) { m_userProvidedGuid = Guid(guid.c_str()); }, "User provided Guid");
-
-        fw->add_option_function<std::string>(
-            "--ip", [&](const std::string& myip) { m_tcpConfig.setIPAddress(String(myip)); }, "IP Address for TCP connection");
-
-        // TCP/IP options
-        fw->add_option_function<uint16_t>(
-            "--port", [&](uint16_t p) { m_tcpConfig.setPort(p); }, "TCP port");
-        fw->add_option_function<std::string>(
-            "--daemon-ip", [&](const std::string& ip) { m_tcpConfig.setDaemonIPAddress(String(ip)); }, "Ramses Daemon TCP port");
-        fw->add_option_function<uint16_t>(
-            "--daemon-port", [&](uint16_t p) { m_tcpConfig.setDaemonPort(p); }, "Ramses Daemon TCP port");
-        fw->add_option_function<std::chrono::milliseconds>(
-            "--tcp-alive", [&](const std::chrono::milliseconds& val) { m_tcpConfig.setAliveInterval(val); }, "TCP Keepalive interval in milliseconds");
-        fw->add_option_function<std::chrono::milliseconds>(
-            "--tcp-alive-timeout", [&](const std::chrono::milliseconds& val) { m_tcpConfig.setAliveTimeout(val); }, "TCP Keepalive timeout in milliseconds");
-
-        // Logger options
-        logger->add_flag("--logp,!--no-logp", m_periodicLogsEnabled, "Enable periodic logs");
-        logger->add_option("--periodic-log-timeout", periodicLogTimeout, "Periodic log time interval in seconds");
-
-        std::map<std::string, ELogLevel> logLevels = {
-            {"off", ELogLevel::Off},
-            {"fatal", ELogLevel::Fatal},
-            {"error", ELogLevel::Error},
-            {"warn", ELogLevel::Warn},
-            {"info", ELogLevel::Info},
-            {"debug", ELogLevel::Debug},
-            {"trace", ELogLevel::Trace},
-        };
-        logger->add_option("-l,--log-level", loggerConfig.logLevel, "Log level for all contexts (both console and dlt)")
-            ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));
-        logger->add_option("--log-level-console", loggerConfig.logLevelConsole, "Log level for all contexts (console only)")
-            ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));
-        logger->add_option("--log-contexts", loggerConfig.logLevelContextsStr, "Log level per context: [logLevel:context,logLevel:context,...]");
-        logger->add_option("--dlt-app-id", loggerConfig.dltAppId, "DLT Application ID")->default_str(loggerConfig.dltAppId.stdRef());
-        logger->add_option("--dlt-app-description", loggerConfig.dltAppDescription, "DLT Application description")->default_str(loggerConfig.dltAppDescription.stdRef());
-        logger->add_flag("--log-test", loggerConfig.enableSmokeTestContext, "Enables additional log context for smoke tests (RSMT)");
-        cli.callback([&](){m_programName = cli.get_name();});
-    }
-
     status_t RamsesFrameworkConfigImpl::enableDLTApplicationRegistration(bool state)
     {
         m_enableDltApplicationRegistration = state;
@@ -189,39 +112,76 @@ namespace ramses
         return m_enableDltApplicationRegistration;
     }
 
-    void RamsesFrameworkConfigImpl::setDLTApplicationID(const char* id)
+    void RamsesFrameworkConfigImpl::setDLTApplicationID(std::string_view id)
     {
-        // command line args overwrite hard coded settings
-        // TOOD: remove condition after CLI11 integration
-        if (!m_dltAppIdSet)
+        loggerConfig.dltAppId = String(id);
+    }
+
+    std::string_view RamsesFrameworkConfigImpl::getDLTApplicationID() const
+    {
+        return loggerConfig.dltAppId;
+    }
+
+    void RamsesFrameworkConfigImpl::setDLTApplicationDescription(std::string_view description)
+    {
+        loggerConfig.dltAppDescription = String(description);
+    }
+
+    std::string_view RamsesFrameworkConfigImpl::getDLTApplicationDescription() const
+    {
+        return loggerConfig.dltAppDescription;
+    }
+
+    void RamsesFrameworkConfigImpl::setLogLevel(ELogLevel logLevel)
+    {
+        loggerConfig.logLevel = GetELogLevelInternal(logLevel);
+    }
+
+    status_t RamsesFrameworkConfigImpl::setLogLevel(std::string_view context, ELogLevel logLevel)
+    {
+        loggerConfig.logLevelContexts[String(context)] = GetELogLevelInternal(logLevel);
+        return StatusOK;
+    }
+
+    void RamsesFrameworkConfigImpl::setLogLevelConsole(ELogLevel logLevel)
+    {
+        loggerConfig.logLevelConsole = GetELogLevelInternal(logLevel);
+    }
+
+    void RamsesFrameworkConfigImpl::setPeriodicLogInterval(std::chrono::seconds interval)
+    {
+        periodicLogTimeout    = static_cast<uint32_t>(interval.count());
+        m_periodicLogsEnabled = (periodicLogTimeout > 0);
+    }
+
+    status_t RamsesFrameworkConfigImpl::setParticipantGuid(uint64_t guid)
+    {
+        m_userProvidedGuid = Guid(guid);
+        if (!m_userProvidedGuid.isValid() || guid < 256)
         {
-            loggerConfig.dltAppId = id;
+            return addErrorEntry(fmt::format("RamsesFrameworkConfig::setParticipantGuid: Failed to set invalid id '{}'.", m_userProvidedGuid));
         }
+        return StatusOK;
     }
 
-    const char* RamsesFrameworkConfigImpl::getDLTApplicationID() const
+    status_t RamsesFrameworkConfigImpl::setParticipantName(std::string_view name)
     {
-        return loggerConfig.dltAppId.c_str();
+        m_participantName = String(name);
+        return StatusOK;
     }
 
-    void RamsesFrameworkConfigImpl::setDLTApplicationDescription(const char* description)
+    status_t RamsesFrameworkConfigImpl::setConnectionSystem(EConnectionSystem connectionSystem)
     {
-        // command line args overwrite hard coded settings
-        // TOOD: remove condition after CLI11 integration
-        if (!m_dltDescriptionSet)
+        switch (connectionSystem)
         {
-            loggerConfig.dltAppDescription = description;
+        case EConnectionSystem::TCP:
+            m_usedProtocol = EConnectionProtocol::TCP;
+            break;
+        case EConnectionSystem::Off:
+            m_usedProtocol = EConnectionProtocol::Off;
+            break;
         }
-    }
-
-    const char* RamsesFrameworkConfigImpl::getDLTApplicationDescription() const
-    {
-        return loggerConfig.dltAppDescription.c_str();
-    }
-
-    void RamsesFrameworkConfigImpl::setPeriodicLogsEnabled(bool enabled)
-    {
-        m_periodicLogsEnabled = enabled;
+        return StatusOK;
     }
 
     ramses_internal::Guid RamsesFrameworkConfigImpl::getUserProvidedGuid() const

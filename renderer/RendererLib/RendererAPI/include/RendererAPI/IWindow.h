@@ -10,7 +10,6 @@
 #define RAMSES_IWINDOW_H
 
 #include "Types.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {

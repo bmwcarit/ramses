@@ -14,7 +14,6 @@
 #include "ramses-framework-api/RendererSceneState.h"
 #include "RendererAPI/Types.h"
 #include "RendererAPI/EDeviceTypeId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererTestUtils.h"
 #include <memory>
 

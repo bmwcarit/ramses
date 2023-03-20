@@ -17,11 +17,6 @@ namespace ramses
     {
     }
 
-    void RendererConfigImpl::registerOptions(CLI::App& cli)
-    {
-        m_internalConfig.registerOptions(cli);
-    }
-
     status_t RendererConfigImpl::enableSystemCompositorControl()
     {
         m_internalConfig.enableSystemCompositorControl();
@@ -40,15 +35,15 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RendererConfigImpl::setSystemCompositorWaylandDisplay(const char* waylandDisplay)
+    status_t RendererConfigImpl::setSystemCompositorWaylandDisplay(std::string_view waylandDisplay)
     {
         m_internalConfig.setWaylandDisplayForSystemCompositorController(waylandDisplay);
         return StatusOK;
     }
 
-    const char* RendererConfigImpl::getSystemCompositorWaylandDisplay() const
+    std::string_view RendererConfigImpl::getSystemCompositorWaylandDisplay() const
     {
-        return m_internalConfig.getWaylandDisplayForSystemCompositorController().c_str();
+        return m_internalConfig.getWaylandDisplayForSystemCompositorController();
     }
 
     status_t RendererConfigImpl::setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec)

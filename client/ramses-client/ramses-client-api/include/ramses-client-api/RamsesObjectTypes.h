@@ -57,7 +57,6 @@ namespace ramses
         ERamsesObjectType_DataVector2i,
         ERamsesObjectType_DataVector3i,
         ERamsesObjectType_DataVector4i,
-        ERamsesObjectType_StreamTexture,
         ERamsesObjectType_SceneReference,
 
         ERamsesObjectType_TextureSamplerExternal,

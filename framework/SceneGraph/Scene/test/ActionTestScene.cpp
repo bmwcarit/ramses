@@ -848,40 +848,6 @@ namespace ramses_internal
         return m_scene.getRenderBuffer(handle);
     }
 
-    StreamTextureHandle ActionTestScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
-    {
-        const StreamTextureHandle handle = m_actionCollector.allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
-        flushPendingSceneActions();
-        return handle;
-    }
-
-    void ActionTestScene::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        m_actionCollector.releaseStreamTexture(streamTextureHandle);
-        flushPendingSceneActions();
-    }
-
-    bool ActionTestScene::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.isStreamTextureAllocated(streamTextureHandle);
-    }
-
-    UInt32 ActionTestScene::getStreamTextureCount() const
-    {
-        return m_scene.getStreamTextureCount();
-    }
-
-    void ActionTestScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        m_actionCollector.setForceFallbackImage(streamTextureHandle, forceFallbackImage);
-        flushPendingSceneActions();
-    }
-
-    const StreamTexture& ActionTestScene::getStreamTexture(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.getStreamTexture(streamTextureHandle);
-    }
-
     DataBufferHandle ActionTestScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)
     {
         const DataBufferHandle allocatedHandle = m_actionCollector.allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, handle);

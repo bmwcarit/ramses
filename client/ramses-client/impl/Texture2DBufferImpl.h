@@ -12,7 +12,7 @@
 #include "SceneObjectImpl.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/MipMapSize.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 #include "ramses-client-api/TextureEnums.h"
 
 namespace ramses

@@ -44,7 +44,6 @@ namespace ramses
     class BlitPass;
     class TextureSampler;
     class TextureSamplerMS;
-    class StreamTexture;
     class Texture2D;
     class Texture3D;
     class TextureCube;
@@ -94,7 +93,6 @@ namespace ramses
         DataVector2i,
         DataVector3i,
         DataVector4i,
-        StreamTexture,
         ArrayBuffer,
         Texture2DBuffer,
         PickableObject,
@@ -120,8 +118,7 @@ namespace ramses
         Appearance,
         Texture2D,
         Texture3D,
-        TextureCube,
-        StreamTexture>;
+        TextureCube>;
 
     // All Ramses objects - set #2
     using RamsesObjectTypes2 = ::testing::Types<

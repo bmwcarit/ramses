@@ -30,7 +30,6 @@
 #include "ramses-client-api/DataVector2i.h"
 #include "ramses-client-api/DataVector3i.h"
 #include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"

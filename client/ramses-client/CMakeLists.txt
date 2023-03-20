@@ -57,17 +57,9 @@ endif()
 target_include_directories(ramses-client-api INTERFACE ${RAMSES_CLIENT_API_INCLUDE_BASE} ${RAMSES_CLIENT_TEXT_API_INCLUDE_BASE})
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    ramses-client
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           impl
     SRC_FILES               impl/*.h
                             impl/glslEffectBlock/*.h
@@ -77,9 +69,6 @@ createModule(
                             ${RAMSES_CLIENT_FILES_SOURCE}
                             ${RAMSES_CLIENT_TEXT_FILES_SOURCE}
                             ${client_text_includes}
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ramses-client-api
                             ramses-framework
                             ramses-glslang
@@ -98,16 +87,8 @@ endif()
 
 if (${ramses-sdk_BUILD_TESTS})
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    ramses-client-test
         TYPE                    BINARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
         INCLUDE_PATHS           test
         SRC_FILES               test/*.h
                                 test/ClientCommands/*.h
@@ -116,10 +97,6 @@ if (${ramses-sdk_BUILD_TESTS})
                                 ${RAMSES_CLIENT_TEXT_TEST_FILES_SOURCE}
                                 test/ClientCommands/*.cpp
         RESOURCE_FOLDERS        test/res
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            ramses-client
                                 FrameworkTestUtils
                                 ramses-gmock-main

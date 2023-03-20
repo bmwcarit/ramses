@@ -10,7 +10,7 @@
 #define RAMSES_ARRAYRESOURCE_H
 
 #include "ramses-client-api/Resource.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 
 namespace ramses
 {

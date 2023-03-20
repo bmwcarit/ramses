@@ -13,7 +13,6 @@
 #include "SceneAPI/RenderGroup.h"
 #include "SceneAPI/PixelRectangle.h"
 #include "SceneAPI/TextureSamplerStates.h"
-#include "SceneAPI/StreamTexture.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
 #include "Math3d/Matrix22f.h"
@@ -50,7 +49,6 @@ namespace ramses_internal
         RecreateTextureBuffers(          source, collector);
         RecreateTextureSamplers(         source, collector);
         RecreateRenderBuffersAndTargets( source, collector);
-        RecreateStreamTextures(          source, collector);
         RecreateDataSlots(               source, collector);
         RecreateSceneReferences(         source, collector);
     }
@@ -114,18 +112,18 @@ namespace ramses_internal
                 const Vector3& translation = source.getTranslation(t);
                 if (translation != Vector3(0.f))
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Translation, t, translation, {});
+                    collector.setTranslation(t, translation);
                 }
                 const Vector3& rotation = source.getRotation(t);
                 if (rotation != Vector3(0.f))
                 {
                     const auto rotationConvention = source.getRotationConvention(t);
-                    collector.setTransformComponent(ETransformPropertyType_Rotation, t, rotation, rotationConvention);
+                    collector.setRotation(t, rotation, rotationConvention);
                 }
                 const Vector3& scaling = source.getScaling(t);
                 if (scaling != Vector3(1.0f))
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Scaling, t, scaling, {});
+                    collector.setScaling(t, scaling);
                 }
             }
         }
@@ -540,20 +538,6 @@ namespace ramses_internal
                     const RenderBufferHandle buffer = source.getRenderTargetRenderBuffer(renderTargetHandle, bufferIdx);
                     collector.addRenderTargetRenderBuffer(renderTargetHandle, buffer);
                 }
-            }
-        }
-    }
-
-    void SceneDescriber::RecreateStreamTextures(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        const UInt32 streamTextureCount = source.getStreamTextureCount();
-        for (StreamTextureHandle streamTextureHandle(0u); streamTextureHandle < streamTextureCount; ++streamTextureHandle)
-        {
-            if (source.isStreamTextureAllocated(streamTextureHandle))
-            {
-                const StreamTexture& streamTexture = source.getStreamTexture(streamTextureHandle);
-                collector.allocateStreamTexture(streamTexture.source, streamTexture.fallbackTexture, streamTextureHandle);
-                collector.setStreamTextureForceFallback(streamTextureHandle, streamTexture.forceFallbackTexture);
             }
         }
     }

@@ -132,11 +132,6 @@ namespace ramses_internal
             for(const auto& rb : renderBuffers)
                 unloadRenderTargetBuffer(rb, sceneId);
 
-            StreamTextureHandleVector streamTextures;
-            sceneResources.getAllStreamTextures(streamTextures);
-            for (const auto& st : streamTextures)
-                unloadStreamTexture(st, sceneId);
-
             RenderableVector vertexArrayRenderables;
             sceneResources.getAllVertexArrayRenderables(vertexArrayRenderables);
             for (const auto r : vertexArrayRenderables)
@@ -505,8 +500,8 @@ namespace ramses_internal
 
         m_embeddedCompositingManager.refStream(source);
 
-        assert(!contains_c(m_streamUsages[source].streamBufferUsages, bufferHandle));
-        m_streamUsages[source].streamBufferUsages.push_back(bufferHandle);
+        assert(!contains_c(m_streamUsages[source], bufferHandle));
+        m_streamUsages[source].push_back(bufferHandle);
     }
 
     void RendererResourceManager::unloadStreamBuffer(StreamBufferHandle bufferHandle)
@@ -519,7 +514,7 @@ namespace ramses_internal
 
         m_embeddedCompositingManager.unrefStream(source);
 
-        auto& streamUsage = m_streamUsages[source].streamBufferUsages;
+        auto& streamUsage = m_streamUsages[source];
         assert(contains_c(streamUsage, bufferHandle));
         streamUsage.erase(find_c(streamUsage, bufferHandle));
     }
@@ -552,38 +547,6 @@ namespace ramses_internal
         m_externalBuffers.release(bufferHandle);
 
         m_renderBackend.getDevice().deleteTexture(deviceHandle);
-    }
-
-    void RendererResourceManager::uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)
-    {
-        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadStreamTexture sceneId={} handle={} source={}", sceneId, handle, source);
-
-        assert(handle.isValid());
-        RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
-        sceneResources.addStreamTexture(handle, source);
-
-        m_embeddedCompositingManager.refStream(source);
-
-        assert(!contains_c(m_streamUsages[source].sceneUsages[sceneId], handle));
-        m_streamUsages[source].sceneUsages[sceneId].push_back(handle);
-    }
-
-    void RendererResourceManager::unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId)
-    {
-        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadStreamTexture sceneId={} handle={}", sceneId, handle);
-
-        assert(m_sceneResourceRegistryMap.contains(sceneId));
-        RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        const WaylandIviSurfaceId source = sceneResources.getStreamTextureSourceId(handle);
-        sceneResources.removeStreamTexture(handle);
-
-        m_embeddedCompositingManager.unrefStream(source);
-
-        auto& streamUsage = m_streamUsages[source].sceneUsages[sceneId];
-        assert(contains_c(streamUsage, handle));
-        streamUsage.erase(find_c(streamUsage, handle));
-        if (streamUsage.empty())
-            m_streamUsages[source].sceneUsages.erase(sceneId);
     }
 
     void RendererResourceManager::uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId)

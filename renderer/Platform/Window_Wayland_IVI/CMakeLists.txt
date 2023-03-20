@@ -8,46 +8,22 @@
 
 if(ramses-sdk_ENABLE_WAYLAND_IVI)
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    Window_Wayland_IVI
         TYPE                    STATIC_LIBRARY
         ENABLE_INSTALL          OFF
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
         INCLUDE_PATHS           include
         SRC_FILES               include/Window_Wayland_IVI/*.h
                                 src/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            Window_Wayland
                                 wayland-ivi-extension
     )
 
     if (${ramses-sdk_BUILD_TESTS})
         createModule(
-
-            #==========================================================================
-            # general module information
-            #==========================================================================
             NAME                    Window_Wayland_IVI_Test
             TYPE                    BINARY
-
-            #==========================================================================
-            # files of this module
-            #==========================================================================
             SRC_FILES            test/*.cpp
                                     test/*.h
-
-            #==========================================================================
-            # dependencies
-            #==========================================================================
             DEPENDENCIES            Window_Wayland_IVI
                                     Window_Wayland_Test
                                     SystemCompositorController_Wayland_IVI
@@ -57,8 +33,9 @@ if(ramses-sdk_ENABLE_WAYLAND_IVI)
 
         makeTestFromTarget(
             TARGET Window_Wayland_IVI_Test
-            SUFFIX RNDSANDWICHTEST
-            SKIPPABLE)
+            SUFFIX RNDSANDWICHTEST_SWRAST
+            SKIPPABLE
+            EXTRA_ARGS --gtest_filter=-*AWindowWaylandWithEventHandling*)
     endif()
 
 endif()

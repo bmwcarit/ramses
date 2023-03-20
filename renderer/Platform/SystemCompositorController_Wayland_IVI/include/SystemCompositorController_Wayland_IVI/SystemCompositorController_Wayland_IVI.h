@@ -15,6 +15,7 @@
 PUSH_DISABLE_C_STYLE_CAST_WARNING
 #include "ivi-controller-client-protocol.h"
 POP_DISABLE_C_STYLE_CAST_WARNING
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -25,7 +26,7 @@ namespace ramses_internal
     class SystemCompositorController_Wayland_IVI : public ISystemCompositorController
     {
     public:
-        explicit SystemCompositorController_Wayland_IVI(const String& waylandDisplay = "");
+        explicit SystemCompositorController_Wayland_IVI(std::string_view waylandDisplay = std::string_view());
         virtual ~SystemCompositorController_Wayland_IVI() override;
 
         virtual Bool init();

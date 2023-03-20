@@ -108,7 +108,6 @@ namespace ramses_internal
         , state(state_)
     {
         ramses::RamsesFrameworkConfigImpl config;
-        config.enableProtocolVersionOffset();
 
         commSystem = CommunicationSystemFactory::ConstructCommunicationSystem(config, ParticipantIdentifier(id, name), frameworkLock, statisticCollection);
         state.knownCommunicationSystems.push_back(this);

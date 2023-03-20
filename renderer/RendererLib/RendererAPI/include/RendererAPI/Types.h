@@ -19,6 +19,7 @@
 #include "Common/TypedMemoryHandle.h"
 #include "Common/BitForgeMacro.h"
 #include "Utils/LoggingUtils.h"
+#include <unordered_set>
 
 namespace ramses_internal
 {
@@ -43,6 +44,11 @@ namespace ramses_internal
 
     struct DmaBufferModifiersTag{};
     using DmaBufferModifiers = StronglyTypedValue<uint64_t, std::numeric_limits<uint64_t>::max(), DmaBufferModifiersTag>;
+
+    struct WaylandIviSurfaceIdTag {};
+    using WaylandIviSurfaceId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), WaylandIviSurfaceIdTag>;
+    using WaylandIviSurfaceIdSet = std::unordered_set<WaylandIviSurfaceId>;
+    using WaylandIviSurfaceIdVector = std::vector<WaylandIviSurfaceId>;
 
     using GenericDataPtr = void *;
     using GenericConstDataPtr = const void *;
@@ -111,7 +117,6 @@ namespace ramses_internal
     {
         Displays = 0,
         SceneStates,
-        StreamTextures,
         Resources,
         MissingResources,
         RenderQueue,
@@ -127,7 +132,6 @@ namespace ramses_internal
     {
         "Displays",
         "SceneStates",
-        "StreamTextures",
         "Resources",
         "MissingResources",
         "RenderQueue",
@@ -143,6 +147,7 @@ MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviLayerId)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WindowsWindowHandle)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::AndroidNativeWindowPtr)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::BinaryShaderFormatID)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviSurfaceId)
 MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::ERendererLogTopic, "ERendererLogTopic", ramses_internal::RendererLogTopicNames, ramses_internal::ERendererLogTopic::COUNT);
 
 #endif

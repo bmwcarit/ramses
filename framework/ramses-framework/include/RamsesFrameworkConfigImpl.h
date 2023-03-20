@@ -17,7 +17,6 @@
 #include "ThreadWatchdogConfig.h"
 #include "TransportCommon/EConnectionProtocol.h"
 #include "Collections/Guid.h"
-#include "CLI/CLI.hpp"
 
 namespace ramses
 {
@@ -27,24 +26,19 @@ namespace ramses
         RamsesFrameworkConfigImpl();
         ~RamsesFrameworkConfigImpl();
 
-        void registerOptions(CLI::App& cli);
-
-        const ramses_internal::String& getProgramName() const;
-
         status_t setFeatureLevel(EFeatureLevel featureLevel);
         EFeatureLevel getFeatureLevel() const;
 
         status_t enableDLTApplicationRegistration(bool state);
         bool getDltApplicationRegistrationEnabled() const;
 
-        void setDLTApplicationID(const char* id);
-        const char* getDLTApplicationID() const;
+        void setDLTApplicationID(std::string_view id);
+        std::string_view getDLTApplicationID() const;
 
-        void setDLTApplicationDescription(const char* description);
-        const char* getDLTApplicationDescription() const;
+        void setDLTApplicationDescription(std::string_view description);
+        std::string_view getDLTApplicationDescription() const;
 
         uint32_t getProtocolVersion() const;
-        void enableProtocolVersionOffset();
 
         status_t setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread, uint32_t interval);
         status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
@@ -55,8 +49,19 @@ namespace ramses
         uint32_t getWatchdogNotificationInterval(ERamsesThreadIdentifier thread) const;
         IThreadWatchdogNotification* getWatchdogNotificationCallback() const;
 
-        void setPeriodicLogsEnabled(bool enabled);
+        void setLogLevel(ELogLevel logLevel);
+        status_t setLogLevel(std::string_view context, ELogLevel logLevel);
+        void setLogLevelConsole(ELogLevel logLevel);
+
+        void setPeriodicLogInterval(std::chrono::seconds interval);
+
+        status_t setParticipantGuid(uint64_t guid);
         ramses_internal::Guid getUserProvidedGuid() const;
+
+        status_t setParticipantName(std::string_view name);
+        const ramses_internal::String& getParticipantName() const;
+
+        status_t setConnectionSystem(EConnectionSystem connectionSystem);
 
         TCPConfig        m_tcpConfig;
         ERamsesShellType m_shellType;
@@ -71,12 +76,9 @@ namespace ramses
     private:
         EFeatureLevel m_featureLevel = EFeatureLevel_01;
         ramses_internal::EConnectionProtocol m_usedProtocol;
-        ramses_internal::String m_programName;
+        ramses_internal::String m_participantName;
         bool m_enableDltApplicationRegistration = true;
-        bool m_enableProtocolVersionOffset;
         ramses_internal::Guid m_userProvidedGuid;
-        bool m_dltAppIdSet = false;
-        bool m_dltDescriptionSet = false;
     };
 }
 
