@@ -157,9 +157,15 @@ namespace ramses_internal
             UInt m_readPosition;
         };
 
-        class Iterator : public std::iterator<std::forward_iterator_tag, SceneActionReader, UInt, SceneActionReader*, SceneActionReader&>
+        class Iterator
         {
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = SceneActionReader;
+            using difference_type = std::ptrdiff_t;
+            using pointer = SceneActionReader*;
+            using reference = SceneActionReader&;
+
             Iterator();
 
             bool operator!=(const Iterator& other) const;

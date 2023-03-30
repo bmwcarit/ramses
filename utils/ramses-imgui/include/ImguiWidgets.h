@@ -8,17 +8,15 @@
 
 #pragma once
 
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
+#include "Utils/Warnings.h"
+
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wold-style-cast)
 
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
-#endif
+WARNINGS_POP
 
 #include "absl/types/span.h"
 #include "SceneAPI/TextureEnums.h"
