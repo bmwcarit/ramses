@@ -3,13 +3,16 @@ name: Test
 # This is derived from the standard CMake template for github actions.
 # For more details on the settings used, have a look at the template in the marketplace
 
-# Only pushes and PRs against the master branch are built
+# Only pushes and PRs against protected branches are built
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - ramses-28
   pull_request:
-    branches: [ master ]
-
+    branches:
+      - master
+      - ramses-28
 jobs:
   build:
     runs-on: ${{ matrix.os }}
