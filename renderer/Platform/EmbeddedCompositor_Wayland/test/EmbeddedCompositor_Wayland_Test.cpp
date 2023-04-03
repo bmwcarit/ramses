@@ -106,7 +106,7 @@ namespace ramses_internal
             {
             }
 
-            virtual void run() override
+            void run() override
             {
                 m_started = true;
                 wl_display* display = (m_clientSocketFileDescriptor>=0) ?

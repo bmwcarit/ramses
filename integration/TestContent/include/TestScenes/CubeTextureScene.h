@@ -10,6 +10,7 @@
 #define RAMSES_CUBETEXTURESCENE_H
 
 #include "IntegrationScene.h"
+#include "ramses-framework-api/DataTypes.h"
 #include "SceneAPI/Handles.h"
 #include "Math3d/Vector3.h"
 #include "Collections/Vector.h"
@@ -44,8 +45,8 @@ namespace ramses_internal
         ramses::MeshNode* m_sphereMesh;
         ramses::Node* m_transformNode;
 
-        std::vector<Vector3> m_spherePositions;
-        std::vector<Vector3> m_sphereNormals;
+        std::vector<ramses::vec3f> m_spherePositions;
+        std::vector<ramses::vec3f> m_sphereNormals;
         std::vector<UInt16> m_sphereIndices;
     };
 }

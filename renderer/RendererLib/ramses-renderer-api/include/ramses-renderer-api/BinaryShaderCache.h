@@ -29,7 +29,7 @@ namespace ramses
         /**
         * @brief Destructor of IBinaryShaderCache
         */
-        virtual ~BinaryShaderCache() override;
+        ~BinaryShaderCache() override;
 
         /**
         * @brief Provides a list of binary shader formats supported by the device in use.
@@ -40,7 +40,7 @@ namespace ramses
         * @param[in] supportedFormats Pointer to first element of a list of supported formats, this array is valid only for in the scope of this callback
         * @param[in] numSupportedFormats Number of elements in \c supportedFormats array, if zero there is no support for uploading binary shaders
         */
-        virtual void deviceSupportsBinaryShaderFormats(const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats) override;
+        void deviceSupportsBinaryShaderFormats(const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats) override;
 
         /**
         * @brief Check if the cache contains the binary shader for the Effect with the given Effect Id.
@@ -48,7 +48,7 @@ namespace ramses
         * @return true if there is binary shader for the Effect Id
         *         false otherwise
         */
-        [[nodiscard]] virtual bool hasBinaryShader(effectId_t effectId) const override;
+        [[nodiscard]] bool hasBinaryShader(effectId_t effectId) const override;
 
         /**
         * @brief Get the binary shader size in bytes for the Effect with the given Effect Id.
@@ -56,7 +56,7 @@ namespace ramses
         * @return size in bytes for the Effect with the given Effect Id
         *         0 if there is no binary shader in the cache for the Effect with the Effect Id.
         */
-        [[nodiscard]] virtual uint32_t getBinaryShaderSize(effectId_t effectId) const override;
+        [[nodiscard]] uint32_t getBinaryShaderSize(effectId_t effectId) const override;
 
         /**
         * @brief Get the binary shader format for the Effect with the given Effect Id.
@@ -64,7 +64,7 @@ namespace ramses
         * @return binary shader format for the Effect with the given Effect Id.
         *         0 if there is no binary shader in the cache for the Effect with the Effect Id.
         */
-        [[nodiscard]] virtual binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const override;
+        [[nodiscard]] binaryShaderFormatId_t getBinaryShaderFormat(effectId_t effectId) const override;
 
         /**
          * @brief      Returns for a specific effect whether it should be cached.
@@ -75,7 +75,7 @@ namespace ramses
          * @param[in]  sceneId  ID of scene that uses the effect
          * @return     true if the effect should be cached, false otherwise.
          */
-        [[nodiscard]] virtual bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const override;
+        [[nodiscard]] bool shouldBinaryShaderBeCached(effectId_t effectId, sceneId_t sceneId) const override;
 
         /**
         * @brief Get the binary shader data for the Effect with the given Effect Id.
@@ -83,7 +83,7 @@ namespace ramses
         * @param buffer pointer to the buffer to get the binary shader data
         * @param bufferSize the size of the buffer to get the binary shader data
         */
-        virtual void getBinaryShaderData(effectId_t effectId, uint8_t* buffer, uint32_t bufferSize) const override;
+        void getBinaryShaderData(effectId_t effectId, uint8_t* buffer, uint32_t bufferSize) const override;
 
         /**
         * @brief Store the binary shader into the cache.
@@ -93,7 +93,7 @@ namespace ramses
         * @param binaryShaderDataSize size of the binary shader data
         * @param binaryShaderFormat format of the binary shader
         */
-        virtual void storeBinaryShader(effectId_t effectId, sceneId_t sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, binaryShaderFormatId_t binaryShaderFormat) override;
+        void storeBinaryShader(effectId_t effectId, sceneId_t sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, binaryShaderFormatId_t binaryShaderFormat) override;
 
         /**
          * @brief Save all binary shaders in the cache to the file with the given path
@@ -118,7 +118,7 @@ namespace ramses
         * @param effectId Effect Id of the Effect
         * @param success The result
         */
-        virtual void binaryShaderUploaded(effectId_t effectId, bool success) const override;
+        void binaryShaderUploaded(effectId_t effectId, bool success) const override;
 
         /**
          * @brief Deleted copy constructor

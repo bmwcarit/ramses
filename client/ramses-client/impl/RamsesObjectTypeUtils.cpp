@@ -40,7 +40,7 @@ namespace ramses
         "ERamsesObjectType_TextureSamplerMS",
         "ERamsesObjectType_RenderBuffer",
         "ERamsesObjectType_RenderTarget",
-        "ERamsesObjectType_DataBufferObject",
+        "ERamsesObjectType_ArrayBufferObject",
         "ERamsesObjectType_Texture2DBuffer",
         "ERamsesObjectType_DataObject",
         "ERamsesObjectType_DataFloat",

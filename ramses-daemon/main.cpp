@@ -16,22 +16,30 @@
 #include "Utils/RamsesLogger.h"
 #include "Utils/StatisticCollection.h"
 #include <memory>
-#include "CLI/CLI.hpp"
-
+#include "ramses-cli.h"
 
 int main(int argc, const char* argv[])
 {
     using namespace ramses_internal;
 
-    ramses::RamsesFrameworkConfigImpl config;
+    ramses::RamsesFrameworkConfig config;
     config.setDLTApplicationDescription("ramses-daemon");
     config.setDLTApplicationID("SMGR");
 
     CLI::App cli;
-    config.registerOptions(cli);
+    try
+    {
+        ramses::registerOptions(cli, config);
+    }
+    catch (const CLI::Error& error)
+    {
+        // configuration error
+        std::cerr << error.what();
+        return -1;
+    }
     CLI11_PARSE(cli, argc, argv);
 
-    GetRamsesLogger().initialize(config.loggerConfig, false, true); // no framework used
+    GetRamsesLogger().initialize(config.impl.loggerConfig, false, true); // no framework used
 
     auto commandExit = std::make_shared<RamshCommandExit>();
     RamshStandardSetup ramsh(ramses::ERamsesShellType_Console, "Daemon");
@@ -44,9 +52,9 @@ int main(int argc, const char* argv[])
 
     PlatformLock frameworkLock;
     StatisticCollectionFramework statisticCollection;
-    std::unique_ptr<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection, &ramsh));
+    std::unique_ptr<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config.impl, frameworkLock, statisticCollection, &ramsh));
     discoveryDaemon->start();
-    LOG_INFO(CONTEXT_SMOKETEST, "Ramsh commands registered");
+    LOG_DEBUG(CONTEXT_SMOKETEST, "Ramsh commands registered");
 
     commandExit->waitForExitRequest();
 

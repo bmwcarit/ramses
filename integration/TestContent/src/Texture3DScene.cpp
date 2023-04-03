@@ -24,17 +24,17 @@ namespace ramses_internal
         , m_effect(getTestEffect("ramses-test-client-3d-textured"))
     {
 
-        uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        m_indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
+        m_indices = m_scene.createArrayResource(6u, indicesArray);
 
         m_groupNode = m_scene.createNode();
 
-        float vertexPositionsArray[] = {
-            -1.0f, -1.f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            -1.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f };
-        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ -1.0f, -1.f, 0.0f },
+            ramses::vec3f{ 1.0f, -1.0f, 0.0f },
+            ramses::vec3f{ -1.0f, 1.0f, 0.0f },
+            ramses::vec3f{ 1.0f, 1.0f, 0.0f }};
+        m_vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
         const uint8_t rgb8Data_0[] = {
             0xff, 0x00, 0x00,
@@ -86,12 +86,12 @@ namespace ramses_internal
     {
         ramses::Appearance* appearance = m_scene.createAppearance(*m_effect, "appearance");
 
-        float textureCoordsArray[] = {
-            0.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier,
-            2.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier,
-            0.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier,
-            2.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, textureCoordsArray);
+        const std::array<ramses::vec3f, 4u> textureCoordsArray{
+            ramses::vec3f{ 0.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier },
+            ramses::vec3f{ 2.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier },
+            ramses::vec3f{ 0.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier },
+            ramses::vec3f{ 2.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier } };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;

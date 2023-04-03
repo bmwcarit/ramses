@@ -28,7 +28,7 @@ namespace ramses_internal
         SceneLinkScene::addChildToNode(parent, child);
     }
 
-    void TransformationLinkCachedScene::setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention)
+    void TransformationLinkCachedScene::setRotation(TransformHandle transform, const Vector4& rotation, ERotationConvention convention)
     {
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());

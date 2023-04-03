@@ -129,12 +129,10 @@ createModule(
                             ../external/lodepng/lodepng.cpp
 
     DEPENDENCIES            ramses-framework-api
-                            CLI11
                             ramses-common-base
                             lz4
                             fmt::fmt
                             ramses-abseil
-                            CLI11::CLI11
     # conditional values
     ${ramses-framework-TCP_MIXIN}
     ${ramses-framework-DLT_MIXIN}
@@ -183,7 +181,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-framework PRIVATE "-Wsuggest-override")
 endif()
 
-install(DIRECTORY ramses-framework-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+if(ramses-sdk_ENABLE_INSTALL)
+    install(DIRECTORY ramses-framework-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+endif()
 
 set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}

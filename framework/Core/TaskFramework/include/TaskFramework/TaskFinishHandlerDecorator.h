@@ -19,9 +19,9 @@ namespace ramses_internal
     {
     public:
         TaskFinishHandlerDecorator(ITaskFinishHandler& finishHandler, ITask& TaskToWatch);
-        virtual ~TaskFinishHandlerDecorator() override;
+        ~TaskFinishHandlerDecorator() override;
 
-        virtual void execute() override;
+        void execute() override;
 
     protected:
 

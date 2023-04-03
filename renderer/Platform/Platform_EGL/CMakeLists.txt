@@ -17,23 +17,11 @@ if (TARGET Device_EGL_Extension)
 endif()
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    Platform_EGL
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/Platform_EGL/*.h
                             src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ${Platfom_EGL_Dependencies}
 )

@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         SceneProviderServiceHandlerMock();
-        virtual ~SceneProviderServiceHandlerMock() override;
+        ~SceneProviderServiceHandlerMock() override;
 
         MOCK_METHOD(void, handleSubscribeScene, (const SceneId& sceneId, const Guid& consumerID), (override));
         MOCK_METHOD(void, handleUnsubscribeScene, (const SceneId& sceneId, const Guid& consumerID), (override));
@@ -33,7 +33,7 @@ namespace ramses_internal
     {
     public:
         SceneRendererServiceHandlerMock();
-        virtual ~SceneRendererServiceHandlerMock() override;
+        ~SceneRendererServiceHandlerMock() override;
 
         MOCK_METHOD(void, handleNewScenesAvailable, (const SceneInfoVector& newScenes, const Guid& providerID, ramses::EFeatureLevel featureLevel), (override));
         MOCK_METHOD(void, handleScenesBecameUnavailable, (const SceneInfoVector& unavailableScenes, const Guid& providerID), (override));

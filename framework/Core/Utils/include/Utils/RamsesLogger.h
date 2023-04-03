@@ -34,7 +34,6 @@ namespace ramses_internal
         std::map<String, ELogLevel> logLevelContexts; // TODO: std::unordered_map<std::string, ELogLevel>
         String dltAppId = "RAMS";
         String dltAppDescription = "RAMS-DESC";
-        bool enableSmokeTestContext = false;
     };
 
     struct LogContextInformation

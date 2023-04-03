@@ -17,7 +17,6 @@
 #include "ThreadWatchdogConfig.h"
 #include "TransportCommon/EConnectionProtocol.h"
 #include "Collections/Guid.h"
-#include "CLI/CLI.hpp"
 
 namespace ramses
 {
@@ -25,11 +24,7 @@ namespace ramses
     {
     public:
         RamsesFrameworkConfigImpl();
-        ~RamsesFrameworkConfigImpl();
-
-        void registerOptions(CLI::App& cli);
-
-        const ramses_internal::String& getProgramName() const;
+        ~RamsesFrameworkConfigImpl() override;
 
         status_t setFeatureLevel(EFeatureLevel featureLevel);
         EFeatureLevel getFeatureLevel() const;
@@ -37,11 +32,11 @@ namespace ramses
         status_t enableDLTApplicationRegistration(bool state);
         bool getDltApplicationRegistrationEnabled() const;
 
-        void setDLTApplicationID(const char* id);
-        const char* getDLTApplicationID() const;
+        void setDLTApplicationID(std::string_view id);
+        std::string_view getDLTApplicationID() const;
 
-        void setDLTApplicationDescription(const char* description);
-        const char* getDLTApplicationDescription() const;
+        void setDLTApplicationDescription(std::string_view description);
+        std::string_view getDLTApplicationDescription() const;
 
         uint32_t getProtocolVersion() const;
 
@@ -63,6 +58,9 @@ namespace ramses
         status_t setParticipantGuid(uint64_t guid);
         ramses_internal::Guid getUserProvidedGuid() const;
 
+        status_t setParticipantName(std::string_view name);
+        const ramses_internal::String& getParticipantName() const;
+
         status_t setConnectionSystem(EConnectionSystem connectionSystem);
 
         TCPConfig        m_tcpConfig;
@@ -78,7 +76,7 @@ namespace ramses
     private:
         EFeatureLevel m_featureLevel = EFeatureLevel_01;
         ramses_internal::EConnectionProtocol m_usedProtocol;
-        ramses_internal::String m_programName;
+        ramses_internal::String m_participantName;
         bool m_enableDltApplicationRegistration = true;
         ramses_internal::Guid m_userProvidedGuid;
     };

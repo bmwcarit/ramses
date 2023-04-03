@@ -19,18 +19,9 @@ add_library(ramses-renderer-api INTERFACE)
 target_include_directories(ramses-renderer-api INTERFACE ${RAMSES_RENDERER_API_INCLUDE_BASE})
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    ramses-renderer-lib
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-
     SRC_FILES               ramses-renderer-api/include/*.h
                             ramses-renderer-api/include/ramses-renderer-api/*.h
 
@@ -61,15 +52,13 @@ createModule(
     SRC_FILES               RendererLib/include/RendererLib/*.h
                             RendererLib/include/*.h
                             RendererLib/src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ramses-renderer-api
                             ramses-framework
 )
 
-install(DIRECTORY ramses-renderer-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+if(ramses-sdk_ENABLE_INSTALL)
+    install(DIRECTORY ramses-renderer-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-renderer-lib PRIVATE "-Wsuggest-override")
@@ -101,24 +90,12 @@ set(ramses-shared-lib-renderer-MIXIN
 
 IF (${ramses-sdk_BUILD_TESTS})
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    RendererTestUtils
         TYPE                    STATIC_LIBRARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
 
         INCLUDE_PATHS           RendererTestUtils/include
         SRC_FILES               RendererTestUtils/include/*.h
                                 RendererTestUtils/src/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            ramses-renderer-lib
                                 FrameworkTestUtils
     )
@@ -126,16 +103,8 @@ ENDIF()
 
 if (${ramses-sdk_BUILD_TESTS})
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    ramses-renderer-lib-test
         TYPE                    BINARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
         SRC_FILES            RendererFramework/test/*.cpp
                                 RendererFramework/test/*.h
                                 RendererAPI/test/*.cpp
@@ -148,10 +117,6 @@ if (${ramses-sdk_BUILD_TESTS})
                                 RendererCommands/test/*.h
                                 ramses-renderer-impl/test/*.h
                                 ramses-renderer-impl/test/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            ramses-renderer-lib
                                 ramses-client
                                 ramses-gmock-main

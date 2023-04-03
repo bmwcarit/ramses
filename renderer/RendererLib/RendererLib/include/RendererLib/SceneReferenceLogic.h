@@ -38,8 +38,8 @@ namespace ramses_internal
     public:
         SceneReferenceLogic(const RendererScenes& scenes, IRendererSceneControlLogic& sceneLogicIRendererSceneControl, IRendererSceneUpdater& sceneUpdater, IRendererSceneEventSender& sender, SceneReferenceOwnership& sharedOwnership);
 
-        virtual void addActions(SceneId masterScene, const SceneReferenceActionVector& actions) override;
-        virtual void update() override;
+        void addActions(SceneId masterScene, const SceneReferenceActionVector& actions) override;
+        void update() override;
 
         void extractAndSendSceneReferenceEvents(RendererEventVector& events);
         [[nodiscard]] bool hasAnyReferencedScenes() const;

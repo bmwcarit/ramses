@@ -19,7 +19,7 @@ namespace ramses_internal
     public:
         explicit UserLogAppender(const ramses::LogHandlerFunc& f);
 
-        virtual void log(const LogMessage& logMessage) override;
+        void log(const LogMessage& logMessage) override;
 
     private:
         ramses::LogHandlerFunc m_func;

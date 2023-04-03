@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorControllerDestroySurface(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt32& surfaceId) const override;
+        Bool execute(UInt32& surfaceId) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

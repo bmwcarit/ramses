@@ -71,17 +71,17 @@ namespace ramses_internal
     {
     public:
         DisplayThread(DisplayBundleShared displayBundle, DisplayHandle displayHandle, IThreadAliveNotifier& notifier);
-        virtual ~DisplayThread() override;
+        ~DisplayThread() override;
 
-        virtual void startUpdating() override;
-        virtual void stopUpdating() override;
+        void startUpdating() override;
+        void stopUpdating() override;
 
-        virtual void setLoopMode(ELoopMode loopMode) override;
-        virtual void setMinFrameDuration(std::chrono::microseconds minLoopPeriod) override;
-        virtual uint32_t getFrameCounter() const override;
+        void setLoopMode(ELoopMode loopMode) override;
+        void setMinFrameDuration(std::chrono::microseconds minLoopPeriod) override;
+        uint32_t getFrameCounter() const override;
 
     private:
-        virtual void run() override;
+        void run() override;
 
         std::chrono::milliseconds sleepToControlFramerate(std::chrono::microseconds loopDuration, std::chrono::microseconds minimumFrameDuration);
 

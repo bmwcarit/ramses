@@ -16,7 +16,7 @@ function(makeTestFromTarget)
     )
 
     # If not specified, the test is assumed to be a unit test
-    if (${TEST_SUFFIX} STREQUAL "")
+    if (TEST_SUFFIX STREQUAL "")
         message(FATAL_ERROR "makeTestFromTarget: SUFFIX not specified for '${TEST_TARGET}'")
     endif()
 
@@ -33,7 +33,9 @@ function(makeTestFromTarget)
 
     # TODO: tests should not have to be installed, this line could be deleted after tests have been refactored to
     # not have the requirement to be installed
-    install(TARGETS ${TEST_TARGET} DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} COMPONENT ramses-tests)
+    if(ramses-sdk_ENABLE_INSTALL)
+        install(TARGETS ${TEST_TARGET} DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} COMPONENT ramses-tests)
+    endif()
 
     add_test(
         NAME ${TEST_NAME}

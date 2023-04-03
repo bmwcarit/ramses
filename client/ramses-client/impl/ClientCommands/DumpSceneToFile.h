@@ -24,7 +24,7 @@ namespace ramses_internal
     {
     public:
         explicit DumpSceneToFile(ramses::RamsesClientImpl& client);
-        virtual Bool execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const override;
+        Bool execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const override;
 
     private:
         ramses::RamsesClientImpl& m_client;

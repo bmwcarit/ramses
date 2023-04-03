@@ -1,0 +1,37 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+---
+# ---- Linux ----
+# Install in own virtualenv to protect system
+- name: Create venv with requirements (Linux)
+  pip:
+    requirements: "{{ git_root }}/ci/oss/requirements.txt"
+    virtualenv: "{{ ansible_user_dir }}/oss-release-test"
+    virtualenv_command: "/usr/bin/python3 -m venv"
+  when: ansible_os_family != "Windows"
+
+- name: run oss release script (Linux)
+  shell: |
+    {{ ansible_user_dir }}/oss-release-test/bin/python \
+        ci/oss/oss-release.py --oss-mirror "{{ git_root_oss }}" --no-submodule-init
+  args:
+    executable: /bin/bash
+    chdir: "{{ git_root }}"
+  when: ansible_os_family != "Windows"
+
+# ---- Windows ----
+# Windows has no system python, no virtualenv needed
+- name: run oss release script (Windows)
+  win_shell: |
+    py -3 -m pip install -r ci/oss/requirements.txt
+    py -3 ci/oss/oss-release.py --oss-mirror "{{ git_root_oss }}" --no-submodule-init
+  args:
+    chdir: "{{ git_root }}"
+  when: ansible_os_family == "Windows"
+...

@@ -12,14 +12,8 @@
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/TextureEnums.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector4.h"
 #include <unordered_map>
-
-namespace CLI
-{
-    class App;
-}
 
 namespace ramses_internal
 {
@@ -27,8 +21,6 @@ namespace ramses_internal
     {
     public:
         DisplayConfig() {}
-
-        void registerOptions(CLI::App& cli);
 
         [[nodiscard]] Bool getFullscreenState() const;
         void setFullscreenState(Bool state);
@@ -57,8 +49,8 @@ namespace ramses_internal
         [[nodiscard]] WaylandIviSurfaceId getWaylandIviSurfaceID() const;
         void setWaylandIviSurfaceID(WaylandIviSurfaceId waylandIviSurfaceID);
 
-        void setWaylandDisplay(const String& waylandDisplay);
-        [[nodiscard]] const String& getWaylandDisplay() const;
+        void setWaylandDisplay(std::string_view waylandDisplay);
+        [[nodiscard]] std::string_view getWaylandDisplay() const;
 
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
         [[nodiscard]] WindowsWindowHandle getWindowsWindowHandle() const;
@@ -90,11 +82,11 @@ namespace ramses_internal
         void setAsyncEffectUploadEnabled(bool enabled);
         [[nodiscard]] bool isAsyncEffectUploadEnabled() const;
 
-        void setWaylandEmbeddedCompositingSocketName(const String& socket);
-        [[nodiscard]] const String& getWaylandSocketEmbedded() const;
+        void setWaylandEmbeddedCompositingSocketName(std::string_view socket);
+        [[nodiscard]] std::string_view getWaylandSocketEmbedded() const;
 
-        void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
-        [[nodiscard]] const String& getWaylandSocketEmbeddedGroup() const;
+        void setWaylandEmbeddedCompositingSocketGroup(std::string_view groupNameForSocketPermissions);
+        [[nodiscard]] std::string_view getWaylandSocketEmbeddedGroup() const;
 
         void setWaylandEmbeddedCompositingSocketFD(int fd);
         [[nodiscard]] int getWaylandSocketEmbeddedFD() const;
@@ -102,8 +94,8 @@ namespace ramses_internal
         bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
         [[nodiscard]] uint32_t getWaylandSocketEmbeddedPermissions() const;
 
-        void setPlatformRenderNode(const String& renderNode);
-        [[nodiscard]] const String& getPlatformRenderNode() const;
+        void setPlatformRenderNode(std::string_view renderNode);
+        [[nodiscard]] std::string_view getPlatformRenderNode() const;
 
         void setSwapInterval(int32_t interval);
         [[nodiscard]] int32_t getSwapInterval() const;

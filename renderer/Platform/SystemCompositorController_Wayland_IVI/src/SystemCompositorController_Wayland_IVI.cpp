@@ -24,7 +24,7 @@
 
 namespace ramses_internal
 {
-    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI(const String& waylandDisplay)
+    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI(std::string_view waylandDisplay)
         : m_waylandDisplay(waylandDisplay)
     {
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI (" << waylandDisplay << ")");

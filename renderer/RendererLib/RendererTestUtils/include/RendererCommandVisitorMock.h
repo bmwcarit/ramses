@@ -15,7 +15,6 @@
 #include "RendererLib/DisplayConfig.h"
 #include "SceneAPI/SceneId.h"
 #include "RendererAPI/Types.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector4.h"
 

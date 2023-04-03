@@ -35,7 +35,7 @@ namespace
             m_sceneUpdate.flushInfos = update.flushInfos.copy();
         }
 
-        virtual bool MatchAndExplain(const SceneUpdate& updatearg, MatchResultListener* /*listener*/) const override
+        bool MatchAndExplain(const SceneUpdate& updatearg, MatchResultListener* /*listener*/) const override
         {
             const SceneActionCollection& arg = updatearg.actions;
             if (arg.numberOfActions() > 0 &&
@@ -58,12 +58,12 @@ namespace
             return updatearg.actions == m_sceneUpdate.actions;
         }
 
-        virtual void DescribeTo(::std::ostream* os) const override
+        void DescribeTo(::std::ostream* os) const override
         {
             *os << "is expected SceneActionCollection";
         }
 
-        virtual void DescribeNegationTo(::std::ostream* os) const override
+        void DescribeNegationTo(::std::ostream* os) const override
         {
             *os << "is not expected SceneActionCollection";
         }
@@ -81,7 +81,7 @@ class SceneGraphSenderMock : public ISceneGraphSender
 {
 public:
     SceneGraphSenderMock() {}
-    virtual ~SceneGraphSenderMock() override = default;
+    ~SceneGraphSenderMock() override = default;
     MOCK_METHOD(void, sendPublishScene, (SceneId sceneId, EScenePublicationMode publicationMode, const String& name), (override));
     MOCK_METHOD(void, sendUnpublishScene, (SceneId sceneId, EScenePublicationMode publicationMode), (override));
     MOCK_METHOD(void, sendCreateScene, (const Guid& to, const SceneId& sceneId, EScenePublicationMode publicationMode), (override));

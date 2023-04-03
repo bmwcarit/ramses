@@ -68,7 +68,7 @@ namespace ramses
             m_ramshCommands.push_back(std::make_shared<ramses_internal::SetFrameTimeLimits>(m_rendererCommandBuffer));
             for (const auto& cmd : m_ramshCommands)
                 m_framework.getRamsh().add(cmd);
-            LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Ramsh commands registered from RamsesRenderer");
+            LOG_DEBUG(ramses_internal::CONTEXT_SMOKETEST, "Ramsh commands registered from RamsesRenderer");
         }
 
         LOG_TRACE(ramses_internal::CONTEXT_PROFILING, "RamsesRenderer::RamsesRenderer finished initializing renderer");

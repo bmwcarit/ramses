@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         SystemCompositorControllerMock();
-        virtual ~SystemCompositorControllerMock() override;
+        ~SystemCompositorControllerMock() override;
 
         MOCK_METHOD(Bool, init, ());
         MOCK_METHOD(void, update, (), (override));

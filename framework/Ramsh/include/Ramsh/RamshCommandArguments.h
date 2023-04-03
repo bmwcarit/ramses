@@ -41,7 +41,7 @@ namespace ramses_internal
         bool executeInput(const std::vector<std::string>& in) override;
         [[nodiscard]] std::string descriptionString() const override;
 
-        virtual ~RamshCommandArgsBase() override
+        ~RamshCommandArgsBase() override
         {
         }
 
@@ -70,7 +70,7 @@ namespace ramses_internal
         virtual bool executeInternal(const RamshArgumentDataProvider&,T0&,T1&,T2&,T3&,T4&) const = 0;
 
         // initializes the current (N-th) argument and call the base class' implementation to initialize the next argument
-        virtual void init() override;
+        void init() override;
     };
 
     // -------------------------------------------------------

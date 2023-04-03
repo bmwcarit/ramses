@@ -27,17 +27,16 @@ namespace ramses_internal
         m_effect = getTestEffect("ramses-test-client-textured");
         m_root = m_scene.createNode();
 
-        using Vec3 = std::array<float, 3>;
-        const Vec3 A{{ -0.5f,  0.5f, -0.5f }};
-        const Vec3 B{{ -0.5f, -0.5f, -0.5f }};
-        const Vec3 C{{  0.5f, -0.5f, -0.5f }};
-        const Vec3 D{{  0.5f,  0.5f, -0.5f }};
-        const Vec3 E{{ -0.5f,  0.5f,  0.5f }};
-        const Vec3 F{{ -0.5f, -0.5f,  0.5f }};
-        const Vec3 G{{  0.5f, -0.5f,  0.5f }};
-        const Vec3 H{{  0.5f,  0.5f,  0.5f }};
+        const ramses::vec3f A{ -0.5f,  0.5f, -0.5f };
+        const ramses::vec3f B{ -0.5f, -0.5f, -0.5f };
+        const ramses::vec3f C{  0.5f, -0.5f, -0.5f };
+        const ramses::vec3f D{  0.5f,  0.5f, -0.5f };
+        const ramses::vec3f E{ -0.5f,  0.5f,  0.5f };
+        const ramses::vec3f F{ -0.5f, -0.5f,  0.5f };
+        const ramses::vec3f G{  0.5f, -0.5f,  0.5f };
+        const ramses::vec3f H{  0.5f,  0.5f,  0.5f };
 
-        using QuadVerts = std::array<Vec3, 4>;
+        using QuadVerts = std::array<ramses::vec3f, 4>;
         const QuadVerts verts1{{A, B, C, D}};
         const QuadVerts verts2{{C, G, H, D}};
         const QuadVerts verts3{{H, E, A, D}};
@@ -49,22 +48,22 @@ namespace ramses_internal
         {
             case MULTI_SOURCE_SAME_FALLBACK_TEXTURE:
             {
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts1.front().data(), ramses::waylandIviSurfaceId_t(1));
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::waylandIviSurfaceId_t(2));
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts3.front().data(), ramses::waylandIviSurfaceId_t(3));
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts4.front().data(), ramses::waylandIviSurfaceId_t(4));
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts5.front().data(), ramses::waylandIviSurfaceId_t(5));
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts6.front().data(), ramses::waylandIviSurfaceId_t(6));
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts1, TextureConsumers[0]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2, TextureConsumers[1]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts3, TextureConsumers[2]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts4, TextureConsumers[3]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts5, TextureConsumers[4]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts6, TextureConsumers[5]);
                 break;
             }
             case SAME_SOURCE_MULTI_FALLBACK:
             {
-                addPngQuad("res/ramses-test-client-embedded-compositing-1.png", verts1.front().data(), ramses::waylandIviSurfaceId_t(2));
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::waylandIviSurfaceId_t(2));
-                addPngQuad("res/ramses-test-client-embedded-compositing-3.png", verts3.front().data(), ramses::waylandIviSurfaceId_t(2));
-                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4.front().data(), ramses::waylandIviSurfaceId_t(2));
-                addPngQuad("res/ramses-test-client-embedded-compositing-5.png", verts5.front().data(), ramses::waylandIviSurfaceId_t(2));
-                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6.front().data(), ramses::waylandIviSurfaceId_t(2));
+                addPngQuad("res/ramses-test-client-embedded-compositing-1.png", verts1, TextureConsumers[0]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2, TextureConsumers[1]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-3.png", verts3, TextureConsumers[2]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4, TextureConsumers[3]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-5.png", verts5, TextureConsumers[4]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6, TextureConsumers[5]);
                 break;
             }
             case MULTI_SOURCE_MULTI_FALLBACK:
@@ -79,43 +78,32 @@ namespace ramses_internal
                 translateRightNode->translate(1.0f, 0.0f, 0.0f);
                 m_root->addChild(*translateRightNode);
 
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::waylandIviSurfaceId_t(2), translateLeftNode);
-                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4.front().data(), ramses::waylandIviSurfaceId_t(2), translateLeftNode);
-                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6.front().data(), ramses::waylandIviSurfaceId_t(4), translateLeftNode);
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::waylandIviSurfaceId_t(4), translateRightNode);
-                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4.front().data(), ramses::waylandIviSurfaceId_t(2), translateRightNode);
-                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6.front().data(), ramses::waylandIviSurfaceId_t(6), translateRightNode);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2, TextureConsumers[0], translateLeftNode);
+                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4, TextureConsumers[1], translateLeftNode);
+                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6, TextureConsumers[2], translateLeftNode);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2, TextureConsumers[3], translateRightNode);
+                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4, TextureConsumers[4], translateRightNode);
+                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6, TextureConsumers[5], translateRightNode);
                 break;
 
             }
-            case FORCE_FALLBACK_ON_SOME_TEXTURES:
-            {
-                addPngQuad("res/ramses-test-client-embedded-compositing-1.png", verts1.front().data(), ramses::waylandIviSurfaceId_t(2), nullptr, "stream1", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::waylandIviSurfaceId_t(2), nullptr, "stream2", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-3.png", verts3.front().data(), ramses::waylandIviSurfaceId_t(2), nullptr, "stream3", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4.front().data(), ramses::waylandIviSurfaceId_t(2), nullptr, "stream4", false);
-                addPngQuad("res/ramses-test-client-embedded-compositing-5.png", verts5.front().data(), ramses::waylandIviSurfaceId_t(2), nullptr, "stream5", true);
-                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6.front().data(), ramses::waylandIviSurfaceId_t(2), nullptr, "stream6", false);
-                break;
-            }
             case INITIAL_STATE:
             {
-                addPngQuad("res/ramses-test-client-embedded-compositing-1.png", verts1.front().data(), ramses::waylandIviSurfaceId_t(1));
-                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2.front().data(), ramses::waylandIviSurfaceId_t(2));
-                addPngQuad("res/ramses-test-client-embedded-compositing-3.png", verts3.front().data(), ramses::waylandIviSurfaceId_t(3));
-                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4.front().data(), ramses::waylandIviSurfaceId_t(4));
-                addPngQuad("res/ramses-test-client-embedded-compositing-5.png", verts5.front().data(), ramses::waylandIviSurfaceId_t(5));
-                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6.front().data(), ramses::waylandIviSurfaceId_t(6));
+                addPngQuad("res/ramses-test-client-embedded-compositing-1.png", verts1, TextureConsumers[0]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2, TextureConsumers[1]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-3.png", verts3, TextureConsumers[2]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-4.png", verts4, TextureConsumers[3]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-5.png", verts5, TextureConsumers[4]);
+                addPngQuad("res/ramses-test-client-embedded-compositing-6.png", verts6, TextureConsumers[5]);
                 break;
             }
         }
 
-        m_root->setRotation(35.264385f, 45.000427f, -0.000427f); // rotate the cube onto one corner
+        m_root->setRotation(-35.264385f, -45.000427f, 0.000427f, ramses::ERotationConvention::Euler_XYZ); // rotate the cube onto one corner
     }
 
-    void StreamTextureScene::addPngQuad(const char* pngFilePath, const float* vertexPositionsArray, ramses::waylandIviSurfaceId_t, ramses::Node* parentNode, const char*, bool)
+    void StreamTextureScene::addPngQuad(const char* pngFilePath, const std::array<ramses::vec3f, 4u>& vertexPositionsArray, ramses::dataConsumerId_t consumerId, ramses::Node* parentNode)
     {
-        //TODO Mohamed: is this needed at all?
         const ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng(pngFilePath, m_scene);
         const ramses::TextureSampler* sampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
@@ -124,25 +112,27 @@ namespace ramses_internal
             ramses::ETextureSamplingMethod_Nearest,
             *texture);
 
+        m_scene.createTextureConsumer(*sampler, consumerId);
+
         ramses::Appearance* appearance = m_scene.createAppearance(*m_effect, "triangle appearance");
 
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        const float textureCoordsArray[] =
+        const std::array<ramses::vec2f, 4u> textureCoordsArray
         {
-            0.f, 1.f, //A   A-----D
-            0.f, 0.f, //B   |     |
-            1.f, 0.f, //C   |     |
-            1.f, 1.f  //D   B-----C
+            ramses::vec2f{ 0.f, 1.f }, //A   A-----D
+            ramses::vec2f{ 0.f, 0.f }, //B   |     |
+            ramses::vec2f{ 1.f, 0.f }, //C   |     |
+            ramses::vec2f{ 1.f, 1.f }  //D   B-----C
         };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         const uint16_t indicesArray[] =
         {
             0, 2, 1, //ACB
             0, 3, 2  //ADC
         };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;

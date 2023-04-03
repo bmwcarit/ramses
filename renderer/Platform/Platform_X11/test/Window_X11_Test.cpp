@@ -31,7 +31,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             ASSERT_TRUE(window.init());
             proceseAllEvents();

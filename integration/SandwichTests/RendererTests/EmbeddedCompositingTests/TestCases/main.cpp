@@ -14,7 +14,7 @@
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include <pwd.h>
 #include <grp.h>
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 int main(int argc, const char *argv[])
 {
@@ -35,9 +35,9 @@ int main(int argc, const char *argv[])
         cli.add_option("--fo,--filter-out", filterOut);
         cli.add_option("--rc,--repeat", repeatCount);
         cli.add_option("--gtest_output"); // added by cmake/ctest
-        config.registerOptions(cli);
-        rendererConfig.registerOptions(cli);
-        displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
     }
     catch (const CLI::Error& error)
     {

@@ -10,7 +10,7 @@
 #include "Utils/StringUtils.h"
 #include "DmaOffscreenBufferRenderingTests.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 using namespace ramses_internal;
 using namespace ramses;
@@ -33,9 +33,9 @@ int main(int argc, const char *argv[])
         cli.add_option("--fi,--filter-in", filterIn);
         cli.add_option("--fo,--filter-out", filterOut);
         cli.add_option("--rc,--repeat", repeatCount);
-        config.registerOptions(cli);
-        rendererConfig.registerOptions(cli);
-        displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
     }
     catch (const CLI::Error& error)
     {

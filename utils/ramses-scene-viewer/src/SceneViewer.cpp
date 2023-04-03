@@ -27,7 +27,7 @@
 #include "Utils/Image.h"
 #include "Utils/File.h"
 #include "SceneSetup.h"
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 
 namespace ramses_internal
@@ -81,9 +81,9 @@ namespace ramses_internal
         auto screenshot = cli.add_option("-x,--screenshot", m_screenshotFile, "Stores a screenshot of the scene to the given filename and exits");
         cli.add_flag("--no-skub", m_noSkub, "Disable skub (skip unmodified buffers). Render unchanged frames.");
 
-        m_frameworkConfig.registerOptions(cli);
-        m_rendererConfig.registerOptions(cli);
-        m_displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, m_frameworkConfig);
+        ramses::registerOptions(cli, m_rendererConfig);
+        ramses::registerOptions(cli, m_displayConfig);
         m_width = cli.get_option("--width");
         m_height = cli.get_option("--height");
         screenshot->excludes("--fullscreen")->excludes(gui);

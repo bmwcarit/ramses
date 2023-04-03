@@ -24,7 +24,7 @@ namespace ramses_internal
         {
         }
 
-        ~AWaylandShellSurface()
+        ~AWaylandShellSurface() override
         {
         }
 

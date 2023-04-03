@@ -17,7 +17,7 @@ namespace ramses_internal
     {
     public:
         BinaryFileOutputStreamTest();
-        ~BinaryFileOutputStreamTest();
+        ~BinaryFileOutputStreamTest() override;
 
         File m_file;
         String m_testString;

@@ -506,11 +506,6 @@ namespace ramses_internal
         return m_profilerStatistics;
     }
 
-    MemoryStatistics& Renderer::getMemoryStatistics()
-    {
-        return m_memoryStatistics;
-    }
-
     Bool Renderer::hasSystemCompositorController() const
     {
         return m_platform.getSystemCompositorController() != nullptr;

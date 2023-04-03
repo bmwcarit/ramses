@@ -9,7 +9,6 @@
 #include "gmock/gmock.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "RamsesFrameworkConfigImpl.h"
-#include "CLI/CLI.hpp"
 
 using namespace ramses;
 using namespace ramses_internal;
@@ -64,8 +63,8 @@ TEST_F(ARamsesFrameworkConfig, TestSetandGetApplicationInformation)
     frameworkConfig.setDLTApplicationID(application_id);
     frameworkConfig.setDLTApplicationDescription(application_description);
 
-    EXPECT_STREQ(application_id, frameworkConfig.getDLTApplicationID());
-    EXPECT_STREQ(application_description, frameworkConfig.getDLTApplicationDescription());
+    EXPECT_EQ(application_id, frameworkConfig.getDLTApplicationID());
+    EXPECT_EQ(application_description, frameworkConfig.getDLTApplicationDescription());
 }
 
 TEST_F(ARamsesFrameworkConfig, CanSetLogLevel)
@@ -102,6 +101,15 @@ TEST_F(ARamsesFrameworkConfig, CanSetParticipantGuid)
     EXPECT_EQ(Guid(1), frameworkConfig.impl.getUserProvidedGuid());
     EXPECT_NE(StatusOK, frameworkConfig.setParticipantGuid(0));
     EXPECT_EQ(Guid(0), frameworkConfig.impl.getUserProvidedGuid());
+}
+
+TEST_F(ARamsesFrameworkConfig, CanSetParticipantName)
+{
+    EXPECT_EQ("", frameworkConfig.impl.getParticipantName());
+    EXPECT_EQ(StatusOK, frameworkConfig.setParticipantName("foo"));
+    EXPECT_EQ("foo", frameworkConfig.impl.getParticipantName());
+    EXPECT_EQ(StatusOK, frameworkConfig.setParticipantName("foo/bar"));
+    EXPECT_EQ("foo/bar", frameworkConfig.impl.getParticipantName());
 }
 
 TEST_F(ARamsesFrameworkConfig, CanSetPeriodicLogInterval)
@@ -154,186 +162,3 @@ TEST_F(ARamsesFrameworkConfig, CanSetTCPKeepAlive)
     EXPECT_EQ(std::chrono::milliseconds(9000), frameworkConfig.impl.m_tcpConfig.getAliveTimeout());
 }
 
-TEST_F(ARamsesFrameworkConfig, cliConnection)
-{
-    EXPECT_EQ(EConnectionProtocol::TCP, frameworkConfig.impl.getUsedProtocol());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--connection"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--connection=off"});
-    EXPECT_EQ(EConnectionProtocol::Off, frameworkConfig.impl.getUsedProtocol());
-    cli.parse(std::vector<std::string>{"--connection=tcp"});
-    EXPECT_EQ(EConnectionProtocol::TCP, frameworkConfig.impl.getUsedProtocol());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliRamsh)
-{
-    EXPECT_EQ(ERamsesShellType::ERamsesShellType_Default, frameworkConfig.impl.m_shellType);
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    cli.parse(std::vector<std::string>{"--ramsh"});
-    EXPECT_EQ(ERamsesShellType::ERamsesShellType_Console, frameworkConfig.impl.m_shellType);
-    cli.parse(std::vector<std::string>{"--no-ramsh"});
-    EXPECT_EQ(ERamsesShellType::ERamsesShellType_None, frameworkConfig.impl.m_shellType);
-}
-
-TEST_F(ARamsesFrameworkConfig, cliGuid)
-{
-    EXPECT_EQ(Guid(), frameworkConfig.impl.getUserProvidedGuid());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--guid"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--guid=foo"});
-    EXPECT_EQ(Guid("foo"), frameworkConfig.impl.getUserProvidedGuid());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliIp)
-{
-    EXPECT_EQ("127.0.0.1", frameworkConfig.impl.m_tcpConfig.getIPAddress());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--ip"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--ip=localhost"});
-    EXPECT_EQ("localhost", frameworkConfig.impl.m_tcpConfig.getIPAddress());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliPort)
-{
-    EXPECT_EQ(0u, frameworkConfig.impl.m_tcpConfig.getPort());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--port"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--port=8937"});
-    EXPECT_EQ(8937u, frameworkConfig.impl.m_tcpConfig.getPort());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliDaemonIp)
-{
-    EXPECT_EQ("127.0.0.1", frameworkConfig.impl.m_tcpConfig.getDaemonIPAddress());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--daemon-ip"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--daemon-ip=localhost"});
-    EXPECT_EQ("localhost", frameworkConfig.impl.m_tcpConfig.getDaemonIPAddress());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliDaemonPort)
-{
-    EXPECT_EQ(5999u, frameworkConfig.impl.m_tcpConfig.getDaemonPort());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--daemon-port"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--daemon-port=8937"});
-    EXPECT_EQ(8937u, frameworkConfig.impl.m_tcpConfig.getDaemonPort());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliTcpAlive)
-{
-    EXPECT_EQ(std::chrono::milliseconds(300u), frameworkConfig.impl.m_tcpConfig.getAliveInterval());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--tcp-alive"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--tcp-alive=500"});
-    EXPECT_EQ(std::chrono::milliseconds(500u), frameworkConfig.impl.m_tcpConfig.getAliveInterval());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliTcpAliveTimeout)
-{
-    EXPECT_EQ(std::chrono::milliseconds(1800u), frameworkConfig.impl.m_tcpConfig.getAliveTimeout());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--tcp-alive-timeout"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--tcp-alive-timeout=5000"});
-    EXPECT_EQ(std::chrono::milliseconds(5000u), frameworkConfig.impl.m_tcpConfig.getAliveTimeout());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliPeriodicLogTimeout)
-{
-    EXPECT_EQ(2u, frameworkConfig.impl.periodicLogTimeout);
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--logp"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--logp=27"});
-    EXPECT_EQ(27u, frameworkConfig.impl.periodicLogTimeout);
-    EXPECT_TRUE(frameworkConfig.impl.m_periodicLogsEnabled);
-    cli.parse(std::vector<std::string>{"--logp=0"});
-    EXPECT_EQ(0u, frameworkConfig.impl.periodicLogTimeout);
-    EXPECT_FALSE(frameworkConfig.impl.m_periodicLogsEnabled);
-}
-
-TEST_F(ARamsesFrameworkConfig, cliLogLevel)
-{
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--log-level"}), CLI::ParseError);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--log-level=foo"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--log-level=trace"});
-    EXPECT_EQ(ramses_internal::ELogLevel::Trace, frameworkConfig.impl.loggerConfig.logLevel.value());
-    cli.parse(std::vector<std::string>{"--log-level=1"});
-    EXPECT_EQ(ramses_internal::ELogLevel::Fatal, frameworkConfig.impl.loggerConfig.logLevel.value());
-    cli.parse(std::vector<std::string>{"-linfo"});
-    EXPECT_EQ(ramses_internal::ELogLevel::Info, frameworkConfig.impl.loggerConfig.logLevel.value());
-    cli.parse(std::vector<std::string>{"-l0"});
-    EXPECT_EQ(ramses_internal::ELogLevel::Off, frameworkConfig.impl.loggerConfig.logLevel.value());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliLogLevelConsole)
-{
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--log-level-console"}), CLI::ParseError);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--log-level-console=foo"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--log-level-console=trace"});
-    EXPECT_EQ(ramses_internal::ELogLevel::Trace, frameworkConfig.impl.loggerConfig.logLevelConsole.value());
-    cli.parse(std::vector<std::string>{"--log-level-console=1"});
-    EXPECT_EQ(ramses_internal::ELogLevel::Fatal, frameworkConfig.impl.loggerConfig.logLevelConsole.value());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliLogContexts)
-{
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--log-context"}), CLI::ParseError);
-    EXPECT_THAT([&]() { cli.parse(std::vector<std::string>{"--log-context=badformat"}); },
-                testing::ThrowsMessage<CLI::ParseError>(testing::HasSubstr("':' missing. Expected: CONTEXT:LOGLEVEL")));
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--log-context=ctx:42"}), CLI::ParseError);
-    cli.parse("--log-context=ctx1:trace");
-    EXPECT_EQ(ramses_internal::ELogLevel::Trace, frameworkConfig.impl.loggerConfig.logLevelContexts["ctx1"]);
-    cli.parse("--log-context=ctx1:trace ctx1:debug ctx2:info");
-    EXPECT_EQ(ramses_internal::ELogLevel::Debug, frameworkConfig.impl.loggerConfig.logLevelContexts["ctx1"]);
-    EXPECT_EQ(ramses_internal::ELogLevel::Info, frameworkConfig.impl.loggerConfig.logLevelContexts["ctx2"]);
-    cli.parse("--log-context=ctx1:0 ctx2:FaTAL");
-    EXPECT_EQ(ramses_internal::ELogLevel::Off, frameworkConfig.impl.loggerConfig.logLevelContexts["ctx1"]);
-    EXPECT_EQ(ramses_internal::ELogLevel::Fatal, frameworkConfig.impl.loggerConfig.logLevelContexts["ctx2"]);
-    cli.parse("--log-context=ctx1:trace --log-context ctx2:info");
-    EXPECT_EQ(ramses_internal::ELogLevel::Trace, frameworkConfig.impl.loggerConfig.logLevelContexts["ctx1"]);
-    EXPECT_EQ(ramses_internal::ELogLevel::Info, frameworkConfig.impl.loggerConfig.logLevelContexts["ctx2"]);
-}
-
-TEST_F(ARamsesFrameworkConfig, cliDltAppId)
-{
-    EXPECT_STREQ("RAMS", frameworkConfig.impl.getDLTApplicationID());
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--dlt-app-id"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--dlt-app-id=RROO"});
-    EXPECT_STREQ("RROO", frameworkConfig.impl.getDLTApplicationID());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliDltAppDescription)
-{
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--dlt-app-description"}), CLI::ParseError);
-    cli.parse(std::vector<std::string>{"--dlt-app-description=foo"});
-    EXPECT_STREQ("foo", frameworkConfig.impl.getDLTApplicationDescription());
-}
-
-TEST_F(ARamsesFrameworkConfig, cliEnableSmokeTestContext)
-{
-    EXPECT_FALSE(frameworkConfig.impl.loggerConfig.enableSmokeTestContext);
-    CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    cli.parse(std::vector<std::string>{"--log-test"});
-    EXPECT_TRUE(frameworkConfig.impl.loggerConfig.enableSmokeTestContext);
-}

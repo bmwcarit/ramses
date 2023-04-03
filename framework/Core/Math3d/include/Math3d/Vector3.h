@@ -14,6 +14,7 @@
 #include "Collections/IOutputStream.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -43,6 +44,8 @@ namespace ramses_internal
 
         constexpr void set(const Float _x, const Float _y, const Float _z);
         constexpr void set(const Float xyz);
+
+        [[nodiscard]] std::array<float, 3u> getAsArray() const;
 
         constexpr Vector3 operator+(const Vector3& other) const;
         constexpr Vector3 operator-(const Vector3& other) const;
@@ -106,6 +109,13 @@ namespace ramses_internal
     constexpr inline void Vector3::set(const Float xyz)
     {
         x = y = z = xyz;
+    }
+
+    inline std::array<float, 3u> Vector3::getAsArray() const
+    {
+        std::array<float, 3u> ret;
+        std::copy(std::begin(data), std::end(data), ret.begin());
+        return ret;
     }
 
     inline Float Vector3::length() const

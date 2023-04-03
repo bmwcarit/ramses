@@ -29,17 +29,17 @@ namespace ramses_internal
     public:
         static IPlatform* CreatePlatform(const RendererConfig& rendererConfig);
 
-        virtual IRenderBackend* createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
-        virtual void            destroyRenderBackend()  override final;
+        IRenderBackend* createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) final override;
+        void            destroyRenderBackend()  final override;
 
-        virtual IResourceUploadRenderBackend* createResourceUploadRenderBackend() override final;
-        virtual void                          destroyResourceUploadRenderBackend() override final;
+        IResourceUploadRenderBackend* createResourceUploadRenderBackend() final override;
+        void                          destroyResourceUploadRenderBackend() final override;
 
-        virtual ISystemCompositorController* getSystemCompositorController() override;
+        ISystemCompositorController* getSystemCompositorController() override;
 
     protected:
         explicit Platform_Base(const RendererConfig& rendererConfig);
-        virtual ~Platform_Base() override;
+        ~Platform_Base() override;
 
         virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
         virtual bool createContext(const DisplayConfig& displayConfig) = 0;

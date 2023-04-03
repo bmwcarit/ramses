@@ -1,0 +1,42 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+# Doxyfile 1.8.2
+
+# This file describes the settings to be used by the documentation system
+# doxygen (www.doxygen.org) for a project
+
+OUTPUT_DIRECTORY       = "@DOXYGEN_TARGET_DIR@"
+
+INPUT                  = @DOXYGEN_INPUT@
+RECURSIVE              = YES
+
+INPUT_ENCODING         = ISO-8859-1
+
+FILE_PATTERNS          = *.h
+
+GENERATE_XML           = YES
+GENERATE_LATEX         = NO
+GENERATE_HTML          = NO
+WARNINGS               = YES
+PREDEFINED             = RLOGIC_LINK_STATIC \
+                         RAMSES_API=
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXTRACT_ALL            = YES
+
+# Make it easier to integrate reStructuredText directly in code
+ALIASES                = "rst=\verbatim embed:rst"
+ALIASES                += "endrst=\endverbatim"
+
+DOT_GRAPH_MAX_NODES    = 100
+
+WARN_LOGFILE           = DoxygenWarningLog.txt

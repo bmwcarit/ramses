@@ -14,8 +14,8 @@
 class RenderTargetRenderingTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
 private:
     template <typename INTEGRATION_SCENE>

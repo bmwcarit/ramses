@@ -14,7 +14,7 @@
 class ReadPixelCallbackHandler : public ramses::RendererEventHandlerEmpty
 {
 public:
-    virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
+    void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
     {
         m_pixelData.clear();
 

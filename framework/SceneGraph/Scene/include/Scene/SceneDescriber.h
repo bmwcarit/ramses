@@ -43,7 +43,6 @@ namespace ramses_internal
         static void RecreateTextureBuffers(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateTextureSamplers(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateRenderBuffersAndTargets(const IScene& source, SceneActionCollectionCreator& collector);
-        static void RecreateStreamTextures(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateDataSlots(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateSceneVersionTag(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateSceneReferences(const IScene& source, SceneActionCollectionCreator& collector);

@@ -27,7 +27,7 @@ namespace ramses_internal
                 : ResourceBase(typeID, cacheFlag, name)
             {}
 
-            virtual void serializeResourceMetadataToStream(IOutputStream&) const override {}
+            void serializeResourceMetadataToStream(IOutputStream&) const override {}
         };
 
         class ResourceCompression : public ::testing::TestWithParam<IResource::CompressionLevel>
@@ -42,7 +42,7 @@ namespace ramses_internal
                 , m_metadata(metadata)
             {}
 
-            virtual void serializeResourceMetadataToStream(IOutputStream& output) const override
+            void serializeResourceMetadataToStream(IOutputStream& output) const override
             {
                 output << m_metadata;
             }

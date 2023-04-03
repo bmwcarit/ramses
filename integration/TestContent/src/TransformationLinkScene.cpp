@@ -39,7 +39,7 @@ namespace ramses_internal
         case TRANSFORMATION_CONSUMER_OVERRIDEN:
         {
             ramses::Node* rotateNode = m_scene.createNode();
-            rotateNode->setRotation(0.0f, 0.0f, 30.0f);
+            rotateNode->setRotation(0.0f, 0.0f, -30.0f, ramses::ERotationConvention::Euler_XYZ);
             ramses::Node* consumerGroupNode = m_scene.createNode("transform consumer");
             rotateNode->setParent(*consumerGroupNode);
             scene.createTransformationDataConsumer(*consumerGroupNode, transformConsumerDataId);
@@ -69,7 +69,7 @@ namespace ramses_internal
             translate->setParent(*consumerGroupNode);
 
             ramses::Node* rotateNode = m_scene.createNode();
-            rotateNode->setRotation(0.0f, 0.0f, 15.0f);
+            rotateNode->setRotation(0.0f, 0.0f, -15.0f, ramses::ERotationConvention::Euler_XYZ);
             rotateNode->setParent(*translate);
 
             mesh = createTriangleMesh(color);
@@ -82,7 +82,7 @@ namespace ramses_internal
         {
             color = ramses::TriangleAppearance::EColor_Green;
             ramses::Node* rotateNode = m_scene.createNode();
-            rotateNode->setRotation(0.0f, 0.0f, 60.0f);
+            rotateNode->setRotation(0.0f, 0.0f, -60.0f, ramses::ERotationConvention::Euler_XYZ);
 
             mesh = createTriangleMesh(color);
             mesh->setParent(*rotateNode);

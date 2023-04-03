@@ -187,7 +187,6 @@ namespace ramses_internal
         const DataFieldHandle samplerField                  { 1u };
         const RenderTargetHandle renderTarget               { 13u };
         const RenderBufferHandle renderTargetColorBuffer    { 5u };
-        const StreamTextureHandle streamTexture             { 6u };
 
     private:
         bool m_indexArrayAvailable;

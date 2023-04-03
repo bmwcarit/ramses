@@ -7,46 +7,68 @@
 //  -------------------------------------------------------------------------
 
 #include "Utils/StringUtils.h"
-#include "absl/strings/str_split.h"
-#include "absl/strings/ascii.h"
+
+namespace
+{
+    template <typename F>
+    void tokenizeTo(std::string_view string, const char splitChar, F f)
+    {
+        while (!string.empty())
+        {
+            const auto pos = string.find(splitChar);
+            if (pos == string.npos)
+            {
+                f(string);
+                break;
+            }
+            if (const auto s = string.substr(0, pos); s.size() != 0 && s != " ")
+            {
+                f(s);
+            }
+            string.remove_prefix(pos + 1);
+        }
+    }
+} // namespace
 
 namespace ramses_internal
 {
-    String StringUtils::Trim(absl::string_view string)
+    String StringUtils::Trim(std::string_view string)
     {
-        return String(absl::StripAsciiWhitespace(string));
+        return String{TrimView(string)};
     }
 
-    std::vector<String> StringUtils::Tokenize(const String& string, const char splitChar)
+    std::string_view StringUtils::TrimView(std::string_view string)
     {
-        return absl::StrSplit(string.stdRef(), splitChar, absl::SkipWhitespace());
-    }
-
-    HashSet<String> StringUtils::TokenizeToSet(const String& string, const char split)
-    {
-        const StringVector vectorOfTokens = Tokenize(string, split);
-        HashSet<String> result;
-        for(const auto& token : vectorOfTokens)
+        if (const auto pos = string.find_first_not_of("\t\n\v\f\r "); pos != string.npos)
         {
-            result.put(token);
+            string.remove_prefix(pos);
         }
+        else
+        {
+            return {};
+        }
+
+        if (const auto pos = string.find_last_not_of("\t\n\v\f\r "); pos != string.npos)
+        {
+            string.remove_suffix(string.size() - pos - 1);
+        }
+
+        return string;
+    }
+
+    std::vector<String> StringUtils::Tokenize(std::string_view string, const char splitChar)
+    {
+        std::vector<String> result{};
+        auto f = [&result](const auto token) { result.emplace_back(token); };
+        tokenizeTo(string, splitChar, f);
         return result;
     }
 
-    std::vector<String> StringUtils::TokenizeTrimmed(const ramses_internal::String& line, char split)
+    HashSet<String> StringUtils::TokenizeToSet(std::string_view string, const char split)
     {
-        const std::vector<ramses_internal::String> allTokens = ramses_internal::StringUtils::Tokenize(line, split);
-
-        // we have to filter out empty tokens
-        std::vector<ramses_internal::String> result;
-        for(const auto& token : allTokens)
-        {
-            ramses_internal::String trimmedToken = ramses_internal::StringUtils::Trim(token.c_str());
-            if (trimmedToken.size() > 0)
-            {
-                result.push_back(trimmedToken);
-            }
-        }
+        HashSet<String> result{};
+        auto f = [&result](const auto token) { result.put(String{token}); };
+        tokenizeTo(string, split, f);
         return result;
     }
-}
+} // namespace ramses_internal

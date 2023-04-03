@@ -13,4 +13,5 @@ expandModuleByPlatform(
     ENABLE_INSTALL      ON
     SRC_FILES           src/*.cpp
     RESOURCE_FOLDERS    res
+    DEPENDENCIES        ramses-cli
 )

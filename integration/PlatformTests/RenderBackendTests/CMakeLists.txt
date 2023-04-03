@@ -13,7 +13,7 @@ expandModuleByPlatform(
     ENABLE_INSTALL  ON
     SRC_FILES       src/*.h
                     src/*.cpp
-    DEPENDENCIES    RendererTestUtils
+    DEPENDENCIES    RendererTestUtils ramses-cli
 )
 
 # Tests which are supposed to be run in the gate build job

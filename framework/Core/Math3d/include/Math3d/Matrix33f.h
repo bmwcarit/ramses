@@ -28,6 +28,8 @@ namespace ramses_internal
         {
             struct
             {
+                // Matrix is stored column-wise (to fit GLSL convention), but elements are named row-wise
+                // E.g. m1x is the first row, and m23 is the 3rd element on the 2nd row
                 Float m11;
                 Float m21;
                 Float m31;
@@ -68,11 +70,15 @@ namespace ramses_internal
         constexpr bool operator!=(const Matrix33f& other) const;
         Vector3 operator*(const Vector3& vec) const;
 
-        static Matrix33f RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention);
+        static Matrix33f Rotation(const Vector4& rotation, ERotationConvention rotationConvention);
         bool toRotationEuler(Vector3& rotation, ERotationConvention rotationConvention) const;
 
         constexpr Float& m(UInt32 column, UInt32 row);
         [[nodiscard]] constexpr const Float& m(UInt32 column, UInt32 row) const;
+
+    private:
+        static Matrix33f RotationQuaternion(const Vector4& rotation);
+        static Matrix33f RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention);
     };
 
     constexpr inline

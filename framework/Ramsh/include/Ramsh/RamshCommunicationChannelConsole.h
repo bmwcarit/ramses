@@ -24,7 +24,7 @@ namespace ramses_internal
     {
     public:
         static std::unique_ptr<RamshCommunicationChannelConsole> Construct(Ramsh& ramsh, const String& prompt, bool startThread = true);
-        virtual ~RamshCommunicationChannelConsole() override;
+        ~RamshCommunicationChannelConsole() override;
 
         // TODO(tobias) called from RamshCommunicationChannelConsoleSignalHandler from signal handler context
         void stopThread();
@@ -35,7 +35,7 @@ namespace ramses_internal
     private:
         RamshCommunicationChannelConsole(Ramsh& ramsh, const String& prompt, std::unique_ptr<ConsoleInput> consoleInput, bool startThread);
 
-        virtual void cancel() override;
+        void cancel() override;
         void run() override;
         void afterSendCallback();
 

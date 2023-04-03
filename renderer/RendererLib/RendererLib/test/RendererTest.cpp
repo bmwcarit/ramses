@@ -47,7 +47,7 @@ public:
             ON_CALL(renderer.m_platform, getSystemCompositorController()).WillByDefault(Return(&renderer.m_platform.systemCompositorControllerMock));
     }
 
-    virtual ~ARenderer()
+    ~ARenderer() override
     {
         if (renderer.hasDisplayController())
             destroyDisplayController();

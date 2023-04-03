@@ -24,30 +24,20 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.004   # allows +/- 1 for rgb values (needed e.g. for ufo driver)
         self.percentageOfWrongPixelsAllowed = 0.0004            # allows few wrong pixels, same as above...
 
-        self.ramsesDaemon = self.target.start_daemon()
-        self.checkThatApplicationWasStarted(self.ramsesDaemon)
-        self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        # start renderer with wayland backend to use embedded compositing features
-        self.renderer = self.target.start_renderer(applicationName="ramses-renderer-wayland-ivi-egl-es-3-0",
-                                                   args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland")
+        # start local test client that has renderer with wayland backend to use embedded compositing features
+        applicationName = "ramses-local-client-test-wayland-ivi-egl-es-3-0"
+        args = "--ec-display wayland-10 --ec-socket-group mgu_wayland --test-nr 10 --test-state {}".format(self._testSceneState)
+        self.renderer = self.target.start_renderer(applicationName=applicationName, args=args)
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
-        self.testClient = self.target.start_client("ramses-test-client", "--test-nr 10 --test-state {} --cz 5".format(self._testSceneState))
-        self.checkThatApplicationWasStarted(self.testClient)
-        self.addCleanup(self.target.kill_application, self.testClient)
-        self.flushname = 44
 
     def impl_tearDown(self):
         if self.target.systemCompositorControllerSupported:
             # ivi control is supported only on systems with SCC support
             self.target.ivi_control.cleanup()
-        self.target.kill_application(self.testClient)
         self.target.kill_application(self.renderer)
-        self.target.kill_application(self.ramsesDaemon)
         log.info("all applications killed")
-        self.save_application_output(self.testClient)
         self.save_application_output(self.renderer)
-        self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 
     def _startIviGears(self, iviID, alternateColors=False):
@@ -98,11 +88,3 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
                                                              "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
-
-    def syncSceneOnClientAndRenderer(self, sceneId):
-        self.flushname += 1
-        self.flushIsReceived = self.renderer.start_watch_stdout()
-        self.testClient.send_ramsh_command("sceneversion {} {}".format(self.flushname, sceneId), waitForRendererConfirmation=False)
-        flushWasReceived = self.renderer.wait_for_msg_in_stdout(self.flushIsReceived,
-                                                                "Named flush applied on scene {} with sceneVersionTag {}".format(sceneId, self.flushname))
-        self.assertTrue(flushWasReceived, msg="Renderer didn't receive named flush")

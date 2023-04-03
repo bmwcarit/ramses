@@ -43,7 +43,7 @@ namespace CLI
     }
 }
 
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 
 class RendererEventHandler : public ramses::RendererEventHandlerEmpty
@@ -84,7 +84,6 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     // enable console mode by default to be able to use Ramsh commands
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     config.setDLTApplicationID("REND");
-    config.registerOptions(cli);
     ramses::RendererConfig rendererConfig;
     ramses::DisplayConfig  displayConfig;
 
@@ -94,9 +93,9 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         cli.add_option("-m,--scene-mapping", mappingCommands, "scene mappings: displayIdx,sceneId,renderOrder");
         cli.add_flag("--no-auto-show", disableAutoMapping, "disables automatic mapping and showing of published scenes");
         cli.add_flag("--skub", skub, "Enable renderer optimization: skip unmodified buffers");
-        config.registerOptions(cli);
-        rendererConfig.registerOptions(cli);
-        displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
     }
     catch (const CLI::Error& error)
     {

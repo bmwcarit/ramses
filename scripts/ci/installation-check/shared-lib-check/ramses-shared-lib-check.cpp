@@ -15,14 +15,10 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-utils.h"
-#include "CLI/CLI.hpp"
 
 int main(int argc, char* argv[])
 {
-    CLI::App cli;
     ramses::RamsesFrameworkConfig frameworkConfig;
-    frameworkConfig.registerOptions(cli);
-    CLI11_PARSE(cli, argc, argv);
 
     printf("Start ramses-shared-lib-check\n");
     ramses::RamsesFramework framework{frameworkConfig};

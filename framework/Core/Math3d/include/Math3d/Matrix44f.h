@@ -52,7 +52,7 @@ namespace ramses_internal
         static const Matrix44f Empty;
 
         static constexpr Matrix44f Translation(const Vector3& translation);
-        static Matrix44f RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention);
+        static Matrix44f Rotation(const Vector4& rotation, ERotationConvention rotationConvention);
         static constexpr Matrix44f Scaling(const Vector3& scaling);
         static constexpr Matrix44f Scaling(const Float uniScale);
 
@@ -365,9 +365,9 @@ namespace ramses_internal
     }
 
     inline
-    Matrix44f Matrix44f::RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention)
+    Matrix44f Matrix44f::Rotation(const Vector4& rotation, ERotationConvention rotationConvention)
     {
-        return Matrix44f(Matrix33f::RotationEuler(rotation, rotationConvention));
+        return Matrix44f(Matrix33f::Rotation(rotation, rotationConvention));
     }
 
     constexpr inline

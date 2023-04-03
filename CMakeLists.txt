@@ -8,10 +8,10 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-set(RAMSES_VERSION_MAJOR 0)
+set(RAMSES_VERSION_MAJOR 28)
 set(RAMSES_VERSION_MINOR 0)
 set(RAMSES_VERSION_PATCH 0)
-set(RAMSES_VERSION_POSTFIX "-devMaster")
+set(RAMSES_VERSION_POSTFIX "")
 set(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
 
 project(ramses-sdk
@@ -21,14 +21,25 @@ project(ramses-sdk
     LANGUAGES       C CXX
 )
 
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(RAMSES_TOPLEVEL ON)
+else()
+    set(RAMSES_TOPLEVEL OFF)
+endif()
+
+
 # build options
 option(ramses-sdk_WARNINGS_AS_ERRORS "If on, warnings are treated as errors during build." ON)
+# TODO let all ramses components which are getting installed to respect this option
+option(ramses-sdk_ENABLE_INSTALL "Enable/disable installation of Ramses" ON)
+option(ramses-sdk_DISABLE_LOGIC "Disable ramses logic - an optional component for scripting and animation." OFF)
 # TODO Building tests should be off when building ramses externally
 option(ramses-sdk_BUILD_TESTS "Build ramses tests." ON)
 option(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke tests." ON) # TODO document how this interacts with the above option
 option(ramses-sdk_BUILD_EXAMPLES "Build examples." ON)
 option(ramses-sdk_BUILD_TOOLS "Build tool binaries." ON)
 option(ramses-sdk_BUILD_DEMOS "Build demos." ON)
+option(ramses-sdk_BUILD_DAEMON "Build the ramses daemon." ON)
 option(ramses-sdk_TEXT_SUPPORT "Enable/disable the ramses text API." ON)
 option(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client-only shared library." OFF)
 option(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per-renderer shared libraries." ON)
@@ -41,6 +52,8 @@ option(ramses-sdk_USE_LINUX_DEV_PTP "Enable support for synchronized PTP time on
 option(ramses-sdk_BUILD_WITH_LTO "Build all targets with link time optimization enabled (supported only on some platforms)." OFF)
 option(ramses-sdk_ENABLE_COVERAGE "Build with code coverage enabled (gcc: gcov, clang: source based coverage)." OFF)
 option(ramses-sdk_USE_CCACHE "Enable ccache when configured and available" OFF)
+option(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION "Enable generation of flatbuffers code" ${RAMSES_TOPLEVEL})
+option(ramses-sdk_USE_IMAGEMAGICK "Enable tests depending on image magick compare" OFF)
 
 set(ramses-sdk_CPP_VERSION "17" CACHE STRING "Set used c++ version, must be 17 or 20")
 
@@ -60,6 +73,12 @@ set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING "Set a custom prefix for target fol
 set(ramses-sdk_USE_LINKER_OVERWRITE "" CACHE STRING "Specify used linker (gcc/clang only).")
 set(ramses-sdk_CPACK_GENERATOR "TGZ" CACHE STRING "CPack package type (default: TGZ).")
 set(ramses-sdk_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}" CACHE STRING "Ramses version" FORCE)
+
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(RAMSES_TOP_LEVEL ON)
+else()
+    set(RAMSES_TOP_LEVEL OFF)
+endif()
 
 message(STATUS "RAMSES_VERSION=${RAMSES_VERSION}")
 
@@ -81,11 +100,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
 )
 
-# if no build configuration is defined, use build config 'Release'
-if (NOT CMAKE_BUILD_TYPE)
-    message(STATUS "Build type not defined. Using default build type 'Release'.")
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose build type: Debug, Release." FORCE)
-else ()
+if (CMAKE_BUILD_TYPE)
     # Case-insensitive comparison required, build type is not case-sensitive
     string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER_CASE)
     if(NOT("${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "debug" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "release" OR
@@ -95,13 +110,6 @@ else ()
 endif ()
 
 message(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS} c++${ramses-sdk_CPP_VERSION}")
-
-set(ramses-sdk_VERSION_DIR "ramses-${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}")
-if (ramses-sdk_USE_VERSIONED_BINARIES)
-    set(ramses-sdk_BINARY_DIR_BASE "bin/${ramses-sdk_VERSION_DIR}")
-else()
-    set(ramses-sdk_BINARY_DIR_BASE "bin")
-endif()
 
 if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") OR (${CMAKE_SYSTEM_NAME} MATCHES "iOS") AND ramses-sdk_TEXT_SUPPORT)
     message(WARNING "Text rendering is not supported on iOS and MacOS currently! Disabling it!")
@@ -128,19 +136,24 @@ include(cmake/ramses/platformTargets.cmake)
 include(cmake/ramses/makeTestFromTarget.cmake)
 include(cmake/ramses/resourceCopy.cmake)
 
-set(RAMSES_INSTALL_HEADERS_PATH     "include/${ramses-sdk_VERSION_DIR}")
-set(RAMSES_INSTALL_RUNTIME_PATH     "${ramses-sdk_BINARY_DIR_BASE}")
+if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Android")
+        message(FATAL_ERROR "The Android build systems don't allow modifying the source tree. Please set ramses-sdk_ENABLE_FLATBUFFERS_GENERATION to OFF.")
+    endif()
+endif()
+
+set(RAMSES_INSTALL_HEADERS_PATH     include)
+set(RAMSES_INSTALL_RUNTIME_PATH     bin)
 set(RAMSES_INSTALL_LIBRARY_PATH     lib)
-set(RAMSES_INSTALL_RESOURCES_PATH   "${ramses-sdk_BINARY_DIR_BASE}/res")
+set(RAMSES_INSTALL_ARCHIVE_PATH     lib)
+set(RAMSES_INSTALL_RESOURCES_PATH   "bin/res")
 
 createBuildConfig()
 
 addSubdirectory(MODE AUTO PATH external)
 addSubdirectory(MODE ON PATH framework)
 
-addSubdirectory(MODE ON PATH client/ramses-client)
-
-addSubdirectory(MODE ON PATH ramses-daemon)
+addSubdirectory(MODE ON PATH client)
 
 addSubdirectory(MODE ON PATH renderer/RendererLib)
 
@@ -174,11 +187,37 @@ addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_X11)
 addSubdirectory(MODE AUTO PATH renderer/Platform/Platform_Android)
 
 addSubdirectory(MODE AUTO PATH ramses-shared-lib)
-addSubdirectory(MODE AUTO PATH renderer/ramses-renderer-main)
-addSubdirectory(MODE AUTO PATH examples)
-addSubdirectory(MODE AUTO PATH integration)
 addSubdirectory(MODE AUTO PATH utils)
-addSubdirectory(MODE AUTO PATH demo)
+if(ramses-sdk_BUILD_DAEMON)
+    addSubdirectory(MODE ON PATH ramses-daemon)
+endif()
+if(ramses-sdk_BUILD_TOOLS)
+    addSubdirectory(MODE AUTO PATH renderer/ramses-renderer-main)
+endif()
+if(ramses-sdk_BUILD_EXAMPLES)
+    addSubdirectory(MODE AUTO PATH examples)
+endif()
+if(ramses-sdk_BUILD_TESTS AND ramses-sdk_BUILD_SMOKE_TESTS)
+    addSubdirectory(MODE AUTO PATH integration)
+endif()
+if(ramses-sdk_BUILD_DEMOS)
+    addSubdirectory(MODE AUTO PATH demo)
+endif()
+
+if(ramses-sdk_BUILD_TESTS)
+    addSubdirectory(MODE ON PATH client/logic/tools)
+    # TODO Fix the benchmarks - they need to link statically, ramses doesn't allow that currently
+    # OR rework the benchmarks to only benchmark public API
+    #addSubdirectory(MODE ON PATH benchmarks)
+endif()
+
+# Only enable testAssetProducer if built as top-level project
+if (RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TOOLS AND NOT ramses-sdk_DISABLE_LOGIC)
+    add_subdirectory(client/logic/unittests/testAssetProducer)
+    add_custom_target(RL_REGEN_TEST_ASSETS
+        COMMAND testAssetProducer ${PROJECT_SOURCE_DIR}/client/logic/unittests/res)
+    set_property(TARGET RL_REGEN_TEST_ASSETS PROPERTY FOLDER "CMakePredefinedTargets")
+endif()
 
 include(cmake/ramses/createPackage.cmake)
 include(cmake/ramses/addCheckerTargets.cmake)
@@ -187,73 +226,63 @@ if (ramses-sdk_BUILD_DOCS)
     add_subdirectory(doc)
 endif()
 
-install(FILES       README.md CHANGELOG.txt LICENSE.txt
-        DESTINATION share/doc/ramses-sdk-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
-        COMPONENT   ramses-sdk-${PROJECT_VERSION}
-    )
+if(ramses-sdk_ENABLE_INSTALL)
+    install(FILES       README.md CHANGELOG.md LICENSE.txt CONTRIBUTING.rst
+            DESTINATION share/doc/ramses-sdk-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
+            COMPONENT   ramses-sdk-${PROJECT_VERSION}
+        )
 
-include(CMakePackageConfigHelpers)
+    include(CMakePackageConfigHelpers)
 
-set(configmodules) # initially empty
-if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
-    list(APPEND configmodules ramses-shared-lib-client-only)
-endif()
-if (ramses-sdk_BUILD_FULL_SHARED_LIB)
-    # only install full shared lib cmake find script if built at least one
-    foreach (PLATFORM_NAME ${PLATFORM_LIST})
-        if (TARGET ramses-shared-lib-${PLATFORM_NAME})
-            list(APPEND configmodules ramses-shared-lib)
-            break()
-        endif()
-    endforeach()
-endif()
-
-foreach(configmodule ${configmodules})
-    # install paths for find/config script must differ on windows and linux because of different search
-    # rules used by find_package. See https://cmake.org/cmake/help/git-master/command/find_package.html
-    # for details
-    set(configmodule-VERSION_DIR "${configmodule}-${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}")
-    if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-        set(ramses-sdk_FIND_SCRIPT_INSTALL_DIR "lib/${configmodule-VERSION_DIR}/cmake")
-    else()
-        set(ramses-sdk_FIND_SCRIPT_INSTALL_DIR "lib/cmake/${configmodule-VERSION_DIR}")
+    set(configmodules) # initially empty
+    if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
+        list(APPEND configmodules ramses-shared-lib-client-only)
+    endif()
+    if (ramses-sdk_BUILD_FULL_SHARED_LIB)
+        # only install full shared lib cmake find script if built at least one
+        foreach (PLATFORM_NAME ${PLATFORM_LIST})
+            if (TARGET ramses-shared-lib-${PLATFORM_NAME})
+                list(APPEND configmodules ramses-shared-lib)
+                break()
+            endif()
+        endforeach()
     endif()
 
-    # generate CMake config file (use ${configmodule}Template.cmake.in as base)
-    configure_package_config_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/${configmodule}Template.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake"
-        INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
-        PATH_VARS RAMSES_INSTALL_HEADERS_PATH RAMSES_INSTALL_LIBRARY_PATH RAMSES_INSTALL_RUNTIME_PATH
-        NO_SET_AND_CHECK_MACRO
-        NO_CHECK_REQUIRED_COMPONENTS_MACRO
-    )
-    install(
-        FILES       ${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake
-        DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
-    )
-    message(STATUS "G ${configmodule}Config.cmake")
+    foreach(configmodule ${configmodules})
+        # install paths for find/config script must differ on windows and linux because of different search
+        # rules used by find_package. See https://cmake.org/cmake/help/git-master/command/find_package.html
+        # for details
+        set(configmodule-VERSION_DIR "${configmodule}-${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}")
+        if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+            set(ramses-sdk_FIND_SCRIPT_INSTALL_DIR "lib/${configmodule-VERSION_DIR}/cmake")
+        else()
+            set(ramses-sdk_FIND_SCRIPT_INSTALL_DIR "lib/cmake/${configmodule-VERSION_DIR}")
+        endif()
 
-    # generate CMake version file
-    write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/${configmodule}ConfigVersion.cmake"
-        VERSION ${RAMSES_VERSION}
-        COMPATIBILITY SameMajorVersion)
-    install(
-        FILES       ${CMAKE_CURRENT_BINARY_DIR}/${configmodule}ConfigVersion.cmake
-        DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
-    )
-    message(STATUS "G ${configmodule}ConfigVersion.cmake")
+        # generate CMake config file (use ${configmodule}Template.cmake.in as base)
+        configure_package_config_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/${configmodule}Template.cmake.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake"
+            INSTALL_DESTINATION "${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}"
+            PATH_VARS RAMSES_INSTALL_HEADERS_PATH RAMSES_INSTALL_LIBRARY_PATH RAMSES_INSTALL_RUNTIME_PATH
+            NO_SET_AND_CHECK_MACRO
+            NO_CHECK_REQUIRED_COMPONENTS_MACRO
+        )
+        install(
+            FILES       ${CMAKE_CURRENT_BINARY_DIR}/${configmodule}Config.cmake
+            DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
+        )
+        message(STATUS "G ${configmodule}Config.cmake")
 
-endforeach()
+        # generate CMake version file
+        write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/${configmodule}ConfigVersion.cmake"
+            VERSION ${RAMSES_VERSION}
+            COMPATIBILITY SameMajorVersion)
+        install(
+            FILES       ${CMAKE_CURRENT_BINARY_DIR}/${configmodule}ConfigVersion.cmake
+            DESTINATION ${ramses-sdk_FIND_SCRIPT_INSTALL_DIR}
+        )
+        message(STATUS "G ${configmodule}ConfigVersion.cmake")
 
-# produce a version file
-string(TIMESTAMP RAMSES_BUILD_TIME UTC)
-configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/ramses-version.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/ramses-version"
-        @ONLY
-    )
-install(
-        FILES       "${CMAKE_CURRENT_BINARY_DIR}/ramses-version"
-        DESTINATION ${RAMSES_INSTALL_HEADERS_PATH}
-    )
+    endforeach()
+endif()

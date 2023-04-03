@@ -79,23 +79,33 @@ namespace ramses_internal
 
     TEST_F(ATransformationCachedScene, GivesCorrectValueWhenTransformOfNodeIsRotated)
     {
-        this->scene.setRotation(this->transform, Vector3(0.5f, 0.0f, 0.0f), ERotationConvention::Legacy_ZYX);
+        this->scene.setRotation(this->transform, Vector4(0.5f, 0.0f, 0.0f, 1.f), ERotationConvention::Euler_XYZ);
 
         this->expectCorrectMatrices(this->nodeWithTransform,
-            Matrix44f::RotationEuler({ 0.5f, 0.f, 0.f }, ERotationConvention::Legacy_ZYX),
-            Matrix44f::RotationEuler({ -0.5f, 0.f, 0.f }, ERotationConvention::Legacy_ZYX));
+            Matrix44f::Rotation({ 0.5f, 0.f, 0.f, 1.f }, ERotationConvention::Euler_XYZ),
+            Matrix44f::Rotation({ -0.5f, 0.f, 0.f, 1.f }, ERotationConvention::Euler_XYZ));
+    }
+
+    TEST_F(ATransformationCachedScene, GivesCorrectValueWhenTransformOfNodeIsQuatRotated)
+    {
+        const auto rotation = Vector4(0.5f, 0.5f, -0.5f, 0.5f);
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Quaternion);
+
+        this->expectCorrectMatrices(this->nodeWithTransform,
+            Matrix44f::Rotation(rotation, ERotationConvention::Quaternion),
+            Matrix44f::Rotation(rotation, ERotationConvention::Quaternion).inverse());
     }
 
     TEST_F(ATransformationCachedScene, AppliesTranslationAfterRotation)
     {
         const Vector3 translation(0.5f);
-        const Vector3 rotation{ 30.f, 0.f, 0.f };
+        const Vector4 rotation{ 30.f, 0.f, 0.f, 1.f };
         this->scene.setTranslation(this->transform, translation);
-        this->scene.setRotation(this->transform, rotation, ERotationConvention::XYZ);
+        this->scene.setRotation(this->transform, Vector4(rotation), ERotationConvention::Euler_ZYX);
 
         this->expectCorrectMatrices(this->nodeWithTransform,
-            Matrix44f::Translation(translation) * Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ),
-            Matrix44f::RotationEuler(-rotation, ERotationConvention::XYZ) * Matrix44f::Translation(-translation));
+            Matrix44f::Translation(translation) * Matrix44f::Rotation(rotation, ERotationConvention::Euler_ZYX),
+            Matrix44f::Rotation(-1 * rotation, ERotationConvention::Euler_ZYX) * Matrix44f::Translation(-translation));
     }
 
     TEST_F(ATransformationCachedScene, AppliesTranslationAfterScaling)
@@ -112,30 +122,38 @@ namespace ramses_internal
 
     TEST_F(ATransformationCachedScene, AppliesScalingBeforeRotation)
     {
-        const Vector3 rotation{ 30.f, 0.f, 0.f };
+        const Vector4 rotation{ 30.f, 0.f, 0.f, 1.f };
         const Vector3 scaling{ 2.f, 3.f, 4.f };
-        this->scene.setRotation(this->transform, rotation, ERotationConvention::XYZ);
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Euler_ZYX);
         this->scene.setScaling(this->transform, scaling);
 
         this->expectCorrectMatrices(this->nodeWithTransform,
-            Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ) * Matrix44f::Scaling(scaling),
-            Matrix44f::Scaling(scaling.inverse()) * Matrix44f::RotationEuler(-rotation, ERotationConvention::XYZ));
+            Matrix44f::Rotation(rotation, ERotationConvention::Euler_ZYX) * Matrix44f::Scaling(scaling),
+            Matrix44f::Scaling(scaling.inverse()) * Matrix44f::Rotation(-1 * rotation, ERotationConvention::Euler_ZYX));
     }
 
     TEST_F(ATransformationCachedScene, GivesCorrectValueWhenRotationConventionIsSet)
     {
-        const Vector3 rotation{ 5.f, 10.0f, 150.0f };
-        this->scene.setRotation(this->transform, rotation, ERotationConvention::ZYX);
+        const Vector4 rotation{ 5.f, 10.0f, 150.0f, 1.f };
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Euler_XYZ);
 
         this->expectCorrectMatrices(this->nodeWithTransform,
-            Matrix44f::RotationEuler(rotation, ERotationConvention::ZYX),
-            Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::XYZ));
+            Matrix44f::Rotation(rotation, ERotationConvention::Euler_XYZ),
+            Matrix44f::Rotation(-1 * rotation, ERotationConvention::Euler_ZYX));
 
-        this->scene.setRotation(this->transform, rotation, ERotationConvention::YZX);
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Euler_XZY);
 
         this->expectCorrectMatrices(this->nodeWithTransform,
-            Matrix44f::RotationEuler(rotation, ERotationConvention::YZX),
-            Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::XZY));
+            Matrix44f::Rotation(rotation, ERotationConvention::Euler_XZY),
+            Matrix44f::Rotation(-1 * rotation, ERotationConvention::Euler_YZX));
+
+        Vector4 rotationQuat{0.2f, 0.3f, 0.5f, 0.6f};
+        rotationQuat /= rotationQuat.length(); // normalize
+        this->scene.setRotation(this->transform, rotationQuat, ERotationConvention::Quaternion);
+
+        this->expectCorrectMatrices(this->nodeWithTransform,
+            Matrix44f::Rotation(rotationQuat, ERotationConvention::Quaternion),
+            Matrix44f::Rotation(rotationQuat, ERotationConvention::Quaternion).inverse());
     }
 
     TEST_F(ATransformationCachedScene, GivesCorrectValueWhenRotationConventionIsSetDifferentFromParent)
@@ -149,17 +167,99 @@ namespace ramses_internal
         this->expectIdentityMatrices(childNode);
 
         const Vector3 rotationParent{ 60.f, 0.f, 0.f }; //rotate only in X-Axis
-        this->scene.setRotation(this->transform, rotationParent, ERotationConvention::YXZ);
+        this->scene.setRotation(this->transform, Vector4(rotationParent), ERotationConvention::Euler_ZXY);
 
         const Vector3 rotationChild{ 0.f, 30.f, 0.f }; //rotate only in Y-Axis
-        this->scene.setRotation(childTransform, rotationChild, ERotationConvention::ZYX); //use different convention
+        this->scene.setRotation(childTransform, Vector4(rotationChild), ERotationConvention::Euler_XYZ); //use different convention
 
-        const auto expectedChildRotation = rotationChild + rotationParent; //because both rotate only on 1 axis this is still possible
-        const Matrix44f expectedWorldMatrix = Matrix44f::RotationEuler(expectedChildRotation, ERotationConvention::XYZ); //Child rotate around Y, then parent rotate around X
-        const Matrix44f expectedObjectMatrix = Matrix44f::RotationEuler(-1 * expectedChildRotation, ERotationConvention::ZYX); //invert angle AND convention
+        const auto expectedChildRotation = Vector4(rotationChild + rotationParent); //because both rotate only on 1 axis this is still possible
+        const Matrix44f expectedWorldMatrix = Matrix44f::Rotation(expectedChildRotation, ERotationConvention::Euler_ZYX); //Child rotate around Y, then parent rotate around X
+        const Matrix44f expectedObjectMatrix = Matrix44f::Rotation(-1 * expectedChildRotation, ERotationConvention::Euler_XYZ); //invert angle AND convention
         this->expectCorrectMatrices(childNode, expectedWorldMatrix, expectedObjectMatrix);
 
-        this->scene.setRotation(this->transform, rotationParent, ERotationConvention::XYZ);
+        this->scene.setRotation(this->transform, Vector4(rotationParent), ERotationConvention::Euler_ZYX);
+    }
+
+    TEST_F(ATransformationCachedScene, QuatParentEulerChild)
+    {
+        // add parent with transform
+        const NodeHandle childNode = this->scene.allocateNode();
+        const TransformHandle childTransform = this->scene.allocateTransform(childNode);
+        this->scene.addChildToNode(this->nodeWithTransform, childNode);
+
+        this->expectIdentityMatrices(nodeWithoutTransform);
+        this->expectIdentityMatrices(childNode);
+
+        const Vector4 rotationParent{0.5f, 0.f, 0.f, 0.8660254f}; // rotate only in X-Axis with 60 degrees
+        this->scene.setRotation(this->transform, rotationParent, ERotationConvention::Quaternion);
+
+        const Vector3 rotationChild{ 0.f, 30.f, 0.f }; //rotate only in Y-Axis
+        this->scene.setRotation(childTransform, Vector4(rotationChild), ERotationConvention::Euler_XYZ); //use different convention
+
+        const auto expectedChildRotation = Vector4(rotationChild + Vector3(60.f, 0.f, 0.f)); //because both rotate only on 1 axis this is still possible
+        const Matrix44f expectedWorldMatrix = Matrix44f::Rotation(expectedChildRotation, ERotationConvention::Euler_ZYX); //Child rotate around Y, then parent rotate around X
+        const Matrix44f expectedObjectMatrix = Matrix44f::Rotation(-1 * expectedChildRotation, ERotationConvention::Euler_XYZ); //invert angle AND convention
+        this->expectCorrectMatrices(childNode, expectedWorldMatrix, expectedObjectMatrix);
+
+        this->scene.setRotation(this->transform, rotationParent, ERotationConvention::Euler_ZYX);
+    }
+
+    TEST_F(ATransformationCachedScene, EulerParentQuatChild)
+    {
+        // add parent with transform
+        const NodeHandle childNode = this->scene.allocateNode();
+        const TransformHandle childTransform = this->scene.allocateTransform(childNode);
+        this->scene.addChildToNode(this->nodeWithTransform, childNode);
+
+        this->expectIdentityMatrices(nodeWithoutTransform);
+        this->expectIdentityMatrices(childNode);
+
+        const Vector3 rotationParent{ 60.f, 0.f, 0.f }; //rotate only in X-Axis
+        this->scene.setRotation(this->transform, Vector4(rotationParent), ERotationConvention::Euler_ZXY);
+
+        const Vector4 rotationChild{0.f, 0.3826834f, 0.f, 0.9238795f}; // rotate only in Y-Axis with 45 degrees
+        this->scene.setRotation(childTransform, rotationChild, ERotationConvention::Quaternion);
+
+        const auto expectedChildRotation = Vector4(Vector3(0.f, 45.f, 0.f) + rotationParent); //because both rotate only on 1 axis this is still possible
+        const Matrix44f expectedWorldMatrix = Matrix44f::Rotation(expectedChildRotation, ERotationConvention::Euler_ZYX); //Child rotate around Y, then parent rotate around X
+        const Matrix44f expectedObjectMatrix = Matrix44f::Rotation(-1 * expectedChildRotation, ERotationConvention::Euler_XYZ); //invert angle AND convention
+        this->expectCorrectMatrices(childNode, expectedWorldMatrix, expectedObjectMatrix);
+
+        this->scene.setRotation(this->transform, Vector4(rotationParent), ERotationConvention::Euler_ZYX);
+    }
+
+    TEST_F(ATransformationCachedScene, QuatParentQuatChild)
+    {
+        // add parent with transform
+        const NodeHandle childNode = this->scene.allocateNode();
+        const TransformHandle childTransform = this->scene.allocateTransform(childNode);
+        this->scene.addChildToNode(this->nodeWithTransform, childNode);
+
+        this->expectIdentityMatrices(nodeWithoutTransform);
+        this->expectIdentityMatrices(childNode);
+
+        const Vector4 rotationParent{0.5f, 0.f, 0.f, 0.8660254f}; // rotate only in X-Axis with 60 degrees
+        this->scene.setRotation(this->transform, rotationParent, ERotationConvention::Quaternion);
+
+        const Vector4 rotationChild{0.f, 0.3826834f, 0.f, 0.9238795f}; // rotate only in Y-Axis with 45 degrees
+        this->scene.setRotation(childTransform, rotationChild, ERotationConvention::Quaternion);
+
+        // quaternion multiplication - remove if glm is available
+        auto qmul = [](const Vector4& p, const Vector4& q) {
+            Vector4 out;
+            out.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
+            out.x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y;
+            out.y = p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z;
+            out.z = p.w * q.z + p.z * q.w + p.x * q.y - p.y * q.x;
+            return out;
+        };
+
+        const auto      expectedChildRotation = qmul(rotationParent, rotationChild);
+        const Matrix44f expectedWorldMatrix = Matrix44f::Rotation(expectedChildRotation, ERotationConvention::Quaternion);
+        const Matrix44f expectedObjectMatrix = Matrix44f::Rotation( expectedChildRotation, ERotationConvention::Quaternion).inverse();
+        this->expectCorrectMatrices(childNode, expectedWorldMatrix, expectedObjectMatrix);
+
+        this->scene.setRotation(this->transform, Vector4(rotationParent), ERotationConvention::Euler_ZYX);
     }
 
     TEST_F(ATransformationCachedScene, UpdatesMatrixCacheAfterAddingParentWithTransform)
@@ -231,19 +331,19 @@ namespace ramses_internal
         this->scene.addChildToNode(this->nodeWithTransform, childRight);
 
         this->expectIdentityMatrices(nodeWithoutTransform);
-        const Vector3 rotation{ 60.f, 30.f, 30.f };
-        this->scene.setRotation(this->transform, rotation, ERotationConvention::ZYX);
+        const Vector4 rotation{ 60.f, 30.f, 30.f, 1.f };
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Euler_XYZ);
 
-        const Matrix44f expectedWorldMatrix = Matrix44f::RotationEuler(rotation, ERotationConvention::ZYX);
-        const Matrix44f expectedObjectMatrix = Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::XYZ); //invert input angles AND convention
+        const Matrix44f expectedWorldMatrix = Matrix44f::Rotation(rotation, ERotationConvention::Euler_XYZ);
+        const Matrix44f expectedObjectMatrix = Matrix44f::Rotation(-1 * rotation, ERotationConvention::Euler_ZYX); //invert input angles AND convention
         this->expectCorrectMatrices(nodeWithTransform, expectedWorldMatrix, expectedObjectMatrix);
         this->expectCorrectMatrices(childLeft, expectedWorldMatrix, expectedObjectMatrix);
         this->expectCorrectMatrices(childRight, expectedWorldMatrix, expectedObjectMatrix);
 
-        this->scene.setRotation(this->transform, rotation, ERotationConvention::XYZ);
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Euler_ZYX);
 
-        const Matrix44f expectedWorldMatrixUpdated = Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ);
-        const Matrix44f expectedObjectMatrixUpdated = Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::ZYX); //invert input angles AND convention
+        const Matrix44f expectedWorldMatrixUpdated = Matrix44f::Rotation(rotation, ERotationConvention::Euler_ZYX);
+        const Matrix44f expectedObjectMatrixUpdated = Matrix44f::Rotation(-1 * rotation, ERotationConvention::Euler_XYZ); //invert input angles AND convention
         this->expectCorrectMatrices(childLeft, expectedWorldMatrixUpdated, expectedObjectMatrixUpdated);
         this->expectCorrectMatrices(childRight, expectedWorldMatrixUpdated, expectedObjectMatrixUpdated);
     }
@@ -311,21 +411,21 @@ namespace ramses_internal
         this->scene.addChildToNode(this->nodeWithTransform, this->nodeWithoutTransform);
 
         const Vector3 translation(1, 2, 3);
-        const Vector3 rotation(4, 5, 6);
+        const Vector4 rotation(4, 5, 6, 1);
         const Vector3 scaling(7, 8, 9);
 
-        this->scene.setRotation(this->transform, rotation, ERotationConvention::Legacy_ZYX);
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Euler_XYZ);
         this->scene.setTranslation(this->transform, translation);
         this->scene.setScaling(this->transform, scaling);
 
         const Matrix44f expectedWorldMatrix =
             Matrix44f::Translation(translation) *
-            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX)*
+            Matrix44f::Rotation(rotation, ERotationConvention::Euler_XYZ)*
             Matrix44f::Scaling(scaling);
 
         const Matrix44f expectedObjectMatrix =
             Matrix44f::Scaling(scaling.inverse()) *
-            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX).transpose() *
+            Matrix44f::Rotation(rotation, ERotationConvention::Euler_XYZ).transpose() *
             Matrix44f::Translation(-translation);
 
         this->expectCorrectMatrices(this->nodeWithoutTransform, expectedWorldMatrix, expectedObjectMatrix);

@@ -1,0 +1,26 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+0. Bump version in CMakeLists (top). Update SECURITY.md supported versions. Update version matrix in README.rst
+1. (Skip for small releases) Check that docs have no broken links.
+    Replace '-b html' with '-b linkcheck' in CMakeLists.txt of docs locally, and run target rlogic-sphinx
+2. Ensure [ramses/ramses-logic-oss] is branch-equivalent to [bmwcarit/ramses-logic] (failing to do this will reset your progress at step 5)
+3. Tag release in [ramses/ramses-logic]. This only works from protected branches!
+    TAG=x.y.z && git tag -a $TAG && git push origin $TAG
+4. Wait for release job to finish and open the resulting PR created automatically in [ramses/ramses-logic-oss]
+    - link with release jobs: https://cc-ci.bmwgroup.net/zuul/t/ramses/builds?job_name=rlogic-release-on-tag
+5. Execute these steps atomically (failing to do so resets to step 2.)
+    - fetch public upstream branch (master)
+    - make sure public branch is strict ancestor of internal branch (git merge-base --is-ancestor public/master internal/master)
+    - make sure release PR is strict ancestor of internal branch (git merge-base --is-ancestor internal/master PR/branch)
+    - push PR/branch -> internal master
+    - push internal/master -> public/master
+6. Tag the release x.y.z in [ramses/ramses-logic-oss] and in [bmwcarit/ramses-logic]. Prefer annotated tags!
+7. Mirror release to Apinext. Quick-bash from src root:
+    ./external/ramses/proprietary/scripts/ci-scripts/release-copy.py -c ci/release-copy/apinext-app.yaml -s . -d <git-of-apinext-mirror>
+8. Write Email to users to inform them of new release

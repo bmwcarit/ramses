@@ -24,7 +24,7 @@ namespace ramses_internal
         *os << "\nWindowHeight=" << config.getDesiredWindowHeight();
         *os << "\nWindowPositionX=" << config.getWindowPositionX();
         *os << "\nWindowPositionY=" << config.getWindowPositionY();
-        *os << "\nWaylandSocketEmbedded=" << config.getWaylandSocketEmbedded().c_str();
+        *os << "\nWaylandSocketEmbedded=" << config.getWaylandSocketEmbedded();
         *os << "\nWaylandSocketEmbeddedFD=" << config.getWaylandSocketEmbeddedFD();
     }
 

@@ -24,7 +24,6 @@ namespace ramses_internal
             TextureBuffer,
             RenderBuffer,
             RenderBufferMS,
-            StreamTexture,
             OffscreenBuffer,
             StreamBuffer,
             ExternalTexture
@@ -55,11 +54,6 @@ namespace ramses_internal
         {
         }
 
-        TextureSampler(const TextureSamplerStates& states_, StreamTextureHandle handle)
-            : TextureSampler(states_, ContentType::StreamTexture, {}, handle.asMemoryHandle())
-        {
-        }
-
         TextureSamplerStates states;
         ContentType          contentType = ContentType::None;
         ResourceContentHash  textureResource;
@@ -75,7 +69,6 @@ namespace ramses_internal
             case ramses_internal::TextureSampler::ContentType::None:
             case ramses_internal::TextureSampler::ContentType::ClientTexture:
             case ramses_internal::TextureSampler::ContentType::TextureBuffer:
-            case ramses_internal::TextureSampler::ContentType::StreamTexture:
             case ramses_internal::TextureSampler::ContentType::OffscreenBuffer:
             case ramses_internal::TextureSampler::ContentType::StreamBuffer:
             case ramses_internal::TextureSampler::ContentType::ExternalTexture:

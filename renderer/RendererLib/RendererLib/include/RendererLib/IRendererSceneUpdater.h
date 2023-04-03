@@ -11,7 +11,6 @@
 
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/DataSlot.h"
 #include "Math3d/Vector2.h"

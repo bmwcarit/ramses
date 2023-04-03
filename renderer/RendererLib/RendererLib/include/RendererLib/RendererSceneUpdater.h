@@ -45,8 +45,6 @@ namespace ramses_internal
     class RendererSceneUpdater : public IRendererSceneUpdater, public IRendererSceneStateControl
     {
         friend class RendererLogger;
-        //TODO (Violin) remove this after KPI Monitor is reworked
-        friend class GpuMemorySample;
 
     public:
         RendererSceneUpdater(
@@ -60,45 +58,45 @@ namespace ramses_internal
             SceneExpirationMonitor& expirationMonitor,
             IThreadAliveNotifier& notifier,
             IRendererResourceCache* rendererResourceCache = nullptr);
-        virtual ~RendererSceneUpdater() override;
+        ~RendererSceneUpdater() override;
 
         // IRendererSceneUpdater
-        virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate) override;
-        virtual void createDisplayContext(const DisplayConfig& displayConfig, IBinaryShaderCache* binaryShaderCache) override;
-        virtual void destroyDisplayContext() override;
-        virtual void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) override;
-        virtual void handleSceneUnpublished(SceneId sceneId) override;
-        virtual void handleSceneReceived(const SceneInfo& sceneInfo) override;
-        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
-        virtual bool handleDmaBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
-        virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) override;
-        virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
-        virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) override;
-        virtual bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) override;
-        virtual bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) override;
-        virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
-        virtual void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) override;
-        virtual void handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
-        virtual void handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
-        virtual void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) override;
-        virtual void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
-        virtual void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
-        virtual void handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
-        virtual void handleBufferToSceneDataLinkRequest(ExternalBufferHandle externalBuffer, SceneId consumerSceneId, DataSlotId consumerId) override;
-        virtual void handleDataUnlinkRequest(SceneId consumerSceneId, DataSlotId consumerId) override;
-        virtual void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply) override;
-        virtual void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe) override;
-        virtual void setSkippingOfUnmodifiedScenes(bool enable) override;
-        virtual void logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const override;
+        void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate) override;
+        void createDisplayContext(const DisplayConfig& displayConfig, IBinaryShaderCache* binaryShaderCache) override;
+        void destroyDisplayContext() override;
+        void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) override;
+        void handleSceneUnpublished(SceneId sceneId) override;
+        void handleSceneReceived(const SceneInfo& sceneInfo) override;
+        bool handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
+        bool handleDmaBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
+        bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) override;
+        bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
+        bool handleBufferDestroyRequest(StreamBufferHandle buffer) override;
+        bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) override;
+        bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) override;
+        void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
+        void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) override;
+        void handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
+        void handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
+        void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) override;
+        void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
+        void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
+        void handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
+        void handleBufferToSceneDataLinkRequest(ExternalBufferHandle externalBuffer, SceneId consumerSceneId, DataSlotId consumerId) override;
+        void handleDataUnlinkRequest(SceneId consumerSceneId, DataSlotId consumerId) override;
+        void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply) override;
+        void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe) override;
+        void setSkippingOfUnmodifiedScenes(bool enable) override;
+        void logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const override;
 
         // IRendererSceneStateControl
-        virtual void handleSceneSubscriptionRequest     (SceneId sceneId) override;
-        virtual void handleSceneUnsubscriptionRequest   (SceneId sceneId, bool indirect) override;
-        virtual void handleSceneMappingRequest          (SceneId sceneId) override;
-        virtual void handleSceneUnmappingRequest        (SceneId sceneId) override;
-        virtual void handleSceneShowRequest             (SceneId sceneId) override;
-        virtual void handleSceneHideRequest             (SceneId sceneId) override;
-        virtual bool handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, int32_t sceneRenderOrder) override;
+        void handleSceneSubscriptionRequest     (SceneId sceneId) override;
+        void handleSceneUnsubscriptionRequest   (SceneId sceneId, bool indirect) override;
+        void handleSceneMappingRequest          (SceneId sceneId) override;
+        void handleSceneUnmappingRequest        (SceneId sceneId) override;
+        void handleSceneShowRequest             (SceneId sceneId) override;
+        void handleSceneHideRequest             (SceneId sceneId) override;
+        bool handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, int32_t sceneRenderOrder) override;
 
         void updateScenes();
 

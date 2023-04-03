@@ -325,7 +325,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_INFO(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished successfully.");
+            LOG_DEBUG(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished successfully.");
         }
         return testResult;
     }

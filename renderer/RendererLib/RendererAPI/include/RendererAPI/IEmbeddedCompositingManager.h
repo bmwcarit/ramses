@@ -10,12 +10,10 @@
 #define RAMSES_IEMBEDDEDCOMPOSITINGMANAGER_H
 
 #include "Types.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include <vector>
 
 namespace ramses_internal
 {
-    using StreamTextureHandleVector = std::vector<StreamTextureHandle>;
     using StreamSourceUpdates = std::vector< std::pair<WaylandIviSurfaceId, uint32_t> >;
 
     class IEmbeddedCompositingManager

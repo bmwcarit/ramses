@@ -61,15 +61,15 @@ namespace ramses_internal
     class Device_EGL_Extension: public IDeviceExtension
     {
     public:
-        explicit Device_EGL_Extension(Context_EGL& context, const String& renderNode);
-        virtual ~Device_EGL_Extension() override;
+        explicit Device_EGL_Extension(Context_EGL& context, std::string_view renderNode);
+        ~Device_EGL_Extension() override;
 
         bool init();
 
-        virtual DeviceResourceHandle    createDmaRenderBuffer       (uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
-        virtual int                     getDmaRenderBufferFD        (DeviceResourceHandle handle) override;
-        virtual uint32_t                getDmaRenderBufferStride    (DeviceResourceHandle handle) override;
-        virtual void                    destroyDmaRenderBuffer      (DeviceResourceHandle handle) override;
+        DeviceResourceHandle    createDmaRenderBuffer       (uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
+        int                     getDmaRenderBufferFD        (DeviceResourceHandle handle) override;
+        uint32_t                getDmaRenderBufferStride    (DeviceResourceHandle handle) override;
+        void                    destroyDmaRenderBuffer      (DeviceResourceHandle handle) override;
 
     private:
         DeviceResourceMapper& m_resourceMapper;

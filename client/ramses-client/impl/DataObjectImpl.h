@@ -31,13 +31,13 @@ namespace ramses
     {
     public:
         DataObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
-        virtual ~DataObjectImpl() override;
+        ~DataObjectImpl() override;
 
         void             initializeFrameworkData();
-        virtual void     deinitializeFrameworkData() override;
+        void     deinitializeFrameworkData() override;
 
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         // Setters for the stored value
         template <typename T>

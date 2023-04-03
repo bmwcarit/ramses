@@ -73,11 +73,11 @@ namespace ramses_internal
             textMesh->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
             textMesh->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
         }
-        textCyrillic->getAppearance()->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.0f, 1.0f);
-        textChinese->getAppearance()->setInputValueVector4f(colorInput, 0.0f, 0.0f, 1.0f, 1.0f);
-        textHebrew->getAppearance()->setInputValueVector4f(colorInput, 0.0f, 1.0f, 1.0f, 1.0f);
-        textArabic->getAppearance()->setInputValueVector4f(colorInput, 1.0f, 0.0f, 1.0f, 1.0f);
-        textJapanese->getAppearance()->setInputValueVector4f(colorInput, 1.0f, 1.0f, 0.0f, 1.0f);
+        textCyrillic->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
+        textChinese->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 0.0f, 0.0f, 1.0f, 1.0f });
+        textHebrew->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 0.0f, 1.0f, 1.0f, 1.0f });
+        textArabic->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 1.0f, 1.0f });
+        textJapanese->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 1.0f, 1.0f, 0.0f, 1.0f });
 
         ramses::Node* translateChinese = m_scene.createNode();
         ramses::Node* translateJapanese = m_scene.createNode();

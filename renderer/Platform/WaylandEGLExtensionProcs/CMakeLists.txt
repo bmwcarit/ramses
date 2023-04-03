@@ -7,24 +7,12 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    WaylandEGLExtensionProcs
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/WaylandEGLExtensionProcs/*.h
                             src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ramses-renderer-lib
                             wayland-zwp-linux-dmabuf-v1-extension
                             EGL

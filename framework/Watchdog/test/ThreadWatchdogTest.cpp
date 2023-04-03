@@ -17,7 +17,7 @@ namespace ramses_internal
     class AThreadWatchdog : public ::testing::Test
     {
     public:
-        void SetUp()
+        void SetUp() override
         {
             config.setThreadWatchDogCallback(&mockCallback);
             config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 0);
@@ -29,7 +29,7 @@ namespace ramses_internal
             watchdog = std::make_unique<ThreadWatchdog>(config, ramses::ERamsesThreadIdentifier_Workers);
         }
 
-        void TearDown()
+        void TearDown() override
         {
             EXPECT_CALL(mockCallback, unregisterThread(_));
         }

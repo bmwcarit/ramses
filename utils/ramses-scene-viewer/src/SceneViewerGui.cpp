@@ -48,30 +48,21 @@ namespace ramses_internal
 {
     namespace
     {
-        void getRotation(ramses::NodeImpl* node, float& x, float& y, float& z, ramses_internal::ERotationConvention& rotationConventionInternal)
+        void getRotation(ramses::NodeImpl* node, Vector4& rot, ERotationConvention& rotationConventionInternal)
         {
-            auto handle = node->getTransformHandle();
-            if (handle.isValid() && ramses_internal::ERotationConvention::Legacy_ZYX == node->getIScene().getRotationConvention(handle))
-            {
-                rotationConventionInternal = ramses_internal::ERotationConvention::Legacy_ZYX;
-                node->getRotation(x, y, z);
-            }
-            else
-            {
-                ramses::ERotationConvention rotationConvention;
-                node->getRotation(x, y, z, rotationConvention);
-                rotationConventionInternal = ramses::RotationConventionUtils::ConvertRotationConventionToInternal(rotationConvention);
-            }
+            rotationConventionInternal = node->getIScene().getRotationConvention(node->getTransformHandle());
+            rot = node->getIScene().getRotation(node->getTransformHandle());
         }
 
-        void setRotation(ramses::NodeImpl* node, float x, float y, float z, ramses_internal::ERotationConvention rotationConventionInternal)
+        void setRotation(ramses::NodeImpl* node, const Vector4& rot, ramses_internal::ERotationConvention rotationConvention)
         {
-            if (rotationConventionInternal == ramses_internal::ERotationConvention::Legacy_ZYX)
-                node->setRotation(x, y, z);
+            if (rotationConvention == ERotationConvention::Quaternion)
+            {
+                node->setRotation(ramses::quat(rot.w, rot.x, rot.y, rot.z));
+            }
             else
             {
-                const auto rotationConvention = ramses::RotationConventionUtils::ConvertDataTypeFromInternal(rotationConventionInternal);
-                node->setRotation(x, y, z, rotationConvention);
+                node->setRotation(rot.x, rot.y, rot.z, ramses::RotationConventionUtils::ConvertDataTypeFromInternal(rotationConvention));
             }
         }
 
@@ -109,6 +100,8 @@ namespace ramses_internal
         {
             switch (t)
             {
+            case ramses::EDataType::Int32:
+                return "UInt32";
             case ramses::EDataType::UInt16:
                 return "UInt16";
             case ramses::EDataType::UInt32:
@@ -121,6 +114,18 @@ namespace ramses_internal
                 return "Vector3F";
             case ramses::EDataType::Vector4F:
                 return "Vector4F";
+            case ramses::EDataType::Vector2I:
+                return "Vector2I";
+            case ramses::EDataType::Vector3I:
+                return "Vector3I";
+            case ramses::EDataType::Vector4I:
+                return "Vector4I";
+            case ramses::EDataType::Matrix22F:
+                return "Matrix22F";
+            case ramses::EDataType::Matrix33F:
+                return "Matrix33F";
+            case ramses::EDataType::Matrix44F:
+                return "Matrix44F";
             case ramses::EDataType::ByteBlob:
                 return "ByteBlob";
             }
@@ -308,12 +313,12 @@ namespace ramses_internal
         return nullptr;
     }
 
-    const ramses::ArrayBuffer* SceneViewerGui::findDataBuffer(ramses_internal::DataBufferHandle handle) const
+    const ramses::ArrayBuffer* SceneViewerGui::findArrayBuffer(ramses_internal::DataBufferHandle handle) const
     {
         const bool isAllocated = m_scene.impl.getIScene().isDataBufferAllocated(handle);
         if (isAllocated)
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_DataBufferObject);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_ArrayBufferObject);
             while (const ramses::ArrayBuffer* dataBuffer = iter.getNext<ramses::ArrayBuffer>())
             {
                 if (handle == dataBuffer->impl.getDataBufferHandle())
@@ -506,7 +511,7 @@ namespace ramses_internal
                 drawRenderGroup(static_cast<ramses::RenderGroupImpl&>(obj));
                 break;
             case ramses::ERamsesObjectType_Appearance:
-                drawAppearance(static_cast<ramses::AppearanceImpl&>(obj));
+                drawAppearance(static_cast<ramses::Appearance&>(obj.getRamsesObject()));
                 break;
             case ramses::ERamsesObjectType_GeometryBinding:
                 drawGeometryBinding(static_cast<ramses::GeometryBindingImpl&>(obj));
@@ -553,7 +558,7 @@ namespace ramses_internal
             case ramses::ERamsesObjectType_DataMatrix44f:
                 drawDataObject(static_cast<ramses::DataObjectImpl&>(obj));
                 break;
-            case ramses::ERamsesObjectType_DataBufferObject:
+            case ramses::ERamsesObjectType_ArrayBufferObject:
                 drawArrayBuffer(static_cast<ramses::ArrayBufferImpl&>(obj));
                 break;
             case ramses::ERamsesObjectType_BlitPass:
@@ -599,14 +604,23 @@ namespace ramses_internal
             ImGui::Text("DataSlot: %u %s", slot->id.getValue(), EnumToString(slot->type));
         if (ImGui::TreeNode("Transformation"))
         {
-            float                                xyz[3];
+            Vector4 rot;
             ramses_internal::ERotationConvention rotationConvention;
-            getRotation(&obj, xyz[0], xyz[1], xyz[2], rotationConvention);
-            if (ImGui::DragFloat3("Rotation (x,y,z)", xyz, 1.0f, -360.f, 360.f, "%.1f"))
-                setRotation(&obj, xyz[0], xyz[1], xyz[2], rotationConvention);
+            getRotation(&obj, rot, rotationConvention);
+            if (rotationConvention == ERotationConvention::Quaternion)
+            {
+                if (ImGui::DragFloat4("Rotation (x,y,z,w)", rot.data, .01f, -1.f, 1.f, "%.6f"))
+                    setRotation(&obj, rot, rotationConvention);
+            }
+            else
+            {
+                if (ImGui::DragFloat3("Rotation (x,y,z)", rot.data, 1.0f, -360.f, 360.f, "%.1f"))
+                    setRotation(&obj, rot, rotationConvention);
+            }
             int rotationConventionInt = static_cast<int>(rotationConvention);
             if (ImGui::Combo("RotationConvention", &rotationConventionInt, ramses_internal::ERotationConventionNames, 13, -1))
-                setRotation(&obj, xyz[0], xyz[1], xyz[2], static_cast<ramses_internal::ERotationConvention>(rotationConventionInt));
+                setRotation(&obj, rot, static_cast<ramses_internal::ERotationConvention>(rotationConventionInt));
+            float xyz[3];
             obj.getTranslation(xyz[0], xyz[1], xyz[2]);
             if (ImGui::DragFloat3("Translation (x,y,z)", xyz, 0.01f, 0.f, 0.f, "%.3f"))
                 obj.setTranslation(xyz[0], xyz[1], xyz[2]);
@@ -1063,8 +1077,9 @@ namespace ramses_internal
         draw(obj.getDestinationRenderBuffer().impl);
     }
 
-    void SceneViewerGui::drawAppearance(ramses::AppearanceImpl& obj)
+    void SceneViewerGui::drawAppearance(ramses::Appearance& appearance)
     {
+        auto& obj = appearance.impl;
         const ramses::Effect& effect = obj.getEffect();
         ramses_internal::ClientScene& iscene   = m_scene.impl.getIScene();
 
@@ -1089,7 +1104,7 @@ namespace ramses_internal
                         if (boundObj != nullptr)
                             draw(boundObj->impl);
                         else
-                            drawUniformValue(obj, uniform);
+                            drawUniformValue(appearance, uniform);
                         ImGui::TreePop();
                     }
                 }
@@ -1102,16 +1117,16 @@ namespace ramses_internal
         });
     }
 
-    void SceneViewerGui::drawUniformValue(ramses::AppearanceImpl& obj, ramses::UniformInput& uniform)
+    void SceneViewerGui::drawUniformValue(ramses::Appearance& appearance, ramses::UniformInput& uniform)
     {
-        std::vector<ramses_internal::Vector4i> vec4i;
-        std::vector<ramses_internal::Vector3i> vec3i;
-        std::vector<ramses_internal::Vector2i> vec2i;
-        std::vector<int32_t>                   vec1i;
-        std::vector<ramses_internal::Vector4>  vec4;
-        std::vector<ramses_internal::Vector3>  vec3;
-        std::vector<ramses_internal::Vector2>  vec2;
-        std::vector<float>                     vec1;
+        std::vector<ramses::vec4i> vec4i;
+        std::vector<ramses::vec3i> vec3i;
+        std::vector<ramses::vec2i> vec2i;
+        std::vector<int32_t>       vec1i;
+        std::vector<ramses::vec4f> vec4;
+        std::vector<ramses::vec3f> vec3;
+        std::vector<ramses::vec2f> vec2;
+        std::vector<float>         vec1;
         const ramses::TextureSampler*          textureSampler;
         const ramses::TextureSamplerMS*        textureSamplerMS;
         const ramses::TextureSamplerExternal*  textureSamplerExternal;
@@ -1121,126 +1136,126 @@ namespace ramses_internal
         {
         case ramses::EEffectInputDataType_Float:
             vec1.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec1.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec1.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec1.begin(); it != vec1.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec1.begin());
                     if (ImGui::DragFloat(label.c_str(), &*it, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec1.data());
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec1.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_Vector2F:
             vec2.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec2.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec2.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec2.begin(); it != vec2.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec2.begin());
-                    if (ImGui::DragFloat2(label.c_str(), it->data, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec2.data());
+                    if (ImGui::DragFloat2(label.c_str(), it->data(), 0.1f))
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec2.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_Vector3F:
             vec3.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec3.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec3.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec3.begin(); it != vec3.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec3.begin());
-                    if (ImGui::DragFloat3(label.c_str(), it->data, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec3.data());
+                    if (ImGui::DragFloat3(label.c_str(), it->data(), 0.1f))
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec3.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_Vector4F:
             vec4.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec4.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec4.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec4.begin(); it != vec4.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec4.begin());
-                    if (ImGui::DragFloat4(label.c_str(), it->data, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec4.data());
+                    if (ImGui::DragFloat4(label.c_str(), it->data(), 0.1f))
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec4.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_Int32:
             vec1i.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec1i.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec1i.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec1i.begin(); it != vec1i.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec1i.begin());
                     if (ImGui::DragInt(label.c_str(), &*it, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec1i.data());
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec1i.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_Vector2I:
             vec2i.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec2i.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec2i.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec2i.begin(); it != vec2i.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec2i.begin());
-                    if (ImGui::DragInt2(label.c_str(), it->data, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec2i.data());
+                    if (ImGui::DragInt2(label.c_str(), it->data(), 0.1f))
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec2i.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_Vector3I:
             vec3i.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec3i.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec3i.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec3i.begin(); it != vec3i.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec3i.begin());
-                    if (ImGui::DragInt3(label.c_str(), it->data, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec3i.data());
+                    if (ImGui::DragInt3(label.c_str(), it->data(), 0.1f))
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec3i.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_Vector4I:
             vec4i.resize(uniform.getElementCount());
-            status = obj.getInputValue(uniform.impl, uniform.getElementCount(), vec4i.data());
+            status = appearance.getInputValue(uniform, uniform.getElementCount(), vec4i.data());
             if (ramses::StatusOK == status)
             {
                 for (auto it = vec4i.begin(); it != vec4i.end(); ++it)
                 {
                     const std::string label = fmt::format("{}[{}]", uniform.getName(), it - vec4i.begin());
-                    if (ImGui::DragInt4(label.c_str(), it->data, 0.1f))
-                        obj.setInputValue(uniform.impl, uniform.getElementCount(), vec4i.data());
+                    if (ImGui::DragInt4(label.c_str(), it->data(), 0.1f))
+                        appearance.setInputValue(uniform, uniform.getElementCount(), vec4i.data());
                 }
             }
             break;
         case ramses::EEffectInputDataType_TextureSampler2D:
         case ramses::EEffectInputDataType_TextureSampler3D:
         case ramses::EEffectInputDataType_TextureSamplerCube:
-            status = obj.getInputTexture(uniform.impl, textureSampler);
+            status = appearance.getInputTexture(uniform, textureSampler);
             if (ramses::StatusOK == status)
             {
                 draw(textureSampler->impl);
             }
             break;
         case ramses::EEffectInputDataType_TextureSampler2DMS:
-            status = obj.getInputTextureMS(uniform.impl, textureSamplerMS);
+            status = appearance.getInputTextureMS(uniform, textureSamplerMS);
             if (ramses::StatusOK == status)
             {
                 draw(textureSamplerMS->impl);
             }
             break;
         case ramses::EEffectInputDataType_TextureSamplerExternal:
-            status = obj.getInputTextureExternal(uniform.impl, textureSamplerExternal);
+            status = appearance.getInputTextureExternal(uniform, textureSamplerExternal);
             if (ramses::StatusOK == status)
             {
                 draw(textureSamplerExternal->impl);
@@ -1257,7 +1272,7 @@ namespace ramses_internal
         }
 
         if (status != ramses::StatusOK)
-            ImGui::Text("Error occurred: %s", obj.getStatusMessage(status));
+            ImGui::Text("Error occurred: %s", appearance.getStatusMessage(status));
     }
 
     void SceneViewerGui::drawGeometryBinding(ramses::GeometryBindingImpl& obj)
@@ -1285,7 +1300,7 @@ namespace ramses_internal
 
                 if (dataResource.dataBuffer.isValid())
                 {
-                    auto buf = findDataBuffer(dataResource.dataBuffer);
+                    auto buf = findArrayBuffer(dataResource.dataBuffer);
                     assert(buf != nullptr);
                     draw(buf->impl);
                 }
@@ -1429,9 +1444,6 @@ namespace ramses_internal
                 draw(textureBuffer->impl);
             else
                 ImGui::Text("TextureBuffer missing");
-            break;
-        case TextureSampler::ContentType::StreamTexture:
-            assert(false);
             break;
         case TextureSampler::ContentType::ExternalTexture:
             // no details

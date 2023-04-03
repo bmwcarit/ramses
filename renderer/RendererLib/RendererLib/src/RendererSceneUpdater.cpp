@@ -583,7 +583,7 @@ namespace ramses_internal
 
             if (pendingFlush.versionTag.isValid())
             {
-                LOG_INFO(CONTEXT_SMOKETEST, "Named flush applied on scene " << rendererScene.getSceneId() <<
+                LOG_DEBUG(CONTEXT_SMOKETEST, "Named flush applied on scene " << rendererScene.getSceneId() <<
                     " with sceneVersionTag " << pendingFlush.versionTag);
                 m_rendererEventCollector.addSceneFlushEvent(ERendererEventType::SceneFlushed, sceneID, pendingFlush.versionTag);
             }

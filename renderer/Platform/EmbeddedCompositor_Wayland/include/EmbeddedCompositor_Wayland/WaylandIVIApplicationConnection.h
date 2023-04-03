@@ -21,11 +21,11 @@ namespace ramses_internal
     {
     public:
         WaylandIVIApplicationConnection(IWaylandClient& client, uint32_t version, uint32_t id, EmbeddedCompositor_Wayland& compositor);
-        virtual ~WaylandIVIApplicationConnection() override;
+        ~WaylandIVIApplicationConnection() override;
         [[nodiscard]] bool wasSuccessfullyInitialized() const;
 
-        virtual void resourceDestroyed() override;
-        virtual void iviApplicationIVISurfaceCreate(IWaylandClient& client, uint32_t iviId, INativeWaylandResource& surfaceResource, uint32_t id) override;
+        void resourceDestroyed() override;
+        void iviApplicationIVISurfaceCreate(IWaylandClient& client, uint32_t iviId, INativeWaylandResource& surfaceResource, uint32_t id) override;
 
     private:
         static void ResourceDestroyedCallback(wl_resource* iviApplicationConnectionResource);

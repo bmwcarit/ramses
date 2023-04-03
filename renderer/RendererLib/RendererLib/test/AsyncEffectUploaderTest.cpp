@@ -31,7 +31,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(0);
         }
 
-        void TearDown()
+        void TearDown() override
         {
             EXPECT_CALL(notifier, unregisterThread(ThreadAliveNotifierMock::dummyThreadId)).Times(1);
         }

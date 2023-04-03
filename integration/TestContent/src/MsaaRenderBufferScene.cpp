@@ -119,11 +119,11 @@ namespace ramses_internal
         ramses::AttributeInput positionsInput;
         effect.findAttributeInput("a_position", positionsInput);
 
-        const float vertexPositionsData[] = {
-                                            -1.f, -1.f, 0.f,
-                                            1.f, -1.f, 0.f,
-                                            -1.f, 1.f, 0.f };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
+        const std::array<ramses::vec3f, 3u> vertexPositionsData{
+            ramses::vec3f{ -1.f, -1.f, 0.f },
+            ramses::vec3f{ 1.f, -1.f, 0.f },
+            ramses::vec3f{ -1.f, 1.f, 0.f } };
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(3u, vertexPositionsData.data());
         meshNode.getGeometryBinding()->setInputBuffer(positionsInput, *vertexPositions);
 
         return meshNode;
@@ -134,19 +134,19 @@ namespace ramses_internal
         const ramses::Effect& effect = *getTestEffect("ramses-test-client-render-one-buffer-ms");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
-        const float vertexPositionsArray[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray
         {
-            -1.f, -1.f, 0.f,
-            1.f, -1.f, 0.f,
-            -1.f, 1.f, 0.f,
-            1.f, 1.f, 0.f
+            ramses::vec3f{ -1.f, -1.f, 0.f },
+            ramses::vec3f{ 1.f, -1.f, 0.f },
+            ramses::vec3f{ -1.f, 1.f, 0.f },
+            ramses::vec3f{ 1.f, 1.f, 0.f }
         };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        const float textureCoordsArray[] = { 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f}, ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f} };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Appearance* appearance = m_scene.createAppearance(effect, "appearance");
 
@@ -169,7 +169,7 @@ namespace ramses_internal
 
         ramses::UniformInput sampleCountInput;
         effect.findUniformInput("sampleCount", sampleCountInput);
-        appearance->setInputValueInt32(sampleCountInput, 4u);
+        appearance->setInputValue(sampleCountInput, 4);
 
         ramses::MeshNode* meshNode = m_scene.createMeshNode("quad");
         meshNode->setAppearance(*appearance);

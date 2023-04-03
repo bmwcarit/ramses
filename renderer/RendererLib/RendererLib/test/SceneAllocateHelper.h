@@ -17,7 +17,6 @@
 #include "SceneAPI/DataFieldInfo.h"
 #include "SceneAPI/MipMapSize.h"
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
@@ -44,7 +43,6 @@ namespace ramses_internal
         BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle handle = BlitPassHandle::Invalid());
         RenderTargetHandle          allocateRenderTarget(RenderTargetHandle handle = RenderTargetHandle::Invalid());
         RenderBufferHandle          allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid());
-        StreamTextureHandle         allocateStreamTexture(WaylandIviSurfaceId streamSource, ResourceContentHash fallbackTextureHash, StreamTextureHandle handle = StreamTextureHandle::Invalid());
         DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid());
         DataBufferHandle            allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid());
         TextureBufferHandle         allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid());

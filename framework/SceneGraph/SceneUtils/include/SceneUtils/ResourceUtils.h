@@ -12,7 +12,6 @@
 #include "Scene/ResourceChanges.h"
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/TextureSampler.h"
-#include "SceneAPI/StreamTexture.h"
 #include "SceneAPI/GeometryDataBuffer.h"
 #include "SceneAPI/TextureBuffer.h"
 #include "Scene/DataLayout.h"

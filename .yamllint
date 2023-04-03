@@ -13,6 +13,7 @@ ignore: |
     /external/googletest/
     /external/asio/
     /external/fmt/
+    /external/glm/
     /external/imgui/
     /external/cli11/
     /external/harfbuzz/
@@ -20,6 +21,7 @@ ignore: |
     /external/flatbuffers/
     /external/sol/
     /external/google-benchmark/
+    /external/glslang/
     /external/lua/
 
 rules:

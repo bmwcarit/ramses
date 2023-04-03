@@ -35,4 +35,4 @@ class TestEmbeddedCompositorLifecycleClientCleansUp(embedded_compositor_base.Emb
         # check that given permissions of wayland socket were set correctly
         socket_file_name = "{}/wayland-10".format(self.target.defaultEnvironment['XDG_RUNTIME_DIR'])
         (stdoutdata, stderrdata, returncode) = self.target.execute_on_target("stat -c '%G' {}".format(socket_file_name), env=self.target.defaultEnvironment)
-        self.assertTrue('wayland\n' in stdoutdata, "permission group not set correctly on embedded compositing socket")
+        self.assertTrue('mgu_wayland\n' in stdoutdata, "permission group not set correctly on embedded compositing socket")

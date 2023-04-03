@@ -37,7 +37,7 @@ namespace ramses_internal
                 m_fd = fd;
             }
 
-            virtual void run() override
+            void run() override
             {
                 m_startBarrier.wait();
                 wl_display*  display  = wl_display_connect_to_fd(m_fd);
@@ -125,7 +125,7 @@ namespace ramses_internal
     class AWaylandCallbackResource : public Test
     {
     public:
-        virtual void SetUp() override
+        void SetUp() override
         {
             const int serverFD = m_socket.createBoundFileDescriptor();
             m_waylandDisplay.init("", "", 0, serverFD);
@@ -133,7 +133,7 @@ namespace ramses_internal
             ASSERT_TRUE(m_display != nullptr);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             if (m_client != nullptr)
                 wl_client_destroy(m_client);

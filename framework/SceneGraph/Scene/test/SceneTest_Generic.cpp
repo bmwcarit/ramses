@@ -17,7 +17,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, PreallocatesMemoryPoolsBasedOnSizeInformation)
     {
-        const SceneSizeInformation sizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+        const SceneSizeInformation sizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18);
         const SceneInfo sceneInfo;
         TypeParam preallocatedScene(sceneInfo);
 
@@ -37,7 +37,6 @@ namespace ramses_internal
         EXPECT_EQ(sizeInfo.renderTargetCount, preallocatedScene.getRenderTargetCount());
         EXPECT_EQ(sizeInfo.renderBufferCount, preallocatedScene.getRenderBufferCount());
         EXPECT_EQ(sizeInfo.textureSamplerCount, preallocatedScene.getTextureSamplerCount());
-        EXPECT_EQ(sizeInfo.streamTextureCount, preallocatedScene.getStreamTextureCount());
         EXPECT_EQ(sizeInfo.dataSlotCount, preallocatedScene.getDataSlotCount());
         EXPECT_EQ(sizeInfo.dataBufferCount, preallocatedScene.getDataBufferCount());
         EXPECT_EQ(sizeInfo.pickableObjectCount, preallocatedScene.getPickableObjectCount());
@@ -54,13 +53,13 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, PreallocatesMemoryPoolsBasedOnSizeInformationNeverShrink)
     {
-        const SceneSizeInformation sizeInfo(21, 22, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+        const SceneSizeInformation sizeInfo(21, 22, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18);
         const SceneInfo sceneInfo;
         TypeParam preallocatedScene(sceneInfo);
         preallocatedScene.preallocateSceneSize(sizeInfo);
         EXPECT_EQ(sizeInfo, preallocatedScene.getSceneSizeInformation());
 
-        const SceneSizeInformation smallerSizeInfo(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+        const SceneSizeInformation smallerSizeInfo(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
         preallocatedScene.preallocateSceneSize(smallerSizeInfo);
 
         EXPECT_EQ(sizeInfo, preallocatedScene.getSceneSizeInformation());
@@ -77,7 +76,6 @@ namespace ramses_internal
         EXPECT_EQ(sizeInfo.renderTargetCount, preallocatedScene.getRenderTargetCount());
         EXPECT_EQ(sizeInfo.renderBufferCount, preallocatedScene.getRenderBufferCount());
         EXPECT_EQ(sizeInfo.textureSamplerCount, preallocatedScene.getTextureSamplerCount());
-        EXPECT_EQ(sizeInfo.streamTextureCount, preallocatedScene.getStreamTextureCount());
         EXPECT_EQ(sizeInfo.dataSlotCount, preallocatedScene.getDataSlotCount());
         EXPECT_EQ(sizeInfo.dataBufferCount, preallocatedScene.getDataBufferCount());
         EXPECT_EQ(sizeInfo.sceneReferenceCount, preallocatedScene.getSceneReferenceCount());

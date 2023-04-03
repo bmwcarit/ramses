@@ -1,0 +1,3 @@
+# ignore covesa dlt locking problems
+mutex:dlt_lock_mutex
+mutex:dlt_free

@@ -19,7 +19,7 @@ namespace ramses
     public:
         static bool RegisterRendererFactory();
 
-        virtual RendererUniquePtr createRenderer(RamsesFrameworkImpl* impl, const RendererConfig& config) const override;
+        RendererUniquePtr createRenderer(RamsesFrameworkImpl* impl, const RendererConfig& config) const override;
     };
 }
 #endif

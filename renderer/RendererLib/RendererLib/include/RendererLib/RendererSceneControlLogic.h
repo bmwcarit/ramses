@@ -33,9 +33,9 @@ namespace ramses_internal
     public:
         explicit RendererSceneControlLogic(IRendererSceneStateControl& sceneStateControl);
 
-        virtual void setSceneState(SceneId sceneId, RendererSceneState state) override;
-        virtual void setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder) override;
-        virtual void getSceneInfo(SceneId sceneId, RendererSceneState& targetState, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const override;
+        void setSceneState(SceneId sceneId, RendererSceneState state) override;
+        void setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder) override;
+        void getSceneInfo(SceneId sceneId, RendererSceneState& targetState, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const override;
 
         enum class EventResult { OK, Failed, Indirect };
 

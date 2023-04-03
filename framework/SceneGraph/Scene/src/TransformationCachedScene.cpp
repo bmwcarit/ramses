@@ -71,7 +71,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention)
+    void TransformationCachedSceneT<MEMORYPOOL>::setRotation(TransformHandle transform, const Vector4& rotation, ERotationConvention convention)
     {
         const NodeHandle nodeTransformIsConnectedTo = this->getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
@@ -228,7 +228,7 @@ namespace ramses_internal
             const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
             const Matrix44f matrix =
                 Matrix44f::Translation(transform.translation) *
-                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention) *
+                Matrix44f::Rotation(transform.rotation, transform.rotationConvention) *
                 Matrix44f::Scaling(transform.scaling);
 
             chainMatrix *= matrix;
@@ -244,7 +244,7 @@ namespace ramses_internal
             const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
             const Matrix44f matrix =
                 Matrix44f::Scaling(transform.scaling.inverse()) *
-                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention).transpose() *
+                Matrix44f::Rotation(transform.rotation, transform.rotationConvention).transpose() *
                 Matrix44f::Translation(-transform.translation);
 
             chainMatrix = matrix * chainMatrix;

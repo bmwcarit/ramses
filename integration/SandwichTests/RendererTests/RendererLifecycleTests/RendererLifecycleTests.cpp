@@ -13,7 +13,7 @@
 #include "ReadPixelCallbackHandler.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "TestScenes/TextureBufferScene.h"
-#include "TestScenes/DataBufferScene.h"
+#include "TestScenes/ArrayBufferScene.h"
 #include "TestScenes/TextScene.h"
 #include "TestScenes/FileLoadingScene.h"
 #include "TestScenes/Texture2DFormatScene.h"
@@ -473,7 +473,7 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, RemapScenesWithDynamicResourcesToOtherDisplay)
     {
         const ramses::sceneId_t sceneId1 = createScene<TextureBufferScene>(TextureBufferScene::EState_RGBA8_OneMip_ScaledDown, Vector3(-0.1f, -0.1f, 15.0f), 200u, 200u); // stretch a bit by using bigger viewport
-        const ramses::sceneId_t sceneId2 = createScene<DataBufferScene>(DataBufferScene::INDEX_DATA_BUFFER_UINT16, Vector3(-2.0f, -2.0f, 15.0f));
+        const ramses::sceneId_t sceneId2 = createScene<ArrayBufferScene>(ArrayBufferScene::INDEX_DATA_BUFFER_UINT16, Vector3(-2.0f, -2.0f, 15.0f));
         testScenesAndRenderer.initializeRenderer();
         const ramses::displayId_t display1 = createDisplayForWindow(0u);
         const ramses::displayId_t display2 = createDisplayForWindow(1u);
@@ -619,11 +619,11 @@ namespace ramses_internal
 
         explicit ReferencedSceneStateEventHandler(ReferenceStateMap&& targetStateMap) : m_targetStateMap{ std::move(targetStateMap) } {}
 
-        virtual void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
+        void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
         {
             m_currentStateMap[sceneRef.getReferencedSceneId()] = state;
         }
-        virtual bool waitCondition() const override
+        bool waitCondition() const override
         {
             return m_currentStateMap == m_targetStateMap;
         }
@@ -722,14 +722,14 @@ namespace ramses_internal
         {
         public:
             EventHandler(TestScenesAndRenderer& tester_, ramses::sceneId_t sceneMasterId_) : m_tester(tester_), m_sceneMasterId(sceneMasterId_) {}
-            virtual void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
+            void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
             {
                 if (state == ramses::RendererSceneState::Ready)
                     sceneRef.requestState(ramses::RendererSceneState::Rendered);
                 m_tester.flush(m_sceneMasterId);
                 m_states[sceneRef.getReferencedSceneId()] = state;
             }
-            virtual bool waitCondition() const override
+            bool waitCondition() const override
             {
                 return 2u == m_states.size()
                     && std::all_of(m_states.cbegin(), m_states.cend(), [](const auto& it) { return it.second == ramses::RendererSceneState::Rendered; });
@@ -761,11 +761,11 @@ namespace ramses_internal
     class ReferencedSceneFlushEventHandler : public TestClientEventHandler
     {
     public:
-        virtual void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t versionTag) override
+        void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t versionTag) override
         {
             m_lastReportedVersion = versionTag;
         }
-        [[nodiscard]] virtual bool waitCondition() const override
+        [[nodiscard]] bool waitCondition() const override
         {
             return m_lastReportedVersion != ramses::InvalidSceneVersionTag;
         }
@@ -1448,7 +1448,7 @@ namespace ramses_internal
     {
         struct ExpirationCounter final : public ramses::RendererSceneControlEventHandlerEmpty
         {
-            virtual void sceneExpired(ramses::sceneId_t) override
+            void sceneExpired(ramses::sceneId_t) override
             {
                 numExpirationEvents++;
             }

@@ -37,7 +37,7 @@ namespace ramses_internal
 
         virtual ResourceComponent& getResourceComponent() = 0;
 
-        virtual ~ResourceComponentTestBase()
+        ~ResourceComponentTestBase() override
         {
             deleteTestResourceFile();
         }
@@ -144,7 +144,7 @@ namespace ramses_internal
             : localResourceComponent(statistics, frameworkLock)
         {}
 
-        virtual ResourceComponent& getResourceComponent() override
+        ResourceComponent& getResourceComponent() override
         {
             return localResourceComponent;
         }
@@ -180,7 +180,7 @@ namespace ramses_internal
             : localResourceComponent(statistics, frameworkLock)
         {}
 
-        virtual ResourceComponent& getResourceComponent() override
+        ResourceComponent& getResourceComponent() override
         {
             return localResourceComponent;
         }

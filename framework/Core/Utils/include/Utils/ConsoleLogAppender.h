@@ -22,7 +22,7 @@ namespace ramses_internal
     public:
         ConsoleLogAppender();
 
-        virtual void log(const LogMessage& logMessage) override;
+        void log(const LogMessage& logMessage) override;
 
         [[nodiscard]] ELogLevel getLogLevel() const;
         void setLogLevel(ELogLevel level);

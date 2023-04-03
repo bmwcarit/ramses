@@ -31,11 +31,6 @@ namespace ramses
     {
     }
 
-    void DisplayConfig::registerOptions(CLI::App& cli)
-    {
-        impl.registerOptions(cli);
-    }
-
     status_t DisplayConfig::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         const status_t status = impl.setWindowRectangle(x, y, width, height);
@@ -103,12 +98,12 @@ namespace ramses
         return impl.getWaylandIviSurfaceID();
     }
 
-    status_t DisplayConfig::setWaylandDisplay(const char* waylandDisplay)
+    status_t DisplayConfig::setWaylandDisplay(std::string_view waylandDisplay)
     {
         return impl.setWaylandDisplay(waylandDisplay);
     }
 
-    const char* DisplayConfig::getWaylandDisplay() const
+    std::string_view DisplayConfig::getWaylandDisplay() const
     {
         return impl.getWaylandDisplay();
     }
@@ -196,17 +191,17 @@ namespace ramses
         return impl.getWindowsWindowHandle();
     }
 
-    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketName(const char* socketname)
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketName(std::string_view socketname)
     {
         return impl.setWaylandEmbeddedCompositingSocketName(socketname);
     }
 
-    const char *DisplayConfig::getWaylandEmbeddedCompositingSocketName() const
+    std::string_view DisplayConfig::getWaylandEmbeddedCompositingSocketName() const
     {
         return impl.getWaylandEmbeddedCompositingSocketName();
     }
 
-    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(std::string_view groupname)
     {
         return impl.setWaylandEmbeddedCompositingSocketGroup(groupname);
     }
@@ -221,7 +216,7 @@ namespace ramses
         return impl.setWaylandEmbeddedCompositingSocketPermissions(permissions);
     }
 
-    status_t DisplayConfig::setPlatformRenderNode(const char* renderNode)
+    status_t DisplayConfig::setPlatformRenderNode(std::string_view renderNode)
     {
         return impl.setPlatformRenderNode(renderNode);
     }

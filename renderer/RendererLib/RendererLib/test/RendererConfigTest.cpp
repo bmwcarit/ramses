@@ -9,14 +9,13 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/RendererConfig.h"
-#include "CLI/CLI.hpp"
 
 TEST(AInternalRendererConfig, hasDefaultValues)
 {
     ramses_internal::RendererConfig config;
     EXPECT_FALSE(config.getSystemCompositorControlEnabled());
     EXPECT_EQ(std::chrono::microseconds{10000u}, config.getFrameCallbackMaxPollTime());
-    EXPECT_STREQ("", config.getWaylandDisplayForSystemCompositorController().c_str());
+    EXPECT_EQ("", config.getWaylandDisplayForSystemCompositorController());
 }
 
 TEST(AInternalRendererConfig, canEnableSystemCompositorControl)
@@ -39,6 +38,6 @@ TEST(AInternalRendererConfig, canSetGetWaylandDisplayForSystemCompositorControll
     ramses_internal::RendererConfig config;
 
     config.setWaylandDisplayForSystemCompositorController("ramses wd");
-    EXPECT_STREQ("ramses wd", config.getWaylandDisplayForSystemCompositorController().c_str());
+    EXPECT_EQ("ramses wd", config.getWaylandDisplayForSystemCompositorController());
 }
 

@@ -106,6 +106,7 @@ Directly included:
 Submodule reference:
 - Freetype 2 (Licensed under FTL, also containing code under BSD and ZLib)
 - GLSLang (Licensed under BSD-3 and Khronos Group License)
+- OpenGL Mathematics (Licensed under MIT License)
 - Googletest (Licensed under BSD-3)
 - Harfbuzz (Licensed under MIT and ISC; see external/harfbuzz/COPYING)
 - Asio (Boost Software License - Version 1.0)

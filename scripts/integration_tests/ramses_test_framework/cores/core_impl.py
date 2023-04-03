@@ -177,9 +177,6 @@ class LocalCoreImpl(CoreImpl):
         CoreImpl.__init__(self, config)
         self.platform = ""
 
-        # ensure all tested applications inherit a sensible console log level or most tests will fail (e.b. if off)
-        os.environ['CONSOLE_LOGLEVEL'] = 'info'
-
     def read_arguments(self):
         parser = AdaptedArgParser()
         parser.add_argument("path", help="path to ramses install directory and where test results should be stored")

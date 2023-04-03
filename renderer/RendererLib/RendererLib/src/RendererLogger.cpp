@@ -10,7 +10,6 @@
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/IContext.h"
-#include "SceneAPI/StreamTexture.h"
 #include "RendererLib/RendererLogger.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/RendererSceneUpdater.h"
@@ -495,17 +494,6 @@ namespace ramses_internal
                     size += UInt32(dbDesc.data.size());
                 }
                 context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
-                context.unindent();
-            }
-
-            const auto& streamTextures = scene.getStreamTextures();
-            const auto streamTextureCount = std::count_if(streamTextures.cbegin(), streamTextures.cend(), [](const auto&) {return true; });
-            context << "Stream textures: " << streamTextureCount << RendererLogContext::NewLine;
-            if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
-            {
-                context.indent();
-                for (const auto& st : streamTextures)
-                    context << st.first << " [sourceId " << st.second->source << "]" << RendererLogContext::NewLine;
                 context.unindent();
             }
 
@@ -1093,11 +1081,9 @@ namespace ramses_internal
             sos << "\n";
             updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);
             sos << "\n";
-            updater.m_renderer.getMemoryStatistics().writeMemoryUsageSummaryToString(sos);
         }));
 
         updater.m_renderer.getStatistics().reset();
         updater.m_renderer.getProfilerStatistics().resetFrameTimings();
-        updater.m_renderer.getMemoryStatistics().reset();
     }
 }

@@ -168,6 +168,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         target_compile_options(ramses-build-options-base INTERFACE /WX)
     endif()
     add_definitions("-D_WIN32_WINNT=0x0600" "-DWINVER=0x0600") # enable 'modern' windows APIs
+
+    if (${MSVC_TOOLSET_VERSION} LESS_EQUAL "141") # disable warning unreachable code for VS 2017 due to false positives
+        addFlags(RAMSES_C_CXX_FLAGS "/wd4702")
+    endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Android")

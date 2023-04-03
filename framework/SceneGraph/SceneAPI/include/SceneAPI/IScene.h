@@ -22,7 +22,6 @@
 #include "SceneAPI/MipMapSize.h"
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/RendererSceneState.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "SceneAPI/ERotationConvention.h"
 
 #include "Collections/HashMap.h"
@@ -50,7 +49,6 @@ namespace ramses_internal
     struct TextureSamplerStates;
     struct TextureBuffer;
     struct GeometryDataBuffer;
-    struct StreamTexture;
     struct RenderBuffer;
     struct BlitPass;
     struct PickableObject;
@@ -128,18 +126,21 @@ namespace ramses_internal
         [[nodiscard]] virtual NodeHandle                  getChild                        (NodeHandle parent, UInt32 childNumber) const = 0;
 
         // Transformation
+        constexpr static Vector3 IdentityTranslation = {0.f, 0.f, 0.f};
+        constexpr static Vector4 IdentityRotation    = {0.f, 0.f, 0.f, 1.f}; // zero rotation for both euler and quaternion
+        constexpr static Vector3 IdentityScaling     = {1.f, 1.f, 1.f};
+
         virtual TransformHandle             allocateTransform               (NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) = 0;
         virtual void                        releaseTransform                (TransformHandle transform) = 0;
         [[nodiscard]] virtual bool                        isTransformAllocated            (TransformHandle transformHandle) const = 0;
         [[nodiscard]] virtual UInt32                      getTransformCount               () const = 0;
         [[nodiscard]] virtual NodeHandle                  getTransformNode                (TransformHandle handle) const = 0;
         [[nodiscard]] virtual const Vector3&              getTranslation                  (TransformHandle handle) const = 0;
-        [[nodiscard]] virtual const Vector3&              getRotation                     (TransformHandle handle) const = 0;
+        [[nodiscard]] virtual const Vector4&              getRotation                     (TransformHandle handle) const = 0;
         [[nodiscard]] virtual ERotationConvention         getRotationConvention           (TransformHandle handle) const = 0;
         [[nodiscard]] virtual const Vector3&              getScaling                      (TransformHandle handle) const = 0;
         virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) = 0;
-        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation, ERotationConvention convention) = 0;
-        virtual void                        setRotationForAnimation         (TransformHandle handle, const Vector3& rotation) = 0;
+        virtual void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationConvention convention) = 0;
         virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) = 0;
 
         virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) = 0;
@@ -282,14 +283,6 @@ namespace ramses_internal
         [[nodiscard]] virtual bool                        isRenderBufferAllocated         (RenderBufferHandle handle) const = 0;
         [[nodiscard]] virtual UInt32                      getRenderBufferCount            () const = 0;
         [[nodiscard]] virtual const RenderBuffer&         getRenderBuffer                 (RenderBufferHandle handle) const = 0;
-
-        // Stream textures
-        virtual StreamTextureHandle         allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) = 0;
-        virtual void                        releaseStreamTexture            (StreamTextureHandle streamTextureHandle) = 0;
-        [[nodiscard]] virtual bool                        isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const = 0;
-        [[nodiscard]] virtual UInt32                      getStreamTextureCount           () const = 0;
-        virtual void                        setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) = 0;
-        [[nodiscard]] virtual const StreamTexture&        getStreamTexture                (StreamTextureHandle streamTextureHandle) const = 0;
 
         // Data buffers
         virtual DataBufferHandle            allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) = 0;

@@ -53,20 +53,20 @@ int main()
     // get input data of appearance and set color values
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 0.0f, 1.0f, 1.0f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 0.0f, 1.0f, 1.0f, 1.0f });
 
     // the raw data for vertices and indices
-    const float vertexPositions[] = {
-        -1.0,  4.0, -1.0,    0.0,  4.0, -1.0,    1.0,  4.0, -1.0,
-        -2.0,  2.0, -1.0,                        2.0,  2.0, -1.0,
-        -4.0,  1.0, -1.0,                        4.0,  1.0, -1.0,
-        -4.0,  0.0, -1.0,                        4.0,  0.0, -1.0,
-        -4.0, -1.0, -1.0,                        4.0, -1.0, -1.0,
-        -2.0, -2.0, -1.0,                        2.0, -2.0, -1.0,
-        -1.0, -4.0, -1.0,    0.0, -4.0, -1.0,    1.0, -4.0, -1.0  };
+    const std::vector<ramses::vec3f> vertexPositions = {
+        ramses::vec3f{ -1.f,  4.f, -1.f }, ramses::vec3f{ 0.f,  4.f, -1.f }, ramses::vec3f{ 1.f,  4.f, -1.f },
+        ramses::vec3f{ -2.f,  2.f, -1.f },                                   ramses::vec3f{ 2.f,  2.f, -1.f },
+        ramses::vec3f{ -4.f,  1.f, -1.f },                                   ramses::vec3f{ 4.f,  1.f, -1.f },
+        ramses::vec3f{ -4.f,  0.f, -1.f },                                   ramses::vec3f{ 4.f,  0.f, -1.f },
+        ramses::vec3f{ -4.f, -1.f, -1.f },                                   ramses::vec3f{ 4.f, -1.f, -1.f },
+        ramses::vec3f{ -2.f, -2.f, -1.f },                                   ramses::vec3f{ 2.f, -2.f, -1.f },
+        ramses::vec3f{ -1.f, -4.f, -1.f }, ramses::vec3f{ 0.f, -4.f, -1.f }, ramses::vec3f{ 1.f, -4.f, -1.f } };
 
 
-    const uint16_t indexData[] = {
+    const std::vector<uint16_t> indexData = {
         3,   1,  0,     4,  2,  1,     4,  1,  3,
         8,   6,  4,    12, 10,  8,    12,  8,  4,
         14, 15, 12,    11, 13, 14,    11, 14, 12,
@@ -75,23 +75,23 @@ int main()
     };
 
     /// [Data Buffer Example Setup]
-    /// Creating a shape with DataBuffer vertices and constantly changing them afterwards
+    /// Creating a shape with #ramses::ArrayBuffer vertices and constantly changing them afterwards
     //
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
 
-    // Create the DataBuffers
+    // Create the ArrayBuffers
     // The data buffers need more information about size
-    const uint32_t NumVertices = 16u;
-    const uint32_t NumIndices  = 42u;
+    const uint32_t NumVertices = uint32_t(vertexPositions.size());
+    const uint32_t NumIndices = uint32_t(indexData.size());
 
     // then create the buffers via the _scene_
-    ramses::ArrayBuffer* vertices = scene->createArrayBuffer( ramses::EDataType::Vector3F, NumVertices, "some varying vertices");
-    ramses::ArrayBuffer*  indices  = scene->createArrayBuffer( ramses::EDataType::UInt16, NumIndices, "some varying indices");
+    ramses::ArrayBuffer* vertices = scene->createArrayBuffer(ramses::EDataType::Vector3F, NumVertices, "some varying vertices");
+    ramses::ArrayBuffer* indices = scene->createArrayBuffer(ramses::EDataType::UInt16, NumIndices, "some varying indices");
 
     // finally set/update the data
-    vertices->updateData(0u, NumVertices, vertexPositions);
-    indices->updateData( 0u, NumIndices, indexData);
+    vertices->updateData(0u, NumVertices, vertexPositions.data());
+    indices->updateData(0u, NumIndices, indexData.data());
 
     /// [Data Buffer Example Setup]
 
@@ -118,12 +118,11 @@ int main()
     scene->publish();
 
     // application logic
-    auto translateVertex = [&vertexPositions](float* updatedValues, uint32_t i, uint64_t timeStamp, float scaleFactor){
+    auto translateVertex = [&vertexPositions](ramses::vec3f& updatedValues, uint32_t index, uint64_t timeStamp, float scaleFactor){
         const float currentFactor = static_cast<float>(std::sin(0.005f*timeStamp));
-        const uint32_t index      = i * 3u;
-        const float    xValue     = vertexPositions[index+0];
-        const float    yValue     = vertexPositions[index+1];
-        const float    zValue     = vertexPositions[index+2];
+        const float    xValue     = vertexPositions[index][0];
+        const float    yValue     = vertexPositions[index][1];
+        const float    zValue     = vertexPositions[index][2];
 
         updatedValues[0] = xValue + scaleFactor * xValue * currentFactor;
         updatedValues[1] = yValue + scaleFactor * yValue * currentFactor;
@@ -134,19 +133,19 @@ int main()
     const std::vector<uint32_t> ridges  = { 1, 7,  8, 14 };
     const std::vector<uint32_t> notches = { 3, 4, 11, 12 };
 
-    float updatedValues[3];
+    ramses::vec3f updatedPosition;
     for (uint64_t timeStamp = 0u; timeStamp < 10000u; timeStamp += 20u)
     {
         for(auto i: ridges)
         {
-            translateVertex(updatedValues, i, timeStamp, 0.25f);
-            vertices->updateData(i, 1, updatedValues);
+            translateVertex(updatedPosition, i, timeStamp, 0.25f);
+            vertices->updateData(i, 1, &updatedPosition);
         }
 
         for(auto i: notches)
         {
-            translateVertex(updatedValues, i, timeStamp, -0.4f);
-            vertices->updateData(i, 1, updatedValues);
+            translateVertex(updatedPosition, i, timeStamp, -0.4f);
+            vertices->updateData(i, 1, &updatedPosition);
         }
 
         // signal the scene it is in a state that can be rendered

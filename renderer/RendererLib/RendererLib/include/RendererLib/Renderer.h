@@ -17,7 +17,6 @@
 #include "RendererLib/RendererInterruptState.h"
 #include "RendererLib/DisplaySetup.h"
 #include "RendererLib/DisplayEventHandler.h"
-#include "MemoryStatistics.h"
 #include "Collections/Vector.h"
 #include "Collections/HashMap.h"
 #include <map>
@@ -97,7 +96,6 @@ namespace ramses_internal
         //TODO: remove/refactor those functions
         RendererStatistics&         getStatistics();
         FrameProfilerStatistics&    getProfilerStatistics();
-        MemoryStatistics&           getMemoryStatistics();
 
         static const Vector4 DefaultClearColor;
 
@@ -129,7 +127,6 @@ namespace ramses_internal
 
         RendererStatistics&                    m_statistics;
         FrameProfilerStatistics                m_profilerStatistics;
-        MemoryStatistics                       m_memoryStatistics;
 
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;

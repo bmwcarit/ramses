@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         RendererSceneControlLogicMock();
-        virtual ~RendererSceneControlLogicMock() override;
+        ~RendererSceneControlLogicMock() override;
 
         MOCK_METHOD(void, setSceneState, (SceneId, RendererSceneState), (override));
         MOCK_METHOD(void, setSceneDisplayBufferAssignment, (SceneId, OffscreenBufferHandle, int32_t), (override));

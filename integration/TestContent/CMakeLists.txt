@@ -7,16 +7,9 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    TestContent
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/TestEffects/*.h
                             include/TestScenes/*.h
@@ -25,10 +18,6 @@ createModule(
                             src/*.cpp
                             src/TextFake/*.cpp
     RESOURCE_FOLDERS        res
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ramses-client
                             ramses-framework
                             ramses-renderer-lib

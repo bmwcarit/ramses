@@ -21,14 +21,14 @@ namespace ramses_internal
     {
     public:
         DisplayEventHandler(DisplayHandle displayHandle, RendererEventCollector& eventCollector);
-        virtual ~DisplayEventHandler() override;
+        ~DisplayEventHandler() override;
 
         /* Inherited from IWindowEventHandler */
-        virtual void onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode) override;
-        virtual void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) override;
-        virtual void onClose() override;
-        virtual void onResize(UInt32 width, UInt32 height) override;
-        virtual void onWindowMove(Int32 posX, Int32 posY) override;
+        void onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode) override;
+        void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) override;
+        void onClose() override;
+        void onResize(UInt32 width, UInt32 height) override;
+        void onWindowMove(Int32 posX, Int32 posY) override;
 
     private:
         const DisplayHandle     m_displayHandle;

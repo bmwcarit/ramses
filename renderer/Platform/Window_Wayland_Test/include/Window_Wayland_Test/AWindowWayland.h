@@ -25,13 +25,13 @@ namespace ramses_internal
     class AWindowWayland : public TestWithWaylandEnvironment
     {
     public:
-        virtual void SetUp() override
+        void SetUp() override
         {
             ThreadLocalLog::SetPrefix(1);
             createWaylandWindow();
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             destroyWaylandWindow();
         }

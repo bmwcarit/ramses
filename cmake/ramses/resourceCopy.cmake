@@ -21,7 +21,7 @@ function(copyResourcesForTarget)
 
     # install whole folders if requested
     # TODO: don't install resources (fix tests and remove installation here)
-    if (RES_INSTALL)
+    if (RES_INSTALL AND ramses-sdk_ENABLE_INSTALL)
         foreach(res_folder ${RES_FOLDERS})
             install(DIRECTORY ${res_folder}/ DESTINATION ${RAMSES_INSTALL_RESOURCES_PATH} COMPONENT "${RES_INSTALL_COMPONENT}")
         endforeach()

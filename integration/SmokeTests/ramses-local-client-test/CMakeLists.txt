@@ -15,4 +15,5 @@ expandModuleByPlatform(
     RESOURCE_FOLDERS    ../../TestContent/res
     DEPENDENCIES        TestContent
                         ramses-renderer-lib
+                        ramses-cli
 )

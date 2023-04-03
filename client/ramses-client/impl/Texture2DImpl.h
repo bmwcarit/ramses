@@ -29,11 +29,11 @@ namespace ramses
             const char* name,
             ERamsesObjectType overrideType = ERamsesObjectType_Texture2D);
 
-        virtual ~Texture2DImpl() override;
+        ~Texture2DImpl() override;
 
         void initializeFromFrameworkData(uint32_t width, uint32_t height, ETextureFormat textureFormat, const TextureSwizzle& swizzle);
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t       getWidth() const;
         uint32_t       getHeight() const;

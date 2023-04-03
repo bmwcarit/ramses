@@ -46,13 +46,13 @@ public:
         : m_client(client)
     {}
 
-    virtual void sceneFileLoadFailed(const char*) override {}
-    virtual void sceneFileLoadSucceeded(const char*, ramses::Scene*) override {}
-    virtual void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t) override {}
-    virtual void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-    virtual void dataUnlinked(ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
+    void sceneFileLoadFailed(const char*) override {}
+    void sceneFileLoadSucceeded(const char*, ramses::Scene*) override {}
+    void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t) override {}
+    void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
+    void dataUnlinked(ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
 
-    virtual void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
+    void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
     {
         m_sceneRefState[sceneRef.getReferencedSceneId()] = state;
     }
@@ -117,10 +117,10 @@ void createContentProviderScene(ramses::RamsesClient& client, ramses::sceneId_t 
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
 
-    float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -6.f}, ramses::vec3f{1.f, 0.f, -6.f}, ramses::vec3f{0.f, 1.f, -6.f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShader(R"glsl(#version 100

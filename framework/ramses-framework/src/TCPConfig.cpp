@@ -50,9 +50,9 @@ namespace ramses
         m_portHasBeenSet = true;
     }
 
-    void TCPConfig::setIPAddress(const ramses_internal::String& ipAddress)
+    void TCPConfig::setIPAddress(std::string_view ipAddress)
     {
-        m_ipAddress = ipAddress;
+        m_ipAddress = ramses_internal::String(ipAddress);
     }
 
     void TCPConfig::setDaemonPort(uint16_t port)
@@ -60,9 +60,9 @@ namespace ramses
         m_daemonPort = port;
     }
 
-    void TCPConfig::setDaemonIPAddress(const ramses_internal::String& ipAddress)
+    void TCPConfig::setDaemonIPAddress(std::string_view ipAddress)
     {
-        m_daemonIP = ipAddress;
+        m_daemonIP = ramses_internal::String(ipAddress);
     }
 
 

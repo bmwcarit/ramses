@@ -28,7 +28,7 @@ namespace ramses
     {
     public:
         EffectInputImpl();
-        virtual ~EffectInputImpl();
+        ~EffectInputImpl() override;
 
         void initialize(
             const ramses_internal::ResourceContentHash& effectHash,

@@ -25,13 +25,7 @@ WARNING_DISABLE_GCC(-Wshadow)
     {
         Invalid = 0,
 
-        // TODO Violin should make this a public type with 28+! Currently reported as Int32
-        //Bool,
         Int32,
-        // And while we are at it, we could as well fix all the types...
-        // Support non-square matrices
-        // Support unsigned int vectors (OR remove unsigned int scalars) - does not make sense to have one but not the other
-        // Handle 'double' properly, _OR_ forbid it in the parsing stage (we currently downcast to float -> bad idea
         UInt16,
         UInt32,
         Float,
@@ -99,7 +93,7 @@ WARNINGS_POP
 
     ENUM_TO_STRING(EDataType, DataTypeNames, EDataType::NUMBER_OF_ELEMENTS);
 
-    inline UInt32 EnumToNumComponents(EDataType type)
+    inline constexpr UInt32 EnumToNumComponents(EDataType type)
     {
         switch (type)
         {
@@ -107,6 +101,7 @@ WARNINGS_POP
         case EDataType::UInt16:
         case EDataType::UInt32:
         case EDataType::Float:
+        case EDataType::ByteBlob:
             return 1u;
         case EDataType::Vector2F:
         case EDataType::Vector2I:
@@ -147,7 +142,7 @@ WARNINGS_POP
         }
     }
 
-    inline UInt32 EnumToSize(EDataType type)
+    inline constexpr UInt32 EnumToSize(EDataType type)
     {
         switch (type)
         {
@@ -178,10 +173,14 @@ WARNINGS_POP
         case EDataType::Vector2Buffer    : return sizeof(ResourceField);
         case EDataType::Vector3Buffer    : return sizeof(ResourceField);
         case EDataType::Vector4Buffer    : return sizeof(ResourceField);
-        default:
-            assert(false);
-            return 0;
+
+        case EDataType::Invalid:
+        case EDataType::NUMBER_OF_ELEMENTS:
+            break;
         };
+
+        assert(false);
+        return 0;
     }
 
     inline UInt EnumToAlignment(EDataType type)

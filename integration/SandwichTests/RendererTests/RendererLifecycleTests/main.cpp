@@ -9,7 +9,7 @@
 #include "RendererTestUtils.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "gmock/gmock.h"
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,9 +19,18 @@ int main(int argc, char *argv[])
     ramses::RamsesFrameworkConfig framworkConfig;
     ramses::RendererConfig rendererConfig;
     ramses::DisplayConfig displayConfig;
-    framworkConfig.registerOptions(cli);
-    rendererConfig.registerOptions(cli);
-    displayConfig.registerOptions(cli);
+    try
+    {
+        ramses::registerOptions(cli, framworkConfig);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
+    }
+    catch (const CLI::Error& error)
+    {
+        // configuration error
+        std::cerr << error.what();
+        return -1;
+    }
     CLI11_PARSE(cli, argc, argv);
     RendererTestUtils::SetDefaultConfigForAllTests(rendererConfig, displayConfig);
 

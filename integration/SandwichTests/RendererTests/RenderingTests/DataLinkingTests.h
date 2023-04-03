@@ -15,8 +15,8 @@
 class DataLinkingTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
 private:
     bool renderAndCompareScreenshot(RendererTestsFramework& testFramework, const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx = 0u, float expectedPixelError = RendererTestUtils::DefaultMaxAveragePercentPerPixel);

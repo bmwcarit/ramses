@@ -20,10 +20,10 @@ namespace ramses_internal
     public:
         ClientSceneLogicShadowCopy(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress);
 
-        virtual bool flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
+        bool flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
 
     private:
-        virtual void postAddSubscriber() override;
+        void postAddSubscriber() override;
         void sendShadowCopySceneToWaitingSubscribers();
 
         SceneWithExplicitMemory m_sceneShadowCopy;

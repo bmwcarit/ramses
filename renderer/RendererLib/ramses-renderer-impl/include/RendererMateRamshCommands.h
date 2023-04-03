@@ -32,35 +32,35 @@ namespace ramses_internal
     {
     public:
         explicit ShowSceneOnDisplay(ramses::RendererMate& rendererMate);
-        virtual bool executeInput(const std::vector<std::string>& input) override;
+        bool executeInput(const std::vector<std::string>& input) override;
     };
 
     class HideScene final : public RamshCommandArgs < uint64_t >, public RendererMateRamshCommand
     {
     public:
         explicit HideScene(ramses::RendererMate& rendererMate);
-        virtual bool execute(uint64_t& sceneId) const override;
+        bool execute(uint64_t& sceneId) const override;
     };
 
     class ReleaseScene final : public RamshCommandArgs < uint64_t >, public RendererMateRamshCommand
     {
     public:
         explicit ReleaseScene(ramses::RendererMate& rendererMate);
-        virtual bool execute(uint64_t& sceneId) const override;
+        bool execute(uint64_t& sceneId) const override;
     };
 
     class LinkData final : public RamshCommandArgs < uint64_t, uint32_t, uint64_t, uint32_t >, public RendererMateRamshCommand
     {
     public:
         explicit LinkData(ramses::RendererMate& rendererMate);
-        virtual bool execute(uint64_t& providerSceneId, uint32_t& providerId, uint64_t& consumerSceneId, uint32_t& consumerId) const override;
+        bool execute(uint64_t& providerSceneId, uint32_t& providerId, uint64_t& consumerSceneId, uint32_t& consumerId) const override;
     };
 
     class ConfirmationEcho final : public RamshCommandArgs<uint32_t, String>, public RendererMateRamshCommand
     {
     public:
         explicit ConfirmationEcho(ramses::RendererMate& rendererMate);
-        virtual bool execute(uint32_t& displayId, String& text) const override;
+        bool execute(uint32_t& displayId, String& text) const override;
     };
 }
 

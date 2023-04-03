@@ -8,7 +8,7 @@
 
 #include "Utils/StringUtils.h"
 #include "ResourceStressTests.h"
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 using namespace ramses_internal;
 
@@ -37,9 +37,9 @@ int main(int argc, const char *argv[])
         cli.add_option("--lr,--rendering-limit", testConfig.perFrameBudgetMSec_Rendering);
         cli.add_option("--rpl,--renderable-per-loop", testConfig.renderablesBatchSizeForRenderingInterruption);
         cli.add_option("--duration", testConfig.durationEachTestSeconds, "test duration in seconds");
-        testConfig.frameworkConfig.registerOptions(cli);
-        testConfig.rendererConfig.registerOptions(cli);
-        testConfig.displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, testConfig.frameworkConfig);
+        ramses::registerOptions(cli, testConfig.rendererConfig);
+        ramses::registerOptions(cli, testConfig.displayConfig);
     }
     catch (const CLI::Error& error)
     {

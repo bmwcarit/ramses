@@ -20,75 +20,75 @@ namespace ramses_internal
     class FakeConnectionSystem : public ICommunicationSystem
     {
     public:
-        virtual bool connectServices() override
+        bool connectServices() override
         {
             return true;
         }
 
-        virtual bool disconnectServices() override
+        bool disconnectServices() override
         {
             return true;
         }
 
-        virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override
+        IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override
         {
             static FakeConnectionStatusUpdateNotifier fake;
             return fake;
         }
 
-        virtual bool broadcastNewScenesAvailable(const SceneInfoVector& /*newScenes*/, ramses::EFeatureLevel) override
+        bool broadcastNewScenesAvailable(const SceneInfoVector& /*newScenes*/, ramses::EFeatureLevel) override
         {
             return true;
         }
 
-        virtual bool broadcastScenesBecameUnavailable(const SceneInfoVector& /*unavailableScenes*/) override
+        bool broadcastScenesBecameUnavailable(const SceneInfoVector& /*unavailableScenes*/) override
         {
             return true;
         }
 
-        virtual bool sendScenesAvailable(const Guid& /*to*/, const SceneInfoVector& /*availableScenes*/, ramses::EFeatureLevel) override
+        bool sendScenesAvailable(const Guid& /*to*/, const SceneInfoVector& /*availableScenes*/, ramses::EFeatureLevel) override
         {
             return true;
         }
 
-        virtual bool sendSubscribeScene(const Guid& /*to*/, const SceneId& /*sceneId*/) override
+        bool sendSubscribeScene(const Guid& /*to*/, const SceneId& /*sceneId*/) override
         {
             return true;
         }
 
-        virtual bool sendUnsubscribeScene(const Guid& /*to*/, const SceneId& /*sceneId*/) override
+        bool sendUnsubscribeScene(const Guid& /*to*/, const SceneId& /*sceneId*/) override
         {
             return true;
         }
 
-        virtual bool sendInitializeScene(const Guid& /*to*/, const SceneId& /*sceneId*/) override
+        bool sendInitializeScene(const Guid& /*to*/, const SceneId& /*sceneId*/) override
         {
             return true;
         }
 
-        virtual bool sendSceneUpdate(const Guid& /*to*/, const SceneId& /*sceneId*/, const ISceneUpdateSerializer& /*serializer*/) override
+        bool sendSceneUpdate(const Guid& /*to*/, const SceneId& /*sceneId*/, const ISceneUpdateSerializer& /*serializer*/) override
         {
             return true;
         }
 
-        virtual bool sendRendererEvent(const Guid& /*to*/, const SceneId& /*sceneId*/, const std::vector<Byte>& /*data*/) override
+        bool sendRendererEvent(const Guid& /*to*/, const SceneId& /*sceneId*/, const std::vector<Byte>& /*data*/) override
         {
             return true;
         }
 
-        virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* /*handler*/) override
+        void setSceneProviderServiceHandler(ISceneProviderServiceHandler* /*handler*/) override
         {
         }
 
-        virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* /*handler*/) override
+        void setSceneRendererServiceHandler(ISceneRendererServiceHandler* /*handler*/) override
         {
         }
 
-        virtual void logConnectionInfo() override
+        void logConnectionInfo() override
         {
         }
 
-        virtual void triggerLogMessageForPeriodicLog() override
+        void triggerLogMessageForPeriodicLog() override
         {
         }
     };

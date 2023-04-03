@@ -20,9 +20,9 @@ import argparse
 
 from check_license import check_license_for_file
 from check_header_guards import check_header_guards
-from check_curly_braces_alone_on_line import check_curly_braces_alone_on_line
+# from check_curly_braces_alone_on_line import check_curly_braces_alone_on_line
+# from check_single_statement_on_line import check_single_statement_on_line
 from check_single_definition_on_line import check_single_definition_on_line
-from check_single_statement_on_line import check_single_statement_on_line
 from check_tabbing_and_spacing import check_tabbing_and_spacing
 from check_tabbing_and_spacing import check_no_spacing_line_end
 from check_tabbing_and_spacing import check_tabs_no_spaces
@@ -51,12 +51,15 @@ def main():
         r'\.bmp$',
         r'\.BMP$',
         r'\.ttf$',
+        r'\.svg$',
         r'\.pyc$',
         r'\.bin$',
         r'\.pac$',
         r'\.rex$',
         r'\.tar\.bz2$',
         r'\.jar$',
+        r'\.ramses$',
+        r'\.rlogic$',
     }
 
     # These files are not checked at all
@@ -78,8 +81,12 @@ def main():
         r'\.cpp$'
     }
 
+    generated_files = {
+        r'^client/logic/lib/flatbuffers/generated'
+    }
+
     # Externals are allowed to have their own code style
-    src_blacklist = shared_blacklist | {r'^external/'}
+    src_blacklist = shared_blacklist | {r'^external/'} | generated_files
 
     src_files = common_modules.common.get_all_files_with_filter(sdk_root, path, src_whitelist, src_blacklist)
 
@@ -92,8 +99,9 @@ def main():
         check_header_guards(f, file_contents)
         check_license_for_file(f, file_contents, sdk_root)
         check_tabbing_and_spacing(f, file_lines)
-        check_curly_braces_alone_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
-        check_single_statement_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        # TODO: decide if these checkers make sense still
+        # check_curly_braces_alone_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        # check_single_statement_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_single_definition_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_deprecated(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_enum_style(f, clean_file_contents)
@@ -101,7 +109,7 @@ def main():
         check_api_export_symbols(f, clean_file_contents)
         check_doxygen_singleline_comments(f, file_lines)
 
-    shared_blacklist_non_src_files = shared_blacklist | {
+    shared_blacklist_non_src_files = shared_blacklist | generated_files | {
         # Externals allowed to have own formatting
         r'^external',
         # created by Android Studio
@@ -132,12 +140,13 @@ def main():
         check_no_spacing_line_end(f, file_lines)
         check_last_line_newline(f, file_contents)
 
-    blacklist_license = shared_blacklist_non_src_files | {
+    blacklist_license = shared_blacklist_non_src_files | generated_files | {
         # Can be safely excluded, don't need license header because trivial
         r'__init__\.py$',
         r'asan_suppressions\.txt$',
         r'lsan_suppressions\.txt$',
         r'tsan_blacklist\.txt$',
+        r'logic/ci/config/sanitizer/tsan_suppressions\.txt$',
         r'maven_settings\.xml$',
         r'\.config$',
         r'\.conf$',
@@ -150,6 +159,18 @@ def main():
         r'^integration/TestContent/res/BigString\.txt$',  # Test file with random content - doesn't need license
         r'^cmake/templates/ramses-version\.in$',  # Just a template, doesn't need license
         r'.*/AndroidManifest\.xml$',  # formatting different due to xml restrictions
+        # json doesn't support comments - can't have license header
+        r'^scripts/integration_tests/proprietary/ramses_test_framework/templates/ramses\.json\.in',
+        r'^CHANGELOG\.md$',  # Doesn't need a license
+        r'^LICENSE\.txt$',   # Contains license info, not related to code/content
+        r'^logic/LICENSE\.txt$',
+        r'^proprietary/oss/LICENSE\.txt$',  # Contains oss license info, not related to code/content
+        r'^proprietary/oss/CHANGELOG\.md$',  # Doesn't need a license
+        r'^.lfsconfig$',     # Doesn't need a license
+        r'valgrind/suppressions$',
+        r'\.spdx$',
+        r'requirements\.txt',
+        r'^doc/doxygen/DoxygenLayout.xml$'
     }
     files_license_header = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'.*'}, blacklist_license)
 

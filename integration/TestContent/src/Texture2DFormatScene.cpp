@@ -267,25 +267,24 @@ namespace ramses_internal
 
     void Texture2DFormatScene::createQuad(const ramses::TextureSampler& sampler)
     {
-        uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
-        float vertexPositionsArray[] = {
-            -1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ -1.0f, -1.0f, -1.0f },
+            ramses::vec3f{ 1.0f, -1.0f, -1.0f },
+            ramses::vec3f{ -1.0f, 1.0f, -1.0f },
+            ramses::vec3f{ 1.0f, 1.0f, -1.0f }
         };
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
-
-        float textureCoordsArray[] = { 0.0f, 1.0f,
-            1.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 0.0f
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{
+            ramses::vec2f{ 0.0f, 1.0f },
+            ramses::vec2f{ 1.0f, 1.0f },
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ 1.0f, 0.0f }
         };
-
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
         assert(effect != nullptr);

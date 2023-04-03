@@ -108,7 +108,7 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(Camera, ERamsesObjectType_Camera, ERamsesObjectType_Node, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Resource, ERamsesObjectType_Resource, ERamsesObjectType_SceneObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(DataObject, ERamsesObjectType_DataObject, ERamsesObjectType_SceneObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(ArrayBuffer, ERamsesObjectType_DataBufferObject, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(ArrayBuffer, ERamsesObjectType_ArrayBufferObject, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Texture2DBuffer, ERamsesObjectType_Texture2DBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(SceneReference, ERamsesObjectType_SceneReference, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerExternal, ERamsesObjectType_TextureSamplerExternal, ERamsesObjectType_SceneObject, true);
@@ -160,7 +160,7 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerMS)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderBuffer)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderTarget)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataBufferObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_ArrayBufferObject)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture2DBuffer)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataObject)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataFloat)

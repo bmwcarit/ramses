@@ -28,7 +28,7 @@ namespace ramses_internal
             WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::WaylandSocket);
         }
 
-        ~TestWithWaylandEnvironment()
+        ~TestWithWaylandEnvironment() override
         {
             //restore environment before running test
             WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);

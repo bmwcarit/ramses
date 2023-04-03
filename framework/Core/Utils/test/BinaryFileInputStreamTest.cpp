@@ -34,7 +34,7 @@ namespace ramses_internal
             m_file.close();
         }
 
-        ~BinaryFileInputStreamTest()
+        ~BinaryFileInputStreamTest() override
         {
             m_file.close();
             m_file.remove();
