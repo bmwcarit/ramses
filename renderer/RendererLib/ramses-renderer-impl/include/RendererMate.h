@@ -44,12 +44,12 @@ namespace ramses
 
     private:
         // IRendererSceneControlEventHandler
-        virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override;
+        void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override;
 
         // IRendererEventHandler
-        virtual void displayCreated(displayId_t displayId, ERendererEventResult result) override;
-        virtual void keyEvent(displayId_t displayId, EKeyEvent keyEvent, uint32_t keyModifiers, EKeyCode keyCode) override;
-        virtual void windowClosed(displayId_t displayId) override;
+        void displayCreated(displayId_t displayId, ERendererEventResult result) override;
+        void keyEvent(displayId_t displayId, EKeyEvent keyEvent, uint32_t keyModifiers, EKeyCode keyCode) override;
+        void windowClosed(displayId_t displayId) override;
 
         struct SceneInfo
         {
@@ -83,7 +83,7 @@ namespace ramses
         {
         }
 
-        virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
+        void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
         {
             const auto it = m_oldState.find(sceneId);
             const bool scenePublished = (it == m_oldState.end()) || (it->second == RendererSceneState::Unavailable);

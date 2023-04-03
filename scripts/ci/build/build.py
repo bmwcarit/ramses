@@ -35,11 +35,29 @@ class BuildConfig(common.CommonConfig):
         if self.compiler == 'llvm':
             optional_args.append("-Dramses-sdk_USE_LINKER_OVERWRITE=lld")
 
+        # Android is special and requires some extra setup
+        android_abi = kwargs.get("android_abi")
+        if android_abi:
+            ndk_home = os.environ['ANDROID_NDK_HOME']
+            optional_args.append(f'-DCMAKE_TOOLCHAIN_FILE={ndk_home}/build/cmake/android.toolchain.cmake')
+            # Android doesn't allow writing files in the source tree -> disable
+            kwargs['flatbuf_gen'] = False
+            # Disable all binaries
+            kwargs['no_examples'] = True
+            kwargs['no_demos'] = True
+            kwargs['no_tests'] = True
+            kwargs['no_tools'] = True
+            optional_args.append('-Dramses-sdk_BUILD_DAEMON=OFF')
+            optional_args.append('-Dramses-sdk_BUILD_IVI_TEST_APPS=OFF')
+            # TODO These should not be needed, if using Gradle instead of CMake
+            optional_args.append('-DANDROID_PLATFORM=21')
+            optional_args.append(f'-DANDROID_ABI={android_abi}')
+
         if self.get_toolchain():
             optional_args.append(f'-DCMAKE_TOOLCHAIN_FILE={self.get_toolchain()}')
 
-        if kwargs.get("override_pkg_name"):
-            optional_args.append(f'-DCPACK_PACKAGE_NAME={kwargs.get("override_pkg_name")}')
+        if kwargs.get("package_name"):
+            optional_args.append(f'-DCPACK_PACKAGE_NAME={kwargs.get("package_name")}')
 
         if kwargs.get("test_coverage"):
             optional_args.append('-Dramses-sdk_ENABLE_COVERAGE=1')
@@ -62,6 +80,10 @@ class BuildConfig(common.CommonConfig):
         if generator:
             optional_args += ['-G', generator]
 
+        # error checking
+        if self.config != "Debug" and kwargs.get("enable_coverage"):
+            raise Exception("Code coverage should only run with debug build!")
+
         args = [
             'cmake',
             *optional_args,
@@ -69,12 +91,14 @@ class BuildConfig(common.CommonConfig):
             f'-DCMAKE_INSTALL_PREFIX={self.install_dir}',
             f'-Dramses-sdk_ENABLE_WAYLAND_SHELL={to_cmake(kwargs.get("wl_shell"))}',
             f'-Dramses-sdk_ENABLE_DLT={to_cmake(kwargs.get("enable_dlt"))}',
+            f'-Dramses-sdk_ENABLE_FLATBUFFERS_GENERATION={to_cmake(kwargs.get("flatbuf_gen"))}',
             f'-Dramses-sdk_BUILD_WITH_LTO={to_cmake(kwargs.get("enable_lto"))}',
             f'-Dramses-sdk_ENABLE_COVERAGE={to_cmake(kwargs.get("enable_coverage"))}',
+            f'-Dramses-sdk_USE_IMAGEMAGICK={to_cmake(kwargs.get("use_imagemagick"))}',
             f"-Dramses-sdk_CPP_VERSION={kwargs['cpp_std']}",
             '-DCMAKE_EXPORT_COMPILE_COMMANDS=1',
             '-DCMAKE_INSTALL_MESSAGE=NEVER',
-            '-Wno-dev',  # TODO add job to check for CMake errors
+            '-Wdev', '-Werror=dev',
             f'-S{self.src_dir}',
             f'-B{self.build_dir}',
         ]
@@ -105,6 +129,8 @@ class BuildConfig(common.CommonConfig):
 @click.option('-b', '--build-dir', type=click.Path(exists=True, file_okay=False))
 @click.option('--wl-shell', is_flag=True, default=False, help='Use wl_shell instead of ivi_shell for wayland')
 @click.option('--build-target', default='install', help='What CMake target to build')
+@click.option('--flatbuf-gen', is_flag=True, default=False, help='Generate flatbuffer file headers')
+@click.option('--android-abi', help='Set ABI when building on Android')
 @click.option('--headless-only', is_flag=True, default=False, help='Build only client-only shared lib, no renderer')
 @click.option('--no-examples', is_flag=True, default=False, help='Dont build examples')
 @click.option('--no-demos', is_flag=True, default=False, help='Dont build demos')
@@ -116,10 +142,10 @@ class BuildConfig(common.CommonConfig):
 @click.option('--enable-lto', is_flag=True, default=False, help='Build with LTO support')
 @click.option('--test-coverage', is_flag=True, default=False, help='Enable test coverage')
 @click.option('--enable-coverage', is_flag=True, default=False, help='Enable code coverage')
-@click.option('--override-pkg-name', default="", help='Use a different package name for CPack than the default')
-@click.option('--build-package', is_flag=True, default=False, help='Build a package')
-@click.option('--copy-package-to', help='Specify a folder where the package shall be copied')  # TODO Violin merge this and the above, no need for three params
+@click.option('--package-name', default="", help='Use a different package name for CPack than the default')
+@click.option('--package-destination', type=click.Path(exists=True, file_okay=False), help='Specify a folder where the package shall be copied')
 @click.option('--cpp-std', type=click.Choice(CPP_STANDARDS), default=CPP_STANDARDS[0])
+@click.option('--use-imagemagick', is_flag=True, default=False, help='Build tests that use imagemagick')
 def build(compiler, config, build_dir, **kwargs):
     conf = BuildConfig(compiler, config, build_dir)
     conf.cmake_configure(**kwargs)
@@ -129,10 +155,10 @@ def build(compiler, config, build_dir, **kwargs):
 
     conf.cmake_build(target=kwargs.get('build_target'))
 
-    if kwargs.get('build_package'):
+    if kwargs.get('package_name'):
         conf.cmake_build(target='package')
 
-        package_target = kwargs.get('copy_package_to')
+        package_target = kwargs.get('package_destination')
         if package_target:
             conf.copy_package(package_target)
 

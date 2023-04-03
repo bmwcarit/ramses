@@ -100,7 +100,7 @@ public:
     {
     }
 
-    virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
+    void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
     {
         if(result == ramses::ERendererEventResult_OK)
         {
@@ -115,12 +115,12 @@ public:
             printf("Error: Failed read pixels!!\n");
     }
 
-    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
         m_scenes[sceneId].state = state;
     }
 
-    virtual void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
+    void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -128,7 +128,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -136,7 +136,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
+    void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
     {
         if (success)
         {
@@ -228,19 +228,19 @@ ramses::Effect& createEffect(ramses::Scene& scene, const std::string& effectName
 ramses::MeshNode& createQuadWithTexture(ramses::Scene& scene, ramses::Effect& effect, ramses::TextureSampler& textureSampler)
 {
     const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::ArrayResource* indices = scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const ramses::ArrayResource* indices = scene.createArrayResource(6u, indicesArray);
 
-    const float vertexPositionsArray[] =
+    const std::array<ramses::vec3f, 4u> vertexPositionsArray
     {
-        -1.f, -1.f, 0.f,
-        1.f, -1.f, 0.f,
-        -1.f, 1.f, 0.f,
-        1.f, 1.f, 0.f
+        ramses::vec3f{ -1.f, -1.f, 0.f },
+        ramses::vec3f{ 1.f, -1.f, 0.f },
+        ramses::vec3f{ -1.f, 1.f, 0.f },
+        ramses::vec3f{ 1.f, 1.f, 0.f }
     };
-    const ramses::ArrayResource* vertexPositions = scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const ramses::ArrayResource* vertexPositions = scene.createArrayResource(4u, vertexPositionsArray.data());
 
-    const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f };
-    const ramses::ArrayResource* textureCoords = scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f} };
+    const ramses::ArrayResource* textureCoords = scene.createArrayResource(4u, textureCoordsArray.data());
 
     ramses::Appearance* appearance = scene.createAppearance(effect, "quad appearance");
     ramses::GeometryBinding* geometry = scene.createGeometryBinding(effect, "quad geometry");

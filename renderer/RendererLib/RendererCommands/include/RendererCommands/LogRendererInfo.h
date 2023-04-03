@@ -23,7 +23,7 @@ namespace ramses_internal
     {
     public:
         explicit LogRendererInfo(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(String& topic, Bool& verbose, MemoryHandle& nodeHandleFilter) const override;
+        Bool execute(String& topic, Bool& verbose, MemoryHandle& nodeHandleFilter) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

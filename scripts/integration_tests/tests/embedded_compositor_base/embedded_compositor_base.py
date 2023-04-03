@@ -26,7 +26,7 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
 
         # start local test client that has renderer with wayland backend to use embedded compositing features
         applicationName = "ramses-local-client-test-wayland-ivi-egl-es-3-0"
-        args = "--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland --test-nr 10 --test-state {}".format(self._testSceneState)
+        args = "--ec-display wayland-10 --ec-socket-group mgu_wayland --test-nr 10 --test-state {}".format(self._testSceneState)
         self.renderer = self.target.start_renderer(applicationName=applicationName, args=args)
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)

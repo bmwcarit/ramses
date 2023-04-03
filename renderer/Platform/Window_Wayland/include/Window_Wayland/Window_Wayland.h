@@ -22,7 +22,7 @@ namespace ramses_internal
         Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id, std::chrono::microseconds frameCallbackMaxPollTime);
         ~Window_Wayland() override;
 
-        virtual bool init() override;
+        bool init() override;
 
         [[nodiscard]] Bool canRenderNewFrame() const override;
         void handleEvents() override;

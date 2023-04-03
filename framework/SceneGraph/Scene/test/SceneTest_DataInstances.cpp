@@ -135,7 +135,7 @@ namespace ramses_internal
         this->m_scene.setDataTextureSamplerHandle (containerHandle, DataFieldHandle(11u), samplerHandle3d);
         this->m_scene.setDataTextureSamplerHandle (containerHandle, DataFieldHandle(12u), samplerHandlecube);
         this->m_scene.setDataSingleMatrix22f      (containerHandle, DataFieldHandle(13u), Matrix22f(1.f, 2.f, 3.f, 4.f));
-        this->m_scene.setDataSingleMatrix33f      (containerHandle, DataFieldHandle(14u), Matrix33f::RotationEuler({ 1.0f, 2.0f, 3.0f }, ERotationConvention::Legacy_ZYX));
+        this->m_scene.setDataSingleMatrix33f      (containerHandle, DataFieldHandle(14u), Matrix33f::Rotation({ 1.0f, 2.0f, 3.0f, 1.f }, ERotationConvention::Euler_XYZ));
         this->m_scene.setDataSingleMatrix44f      (containerHandle, DataFieldHandle(15u), Matrix44f::Translation({ 1.0f, 2.0f, 3.0f }));
         this->m_scene.setDataReference            (containerHandle, DataFieldHandle(16u), dataRef);
 
@@ -160,7 +160,7 @@ namespace ramses_internal
         EXPECT_EQ(samplerHandle3d                       , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(11u)));
         EXPECT_EQ(samplerHandlecube                     , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(12u)));
         expectMatrixFloatEqual(Matrix22f(1.f, 2.f, 3.f, 4.f)                                                    , this->m_scene.getDataSingleMatrix22f(containerHandle, DataFieldHandle(13u)));
-        expectMatrixFloatEqual(Matrix33f::RotationEuler({ 1.0f, 2.0f, 3.0f }, ERotationConvention::Legacy_ZYX)  , this->m_scene.getDataSingleMatrix33f(containerHandle, DataFieldHandle(14u)));
+        expectMatrixFloatEqual(Matrix33f::Rotation({ 1.0f, 2.0f, 3.0f, 1.f }, ERotationConvention::Euler_XYZ)         , this->m_scene.getDataSingleMatrix33f(containerHandle, DataFieldHandle(14u)));
         expectMatrixFloatEqual(Matrix44f::Translation({ 1.0f, 2.0f, 3.0f })                                     , this->m_scene.getDataSingleMatrix44f(containerHandle, DataFieldHandle(15u)));
         EXPECT_EQ(dataRef                               , this->m_scene.getDataReference                      (containerHandle, DataFieldHandle(16u)));
 

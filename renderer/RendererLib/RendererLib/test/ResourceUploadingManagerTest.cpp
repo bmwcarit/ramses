@@ -69,7 +69,7 @@ public:
         EXPECT_TRUE(status);
     }
 
-    ~AResourceUploadingManager()
+    ~AResourceUploadingManager() override
     {
         EXPECT_CALL(platformMock, destroyResourceUploadRenderBackend());
         asyncEffectUploader.destroyResourceUploadRenderBackendAndStopThread();

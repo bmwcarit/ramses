@@ -60,24 +60,24 @@ namespace ramses_internal
             IThreadAliveNotifier& notifier,
             std::chrono::milliseconds timingReportingPeriod);
 
-        virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
+        void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
 
-        virtual void pushAndConsumeCommands(RendererCommands& cmds) override;
-        virtual void dispatchRendererEvents(RendererEventVector& events) override;
-        virtual void dispatchSceneControlEvents(RendererEventVector& events) override;
+        void pushAndConsumeCommands(RendererCommands& cmds) override;
+        void dispatchRendererEvents(RendererEventVector& events) override;
+        void dispatchSceneControlEvents(RendererEventVector& events) override;
 
-        [[nodiscard]] virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const override;
-        virtual void enableContext() override;
+        [[nodiscard]] SceneId findMasterSceneForReferencedScene(SceneId refScene) const override;
+        void enableContext() override;
 
         // needed for EC tests...
-        virtual IEmbeddedCompositingManager& getECManager() override;
-        virtual IEmbeddedCompositor& getEC() override;
+        IEmbeddedCompositingManager& getECManager() override;
+        IEmbeddedCompositor& getEC() override;
 
         // needed for Renderer lifecycle tests...
-        [[nodiscard]] virtual bool hasSystemCompositorController() const override;
+        [[nodiscard]] bool hasSystemCompositorController() const override;
 
         // TODO vaclav remove, debugging only
-        virtual std::atomic_int& traceId() override { return m_renderer.m_traceId; }
+        std::atomic_int& traceId() override { return m_renderer.m_traceId; }
 
     private:
         void update();

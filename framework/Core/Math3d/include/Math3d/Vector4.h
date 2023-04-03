@@ -14,6 +14,7 @@
 #include "Math3d/Vector3.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -43,12 +44,15 @@ namespace ramses_internal
         explicit constexpr Vector4(const Float value);
         explicit constexpr Vector4(const Vector3& other);
         constexpr Vector4(Float _x, Float _y, Float _z, Float _w);
+        explicit constexpr Vector4(const std::array<float, 4u>& values);
 
         constexpr Vector4(const Vector4& other) = default;
         constexpr Vector4& operator=(const Vector4& other) = default;
 
         constexpr void set(Float _x, Float _y, Float _z, Float _w);
         constexpr void set(Float xyzw);
+
+        [[nodiscard]] std::array<float, 4u> getAsArray() const;
 
         constexpr Vector4 operator+(const Vector4& other) const;
         constexpr void operator+=(const Vector4& other);
@@ -101,6 +105,12 @@ namespace ramses_internal
     {
     }
 
+    constexpr inline
+        Vector4::Vector4(const std::array<float, 4u>& values)
+        : Vector4(values[0], values[1], values[2], values[3])
+    {
+    }
+
     constexpr inline Vector4::Vector4(const Vector3& other)
         : x(other.x)
         , y(other.y)
@@ -120,6 +130,13 @@ namespace ramses_internal
     constexpr inline void Vector4::set(Float xyzw)
     {
         x = y = z = w = xyzw;
+    }
+
+    inline std::array<float, 4u> Vector4::getAsArray() const
+    {
+        std::array<float, 4u> ret;
+        std::copy(std::begin(data), std::end(data), ret.begin());
+        return ret;
     }
 
     inline Float Vector4::length() const

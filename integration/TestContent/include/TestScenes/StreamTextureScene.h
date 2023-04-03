@@ -11,6 +11,7 @@
 
 #include "IntegrationScene.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-framework-api/DataTypes.h"
 #include <array>
 
 namespace ramses
@@ -59,7 +60,7 @@ namespace ramses_internal
         }
 
     private:
-        void addPngQuad(const char* pngFilePath, const float* vertexPositionsArray, ramses::dataConsumerId_t consumerId, ramses::Node* parentNode = nullptr);
+        void addPngQuad(const char* pngFilePath, const std::array<ramses::vec3f, 4u>& vertexPositionsArray, ramses::dataConsumerId_t consumerId, ramses::Node* parentNode = nullptr);
 
         const ramses::Effect* m_effect;
         ramses::Node* m_root;

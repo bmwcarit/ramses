@@ -51,8 +51,9 @@ int main()
         0.f, 1.f, -1.f, 1.f,    //vertex 3 position vec4
         0.f, 0.f, 1.f,          //vertex 3 color vec3
     };
+    // interleaved data must be created as ByteBlob and passed as byte array
     ramses::ArrayBuffer* vertexDataBuffer = scene->createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertexData));
-    vertexDataBuffer->updateData(0u, sizeof(vertexData), vertexData);
+    vertexDataBuffer->updateData(0u, sizeof(vertexData), reinterpret_cast<const ramses::Byte*>(vertexData));
 
     // create an appearance for triangle
     ramses::EffectDescription effectDesc;

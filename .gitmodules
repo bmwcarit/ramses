@@ -4,6 +4,9 @@
 [submodule "external/googletest"]
 	url = https://github.com/google/googletest.git
 	path = external/googletest
+[submodule "external/glm"]
+	url = https://github.com/g-truc/glm.git
+	path = external/glm
 [submodule "external/glslang"]
 	url = https://github.com/KhronosGroup/glslang.git
 	path = external/glslang
@@ -40,6 +43,3 @@
 [submodule "external/sol"]
     path = external/sol
     url = https://github.com/ThePhD/sol2.git
-[submodule "external/glm"]
-	path = external/glm
-	url = https://github.com/g-truc/glm.git

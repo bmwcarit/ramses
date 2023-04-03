@@ -72,8 +72,6 @@ class Target(with_metaclass(ABCMeta)):
         self.main_screen_id = -1
         self.supportsUnbuffer = False
 
-        if targetInfo.systemMonitorClassname is not None:
-            self.systemMonitor = targetInfo.systemMonitorClassname(resultDir)
         self.logLevel = logLevel
 
         self.currentTestId = None

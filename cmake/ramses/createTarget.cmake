@@ -48,6 +48,8 @@ function(setSharedTargetProperties)
                     target_link_libraries(${TARGET_NAME} PUBLIC ${DEPENDENCY})
                 elseif("${TARGET_LINK_VISIBILITY}" STREQUAL "PRIVATE")
                     target_link_libraries(${TARGET_NAME} PRIVATE ${DEPENDENCY})
+                elseif("${TARGET_LINK_VISIBILITY}" STREQUAL "INTERFACE")
+                    target_link_libraries(${TARGET_NAME} INTERFACE ${DEPENDENCY})
                 else()
                     # TODO Also support interface as visibility specifier and use it for header-only dependencies
                     message(FATAL_ERROR "linkDependencies: unknown visibility specifier ${TARGET_LINK_VISIBILITY}!")
@@ -135,7 +137,9 @@ function(createModule)
     set(INSTALL_COMPONENT "ramses-sdk-${PROJECT_VERSION}")
 
     set(LINK_VISIBILITY PRIVATE)
-    if("${MODULE_TYPE}" STREQUAL "BINARY")
+    if("${MODULE_TYPE}" STREQUAL "INTERFACE_LIB")
+        set(LINK_VISIBILITY INTERFACE)
+    elseif("${MODULE_TYPE}" STREQUAL "BINARY")
         add_executable(${MODULE_NAME} ${GLOBBED_MODULE_SRC_FILES})
         set_target_properties(${MODULE_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
@@ -151,8 +155,15 @@ function(createModule)
         add_library(${MODULE_NAME} STATIC ${GLOBBED_MODULE_SRC_FILES})
         # TODO this looks wrong, should not link all static libs dependencies public! Make settable and fix
         set(LINK_VISIBILITY PUBLIC)
+    elseif("${MODULE_TYPE}" STREQUAL "OBJECT")
+        add_library(${MODULE_NAME} OBJECT ${GLOBBED_MODULE_SRC_FILES})
     elseif("${MODULE_TYPE}" STREQUAL "SHARED_LIBRARY")
         add_library(${MODULE_NAME} SHARED ${GLOBBED_MODULE_SRC_FILES})
+    elseif("${MODULE_TYPE}" STREQUAL "INTERFACE_LIB")
+        if(GLOBBED_MODULE_SRC_FILES)
+            message(FATAL_ERROR "Can't have interface library with source files attached!")
+        endif()
+        add_library(${MODULE_NAME} INTERFACE)
     else()
         message(FATAL_ERROR "Invalid module type '${MODULE_TYPE}'!")
     endif()
@@ -166,7 +177,11 @@ function(createModule)
         INTERFACE_DEFINES ${MODULE_INTERFACE_DEFINES}
     )
 
-    if(MODULE_ENABLE_INSTALL)
+    if(MODULE_ENABLE_INSTALL AND ramses-sdk_ENABLE_INSTALL)
+        if("${MODULE_TYPE}" STREQUAL "INTERFACE_LIB" OR "${MODULE_TYPE}" STREQUAL "OBJECT")
+            message(FATAL_ERROR "Can't install interface libraries or objects!")
+        endif()
+
         # Special case for MSVC which expects DLLs in the executable path
         # TODO maybe there is a better solution with modern CMake?
         if("${MODULE_TYPE}" STREQUAL "BINARY" OR MSVC)
@@ -199,7 +214,7 @@ set(PLATFORM_LIST
 function(expandModuleByPlatform)
     cmake_parse_arguments(
         MODULE              # Prefix of parsed args
-        ""  # Options
+        "ANY_PLATFORM"  # Options
         # Single-value-args
         "NAME;TYPE;ENABLE_INSTALL;LINKED_TYPE"
         # Multi-value-args
@@ -216,7 +231,11 @@ function(expandModuleByPlatform)
 
     foreach(PLATFORM_NAME ${PLATFORM_LIST})
         if (TARGET platform-${PLATFORM_NAME})
-            set(MODULE_NAME_EXTENDED "${MODULE_NAME}-${PLATFORM_NAME}")
+            if(MODULE_ANY_PLATFORM)
+                set(MODULE_NAME_EXTENDED "${MODULE_NAME}")
+            else()
+                set(MODULE_NAME_EXTENDED "${MODULE_NAME}-${PLATFORM_NAME}")
+            endif()
 
             # TODO Remove this dependency hack
             if(${MODULE_LINKED_TYPE} STREQUAL "STATIC")
@@ -241,6 +260,10 @@ function(expandModuleByPlatform)
                 set_target_properties(${MODULE_NAME_EXTENDED} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
                 get_target_property(MODULE_SOVERSION ${MODULE_NAME_EXTENDED} SOVERSION)
                 message(STATUS "    setting shared library version to ${MODULE_SOVERSION}")
+            endif()
+
+            if(MODULE_ANY_PLATFORM)
+                break()
             endif()
         endif()
 

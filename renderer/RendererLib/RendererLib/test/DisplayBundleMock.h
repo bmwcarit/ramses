@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         DisplayBundleMock();
-        virtual ~DisplayBundleMock() override;
+        ~DisplayBundleMock() override;
 
         MOCK_METHOD(void, doOneLoop, (ELoopMode loopMode, std::chrono::microseconds sleepTime), (override));
         MOCK_METHOD(void, pushAndConsumeCommands, (RendererCommands& cmds), (override));

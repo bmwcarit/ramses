@@ -34,7 +34,7 @@ namespace ramses_internal
         };
     public:
         explicit ResourceStorage(PlatformLock& lockToUse, StatisticCollectionFramework& statistics);
-        virtual ~ResourceStorage() override;
+        ~ResourceStorage() override;
 
         [[nodiscard]] ResourceInfoVector getAllResourceInfo() const;
         ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false);
@@ -44,8 +44,8 @@ namespace ramses_internal
         void storeResourceInfo(const ResourceContentHash& hash, const ResourceInfo& resourceInfo);
         [[nodiscard]] const ResourceInfo& getResourceInfo(const ResourceContentHash& hash) const;
 
-        virtual void managedResourceDeleted(const IResource& resourceToRemove) override;
-        virtual void resourceHashUsageZero(const ResourceContentHash& hash) override;
+        void managedResourceDeleted(const IResource& resourceToRemove) override;
+        void resourceHashUsageZero(const ResourceContentHash& hash) override;
         void reserveResourceCount(uint32_t totalCount);
 
         void markDeletionDisallowed(const ResourceContentHash& hash);

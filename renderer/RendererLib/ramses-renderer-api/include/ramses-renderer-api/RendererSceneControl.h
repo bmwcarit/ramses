@@ -301,7 +301,7 @@ namespace ramses
         explicit RendererSceneControl(RendererSceneControlImpl&);
 
         /// Hidden destructor
-        virtual ~RendererSceneControl();
+        ~RendererSceneControl() override;
     };
 }
 

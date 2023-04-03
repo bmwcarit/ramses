@@ -28,18 +28,17 @@ int main()
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic rendertarget scene");
 
     // prepare triangle geometry: vertex position array and index array
-    const float vertexPositionsQuadArray[] = { -1.5f, -0.75f, -1.f, 1.5f, -0.75f, -1.f, -1.5f, 0.75f, -1.f, 1.5f, 0.75f, -1.f };
-    ramses::ArrayResource* vertexPositionsQuad = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsQuadArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsQuadArray{ ramses::vec3f{-1.5f, -0.75f, -1.f}, ramses::vec3f{1.5f, -0.75f, -1.f}, ramses::vec3f{-1.5f, 0.75f, -1.f}, ramses::vec3f{1.5f, 0.75f, -1.f} };
+    ramses::ArrayResource* vertexPositionsQuad = scene->createArrayResource(4u, vertexPositionsQuadArray.data());
 
-    const float vertexPositionsTriangleArray[] = { -0.5f, -0.5f, -1.f, 0.5f, -0.5f, -1.f, -0.5f, 0.5f, -1.f };
-    ramses::ArrayResource* vertexPositionsTriangle = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsTriangleArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsTriangleArray{ ramses::vec3f{-0.5f, -0.5f, -1.f}, ramses::vec3f{0.5f, -0.5f, -1.f}, ramses::vec3f{-0.5f, 0.5f, -1.f} };
+    ramses::ArrayResource* vertexPositionsTriangle = scene->createArrayResource(4u, vertexPositionsTriangleArray.data());
 
-    const float textureCoordsArray[] = { -1.f, 0.f, 1.0f, 0.f, -1.f, 1.f, 1.0f, 1.f};
-    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{-1.f, 0.f}, ramses::vec2f{1.f, 0.f}, ramses::vec2f{-1.f, 1.f}, ramses::vec2f{1.f, 1.f} };
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(4u, textureCoordsArray.data());
 
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    ramses::ArrayResource* indicesQuad = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
-    ramses::ArrayResource* indicesTriangle = scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indices = scene->createArrayResource(6u, indicesArray.data());
 
     ramses::EffectDescription triangleEffectDesc;
     triangleEffectDesc.setVertexShaderFromFile("res/ramses-example-renderonce-simple-color.vert");
@@ -104,12 +103,12 @@ int main()
     ramses::Appearance* appearanceA = scene->createAppearance(*triangleEffect, "triangle appearance");
     {
         triangleEffect->findUniformInput("color", color);
-        appearanceA->setInputValueVector4f(color, 1.0f, 0.0f, 0.0f, 1.0f);
+        appearanceA->setInputValue(color, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
     }
 
     ramses::GeometryBinding* geometryA = scene->createGeometryBinding(*triangleEffect, "triangle geometry");
     {
-        geometryA->setIndices(*indicesTriangle);
+        geometryA->setIndices(*indices);
         ramses::AttributeInput positionsInput;
         triangleEffect->findAttributeInput("a_position", positionsInput);
         geometryA->setInputBuffer(positionsInput, *vertexPositionsTriangle);
@@ -134,7 +133,7 @@ int main()
 
     ramses::GeometryBinding* geometryB = scene->createGeometryBinding(*quadEffect, "quad geometry");
     {
-        geometryB->setIndices(*indicesQuad);
+        geometryB->setIndices(*indices);
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texcoordsInput;
         quadEffect->findAttributeInput("a_position", positionsInput);
@@ -147,6 +146,7 @@ int main()
     ramses::MeshNode* meshNodeA = scene->createMeshNode("red triangle mesh node");
     meshNodeA->setAppearance(*appearanceA);
     meshNodeA->setGeometryBinding(*geometryA);
+    meshNodeA->setIndexCount(3u); // using only 3 indices from index buffer which defines quad
 
     ramses::MeshNode* meshNodeB = scene->createMeshNode("texture quad mesh node");
     meshNodeB->setAppearance(*appearanceB);
@@ -161,7 +161,7 @@ int main()
     scene->publish();
 
     // application logic
-    uint32_t loops = 10000;
+    uint32_t loops = 100;
 
     /// [Render Once Example Retrigger]
     while (--loops)
@@ -169,7 +169,7 @@ int main()
         // change color once per second
         // this will re-render the mesh to the render target only once per color change
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        appearanceA->setInputValueVector4f(color, (loops % 2 ? 1.0f : 0.0f), 0.0f, (loops % 2 ? 0.0f : 1.0f), 1.0f);
+        appearanceA->setInputValue(color, ramses::vec4f{ (loops % 2 ? 1.0f : 0.0f), 0.0f, (loops % 2 ? 0.0f : 1.0f), 1.0f });
         renderPassRT->retriggerRenderOnce();
         scene->flush();
     }
@@ -177,11 +177,6 @@ int main()
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
-    scene->destroy(*vertexPositionsTriangle);
-    scene->destroy(*vertexPositionsQuad);
-    scene->destroy(*textureCoords);
-    scene->destroy(*indicesQuad);
-    scene->destroy(*indicesTriangle);
     ramses.destroy(*scene);
     framework.disconnect();
 

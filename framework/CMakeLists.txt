@@ -181,7 +181,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-framework PRIVATE "-Wsuggest-override")
 endif()
 
-install(DIRECTORY ramses-framework-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+if(ramses-sdk_ENABLE_INSTALL)
+    install(DIRECTORY ramses-framework-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+endif()
 
 set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}

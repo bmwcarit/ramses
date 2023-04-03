@@ -27,7 +27,7 @@ namespace ramses
     {
     public:
         CameraNodeImpl(SceneImpl& scene, ERamsesObjectType cameraType, const char* cameraName);
-        virtual ~CameraNodeImpl() override;
+        ~CameraNodeImpl() override;
 
         // Common for all camera types
         ramses_internal::ECameraProjectionType getProjectionType() const;
@@ -39,11 +39,11 @@ namespace ramses
         uint32_t getViewportHeight() const;
 
         void             initializeFrameworkData();
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
         ramses_internal::CameraHandle getCameraHandle() const;
 
         status_t setFrustum(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane);

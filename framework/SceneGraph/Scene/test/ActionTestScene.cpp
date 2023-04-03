@@ -308,7 +308,7 @@ namespace ramses_internal
         return m_scene.getTranslation(handle);
     }
 
-    const Vector3& ActionTestScene::getRotation(TransformHandle handle) const
+    const Vector4& ActionTestScene::getRotation(TransformHandle handle) const
     {
         return m_scene.getRotation(handle);
     }
@@ -329,15 +329,10 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void ActionTestScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationConvention convention)
     {
         m_actionCollector.setRotation(handle, rotation, convention);
         flushPendingSceneActions();
-    }
-
-    void ActionTestScene::setRotationForAnimation(TransformHandle, const Vector3&)
-    {
-        assert(false && "Should only be called from Animations without creation of any scene actions");
     }
 
     void ActionTestScene::setScaling(TransformHandle handle, const Vector3& scaling)

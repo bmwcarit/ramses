@@ -186,7 +186,7 @@ namespace ramses
 
     ramses::ArrayBufferImpl* GeometryBindingImpl::findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const
     {
-        RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_DataBufferObject);
+        RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_ArrayBufferObject);
         while (const ArrayBuffer* dataBuffer = arrayBufferIter.getNext<ArrayBuffer>())
         {
             if (dataBuffer->impl.getDataBufferHandle() == dataBufferHandle)

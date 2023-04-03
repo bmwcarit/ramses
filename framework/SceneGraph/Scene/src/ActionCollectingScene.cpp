@@ -141,7 +141,7 @@ namespace ramses_internal
         m_creator.setScaling(handle, scaling);
     }
 
-    void ActionCollectingScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void ActionCollectingScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationConvention convention)
     {
         ResourceChangeCollectingScene::setRotation(handle, rotation, convention);
         m_creator.setRotation(handle, rotation, convention);

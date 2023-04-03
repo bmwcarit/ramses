@@ -110,18 +110,18 @@ namespace ramses_internal
             if (source.isTransformAllocated(t))
             {
                 const Vector3& translation = source.getTranslation(t);
-                if (translation != Vector3(0.f))
+                if (translation != IScene::IdentityTranslation)
                 {
                     collector.setTranslation(t, translation);
                 }
-                const Vector3& rotation = source.getRotation(t);
-                if (rotation != Vector3(0.f))
+                const Vector4& rotation = source.getRotation(t);
+                if (rotation != IScene::IdentityRotation)
                 {
                     const auto rotationConvention = source.getRotationConvention(t);
                     collector.setRotation(t, rotation, rotationConvention);
                 }
                 const Vector3& scaling = source.getScaling(t);
-                if (scaling != Vector3(1.0f))
+                if (scaling != IScene::IdentityScaling)
                 {
                     collector.setScaling(t, scaling);
                 }

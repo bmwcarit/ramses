@@ -24,7 +24,7 @@ namespace ramses
     {
     public:
         RamsesFrameworkConfigImpl();
-        ~RamsesFrameworkConfigImpl();
+        ~RamsesFrameworkConfigImpl() override;
 
         status_t setFeatureLevel(EFeatureLevel featureLevel);
         EFeatureLevel getFeatureLevel() const;

@@ -21,13 +21,13 @@ namespace ramses
     {
     public:
         Texture2DBufferImpl(SceneImpl& scene, const char* textureBufferName);
-        virtual ~Texture2DBufferImpl() override;
+        ~Texture2DBufferImpl() override;
 
         void             initializeFrameworkData(const ramses_internal::MipMapDimensions& mipDimensions, ETextureFormat textureFormat);
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t validate() const override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t validate() const override;
 
         status_t setData(const ramses_internal::Byte* data, uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height);
         uint32_t getMipLevelCount() const;

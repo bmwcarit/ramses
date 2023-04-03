@@ -294,7 +294,7 @@ namespace ramses
             {
             }
 
-            virtual void displayCreated(displayId_t, ERendererEventResult) override
+            void displayCreated(displayId_t, ERendererEventResult) override
             {
                 m_displayCreated = true;
             }
@@ -576,7 +576,7 @@ namespace ramses
                 m_renderer.setLoopMode(ELoopMode_UpdateOnly);
             }
 
-            virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
+            void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
             {
                 switch (state)
                 {

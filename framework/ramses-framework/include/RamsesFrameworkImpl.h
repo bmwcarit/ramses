@@ -44,7 +44,7 @@ namespace ramses
     class RamsesFrameworkImpl : public StatusObjectImpl
     {
     public:
-        ~RamsesFrameworkImpl();
+        ~RamsesFrameworkImpl() override;
 
         static RamsesFrameworkImpl& createImpl(const RamsesFrameworkConfig& config);
 

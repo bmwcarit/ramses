@@ -143,8 +143,8 @@ namespace ramses_internal
 
         ramses::Effect* effect(getTestEffect("ramses-test-client-textured-cube"));
 
-        uint16_t indicesArray[] = { 0, 1, 2, 0, 2, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const uint16_t indicesArray[] = { 0, 1, 2, 0, 2, 3 };
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
         const float x = 0.0f;
         const float y = 0.0f;
@@ -152,24 +152,24 @@ namespace ramses_internal
         const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight) * 0.5f;
         const float z = -1.0f;
 
-        float vertexPositionsArray[] = {
-            x, y, z,
-            x + w, y, z,
-            x + w, y + h, z,
-            x, y + h, z,
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ x, y, z },
+            ramses::vec3f{ x + w, y, z },
+            ramses::vec3f{ x + w, y + h, z },
+            ramses::vec3f{ x, y + h, z }
         };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
         const float s = w / static_cast<float>(textureResolution) * 4.0f; // 2 texel maps to one pixel
         const float t = h / static_cast<float>(textureResolution) * 2.0f; // 1 texel maps to one pixel
 
-        float normalsArray[] = {
-            -1.0f, -1.0f, 1.0f,
-            -1.0f + s, -1.0f, 1.0f,
-            -1.0f + s, -1.0f + t, 1.0f,
-            -1.0f, -1.0f + t, 1.0f
+        const std::array<ramses::vec3f, 4u> normalsArray{
+            ramses::vec3f{ -1.0f, -1.0f, 1.0f },
+            ramses::vec3f{ -1.0f + s, -1.0f, 1.0f },
+            ramses::vec3f{ -1.0f + s, -1.0f + t, 1.0f },
+            ramses::vec3f{ -1.0f, -1.0f + t, 1.0f }
         };
-        const ramses::ArrayResource* normals = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, normalsArray);
+        const ramses::ArrayResource* normals = m_scene.createArrayResource(4u, normalsArray.data());
 
         ramses::TextureCube* texture = m_scene.createTextureCube(
             ramses::ETextureFormat::RGB8,

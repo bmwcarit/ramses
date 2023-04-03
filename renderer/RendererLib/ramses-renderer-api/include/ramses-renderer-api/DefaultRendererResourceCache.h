@@ -32,7 +32,7 @@ namespace ramses
         /**
         * @brief Destructor of DefaultRendererResourceCache
         */
-        virtual ~DefaultRendererResourceCache() override;
+        ~DefaultRendererResourceCache() override;
 
         /**
         * @brief Called by RamsesRenderer to ask for a resource with the given id.

@@ -36,7 +36,7 @@ public:
     {
     }
 
-    virtual void displayCreated(ramses::displayId_t, ramses::ERendererEventResult result) override
+    void displayCreated(ramses::displayId_t, ramses::ERendererEventResult result) override
     {
         if (result != ramses::ERendererEventResult_OK)
         {
@@ -53,7 +53,7 @@ public:
         }
     }
 
-    virtual void dataConsumerCreated(ramses::sceneId_t sceneId, ramses::dataConsumerId_t dataConsumerId) override
+    void dataConsumerCreated(ramses::sceneId_t sceneId, ramses::dataConsumerId_t dataConsumerId) override
     {
         m_textureConsumer = dataConsumerId;
         m_consumerScene = sceneId;
@@ -159,14 +159,14 @@ int main(int argc, char* argv[])
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = {-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.f};
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsData{ ramses::vec3f{-1.0f, -1.0f, -1.0f}, ramses::vec3f{1.0f, -1.0f, -1.0f}, ramses::vec3f{-1.0f, 1.0f, -1.0f}, ramses::vec3f{1.0f, 1.0f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(4u, vertexPositionsData.data());
 
-    float textureCoordsArray[] = {0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};
-    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f} };
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(4u, textureCoordsArray.data());
 
-    uint16_t indicesArray[] = {0, 1, 2, 2, 1, 3};
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indices = scene->createArrayResource(6u, indicesArray.data());
 
     /// [Local Compositing Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.

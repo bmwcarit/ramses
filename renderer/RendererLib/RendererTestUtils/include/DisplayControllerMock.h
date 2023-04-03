@@ -25,7 +25,7 @@ class DisplayControllerMock : public IDisplayController
 {
 public:
     DisplayControllerMock();
-    virtual ~DisplayControllerMock() override;
+    ~DisplayControllerMock() override;
 
     static const DeviceResourceHandle FakeFrameBufferHandle;
     static const ProjectionParams FakeProjectionParams;

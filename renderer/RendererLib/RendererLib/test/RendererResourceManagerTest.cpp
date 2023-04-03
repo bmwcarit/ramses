@@ -55,7 +55,7 @@ public:
         EXPECT_TRUE(status);
     }
 
-    ~ARendererResourceManager()
+    ~ARendererResourceManager() override
     {
         // no actual unload expected but clears internal lists
         resourceManager.unloadAllSceneResourcesForScene(fakeSceneId);

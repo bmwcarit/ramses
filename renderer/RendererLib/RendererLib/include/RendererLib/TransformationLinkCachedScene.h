@@ -19,14 +19,14 @@ namespace ramses_internal
         explicit TransformationLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         // From IScene
-        virtual void                    addChildToNode(NodeHandle parent, NodeHandle child) override;
-        virtual void                    removeChildFromNode(NodeHandle parent, NodeHandle child) override;
+        void                    addChildToNode(NodeHandle parent, NodeHandle child) override;
+        void                    removeChildFromNode(NodeHandle parent, NodeHandle child) override;
 
-        virtual void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
-        virtual void                    setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention) override;
-        virtual void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
+        void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
+        void                    setRotation(TransformHandle transform, const Vector4& rotation, ERotationConvention convention) override;
+        void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
 
-        virtual void                    releaseDataSlot(DataSlotHandle handle) override;
+        void                    releaseDataSlot(DataSlotHandle handle) override;
         [[nodiscard]] Matrix44f updateMatrixCacheWithLinks(ETransformationMatrixType matrixType, NodeHandle node) const;
         void      propagateDirtyToConsumers(NodeHandle node) const;
 

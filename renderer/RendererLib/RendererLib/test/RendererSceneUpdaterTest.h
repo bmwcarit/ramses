@@ -66,7 +66,7 @@ public:
         EXPECT_CALL(rendererResourceCacheMock, hasResource(_, _)).Times(AnyNumber()).WillRepeatedly(Return(true));
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         expectNoEvent();
     }

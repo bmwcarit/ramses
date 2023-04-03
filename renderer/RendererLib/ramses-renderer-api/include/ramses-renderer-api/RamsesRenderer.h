@@ -648,7 +648,7 @@ namespace ramses
         /**
         * @brief Destructor of RamsesRenderer
         */
-        virtual ~RamsesRenderer();
+        ~RamsesRenderer() override;
     };
 }
 

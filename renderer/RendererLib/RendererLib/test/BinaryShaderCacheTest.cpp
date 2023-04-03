@@ -25,7 +25,7 @@ public:
 
     }
 
-    virtual ~ABinaryShaderCache()
+    ~ABinaryShaderCache() override
     {
         File binaryShaderFile(m_binaryShaderFilePath);
         if (binaryShaderFile.exists())

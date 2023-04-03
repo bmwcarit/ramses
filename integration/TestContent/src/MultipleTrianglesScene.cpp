@@ -141,7 +141,7 @@ namespace ramses_internal
         case BLENDING_CONSTANT:
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
 
-            m_whiteTriangle.GetAppearance().setBlendingColor(.5f, .5f, 0.f, .7f);
+            m_whiteTriangle.GetAppearance().setBlendingColor(ramses::vec4f{ .5f, .5f, 0.f, .7f });
             m_whiteTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_ConstColor, ramses::EBlendFactor_ConstAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_Zero);
             m_whiteTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
             m_meshNode2->setAppearance(m_whiteTriangle.GetAppearance());
@@ -187,7 +187,7 @@ namespace ramses_internal
             rotate->setParent(*translate);
 
             translate->setTranslation(-3.f, 3.5f, 0.f);
-            rotate->setRotation(2.0f, 22.0f, 60.0f);
+            rotate->setRotation(-2.0f, -22.0f, -60.0f, ramses::ERotationConvention::Euler_XYZ);
             break;
         case FACE_CULLING:
             m_CCWTriangle.GetAppearance().setCullingMode(ramses::ECullMode_BackFacing);
@@ -396,20 +396,20 @@ namespace ramses_internal
             transNode5->setTranslation(1.f , 0.f , -15.f);
             transNode6->setTranslation(1.f , 1.f , -15.f);
 
-            transNode1->setRotation(0.f , 0.f, 45.f, ramses::ERotationConvention::XYZ);
-            transNode2->setRotation(0.f , 60.f, 45.f, ramses::ERotationConvention::XYZ);
-            transNode3->setRotation(60.f, 60.f, 45.f, ramses::ERotationConvention::XYZ);
-            transNode4->setRotation(45.f, 60.f, 45.f, ramses::ERotationConvention::ZYZ);
+            transNode1->setRotation(0.f , 0.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
+            transNode2->setRotation(0.f , 60.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
+            transNode3->setRotation(60.f, 60.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
+            transNode4->setRotation(45.f, 60.f, 45.f, ramses::ERotationConvention::Euler_ZYZ);
 
             ramses::Node* transNode5Child = m_scene.createNode();
             transNode5->addChild(*transNode5Child);
-            transNode5->setRotation(60.f, 0.f, 0.f, ramses::ERotationConvention::ZYX);
-            transNode5Child->setRotation(0.f, 60.f, 45.f, ramses::ERotationConvention::YZX);
+            transNode5->setRotation(60.f, 0.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
+            transNode5Child->setRotation(0.f, 60.f, 45.f, ramses::ERotationConvention::Euler_XZY);
 
             ramses::Node* transNode6Child = m_scene.createNode();
             transNode6->addChild(*transNode6Child);
-            transNode6->setRotation(-80.f, -60.f, -45.f, ramses::ERotationConvention::ZYX);
-            transNode6Child->setRotation(80.f, 60.f, 45.f, ramses::ERotationConvention::XYZ);
+            transNode6->setRotation(-80.f, -60.f, -45.f, ramses::ERotationConvention::Euler_XYZ);
+            transNode6Child->setRotation(80.f, 60.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
 
             m_meshNode1->setParent(*transNode1);
             m_meshNode2->setParent(*transNode2);

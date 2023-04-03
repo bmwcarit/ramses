@@ -26,7 +26,7 @@ namespace ramses
     class RendererSceneStateTracker final : public RendererSceneControlEventHandlerEmpty
     {
     public:
-        virtual void sceneStateChanged(sceneId_t, RendererSceneState state) override
+        void sceneStateChanged(sceneId_t, RendererSceneState state) override
         {
             m_lastState = state;
         }
@@ -67,12 +67,12 @@ namespace ramses
     class ARendererSceneControlWithRenderer : public Test
     {
     public:
-        virtual void SetUp() override
+        void SetUp() override
         {
             ramsesClientRenderer->m_scene.publish(EScenePublicationMode_LocalOnly);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             ramsesClientRenderer->m_scene.unpublish();
             ramsesClientRenderer->m_renderer.doOneLoop();

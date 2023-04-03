@@ -51,7 +51,7 @@ namespace ramses_internal
         collection.write(newValue.data);
     }
 
-    void SceneActionCollectionCreator::setRotation(TransformHandle node, const Vector3& newValue, ERotationConvention rotationConvention)
+    void SceneActionCollectionCreator::setRotation(TransformHandle node, const Vector4& newValue, ERotationConvention rotationConvention)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetRotation);
         collection.write(node);

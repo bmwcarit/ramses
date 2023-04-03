@@ -1062,7 +1062,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector3& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
+    const Vector4& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
     {
         return m_transforms.getMemory(handle)->rotation;
     }
@@ -1086,23 +1086,11 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector4& rotation, ERotationConvention convention)
     {
         auto transformMemory = m_transforms.getMemory(handle);
         transformMemory->rotation = rotation;
         transformMemory->rotationConvention = convention;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotationForAnimation(TransformHandle handle, const Vector3& rotation)
-    {
-        if(m_transforms.getMemory(handle)->rotationConvention != ERotationConvention::Legacy_ZYX)
-        {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Scene::setRotationForAnimation: failed to animate rotation for node :" << getTransformNode(handle) << " that does not use legacy rotation convention.");
-            return;
-        }
-
-        setRotation(handle, rotation, ERotationConvention::Legacy_ZYX);
     }
 
     template <template<typename, typename> class MEMORYPOOL>

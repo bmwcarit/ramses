@@ -39,7 +39,7 @@ namespace ramses
         /**
         * @brief Destructor of RendererConfig
         */
-        virtual ~RendererConfig();
+        ~RendererConfig() override;
 
         /**
         * @brief Set the Binary Shader Cache to be used in Renderer.

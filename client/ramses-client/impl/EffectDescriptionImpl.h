@@ -29,7 +29,7 @@ namespace ramses
         using SemanticsMap = ramses_internal::HashMap<ramses_internal::String, ramses_internal::EFixedSemantics>;
 
         EffectDescriptionImpl();
-        virtual ~EffectDescriptionImpl();
+        ~EffectDescriptionImpl() override;
 
         status_t setVertexShader(const char* shaderSource);
         status_t setFragmentShader(const char* shaderSource);

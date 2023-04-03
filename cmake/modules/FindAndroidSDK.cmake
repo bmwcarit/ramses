@@ -10,15 +10,15 @@ if (AndroidSDK_FOUND)
     return()
 endif()
 
-SET(AndroidSDK_FOUND FALSE)
+set(AndroidSDK_FOUND FALSE)
 
-FIND_LIBRARY(ANDROID_LIB android)
-IF(ANDROID_LIB)
-    SET(AndroidSDK_LIBRARIES ${ANDROID_LIB} log)
+find_library(ANDROID_LIB android)
+if(ANDROID_LIB)
+    set(AndroidSDK_LIBRARIES ${ANDROID_LIB} log)
 
-    MARK_AS_ADVANCED(
+    mark_as_advanced(
         AndroidSDK_LIBRARIES
     )
 
-    SET(AndroidSDK_FOUND TRUE)
-ENDIF()
+    set(AndroidSDK_FOUND TRUE)
+endif()

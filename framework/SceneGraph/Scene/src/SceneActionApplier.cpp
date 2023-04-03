@@ -90,7 +90,7 @@ namespace ramses_internal
         case ESceneActionId::SetRotation:
         {
             TransformHandle transform;
-            Vector3 vec;
+            Vector4 vec;
             ERotationConvention rotationConvention;
             action.read(transform);
             action.read(vec.data);

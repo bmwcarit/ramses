@@ -10,21 +10,31 @@
 #define RAMSES_EDATATYPE_H
 #include <cstdint> // for integer datatypes
 #include <cstddef> // for size_t
+#include <cassert>
 
 namespace ramses
 {
     /**
-     * @brief Specifies the data type used for creating data buffers
+     * @brief Specifies the data type used for creating and managing #ramses::ArrayResource,
+     * #ramses::ArrayBuffer or #ramses::DataObject.
     */
     enum class EDataType
     {
-        UInt16 = 0, ///< one component of type uint16_t per data element
-        UInt32,     ///< one component of type uint32_t per data element
-        Float,      ///< one component of type float per data element
-        Vector2F,   ///< two components of type float per data element
-        Vector3F,   ///< three components of type float per data element
-        Vector4F,   ///< four components of type float per data element
-        ByteBlob,   ///< array of raw bytes which gets typed later (e.g. interleaved vertex buffer) where one element is always sized as 1 byte
+        UInt16 = 0, ///< one component of type uint16_t (per data element if array)
+        UInt32,     ///< one component of type uint32_t (per data element if array)
+        Float,      ///< one component of type float (per data element if array)
+        Vector2F,   ///< #ramses::vec2f (two components of type float) (per data element if array)
+        Vector3F,   ///< #ramses::vec3f (three components of type float) (per data element if array)
+        Vector4F,   ///< #ramses::vec4f (four components of type float) (per data element if array)
+        ByteBlob,   ///< array of #ramses::Byte which gets typed later (e.g. interleaved vertex buffer) where one element is always sized as 1 byte
+
+        Int32,      ///< one component of type int32_t
+        Vector2I,   ///< #ramses::vec2i (two components of type int32_t) (per data element if array)
+        Vector3I,   ///< #ramses::vec3i (three components of type int32_t) (per data element if array)
+        Vector4I,   ///< #ramses::vec4i (four components of type int32_t) (per data element if array)
+        Matrix22F,  ///< #ramses::matrix22f (two by two components of type float) (per data element if array)
+        Matrix33F,  ///< #ramses::matrix33f (three by three components of type float) (per data element if array)
+        Matrix44F,  ///< #ramses::matrix44f (four by four components of type float) (per data element if array)
     };
 
     /**
@@ -35,13 +45,32 @@ namespace ramses
     */
     constexpr size_t GetNumberOfComponents(EDataType dataType)
     {
-        return (dataType == EDataType::UInt16) ? 1u :
-            (dataType == EDataType::UInt32) ? 1u :
-            (dataType == EDataType::Float) ? 1u :
-            (dataType == EDataType::Vector2F) ? 2u :
-            (dataType == EDataType::Vector3F) ? 3u :
-            (dataType == EDataType::Vector4F) ? 4u :
-            (dataType == EDataType::ByteBlob) ? 1u : 0u;
+        switch (dataType)
+        {
+        case EDataType::Int32:
+        case EDataType::UInt16:
+        case EDataType::UInt32:
+        case EDataType::Float:
+        case EDataType::ByteBlob:
+            return 1u;
+        case EDataType::Vector2F:
+        case EDataType::Vector2I:
+            return 2u;
+        case EDataType::Vector3F:
+        case EDataType::Vector3I:
+            return 3u;
+        case EDataType::Vector4F:
+        case EDataType::Vector4I:
+        case EDataType::Matrix22F:
+            return 4u;
+        case EDataType::Matrix33F:
+            return 9u;
+        case EDataType::Matrix44F:
+            return 16u;
+        }
+
+        assert(false);
+        return 0u;
     }
 
     /**
@@ -54,13 +83,31 @@ namespace ramses
     */
     constexpr size_t GetSizeOfComponent(EDataType dataType)
     {
-        return (dataType == EDataType::Float) ? sizeof(float) :
-            (dataType == EDataType::UInt16) ? sizeof(uint16_t) :
-            (dataType == EDataType::UInt32) ? sizeof(uint32_t) :
-            (dataType == EDataType::Vector2F) ? sizeof(float) :
-            (dataType == EDataType::Vector3F) ? sizeof(float) :
-            (dataType == EDataType::Vector4F) ? sizeof(float) :
-            (dataType == EDataType::ByteBlob) ? 1u : 0u;
+        switch (dataType)
+        {
+        case EDataType::UInt16:
+            return sizeof(uint16_t);
+        case EDataType::UInt32:
+            return sizeof(uint32_t);
+        case EDataType::ByteBlob:
+            return 1u;
+        case EDataType::Float:
+        case EDataType::Vector2F:
+        case EDataType::Vector3F:
+        case EDataType::Vector4F:
+        case EDataType::Matrix22F:
+        case EDataType::Matrix33F:
+        case EDataType::Matrix44F:
+            return sizeof(float);
+        case EDataType::Int32:
+        case EDataType::Vector2I:
+        case EDataType::Vector3I:
+        case EDataType::Vector4I:
+            return sizeof(int32_t);
+        }
+
+        assert(false);
+        return 0u;
     }
 
     /**

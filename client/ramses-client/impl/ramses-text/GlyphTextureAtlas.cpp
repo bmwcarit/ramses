@@ -188,14 +188,10 @@ namespace ramses
             const float maxX = minX + glyph.width + 1.0f;
             const float maxY = minY + glyph.height + 1.0f;
 
-            geometry.positions.push_back(minX);  // LowerLeft
-            geometry.positions.push_back(minY);
-            geometry.positions.push_back(minX);  // UpperLeft
-            geometry.positions.push_back(maxY);
-            geometry.positions.push_back(maxX);  // UpperRight
-            geometry.positions.push_back(maxY);
-            geometry.positions.push_back(maxX);  // LowerRight
-            geometry.positions.push_back(minY);
+            geometry.positions.push_back(vec2f{ minX, minY });  // LowerLeft
+            geometry.positions.push_back(vec2f{ minX, maxY });  // UpperLeft
+            geometry.positions.push_back(vec2f{ maxX, maxY });  // UpperRight
+            geometry.positions.push_back(vec2f{ maxX, minY });  // LowerRight
 
             const Quad& glyphQuad = m_glyphInfoMap.at(glyphKey).glyphMapping.at(atlasPage).quad;
             const float lowerLeftX = glyphQuad.getOrigin().x + 0.5f;
@@ -214,14 +210,10 @@ namespace ramses
             const float upperRightX_textureSpace = upperRightX / textureWidth;
             const float upperRightY_textureSpace = upperRightY / textureHeight;
 
-            geometry.texcoords.push_back(lowerLeftX_textureSpace);
-            geometry.texcoords.push_back(upperRightY_textureSpace);
-            geometry.texcoords.push_back(lowerLeftX_textureSpace);
-            geometry.texcoords.push_back(lowerLeftY_textureSpace);
-            geometry.texcoords.push_back(upperRightX_textureSpace);
-            geometry.texcoords.push_back(lowerLeftY_textureSpace);
-            geometry.texcoords.push_back(upperRightX_textureSpace);
-            geometry.texcoords.push_back(upperRightY_textureSpace);
+            geometry.texcoords.push_back(vec2f{ lowerLeftX_textureSpace, upperRightY_textureSpace });
+            geometry.texcoords.push_back(vec2f{ lowerLeftX_textureSpace, lowerLeftY_textureSpace });
+            geometry.texcoords.push_back(vec2f{ upperRightX_textureSpace, lowerLeftY_textureSpace });
+            geometry.texcoords.push_back(vec2f{ upperRightX_textureSpace, upperRightY_textureSpace });
 
             geometry.indices.push_back(indicesCounter + 2);
             geometry.indices.push_back(indicesCounter + 1);

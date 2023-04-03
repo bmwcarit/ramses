@@ -23,6 +23,8 @@ namespace ramses
         {
             switch (type)
             {
+            case ramses_internal::EDataType::Int32:
+                return EDataType::Int32;
             case ramses_internal::EDataType::UInt16:
                 return EDataType::UInt16;
             case ramses_internal::EDataType::UInt32:
@@ -35,18 +37,33 @@ namespace ramses
                 return EDataType::Vector3F;
             case ramses_internal::EDataType::Vector4F:
                 return EDataType::Vector4F;
+            case ramses_internal::EDataType::Vector2I:
+                return EDataType::Vector2I;
+            case ramses_internal::EDataType::Vector3I:
+                return EDataType::Vector3I;
+            case ramses_internal::EDataType::Vector4I:
+                return EDataType::Vector4I;
+            case ramses_internal::EDataType::Matrix22F:
+                return EDataType::Matrix22F;
+            case ramses_internal::EDataType::Matrix33F:
+                return EDataType::Matrix33F;
+            case ramses_internal::EDataType::Matrix44F:
+                return EDataType::Matrix44F;
             case ramses_internal::EDataType::ByteBlob:
                 return EDataType::ByteBlob;
+
             default:
                 assert(false);
-                return EDataType::UInt16;
+                return EDataType::ByteBlob;
             }
         }
 
-        static ramses_internal::EDataType ConvertDataTypeToInternal(EDataType type)
+        static constexpr ramses_internal::EDataType ConvertDataTypeToInternal(EDataType type)
         {
             switch (type)
             {
+            case EDataType::Int32:
+                return ramses_internal::EDataType::Int32;
             case EDataType::UInt16:
                 return ramses_internal::EDataType::UInt16;
             case EDataType::UInt32:
@@ -59,58 +76,59 @@ namespace ramses
                 return ramses_internal::EDataType::Vector3F;
             case EDataType::Vector4F:
                 return ramses_internal::EDataType::Vector4F;
+            case EDataType::Vector2I:
+                return ramses_internal::EDataType::Vector2I;
+            case EDataType::Vector3I:
+                return ramses_internal::EDataType::Vector3I;
+            case EDataType::Vector4I:
+                return ramses_internal::EDataType::Vector4I;
+            case EDataType::Matrix22F:
+                return ramses_internal::EDataType::Matrix22F;
+            case EDataType::Matrix33F:
+                return ramses_internal::EDataType::Matrix33F;
+            case EDataType::Matrix44F:
+                return ramses_internal::EDataType::Matrix44F;
             case EDataType::ByteBlob:
                 return ramses_internal::EDataType::ByteBlob;
             }
+
             assert(false);
-            return ramses_internal::EDataType::UInt16;
+            return ramses_internal::EDataType::Invalid;
         }
 
         static ramses_internal::EResourceType DeductResourceTypeFromDataType(EDataType type)
         {
-            switch (type)
-            {
-            case ramses::EDataType::UInt16:
-            case ramses::EDataType::UInt32:
+            if (IsValidIndicesType(type))
                 return ramses_internal::EResourceType_IndexArray;
-            case ramses::EDataType::Float:
-            case ramses::EDataType::Vector2F:
-            case ramses::EDataType::Vector3F:
-            case ramses::EDataType::Vector4F:
-            case ramses::EDataType::ByteBlob:
+            else if (IsValidVerticesType(type))
                 return ramses_internal::EResourceType_VertexArray;
-            }
+
             assert(false);
             return ramses_internal::EResourceType_Invalid;
         }
 
         static ramses_internal::EDataBufferType DeductBufferTypeFromDataType(EDataType type)
         {
-            switch (type)
-            {
-            case ramses::EDataType::UInt16:
-            case ramses::EDataType::UInt32:
+            if (IsValidIndicesType(type))
                 return ramses_internal::EDataBufferType::IndexBuffer;
-            case ramses::EDataType::Float:
-            case ramses::EDataType::Vector2F:
-            case ramses::EDataType::Vector3F:
-            case ramses::EDataType::Vector4F:
-            case ramses::EDataType::ByteBlob:
+            else if (IsValidVerticesType(type))
                 return ramses_internal::EDataBufferType::VertexBuffer;
-            }
+
             assert(false);
             return ramses_internal::EDataBufferType::Invalid;
         }
 
         static bool IsValidIndicesType(EDataType type)
         {
-            return type == EDataType::UInt16 ||
+            return
+                type == EDataType::UInt16 ||
                 type == EDataType::UInt32;
         }
 
         static bool IsValidVerticesType(EDataType type)
         {
-            return type == EDataType::Float ||
+            return
+                type == EDataType::Float ||
                 type == EDataType::Vector2F ||
                 type == EDataType::Vector3F ||
                 type == EDataType::Vector4F ||

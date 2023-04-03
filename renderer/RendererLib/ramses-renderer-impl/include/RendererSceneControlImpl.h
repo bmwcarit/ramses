@@ -51,18 +51,18 @@ namespace ramses
     public:
         explicit RendererSceneControlImpl(RamsesRendererImpl& renderer);
 
-        virtual status_t setSceneState(sceneId_t sceneId, RendererSceneState state) override;
-        virtual status_t setSceneMapping(sceneId_t sceneId, displayId_t displayId) override;
-        virtual status_t setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder) override;
-        virtual status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId) override;
-        virtual status_t linkStreamBuffer(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId) override;
+        status_t setSceneState(sceneId_t sceneId, RendererSceneState state) override;
+        status_t setSceneMapping(sceneId_t sceneId, displayId_t displayId) override;
+        status_t setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder) override;
+        status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId) override;
+        status_t linkStreamBuffer(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId) override;
         virtual status_t linkExternalBuffer(externalBufferId_t externalBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
-        virtual status_t linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId) override;
-        virtual status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId) override;
-        virtual status_t handlePickEvent(sceneId_t scene, float bufferNormalizedCoordX, float bufferNormalizedCoordY) override;
+        status_t linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId) override;
+        status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId) override;
+        status_t handlePickEvent(sceneId_t scene, float bufferNormalizedCoordX, float bufferNormalizedCoordY) override;
 
-        virtual status_t flush() override;
-        virtual status_t dispatchEvents(IRendererSceneControlEventHandler& eventHandler) override;
+        status_t flush() override;
+        status_t dispatchEvents(IRendererSceneControlEventHandler& eventHandler) override;
 
         const ramses_internal::RendererCommands& getPendingCommands() const;
 

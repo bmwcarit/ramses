@@ -33,7 +33,7 @@ namespace ramses_internal
     {
     public:
         ShaderGPUResource_GL(const EffectResource& effect, ShaderProgramInfo shaderProgramInfo);
-        virtual ~ShaderGPUResource_GL() override;
+        ~ShaderGPUResource_GL() override;
 
         [[nodiscard]] GLInputLocation     getUniformLocation(DataFieldHandle) const;
         [[nodiscard]] GLInputLocation     getAttributeLocation(DataFieldHandle) const;

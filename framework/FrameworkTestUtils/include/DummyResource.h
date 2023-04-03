@@ -22,22 +22,22 @@ namespace ramses_internal
         {
         }
 
-        virtual const ResourceContentHash& getHash() const override
+        const ResourceContentHash& getHash() const override
         {
             return m_hash;
         }
 
-        virtual UInt32 getCompressedDataSize() const override
+        UInt32 getCompressedDataSize() const override
         {
             return 0;
         }
 
-        virtual UInt32 getDecompressedDataSize() const override
+        UInt32 getDecompressedDataSize() const override
         {
             return 42;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& /*output*/) const override
+        void serializeResourceMetadataToStream(IOutputStream& /*output*/) const override
         {
         }
 

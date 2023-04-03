@@ -20,17 +20,17 @@ namespace ramses_internal
         explicit TextureLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         // From IScene
-        virtual DataSlotHandle      allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
-        virtual void                releaseDataSlot(DataSlotHandle handle) override;
+        DataSlotHandle      allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
+        void                releaseDataSlot(DataSlotHandle handle) override;
 
-        virtual void setDataSlotTexture(DataSlotHandle handle, const ResourceContentHash& texture) override;
+        void setDataSlotTexture(DataSlotHandle handle, const ResourceContentHash& texture) override;
 
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, const ResourceContentHash& hash);
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, OffscreenBufferHandle offscreenBuffer);
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, StreamBufferHandle streamBuffer);
         void setTextureSamplerContentSource(TextureSamplerHandle sampler, ExternalBufferHandle externalTexture);
         void restoreTextureSamplerFallbackValue(TextureSamplerHandle sampler);
-        const TextureSampler& getFallbackTextureSampler(TextureSamplerHandle sampler) const;
+        [[nodiscard]] const TextureSampler& getFallbackTextureSampler(TextureSamplerHandle sampler) const;
 
     protected:
         HashMap<TextureSamplerHandle, TextureSampler> m_fallbackTextureSamplers;

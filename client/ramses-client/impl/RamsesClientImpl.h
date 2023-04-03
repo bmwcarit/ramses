@@ -78,11 +78,11 @@ namespace ramses
     class RamsesClientImpl final : public RamsesObjectImpl
     {
     public:
-        virtual ~RamsesClientImpl() override;
+        ~RamsesClientImpl() override;
 
         void setHLObject(RamsesClient* hlClient);
 
-        virtual void deinitializeFrameworkData() override final;
+        void deinitializeFrameworkData() override;
 
         virtual ramses_internal::ManagedResource getResource(ramses_internal::ResourceContentHash hash) const;
         template <typename T>
@@ -116,7 +116,7 @@ namespace ramses
         RamsesFrameworkImpl& getFramework();
         static RamsesClientImpl& createImpl(const char* name, RamsesFrameworkImpl& components);
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
 
         template <typename T>
         void enqueueSceneCommand(sceneId_t sceneId, T cmd);
@@ -157,7 +157,7 @@ namespace ramses
         {
         public:
             LoadSceneRunnable(RamsesClientImpl& client, SceneCreationConfig&& cconfig);
-            virtual void execute() override;
+            void execute() override;
 
         private:
             RamsesClientImpl& m_client;
@@ -168,7 +168,7 @@ namespace ramses
         {
         public:
             DeleteSceneRunnable(Scene* scene, ramses_internal::ClientScene* llscene);
-            virtual void execute() override;
+            void execute() override;
 
         private:
             Scene* m_scene;

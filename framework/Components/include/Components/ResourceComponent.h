@@ -22,24 +22,24 @@ namespace ramses_internal
     {
     public:
         ResourceComponent(StatisticCollectionFramework& statistics, PlatformLock& frameworkLock);
-        virtual ~ResourceComponent() override;
+        ~ResourceComponent() override;
 
         // implement IResourceProviderComponent
-        virtual ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false) override;
-        virtual ManagedResource getResource(ResourceContentHash hash) override;
-        virtual ManagedResource loadResource(const ResourceContentHash& hash) override;
+        ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false) override;
+        ManagedResource getResource(ResourceContentHash hash) override;
+        ManagedResource loadResource(const ResourceContentHash& hash) override;
 
-        virtual ResourceHashUsage getResourceHashUsage(const ResourceContentHash& hash) override;
-        virtual SceneFileHandle addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc) override;
-        virtual void loadResourceFromFile(SceneFileHandle handle) override;
-        virtual void removeResourceFile(SceneFileHandle handle) override;
-        [[nodiscard]] virtual bool hasResourceFile(SceneFileHandle handle) const override;
+        ResourceHashUsage getResourceHashUsage(const ResourceContentHash& hash) override;
+        SceneFileHandle addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc) override;
+        void loadResourceFromFile(SceneFileHandle handle) override;
+        void removeResourceFile(SceneFileHandle handle) override;
+        [[nodiscard]] bool hasResourceFile(SceneFileHandle handle) const override;
 
-        virtual void reserveResourceCount(uint32_t totalCount) override;
-        virtual ManagedResourceVector resolveResources(ResourceContentHashVector& hashes) override;
+        void reserveResourceCount(uint32_t totalCount) override;
+        ManagedResourceVector resolveResources(ResourceContentHashVector& hashes) override;
 
-        virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) override;
-        [[nodiscard]] virtual bool knowsResource(const ResourceContentHash& hash) const override;
+        ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) override;
+        [[nodiscard]] bool knowsResource(const ResourceContentHash& hash) const override;
 
         ManagedResourceVector getResources();
 

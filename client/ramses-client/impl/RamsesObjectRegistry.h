@@ -28,7 +28,7 @@ namespace ramses
     class RamsesObjectRegistry final : public IRamsesObjectRegistry
     {
     public:
-        virtual ~RamsesObjectRegistry() override;
+        ~RamsesObjectRegistry() override;
 
         void     addObject(RamsesObject& object);
         void     removeObject(RamsesObject& object);
@@ -39,7 +39,7 @@ namespace ramses
         void     getObjectsOfType(RamsesObjectVector& objects, ERamsesObjectType ofType) const;
 
         // IRamsesObjectRegistry
-        virtual void updateName(RamsesObject& object, const ramses_internal::String& name) override final;
+        void updateName(RamsesObject& object, const ramses_internal::String& name) override;
 
         const RamsesObject* findObjectByName(const char* name) const;
         RamsesObject*       findObjectByName(const char* name);

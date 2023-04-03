@@ -27,20 +27,20 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorController_Wayland_IVI(std::string_view waylandDisplay = std::string_view());
-        virtual ~SystemCompositorController_Wayland_IVI() override;
+        ~SystemCompositorController_Wayland_IVI() override;
 
         virtual Bool init();
-        virtual void update() override;
-        virtual void listIVISurfaces() const override;
-        virtual Bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) override;
-        virtual Bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) override;
-        virtual Bool setSurfaceDestinationRectangle(
+        void update() override;
+        void listIVISurfaces() const override;
+        Bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) override;
+        Bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) override;
+        Bool setSurfaceDestinationRectangle(
             WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) override;
-        virtual Bool doScreenshot(const String& fileName, int32_t screenIviId) override;
-        virtual Bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
-        virtual Bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
-        virtual Bool destroySurface(WaylandIviSurfaceId surfaceId) override;
-        virtual Bool setLayerVisibility(WaylandIviLayerId layerId, Bool visibility) override;
+        Bool doScreenshot(const String& fileName, int32_t screenIviId) override;
+        Bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
+        Bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
+        Bool destroySurface(WaylandIviSurfaceId surfaceId) override;
+        Bool setLayerVisibility(WaylandIviLayerId layerId, Bool visibility) override;
         void         deleteControllerSurface(IVIControllerSurface& controllerSurface);
 
     private:

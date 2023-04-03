@@ -9,7 +9,7 @@
 
 # configure valgrind memcheck
 set(MEMORYCHECK_COMMAND_OPTIONS
-    "--log-fd=1 --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --errors-for-leak-kinds=definite,possible --undef-value-errors=yes --track-origins=no --child-silent-after-fork=yes --trace-children=yes --num-callers=50 --fullpath-after=${PROJECT_SOURCE_DIR}/ --gen-suppressions=all"
+    "--log-fd=1 --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --errors-for-leak-kinds=definite,possible --undef-value-errors=yes --track-origins=no --child-silent-after-fork=yes --trace-children=yes --num-callers=50 --fullpath-after=${PROJECT_SOURCE_DIR}/ --gen-suppressions=all --suppressions=${PROJECT_SOURCE_DIR}/scripts/ci/config/valgrind/suppressions"
     CACHE INTERNAL "")
 
 # enable ctest

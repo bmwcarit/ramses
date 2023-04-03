@@ -55,12 +55,12 @@ namespace ramses_internal
     class TestClientEventHandler : public ramses::IClientEventHandler
     {
     public:
-        virtual void sceneFileLoadFailed(const char*) override {}
-        virtual void sceneFileLoadSucceeded(const char*, ramses::Scene*) override {}
-        virtual void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t) override {}
-        virtual void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-        virtual void dataUnlinked(ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-        virtual void sceneReferenceStateChanged(ramses::SceneReference&, ramses::RendererSceneState) override {}
+        void sceneFileLoadFailed(const char*) override {}
+        void sceneFileLoadSucceeded(const char*, ramses::Scene*) override {}
+        void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t) override {}
+        void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
+        void dataUnlinked(ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
+        void sceneReferenceStateChanged(ramses::SceneReference&, ramses::RendererSceneState) override {}
 
         [[nodiscard]] virtual bool waitCondition() const = 0;
     };

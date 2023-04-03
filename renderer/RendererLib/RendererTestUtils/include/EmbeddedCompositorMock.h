@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         EmbeddedCompositorMock();
-        virtual ~EmbeddedCompositorMock() override;
+        ~EmbeddedCompositorMock() override;
 
         MOCK_METHOD(Bool, init, ());
         MOCK_METHOD(void, handleRequestsFromClients, (), (override));

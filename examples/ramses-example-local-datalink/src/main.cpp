@@ -46,7 +46,7 @@ public:
         scenesWithCreatedProviderOrConsumer.insert(sceneId);
     }
 
-    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
         if (state == ramses::RendererSceneState::Ready)
             mappedScenes.insert(sceneId);
@@ -143,10 +143,11 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -0.25f, -0.125f, 0.f, 0.25f, -0.125f, 0.f, 0.f, 0.125f, 0.f };
-    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-0.25f, -0.125f, 0.f}, ramses::vec3f{0.25f, -0.125f, 0.f}, ramses::vec3f{0.f, 0.125f, 0.f} };
+    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(4u, vertexPositionsData.data());
+
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -168,7 +169,7 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
     //bind input to data object
     sceneInfo->colorData = sceneInfo->scene->createDataVector4f("colorData");
     sceneInfo->colorData->setValue(1.0f, 0.0f, 0.3f, 1.0f);
@@ -212,18 +213,20 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -0.1f, -0.1f, 0.0f,
-                                    0.1f, -0.1f, 0.0f,
-                                    0.1f, 0.1f, 0.0f,
-                                    -0.1f, 0.1f, 0.0f };
-    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
-    float texCoordsArray[] = { 1.0f, 1.0f,
-                                0.0f, 1.0f,
-                                0.0f, 0.0f,
-                                1.0f, 0.0f };
-    ramses::ArrayResource* texCoords = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector2F, 4, texCoordsArray);
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 3, 0 };
-    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+        ramses::vec3f{-0.1f, -0.1f, 0.0f},
+        ramses::vec3f{0.1f, -0.1f, 0.0f},
+        ramses::vec3f{.1f, 0.1f, 0.0f},
+        ramses::vec3f{-0.1f, 0.1f, 0.0f} };
+    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(4u, vertexPositionsArray.data());
+    const std::array<ramses::vec2f, 4u> texCoordsArray{
+        ramses::vec2f{1.0f, 1.0f},
+        ramses::vec2f{0.0f, 1.0f},
+        ramses::vec2f{0.0f, 0.0f},
+        ramses::vec2f{1.0f, 0.0f} };
+    ramses::ArrayResource* texCoords = sceneInfo->scene->createArrayResource(4u, texCoordsArray.data());
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 3, 0 };
+    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(6u, indicesArray.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -249,7 +252,7 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 1.0f, 1.0f, 1.0f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 1.0f, 1.0f, 1.0f });
 
     ramses::UniformInput textureInput;
     effect->findUniformInput("textureSampler", textureInput);
@@ -385,6 +388,7 @@ int main()
     // run animation
     uint32_t textureId = 0;
     uint64_t timeStamp = 0u;
+    float rotationFactor = 0.f;
     while (!eventHandler.isWindowClosed())
     {
         renderer.dispatchEvents(eventHandler);
@@ -396,9 +400,10 @@ int main()
 
         triangleInfo->translateNode->setTranslation(std::sin(timeStamp * 0.05f) * 0.2f, 0.0f, 0.0f);
         triangleInfo->scene->flush();
-        quadInfo->rotateNode->rotate(0.0f, 0.0f, 1.0f);
+        rotationFactor += 1.f;
+        quadInfo->rotateNode->setRotation(0.0f, 0.0f, rotationFactor, ramses::ERotationConvention::Euler_XYZ);
         quadInfo->scene->flush();
-        quadInfo2->rotateNode->rotate(0.0f, 1.0f, 0.0f);
+        quadInfo2->rotateNode->setRotation(0.0f, rotationFactor, 0.0f, ramses::ERotationConvention::Euler_XYZ);
         quadInfo2->scene->flush();
 
         quadInfo->colorData->setValue(std::sin(timeStamp * 0.1f), 0.0f, 0.5f, 1.0f);

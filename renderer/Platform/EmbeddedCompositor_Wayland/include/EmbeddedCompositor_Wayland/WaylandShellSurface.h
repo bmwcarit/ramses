@@ -23,19 +23,19 @@ namespace ramses_internal
         WaylandShellSurface(IWaylandClient& client, INativeWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface);
         ~WaylandShellSurface() override;
         [[nodiscard]] bool wasSuccessfullyInitialized() const;
-        virtual void resourceDestroyed() override;
-        virtual void surfaceWasDeleted() override;
-        [[nodiscard]] virtual const String& getTitle() const override;
-        virtual void shellSurfacePong(IWaylandClient& client, uint32_t serial) override;
-        virtual void shellSurfaceMove(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial) override;
-        virtual void shellSurfaceResize(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, uint32_t edges) override;
-        virtual void shellSurfaceSetToplevel(IWaylandClient& client) override;
-        virtual void shellSurfaceSetTransient(IWaylandClient& client, INativeWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
-        virtual void shellSurfaceSetFullscreen(IWaylandClient& client, uint32_t method, uint32_t framerate) override;
-        virtual void shellSurfaceSetPopup(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, INativeWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
-        virtual void shellSurfaceSetMaximized(IWaylandClient& client) override;
-        virtual void shellSurfaceSetTitle(IWaylandClient& client, const char* title) override;
-        virtual void shellSurfaceSetClass(IWaylandClient& client, const char* className) override;
+        void resourceDestroyed() override;
+        void surfaceWasDeleted() override;
+        [[nodiscard]] const String& getTitle() const override;
+        void shellSurfacePong(IWaylandClient& client, uint32_t serial) override;
+        void shellSurfaceMove(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial) override;
+        void shellSurfaceResize(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, uint32_t edges) override;
+        void shellSurfaceSetToplevel(IWaylandClient& client) override;
+        void shellSurfaceSetTransient(IWaylandClient& client, INativeWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
+        void shellSurfaceSetFullscreen(IWaylandClient& client, uint32_t method, uint32_t framerate) override;
+        void shellSurfaceSetPopup(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, INativeWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
+        void shellSurfaceSetMaximized(IWaylandClient& client) override;
+        void shellSurfaceSetTitle(IWaylandClient& client, const char* title) override;
+        void shellSurfaceSetClass(IWaylandClient& client, const char* className) override;
 
     private:
         static void ShellSurfacePongCallback(wl_client* client, wl_resource* surfaceResource, uint32_t serial);

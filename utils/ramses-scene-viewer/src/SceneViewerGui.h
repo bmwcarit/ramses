@@ -52,17 +52,17 @@ namespace ramses_internal
         void setSceneTexture(ramses::TextureSampler* sampler, uint32_t width, uint32_t height);
 
     private:
-        const ramses::RenderBuffer* findRenderBuffer(ramses_internal::RenderBufferHandle handle) const;
-        const ramses::Texture2DBuffer* findTextureBuffer(ramses_internal::TextureBufferHandle handle) const;
-        const ramses::TextureSampler* findTextureSampler(ramses_internal::TextureSamplerHandle handle) const;
-        const ramses::ArrayBuffer* findDataBuffer(ramses_internal::DataBufferHandle handle) const;
-        const ramses::Node* findNode(ramses_internal::NodeHandle handle) const;
-        const ramses::DataObject* findDataObject(ramses_internal::DataInstanceHandle) const;
-        const ramses::Texture2D* findTexture2D(ramses_internal::ResourceContentHash hash) const;
-        const ramses_internal::DataSlot* findDataSlot(ramses_internal::NodeHandle handle) const;
-        const ramses_internal::DataSlot* findDataSlot(ramses_internal::DataInstanceHandle handle) const;
-        const ramses_internal::DataSlot* findDataSlot(ramses_internal::TextureSamplerHandle handle) const;
-        const ramses_internal::DataSlot* findDataSlot(ramses_internal::ResourceContentHash hash) const;
+        [[nodiscard]] const ramses::RenderBuffer* findRenderBuffer(ramses_internal::RenderBufferHandle handle) const;
+        [[nodiscard]] const ramses::Texture2DBuffer* findTextureBuffer(ramses_internal::TextureBufferHandle handle) const;
+        [[nodiscard]] const ramses::TextureSampler* findTextureSampler(ramses_internal::TextureSamplerHandle handle) const;
+        [[nodiscard]] const ramses::ArrayBuffer* findArrayBuffer(ramses_internal::DataBufferHandle handle) const;
+        [[nodiscard]] const ramses::Node* findNode(ramses_internal::NodeHandle handle) const;
+        [[nodiscard]] const ramses::DataObject* findDataObject(ramses_internal::DataInstanceHandle) const;
+        [[nodiscard]] const ramses::Texture2D* findTexture2D(ramses_internal::ResourceContentHash hash) const;
+        [[nodiscard]] const ramses_internal::DataSlot* findDataSlot(ramses_internal::NodeHandle handle) const;
+        [[nodiscard]] const ramses_internal::DataSlot* findDataSlot(ramses_internal::DataInstanceHandle handle) const;
+        [[nodiscard]] const ramses_internal::DataSlot* findDataSlot(ramses_internal::TextureSamplerHandle handle) const;
+        [[nodiscard]] const ramses_internal::DataSlot* findDataSlot(ramses_internal::ResourceContentHash hash) const;
 
         void zoomIn();
         void zoomOut();
@@ -98,8 +98,8 @@ namespace ramses_internal
         void drawRenderTarget(ramses::RenderTargetImpl& obj);
         void drawRenderBuffer(ramses::RenderBufferImpl& obj);
         void drawBlitPass(ramses::BlitPassImpl& obj);
-        void drawAppearance(ramses::AppearanceImpl& obj);
-        void drawUniformValue(ramses::AppearanceImpl& obj, ramses::UniformInput& uniform);
+        void drawAppearance(ramses::Appearance& appearance);
+        void drawUniformValue(ramses::Appearance& appearance, ramses::UniformInput& uniform);
         void drawGeometryBinding(ramses::GeometryBindingImpl& obj);
         void drawTexture2D(ramses::Texture2DImpl& obj);
         void drawTexture3D(ramses::Texture3DImpl& obj);
@@ -120,7 +120,7 @@ namespace ramses_internal
         void drawRenderHierarchy();
         void drawErrors();
 
-        bool passFilter(const ramses::RamsesObjectImpl& obj) const;
+        [[nodiscard]] bool passFilter(const ramses::RamsesObjectImpl& obj) const;
 
         bool drawRamsesObject(ramses::RamsesObjectImpl& obj);
 
@@ -134,8 +134,8 @@ namespace ramses_internal
         void logTexture2D(ramses::Texture2DImpl& obj);
 
         void saveSceneToFile();
-        std::string saveTexture2D(const ramses::Texture2DImpl& obj) const;
-        std::string saveShaderSources(const ramses::EffectImpl& obj) const;
+        [[nodiscard]] std::string saveTexture2D(const ramses::Texture2DImpl& obj) const;
+        [[nodiscard]] std::string saveShaderSources(const ramses::EffectImpl& obj) const;
 
         void setVisibility(ramses::NodeImpl& node, ramses::EVisibilityMode visibility);
 

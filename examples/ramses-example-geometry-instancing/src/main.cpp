@@ -42,10 +42,10 @@ int main()
     //                 This should not be the case for real applications.
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{0.f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = scene->createArrayResource(3, indexData.data());
 
     // ------- Instancing with uniforms --------
     // create an appearance for red triangles
@@ -60,11 +60,11 @@ int main()
     // get input data of appearance and bind required data
     ramses::UniformInput uniformInstanceTranslationInput;
     uniformEffect->findUniformInput("translations", uniformInstanceTranslationInput);
-    float translations[30];
+    ramses::vec3f translations[10];
 
     ramses::UniformInput uniformInstanceColorInput;
     uniformEffect->findUniformInput("colors", uniformInstanceColorInput);
-    float colors[40];
+    ramses::vec4f colors[10];
 
     // set vertex positions directly in geometry
     ramses::GeometryBinding* uniformGeometry = scene->createGeometryBinding(*uniformEffect, "triangle geometry uniforms");
@@ -100,20 +100,20 @@ int main()
     vertexGeometry->setInputBuffer(vertexPositionInput, *vertexPositions);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexInstanceTranslationArray[] = {
-        -4.5f, .75f, -6.0f,
-        4.5f, .75f, -6.0f,
-        4.5f, -1.75f, -6.0f,
-        -4.5f, -1.75f, -6.0f
+    const std::array<ramses::vec3f, 4u> vertexInstanceTranslationArray{
+        ramses::vec3f{-4.5f, .75f, -6.0f},
+        ramses::vec3f{4.5f, .75f, -6.0f},
+        ramses::vec3f{4.5f, -1.75f, -6.0f},
+        ramses::vec3f{-4.5f, -1.75f, -6.0f}
     };
-    float vertexInstanceColorArray[] = {
-        1.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 1.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f
+    const std::array<ramses::vec4f, 4u> vertexInstanceColorArray{
+        ramses::vec4f{1.0f, 0.0f, 0.0f, 1.0f},
+        ramses::vec4f{0.0f, 1.0f, 0.0f, 1.0f},
+        ramses::vec4f{0.0f, 0.0f, 1.0f, 1.0f},
+        ramses::vec4f{1.0f, 1.0f, 1.0f, 1.0f}
     };
-    const ramses::ArrayResource* vertexTranslations = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexInstanceTranslationArray);
-    const ramses::ArrayResource* vertexColors = scene->createArrayResource(ramses::EDataType::Vector4F, 4, vertexInstanceColorArray);
+    const ramses::ArrayResource* vertexTranslations = scene->createArrayResource(4u, vertexInstanceTranslationArray.data());
+    const ramses::ArrayResource* vertexColors = scene->createArrayResource(4u, vertexInstanceColorArray.data());
 
     ramses::AttributeInput vertexTranslationInput;
     vertexEffect->findAttributeInput("translation", vertexTranslationInput);
@@ -141,21 +141,21 @@ int main()
         // update translations of triangle instances
         for (uint32_t i = 0; i < 10; i++)
         {
-            translations[i * 3] = -3.0f + i * 0.7f;
-            translations[i * 3 + 1] = -0.5f + static_cast<float>(std::sin(i+0.05f*t));
-            translations[i * 3 + 2] = -5.0f;
+            translations[i][0] = -3.0f + i * 0.7f;
+            translations[i][1] = -0.5f + static_cast<float>(std::sin(i+0.05f*t));
+            translations[i][2] = -5.0f;
         }
-        uniformAppearance->setInputValueVector3f(uniformInstanceTranslationInput, 10, translations);
+        uniformAppearance->setInputValue(uniformInstanceTranslationInput, 10, translations);
 
         // update color of triangle instances
         for (uint32_t i = 0; i < 10; i++)
         {
-            colors[i * 4] = 1.0f;
-            colors[i * 4 + 1] = 0.75f * static_cast<float>(std::sin(i+0.05f*t));
-            colors[i * 4 + 2] = 0.2f;
-            colors[i * 4 + 3] = 1.0f;
+            colors[i][0] = 1.0f;
+            colors[i][1] = 0.75f * static_cast<float>(std::sin(i+0.05f*t));
+            colors[i][2] = 0.2f;
+            colors[i][3] = 1.0f;
         }
-        uniformAppearance->setInputValueVector4f(uniformInstanceColorInput, 10, colors);
+        uniformAppearance->setInputValue(uniformInstanceColorInput, 10, colors);
 
         scene->flush();
         t++;

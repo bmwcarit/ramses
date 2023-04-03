@@ -35,7 +35,7 @@ namespace ramses
         /**
         * @brief Destructor of DisplayConfig
         */
-        virtual ~DisplayConfig();
+        ~DisplayConfig() override;
 
         /**
         * @brief Sets the window size and position in display pixel space.

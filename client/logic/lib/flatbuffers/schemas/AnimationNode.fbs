@@ -1,0 +1,41 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+include "LogicObject.fbs";
+include "DataArray.fbs";
+include "Property.fbs";
+
+namespace rlogic_serialization;
+
+enum EInterpolationType:uint8
+{
+    Step = 0,
+    Linear = 1,
+    Cubic = 2,
+    Linear_Quaternions = 3,
+    Cubic_Quaternions = 4,
+}
+
+table Channel
+{
+    name:string;
+    timestamps:DataArray;
+    keyframes:DataArray;
+    interpolationType:EInterpolationType;
+    tangentsIn:DataArray;
+    tangentsOut:DataArray;
+}
+
+table AnimationNode
+{
+    base:LogicObject;
+    channels:[Channel];
+    channelsAsProperties:bool;
+    rootInput:Property;
+    rootOutput:Property;
+}

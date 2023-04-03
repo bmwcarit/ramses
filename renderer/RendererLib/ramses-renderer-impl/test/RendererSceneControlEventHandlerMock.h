@@ -18,7 +18,7 @@ namespace ramses
     {
     public:
         RendererSceneControlEventHandlerMock();
-        virtual ~RendererSceneControlEventHandlerMock() override;
+        ~RendererSceneControlEventHandlerMock() override;
 
         MOCK_METHOD(void, sceneStateChanged, (sceneId_t, RendererSceneState), (override));
         MOCK_METHOD(void, offscreenBufferLinked, (displayBufferId_t, sceneId_t, dataConsumerId_t, bool), (override));

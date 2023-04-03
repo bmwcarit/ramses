@@ -19,7 +19,7 @@ namespace ramses
     {
     public:
         explicit ClientObjectImpl(RamsesClientImpl& client, ERamsesObjectType type, const char* name);
-        virtual ~ClientObjectImpl();
+        ~ClientObjectImpl() override;
 
         // impl methods
         const RamsesClientImpl& getClientImpl() const;

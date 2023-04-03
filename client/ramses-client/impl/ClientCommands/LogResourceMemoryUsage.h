@@ -23,7 +23,7 @@ namespace ramses_internal
     {
     public:
         explicit LogResourceMemoryUsage(ramses::RamsesClientImpl& client);
-        virtual Bool execute(uint64_t& sceneId) const override;
+        Bool execute(uint64_t& sceneId) const override;
     private:
         ramses::RamsesClientImpl& m_client;
     };

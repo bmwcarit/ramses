@@ -104,13 +104,13 @@ namespace ramses
     {
     public:
         SceneImpl(ramses_internal::ClientScene& scene, const SceneConfigImpl& sceneConfig, RamsesClient& ramsesClient);
-        virtual ~SceneImpl() override;
+        ~SceneImpl() override;
 
         void             initializeFrameworkData();
-        virtual void     deinitializeFrameworkData() override final;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override final;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override final;
-        virtual status_t validate() const override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t validate() const override;
 
         status_t            publish(EScenePublicationMode publicationMode = EScenePublicationMode_LocalAndRemote);
         status_t            unpublish();
@@ -233,7 +233,8 @@ namespace ramses
         status_t resetUniformTimeMs();
         int32_t getUniformTimeMs() const;
 
-        ArrayResource* createArrayResource(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
+        template <typename T>
+        ArrayResource* createArrayResource(uint32_t numElements, const T* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
         Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
         TextureCube* createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);

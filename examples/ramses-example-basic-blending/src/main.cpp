@@ -38,10 +38,10 @@ int main()
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsData[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
-    uint16_t indexData[] = {0, 1, 2};
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indexData);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{0.f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{0, 1, 2};
+    ramses::ArrayResource* indices = scene->createArrayResource(3u, indexData.data());
 
     // initialize effect
     ramses::EffectDescription effectDesc;
@@ -78,9 +78,9 @@ int main()
     // get handle to appearances' input and set color with alpha smaller than 1
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearanceRed->setInputValueVector4f(colorInput, 1.f, 0.f, 0.f, 0.9f);
-    appearanceGreen->setInputValueVector4f(colorInput, 0.f, 1.f, 0.f, 0.6f);
-    appearanceBlue->setInputValueVector4f(colorInput, 0.f, 0.f, 1.f, 0.3f);
+    appearanceRed->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 0.9f });
+    appearanceGreen->setInputValue(colorInput, ramses::vec4f{ 0.f, 1.f, 0.f, 0.6f });
+    appearanceBlue->setInputValue(colorInput, ramses::vec4f{ 0.f, 0.f, 1.f, 0.3f });
 
     /// [Basic Blending Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.

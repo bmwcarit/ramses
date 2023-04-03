@@ -98,7 +98,7 @@ namespace ramses_internal
 
         // Transformation
         void setTranslation(TransformHandle node, const Vector3& newValue);
-        void setRotation(TransformHandle node, const Vector3& newValue, ERotationConvention rotationConvention);
+        void setRotation(TransformHandle node, const Vector4& newValue, ERotationConvention rotationConvention);
         void setScaling(TransformHandle node, const Vector3& newValue);
 
         void allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);

@@ -1,0 +1,83 @@
+<rdf:RDF xmlns:ns1="http://spdx.org/rdf/terms#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+  <ns1:SpdxDocument rdf:about="http://www.spdx.org/tools#SPDXRef-DOCUMENT">
+    <ns1:creationInfo>
+      <ns1:CreationInfo rdf:nodeID="N0">
+        <ns1:created>2022-09-27T22:41:14Z</ns1:created>
+        <ns1:creator>Organization: BMW AG</ns1:creator>
+        <rdfs:comment>a3cd77a4a12968d847a2db6d9ec78b42b97ac983</rdfs:comment>
+      </ns1:CreationInfo>
+    </ns1:creationInfo>
+    <ns1:dataLicense rdf:resource="http://spdx.org/licenses/CC0-1.0"/>
+    <ns1:name>Lua-5.1.1-modified</ns1:name>
+
+    <ns1:describesPackage>
+      <ns1:Package rdf:nodeID="N1">
+
+        <ns1:copyrightText>
+Copyright (C) 1994-2006 Lua.org, PUC-Rio.  All rights reserved.
+        </ns1:copyrightText>
+
+        <ns1:downloadLocation rdf:resource="http://spdx.org/rdf/terms#none"/>
+        <ns1:hasFile rdf:nodeID="N2"/>
+
+        <ns1:licenseDeclared>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseDeclared>
+
+
+        <ns1:licenseConcluded>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseConcluded>
+        <ns1:licenseInfoFromFiles rdf:resource="http://spdx.org/licenses/MIT"/>
+
+        <ns1:name>Lua</ns1:name>
+        <ns1:originator>Organization: Lua.org, PUC-Rio, Brazil (http://www.lua.org)</ns1:originator>
+        <ns1:packageFileName>lua-5.1.1-modified-5c4c1e78cde37bb632897266874cc4609cd0115f.zip</ns1:packageFileName>
+        <ns1:packageVerificationCode>
+          <ns1:PackageVerificationCode rdf:nodeID="N3">
+            <ns1:packageVerificationCodeValue>db77caf79c4e753248192df2f9a0d50b6d5115a0</ns1:packageVerificationCodeValue>
+          </ns1:PackageVerificationCode>
+        </ns1:packageVerificationCode>
+        <ns1:summary>Lua - An Extensible Extension Language</ns1:summary>
+        <ns1:supplier rdf:resource="http://spdx.org/rdf/terms#noassertion"/>
+        <ns1:versionInfo>5.1.1-modified</ns1:versionInfo>
+      </ns1:Package>
+    </ns1:describesPackage>
+    <ns1:referencesFile>
+      <ns1:File rdf:nodeID="N2">
+        <ns1:checksum>
+          <ns1:Checksum rdf:nodeID="N4">
+            <ns1:algorithm>SHA1</ns1:algorithm>
+            <ns1:checksumValue>5c4c1e78cde37bb632897266874cc4609cd0115f</ns1:checksumValue>
+          </ns1:Checksum>
+        </ns1:checksum>
+        <ns1:fileName>lua-5.1.1-modified-5c4c1e78cde37bb632897266874cc4609cd0115f.zip</ns1:fileName>
+
+        <ns1:copyrightText>
+Copyright (C) 1994-2006 Lua.org, PUC-Rio.  All rights reserved.
+        </ns1:copyrightText>
+
+        <ns1:fileType rdf:resource="http://spdx.org/rdf/terms#fileType_archive"/>
+
+        <ns1:licenseDeclared>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseDeclared>
+
+
+        <ns1:licenseConcluded>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseConcluded>
+
+      </ns1:File>
+    </ns1:referencesFile>
+    <ns1:specVersion>SPDX-1.2</ns1:specVersion>
+  </ns1:SpdxDocument>
+</rdf:RDF>

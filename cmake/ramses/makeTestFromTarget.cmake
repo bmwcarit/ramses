@@ -33,7 +33,9 @@ function(makeTestFromTarget)
 
     # TODO: tests should not have to be installed, this line could be deleted after tests have been refactored to
     # not have the requirement to be installed
-    install(TARGETS ${TEST_TARGET} DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} COMPONENT ramses-tests)
+    if(ramses-sdk_ENABLE_INSTALL)
+        install(TARGETS ${TEST_TARGET} DESTINATION ${RAMSES_INSTALL_RUNTIME_PATH} COMPONENT ramses-tests)
+    endif()
 
     add_test(
         NAME ${TEST_NAME}

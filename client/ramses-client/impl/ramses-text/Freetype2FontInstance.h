@@ -23,15 +23,15 @@ namespace ramses
     {
     public:
         Freetype2FontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting);
-        virtual ~Freetype2FontInstance() override;
+        ~Freetype2FontInstance() override;
 
-        [[nodiscard]] virtual bool      supportsCharacter(char32_t character) const override final;
-        [[nodiscard]] virtual int       getHeight() const override;
-        [[nodiscard]] virtual int       getAscender() const override;
-        [[nodiscard]] virtual int       getDescender() const override;
+        [[nodiscard]] bool      supportsCharacter(char32_t character) const final override;
+        [[nodiscard]] int       getHeight() const override;
+        [[nodiscard]] int       getAscender() const override;
+        [[nodiscard]] int       getDescender() const override;
 
-        virtual void                 loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override;
-        virtual GlyphData            loadGlyphBitmapData(GlyphId glyphId, uint32_t& sizeX, uint32_t& sizeY) override final;
+        void                 loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override;
+        GlyphData            loadGlyphBitmapData(GlyphId glyphId, uint32_t& sizeX, uint32_t& sizeY) final override;
         std::unordered_set<unsigned long> getAllSupportedCharacters() override;
 
         [[nodiscard]] GlyphId getGlyphId(char32_t character) const;

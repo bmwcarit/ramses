@@ -47,11 +47,11 @@ namespace ramses_internal
                         const std::vector<LogContext*>& contexts, bool pushLogLevelsToDaemon) override;
         void uninitialize() override;
 
-        virtual bool logMessage(const LogMessage& msg) override;
-        virtual bool registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
-        virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) override;
+        bool logMessage(const LogMessage& msg) override;
+        bool registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
+        bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) override;
 
-        virtual bool isInitialized() override;
+        bool isInitialized() override;
 
         static bool IsDummyAdapter()
         {

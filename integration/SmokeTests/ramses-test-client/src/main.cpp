@@ -192,11 +192,6 @@ int main(int argc, const char* argv[])
         integrationScenes.push_back(std::move(integrationScene4));
         break;
     }
-    case 11:
-    {
-        // do not occupy, should be an empty scene
-        break;
-    }
     case 13:
     {
         const ramses::sceneId_t sceneId(37u);
@@ -246,6 +241,9 @@ int main(int argc, const char* argv[])
         integrationScenes.push_back(std::move(integrationScene));
         break;
     }
+    default:
+        std::cerr << "Unhandled test number :" << testNr << std::endl;
+        return -1;
     }
 
     // handle the case that testscene disconnects framework

@@ -9,6 +9,7 @@
 #ifndef RAMSES_GLYPHGEOMETRY_H
 #define RAMSES_GLYPHGEOMETRY_H
 
+#include "ramses-framework-api/DataTypes.h"
 #include "Utils/AssertMovable.h"
 
 #include <cstdint>
@@ -20,8 +21,8 @@ namespace ramses
     struct GlyphGeometry
     {
         std::vector<uint16_t> indices;
-        std::vector<float>    positions;
-        std::vector<float>    texcoords;
+        std::vector<vec2f>    positions;
+        std::vector<vec2f>    texcoords;
         size_t atlasPage = std::numeric_limits<size_t>::max();
     };
 

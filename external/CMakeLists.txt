@@ -70,6 +70,13 @@ else()
     message(STATUS "+ CLI11")
 endif()
 
+# OpenGL Mathematics (glm)
+if (TARGET glm::glm)
+    message(STATUS "+ glm (existing target)")
+else()
+    add_subdirectory(glm)
+    message(STATUS "+ glm")
+endif()
 
 # abseil library
 function(add_abseil_scope)
@@ -154,7 +161,7 @@ if(ramses-sdk_TEXT_SUPPORT)
         add_subdirectory(freetype)
         message(STATUS "+ freetype")
 
-        set(HB_BUILD_SUBSET OFF)
+        set(HB_BUILD_SUBSET OFF CACHE BOOL "don't build harfbuzz subset" FORCE)
         add_subdirectory(harfbuzz)
         message(STATUS "+ harfbuzz")
 
@@ -233,6 +240,24 @@ IF (wayland-client_FOUND AND wayland-server_FOUND AND EXISTS "${CMAKE_CURRENT_SO
                                 wayland-zwp-linux-dmabuf-v1-extension/*.c
         )
 ENDIF()
+
+if (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension)
+    # wayland ivi example/test application 2
+    createModule(
+        NAME                    ivi-simple-dmabuf-egl
+        TYPE                    BINARY
+        ENABLE_INSTALL          ON
+        SRC_FILES            wayland-ivi-example-client/simple-dmabuf-egl.c
+        DEPENDENCIES            EGL
+                                OpenGL
+                                wayland-client
+                                wayland-egl
+                                wayland-ivi-extension
+                                wayland-zwp-linux-dmabuf-v1-extension
+                                libdrm
+                                gbm
+    )
+endif()
 
 if (ramses-sdk_ENABLE_TCP_SUPPORT)
     add_library(asio INTERFACE)
@@ -332,7 +357,7 @@ if(NOT ramses-sdk_DISABLE_LOGIC)
         # This is required for Lua on Android to suppress a false-positive fortification trigger when
         # the garbage collector is invoked
         if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-            target_compile_options(lua PRIVATE -fno-stack-protector -U_FORTIFY_SOURCE)
+            target_compile_options(lua PRIVATE -fno-stack-protector -U_FORTIFY_SOURCE -Wno-deprecated-declarations)
         endif()
 
         if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")

@@ -1,0 +1,83 @@
+<rdf:RDF xmlns:ns1="http://spdx.org/rdf/terms#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+  <ns1:SpdxDocument rdf:about="http://www.spdx.org/tools#SPDXRef-DOCUMENT">
+    <ns1:creationInfo>
+      <ns1:CreationInfo rdf:nodeID="N0">
+        <ns1:created>2022-09-27T22:41:14Z</ns1:created>
+        <ns1:creator>Organization: BMW AG</ns1:creator>
+        <rdfs:comment>edec519c1fc554bc31b8af78f5a8a1487a9975e9</rdfs:comment>
+      </ns1:CreationInfo>
+    </ns1:creationInfo>
+    <ns1:dataLicense rdf:resource="http://spdx.org/licenses/CC0-1.0"/>
+    <ns1:name>ImGui-1.74-modified</ns1:name>
+
+    <ns1:describesPackage>
+      <ns1:Package rdf:nodeID="N1">
+
+        <ns1:copyrightText>
+Copyright (c) 2014-2019 Omar Cornut
+        </ns1:copyrightText>
+
+        <ns1:downloadLocation rdf:resource="http://spdx.org/rdf/terms#none"/>
+        <ns1:hasFile rdf:nodeID="N2"/>
+
+        <ns1:licenseDeclared>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseDeclared>
+
+
+        <ns1:licenseConcluded>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseConcluded>
+        <ns1:licenseInfoFromFiles rdf:resource="http://spdx.org/licenses/MIT"/>
+
+        <ns1:name>ImGui</ns1:name>
+        <ns1:originator>Organization: None</ns1:originator>
+        <ns1:packageFileName>imgui-1.74-modified-0d7d838d3c889c4250a4e6558051e7ae39323b69.zip</ns1:packageFileName>
+        <ns1:packageVerificationCode>
+          <ns1:PackageVerificationCode rdf:nodeID="N3">
+            <ns1:packageVerificationCodeValue>5390580086998180a3f6e998194fb34b7655be3e</ns1:packageVerificationCodeValue>
+          </ns1:PackageVerificationCode>
+        </ns1:packageVerificationCode>
+        <ns1:summary>Dear ImGui: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies</ns1:summary>
+        <ns1:supplier rdf:resource="http://spdx.org/rdf/terms#noassertion"/>
+        <ns1:versionInfo>1.74-modified</ns1:versionInfo>
+      </ns1:Package>
+    </ns1:describesPackage>
+    <ns1:referencesFile>
+      <ns1:File rdf:nodeID="N2">
+        <ns1:checksum>
+          <ns1:Checksum rdf:nodeID="N4">
+            <ns1:algorithm>SHA1</ns1:algorithm>
+            <ns1:checksumValue>0d7d838d3c889c4250a4e6558051e7ae39323b69</ns1:checksumValue>
+          </ns1:Checksum>
+        </ns1:checksum>
+        <ns1:fileName>imgui-1.74-modified-0d7d838d3c889c4250a4e6558051e7ae39323b69.zip</ns1:fileName>
+
+        <ns1:copyrightText>
+Copyright (c) 2014-2019 Omar Cornut
+        </ns1:copyrightText>
+
+        <ns1:fileType rdf:resource="http://spdx.org/rdf/terms#fileType_archive"/>
+
+        <ns1:licenseDeclared>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseDeclared>
+
+
+        <ns1:licenseConcluded>
+          <ns1:ConjunctiveLicenseSet>
+            <ns1:member rdf:resource="http://spdx.org/licenses/MIT"/>
+          </ns1:ConjunctiveLicenseSet>
+        </ns1:licenseConcluded>
+
+      </ns1:File>
+    </ns1:referencesFile>
+    <ns1:specVersion>SPDX-1.2</ns1:specVersion>
+  </ns1:SpdxDocument>
+</rdf:RDF>

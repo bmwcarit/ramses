@@ -19,7 +19,7 @@ namespace ramses_internal
         explicit Platform_X11_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
     protected:
-        [[nodiscard]] virtual uint32_t getSwapInterval() const override;
+        [[nodiscard]] uint32_t getSwapInterval() const override;
     };
 }
 

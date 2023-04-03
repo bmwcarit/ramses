@@ -77,7 +77,7 @@ namespace ramses
         status_t setResourceUploadBatchSize(uint32_t batchSize);
         uint32_t getResourceUploadBatchSize() const;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
 
         //impl methods
         const ramses_internal::DisplayConfig& getInternalDisplayConfig() const;

@@ -21,7 +21,7 @@ namespace ramses_internal
     class IOStreamTester : public IInputStream, public IOutputStream
     {
     public:
-        virtual IInputStream& read(void* data, size_t size) override
+        IInputStream& read(void* data, size_t size) override
         {
             assert(data);
             assert(size > 0);
@@ -31,24 +31,24 @@ namespace ramses_internal
             return *this;
         }
 
-        [[nodiscard]] virtual EStatus getState() const override
+        [[nodiscard]] EStatus getState() const override
         {
             return EStatus::Ok;
         }
 
-        virtual EStatus seek(Int /*numberOfBytesToSeek*/, Seek /*origin*/) override
+        EStatus seek(Int /*numberOfBytesToSeek*/, Seek /*origin*/) override
         {
             assert(false);
             return EStatus::Error;
         }
 
-        virtual EStatus getPos(size_t& /*position*/) const override
+        EStatus getPos(size_t& /*position*/) const override
         {
             assert(false);
             return EStatus::Error;
         }
 
-        virtual IOutputStream& write(const void* data, size_t size) override
+        IOutputStream& write(const void* data, size_t size) override
         {
             m_buffer.insert(m_buffer.end(), static_cast<const Byte*>(data), static_cast<const Byte*>(data)+size);
             return *this;

@@ -37,22 +37,22 @@ namespace ramses_internal
             return m_objects.size();
         }
 
-        uint32_t unavailable() const
+        [[nodiscard]] uint32_t unavailable() const
         {
             return m_unavailable;
         }
 
-        uint32_t compressedSize() const
+        [[nodiscard]] uint32_t compressedSize() const
         {
             return m_compressedSize;
         }
 
-        uint32_t decompressedSize() const
+        [[nodiscard]] uint32_t decompressedSize() const
         {
             return m_decompressedSize;
         }
 
-        int getDisplayLimit() const
+        [[nodiscard]] int getDisplayLimit() const
         {
             return m_displayLimit;
         }
@@ -68,7 +68,7 @@ namespace ramses_internal
          * Returns the index of the current order criteria.
          * The returned index can be used to access an item in #ramses_internal::ResourceList::orderCriteriaItems
          */
-        int getOrderCriteriaIndex() const
+        [[nodiscard]] int getOrderCriteriaIndex() const
         {
             return static_cast<int>(m_orderCriteria);
         }
@@ -101,7 +101,7 @@ namespace ramses_internal
             return m_hashLookup.equal_range(hash);
         }
 
-        uint32_t getDisplayedSize() const
+        [[nodiscard]] uint32_t getDisplayedSize() const
         {
             return m_displayedSize;
         }

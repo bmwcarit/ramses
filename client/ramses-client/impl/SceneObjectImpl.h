@@ -24,13 +24,13 @@ namespace ramses
     {
     public:
         explicit SceneObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
-        virtual ~SceneObjectImpl() override;
+        ~SceneObjectImpl() override;
 
         // impl methods
         const SceneImpl& getSceneImpl() const;
         SceneImpl&       getSceneImpl();
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         const ramses_internal::ClientScene& getIScene() const;
         ramses_internal::ClientScene&       getIScene();

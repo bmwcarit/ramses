@@ -503,7 +503,7 @@ public:
     {
     }
 
-    virtual void displayCreated(ramses::displayId_t /*displayId*/, ramses::ERendererEventResult result) override
+    void displayCreated(ramses::displayId_t /*displayId*/, ramses::ERendererEventResult result) override
     {
         m_displayCreated = (result == ramses::ERendererEventResult_OK);
     }

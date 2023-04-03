@@ -84,12 +84,12 @@ public:
 class RendererResourceManagerRefCountMock : public RendererResourceManagerMock
 {
 public:
-    virtual ~RendererResourceManagerRefCountMock() override;
+    ~RendererResourceManagerRefCountMock() override;
 
-    virtual void referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
-    virtual void unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
-    [[nodiscard]] virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
-    virtual void unreferenceAllResourcesForScene(SceneId sceneId) override;
+    void referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
+    void unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
+    [[nodiscard]] const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
+    void unreferenceAllResourcesForScene(SceneId sceneId) override;
 
     void expectNoResourceReferencesForScene(SceneId sceneId) const;
     void expectNoResourceReferences() const;

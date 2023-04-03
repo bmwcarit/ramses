@@ -15,48 +15,6 @@ import argparse
 from pathlib import Path
 
 
-def get_versioned_ramses_include_dir(dir):
-    entries = os.listdir(dir)
-    version = None
-    result = None
-    for e in entries:
-        full = os.path.join(dir, e)
-        m = re.match(r'^ramses-(\d+\.\d+)$', e)
-        if m:
-            if result:
-                print("ERROR: duplicate ramses directory", full, "already found", result)
-                exit(1)
-            else:
-                version = m.group(1)
-                result = full
-        else:
-            print("ERROR: Unexpected directory", full)
-            exit(1)
-    if not result:
-        print("ERROR: did not find ramses version directory in", dir)
-        exit(1)
-
-    # check version matches dir
-    versionFile = os.path.join(result, "ramses-version")
-    if os.path.isfile(versionFile):
-        with open(versionFile, 'r') as f:
-            content = f.read()
-            m = re.search(r'RAMSES_VERSION={}\.'.format(re.escape(version)), content, re.MULTILINE)
-            if not m:
-                print("ERROR: ramses-version file invalid or does not match directory version", version)
-                exit(1)
-    else:
-        print("ERROR: version file not found at", versionFile)
-        exit(1)
-    return result
-
-
-def get_installed_include_dir(installDir):
-    fullIncludeDir = os.path.join(installDir, 'include')
-    fullDir = get_versioned_ramses_include_dir(fullIncludeDir)
-    return fullDir
-
-
 def get_files_in_directory_recursive(path, ext):
     res = []
     for (dir, _, files) in os.walk(path):
@@ -92,14 +50,19 @@ def main():
     expectNonHeaderFiles = [
         r"^bin/ramses-daemon$",
         r"^share/doc/ramses-sdk-\d+\.\d+\.\d+/LICENSE\.txt$",
-        r"^share/doc/ramses-sdk-\d+\.\d+\.\d+/CHANGELOG\.txt$",
+        r"^share/doc/ramses-sdk-\d+\.\d+\.\d+/CHANGELOG\.md$",
+        r"^share/doc/ramses-sdk-\d+\.\d+\.\d+/CONTRIBUTING\.rst$",
         r"^share/doc/ramses-sdk-\d+\.\d+\.\d+/README\.md$",
+        # TODO: These files should be packaged separately - maybe as a tools package?
+        r"^bin/ramses-logic-viewer$",
         # TODO: remove, these are a tests/demos, not needed in the package
         r"^bin/ramses-test-client$",
         r"^bin/ramses-client-test$",
         r"^bin/ramses-framework-test$",
         r"^bin/ramses-renderer-lib-test$",
         r"^bin/ramses-cli-test$",
+        r"^bin/ramses-logic-viewer-unittests$",
+        r"^bin/ramses-logic-viewer-swrast-tests$",
     ]
 
     known_platforms = ['x11-egl-es-3-0', 'wayland-shell-egl-es-3-0', 'wayland-ivi-egl-es-3-0']
@@ -150,12 +113,11 @@ def main():
         expectNonHeaderFiles += [
             r"^lib/cmake/ramses-shared-lib-client-only-\d+\.\d+/ramses-shared-lib-client-onlyConfigVersion\.cmake$",
             r"^lib/cmake/ramses-shared-lib-client-only-\d+\.\d+/ramses-shared-lib-client-onlyConfig\.cmake$",
+            r"^bin/ramses-logic-viewer-headless$",
         ]
 
     installPath = Path(args.install_dir)
-    # TODO Consider removing the option to install more than one version of ramses side by side
-    # then eventually remove the 0.0 suffix here
-    includePath = get_installed_include_dir(installPath)
+    includePath = installPath / 'include'
 
     installedHeaders = []
     unexpectedFiles = []
@@ -166,17 +128,17 @@ def main():
 
         relPathStr = str(path.relative_to(installPath))
 
-        # Handle all cases, don't skip anything
-        if re.match(r'^include/ramses-\d+\.\d+\/', relPathStr):
-            # Skip version info file - already checked above
-            if not relPathStr.endswith('ramses-version'):
-                # Ramses header file - add to special list to check compilation later
-                installedHeaders.append(str(path.relative_to(includePath)))
+        # Handle all cases below, don't skip anything!
+
+        # Ramses header file - add to special list to check compilation later
+        if re.match(r'^include/', relPathStr):
+            installedHeaders.append(str(path.relative_to(includePath)))
         elif re.match(r'^bin/res', relPathStr):
             # Ignore resource files
             # TODO Violin: don't pollute installation packages with test resources! Don't install resources unless explicitly requested
             pass
-        elif re.match(r'^bin/ramses-example', relPathStr):
+        # ramses examples start by "ramses-example", rlogic examles start by two digits, optionally a lowercase letter then an underscore
+        elif re.match(r'^bin/(ramses-example|\d\d[a-z]?_)', relPathStr):
             # Ignore examples
             # TODO Violin: don't pollute installation packages with examples
             pass
@@ -206,7 +168,7 @@ def main():
         return 1
 
     # Extract header files from the source tree
-    srcApiHeaders = get_source_api_headers(args.src_dir, '.*/(ramses-[^/]+-api)/include')
+    srcApiHeaders = get_source_api_headers(args.src_dir, '.*/((ramses-[^/]+-api)|logic)/include')
 
     # check which headers are unexpected and which are missing
     unexpectedHeaders = list(set(installedHeaders) - set(srcApiHeaders))

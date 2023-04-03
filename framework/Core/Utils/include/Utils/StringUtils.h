@@ -31,6 +31,8 @@ namespace ramses_internal
 
         /**
         * Return a trimmed string view without leading and ending spaces
+        * @warning Returns dangling std::string_view if used with temporaries.
+        * For ex. TrimView(string + "some text") or TrimView(std::string{"Hello world"})
         * @param string string view to trim
         * @return trimmed string view
         */

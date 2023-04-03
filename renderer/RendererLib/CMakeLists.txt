@@ -56,7 +56,9 @@ createModule(
                             ramses-framework
 )
 
-install(DIRECTORY ramses-renderer-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+if(ramses-sdk_ENABLE_INSTALL)
+    install(DIRECTORY ramses-renderer-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-renderer-lib PRIVATE "-Wsuggest-override")

@@ -15,9 +15,16 @@
 
 #include "fmt/format.h"
 
-
 namespace ramses_internal
 {
+    // TODO Find a better solution to this. For now, needed to suppress cast warnings
+    WARNINGS_PUSH
+    WARNING_DISABLE_LINUX(-Wold-style-cast)
+    constexpr auto white{IM_COL32(255, 255, 255, 255)};
+    constexpr auto grey{IM_COL32(200, 200, 200, 255)};
+    constexpr auto green{IM_COL32(15, 200, 19, 255)};
+    WARNINGS_POP
+
     namespace imgui
     {
         namespace
@@ -165,9 +172,6 @@ namespace ramses_internal
                 valueHasChanged = true;
             }
 
-            constexpr auto white{IM_COL32(255, 255, 255, 255)};
-            constexpr auto grey{IM_COL32(200, 200, 200, 255)};
-            constexpr auto green{IM_COL32(15, 200, 19, 255)};
             ImU32          backgroundColor;
             float          offsetOnPosition = 0;
             if (value)

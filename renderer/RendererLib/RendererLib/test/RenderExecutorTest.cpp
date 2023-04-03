@@ -1017,10 +1017,10 @@ TEST_F(ARenderExecutor, UpdatesModelMatrixWhenChangingTranslationRotationOrScali
 
     scene.setTranslation(transform, Vector3(0.15f));
     scene.setScaling(transform, Vector3(0.25f));
-    scene.setRotation(transform, Vector3(0.35f), ERotationConvention::Legacy_ZYX);
+    scene.setRotation(transform, Vector4(0.35f), ERotationConvention::Euler_XZX);
     updateScenes({});
     expectFrameWithSinglePass(renderable, projParams,
-        Matrix44f::Translation(Vector3(0.15f)) * Matrix44f::Scaling(Vector3(0.25f)) * Matrix44f::RotationEuler(Vector3(0.35f), ERotationConvention::Legacy_ZYX));
+        Matrix44f::Translation(Vector3(0.15f)) * Matrix44f::Scaling(Vector3(0.25f)) * Matrix44f::Rotation(Vector4(Vector3(0.35f)), ERotationConvention::Euler_XZX));
     executeScene();
 }
 

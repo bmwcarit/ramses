@@ -26,7 +26,7 @@
 # See http://jorisroovers.github.io/gitlint/rules/ for a full description.
 
 [general]
-ignore=T3,T5,T7,B1,B5,B6,B7
+ignore=T3,T5,T7,B1,B5,B6,B7,CCB1
 
 # verbosity should be a value between 1 and 3, the commandline -v flags take precedence over this
 verbosity = 3

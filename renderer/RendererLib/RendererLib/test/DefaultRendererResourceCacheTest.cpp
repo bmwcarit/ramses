@@ -26,7 +26,7 @@ public:
     {
     }
 
-    virtual ~ADefaultRendererResourceCache()
+    ~ADefaultRendererResourceCache() override
     {
         File binaryShaderFile(m_saveFilePath);
 

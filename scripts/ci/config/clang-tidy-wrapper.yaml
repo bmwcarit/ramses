@@ -14,6 +14,9 @@ exclude:
   # exclude all external
   - ^external/
 
+  # exclude generated flatbuffers files
+  - ^client/logic/lib/flatbuffers/
+
 sort-order:
   # run on tests first because tests tend to take long due to googletest macros
   - pattern: /test/

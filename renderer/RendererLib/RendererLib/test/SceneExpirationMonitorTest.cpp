@@ -35,7 +35,7 @@ public:
         rendererScenes.createScene(SceneInfo{ scene5 });
     }
 
-    ~ASceneExpirationMonitor()
+    ~ASceneExpirationMonitor() override
     {
         rendererScenes.destroyScene(scene1);
         rendererScenes.destroyScene(scene2);
