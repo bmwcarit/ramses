@@ -33,7 +33,7 @@ namespace ramses_internal
         void setInstancedAttributes(const ramses::Effect& effect, ramses::GeometryBinding* geometry, UInt32 instancingDivisor);
         ramses::GeometryBinding* createGeometry(const ramses::Effect& effect);
 
-        static const UInt32 NumInstances = 3u;
+        static constexpr UInt32 NumInstances = 3u;
     };
 }
 

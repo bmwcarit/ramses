@@ -61,8 +61,8 @@ namespace ramses_internal
         translate1->setTranslation(-1.5f, 0.f, -15.f);
         translate2->setTranslation(1.5f, 0.f, -15.f);
 
-        const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 3u, textureCoordsArray);
+        const std::array<ramses::vec2f, 3u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f} };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(3u, textureCoordsArray.data());
 
         ramses::AttributeInput texCoordsInput;
         effectTex->findAttributeInput("a_texcoord", texCoordsInput);

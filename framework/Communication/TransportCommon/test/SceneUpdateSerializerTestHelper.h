@@ -31,7 +31,7 @@ namespace ramses_internal
         {
         }
 
-        virtual bool writeToPackets(absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc) const override
+        bool writeToPackets(absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc) const override
         {
             EXPECT_EQ(expectedSize, packetMem.size());
             for (const auto& d : data)

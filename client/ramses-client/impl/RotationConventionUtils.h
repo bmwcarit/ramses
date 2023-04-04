@@ -19,48 +19,48 @@ namespace ramses
     {
         inline ERotationConvention ConvertDataTypeFromInternal(ramses_internal::ERotationConvention convention)
         {
-            assert(convention != ramses_internal::ERotationConvention::Legacy_ZYX);
-
             switch (convention)
             {
-            case ramses_internal::ERotationConvention::XYZ: return ERotationConvention::XYZ;
-            case ramses_internal::ERotationConvention::XZY: return ERotationConvention::XZY;
-            case ramses_internal::ERotationConvention::YXZ: return ERotationConvention::YXZ;
-            case ramses_internal::ERotationConvention::YZX: return ERotationConvention::YZX;
-            case ramses_internal::ERotationConvention::ZXY: return ERotationConvention::ZXY;
-            case ramses_internal::ERotationConvention::ZYX: return ERotationConvention::ZYX;
-            case ramses_internal::ERotationConvention::XYX: return ERotationConvention::XYX;
-            case ramses_internal::ERotationConvention::XZX: return ERotationConvention::XZX;
-            case ramses_internal::ERotationConvention::YXY: return ERotationConvention::YXY;
-            case ramses_internal::ERotationConvention::YZY: return ERotationConvention::YZY;
-            case ramses_internal::ERotationConvention::ZXZ: return ERotationConvention::ZXZ;
-            case ramses_internal::ERotationConvention::ZYZ: return ERotationConvention::ZYZ;
-            default:
-                assert(false);
-                return ERotationConvention::ZYZ;
+            case ramses_internal::ERotationConvention::Euler_ZYX: return ERotationConvention::Euler_ZYX;
+            case ramses_internal::ERotationConvention::Euler_YZX: return ERotationConvention::Euler_YZX;
+            case ramses_internal::ERotationConvention::Euler_ZXY: return ERotationConvention::Euler_ZXY;
+            case ramses_internal::ERotationConvention::Euler_XZY: return ERotationConvention::Euler_XZY;
+            case ramses_internal::ERotationConvention::Euler_YXZ: return ERotationConvention::Euler_YXZ;
+            case ramses_internal::ERotationConvention::Euler_XYZ: return ERotationConvention::Euler_XYZ;
+            case ramses_internal::ERotationConvention::Euler_XYX: return ERotationConvention::Euler_XYX;
+            case ramses_internal::ERotationConvention::Euler_XZX: return ERotationConvention::Euler_XZX;
+            case ramses_internal::ERotationConvention::Euler_YXY: return ERotationConvention::Euler_YXY;
+            case ramses_internal::ERotationConvention::Euler_YZY: return ERotationConvention::Euler_YZY;
+            case ramses_internal::ERotationConvention::Euler_ZXZ: return ERotationConvention::Euler_ZXZ;
+            case ramses_internal::ERotationConvention::Euler_ZYZ: return ERotationConvention::Euler_ZYZ;
+            case ramses_internal::ERotationConvention::Quaternion: return ERotationConvention::Quaternion;
             }
+
+            assert(false);
+            return ERotationConvention::Euler_XYZ;
         }
 
         inline ramses_internal::ERotationConvention ConvertRotationConventionToInternal(ERotationConvention convention)
         {
             switch (convention)
             {
-            case ERotationConvention::XYZ: return ramses_internal::ERotationConvention::XYZ;
-            case ERotationConvention::XZY: return ramses_internal::ERotationConvention::XZY;
-            case ERotationConvention::YXZ: return ramses_internal::ERotationConvention::YXZ;
-            case ERotationConvention::YZX: return ramses_internal::ERotationConvention::YZX;
-            case ERotationConvention::ZXY: return ramses_internal::ERotationConvention::ZXY;
-            case ERotationConvention::ZYX: return ramses_internal::ERotationConvention::ZYX;
-            case ERotationConvention::XYX: return ramses_internal::ERotationConvention::XYX;
-            case ERotationConvention::XZX: return ramses_internal::ERotationConvention::XZX;
-            case ERotationConvention::YXY: return ramses_internal::ERotationConvention::YXY;
-            case ERotationConvention::YZY: return ramses_internal::ERotationConvention::YZY;
-            case ERotationConvention::ZXZ: return ramses_internal::ERotationConvention::ZXZ;
-            case ERotationConvention::ZYZ: return ramses_internal::ERotationConvention::ZYZ;
+            case ERotationConvention::Euler_ZYX: return ramses_internal::ERotationConvention::Euler_ZYX;
+            case ERotationConvention::Euler_YZX: return ramses_internal::ERotationConvention::Euler_YZX;
+            case ERotationConvention::Euler_ZXY: return ramses_internal::ERotationConvention::Euler_ZXY;
+            case ERotationConvention::Euler_XZY: return ramses_internal::ERotationConvention::Euler_XZY;
+            case ERotationConvention::Euler_YXZ: return ramses_internal::ERotationConvention::Euler_YXZ;
+            case ERotationConvention::Euler_XYZ: return ramses_internal::ERotationConvention::Euler_XYZ;
+            case ERotationConvention::Euler_XYX: return ramses_internal::ERotationConvention::Euler_XYX;
+            case ERotationConvention::Euler_XZX: return ramses_internal::ERotationConvention::Euler_XZX;
+            case ERotationConvention::Euler_YXY: return ramses_internal::ERotationConvention::Euler_YXY;
+            case ERotationConvention::Euler_YZY: return ramses_internal::ERotationConvention::Euler_YZY;
+            case ERotationConvention::Euler_ZXZ: return ramses_internal::ERotationConvention::Euler_ZXZ;
+            case ERotationConvention::Euler_ZYZ: return ramses_internal::ERotationConvention::Euler_ZYZ;
+            case ERotationConvention::Quaternion: return ramses_internal::ERotationConvention::Quaternion;
             }
 
             assert(false);
-            return ramses_internal::ERotationConvention::ZYZ;
+            return ramses_internal::ERotationConvention::Euler_ZYZ;
         }
     };
 }

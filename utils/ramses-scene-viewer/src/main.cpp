@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "SceneViewer.h"
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 int main(int argc, char* argv[])
 {

@@ -30,7 +30,6 @@ namespace ramses_internal
             UInt32 renderTargets,
             UInt32 renderBuffers,
             UInt32 textureSamplers,
-            UInt32 streamTextures,
             UInt32 dataSlots,
             UInt32 dataBuffers,
             UInt32 textureBuffers,
@@ -49,7 +48,6 @@ namespace ramses_internal
             , renderTargetCount(renderTargets)
             , renderBufferCount(renderBuffers)
             , textureSamplerCount(textureSamplers)
-            , streamTextureCount(streamTextures)
             , dataSlotCount(dataSlots)
             , dataBufferCount(dataBuffers)
             , textureBufferCount(textureBuffers)
@@ -75,7 +73,6 @@ namespace ramses_internal
                 && (renderTargetCount == other.renderTargetCount)
                 && (renderBufferCount == other.renderBufferCount)
                 && (textureSamplerCount == other.textureSamplerCount)
-                && (streamTextureCount == other.streamTextureCount)
                 && (dataSlotCount == other.dataSlotCount)
                 && (dataBufferCount == other.dataBufferCount)
                 && (textureBufferCount == other.textureBufferCount)
@@ -99,7 +96,6 @@ namespace ramses_internal
                 || (renderTargetCount > other.renderTargetCount)
                 || (renderBufferCount > other.renderBufferCount)
                 || (textureSamplerCount > other.textureSamplerCount)
-                || (streamTextureCount > other.streamTextureCount)
                 || (dataSlotCount > other.dataSlotCount)
                 || (dataBufferCount > other.dataBufferCount)
                 || (textureBufferCount > other.textureBufferCount)
@@ -120,7 +116,6 @@ namespace ramses_internal
         UInt32 renderTargetCount    = 0u;
         UInt32 renderBufferCount    = 0u;
         UInt32 textureSamplerCount  = 0u;
-        UInt32 streamTextureCount   = 0u;
         UInt32 dataSlotCount        = 0u;
         UInt32 dataBufferCount      = 0u;
         UInt32 textureBufferCount   = 0u;
@@ -137,7 +132,7 @@ struct fmt::formatter<ramses_internal::SceneSizeInformation> : public ramses_int
     {
         return fmt::format_to(ctx.out(),
                               "[node={} camera={} transform={} renderable={} state={} datalayout={} datainstance={} renderGroup={} renderPass={} blitPass={} "
-                              "renderTarget={} renderBuffer={} textureSampler={} streamTexture={} dataSlot={} dataBuffer={} textureBuffer={} "
+                              "renderTarget={} renderBuffer={} textureSampler={} dataSlot={} dataBuffer={} textureBuffer={} "
                               "pickableObjectCount={} sceneReferenceCount={}]",
                               si.nodeCount,
                               si.cameraCount,
@@ -152,7 +147,6 @@ struct fmt::formatter<ramses_internal::SceneSizeInformation> : public ramses_int
                               si.renderTargetCount,
                               si.renderBufferCount,
                               si.textureSamplerCount,
-                              si.streamTextureCount,
                               si.dataSlotCount,
                               si.dataBufferCount,
                               si.textureBufferCount,

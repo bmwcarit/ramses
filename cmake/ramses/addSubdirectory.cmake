@@ -10,7 +10,7 @@
 function(addSubdirectory)
     cmake_parse_arguments(SUBDIR "" "PATH;MODE" "" ${ARGV})
 
-    if(${SUBDIR_UNPARSED_ARGUMENTS})
+    if(SUBDIR_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unparsed addSubdirectories properties: '${SUBDIR_UNPARSED_ARGUMENTS}'")
     endif()
 

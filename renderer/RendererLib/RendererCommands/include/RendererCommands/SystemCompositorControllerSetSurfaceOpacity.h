@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorControllerSetSurfaceOpacity(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(Int32& surfaceId, Float& opacity) const override;
+        Bool execute(Int32& surfaceId, Float& opacity) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

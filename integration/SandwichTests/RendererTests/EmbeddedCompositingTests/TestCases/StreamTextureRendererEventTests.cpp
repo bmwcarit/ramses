@@ -278,7 +278,7 @@ namespace ramses_internal
             {
             }
 
-            virtual void streamAvailabilityChanged(ramses::waylandIviSurfaceId_t eventStreamSourceId, bool state) override
+            void streamAvailabilityChanged(ramses::waylandIviSurfaceId_t eventStreamSourceId, bool state) override
             {
                 if(eventStreamSourceId.getValue() == m_targetStreamSourceId.getValue())
                 {

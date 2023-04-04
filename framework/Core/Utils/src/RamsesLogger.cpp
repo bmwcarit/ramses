@@ -110,11 +110,12 @@ namespace ramses_internal
             pushLogLevelToDltDaemon = true;
         }
 
-        if (config.logLevel.has_value())
+        if (config.logLevelConsole.has_value())
         {
-            logLevelConsole = config.logLevel.value();
+            logLevelConsole = config.logLevelConsole.value();
         }
 
+        // TODO: environment should probably not override explicit config
         //same for environment variable
         String envVarValue;
         if (PlatformEnvironmentVariables::get("RAMSES_LOGLEVEL", envVarValue))
@@ -128,6 +129,7 @@ namespace ramses_internal
             }
         }
 
+        // TODO: environment should probably not override explicit config
         UpdateConsoleLogLevelFromEnvVar(logLevelConsole);
 
         // apply loglevels
@@ -180,12 +182,6 @@ namespace ramses_internal
         if (m_userLogAppender)
         {
             LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: a user logger was added");
-        }
-
-        if (!config.enableSmokeTestContext)
-        {
-            CONTEXT_SMOKETEST.setLogLevel(ELogLevel::Off);
-            CONTEXT_SMOKETEST.disableSetLogLevel();
         }
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Ramses log levels: Contexts " << RamsesLogger::GetLogLevelText(logLevelContexts) <<

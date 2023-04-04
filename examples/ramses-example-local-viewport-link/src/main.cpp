@@ -56,7 +56,7 @@ public:
     {
     }
 
-    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
         m_scenes[sceneId] = state;
     }
@@ -126,10 +126,10 @@ ramses::Scene* createContentProviderScene(ramses::RamsesClient& client, ramses::
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
 
-    float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -6.f}, ramses::vec3f{1.f, 0.f, -6.f}, ramses::vec3f{0.f, 1.f, -6.f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-local-viewport-link.vert");
@@ -297,6 +297,7 @@ int main()
     ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
 
     RendererEventHandler rendererEventHandler;
+    float rotationFactor = 0.f;
     while (!rendererEventHandler.isWindowClosed())
     {
         renderer.dispatchEvents(rendererEventHandler);
@@ -314,9 +315,10 @@ int main()
             animInc = !animInc;
 
         // animate content inside provider scenes
-        meshScene1->rotate(0.f, 0.f, 2.f);
+        rotationFactor += 1.f;
+        meshScene1->setRotation(0.f, 0.f, 2 * rotationFactor, ramses::ERotationConvention::Euler_XYZ);
         scene1->flush();
-        meshScene2->rotate(0.f, 0.f, 4.f);
+        meshScene2->setRotation(0.f, 0.f, 4 * rotationFactor, ramses::ERotationConvention::Euler_XYZ);
         scene2->flush();
 
         renderer.doOneLoop();

@@ -27,7 +27,7 @@ namespace ramses_internal
             m_cleanupFiles.insert(m_cleanupFiles.end(), lst.begin(), lst.end());
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             for (const auto& f : m_cleanupFiles)
                 File(f).remove();

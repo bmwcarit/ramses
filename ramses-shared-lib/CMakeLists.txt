@@ -24,7 +24,6 @@ if (ramses-sdk_BUILD_FULL_SHARED_LIB)
         set(tgt "ramses-shared-lib-${lib-suffix}")
         if (TARGET ${tgt})
             set_target_properties(${tgt} PROPERTIES RAMSES_VERSION "${ramses-sdk_VERSION}")
-            target_link_libraries(${tgt} PUBLIC CLI11)
         endif()
     endforeach()
 
@@ -44,7 +43,6 @@ if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
         )
 
     set_target_properties(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PROPERTIES RAMSES_VERSION "${ramses-sdk_VERSION}")
-    target_link_libraries(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PUBLIC CLI11)
 
     SET_TARGET_PROPERTIES(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
     GET_TARGET_PROPERTY(MYMODULE_SOVERSION ${ramses-sdk_CLIENT_ONLY_LIB_NAME} SOVERSION)

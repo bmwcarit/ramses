@@ -91,21 +91,21 @@ namespace ramses_internal
 
     void EmbeddedCompositorScene::createQuad(float x, float y, float w, float h, ramses::Appearance& appearance)
     {
-        const float vertexPositionsArray[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray
         {
-            x, y, -8.0f,
-            x, y + h, -8.0f,
-            x + w, y + h, -8.0f,
-            x + w, y, -8.0f
+            ramses::vec3f{ x, y, -8.0f },
+            ramses::vec3f{ x, y + h, -8.0f },
+            ramses::vec3f{ x + w, y + h, -8.0f },
+            ramses::vec3f{ x + w, y, -8.0f }
         };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
         const uint16_t indicesArray[] =
         {
             0, 2, 1, //ABC
             0, 3, 2  //ACD
         };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6, indicesArray);
 
         // set vertex positions directly in geometry
         ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(appearance.getEffect(), "triangle geometry");
@@ -181,25 +181,25 @@ namespace ramses_internal
         {
         case SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET:
         {
-            const float textureCoordsArray[] =
+            const std::array<ramses::vec2f, 4u> textureCoordsArray
             {
-                0.25f, 2.f, //A   A-----D
-                0.25f, -1.f, //B   |     |
-                .75f,  -1.f, //C   |     |
-                .75f,  2.f  //D   B-----C
+                ramses::vec2f{ 0.25f, 2.f },  //A   A-----D
+                ramses::vec2f{ 0.25f, -1.f }, //B   |     |
+                ramses::vec2f{ .75f,  -1.f }, //C   |     |
+                ramses::vec2f{ .75f,  2.f }   //D   B-----C
             };
-            return *m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+            return *m_scene.createArrayResource(4u, textureCoordsArray.data());
         }
         default:
         {
-            const float textureCoordsArray[] =
+            const std::array<ramses::vec2f, 4u> textureCoordsArray
             {
-                0.f, 1.f, //A   A-----D
-                0.f, 0.f, //B   |     |
-                1.f, 0.f, //C   |     |
-                1.f, 1.f  //D   B-----C
+                ramses::vec2f{ 0.f, 1.f },  //A   A-----D
+                ramses::vec2f{ 0.f, 0.f },  //B   |     |
+                ramses::vec2f{ 1.f, 0.f },  //C   |     |
+                ramses::vec2f{ 1.f, 1.f }   //D   B-----C
             };
-            return *m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+            return *m_scene.createArrayResource(4u, textureCoordsArray.data());
         }
         }
     }

@@ -25,7 +25,7 @@ namespace ramses_internal
     class DefaultManagedResourceDeleterCallback final : public IManagedResourceDeleterCallback
     {
     public:
-        virtual void managedResourceDeleted(const IResource& resource) override
+        void managedResourceDeleted(const IResource& resource) override
         {
             delete &resource;
         }

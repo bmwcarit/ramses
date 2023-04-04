@@ -15,7 +15,6 @@
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureSamplerStates.h"
 #include "SceneAPI/EDataType.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Resource/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 #include <unordered_map>

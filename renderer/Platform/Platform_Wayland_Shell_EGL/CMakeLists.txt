@@ -7,10 +7,6 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     # Attention: extra care is needed in case of renaming this module
     # The name of this module (and all CONCRETE platform modules) must align with
     # the postfix of generated RAMSES libs' names. The platform name is used in
@@ -19,17 +15,9 @@ createModule(
     NAME                    platform-wayland-shell-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/Platform_Wayland_Shell_EGL/*.h
                             src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            Platform_Wayland_EGL
                             Window_Wayland_Shell
 )

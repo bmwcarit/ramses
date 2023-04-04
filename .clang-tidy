@@ -141,7 +141,7 @@ Checks:
     clang-analyzer-cplusplus.InnerPointer,
     clang-analyzer-cplusplus.Move,
     clang-analyzer-cplusplus.NewDelete,
-    # TODO clang-analyzer-cplusplus.NewDeleteLeaks,
+    clang-analyzer-cplusplus.NewDeleteLeaks,
     clang-analyzer-cplusplus.SelfAssignment,
     clang-analyzer-cplusplus.SmartPtr,
     # TODO clang-analyzer-optin.cplusplus.VirtualCall,
@@ -182,6 +182,7 @@ Checks:
     modernize-deprecated-headers,
     modernize-make-unique,
     modernize-make-shared,
+    modernize-use-override,
 
     performance-faster-string-find,
     performance-for-range-copy,
@@ -260,4 +261,6 @@ CheckOptions:
   - key: readability-implicit-bool-conversion.AllowIntegerConditions
     value: true
   - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: modernize-use-override.AllowOverrideAndFinal
     value: true

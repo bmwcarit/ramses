@@ -31,22 +31,22 @@ namespace ramses_internal
     public:
         explicit DisplayController(IRenderBackend& renderer, UInt32 samples = 1);
 
-        virtual void                    handleWindowEvents() override;
-        [[nodiscard]] virtual Bool                    canRenderNewFrame() const override;
-        virtual void                    enableContext() override;
-        virtual void                    swapBuffers() override;
-        virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) override;
-        virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) override;
+        void                    handleWindowEvents() override;
+        [[nodiscard]] Bool                    canRenderNewFrame() const override;
+        void                    enableContext() override;
+        void                    swapBuffers() override;
+        SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) override;
+        void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) override;
 
-        [[nodiscard]] virtual DeviceResourceHandle    getDisplayBuffer() const override final;
-        [[nodiscard]] virtual IRenderBackend&         getRenderBackend() const override;
-        virtual IEmbeddedCompositingManager& getEmbeddedCompositingManager() override;
-        [[nodiscard]] virtual UInt32                  getDisplayWidth() const override;
-        [[nodiscard]] virtual UInt32                  getDisplayHeight() const override;
+        [[nodiscard]] DeviceResourceHandle    getDisplayBuffer() const final override;
+        [[nodiscard]] IRenderBackend&         getRenderBackend() const override;
+        IEmbeddedCompositingManager& getEmbeddedCompositingManager() override;
+        [[nodiscard]] UInt32                  getDisplayWidth() const override;
+        [[nodiscard]] UInt32                  getDisplayHeight() const override;
 
-        virtual void                    readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) override;
+        void                    readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) override;
 
-        virtual void validateRenderingStatusHealthy() const override;
+        void validateRenderingStatusHealthy() const override;
 
     private:
         IRenderBackend&         m_renderBackend;

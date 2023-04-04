@@ -37,10 +37,10 @@ int main()
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsData[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
-    uint16_t indexData[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indexData);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{0.f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = scene->createArrayResource(3u, indexData.data());
 
     /// [Basic GLSL Import Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -65,8 +65,8 @@ int main()
     ramses::UniformInput scaleAndShearInput;
     effect->findUniformInput("u_transformations", scaleAndShearInput);
 
-    float scaleAndShearArrayData[] = { 0.3f, 0.6f, 0.0f, 0.0f, 0.3f, 0.6f, 0.0f, 0.0f };
-    appearance->setInputValueVector4f(scaleAndShearInput, 2, scaleAndShearArrayData);
+    const ramses::vec4f scaleAndShearArrayData[2] = { ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f}, ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f} };
+    appearance->setInputValue(scaleAndShearInput, 2, scaleAndShearArrayData);
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
@@ -77,7 +77,7 @@ int main()
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 0.1f, 0.5f, 0.2f, 1.0);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 0.1f, 0.5f, 0.2f, 1.f });
 
     /// [Basic GLSL Import Example]
 

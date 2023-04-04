@@ -16,41 +16,41 @@ namespace ramses_internal
 {
     enum class ERotationConvention : uint8_t
     {
-        Legacy_ZYX, //deprecated left-handed rotation using ZYX convention, all other conventions use right-handed rotation
-        XYZ,
-        XZY,
-        YXZ,
-        YZX,
-        ZXY,
-        ZYX,
-        XYX,
-        XZX,
-        YXY,
-        YZY,
-        ZXZ,
-        ZYZ,
+        Euler_XYZ,
+        Euler_XZY,
+        Euler_YXZ,
+        Euler_YZX,
+        Euler_ZXY,
+        Euler_ZYX,
+        Euler_XYX,
+        Euler_XZX,
+        Euler_YXY,
+        Euler_YZY,
+        Euler_ZXZ,
+        Euler_ZYZ,
+        Quaternion,
     };
 
     static constexpr const char* const ERotationConventionNames[] = {
-        "LEGACY_ZYX",
-        "XYZ",
-        "XZY",
-        "YXZ",
-        "YZX",
-        "ZXY",
-        "ZYX",
-        "XYX",
-        "XZX",
-        "YXY",
-        "YZY",
-        "ZXZ",
-        "ZYZ",
+        "Euler_XYZ",
+        "Euler_XZY",
+        "Euler_YXZ",
+        "Euler_YZX",
+        "Euler_ZXY",
+        "Euler_ZYX",
+        "Euler_XYX",
+        "Euler_XZX",
+        "Euler_YXY",
+        "Euler_YZY",
+        "Euler_ZXZ",
+        "Euler_ZYZ",
+        "Quaternion",
     };
 }
 
 MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::ERotationConvention,
                                         "ERotationConvention",
                                         ramses_internal::ERotationConventionNames,
-                                        ramses_internal::ERotationConvention::ZYZ);
+                                        ramses_internal::ERotationConvention::Quaternion);
 
 #endif

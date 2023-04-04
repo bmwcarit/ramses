@@ -35,7 +35,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             // make sure all test cases dispatch all collected events
             RendererEventVector resultEvents;

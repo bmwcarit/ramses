@@ -46,20 +46,20 @@ namespace ramses
         GeometryBinding* geometry = scene.createGeometryBinding(effect, "triangle geometry");
 
         geometry->setIndices(indices);
-        static const float vertexPositionsData[] =
+        const std::array<ramses::vec3f, 10u> vertexPositionsData
         {
-            -1.f, 0.f, -1.f,
-            0.f, 1.f, -1.f,
-            -0.75f, -0.25f, -1.f,
-            0.25f, 0.75f, -1.f,
-            -0.5f, -0.5f, -1.f,
-            0.5f, 0.5f, -1.f,
-            -0.25f, -0.75f, -1.f,
-            0.75f, 0.25f, -1.f,
-            0.f, -1.f, -1.f,
-            1.f, 0.f, -1.f
+            ramses::vec3f{ -1.f, 0.f, -1.f },
+            ramses::vec3f{ 0.f, 1.f, -1.f },
+            ramses::vec3f{ -0.75f, -0.25f, -1.f },
+            ramses::vec3f{ 0.25f, 0.75f, -1.f },
+            ramses::vec3f{ -0.5f, -0.5f, -1.f },
+            ramses::vec3f{ 0.5f, 0.5f, -1.f },
+            ramses::vec3f{ -0.25f, -0.75f, -1.f },
+            ramses::vec3f{ 0.75f, 0.25f, -1.f },
+            ramses::vec3f{ 0.f, -1.f, -1.f },
+            ramses::vec3f{ 1.f, 0.f, -1.f }
         };
-        const ArrayResource* vertexPositions = scene.createArrayResource(EDataType::Vector3F, 10, vertexPositionsData);
+        const ArrayResource* vertexPositions = scene.createArrayResource(10u, vertexPositionsData.data());
         geometry->setInputBuffer(positionsInput, *vertexPositions);
 
         return *geometry;
@@ -73,15 +73,15 @@ namespace ramses
         switch (desiredDrawMode)
         {
         case ramses::EDrawMode_Lines:
-            return *scene.createArrayResource(EDataType::UInt16, 18, indiceData_line);
+            return *scene.createArrayResource(18u, indiceData_line);
             break;
         case ramses::EDrawMode_Points:
         case ramses::EDrawMode_LineStrip:
-            return *scene.createArrayResource(EDataType::UInt16, 10, indiceData_lineStrip);
+            return *scene.createArrayResource(10u, indiceData_lineStrip);
             break;
         default:
             assert(false && "not supported");
-            return *scene.createArrayResource(EDataType::UInt16, 10, indiceData_lineStrip);
+            return *scene.createArrayResource(10u, indiceData_lineStrip);
         }
     }
 
@@ -91,19 +91,19 @@ namespace ramses
         switch (color)
         {
         case ramses::Line::EColor_Red:
-            status = m_appearance.setInputValueVector4f(colorInput, 1.f, 0.f, 0.f, alpha);
+            status = m_appearance.setInputValue(colorInput, vec4f{ 1.f, 0.f, 0.f, alpha });
             break;
         case ramses::Line::EColor_Blue:
-            status = m_appearance.setInputValueVector4f(colorInput, 0.f, 0.f, 1.f, alpha);
+            status = m_appearance.setInputValue(colorInput, vec4f{ 0.f, 0.f, 1.f, alpha });
             break;
         case ramses::Line::EColor_Green:
-            status = m_appearance.setInputValueVector4f(colorInput, 0.f, 1.0, 0.f, alpha);
+            status = m_appearance.setInputValue(colorInput, vec4f{ 0.f, 1.f, 0.f, alpha });
             break;
         case ramses::Line::EColor_White:
-            status = m_appearance.setInputValueVector4f(colorInput, 1.f, 1.0, 1.f, alpha);
+            status = m_appearance.setInputValue(colorInput, vec4f{ 1.f, 1.f, 1.f, alpha });
             break;
         case ramses::Line::EColor_Yellow:
-            status = m_appearance.setInputValueVector4f(colorInput, 1.f, 1.f, 0.f, alpha);
+            status = m_appearance.setInputValue(colorInput, vec4f{ 1.f, 1.f, 0.f, alpha });
             break;
         default:
             assert(false && "Chosen color for triangle is not available!");

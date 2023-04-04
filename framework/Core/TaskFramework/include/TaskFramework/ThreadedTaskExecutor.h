@@ -37,14 +37,14 @@ namespace ramses_internal
         /**
          * Virtual destructor.
          */
-        virtual ~ThreadedTaskExecutor() override;
+        ~ThreadedTaskExecutor() override;
 
         /**
          * @name    TaskExecutor implementation
          * @see ITaskChainComponent
          * @{
          */
-        virtual bool enqueue(ITask& Task) override;
+        bool enqueue(ITask& Task) override;
 
         /**
          * @}
@@ -59,7 +59,7 @@ namespace ramses_internal
          * Stop the instance with the executing thread and the thread pool.
          */
         void stop();
-        virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
+        void disableAcceptingTasksAfterExecutingCurrentQueue() override;
     private:
         /**
          * Start the instance with the executing thread and the thread pool.

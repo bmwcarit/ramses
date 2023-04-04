@@ -233,9 +233,6 @@ namespace ramses
         case ramses_internal::TextureSampler::ContentType::TextureBuffer:
             contentStatus = validateTextureBuffer(ramses_internal::TextureBufferHandle(sampler.contentHandle));
             break;
-        case ramses_internal::TextureSampler::ContentType::StreamTexture:
-            assert(false);
-            break;
         case ramses_internal::TextureSampler::ContentType::ExternalTexture:
             contentStatus = StatusOK;
             break;

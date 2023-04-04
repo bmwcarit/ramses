@@ -25,20 +25,20 @@ namespace ramses_internal
         , m_indices(nullptr)
         , m_effect(getTestEffect("ramses-test-client-textured"))
     {
-        uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        m_indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
+        m_indices = m_scene.createArrayResource(6u, indicesArray);
 
         m_groupNode = m_scene.createNode();
 
-        float vertexPositionsArray[] = {
-            -1.0f, -1.f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            -1.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f };
-        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ -1.0f, -1.f, 0.0f },
+            ramses::vec3f{ 1.0f, -1.0f, 0.0f },
+            ramses::vec3f{ -1.0f, 1.0f, 0.0f },
+            ramses::vec3f{ 1.0f, 1.0f, 0.0f }};
+        m_vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        float textureCoordsArray[] = { 0.f, 1.f, 2.f, 1.f, 0.f, -1.f, 2.f, -1.f };
-        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{2.f, 1.f}, ramses::vec2f{0.f, -1.f}, ramses::vec2f{2.f, -1.f} };
+        m_textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         m_texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-logo-cropped.png", m_scene);
 

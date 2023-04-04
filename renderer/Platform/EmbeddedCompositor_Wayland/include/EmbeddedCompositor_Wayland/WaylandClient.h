@@ -19,10 +19,10 @@ namespace ramses_internal
     {
     public:
         explicit WaylandClient(wl_client* client);
-        virtual WaylandClientCredentials getCredentials() const override;
-        virtual void postNoMemory() override;
-        virtual INativeWaylandResource* resourceCreate(const wl_interface *interface, int version, uint32_t id) override;
-        virtual WaylandCallbackResource* callbackResourceCreate(const wl_interface* interface, int version, uint32_t id) override;
+        WaylandClientCredentials getCredentials() const override;
+        void postNoMemory() override;
+        INativeWaylandResource* resourceCreate(const wl_interface *interface, int version, uint32_t id) override;
+        WaylandCallbackResource* callbackResourceCreate(const wl_interface* interface, int version, uint32_t id) override;
 
     private:
         wl_client* m_client;

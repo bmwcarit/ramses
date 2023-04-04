@@ -12,5 +12,5 @@ expandModuleByPlatform(
     LINKED_TYPE     STATIC
     ENABLE_INSTALL  ON
     SRC_FILES   src/main.cpp
-    DEPENDENCIES   ramses-renderer-lib
+    DEPENDENCIES   ramses-renderer-lib ramses-cli
 )

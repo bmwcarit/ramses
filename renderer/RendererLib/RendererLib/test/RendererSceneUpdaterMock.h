@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         RendererSceneUpdaterMock();
-        virtual ~RendererSceneUpdaterMock() override;
+        ~RendererSceneUpdaterMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& sceneUpdate), (override));
         MOCK_METHOD(void, createDisplayContext, (const DisplayConfig& displayConfig, IBinaryShaderCache*), (override));

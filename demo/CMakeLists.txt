@@ -6,6 +6,4 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-if(ramses-sdk_BUILD_DEMOS)
-    add_subdirectory(android)
-endif()
+add_subdirectory(android)

@@ -16,7 +16,6 @@
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/ERotationConvention.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector4.h"
@@ -45,14 +44,26 @@ namespace ramses_internal
         putSceneSizeInformation(sizeInfo);
     }
 
-    void SceneActionCollectionCreator::setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue, ERotationConvention rotationConvention)
+    void SceneActionCollectionCreator::setTranslation(TransformHandle node, const Vector3& newValue)
     {
-        collection.beginWriteSceneAction(ESceneActionId::SetTransformComponent);
-        collection.write(static_cast<UInt32>(propertyChanged));
+        collection.beginWriteSceneAction(ESceneActionId::SetTranslation);
         collection.write(node);
         collection.write(newValue.data);
-        if (propertyChanged == ETransformPropertyType_Rotation)
-            collection.write(rotationConvention);
+    }
+
+    void SceneActionCollectionCreator::setRotation(TransformHandle node, const Vector4& newValue, ERotationConvention rotationConvention)
+    {
+        collection.beginWriteSceneAction(ESceneActionId::SetRotation);
+        collection.write(node);
+        collection.write(newValue.data);
+        collection.write(rotationConvention);
+    }
+
+    void SceneActionCollectionCreator::setScaling(TransformHandle node, const Vector3& newValue)
+    {
+        collection.beginWriteSceneAction(ESceneActionId::SetScaling);
+        collection.write(node);
+        collection.write(newValue.data);
     }
 
     void SceneActionCollectionCreator::allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle)
@@ -712,30 +723,6 @@ namespace ramses_internal
         collection.write(handle);
     }
 
-    void SceneActionCollectionCreator::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
-    {
-        collection.beginWriteSceneAction(ESceneActionId::AllocateStreamTexture);
-        collection.write(streamTextureHandle);
-        collection.write(streamSource);
-        collection.write(fallbackTextureHash);
-        collection.write(String{});
-        collection.write(UInt64{});
-    }
-
-    void SceneActionCollectionCreator::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        collection.beginWriteSceneAction(ESceneActionId::ReleaseStreamTexture);
-        collection.write(streamTextureHandle);
-    }
-
-    void SceneActionCollectionCreator::setStreamTextureForceFallback(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        assert(streamTextureHandle.isValid());
-        collection.beginWriteSceneAction(ESceneActionId::SetForceFallback);
-        collection.write(streamTextureHandle);
-        collection.write(forceFallbackImage);
-    }
-
     void SceneActionCollectionCreator::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)
     {
         collection.beginWriteSceneAction(ESceneActionId::AllocateDataBuffer);
@@ -945,7 +932,6 @@ namespace ramses_internal
         collection.write(sizeInfo.renderTargetCount);
         collection.write(sizeInfo.renderBufferCount);
         collection.write(sizeInfo.textureSamplerCount);
-        collection.write(sizeInfo.streamTextureCount);
         collection.write(sizeInfo.dataSlotCount);
         collection.write(sizeInfo.dataBufferCount);
         collection.write(sizeInfo.textureBufferCount);

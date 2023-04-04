@@ -25,4 +25,4 @@ class Config(object):
         self.imageDiffScaleFactor = 100  # scale factor for the scaled diff images
 
         # common switches
-        self.ramsesApplicationLogLevel = 5
+        self.ramsesApplicationLogLevel = "info"

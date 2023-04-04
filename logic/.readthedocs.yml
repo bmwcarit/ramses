@@ -1,0 +1,24 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+# .readthedocs.yml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+---
+version: 2
+
+sphinx:
+    configuration: doc/sphinx/conf.py
+    fail_on_warning: true
+
+python:
+    version: 3.7
+    install:
+        - requirements: doc/sphinx/requirements.txt
+...

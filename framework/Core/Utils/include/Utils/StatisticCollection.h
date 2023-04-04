@@ -170,9 +170,9 @@ namespace ramses_internal
     class StatisticCollectionFramework : public StatisticCollection
     {
     public:
-        virtual void reset() override;
-        virtual void resetSummaries() override;
-        virtual void nextTimeInterval() override;
+        void reset() override;
+        void resetSummaries() override;
+        void nextTimeInterval() override;
 
         StatisticEntry<UInt32, SummaryEntry> statMessagesSent;
         StatisticEntry<UInt32, SummaryEntry> statMessagesReceived;
@@ -198,9 +198,9 @@ namespace ramses_internal
     class StatisticCollectionScene : public StatisticCollection
     {
     public:
-        virtual void reset() override;
-        virtual void resetSummaries() override;
-        virtual void nextTimeInterval() override;
+        void reset() override;
+        void resetSummaries() override;
+        void nextTimeInterval() override;
 
         StatisticEntry<UInt32, SummaryEntry> statFlushesTriggered;
         StatisticEntry<UInt32, SummaryEntry> statObjectsCreated;

@@ -33,7 +33,7 @@ namespace ramses_internal
             assert(m_display != nullptr);
         }
 
-        ~AWaylandClient()
+        ~AWaylandClient() override
         {
         }
 
@@ -86,7 +86,7 @@ namespace ramses_internal
             {
             }
 
-            virtual void run() override
+            void run() override
             {
                 m_startBarrier.wait();
                 wl_display*  display  = wl_display_connect_to_fd(m_fd);

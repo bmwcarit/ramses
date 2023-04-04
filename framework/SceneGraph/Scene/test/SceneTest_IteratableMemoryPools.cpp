@@ -184,13 +184,6 @@ namespace ramses_internal
         this->runTest(allocateF, releaseF, this->m_scene.getRenderBuffers());
     }
 
-    TYPED_TEST(AnIteratableScene, CanIterateOverStreamTextures)
-    {
-        auto allocateF = std::bind(&TypeParam::allocateStreamTexture, &this->m_scene, WaylandIviSurfaceId{1u}, ResourceContentHash{}, StreamTextureHandle{});
-        auto releaseF = std::bind(&TypeParam::releaseStreamTexture, &this->m_scene, std::placeholders::_1);
-        this->runTest(allocateF, releaseF, this->m_scene.getStreamTextures());
-    }
-
     TYPED_TEST(AnIteratableScene, CanIterateOverDataBuffers)
     {
         auto allocateF = std::bind(&TypeParam::allocateDataBuffer, &this->m_scene, EDataBufferType::IndexBuffer, EDataType::Int32, 4u, DataBufferHandle{});

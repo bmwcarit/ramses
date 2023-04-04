@@ -7,24 +7,12 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    EmbeddedCompositor_Wayland
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/EmbeddedCompositor_Wayland/*.h
                             src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            ramses-renderer-lib
                             wayland-server
                             wayland-ivi-extension
@@ -37,23 +25,11 @@ createModule(
 
 if (${ramses-sdk_BUILD_TESTS})
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    EmbeddedCompositor_Wayland_Test
         TYPE                    BINARY
         ENABLE_INSTALL          ON
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
         SRC_FILES            ../EmbeddedCompositor_Wayland/test/*.cpp
                                 ../EmbeddedCompositor_Wayland/test/*.h
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            EmbeddedCompositor_Wayland
                                 wayland-client
                                 Device_GL

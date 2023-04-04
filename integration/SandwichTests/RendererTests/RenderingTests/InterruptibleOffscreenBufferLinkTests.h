@@ -14,8 +14,8 @@
 class InterruptibleOffscreenBufferLinkTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) override final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) override final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final override;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final override;
 
 private:
     enum

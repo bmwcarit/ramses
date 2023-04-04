@@ -13,11 +13,6 @@
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
-namespace CLI
-{
-    class App;
-}
-
 namespace ramses
 {
     /**
@@ -40,17 +35,7 @@ namespace ramses
         /**
         * @brief Destructor of DisplayConfig
         */
-        virtual ~DisplayConfig();
-
-        /**
-        * @brief Register command line options for the CLI11 command line parser
-        *
-        * Creates an option group "Display Options" and registers command line options
-        * After parsing the command line with CLI::App::parse() this config object is assigned with the values provided by command line
-        *
-        * @param[in] cli CLI11 command line parser
-        */
-        void registerOptions(CLI::App& cli);
+        ~DisplayConfig() override;
 
         /**
         * @brief Sets the window size and position in display pixel space.
@@ -319,14 +304,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandDisplay(const char* waylandDisplay);
+        status_t setWaylandDisplay(std::string_view waylandDisplay);
 
         /**
         * @brief Get the current setting of Wayland display name
         *
         * @return Wayland display name to use for connection, empty means default
         */
-        [[nodiscard]] const char* getWaylandDisplay() const;
+        [[nodiscard]] std::string_view getWaylandDisplay() const;
 
         /**
         * @brief   Sets whether async shader/effect compilation and upload should be enabled.
@@ -382,14 +367,14 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
+        status_t setWaylandEmbeddedCompositingSocketName(std::string_view socketname);
 
         /**
         * @brief Get the current setting of embedded compositing display socket name
         *
         * @return Wayland display name to use for embedded compositing socket
         */
-        [[nodiscard]] const char* getWaylandEmbeddedCompositingSocketName() const;
+        [[nodiscard]] std::string_view getWaylandEmbeddedCompositingSocketName() const;
 
         /**
         * @brief Request that the embedded compositing display socket belongs to the given group.
@@ -398,7 +383,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
+        status_t setWaylandEmbeddedCompositingSocketGroup(std::string_view groupname);
 
         /**
          * @brief      Set the file descriptor for the embedded compositor
@@ -458,7 +443,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
+        status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
 
         /**
         * @brief Set the render node to use for creating GBM buffer objects used for creating DMA Offscreen buffers
@@ -479,7 +464,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setPlatformRenderNode(const char* renderNode);
+        status_t setPlatformRenderNode(std::string_view renderNode);
 
         /**
         * @brief Specifies the minimum number of video frames that are displayed before a buffer swap will occur

@@ -13,11 +13,6 @@
 #include "ramses-framework-api/StatusObject.h"
 #include <chrono>
 
-namespace CLI
-{
-    class App;
-}
-
 namespace ramses
 {
     class IBinaryShaderCache;
@@ -44,17 +39,7 @@ namespace ramses
         /**
         * @brief Destructor of RendererConfig
         */
-        virtual ~RendererConfig();
-
-        /**
-        * @brief Register command line options for the CLI11 command line parser
-        *
-        * Creates an option group "Renderer Options" and registers command line options
-        * After parsing the command line with CLI::App::parse() this config object is assigned with the values provided by command line
-        *
-        * @param[in] cli CLI11 command line parser
-        */
-        void registerOptions(CLI::App& cli);
+        ~RendererConfig() override;
 
         /**
         * @brief Set the Binary Shader Cache to be used in Renderer.
@@ -106,14 +91,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
+        status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
 
         /**
         * @brief Get the current setting of Wayland display name
         *
         * @return Wayland display name to use for connection, empty means default
         */
-        [[nodiscard]] const char* getSystemCompositorWaylandDisplay() const;
+        [[nodiscard]] std::string_view getSystemCompositorWaylandDisplay() const;
 
         /**
         * @brief   Set the desired reporting period for first display loop timings.

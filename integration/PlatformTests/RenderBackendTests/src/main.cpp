@@ -11,7 +11,7 @@
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "RendererTestUtils.h"
 #include "Utils/ThreadLocalLog.h"
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,10 +21,18 @@ int main(int argc, char* argv[])
     ramses::RendererConfig rendererConfig;
     ramses::DisplayConfig displayConfig;
     CLI::App cli;
-    frameworkConfig.registerOptions(cli);
-    rendererConfig.registerOptions(cli);
-    displayConfig.registerOptions(cli);
-
+    try
+    {
+        ramses::registerOptions(cli, frameworkConfig);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
+    }
+    catch (const CLI::Error& error)
+    {
+        // configuration error
+        std::cerr << error.what();
+        return -1;
+    }
     CLI11_PARSE(cli, argc, argv);
     RendererTestUtils::SetDefaultConfigForAllTests(rendererConfig, displayConfig);
 

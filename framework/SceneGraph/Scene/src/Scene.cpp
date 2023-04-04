@@ -209,41 +209,6 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    StreamTextureHandle SceneT<MEMORYPOOL>::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle handle /*= StreamTextureHandle::Invalid()*/)
-    {
-        const StreamTextureHandle streamTextureHandle = m_streamTextures.allocate(handle);
-        StreamTexture* streamTexture = m_streamTextures.getMemory(streamTextureHandle);
-        assert(nullptr != streamTexture);
-        streamTexture->fallbackTexture = fallbackTextureHash;
-        streamTexture->source = streamSource;
-        return streamTextureHandle;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        m_streamTextures.release(streamTextureHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    UInt32 SceneT<MEMORYPOOL>::getStreamTextureCount() const
-    {
-        return m_streamTextures.getTotalCount();
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        m_streamTextures.getMemory(streamTextureHandle)->forceFallbackTexture = forceFallbackImage;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const StreamTexture& SceneT<MEMORYPOOL>::getStreamTexture(StreamTextureHandle streamTextureHandle) const
-    {
-        return *m_streamTextures.getMemory(streamTextureHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
     DataBufferHandle SceneT<MEMORYPOOL>::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)
     {
         const DataBufferHandle allocatedHandle = m_dataBuffers.allocate(handle);
@@ -1057,7 +1022,6 @@ namespace ramses_internal
         m_renderTargets.preallocateSize(sizeInfo.renderTargetCount);
         m_renderBuffers.preallocateSize(sizeInfo.renderBufferCount);
         m_textureSamplers.preallocateSize(sizeInfo.textureSamplerCount);
-        m_streamTextures.preallocateSize(sizeInfo.streamTextureCount);
         m_dataSlots.preallocateSize(sizeInfo.dataSlotCount);
         m_dataBuffers.preallocateSize(sizeInfo.dataBufferCount);
         m_textureBuffers.preallocateSize(sizeInfo.textureBufferCount);
@@ -1098,7 +1062,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector3& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
+    const Vector4& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
     {
         return m_transforms.getMemory(handle)->rotation;
     }
@@ -1122,23 +1086,11 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector4& rotation, ERotationConvention convention)
     {
         auto transformMemory = m_transforms.getMemory(handle);
         transformMemory->rotation = rotation;
         transformMemory->rotationConvention = convention;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotationForAnimation(TransformHandle handle, const Vector3& rotation)
-    {
-        if(m_transforms.getMemory(handle)->rotationConvention != ERotationConvention::Legacy_ZYX)
-        {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Scene::setRotationForAnimation: failed to animate rotation for node :" << getTransformNode(handle) << " that does not use legacy rotation convention.");
-            return;
-        }
-
-        setRotation(handle, rotation, ERotationConvention::Legacy_ZYX);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1237,7 +1189,6 @@ namespace ramses_internal
         sizeInfo.renderTargetCount = m_renderTargets.getTotalCount();
         sizeInfo.renderBufferCount = m_renderBuffers.getTotalCount();
         sizeInfo.textureSamplerCount = m_textureSamplers.getTotalCount();
-        sizeInfo.streamTextureCount = m_streamTextures.getTotalCount();
         sizeInfo.dataSlotCount = m_dataSlots.getTotalCount();
         sizeInfo.dataBufferCount = m_dataBuffers.getTotalCount();
         sizeInfo.textureBufferCount = m_textureBuffers.getTotalCount();

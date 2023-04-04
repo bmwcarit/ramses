@@ -50,7 +50,7 @@ public:
         ON_CALL(*this, binaryShaderFormatsReported()).WillByDefault(ReturnRef(m_binaryShaderFormatReported));
     }
 
-    [[nodiscard]] virtual ramses_internal::Bool hasBinaryShader(ResourceContentHash effectHash) const override
+    [[nodiscard]] ramses_internal::Bool hasBinaryShader(ResourceContentHash effectHash) const override
     {
         BinaryShaderProviderMock::hasBinaryShader(effectHash);
         if (effectHash == m_effectHash)
@@ -61,7 +61,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] virtual UInt32 getBinaryShaderSize(ResourceContentHash effectHash) const override
+    [[nodiscard]] UInt32 getBinaryShaderSize(ResourceContentHash effectHash) const override
     {
         BinaryShaderProviderMock::getBinaryShaderSize(effectHash);
         if (effectHash == m_effectHash)
@@ -72,7 +72,7 @@ public:
         return 0;
     }
 
-    [[nodiscard]] virtual BinaryShaderFormatID getBinaryShaderFormat(ResourceContentHash effectHash) const override
+    [[nodiscard]] BinaryShaderFormatID getBinaryShaderFormat(ResourceContentHash effectHash) const override
     {
         BinaryShaderProviderMock::getBinaryShaderFormat(effectHash);
         return (effectHash == m_effectHash ? m_binaryShaderFormat : BinaryShaderFormatID::Invalid());

@@ -15,15 +15,11 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
-#include "CLI/CLI.hpp"
 
 int main(int argc, char* argv[])
 {
     printf("Start ramses-static-lib-check\n");
-    CLI::App cli;
     ramses::RamsesFrameworkConfig frameworkConfig;
-    frameworkConfig.registerOptions(cli);
-    CLI11_PARSE(cli, argc, argv);
 
     ramses::RamsesFramework framework{frameworkConfig};
     framework.isConnected();

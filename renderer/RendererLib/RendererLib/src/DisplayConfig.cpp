@@ -8,31 +8,9 @@
 
 #include "RendererLib/DisplayConfig.h"
 #include <array>
-#include "Utils/Cli.h"
 
 namespace ramses_internal
 {
-    void DisplayConfig::registerOptions(CLI::App& cli)
-    {
-        auto* grp = cli.add_option_group("Display Options");
-        grp->add_option("--xpos", m_windowPositionX, "set x position of window");
-        grp->add_option("--ypos", m_windowPositionY, "set y position of window");
-        grp->add_option("--width", m_desiredWindowWidth, "set window width")->default_val(m_desiredWindowWidth);
-        grp->add_option("--height", m_desiredWindowHeight, "set window height")->default_val(m_desiredWindowHeight);
-        grp->add_flag("-f,--fullscreen", m_fullscreen, "enable fullscreen mode");
-        grp->add_flag("--borderless", m_borderless, "disable window borders");
-        grp->add_flag("--resizable", m_resizable, "enables resizable renderer window");
-        grp->add_option("--msaa", m_antiAliasingSamples, "set msaa (antialiasing) sample count")->check(CLI::IsMember({1, 2, 4, 8}));
-        grp->add_flag_function("--delete-effects", [&](std::int64_t) { m_keepEffectsUploaded = false; }, "do not keep effects uploaded");
-        grp->add_flag("--ivi-visible,!--no-ivi-visible", m_startVisibleIvi, "set IVI surface visible when created");
-        grp->add_option("--ivi-layer", m_waylandIviLayerID, "set id of IVI layer the display surface will be added to")->type_name("LAYER");
-        grp->add_option("--ivi-surface", m_waylandIviSurfaceID, "set id of IVI surface the display will be composited on")->type_name("SURFACE");
-        auto* ec  = grp->add_option("--ec-display", m_waylandSocketEmbedded, "set wayland display (socket name) that is created by the embedded compositor")->type_name("NAME");
-        grp->add_option("--ec-socket-group", m_waylandSocketEmbeddedGroupName, "group name for wayland display socket")->needs(ec)->type_name("NAME");
-        grp->add_option("--ec-socket-permissions", m_waylandSocketEmbeddedPermissions, "file permissions for wayland display socket")->needs(ec)->type_name("MODE");
-        grp->add_option("--clear", m_clearColor, "set clear color (rgba)");
-    }
-
     void DisplayConfig::setAntialiasingSampleCount(UInt32 samples)
     {
         assert(ramses_internal::contains_c<uint32_t>({ 1u, 2u, 4u, 8u }, samples));
@@ -196,12 +174,12 @@ namespace ramses_internal
         return m_depthStencilBufferType;
     }
 
-    void DisplayConfig::setWaylandDisplay(const String& waylandDisplay)
+    void DisplayConfig::setWaylandDisplay(std::string_view waylandDisplay)
     {
-        m_waylandDisplay = waylandDisplay;
+        m_waylandDisplay = String(waylandDisplay);
     }
 
-    const String& DisplayConfig::getWaylandDisplay() const
+    std::string_view DisplayConfig::getWaylandDisplay() const
     {
         return m_waylandDisplay;
     }
@@ -235,9 +213,9 @@ namespace ramses_internal
     {
         return m_asyncEffectUploadEnabled;
     }
-    void DisplayConfig::setWaylandEmbeddedCompositingSocketName(const String& socket)
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketName(std::string_view socket)
     {
-        m_waylandSocketEmbedded = socket;
+        m_waylandSocketEmbedded = String(socket);
     }
 
     void DisplayConfig::setWaylandEmbeddedCompositingSocketFD(int fd)
@@ -245,12 +223,12 @@ namespace ramses_internal
         m_waylandSocketEmbeddedFD = fd;
     }
 
-    const String& DisplayConfig::getWaylandSocketEmbedded() const
+    std::string_view DisplayConfig::getWaylandSocketEmbedded() const
     {
         return m_waylandSocketEmbedded;
     }
 
-    const String& DisplayConfig::getWaylandSocketEmbeddedGroup() const
+    std::string_view DisplayConfig::getWaylandSocketEmbeddedGroup() const
     {
         return m_waylandSocketEmbeddedGroupName;
     }
@@ -260,9 +238,9 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedFD;
     }
 
-    void DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions)
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(std::string_view groupNameForSocketPermissions)
     {
-        m_waylandSocketEmbeddedGroupName = groupNameForSocketPermissions;
+        m_waylandSocketEmbeddedGroupName = String(groupNameForSocketPermissions);
     }
 
     bool DisplayConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
@@ -278,12 +256,12 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedPermissions;
     }
 
-    void DisplayConfig::setPlatformRenderNode(const String& renderNode)
+    void DisplayConfig::setPlatformRenderNode(std::string_view renderNode)
     {
-        m_platformRenderNode = renderNode;
+        m_platformRenderNode = String(renderNode);
     }
 
-    const String& DisplayConfig::getPlatformRenderNode() const
+    std::string_view DisplayConfig::getPlatformRenderNode() const
     {
         return m_platformRenderNode;
     }

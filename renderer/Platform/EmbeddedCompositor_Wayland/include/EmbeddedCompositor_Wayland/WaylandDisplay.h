@@ -21,10 +21,10 @@ namespace ramses_internal
     public:
         WaylandDisplay();
         ~WaylandDisplay() override;
-        virtual bool init(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD) override;
-        virtual IWaylandGlobal* createGlobal(const wl_interface *interface, int version, void *data, wl_global_bind_func_t bind) override;
-        virtual void dispatchEventLoop() override;
-        virtual void flushClients() override;
+        bool init(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD) override;
+        IWaylandGlobal* createGlobal(const wl_interface *interface, int version, void *data, wl_global_bind_func_t bind) override;
+        void dispatchEventLoop() override;
+        void flushClients() override;
         [[nodiscard]] wl_display* get() const; // (AI) TODO - Eliminate, when TextureUploadingAdapter_Wayland does not need the wl_display anymore.
 
     private:

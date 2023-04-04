@@ -33,17 +33,17 @@ public:
     {
     }
 
-    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
         m_scenes[sceneId].state = state;
     }
 
-    virtual void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersion) override
+    void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersion) override
     {
         m_scenes[sceneId].version = sceneVersion;
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -51,7 +51,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
+    void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
     {
         if (success)
         {
@@ -168,7 +168,7 @@ ramses::MeshNode* createTexturedQuad(ramses::Scene* clientScene, const ramses::E
     for (uint32_t i = 0; i < effect->getUniformInputCount(); ++i)
         if (ramses::StatusOK == effect->getUniformInput(i, sampleCountUnif) && strcmp(sampleCountUnif.getName(), "sampleCount") == 0)
         {
-            appearance->setInputValueInt32(sampleCountUnif, SampleCount);
+            appearance->setInputValue(sampleCountUnif, static_cast<int32_t>(SampleCount));
             break;
         }
 
@@ -220,20 +220,14 @@ ramses::Scene* createConsumerScene(ramses::RamsesClient& client, ramses::sceneId
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare quad geometry: vertex position array and index array
-    const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::ArrayResource* sharedIndices = clientScene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* sharedIndices = clientScene->createArrayResource(6u, indicesArray.data());
 
-    const float vertexPositionsArray[] =
-    {
-        -1.f, -1.f, 0.f,
-        1.f, -1.f, 0.f,
-        -1.f, 1.f, 0.f,
-        1.f, 1.f, 0.f
-    };
-    const ramses::ArrayResource* sharedVertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsQuadArray{ ramses::vec3f{-1.f, -1.f, 0.f}, ramses::vec3f{1.f, -1.f, 0.f}, ramses::vec3f{-1.f, 1.f, 0.f}, ramses::vec3f{1.f, 1.f, 0.f} };
+    ramses::ArrayResource* sharedVertexPositions = clientScene->createArrayResource(4u, vertexPositionsQuadArray.data());
 
-    const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f };
-    const ramses::ArrayResource* sharedTextureCoords = clientScene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f} };
+    ramses::ArrayResource* sharedTextureCoords = clientScene->createArrayResource(4u, textureCoordsArray.data());
 
     // create an appearance for grey quad
     ramses::Effect* effect = createEffect(clientScene, "ramses-example-offscreenbuffer_texture","quad effect");
@@ -290,17 +284,11 @@ ramses::Scene* createProviderScene(ramses::RamsesClient& client, ramses::sceneId
 
     ramses::Effect* effect = createEffect(clientScene, "ramses-example-offscreenbuffer","quad effect");
 
-    const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(6u, indicesArray.data());
 
-    const float vertexPositionsArray[] =
-    {
-        -1.f, -1.f, 0.f,
-        1.f, -1.f, 0.f,
-        -1.f, 1.f, 0.f,
-        1.f, 1.f, 0.f
-    };
-    const ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsQuadArray{ ramses::vec3f{-1.f, -1.f, 0.f}, ramses::vec3f{1.f, -1.f, 0.f}, ramses::vec3f{-1.f, 1.f, 0.f}, ramses::vec3f{1.f, 1.f, 0.f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(4u, vertexPositionsQuadArray.data());
 
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "Quad appearance");
     ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "Quad geometry");
@@ -312,7 +300,7 @@ ramses::Scene* createProviderScene(ramses::RamsesClient& client, ramses::sceneId
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 1.0f, 0.3f, 0.5f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.3f, 0.5f, 1.0f });
 
     ramses::MeshNode* meshNode = clientScene->createMeshNode("quad mesh node");
     ramses::Node* rotationNode = clientScene->createNode(rotationNodeName);
@@ -441,9 +429,9 @@ int main()
     {
         renderer.dispatchEvents(eventHandler);
         //Rotate the quads of the provider scenes
-        rotationNode->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::ZYX);
+        rotationNode->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::Euler_XYZ);
         providerScene->flush();
-        rotationNodeMS->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::ZYX);
+        rotationNodeMS->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::Euler_XYZ);
         providerScene2->flush();
 
         if (timeStamp % 200 == 0)

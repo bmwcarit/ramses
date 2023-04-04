@@ -1,0 +1,30 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+---
+# Warning suppression note: not possible to do this with the git module, because of local path usage instead of remote upstream
+- name: clone oss repo  # noqa 303 305
+  shell: >-
+    git clone
+    --single-branch
+    --branch master
+    file://{{ buildslave_root_dir }}/{{ zuul.projects['cc-github.bmwgroup.net/ramses/ramses-logic-oss'].src_dir }}
+    {{ oss_mirror }}
+  args:
+    executable: /bin/bash
+  when: ansible_os_family != "Windows"
+
+# Windows
+- name: clone oss repo
+  win_shell: >-
+    git clone
+    --single-branch
+    --branch master
+    file://{{ buildslave_root_dir }}/{{ zuul.projects['cc-github.bmwgroup.net/ramses/ramses-logic-oss'].src_dir }}
+    {{ oss_mirror }}
+  when: ansible_os_family == "Windows"

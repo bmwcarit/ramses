@@ -23,7 +23,7 @@ class RendererResourceCacheFake : public RendererResourceCacheMock
 {
 public:
 
-    virtual bool hasResource(ResourceContentHash resourceId, uint32_t& size) const override
+    bool hasResource(ResourceContentHash resourceId, uint32_t& size) const override
     {
         RendererResourceCacheMock::hasResource(resourceId, size);
 
@@ -31,7 +31,7 @@ public:
         return !m_data.empty();
     }
 
-    virtual bool getResourceData(ResourceContentHash resourceId, uint8_t* buffer, uint32_t bufferSize) const override
+    bool getResourceData(ResourceContentHash resourceId, uint8_t* buffer, uint32_t bufferSize) const override
     {
         RendererResourceCacheMock::getResourceData(resourceId, buffer, bufferSize);
 
@@ -44,7 +44,7 @@ public:
         return true;
     }
 
-    virtual void storeResource(ResourceContentHash resourceId, const uint8_t* resourceData, uint32_t resourceDataSize, ramses_internal::ResourceCacheFlag cacheFlag, ramses_internal::SceneId sceneId) override
+    void storeResource(ResourceContentHash resourceId, const uint8_t* resourceData, uint32_t resourceDataSize, ramses_internal::ResourceCacheFlag cacheFlag, ramses_internal::SceneId sceneId) override
     {
         RendererResourceCacheMock::storeResource(resourceId, resourceData, resourceDataSize, cacheFlag, sceneId);
 

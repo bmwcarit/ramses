@@ -22,7 +22,7 @@ namespace ramses_internal
     public:
         RendererSceneUpdaterPartialMock(DisplayHandle display, IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor,
             const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
-        virtual ~RendererSceneUpdaterPartialMock() override;
+        ~RendererSceneUpdaterPartialMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coords), (override));
@@ -35,23 +35,23 @@ namespace ramses_internal
     public:
         RendererSceneUpdaterFacade(DisplayHandle display, IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor,
             const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
-        virtual ~RendererSceneUpdaterFacade() override;
+        ~RendererSceneUpdaterFacade() override;
 
-        virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& update) override;
-        virtual void handlePickEvent(SceneId sceneId, Vector2 coords) override;
+        void handleSceneUpdate(SceneId sceneId, SceneUpdate&& update) override;
+        void handlePickEvent(SceneId sceneId, Vector2 coords) override;
 
         void setForceMapTimeout(std::chrono::milliseconds timeout);
 
         testing::StrictMock<RendererResourceManagerRefCountMock>* m_resourceManagerMock = nullptr;
 
     protected:
-        virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
+        std::unique_ptr<IRendererResourceManager> createResourceManager(
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
             const DisplayConfig& displayConfig,
             IBinaryShaderCache* binaryShaderCache) override;
 
-        virtual void destroyResourceManager() override;
+        void destroyResourceManager() override;
     };
 }
 

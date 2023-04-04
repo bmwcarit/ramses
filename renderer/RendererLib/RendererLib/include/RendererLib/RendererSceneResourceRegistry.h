@@ -13,7 +13,6 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureEnums.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal

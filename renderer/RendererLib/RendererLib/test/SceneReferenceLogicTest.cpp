@@ -33,7 +33,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             SceneAllocateHelper masterScene1{ m_scenes.createScene(SceneInfo{ MasterSceneId1 }) };
             masterScene1.allocateSceneReference(RefSceneId11, RefSceneHandle11);

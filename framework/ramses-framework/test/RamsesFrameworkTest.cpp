@@ -13,7 +13,6 @@
 #include "ApiRamshCommandMock.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Utils/LogMacros.h"
-#include "CLI/CLI.hpp"
 
 using namespace ramses;
 using namespace testing;
@@ -27,9 +26,7 @@ TEST(ARamsesFramework, canDefaultConstruct)
 TEST(ARamsesFramework, canConstructFromConfig)
 {
     RamsesFrameworkConfig config;
-    CLI::App cli;
-    config.registerOptions(cli);
-    cli.parse("--guid=0000-000000000123");
+    config.setParticipantGuid(0x123);
     RamsesFramework fw(config);
     EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x123);
 }

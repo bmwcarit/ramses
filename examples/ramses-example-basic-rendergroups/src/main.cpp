@@ -26,11 +26,11 @@ int main()
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic renderpasses scene");
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -0.5f, 0.f, -1.f, 0.5f, 0.f, -1.f, -0.5f, 1.f, -1.f, 0.5f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsData{ ramses::vec3f{-0.5f, 0.f, -1.f}, ramses::vec3f{0.5f, 0.f, -1.f}, ramses::vec3f{-0.5f, 1.f, -1.f}, ramses::vec3f{0.5f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(4u, vertexPositionsData.data());
 
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indices = scene->createArrayResource(6u, indicesArray.data());
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-rendergroups.vert");
@@ -79,9 +79,9 @@ int main()
     // use three appearances, each with a different color for distinguishing the meshes
     ramses::UniformInput color;
     effectTex->findUniformInput("color", color);
-    appearanceA->setInputValueVector4f(color, 1.0f,0.0f,0.0f,1.0f);
-    appearanceB->setInputValueVector4f(color, 0.0f,1.0f,0.0f,1.0f);
-    appearanceC->setInputValueVector4f(color, 0.0f,0.0f,1.0f,1.0f);
+    appearanceA->setInputValue(color, ramses::vec4f{ 1.0f,0.0f,0.0f,1.0f });
+    appearanceB->setInputValue(color, ramses::vec4f{ 0.0f,1.0f,0.0f,1.0f });
+    appearanceC->setInputValue(color, ramses::vec4f{ 0.0f,0.0f,1.0f,1.0f });
 
     ramses::MeshNode* meshNodeA = scene->createMeshNode("red triangle mesh node");
     meshNodeA->setAppearance(*appearanceA);

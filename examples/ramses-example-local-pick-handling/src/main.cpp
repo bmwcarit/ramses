@@ -62,7 +62,7 @@ public:
         }
     }
 
-    virtual void objectsPicked(ramses::sceneId_t /*sceneId*/, const ramses::pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
+    void objectsPicked(ramses::sceneId_t /*sceneId*/, const ramses::pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
     {
         std::uniform_real_distribution<float> dist;
         const float r = dist(m_randomGenerator);
@@ -77,12 +77,12 @@ public:
             if (pickedObjects[po].getValue() == 1)
             {
                 m_appearanceA.getEffect().findUniformInput("color", m_colorInput);
-                m_appearanceA.setInputValueVector4f(m_colorInput, r, g, b, 1.0f);
+                m_appearanceA.setInputValue(m_colorInput, ramses::vec4f{ r, g, b, 1.0f });
             }
             else if (pickedObjects[po].getValue() == 2)
             {
                 m_appearanceB.getEffect().findUniformInput("color", m_colorInput);
-                m_appearanceB.setInputValueVector4f(m_colorInput, r, g, b, 1.0f);
+                m_appearanceB.setInputValue(m_colorInput, ramses::vec4f{ r, g, b, 1.0f });
             }
         }
     }
@@ -136,14 +136,14 @@ int main()
     orthographicCamera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
     orthographicCamera->setViewport(0, 0, 1280, 480);
     orthographicCamera->translate(.2f, 0.f, 5.f);
-    orthographicCamera->rotate(0.f, 5.f, 0.f);
+    orthographicCamera->setRotation(0.f, -5.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
     orthographicCamera->scale(1.f, 2.f, 1.f);
 
     ramses::PerspectiveCamera* perspectiveCamera = clientScene->createPerspectiveCamera("my perspectiveCamera");
     perspectiveCamera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 100.f);
     perspectiveCamera->setViewport(perspViewportOffsetX, perspViewportOffsetY, perspViewportWidth, perspViewportHeight);
     perspectiveCamera->translate(0.f, 0.f, 11.f);
-    perspectiveCamera->rotate(0.f, 12.f, 4.f);
+    perspectiveCamera->setRotation(0.f, -12.f, -4.f, ramses::ERotationConvention::Euler_XYZ);
     perspectiveCamera->scale(1.f, 2.f, 1.f);
     ramses::RenderPass* renderPassA = clientScene->createRenderPass("my render pass A");
     ramses::RenderPass* renderPassB = clientScene->createRenderPass("my render pass B");
@@ -157,10 +157,14 @@ int main()
     renderPassB->addRenderGroup(*renderGroupB);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::vector<ramses::vec3f> vertexPositionsArray{
+        ramses::vec3f{ -1.f, 0.f, 0.f },
+        ramses::vec3f{ 1.f, 0.f, 0.f },
+        ramses::vec3f{ 0.f, 1.f, 0.f } };
+
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsArray.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -187,27 +191,27 @@ int main()
 
     meshNode->setAppearance(*appearanceA);
     meshNode->setTranslation(1.5f, -0.3f, 0.4f);
-    meshNode->setRotation(12.f, 30.f, 10.f);
+    meshNode->setRotation(-12.f, -30.f, -10.f, ramses::ERotationConvention::Euler_XYZ);
     meshNode->setScaling(1.2f, 1.5f, 0.7f);
     meshNode->setGeometryBinding(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroupA->addMeshNode(*meshNode);
 
     meshNode2->setTranslation(1.f, 0.0f, 0.0f);
-    meshNode2->setRotation(10.f, 34.f, 19.f);
+    meshNode2->setRotation(-10.f, -34.f, -19.f, ramses::ERotationConvention::Euler_XYZ);
     meshNode2->setScaling(0.5f, 0.5f, 0.5f);
     meshNode2->setAppearance(*appearanceB);
     meshNode2->setGeometryBinding(*geometry);
     renderGroupB->addMeshNode(*meshNode2);
 
-    appearanceA->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
-    appearanceB->setInputValueVector4f(colorInput, 0.0f, 1.0f, 0.3f, 1.0f);
+    appearanceA->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
+    appearanceB->setInputValue(colorInput, ramses::vec4f{ 0.0f, 1.0f, 0.3f, 1.0f });
 
     /// [Pick Handling Example]
     // use triangle's vertex position array as PickableObject geometry
     // the two PickableObjects are exactly covering the two triangles
     ramses::ArrayBuffer* pickableGeometryBuffer = clientScene->createArrayBuffer(ramses::EDataType::Vector3F, 3u, "geometryBuffer");
-    pickableGeometryBuffer->updateData(0u, 3, vertexPositionsArray);
+    pickableGeometryBuffer->updateData(0u, 3u, vertexPositionsArray.data());
 
     ramses::PickableObject* pickableObject1 =  clientScene->createPickableObject(*pickableGeometryBuffer, ramses::pickableObjectId_t(1), "pickableObject");
     pickableObject1->setParent(*meshNode);

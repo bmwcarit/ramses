@@ -45,31 +45,31 @@ namespace ramses_internal
         meshNode->setGeometryBinding(triangleGeometry.GetGeometry());
         addMeshNodeToDefaultRenderGroup(*meshNode);
 
-        appearance.setInputValueInt32(caseNumber, state);
+        appearance.setInputValue(caseNumber, static_cast<int32_t>(state));
 
         switch (state)
         {
         case ARRAY_INPUT_VEC4:
         {
-            const float floatValues[12] = {
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f
+            const std::array<ramses::vec4f, 3u> floatValues = {
+                ramses::vec4f{ 1.0f, 0.0f, 0.0f, 0.0f },
+                ramses::vec4f{ 0.0f, 1.0f, 0.0f, 0.0f },
+                ramses::vec4f{ 0.0f, 0.0f, 1.0f, 0.0f }
             };
-            appearance.setInputValueVector4f(colorVec4Array, 3, floatValues);
+            appearance.setInputValue(colorVec4Array, 3, floatValues.data());
             break;
         }
         case ARRAY_INPUT_INT32:
         {
-            const int32_t intValues[3] = { 0, 1, 0 };
-            appearance.setInputValueInt32(colorIntArray, 3, intValues);
+            const std::array<int32_t, 3u> intValues = { 0, 1, 0 };
+            appearance.setInputValue(colorIntArray, 3, intValues.data());
             break;
         }
         case ARRAY_INPUT_INT32_DYNAMIC_INDEX:
         {
-            appearance.setInputValueInt32(index, 1);
-            const int32_t intValues[3] = { 0, 1, 0 };
-            appearance.setInputValueInt32(colorIntArray, 3, intValues);
+            appearance.setInputValue(index, 1);
+            const std::array<int32_t, 3u> intValues = { 0, 1, 0 };
+            appearance.setInputValue(colorIntArray, 3, intValues.data());
             break;
         }
         }

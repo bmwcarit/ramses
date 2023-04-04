@@ -21,9 +21,9 @@ namespace ramses
     {
     public:
         RenderTargetDescriptionImpl();
-        virtual ~RenderTargetDescriptionImpl() override;
+        ~RenderTargetDescriptionImpl() override;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
 
         status_t addRenderBuffer(const RenderBufferImpl& renderBuffer);
 

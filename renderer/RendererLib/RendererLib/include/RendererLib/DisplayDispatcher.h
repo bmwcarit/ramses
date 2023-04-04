@@ -48,7 +48,7 @@ namespace ramses_internal
         void stopDisplayThreadsUpdating();
         void setLoopMode(ELoopMode loopMode);
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration, DisplayHandle display);
-        std::chrono::microseconds getMinFrameDuration(DisplayHandle display) const;
+        [[nodiscard]] std::chrono::microseconds getMinFrameDuration(DisplayHandle display) const;
 
         [[nodiscard]] const RendererConfig& getRendererConfig() const;
 

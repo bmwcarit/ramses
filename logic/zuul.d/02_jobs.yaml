@@ -1,0 +1,241 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+---
+- job:
+    name: rlogic-build-and-push-docker-image
+    description: |
+      Build ramses logic docker container and store in artifactory
+    parent: rlogic-linux-base
+    run: ci/playbooks/build-and-push-docker-image.yaml
+    vars:
+      repo: "{{ zuul.project.canonical_name }}"
+      image_name: ramses-docker/ramses-logic-build
+      path: ci/docker/image
+      use_proxy: true
+    files:
+      - ci/docker/image/.*
+
+- job:
+    name: rlogic-checker
+    description: |
+      Syntax and stuff checking
+    parent: rlogic-linux-base-small
+    vars:
+      repo: "{{ zuul.project.src_dir }}"
+      use_proxy: true
+    run: ci/playbooks/pre-checker.yaml
+
+- job:
+    name: rlogic-windows-msvc2017-release
+    description: |
+      Build ramses logic on windows with 64bit MSVC2017 in Release
+    parent: rlogic-windows-compile-base
+    vars:
+      buildtype: Release
+      package_name: WIN_MSVC2017_64_Release
+      cmake_generator: Visual Studio 15 2017 Win64
+      additional_cmake_params: "-Wdev -Werror=dev -Wdeprecated -Werror=deprecated"
+    run: ci/playbooks/windows-build.yaml
+
+- job:
+    name: rlogic-windows-msvc2017-release-oss
+    description: |
+      Run oss-release script, then build ramses logic on windows with 64bit MSVC2017 in Release
+    parent: rlogic-windows-compile-base
+    vars:
+      buildtype: Release
+      package_name: WIN_MSVC2017_64_Release_Oss
+      cmake_generator: Visual Studio 15 2017 Win64
+      additional_cmake_params: "-Wdeprecated -Werror=deprecated"
+    run: ci/playbooks/windows-build-oss.yaml
+
+- job:
+    name: rlogic-windows-msvc2017-debug
+    description: |
+      Build ramses logic on windows with 64bit MSVC2017 in Debug
+    parent: rlogic-windows-compile-base
+    vars:
+      buildtype: Debug
+      package_name: WIN_MSVC2017_64_Debug
+      cmake_generator: Visual Studio 15 2017 Win64
+      additional_cmake_params: "-Wdev -Werror=dev -Wdeprecated -Werror=deprecated"
+    run: ci/playbooks/windows-build.yaml
+
+- job:
+    name: rlogic-linux-gcc-64-release
+    description: |
+      Build ramses logic on linux with 64bit GCC in release with all tests
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh L64_GCC Release"
+      package_name: LINUX_GCC_64_Release
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-gcc-64-release-oss
+    description: |
+      Run oss-release script, then build ramses logic on linux with 64bit GCC in release with all tests
+    parent: rlogic-linux-base
+    vars:
+      # no build.sh available, run commands as user would do
+      ramses_docker_run_command: >-
+        cd /home/rl-build/build &&
+        cmake -GNinja ../git &&
+        ninja &&
+        ctest -V --exclude-regex '.*SWRAST'
+      package_name: LINUX_GCC_64_Release_Oss
+    run: ci/playbooks/build-in-docker-container-oss.yaml
+
+- job:
+    name: rlogic-linux-gcc-64-lto-release
+    description: |
+      Build ramses logic on linux with 64bit GCC in release with LTO enabled
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh L64_GCC_LTO Release"
+      package_name: LINUX_GCC_64_LTO_Release
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-gcc-64-debug
+    description: |
+      Build ramses logic on linux with 64bit GCC in Debug with all tests
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh L64_GCC Debug"
+      package_name: LINUX_GCC_64_Debug
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-thread-sanitizer-64-debug
+    description: |
+      Build ramses logic on linux
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh THREAD_SANITIZER Debug"
+      package_name: LINUX_TSan_Debug
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-ub-sanitizer-64-debug
+    description: |
+      Build ramses logic on linux
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh UB_SANITIZER Debug"
+      package_name: LINUX_UBSan_Debug
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-valgrind-64
+    description: |
+     Build ramses logic on linux and run all valgrind tests
+    parent: rlogic-linux-base
+    vars:
+      valgrind_mode: valgrind_check_full
+      package_name: LINUX_GCC_64_Valgrind
+    timeout: 10800  # 3 hours
+    run: ci/playbooks/valgrind.yaml
+
+- job:
+    name: rlogic-linux-clang-tidy
+    description: |
+      Run clang-tidy on linux
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh CLANG_TIDY"
+      package_name: LINUX_ClangTidy
+    timeout: 5400  # 1.5 hours
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-verify-flatbuffers-gen-files
+    description: |
+      Make sure that generated flatbuffer files are up to date
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh CHECK_FLATBUF_GEN"
+    timeout: 1800  # 0.5 hours
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-address-sanitizer-64-debug
+    description: |
+      Build ramses logic on linux
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh ADDRESS_SANITIZER Debug"
+      package_name: LINUX_ASAN_Debug
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-llvm-64-release
+    description: |
+      Build ramses logic on linux with 64bit LLVM in Release with all tests
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh L64_LLVM Release"
+      package_name: LINUX_LLVM_64_Release
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-llvm-64-debug
+    description: |
+      Build ramses logic on linux with 64bit LLVM in Debug with all tests, extract test coverage for PR
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh L64_LLVM_COVERAGE Debug"
+      package_name: LINUX_LLVM_64_Debug
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-llvm-64-headless
+    description: |
+      Build ramses logic on linux with 64bit LLVM in Debug without ramses renderer
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh L64_LLVM_HEADLESS Debug"
+      package_name: LINUX_LLVM_64_Debug
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-linux-llvm-64-debug-shuffled
+    description: |
+      Build ramses logic on linux with 64bit LLVM in Debug with all tests, run shuffled
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh L64_LLVM_SHUFFLE Debug"
+    run: ci/playbooks/build-in-docker-container.yaml
+
+- job:
+    name: rlogic-tag-docker-images
+    description: |
+      Tag newly merged docker image tags for caching
+    parent: rlogic-linux-base-small
+    run: ci/playbooks/tag-docker-images-for-caching.yaml
+    # This filter ensures that docker images are only updated when the source files changed
+    # This filter **must** be the same as the one defined in 03_project.yaml (the post-section)
+    files:
+      - ci/docker/image/.*
+
+- job:
+    name: rlogic-release-on-tag
+    description: |
+      Create release copies, mirrors, forks and other things for a tagged ramses logic version
+    parent: rlogic-linux-base
+    run: ci/playbooks/publish-release.yaml
+
+- job:
+    name: rlogic-mgu22-release
+    description: |
+      Build ramses logic on MGU22 without test
+    parent: rlogic-linux-base
+    vars:
+      ramses_docker_run_command: "/home/rl-build/git/ci/docker/runtime-files/build.sh MGU22 Release"
+    run: ci/playbooks/build-in-docker-container.yaml

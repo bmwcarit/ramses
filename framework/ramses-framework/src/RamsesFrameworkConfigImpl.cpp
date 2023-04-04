@@ -52,9 +52,9 @@ namespace ramses
         return RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR;
     }
 
-    const ramses_internal::String& RamsesFrameworkConfigImpl::getProgramName() const
+    const ramses_internal::String& RamsesFrameworkConfigImpl::getParticipantName() const
     {
-        return m_programName;
+        return m_participantName;
     }
 
     EConnectionProtocol RamsesFrameworkConfigImpl::getUsedProtocol() const
@@ -101,88 +101,6 @@ namespace ramses
         return StatusOK;
     }
 
-    void RamsesFrameworkConfigImpl::registerOptions(CLI::App& cli)
-    {
-        auto* fw = cli.add_option_group("Framework Options");
-        auto* logger = cli.add_option_group("Logger Options");
-
-        std::map<std::string, EConnectionProtocol> mapConn{{"tcp", EConnectionProtocol::TCP}, {"off", EConnectionProtocol::Off}};
-        fw->add_option("--connection", m_usedProtocol, "Connection system")->transform(CLI::CheckedTransformer(mapConn, CLI::ignore_case))->default_val(m_usedProtocol);
-
-        fw->add_flag_function(
-            "--ramsh,!--no-ramsh",
-            [&](std::int64_t count) {
-                if (count > 0)
-                {
-                    m_shellType = ERamsesShellType_Console;
-                }
-                if (count < 0)
-                {
-                    m_shellType = ERamsesShellType_None;
-                }
-            },
-            "Enable Ramses Shell");
-        fw->add_option_function<std::string>(
-            "--guid", [&](const std::string& guid) { m_userProvidedGuid = Guid(guid.c_str()); }, "User provided Guid");
-
-        fw->add_option_function<std::string>(
-            "--ip", [&](const std::string& myip) { m_tcpConfig.setIPAddress(String(myip)); }, "IP Address for TCP connection");
-
-        // TCP/IP options
-        fw->add_option_function<uint16_t>(
-            "--port", [&](uint16_t p) { m_tcpConfig.setPort(p); }, "TCP port");
-        fw->add_option_function<std::string>(
-            "--daemon-ip", [&](const std::string& ip) { m_tcpConfig.setDaemonIPAddress(String(ip)); }, "Ramses Daemon TCP port");
-        fw->add_option_function<uint16_t>(
-            "--daemon-port", [&](uint16_t p) { m_tcpConfig.setDaemonPort(p); }, "Ramses Daemon TCP port");
-        fw->add_option_function<std::chrono::milliseconds>(
-            "--tcp-alive", [&](const std::chrono::milliseconds& val) { m_tcpConfig.setAliveInterval(val); }, "TCP Keepalive interval in milliseconds");
-        fw->add_option_function<std::chrono::milliseconds>(
-            "--tcp-alive-timeout", [&](const std::chrono::milliseconds& val) { m_tcpConfig.setAliveTimeout(val); }, "TCP Keepalive timeout in milliseconds");
-
-        // Logger options
-        logger->add_option_function<std::chrono::seconds>(
-            "--logp", [&](const std::chrono::seconds& val) { setPeriodicLogInterval(val); }, "Periodic log time interval in seconds (0 disables periodic logs)");
-
-        const std::map<std::string, ELogLevel> logLevels = {
-            {"off", ELogLevel::Off},
-            {"fatal", ELogLevel::Fatal},
-            {"error", ELogLevel::Error},
-            {"warn", ELogLevel::Warn},
-            {"info", ELogLevel::Info},
-            {"debug", ELogLevel::Debug},
-            {"trace", ELogLevel::Trace},
-        };
-
-        auto addLogContext = [logLevels, this](const std::vector<std::string>& values) {
-            for (const auto& value : values)
-            {
-                auto it = value.find(':');
-                if (it == std::string::npos)
-                    throw CLI::ValidationError("':' missing. Expected: CONTEXT:LOGLEVEL");
-                const auto              contextStr  = value.substr(0, it);
-                auto                    logLevelStr = value.substr(it + 1);
-                CLI::CheckedTransformer t(logLevels, CLI::ignore_case);
-                auto                    errorMsg = t(logLevelStr);
-                if (!errorMsg.empty())
-                    throw CLI::ValidationError(errorMsg);
-                ELogLevel logLevel;
-                if (!CLI::detail::lexical_assign<ELogLevel, ELogLevel>(logLevelStr, logLevel))
-                    throw CLI::ValidationError(fmt::format("Could not convert '{}' to loglevel", logLevelStr));
-                loggerConfig.logLevelContexts[contextStr.c_str()] = GetELogLevelInternal(logLevel);
-            }
-        };
-        logger->add_option("-l,--log-level", loggerConfig.logLevel, "Log level for all contexts (both console and dlt)")
-            ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));
-        logger->add_option("--log-level-console", loggerConfig.logLevelConsole, "Log level for all contexts (console only)")
-            ->transform(CLI::CheckedTransformer(logLevels, CLI::ignore_case));
-        logger->add_option_function<std::vector<std::string>>("--log-context", addLogContext, "Apply log level for specific log context.")->type_name("CONTEXT:LOGLEVEL");
-        logger->add_option("--dlt-app-id", loggerConfig.dltAppId, "DLT Application ID")->default_str(loggerConfig.dltAppId.stdRef());
-        logger->add_option("--dlt-app-description", loggerConfig.dltAppDescription, "DLT Application description")->default_str(loggerConfig.dltAppDescription.stdRef());
-        logger->add_flag("--log-test", loggerConfig.enableSmokeTestContext, "Enables additional log context for smoke tests (RSMT)");
-        cli.callback([&](){m_programName = cli.get_name();});
-    }
-
     status_t RamsesFrameworkConfigImpl::enableDLTApplicationRegistration(bool state)
     {
         m_enableDltApplicationRegistration = state;
@@ -194,24 +112,24 @@ namespace ramses
         return m_enableDltApplicationRegistration;
     }
 
-    void RamsesFrameworkConfigImpl::setDLTApplicationID(const char* id)
+    void RamsesFrameworkConfigImpl::setDLTApplicationID(std::string_view id)
     {
-        loggerConfig.dltAppId = id;
+        loggerConfig.dltAppId = String(id);
     }
 
-    const char* RamsesFrameworkConfigImpl::getDLTApplicationID() const
+    std::string_view RamsesFrameworkConfigImpl::getDLTApplicationID() const
     {
-        return loggerConfig.dltAppId.c_str();
+        return loggerConfig.dltAppId;
     }
 
-    void RamsesFrameworkConfigImpl::setDLTApplicationDescription(const char* description)
+    void RamsesFrameworkConfigImpl::setDLTApplicationDescription(std::string_view description)
     {
-        loggerConfig.dltAppDescription = description;
+        loggerConfig.dltAppDescription = String(description);
     }
 
-    const char* RamsesFrameworkConfigImpl::getDLTApplicationDescription() const
+    std::string_view RamsesFrameworkConfigImpl::getDLTApplicationDescription() const
     {
-        return loggerConfig.dltAppDescription.c_str();
+        return loggerConfig.dltAppDescription;
     }
 
     void RamsesFrameworkConfigImpl::setLogLevel(ELogLevel logLevel)
@@ -243,6 +161,12 @@ namespace ramses
         {
             return addErrorEntry(fmt::format("RamsesFrameworkConfig::setParticipantGuid: Failed to set invalid id '{}'.", m_userProvidedGuid));
         }
+        return StatusOK;
+    }
+
+    status_t RamsesFrameworkConfigImpl::setParticipantName(std::string_view name)
+    {
+        m_participantName = String(name);
         return StatusOK;
     }
 

@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERSTATISTICS_H
 
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererAPI/Types.h"
 #include "Utils/StatisticCollection.h"
 #include "PlatformAbstraction/PlatformTime.h"

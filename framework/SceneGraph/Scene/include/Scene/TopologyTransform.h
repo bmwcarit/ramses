@@ -11,6 +11,7 @@
 
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/IScene.h"
 #include "Math3d/Vector3.h"
 #include "Utils/AssertMovable.h"
 
@@ -18,10 +19,10 @@ namespace ramses_internal
 {
     struct TopologyTransform
     {
-        Vector3 translation = { 0.f, 0.f, 0.f };
-        Vector3 rotation    = { 0.f, 0.f, 0.f };
-        Vector3 scaling     = { 1.f, 1.f, 1.f };
-        ERotationConvention rotationConvention = ERotationConvention::Legacy_ZYX;
+        Vector3 translation = IScene::IdentityTranslation;
+        Vector4 rotation    = IScene::IdentityRotation;
+        Vector3 scaling     = IScene::IdentityScaling;
+        ERotationConvention rotationConvention = ERotationConvention::Euler_XYZ;
 
         NodeHandle node;
     };

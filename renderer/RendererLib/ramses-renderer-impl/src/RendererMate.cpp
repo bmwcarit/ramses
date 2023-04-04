@@ -29,7 +29,7 @@ namespace ramses
         m_ramshCommands.push_back(std::make_shared<ramses_internal::ConfirmationEcho>(*this));
         for (auto& cmd : m_ramshCommands)
             framework.getRamsh().add(cmd);
-        LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Ramsh commands registered from RendererMate");
+        LOG_DEBUG(ramses_internal::CONTEXT_SMOKETEST, "Ramsh commands registered from RendererMate");
     }
 
     bool RendererMate::setSceneState(sceneId_t sceneId, RendererSceneState state, std::string confirmationText)

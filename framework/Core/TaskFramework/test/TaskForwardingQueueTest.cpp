@@ -32,13 +32,13 @@ namespace ramses_internal
     class DirectTaskExecutor : public ITaskQueue
     {
     public:
-        virtual bool enqueue(ITask& Task) override
+        bool enqueue(ITask& Task) override
         {
             Task.execute();
             return true;
         }
 
-        virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override
+        void disableAcceptingTasksAfterExecutingCurrentQueue() override
         {
         }
     };

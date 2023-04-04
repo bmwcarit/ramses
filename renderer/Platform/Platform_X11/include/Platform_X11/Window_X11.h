@@ -50,7 +50,7 @@ namespace ramses_internal
         Window_X11(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
         ~Window_X11() override;
 
-        virtual bool init() override;
+        bool init() override;
 
         void handleEvents() override;
         bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;

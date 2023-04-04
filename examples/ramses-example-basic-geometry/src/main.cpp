@@ -41,8 +41,8 @@ int main()
     //                 This should not be the case for real applications.
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{0.f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -62,7 +62,7 @@ int main()
     // get input data of appearance and bind required data
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.0f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");

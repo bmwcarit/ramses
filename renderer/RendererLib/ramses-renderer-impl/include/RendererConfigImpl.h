@@ -12,11 +12,6 @@
 #include "RendererLib/RendererConfig.h"
 #include "StatusObjectImpl.h"
 
-namespace CLI
-{
-    class App;
-}
-
 namespace ramses
 {
     class IBinaryShaderCache;
@@ -27,12 +22,10 @@ namespace ramses
     public:
         RendererConfigImpl();
 
-        void registerOptions(CLI::App& cli);
-
         status_t enableSystemCompositorControl();
 
-        status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
-        const char* getSystemCompositorWaylandDisplay() const;
+        status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
+        std::string_view getSystemCompositorWaylandDisplay() const;
 
         status_t setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec);
 

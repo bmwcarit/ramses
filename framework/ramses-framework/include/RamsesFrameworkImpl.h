@@ -44,7 +44,7 @@ namespace ramses
     class RamsesFrameworkImpl : public StatusObjectImpl
     {
     public:
-        ~RamsesFrameworkImpl();
+        ~RamsesFrameworkImpl() override;
 
         static RamsesFrameworkImpl& createImpl(const RamsesFrameworkConfig& config);
 
@@ -75,7 +75,6 @@ namespace ramses
 
     private:
         RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress);
-        static ramses_internal::String GetParticipantName(const RamsesFrameworkConfig& config);
         static void LogEnvironmentVariableIfSet(const ramses_internal::String& envVarName);
         static void LogAvailableCommunicationStacks();
         static void LogBuildInformation();

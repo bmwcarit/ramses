@@ -10,6 +10,7 @@
 
 import sys
 import os
+import re
 import argparse
 import time
 from pathlib import Path
@@ -58,6 +59,7 @@ CONFIG_SCHEMA = {
                             },
                         ],
                     },
+                    'pattern': {'type': 'string'},
                     'include': {
                         'anyOf': [
                             {'type': 'string'},
@@ -148,6 +150,12 @@ def filter_issues_by_checks(issues, config):
             file_excludes = ensure_list(check_filter['exclude']) if 'exclude' in check_filter else []
             if lists.filter_includes_excludes([issue.relative_file], includes=file_includes, excludes=file_excludes):
                 continue
+
+            # keep issue if it matches the pattern or if there is no pattern defined
+            if 'pattern' in check_filter:
+                rx = re.compile(check_filter['pattern'])
+                if not rx.search(issue.text):
+                    continue
 
             # matched by exclude if gets here: discard issue and do not try other checks
             keep_issue = False

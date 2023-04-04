@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Scene/SceneActionApplier.h"
-#include "Scene/TransformPropertyType.h"
 #include "Scene/ResourceChanges.h"
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/PixelRectangle.h"
@@ -16,7 +15,6 @@
 #include "SceneAPI/Camera.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/ERotationConvention.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector4.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector2.h"
@@ -80,34 +78,33 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateTransform(nodeHandle, transformHandle), transformHandle);
             break;
         }
-        case ESceneActionId::SetTransformComponent:
+        case ESceneActionId::SetTranslation:
         {
             TransformHandle transform;
-            UInt32 component = 0;
             Vector3 vec;
-            action.read(component);
             action.read(transform);
             action.read(vec.data);
-            switch (component)
-            {
-            case ETransformPropertyType_Rotation:
-            {
-                ERotationConvention rotationConvention;
-                action.read(rotationConvention);
-                scene.setRotation(transform, vec, rotationConvention);
-                break;
-            }
-            case ETransformPropertyType_Scaling:
-            {
-                scene.setScaling(transform, vec);
-                break;
-            }
-            case ETransformPropertyType_Translation:
-            {
-                scene.setTranslation(transform, vec);
-                break;
-            }
-            };
+            scene.setTranslation(transform, vec);
+            break;
+        }
+        case ESceneActionId::SetRotation:
+        {
+            TransformHandle transform;
+            Vector4 vec;
+            ERotationConvention rotationConvention;
+            action.read(transform);
+            action.read(vec.data);
+            action.read(rotationConvention);
+            scene.setRotation(transform, vec, rotationConvention);
+            break;
+        }
+        case ESceneActionId::SetScaling:
+        {
+            TransformHandle transform;
+            Vector3 vec;
+            action.read(transform);
+            action.read(vec.data);
+            scene.setScaling(transform, vec);
             break;
         }
         case ESceneActionId::AllocateDataInstance:
@@ -509,39 +506,6 @@ namespace ramses_internal
             NodeHandle nodeHandle;
             action.read(nodeHandle);
             scene.releaseNode(nodeHandle);
-            break;
-        }
-        case ESceneActionId::AllocateStreamTexture:
-        {
-            StreamTextureHandle handle;
-            WaylandIviSurfaceId streamSource;
-            ResourceContentHash fallbackTextureHash;
-            String objectName;
-            UInt64 objectId;
-            action.read(handle);
-            action.read(streamSource);
-            action.read(fallbackTextureHash);
-            action.read(objectName);
-            action.read(objectId);
-            UNUSED(objectName);
-            UNUSED(objectId);
-            ALLOCATE_AND_ASSERT_HANDLE(scene.allocateStreamTexture(streamSource, fallbackTextureHash, handle), handle);
-            break;
-        }
-        case ESceneActionId::ReleaseStreamTexture:
-        {
-            StreamTextureHandle handle;
-            action.read(handle);
-            scene.releaseStreamTexture(handle);
-            break;
-        }
-        case ESceneActionId::SetForceFallback:
-        {
-            StreamTextureHandle handle;
-            bool forceFallback;
-            action.read(handle);
-            action.read(forceFallback);
-            scene.setForceFallbackImage(handle, forceFallback);
             break;
         }
         case ESceneActionId::AllocateRenderState:
@@ -1395,7 +1359,6 @@ namespace ramses_internal
         action.read(sizeInfo.renderTargetCount);
         action.read(sizeInfo.renderBufferCount);
         action.read(sizeInfo.textureSamplerCount);
-        action.read(sizeInfo.streamTextureCount);
         action.read(sizeInfo.dataSlotCount);
         action.read(sizeInfo.dataBufferCount);
         action.read(sizeInfo.textureBufferCount);

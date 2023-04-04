@@ -27,24 +27,24 @@ namespace ramses_internal
     public:
         explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
-        virtual void                        preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
+        void                        preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
         // Renderable allocation
-        virtual RenderableHandle            allocateRenderable          (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
-        virtual void                        releaseRenderable           (RenderableHandle renderableHandle) override;
-        virtual void                        setRenderableVisibility     (RenderableHandle renderableHandle, EVisibilityMode visibility) override;
-        virtual void                        setRenderableStartVertex    (RenderableHandle renderableHandle, UInt32 startVertex) override;
-        virtual DataInstanceHandle          allocateDataInstance        (DataLayoutHandle handle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
-        virtual void                        releaseDataInstance         (DataInstanceHandle dataInstanceHandle) override;
-        virtual TextureSamplerHandle        allocateTextureSampler      (const TextureSampler& sampler, TextureSamplerHandle handle) override;
-        virtual void                        releaseTextureSampler       (TextureSamplerHandle handle) override;
+        RenderableHandle            allocateRenderable          (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
+        void                        releaseRenderable           (RenderableHandle renderableHandle) override;
+        void                        setRenderableVisibility     (RenderableHandle renderableHandle, EVisibilityMode visibility) override;
+        void                        setRenderableStartVertex    (RenderableHandle renderableHandle, UInt32 startVertex) override;
+        DataInstanceHandle          allocateDataInstance        (DataLayoutHandle handle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
+        void                        releaseDataInstance         (DataInstanceHandle dataInstanceHandle) override;
+        TextureSamplerHandle        allocateTextureSampler      (const TextureSampler& sampler, TextureSamplerHandle handle) override;
+        void                        releaseTextureSampler       (TextureSamplerHandle handle) override;
 
         // Renderable data (stuff required for rendering)
-        virtual void                        setRenderableDataInstance   (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
-        virtual void                        setDataResource             (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
-        virtual void                        setDataTextureSamplerHandle (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
+        void                        setRenderableDataInstance   (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
+        void                        setDataResource             (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
+        void                        setDataTextureSamplerHandle (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
 
-        virtual RenderTargetHandle          allocateRenderTarget        (RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
-        virtual BlitPassHandle              allocateBlitPass            (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
+        RenderTargetHandle          allocateRenderTarget        (RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
+        BlitPassHandle              allocateBlitPass            (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
 
         void                                resetResourceCache();
 

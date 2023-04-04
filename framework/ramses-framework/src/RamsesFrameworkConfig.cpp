@@ -21,11 +21,6 @@ namespace ramses
     {
     }
 
-    void RamsesFrameworkConfig::registerOptions(CLI::App& cli)
-    {
-        return impl.registerOptions(cli);
-    }
-
     status_t RamsesFrameworkConfig::setFeatureLevel(EFeatureLevel featureLevel)
     {
         return impl.setFeatureLevel(featureLevel);
@@ -57,22 +52,22 @@ namespace ramses
         return impl.enableDLTApplicationRegistration(false);
     }
 
-    void RamsesFrameworkConfig::setDLTApplicationID(const char* id)
+    void RamsesFrameworkConfig::setDLTApplicationID(std::string_view id)
     {
         impl.setDLTApplicationID(id);
     }
 
-    const char* RamsesFrameworkConfig::getDLTApplicationID() const
+    std::string_view RamsesFrameworkConfig::getDLTApplicationID() const
     {
         return impl.getDLTApplicationID();
     }
 
-    void RamsesFrameworkConfig::setDLTApplicationDescription(const char* description)
+    void RamsesFrameworkConfig::setDLTApplicationDescription(std::string_view description)
     {
         impl.setDLTApplicationDescription(description);
     }
 
-    const char* RamsesFrameworkConfig::getDLTApplicationDescription() const
+    std::string_view RamsesFrameworkConfig::getDLTApplicationDescription() const
     {
         return impl.getDLTApplicationDescription();
     }
@@ -102,12 +97,17 @@ namespace ramses
         return impl.setParticipantGuid(guid);
     }
 
+    status_t RamsesFrameworkConfig::setParticipantName(std::string_view name)
+    {
+        return impl.setParticipantName(name);
+    }
+
     status_t RamsesFrameworkConfig::setConnectionSystem(EConnectionSystem connectionSystem)
     {
         return impl.setConnectionSystem(connectionSystem);
     }
 
-    void RamsesFrameworkConfig::setInterfaceSelectionIPForTCPCommunication(const char* ip)
+    void RamsesFrameworkConfig::setInterfaceSelectionIPForTCPCommunication(std::string_view ip)
     {
         impl.m_tcpConfig.setIPAddress(ip);
     }
@@ -117,7 +117,7 @@ namespace ramses
         impl.m_tcpConfig.setPort(port);
     }
 
-    void RamsesFrameworkConfig::setDaemonIPForTCPCommunication(const char* ip)
+    void RamsesFrameworkConfig::setDaemonIPForTCPCommunication(std::string_view ip)
     {
         impl.m_tcpConfig.setDaemonIPAddress(ip);
     }

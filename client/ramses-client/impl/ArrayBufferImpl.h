@@ -11,7 +11,7 @@
 
 #include "SceneObjectImpl.h"
 #include "SceneAPI/Handles.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 
 namespace ramses
 {
@@ -19,16 +19,16 @@ namespace ramses
     {
     public:
         ArrayBufferImpl(SceneImpl& scene, const char* databufferName);
-        virtual ~ArrayBufferImpl() override;
+        ~ArrayBufferImpl() override;
 
         void             initializeFrameworkData(EDataType dataType, uint32_t numElements);
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
 
-        status_t updateData(uint32_t firstElement, uint32_t numElements, const void* bufferData);
+        status_t updateData(uint32_t firstElement, uint32_t numElements, const ramses_internal::Byte* bufferData);
 
         ramses_internal::DataBufferHandle getDataBufferHandle() const;
         uint32_t getMaximumNumberOfElements() const;

@@ -366,9 +366,6 @@ namespace ramses_internal
         case TextureSampler::ContentType::RenderBuffer:
         case TextureSampler::ContentType::RenderBufferMS:
             return updateTextureSamplerResourceAsRenderBuffer(resourceAccessor, RenderBufferHandle(samplerData.contentHandle), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
-        case TextureSampler::ContentType::StreamTexture:
-            assert(false);
-            break;
         case TextureSampler::ContentType::OffscreenBuffer:
             m_deviceHandleCacheForTextures[sampler.asMemoryHandle()] = resourceAccessor.getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle(samplerData.contentHandle));
             return true;
@@ -424,7 +421,6 @@ namespace ramses_internal
             return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, fallbackSamplerData.textureResource);
         case TextureSampler::ContentType::TextureBuffer:
             return updateTextureSamplerResourceAsTextureBuffer(resourceAccessor, TextureBufferHandle(fallbackSamplerData.contentHandle), deviceHandleInOut);
-        case TextureSampler::ContentType::StreamTexture:
         case TextureSampler::ContentType::RenderBuffer:
         case TextureSampler::ContentType::RenderBufferMS:
         case TextureSampler::ContentType::OffscreenBuffer:

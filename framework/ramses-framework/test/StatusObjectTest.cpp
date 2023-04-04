@@ -22,7 +22,7 @@ public:
     {
     }
 
-    virtual status_t validate() const override
+    status_t validate() const override
     {
         StatusObjectImpl::validate();
         const auto infoStatus = addValidationMessage(EValidationSeverity_Info, m_prefix + "info");

@@ -51,10 +51,10 @@ int main()
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsData[] = { -0.1f, 0.f, -0.1f, 0.1f, 0.f, -0.1f, 0.f, 0.1f, -0.1f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
-    uint16_t indexData[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indexData);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-0.1f, 0.f, -0.1f}, ramses::vec3f{0.1f, 0.f, -0.1f}, ramses::vec3f{0.f, 0.1f, -0.1f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = scene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -74,7 +74,7 @@ int main()
     // get input data of appearance and bind required data
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 0.5f, 1.0f, 0.3f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 0.5f, 1.0f, 0.3f, 1.0f });
 
     /// [Basic Scene Graph Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.

@@ -21,7 +21,7 @@ namespace ramses_internal
     {
         using ContextFilter = std::pair<ELogLevel, String>;
 
-        bool StringToLogLevel(String str, ELogLevel& logLevel);
+        bool StringToLogLevel(std::string_view str, ELogLevel& logLevel);
         ELogLevel GetLoglevelFromInt(Int32 logLevelInt);
 
         std::vector<ContextFilter> ParseContextFilters(const String& filterCommand);

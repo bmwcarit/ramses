@@ -18,13 +18,13 @@ G_PROP_FILES = [
 ]
 
 # generate license regexes only once
-G_RE_LICENSE_TEMPLATE_OPEN = re.compile(r"""(?://|::|#)  -------------------------------------------------------------------------
-(?://|::|#)  Copyright \(C\) 2\d{3}(?:-2\d{3})?(?: BMW AG| BMW Car IT GmbH|, Garmin International, Inc\. and its affiliates\.)$(?:\n(?://|::|#)  Copyright \(C\) .*$)*
-(?://|::|#)  -------------------------------------------------------------------------
-(?://|::|#)  This Source Code Form is subject to the terms of the Mozilla Public
-(?://|::|#)  License, v\. 2\.0\. If a copy of the MPL was not distributed with this
-(?://|::|#)  file, You can obtain one at https://mozilla\.org/MPL/2\.0/\.
-(?://|::|#)  -------------------------------------------------------------------------
+G_RE_LICENSE_TEMPLATE_OPEN = re.compile(r"""(?://|::|#|  )  -------------------------------------------------------------------------
+(?://|::|#|  )  Copyright \(C\) 2\d{3}(?:-2\d{3})?(?: BMW AG| BMW Car IT GmbH|, Garmin International, Inc\. and its affiliates\.)$(?:\n(?://|::|#)  Copyright \(C\) .*$)*
+(?://|::|#|  )  -------------------------------------------------------------------------
+(?://|::|#|  )  This Source Code Form is subject to the terms of the Mozilla Public
+(?://|::|#|  )  License, v\. 2\.0\. If a copy of the MPL was not distributed with this
+(?://|::|#|  )  file, You can obtain one at https://mozilla\.org/MPL/2\.0/\.
+(?://|::|#|  )  -------------------------------------------------------------------------
 """, re.MULTILINE)  # noqa E501 allow long lines here
 
 G_RE_LICENSE_TEMPLATE_PROP = re.compile(r"""(?://|::|#)  -------------------------------------------------------------------------

@@ -52,7 +52,7 @@ namespace ramses_internal
         m_geometry = m_scene.createGeometryBinding(effect);
 
         static const UInt32 indicesData[] = { 0, 1, 2 };
-        auto dataBuffer = m_scene.createArrayResource(ramses::EDataType::UInt32, 3u, indicesData);
+        auto dataBuffer = m_scene.createArrayResource(3u, indicesData);
         m_geometry->setIndices(*dataBuffer);
 
         switch (state)
@@ -87,7 +87,7 @@ namespace ramses_internal
             3.f, -3.f,  0.f, 1.0f,
         };
 
-        auto arrayResource = m_scene.createArrayResource(ramses::EDataType::ByteBlob, sizeof(vertices), vertices);
+        auto arrayResource = m_scene.createArrayResource(sizeof(vertices), reinterpret_cast<const ramses::Byte*>(vertices));
 
         constexpr uint16_t stride = 4 * sizeof(float);
         ramses::AttributeInput inputX;
@@ -117,7 +117,7 @@ namespace ramses_internal
             UNUSEDVALUE , UNUSEDVALUE   , UNUSEDVALUE   , 1.0f            //_ , _ _ , w2
         };
 
-        auto arrayResource = m_scene.createArrayResource(ramses::EDataType::ByteBlob, sizeof(vertices), vertices);
+        auto arrayResource = m_scene.createArrayResource(sizeof(vertices), reinterpret_cast<const ramses::Byte*>(vertices));
 
         constexpr uint16_t strideXAndW = 8 * sizeof(float);
         constexpr uint16_t strideYZ = 4 * sizeof(float);
@@ -142,7 +142,7 @@ namespace ramses_internal
             UNUSEDVALUE, 3.f, -3.f,  0.f,
         };
 
-        auto arrayResource = m_scene.createArrayResource(ramses::EDataType::ByteBlob, sizeof(vertices), vertices);
+        auto arrayResource = m_scene.createArrayResource(sizeof(vertices), reinterpret_cast<const ramses::Byte*>(vertices));
 
         constexpr uint16_t stride = 4 * sizeof(float);
         ramses::AttributeInput input;
@@ -160,7 +160,7 @@ namespace ramses_internal
             3.f, -3.f,  0.f, 1.0f,
         };
 
-        auto arrayResource = m_scene.createArrayResource(ramses::EDataType::ByteBlob, sizeof(vertices), vertices);
+        auto arrayResource = m_scene.createArrayResource(sizeof(vertices), reinterpret_cast<const ramses::Byte*>(vertices));
 
         constexpr uint16_t stride = 4 * sizeof(float);
         ramses::AttributeInput inputX;

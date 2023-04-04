@@ -30,7 +30,7 @@ namespace ramses_internal
         {
         }
 
-        ~AWaylandSurface()
+        ~AWaylandSurface() override
         {
         }
 

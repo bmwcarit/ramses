@@ -35,7 +35,7 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool logMessage(const LogMessage&) override
+        bool logMessage(const LogMessage&) override
         {
             return true;
         }
@@ -49,24 +49,24 @@ namespace ramses_internal
 
         void uninitialize() override {}
 
-        virtual bool registerInjectionCallback(LogContext*, uint32_t, int(*)(uint32_t, void*, uint32_t)) override
+        bool registerInjectionCallback(LogContext*, uint32_t, int(*)(uint32_t, void*, uint32_t)) override
         {
             return true;
         }
 
-        virtual bool transmitFile(LogContext&, const String&, bool) override
+        bool transmitFile(LogContext&, const String&, bool) override
         {
             return true;
         }
 
-        virtual bool isInitialized() override
+        bool isInitialized() override
         {
             return true;
         }
 
     private:
         DltAdapterDummy() {};
-        virtual ~DltAdapterDummy() override {};
+        ~DltAdapterDummy() override {};
     };
 }
 #endif // RAMSES_DLTADAPTERDUMMY_H

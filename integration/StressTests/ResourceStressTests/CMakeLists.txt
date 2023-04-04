@@ -14,7 +14,7 @@ expandModuleByPlatform(
     SRC_FILES           src/*.cpp
                         src/*.h
     RESOURCE_FOLDERS    ../../TestContent/res
-    DEPENDENCIES        TestContent FrameworkTestUtils RendererTestUtils
+    DEPENDENCIES        TestContent FrameworkTestUtils RendererTestUtils ramses-cli
 )
 
 RENDERER_TEST_PER_CONFIG(ResourceStressTests RNDSANDWICHTEST)

@@ -15,7 +15,6 @@
 #include "TestApplicationSurfaceId.h"
 #include "TestApplicationShellSurfaceId.h"
 #include "WaylandOutputTestParams.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {

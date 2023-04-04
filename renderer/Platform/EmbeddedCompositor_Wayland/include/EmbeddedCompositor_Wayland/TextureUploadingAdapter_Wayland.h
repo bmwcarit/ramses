@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         TextureUploadingAdapter_Wayland(IDevice& device, wl_display* waylandWindowDisplay, wl_display* embeddedCompositingDisplay);
-        ~TextureUploadingAdapter_Wayland();
+        ~TextureUploadingAdapter_Wayland() override;
 
         void uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, EGLClientBuffer bufferResource);
         bool uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf);

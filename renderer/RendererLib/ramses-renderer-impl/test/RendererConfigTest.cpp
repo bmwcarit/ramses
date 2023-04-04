@@ -10,7 +10,6 @@
 #include "ramses-renderer-api/BinaryShaderCache.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "RendererConfigImpl.h"
-#include "CLI/CLI.hpp"
 
 TEST(ARendererConfig, hasDefaultValuesUponConstruction)
 {
@@ -59,8 +58,8 @@ TEST(ARendererConfig, setsAndGetsWaylandDisplay)
 {
     ramses::RendererConfig config;
     EXPECT_EQ(ramses::StatusOK, config.setSystemCompositorWaylandDisplay("xxx"));
-    EXPECT_STREQ("xxx", config.getSystemCompositorWaylandDisplay());
-    EXPECT_STREQ("xxx", config.impl.getInternalRendererConfig().getWaylandDisplayForSystemCompositorController().c_str());
+    EXPECT_EQ("xxx", config.getSystemCompositorWaylandDisplay());
+    EXPECT_EQ("xxx", config.impl.getInternalRendererConfig().getWaylandDisplayForSystemCompositorController());
 }
 
 TEST(ARendererConfig, setsAndGetsLoopCountPeriod)
@@ -70,21 +69,3 @@ TEST(ARendererConfig, setsAndGetsLoopCountPeriod)
     EXPECT_EQ(std::chrono::milliseconds(1234), config.getRenderThreadLoopTimingReportingPeriod());
 }
 
-TEST(ARendererConfig, cliIviControl)
-{
-    ramses::RendererConfig config;
-    CLI::App cli;
-    config.registerOptions(cli);
-    cli.parse(std::vector<std::string>{"--ivi-control"});
-    EXPECT_TRUE(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled());
-    cli.parse(std::vector<std::string>{"--no-ivi-control"});
-    EXPECT_FALSE(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled());
-}
-
-TEST(ARendererConfig, cliThrowsErrorsForExtras)
-{
-    ramses::RendererConfig config;
-    CLI::App cli;
-    config.registerOptions(cli);
-    EXPECT_THROW(cli.parse(std::vector<std::string>{"--foo"}), CLI::ExtrasError);
-}

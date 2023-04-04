@@ -14,7 +14,6 @@
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererAPI/ITextureUploadingAdapter.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
@@ -22,7 +21,7 @@ namespace ramses_internal
     {
     public:
         EmbeddedCompositorMock();
-        virtual ~EmbeddedCompositorMock() override;
+        ~EmbeddedCompositorMock() override;
 
         MOCK_METHOD(Bool, init, ());
         MOCK_METHOD(void, handleRequestsFromClients, (), (override));

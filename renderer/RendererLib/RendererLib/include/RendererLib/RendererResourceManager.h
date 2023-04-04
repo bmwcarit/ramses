@@ -41,74 +41,74 @@ namespace ramses_internal
             const DisplayConfig& displayConfig,
             const FrameTimer& frameTimer,
             RendererStatistics& stats);
-        virtual ~RendererResourceManager() override;
+        ~RendererResourceManager() override;
 
         // Immutable resources
-        virtual void                 referenceResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) override;
-        virtual void                 unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) override;
+        void                 referenceResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) override;
+        void                 unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) override;
 
-        virtual void                 provideResourceData(const ManagedResource& mr) override;
-        [[nodiscard]] virtual Bool                 hasResourcesToBeUploaded() const override;
-        virtual void                 uploadAndUnloadPendingResources() override;
+        void                 provideResourceData(const ManagedResource& mr) override;
+        [[nodiscard]] Bool                 hasResourcesToBeUploaded() const override;
+        void                 uploadAndUnloadPendingResources() override;
 
-        [[nodiscard]] virtual DeviceResourceHandle getResourceDeviceHandle(const ResourceContentHash& hash) const override;
-        [[nodiscard]] virtual EResourceStatus      getResourceStatus(const ResourceContentHash& hash) const override;
-        [[nodiscard]] virtual EResourceType        getResourceType(const ResourceContentHash& hash) const override;
+        [[nodiscard]] DeviceResourceHandle getResourceDeviceHandle(const ResourceContentHash& hash) const override;
+        [[nodiscard]] EResourceStatus      getResourceStatus(const ResourceContentHash& hash) const override;
+        [[nodiscard]] EResourceType        getResourceType(const ResourceContentHash& hash) const override;
 
         // Scene resources
-        [[nodiscard]] virtual DeviceResourceHandle getRenderTargetDeviceHandle(RenderTargetHandle, SceneId sceneId) const override;
-        [[nodiscard]] virtual DeviceResourceHandle getRenderTargetBufferDeviceHandle(RenderBufferHandle bufferHandle, SceneId sceneId) const override;
-        virtual void                 getBlitPassRenderTargetsDeviceHandle(BlitPassHandle blitPassHandle, SceneId sceneId, DeviceResourceHandle& srcRT, DeviceResourceHandle& dstRT) const override;
+        [[nodiscard]] DeviceResourceHandle getRenderTargetDeviceHandle(RenderTargetHandle, SceneId sceneId) const override;
+        [[nodiscard]] DeviceResourceHandle getRenderTargetBufferDeviceHandle(RenderBufferHandle bufferHandle, SceneId sceneId) const override;
+        void                 getBlitPassRenderTargetsDeviceHandle(BlitPassHandle blitPassHandle, SceneId sceneId, DeviceResourceHandle& srcRT, DeviceResourceHandle& dstRT) const override;
 
-        virtual void                 uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer) override;
-        virtual void                 unloadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId) override;
+        void                 uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer) override;
+        void                 unloadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId) override;
 
-        virtual void                 uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) override;
-        virtual void                 unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) override;
+        void                 uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) override;
+        void                 unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) override;
 
-        virtual void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
-        virtual void                 uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
-        virtual void                 unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) override;
+        void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
+        void                 uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
+        void                 unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) override;
 
-        virtual void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source) override;
-        virtual void                 unloadStreamBuffer(StreamBufferHandle bufferHandle) override;
+        void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source) override;
+        void                 unloadStreamBuffer(StreamBufferHandle bufferHandle) override;
 
-        virtual void                 uploadExternalBuffer(ExternalBufferHandle bufferHandle) override;
-        virtual void                 unloadExternalBuffer(ExternalBufferHandle bufferHandle) override;
+        void                 uploadExternalBuffer(ExternalBufferHandle bufferHandle) override;
+        void                 unloadExternalBuffer(ExternalBufferHandle bufferHandle) override;
 
-        virtual void                 uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId) override;
-        virtual void                 unloadBlitPassRenderTargets(BlitPassHandle blitPass, SceneId sceneId) override;
+        void                 uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId) override;
+        void                 unloadBlitPassRenderTargets(BlitPassHandle blitPass, SceneId sceneId) override;
 
-        virtual void                 uploadDataBuffer(DataBufferHandle dataBufferHandle, EDataBufferType dataBufferType, EDataType dataType, UInt32 dataSizeInBytes, SceneId sceneId) override;
-        virtual void                 unloadDataBuffer(DataBufferHandle dataBufferHandle, SceneId sceneId) override;
-        virtual void                 updateDataBuffer(DataBufferHandle handle, UInt32 dataSizeInBytes, const Byte* data, SceneId sceneId) override;
-        [[nodiscard]] virtual DeviceResourceHandle getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const override;
+        void                 uploadDataBuffer(DataBufferHandle dataBufferHandle, EDataBufferType dataBufferType, EDataType dataType, UInt32 dataSizeInBytes, SceneId sceneId) override;
+        void                 unloadDataBuffer(DataBufferHandle dataBufferHandle, SceneId sceneId) override;
+        void                 updateDataBuffer(DataBufferHandle handle, UInt32 dataSizeInBytes, const Byte* data, SceneId sceneId) override;
+        [[nodiscard]] DeviceResourceHandle getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const override;
 
-        virtual void                 uploadTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, SceneId sceneId) override;
-        virtual void                 unloadTextureBuffer(TextureBufferHandle textureBufferHandle, SceneId sceneId) override;
-        virtual void                 updateTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId) override;
-        [[nodiscard]] virtual DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const override;
+        void                 uploadTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, SceneId sceneId) override;
+        void                 unloadTextureBuffer(TextureBufferHandle textureBufferHandle, SceneId sceneId) override;
+        void                 updateTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId) override;
+        [[nodiscard]] DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const override;
 
-        virtual void                 uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId) override;
-        virtual void                 unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId) override;
-        [[nodiscard]] virtual DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const override;
+        void                 uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId) override;
+        void                 unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId) override;
+        [[nodiscard]] DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const override;
 
-        virtual void                 unloadAllSceneResourcesForScene(SceneId sceneId) override;
-        virtual void                 unreferenceAllResourcesForScene(SceneId sceneId) override;
-        [[nodiscard]] virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
+        void                 unloadAllSceneResourcesForScene(SceneId sceneId) override;
+        void                 unreferenceAllResourcesForScene(SceneId sceneId) override;
+        [[nodiscard]] const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
 
         // Renderer resources
-        [[nodiscard]] virtual DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
-        [[nodiscard]] virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
-        [[nodiscard]] virtual int getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const override;
-        [[nodiscard]] virtual UInt32 getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const override;
-        [[nodiscard]] virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const override;
-        [[nodiscard]] virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const override;
-        [[nodiscard]] virtual DeviceResourceHandle getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const override;
-        [[nodiscard]] virtual DeviceResourceHandle getEmptyExternalBufferDeviceHandle() const override;
-        [[nodiscard]] virtual uint32_t getExternalBufferGlId(ExternalBufferHandle bufferHandle) const override;
+        [[nodiscard]] DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
+        [[nodiscard]] DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
+        [[nodiscard]] int getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const override;
+        [[nodiscard]] UInt32 getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const override;
+        [[nodiscard]] OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const override;
+        [[nodiscard]] DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const override;
+        [[nodiscard]] DeviceResourceHandle getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const override;
+        [[nodiscard]] DeviceResourceHandle getEmptyExternalBufferDeviceHandle() const override;
+        [[nodiscard]] uint32_t getExternalBufferGlId(ExternalBufferHandle bufferHandle) const override;
 
-        [[nodiscard]] virtual const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const override;
+        [[nodiscard]] const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const override;
 
         [[nodiscard]] const RendererResourceRegistry& getRendererResourceRegistry() const;
 
@@ -145,8 +145,6 @@ namespace ramses_internal
         std::unordered_map<WaylandIviSurfaceId, StreamUsage> m_streamUsages;
 
         friend class RendererLogger;
-        // TODO Violin remove this after KPI monitor is reworked
-        friend class GpuMemorySample;
     };
 }
 

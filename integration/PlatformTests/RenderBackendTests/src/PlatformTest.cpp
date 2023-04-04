@@ -47,7 +47,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        ~APlatform()
+        ~APlatform() override
         {
             delete platform;
         }

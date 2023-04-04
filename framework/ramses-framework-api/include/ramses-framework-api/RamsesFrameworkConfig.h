@@ -16,11 +16,6 @@
 #include <chrono>
 #include <string_view>
 
-namespace CLI
-{
-    class App;
-}
-
 namespace ramses
 {
     /**
@@ -39,16 +34,6 @@ namespace ramses
         * @brief Destructor of RamsesFrameworkConfig
         */
         ~RamsesFrameworkConfig() override;
-
-        /**
-        * @brief Register command line options for the CLI11 command line parser
-        *
-        * Creates an option group "Framework Options" and registers command line options
-        * After parsing the command line with CLI::App::parser() this config object is assigned with the values provided by command line
-        *
-        * @param[in] cli CLI11 command line parser
-        */
-        void registerOptions(CLI::App& cli);
 
         /**
         * @brief Set feature level
@@ -125,28 +110,28 @@ namespace ramses
         *
         * @param[in] id to use as DLT application id
         */
-        void setDLTApplicationID(const char* id);
+        void setDLTApplicationID(std::string_view id);
 
         /**
         * @brief Return the DLT application id value set in configuration object
         *
         * @return DLT application id value set in this configuration object
         */
-        [[nodiscard]] const char* getDLTApplicationID() const;
+        [[nodiscard]] std::string_view getDLTApplicationID() const;
 
         /**
         * @brief Set the application description for DLT
         *
         * @param[in] description to use as DLT application description
         */
-        void setDLTApplicationDescription(const char* description);
+        void setDLTApplicationDescription(std::string_view description);
 
         /**
         * @brief Return the DLT application description set in configuration object
         *
         * @return DLT application description set in this configuration object
         */
-        [[nodiscard]] const char* getDLTApplicationDescription() const;
+        [[nodiscard]] std::string_view getDLTApplicationDescription() const;
 
         /**
         * @brief Sets the log level for all contexts
@@ -200,6 +185,17 @@ namespace ramses
         status_t setParticipantGuid(uint64_t guid);
 
         /**
+        * @brief Sets the participant name in a distributed rendering setup
+        *
+        * Default value is an empty string.
+        *
+        * @param[in] name human readable participant name
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setParticipantName(std::string_view name);
+
+        /**
         * @brief Sets the connection system for a distributed setup
         *
         * @param[in] connectionSystem the connection system to use (default: TCP)
@@ -213,7 +209,7 @@ namespace ramses
         *
         * @param[in] ip IP to use
         */
-        void setInterfaceSelectionIPForTCPCommunication(const char* ip);
+        void setInterfaceSelectionIPForTCPCommunication(std::string_view ip);
 
         /**
         * @brief Sets the port that is used to select the local network interface
@@ -227,7 +223,7 @@ namespace ramses
         *
         * @param[in] ip IP to use
         */
-        void setDaemonIPForTCPCommunication(const char* ip);
+        void setDaemonIPForTCPCommunication(std::string_view ip);
 
         /**
         * @brief Sets the port of the communication daemon

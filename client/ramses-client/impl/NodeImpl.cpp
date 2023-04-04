@@ -17,10 +17,6 @@
 
 namespace ramses
 {
-    static const ramses_internal::Vector3 IdentityTranslation(0.0f, 0.0f, 0.0f);
-    static const ramses_internal::Vector3 IdentityRotation(0.0f, 0.0f, 0.0f);
-    static const ramses_internal::Vector3 IdentityScaling(1.0f, 1.0f, 1.0f);
-
     NodeImpl::NodeImpl(SceneImpl& scene, ERamsesObjectType type, const char* nodeName)
         : SceneObjectImpl(scene, type, nodeName)
         , m_parent(nullptr)
@@ -281,32 +277,11 @@ namespace ramses
         getIScene().removeChildFromNode(m_nodeHandle, child.m_nodeHandle);
     }
 
-    status_t NodeImpl::setRotationInternal(const ramses_internal::Vector3& rotation, ramses_internal::ERotationConvention rotationConventionInternal)
-    {
-        if (!m_transformHandle.isValid())
-        {
-            if (rotation == IdentityRotation &&
-                rotationConventionInternal == ramses_internal::ERotationConvention::Legacy_ZYX)
-            {
-                return StatusOK;
-            }
-            initializeTransform();
-        }
-
-        if (rotation != getIScene().getRotation(m_transformHandle)
-            || rotationConventionInternal != getIScene().getRotationConvention(m_transformHandle))
-        {
-            getIScene().setRotation(m_transformHandle, rotation, rotationConventionInternal);
-        }
-
-        return StatusOK;
-    }
-
     status_t NodeImpl::translate(float x, float y, float z)
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityTranslation)
+            if (ramses_internal::Vector3(x, y, z) == ramses_internal::IScene::IdentityTranslation)
             {
                 return StatusOK;
             }
@@ -321,7 +296,7 @@ namespace ramses
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityTranslation)
+            if (ramses_internal::Vector3(x, y, z) == ramses_internal::IScene::IdentityTranslation)
             {
                 return StatusOK;
             }
@@ -339,9 +314,9 @@ namespace ramses
     {
         if (!m_transformHandle.isValid())
         {
-            x = IdentityTranslation.x;
-            y = IdentityTranslation.y;
-            z = IdentityTranslation.z;
+            x = ramses_internal::IScene::IdentityTranslation.x;
+            y = ramses_internal::IScene::IdentityTranslation.y;
+            z = ramses_internal::IScene::IdentityTranslation.z;
             return StatusOK;
         }
 
@@ -352,87 +327,89 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t NodeImpl::rotate(float x, float y, float z)
+    ramses::status_t NodeImpl::setRotation(float x, float y, float z, ERotationConvention rotationConvention)
+    {
+        if (rotationConvention == ERotationConvention::Quaternion)
+        {
+            return addErrorEntry("Invalid rotation convention: Quaternion");
+        }
+        const auto rotationConventionInternal = RotationConventionUtils::ConvertRotationConventionToInternal(rotationConvention);
+        return setRotationInternal({x, y, z, 1.f}, rotationConventionInternal);
+    }
+
+    ramses::status_t NodeImpl::setRotationInternal(ramses_internal::Vector4&& rotation, ramses_internal::ERotationConvention rotationConvention)
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityRotation)
+            if (rotation == ramses_internal::IScene::IdentityRotation)
             {
                 return StatusOK;
             }
             initializeTransform();
         }
-        else if (ramses_internal::ERotationConvention::Legacy_ZYX != getIScene().getRotationConvention(m_transformHandle))
-            return addErrorEntry("Node::rotate() can only be used with legacy left-handed rotation: setRotation(float,float,float)");
 
-        const ramses_internal::Vector3& previous = getIScene().getRotation(m_transformHandle);
-        const ramses_internal::Vector3 increment(x, y, z);
-        getIScene().setRotation(m_transformHandle, previous + increment, ramses_internal::ERotationConvention::Legacy_ZYX);
+        if (rotation != getIScene().getRotation(m_transformHandle)
+            || rotationConvention != getIScene().getRotationConvention(m_transformHandle))
+        {
+            getIScene().setRotation(m_transformHandle, rotation, rotationConvention);
+        }
 
         return StatusOK;
     }
 
-    status_t NodeImpl::setRotation(float x, float y, float z)
+    ERotationConvention NodeImpl::getRotationConvention() const
     {
-        return setRotationInternal({ x, y, z }, ramses_internal::ERotationConvention::Legacy_ZYX);
-    }
-
-    ramses::status_t NodeImpl::setRotation(float x, float y, float z, ERotationConvention rotationConvention)
-    {
-        const auto rotationConventionInternal = RotationConventionUtils::ConvertRotationConventionToInternal(rotationConvention);
-        return setRotationInternal({ x, y, z }, rotationConventionInternal);
+        if (!m_transformHandle.isValid())
+        {
+            return ERotationConvention::Euler_XYZ;
+        }
+        const auto rotationConventionInternal = getIScene().getRotationConvention(m_transformHandle);
+        return RotationConventionUtils::ConvertDataTypeFromInternal(rotationConventionInternal);
     }
 
     status_t NodeImpl::getRotation(float& x, float& y, float& z) const
     {
         if (!m_transformHandle.isValid())
         {
-            x = IdentityRotation.x;
-            y = IdentityRotation.y;
-            z = IdentityRotation.z;
+            x = 0.f;
+            y = 0.f;
+            z = 0.f;
             return StatusOK;
         }
-        else if (ramses_internal::ERotationConvention::Legacy_ZYX != getIScene().getRotationConvention(m_transformHandle))
-            return addErrorEntry("Node::getRotation(float,float,float) can only be used with legacy left-handed rotation: setRotation(float,float,float)");
 
-        const ramses_internal::Vector3& value = getIScene().getRotation(m_transformHandle);
-        x = value[0];
-        y = value[1];
-        z = value[2];
+        if (ramses_internal::ERotationConvention::Quaternion == getIScene().getRotationConvention(m_transformHandle))
+        {
+            return addErrorEntry("Node::getRotation(float&, float&, float&) failed: rotation was set by quaternion before. Check Node::getRotationConvention().");
+        }
+
+        const auto& value = getIScene().getRotation(m_transformHandle);
+        x = value.x;
+        y = value.y;
+        z = value.z;
         return StatusOK;
     }
 
-    status_t NodeImpl::getRotation(float& x, float& y, float& z, ERotationConvention& rotationConvention) const
+    status_t NodeImpl::setRotation(const quat& rotation)
+    {
+        ramses_internal::Vector4 vec{rotation.x, rotation.y, rotation.z, rotation.w};
+        return setRotationInternal(std::move(vec), ramses_internal::ERotationConvention::Quaternion);
+    }
+
+    ramses::status_t NodeImpl::getRotation(quat& rotation) const
     {
         if (!m_transformHandle.isValid())
         {
-            x = IdentityRotation.x;
-            y = IdentityRotation.y;
-            z = IdentityRotation.z;
-            rotationConvention = ERotationConvention::XYZ;
+            rotation = quat();
             return StatusOK;
         }
-        else if (ramses_internal::ERotationConvention::Legacy_ZYX == getIScene().getRotationConvention(m_transformHandle))
+
+        if (ramses_internal::ERotationConvention::Quaternion != getIScene().getRotationConvention(m_transformHandle))
         {
-            if (getIScene().getRotation(m_transformHandle) == IdentityRotation)
-            {
-                x = IdentityRotation.x;
-                y = IdentityRotation.y;
-                z = IdentityRotation.z;
-                rotationConvention = ramses::ERotationConvention::XYZ;
-
-                return StatusOK;
-            }
-
-            return addErrorEntry("Node::getRotation(float,float,float,ERotationConvention) can only be used with right-handed rotation conventions: setRotation(float,float,float,ERotationConvention)");
+            return addErrorEntry("Node::getRotation(quat&) failed: rotation was set by euler angles before. Check Node::getRotationConvention().");
         }
 
-        const ramses_internal::Vector3& value = getIScene().getRotation(m_transformHandle);
-        x = value[0];
-        y = value[1];
-        z = value[2];
-
-        rotationConvention = RotationConventionUtils::ConvertDataTypeFromInternal(getIScene().getRotationConvention(m_transformHandle));
+        const auto& value = getIScene().getRotation(m_transformHandle);
+        rotation = quat(value.w, value.x, value.y, value.z);
         return StatusOK;
     }
 
@@ -440,7 +417,7 @@ namespace ramses
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityScaling)
+            if (ramses_internal::Vector3(x, y, z) == ramses_internal::IScene::IdentityScaling)
             {
                 return StatusOK;
             }
@@ -457,7 +434,7 @@ namespace ramses
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityScaling)
+            if (ramses_internal::Vector3(x, y, z) == ramses_internal::IScene::IdentityScaling)
             {
                 return StatusOK;
             }
@@ -476,9 +453,9 @@ namespace ramses
     {
         if (!m_transformHandle.isValid())
         {
-            x = IdentityScaling.x;
-            y = IdentityScaling.y;
-            z = IdentityScaling.z;
+            x = ramses_internal::IScene::IdentityScaling.x;
+            y = ramses_internal::IScene::IdentityScaling.y;
+            z = ramses_internal::IScene::IdentityScaling.z;
             return StatusOK;
         }
 

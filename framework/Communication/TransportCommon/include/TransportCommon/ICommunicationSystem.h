@@ -26,7 +26,7 @@ namespace ramses_internal
     class ICommunicationSystem : public IPeriodicLogSupplier
     {
     public:
-        virtual ~ICommunicationSystem() override {}
+        ~ICommunicationSystem() override {}
 
         // connection management
         virtual bool connectServices() = 0;
@@ -53,7 +53,7 @@ namespace ramses_internal
 
         // log triggers
         virtual void logConnectionInfo() = 0;
-        virtual void triggerLogMessageForPeriodicLog() override = 0;
+        void triggerLogMessageForPeriodicLog() override = 0;
     };
 }
 

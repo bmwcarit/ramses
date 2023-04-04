@@ -316,7 +316,7 @@ namespace ramses
             case ERamsesObjectType_DataVector4i:
                 status = createAndDeserializeObjectImpls<DataVector4i, DataObjectImpl>(inStream, serializationContext, count);
                 break;
-            case ERamsesObjectType_DataBufferObject:
+            case ERamsesObjectType_ArrayBufferObject:
                 status = createAndDeserializeObjectImpls<ArrayBuffer, ArrayBufferImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_Texture2DBuffer:
@@ -526,7 +526,7 @@ namespace ramses
         case ERamsesObjectType_RenderPass:
         case ERamsesObjectType_BlitPass:
         case ERamsesObjectType_RenderBuffer:
-        case ERamsesObjectType_DataBufferObject:
+        case ERamsesObjectType_ArrayBufferObject:
         case ERamsesObjectType_Texture2DBuffer:
             returnStatus = destroyObject(object);
             break;
@@ -1657,6 +1657,12 @@ namespace ramses
 
     ArrayBufferImpl* SceneImpl::createArrayBufferImpl(EDataType dataType, uint32_t numElements, const char* name)
     {
+        if (!IsArrayResourceDataType(dataType))
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createArrayBuffer failed: incompatible data type");
+            return nullptr;
+        }
+
         ArrayBufferImpl* pimpl = new ArrayBufferImpl(*this, name);
         pimpl->initializeFrameworkData(dataType, numElements);
 
@@ -1803,7 +1809,8 @@ namespace ramses
         return sceneObjectId_t{ m_lastSceneObjectId};
     }
 
-    ArrayResource* SceneImpl::createArrayResource(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
+    template <typename T>
+    ArrayResource* SceneImpl::createArrayResource(uint32_t numElements, const T* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         if (0u == numElements || nullptr == arrayData)
         {
@@ -1811,7 +1818,7 @@ namespace ramses
             return nullptr;
         }
 
-        ramses_internal::ManagedResource res = getClientImpl().createManagedArrayResource(numElements, type, arrayData, cacheFlag, name);
+        ramses_internal::ManagedResource res = getClientImpl().createManagedArrayResource(numElements, GetEDataType<T>(), arrayData, cacheFlag, name);
         if (!res)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createArrayResource: failed to create managed array resource");
@@ -2078,4 +2085,12 @@ namespace ramses
         removeResourceWithIdFromResources(oldId, resourceWithNewId);
         m_resources.insert({ resourceWithNewId.getResourceId(), &resourceWithNewId });
     }
+
+    template ArrayResource* SceneImpl::createArrayResource<uint16_t>(uint32_t, const uint16_t*, resourceCacheFlag_t, const char*);
+    template ArrayResource* SceneImpl::createArrayResource<uint32_t>(uint32_t, const uint32_t*, resourceCacheFlag_t, const char*);
+    template ArrayResource* SceneImpl::createArrayResource<float>(uint32_t, const float*, resourceCacheFlag_t, const char*);
+    template ArrayResource* SceneImpl::createArrayResource<vec2f>(uint32_t, const vec2f*, resourceCacheFlag_t, const char*);
+    template ArrayResource* SceneImpl::createArrayResource<vec3f>(uint32_t, const vec3f*, resourceCacheFlag_t, const char*);
+    template ArrayResource* SceneImpl::createArrayResource<vec4f>(uint32_t, const vec4f*, resourceCacheFlag_t, const char*);
+    template ArrayResource* SceneImpl::createArrayResource<Byte>(uint32_t, const Byte*, resourceCacheFlag_t, const char*);
 }

@@ -26,9 +26,9 @@ namespace ramses
         [[nodiscard]] const ramses_internal::String& getDaemonIPAddress() const;
 
         void setPort(uint16_t port);
-        void setIPAddress(const ramses_internal::String& ipAddress);
+        void setIPAddress(std::string_view ipAddress);
         void setDaemonPort(uint16_t port);
-        void setDaemonIPAddress(const ramses_internal::String& ipAddress);
+        void setDaemonIPAddress(std::string_view ipAddress);
 
         [[nodiscard]] std::chrono::milliseconds getAliveInterval() const;
         [[nodiscard]] std::chrono::milliseconds getAliveTimeout() const;

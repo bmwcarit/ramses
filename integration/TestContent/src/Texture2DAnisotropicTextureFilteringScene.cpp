@@ -64,7 +64,7 @@ namespace ramses_internal
         ramses::Effect* effect(getTestEffect("ramses-test-client-textured"));
 
         uint16_t indicesArray[] = { 0, 1, 2, 0, 2, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
         const float x = 0.0f;
         const float y = 0.0f;
@@ -72,24 +72,24 @@ namespace ramses_internal
         const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight) * 0.5f;
         const float z = -1.0f;
 
-        float vertexPositionsArray[] = {
-            x, y, z,
-            x + w, y, z,
-            x + w, y + h, z,
-            x, y + h, z,
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ x, y, z },
+            ramses::vec3f{ x + w, y, z },
+            ramses::vec3f{ x + w, y + h, z },
+            ramses::vec3f{ x, y + h, z }
         };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
         const float s = w / 4.0f * 2.0f;
         const float t = h / 4.0f;
 
-        float textureCoordsArray[] = {
-            0.0f, 0.0f,
-            s, 0.0f,
-            s, t,
-            0.0f, t,
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s, 0.0f },
+            ramses::vec2f{ s, t },
+            ramses::vec2f{ 0.0f, t }
         };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Texture2D* texture = m_scene.createTexture2D(
             ramses::ETextureFormat::RGB8,

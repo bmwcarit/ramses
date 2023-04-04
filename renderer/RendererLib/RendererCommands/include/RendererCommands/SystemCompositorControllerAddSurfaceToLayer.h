@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorControllerAddSurfaceToLayer(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt32& surfaceId, UInt32& layerId) const override;
+        Bool execute(UInt32& surfaceId, UInt32& layerId) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

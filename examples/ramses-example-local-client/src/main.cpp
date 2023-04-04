@@ -70,10 +70,10 @@ int main()
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -6.f}, ramses::vec3f{1.f, 0.f, -6.f}, ramses::vec3f{0.f, 1.f, -6.f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -101,7 +101,7 @@ int main()
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
 
     clientScene->publish(ramses::EScenePublicationMode_LocalOnly);
     clientScene->flush();
@@ -112,10 +112,12 @@ int main()
     sceneControlAPI.flush();
 
     RendererEventHandler eventHandler;
+    float rotationZ = 0.f;
     while (!eventHandler.isWindowClosed())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
-        meshNode->rotate(0.f, 0.f, 1.5f);
+        rotationZ += 1.5f;
+        meshNode->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::Euler_XYZ);
         clientScene->flush();
     }
 }

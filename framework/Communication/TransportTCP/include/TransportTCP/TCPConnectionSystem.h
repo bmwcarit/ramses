@@ -32,35 +32,35 @@ namespace ramses_internal
         TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, const NetworkParticipantAddress& daemonAddress, bool pureDaemon,
                             PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
                             std::chrono::milliseconds aliveInterval, std::chrono::milliseconds aliveTimeout);
-        virtual ~TCPConnectionSystem() override;
+        ~TCPConnectionSystem() override;
 
         static Guid GetDaemonId();
 
-        virtual bool connectServices() override;
-        virtual bool disconnectServices() override;
+        bool connectServices() override;
+        bool disconnectServices() override;
 
-        virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
+        IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
 
         // scene
-        virtual bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes, ramses::EFeatureLevel featureLevel) override;
-        virtual bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes) override;
-        virtual bool sendScenesAvailable(const Guid& to, const SceneInfoVector& availableScenes, ramses::EFeatureLevel featureLevel) override;
+        bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes, ramses::EFeatureLevel featureLevel) override;
+        bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes) override;
+        bool sendScenesAvailable(const Guid& to, const SceneInfoVector& availableScenes, ramses::EFeatureLevel featureLevel) override;
 
-        virtual bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) override;
-        virtual bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) override;
+        bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) override;
+        bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) override;
 
-        virtual bool sendInitializeScene(const Guid& to, const SceneId& sceneId) override;
-        virtual bool sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer) override;
+        bool sendInitializeScene(const Guid& to, const SceneId& sceneId) override;
+        bool sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer) override;
 
-        virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
+        bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
 
         // set service handlers
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
 
         // log triggers
-        virtual void logConnectionInfo() override;
-        virtual void triggerLogMessageForPeriodicLog() override;
+        void logConnectionInfo() override;
+        void triggerLogMessageForPeriodicLog() override;
 
     private:
         enum class EParticipantState
@@ -140,7 +140,7 @@ namespace ramses_internal
             asio::ip::tcp::socket   m_acceptorSocket;
         };
 
-        virtual void run() override;
+        void run() override;
 
         void doConnect(const ParticipantPtr& pp);
         void sendConnectionDescriptionOnNewConnection(const ParticipantPtr& pp);

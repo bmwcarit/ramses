@@ -268,16 +268,16 @@ namespace ramses_internal
         const float w2 = w;
         const float h2 = h;
 
-        const float vertexPositionsArray[] = {
-            x, y, z,
-            x + w, y, z,
-            x + w, y + h, z,
-            x, y + h, z,
+        const std::array<ramses::vec3f, 8u> vertexPositionsArray{
+            ramses::vec3f{ x, y, z },
+            ramses::vec3f{ x + w, y, z },
+            ramses::vec3f{ x + w, y + h, z },
+            ramses::vec3f{ x, y + h, z },
 
-            x2, y2, z,
-            x2 + w2, y2, z,
-            x2 + w2, y2 + h2, z,
-            x2, y2 + h2, z,
+            ramses::vec3f{ x2, y2, z },
+            ramses::vec3f{ x2 + w2, y2, z },
+            ramses::vec3f{ x2 + w2, y2 + h2, z },
+            ramses::vec3f{ x2, y2 + h2, z }
         };
 
         const float s = w / 2.0f;
@@ -286,21 +286,21 @@ namespace ramses_internal
         const float s2 = w2 / 32.0f;
         const float t2 = h2 / 32.0f;
 
-        const float textureCoordsArray[] = {
-            0.0f, 0.0f,
-            s, 0.0f,
-            s, t,
-            0.0f, t,
+        const std::array<ramses::vec2f, 8u> textureCoordsArray{
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s, 0.0f },
+            ramses::vec2f{ s, t },
+            ramses::vec2f{ 0.0f, t },
 
-            0.0f, 0.0f,
-            s2, 0.0f,
-            s2, t2,
-            0.0f, t2
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s2, 0.0f },
+            ramses::vec2f{ s2, t2 },
+            ramses::vec2f{ 0.0f, t2 }
         };
 
-        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, 12, indicesArray);
-        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 8, vertexPositionsArray);
-        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 8, textureCoordsArray);
+        m_indexArray = m_scene.createArrayResource(12u, indicesArray);
+        m_vertexPositions = m_scene.createArrayResource(8u, vertexPositionsArray.data());
+        m_textureCoords = m_scene.createArrayResource(8u, textureCoordsArray.data());
     }
 
     void Texture2DSamplingScene::createGeometryTrilinear()
@@ -355,21 +355,21 @@ namespace ramses_internal
         const float w3 = static_cast<float>(IntegrationScene::DefaultViewportWidth) * 0.3f;
         const float h3 = h;
 
-        const float vertexPositionsArray[] = {
-            x, y, z,
-            x + w, y, z,
-            x + w, y + h, z,
-            x, y + h, z,
+        const std::array<ramses::vec3f, 12u> vertexPositionsArray{
+            ramses::vec3f{ x, y, z },
+            ramses::vec3f{ x + w, y, z },
+            ramses::vec3f{ x + w, y + h, z },
+            ramses::vec3f{ x, y + h, z },
 
-            x2, y2, z,
-            x2 + w2, y2, z,
-            x2 + w2, y2 + h2, z,
-            x2, y2 + h2, z,
+            ramses::vec3f{ x2, y2, z },
+            ramses::vec3f{ x2 + w2, y2, z },
+            ramses::vec3f{ x2 + w2, y2 + h2, z },
+            ramses::vec3f{ x2, y2 + h2, z },
 
-            x3, y3, z,
-            x3 + w3, y3, z,
-            x3 + w3, y3 + h3, z,
-            x3, y3 + h3, z,
+            ramses::vec3f{ x3, y3, z },
+            ramses::vec3f{ x3 + w3, y3, z },
+            ramses::vec3f{ x3 + w3, y3 + h3, z },
+            ramses::vec3f{ x3, y3 + h3, z }
         };
 
         const float s = w / 2.0f;
@@ -382,25 +382,25 @@ namespace ramses_internal
         const float s3 = w3 * f / 4.0f;
         const float t3 = h3 * f / 4.0f;
 
-        const float textureCoordsArray[] = {
-            0.0f, 0.0f,
-            s, 0.0f,
-            s, t,
-            0.0f, t,
+        const std::array<ramses::vec2f, 12u> textureCoordsArray{
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s, 0.0f },
+            ramses::vec2f{ s, t },
+            ramses::vec2f{ 0.0f, t },
 
-            0.0f, 0.0f,
-            s2, 0.0f,
-            s2, t2,
-            0.0f, t2,
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s2, 0.0f },
+            ramses::vec2f{ s2, t2 },
+            ramses::vec2f{ 0.0f, t2 },
 
-            0.0, 0.0f,
-            s3, 0.0f,
-            s3, t3,
-            0.0f, t3
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s3, 0.0f },
+            ramses::vec2f{ s3, t3 },
+            ramses::vec2f{ 0.0f, t3 }
         };
 
-        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, 18, indicesArray);
-        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 12, vertexPositionsArray);
-        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 12, textureCoordsArray);
+        m_indexArray = m_scene.createArrayResource(18u, indicesArray);
+        m_vertexPositions = m_scene.createArrayResource(12u, vertexPositionsArray.data());
+        m_textureCoords = m_scene.createArrayResource(12u, textureCoordsArray.data());
     }
 }

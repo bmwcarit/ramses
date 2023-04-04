@@ -7,10 +7,6 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     # Attention: extra care is needed in case of renaming this module
     # The name of this module (and all CONCRETE platform modules) must align with
     # the postfix of generated RAMSES libs' names. The platform name is used in
@@ -19,39 +15,19 @@ createModule(
     NAME                    platform-x11-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
     INCLUDE_PATHS           include
     SRC_FILES               include/Platform_X11/*.h
                             src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
     DEPENDENCIES            X11
                             Platform_EGL
 )
 
 if (${ramses-sdk_BUILD_TESTS})
     createModule(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
         NAME                    platform-x11-test
         TYPE                    BINARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
         SRC_FILES            test/*.cpp
                                 test/*.h
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
         DEPENDENCIES            platform-x11-egl-es-3-0
                                 ramses-gmock-main
                                 RendererTestUtils

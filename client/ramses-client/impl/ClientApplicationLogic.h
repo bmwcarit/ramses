@@ -40,7 +40,7 @@ namespace ramses_internal
     {
     public:
         explicit ClientApplicationLogic(const Guid& myId, PlatformLock& frameworkLock);
-        virtual ~ClientApplicationLogic() override;
+        ~ClientApplicationLogic() override;
 
         void init(IResourceProviderComponent& resources, ISceneGraphProviderComponent& scenegraph);
         void deinit();
@@ -54,8 +54,8 @@ namespace ramses_internal
         bool flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);
 
-        virtual void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) override;
-        virtual void handleResourceAvailabilityEvent(ResourceAvailabilityEvent const& event, const Guid& rendererId) override;
+        void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) override;
+        void handleResourceAvailabilityEvent(ResourceAvailabilityEvent const& event, const Guid& rendererId) override;
 
         // Resource handling
         ManagedResource         addResource(const IResource* resource);

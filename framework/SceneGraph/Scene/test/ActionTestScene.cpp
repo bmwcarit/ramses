@@ -308,7 +308,7 @@ namespace ramses_internal
         return m_scene.getTranslation(handle);
     }
 
-    const Vector3& ActionTestScene::getRotation(TransformHandle handle) const
+    const Vector4& ActionTestScene::getRotation(TransformHandle handle) const
     {
         return m_scene.getRotation(handle);
     }
@@ -329,15 +329,10 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void ActionTestScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationConvention convention)
     {
         m_actionCollector.setRotation(handle, rotation, convention);
         flushPendingSceneActions();
-    }
-
-    void ActionTestScene::setRotationForAnimation(TransformHandle, const Vector3&)
-    {
-        assert(false && "Should only be called from Animations without creation of any scene actions");
     }
 
     void ActionTestScene::setScaling(TransformHandle handle, const Vector3& scaling)
@@ -846,40 +841,6 @@ namespace ramses_internal
     const RenderBuffer& ActionTestScene::getRenderBuffer(RenderBufferHandle handle) const
     {
         return m_scene.getRenderBuffer(handle);
-    }
-
-    StreamTextureHandle ActionTestScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
-    {
-        const StreamTextureHandle handle = m_actionCollector.allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
-        flushPendingSceneActions();
-        return handle;
-    }
-
-    void ActionTestScene::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        m_actionCollector.releaseStreamTexture(streamTextureHandle);
-        flushPendingSceneActions();
-    }
-
-    bool ActionTestScene::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.isStreamTextureAllocated(streamTextureHandle);
-    }
-
-    UInt32 ActionTestScene::getStreamTextureCount() const
-    {
-        return m_scene.getStreamTextureCount();
-    }
-
-    void ActionTestScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        m_actionCollector.setForceFallbackImage(streamTextureHandle, forceFallbackImage);
-        flushPendingSceneActions();
-    }
-
-    const StreamTexture& ActionTestScene::getStreamTexture(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.getStreamTexture(streamTextureHandle);
     }
 
     DataBufferHandle ActionTestScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)

@@ -36,7 +36,7 @@ namespace ramses_internal
         DataFieldHandle getUniformDataFieldHandleByName(const String& name) const;
         DataFieldHandle getAttributeDataFieldHandleByName(const String& name) const;
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override;
+        void serializeResourceMetadataToStream(IOutputStream& output) const override;
         static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name);
 
     private:

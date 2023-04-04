@@ -24,10 +24,10 @@ namespace ramses_internal
         WaylandBuffer(WaylandBufferResource& bufferResource, IEmbeddedCompositor_Wayland& compositor);
         ~WaylandBuffer() override;
 
-        [[nodiscard]] virtual WaylandBufferResource& getResource() const override;
-        virtual void reference() override;
-        virtual void release() override;
-        [[nodiscard]] virtual bool isSharedMemoryBuffer() const override;
+        [[nodiscard]] WaylandBufferResource& getResource() const override;
+        void reference() override;
+        void release() override;
+        [[nodiscard]] bool isSharedMemoryBuffer() const override;
 
     private:
 

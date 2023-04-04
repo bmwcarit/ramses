@@ -21,7 +21,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <iostream>
-#include "CLI/CLI.hpp"
+#include "ramses-cli.h"
 
 
 constexpr const char* const vertexShader = R"##(
@@ -81,12 +81,11 @@ public:
         m_renderPass->addRenderGroup(*m_renderGroup);
 
         // prepare triangle geometry: vertex position array and index array
-        float vertexPositionsArray[] = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
-        m_vertexPositions = m_scene->createArrayResource(ramses::EDataType::Vector2F, 4, vertexPositionsArray);
+        const std::array<ramses::vec2f, 4u> vertexPositionsArray{ ramses::vec2f{-1.0f, -1.0f}, ramses::vec2f{1.0f, -1.0f}, ramses::vec2f{-1.0f, 1.0f}, ramses::vec2f{1.0f, 1.0f} };
+        m_vertexPositions = m_scene->createArrayResource(4u, vertexPositionsArray.data());
 
         uint16_t indicesArray[] = {0, 1, 2, 2, 1, 3};
-        m_indices = m_scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
-
+        m_indices = m_scene->createArrayResource(6u, indicesArray);
 
         static const uint8_t textureData[] = {1u, 1u, 1u, 1u};
         const ramses::MipLevelData mipLevelData(sizeof(textureData), textureData);
@@ -268,7 +267,7 @@ public:
     {
     }
 
-    virtual void streamAvailabilityChanged(ramses::waylandIviSurfaceId_t streamId, bool available) override
+    void streamAvailabilityChanged(ramses::waylandIviSurfaceId_t streamId, bool available) override
     {
         if(available)
         {
@@ -282,7 +281,7 @@ public:
         }
     }
 
-    virtual void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag) override
+    void sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag) override
     {
         m_sceneCreator.handleSceneFlushed(sceneId, sceneVersionTag);
     }
@@ -307,9 +306,9 @@ int main(int argc, char* argv[])
     {
         cli.add_option("--fps", maxFps, "Frames per second")->default_val(maxFps);
         cli.add_flag("-y,--flip-y", flipY, "flip received stream vertically (on y-axis)");
-        config.registerOptions(cli);
-        rendererConfig.registerOptions(cli);
-        displayConfig.registerOptions(cli);
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
     }
     catch (const CLI::Error& error)
     {

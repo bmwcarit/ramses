@@ -1,0 +1,22 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+---
+- hosts: all
+  roles:
+    - rlogic-prepare-setup
+    - role: rlogic-clone-oss-mirror
+      oss_mirror: "{{ buildslave_root_dir }}/oss-mirror"
+    - role: rlogic-submodule-update
+      git_root: "{{ buildslave_root_dir }}/oss-mirror"
+      ramses_repo: 'ramses/ramses-oss'
+    - role: rlogic-create-oss-release-candidate
+      git_root_oss: "{{ buildslave_root_dir }}/oss-mirror"
+    - role: rlogic-windows-build
+      git_root: "{{ buildslave_root_dir }}/oss-mirror"
+    - rlogic-windows-test

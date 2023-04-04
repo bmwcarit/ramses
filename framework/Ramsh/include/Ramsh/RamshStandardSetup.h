@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         explicit RamshStandardSetup(ramses::ERamsesShellType type, String prompt = "ramses");
-        virtual ~RamshStandardSetup() override;
+        ~RamshStandardSetup() override;
 
         bool start();
         bool stop();

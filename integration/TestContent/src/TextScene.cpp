@@ -113,12 +113,12 @@ namespace ramses_internal
 
         for (auto textMesh : { m_meshUTF, m_meshASCII, m_meshDigits, m_meshChinese, m_meshLight, m_meshLightAutoHinting, m_meshShaping, m_meshShapingAutoHint, m_meshFontCascade, m_meshFontCascadeWithVerticalOffset })
         {
-            textMesh->getAppearance()->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.0f, 1.0f);
+            textMesh->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
             textMesh->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
             textMesh->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
         }
         for (auto textMesh : { m_meshChinese, m_meshFontCascade, m_meshFontCascadeWithVerticalOffset })
-            textMesh->getAppearance()->setInputValueVector4f(colorInput, 0.0f, 0.0f, 1.0f, 1.0f);
+            textMesh->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 0.0f, 0.0f, 1.0f, 1.0f });
 
         ramses::Node* translateUTF = m_scene.createNode();
         ramses::Node* translateASCII = m_scene.createNode();

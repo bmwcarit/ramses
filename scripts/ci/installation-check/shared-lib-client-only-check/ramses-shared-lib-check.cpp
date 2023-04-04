@@ -12,14 +12,10 @@
 #include "ramses-client.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-text.h"
-#include "CLI/CLI.hpp"
 
 int main(int argc, char* argv[])
 {
-    CLI::App cli;
     ramses::RamsesFrameworkConfig config;
-    config.registerOptions(cli);
-    CLI11_PARSE(cli, argc, argv);
 
     printf("Start ramses-shared-lib-check client only\n");
     ramses::RamsesFramework framework{config};

@@ -65,7 +65,7 @@ namespace ramses_internal
          * @see Runnable
          * @{
          */
-        virtual void run() override;
+        void run() override;
         /**
          * @}
          */
