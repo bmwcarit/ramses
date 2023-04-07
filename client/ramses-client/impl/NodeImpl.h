@@ -20,6 +20,7 @@
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/ERotationConvention.h"
 #include "Collections/Vector.h"
+#include "glm/gtc/quaternion.hpp"
 
 namespace ramses_internal
 {
@@ -72,8 +73,8 @@ namespace ramses
         status_t setRotation(float x, float y, float z, ERotationConvention rotationConvention);
         ERotationConvention getRotationConvention() const;
         status_t getRotation(float& x, float& y, float& z) const;
-        status_t setRotation(const quat& rotation);
-        status_t getRotation(quat& rotation) const;
+        status_t setRotation(const glm::quat& rotation);
+        status_t getRotation(glm::quat& rotation) const;
         status_t scale(float x, float y, float z);
         status_t setScaling(float x, float y, float z);
         status_t getScaling(float& x, float& y, float& z) const;

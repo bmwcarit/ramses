@@ -457,10 +457,10 @@ namespace ramses
             return addErrorEntry("Appearance::set failed, input is not properly initialized or cannot be used with this appearance.");
         }
 
-        const auto result = std::find(valueDataType.begin(), valueDataType.end(),input.getDataType());
+        const auto result = std::find(valueDataType.begin(), valueDataType.end(), input.getInternalDataType());
         if (result == valueDataType.end())
         {
-            return addErrorEntry(::fmt::format("Appearance::set failed, value type does not match input data type {}", EnumToString(input.getDataType())));
+            return addErrorEntry(::fmt::format("Appearance::set failed, value type does not match input data type {}", EnumToString(input.getInternalDataType())));
         }
 
         if (input.getElementCount() != valueElementCount)
@@ -524,7 +524,7 @@ namespace ramses
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
         if (isBindable)
         {
-            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getDataType());
+            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getInternalDataType());
             const T* currentValues = ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), dataReference, ramses_internal::DataFieldHandle(0u));
             if (ramses_internal::PlatformMemory::Compare(currentValues, values, 1u * sizeof(T)) != 0)
             {
@@ -563,12 +563,12 @@ namespace ramses
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
         if (isBindable)
         {
-            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getDataType());
-            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), dataReference, ramses_internal::DataFieldHandle(0u)), EnumToSize(input.getDataType()));
+            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getInternalDataType());
+            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), dataReference, ramses_internal::DataFieldHandle(0u)), EnumToSize(input.getInternalDataType()));
         }
         else
         {
-            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), m_uniformInstance, dataField), elementCount * EnumToSize(input.getDataType()));
+            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), m_uniformInstance, dataField), elementCount * EnumToSize(input.getInternalDataType()));
         }
 
         return StatusOK;

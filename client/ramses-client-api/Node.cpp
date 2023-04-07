@@ -110,7 +110,7 @@ namespace ramses
         return status;
     }
 
-    status_t Node::setRotation(const quat& rotation)
+    status_t Node::setRotation(const glm::quat& rotation)
     {
         const status_t status = impl.setRotation(rotation);
         LOG_HL_CLIENT_API4(status, rotation.w, rotation.x, rotation.y, rotation.z);
@@ -127,7 +127,7 @@ namespace ramses
         return impl.getRotation(x, y, z);
     }
 
-    ramses::status_t Node::getRotation(quat& rotation) const
+    ramses::status_t Node::getRotation(glm::quat& rotation) const
     {
         return impl.getRotation(rotation);
     }

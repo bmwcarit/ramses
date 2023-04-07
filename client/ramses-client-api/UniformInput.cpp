@@ -8,18 +8,12 @@
 
 #include "ramses-client-api/UniformInput.h"
 #include "EffectInputImpl.h"
-#include "EffectInputSemanticUtils.h"
 
 namespace ramses
 {
     UniformInput::UniformInput()
         : EffectInput(*(new EffectInputImpl()))
     {
-    }
-
-    EEffectInputDataType UniformInput::getDataType() const
-    {
-        return impl.getUniformInputDataType();
     }
 
     EEffectUniformSemantic UniformInput::getSemantics() const

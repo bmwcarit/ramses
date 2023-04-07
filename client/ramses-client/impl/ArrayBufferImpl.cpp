@@ -60,7 +60,7 @@ namespace ramses
     EDataType ArrayBufferImpl::getDataType() const
     {
         const ramses_internal::GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
-        return  DataTypeUtils::ConvertDataTypeFromInternal(dataBuffer.dataType);
+        return DataTypeUtils::ConvertDataTypeFromInternal(dataBuffer.dataType);
     }
 
     status_t ArrayBufferImpl::getData(ramses_internal::Byte* buffer, uint32_t numElements) const

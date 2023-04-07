@@ -10,7 +10,6 @@
 #define RAMSES_ATTRIBUTEINPUT_H
 
 #include "ramses-client-api/EffectInput.h"
-#include "ramses-client-api/EffectInputDataType.h"
 #include "ramses-client-api/EffectInputSemantic.h"
 
 namespace ramses
@@ -25,13 +24,6 @@ namespace ramses
         * @brief Constructor of AttributeInput.
         */
         AttributeInput();
-
-        /**
-        * @brief Returns the effect input data type.
-        *
-        * @return Effect input data type
-        */
-        [[nodiscard]] EEffectInputDataType getDataType() const;
 
         /**
         * @brief Returns the effect input semantics.

@@ -13,6 +13,7 @@
 # GL_VERSION is overridden for some systems
 
 INCLUDE(FindPackageHandleStandardArgs)
+INCLUDE(CMakeFindDependencyMacro)
 SET(ramses-shared-lib_VERSION @RAMSES_VERSION@)
 
 @PACKAGE_INIT@
@@ -40,6 +41,17 @@ ELSE()
         HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
     )
 ENDIF()
+
+if(IS_DIRECTORY "${ramses-shared-lib_INCLUDE_DIRS}/glm")
+    add_library(glm::glm INTERFACE IMPORTED)
+    set_target_properties(glm::glm PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${ramses-shared-lib_INCLUDE_DIRS})
+else()
+    find_dependency(glm REQUIRED)
+
+    if(NOT TARGET glm::glm)
+        add_library(glm::glm ALIAS glm)
+    endif()
+endif()
 
 # find library
 IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
@@ -125,6 +137,7 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
             set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib_LIBRARIES})
         endif()
         target_include_directories(ramses-ramses-shared-lib INTERFACE ${ramses-shared-lib_INCLUDE_DIRS})
+        target_link_libraries(ramses-ramses-shared-lib INTERFACE glm::glm)
 
         if (NOT TARGET ramses::ramses)
             add_library(ramses::ramses ALIAS ramses-ramses-shared-lib)

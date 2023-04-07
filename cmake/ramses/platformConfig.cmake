@@ -112,7 +112,7 @@ endif()
 # clang specific
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     target_compile_options(ramses-build-options-base INTERFACE
-        -Winconsistent-missing-override -Wmove
+        -Wimplicit-fallthrough -Winconsistent-missing-override -Wmove
         -Winconsistent-missing-destructor-override)
 
     #  do not optimize debug build at all (-Og is wrong on clang)

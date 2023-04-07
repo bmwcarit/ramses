@@ -58,7 +58,7 @@ namespace ramses_internal
         {
             if (rotationConvention == ERotationConvention::Quaternion)
             {
-                node->setRotation(ramses::quat(rot.w, rot.x, rot.y, rot.z));
+                node->setRotation(glm::quat(rot.w, rot.x, rot.y, rot.z));
             }
             else
             {
@@ -128,6 +128,16 @@ namespace ramses_internal
                 return "Matrix44F";
             case ramses::EDataType::ByteBlob:
                 return "ByteBlob";
+            case ramses::EDataType::TextureSampler2D:
+                return "TextureSampler2D";
+            case ramses::EDataType::TextureSampler2DMS:
+                return "TextureSampler2DMS";
+            case ramses::EDataType::TextureSampler3D:
+                return "TextureSampler3D";
+            case ramses::EDataType::TextureSamplerCube:
+                return "TextureSamplerCube";
+            case ramses::EDataType::TextureSamplerExternal:
+                return "TextureSamplerExternal";
             }
             return nullptr;
         }
@@ -1091,15 +1101,16 @@ namespace ramses_internal
             {
                 ramses::UniformInput uniform;
                 effect.getUniformInput(i, uniform);
+                assert(uniform.isValid());
                 const ramses::DataObject* boundObj = obj.getBoundDataObject(uniform.impl);
                 if (uniform.getSemantics() != ramses::EEffectUniformSemantic::Invalid)
                 {
-                    ImGui::BulletText("%s %s[%u] (%s)", shortName(uniform.impl.getDataType()), uniform.getName(), uniform.getElementCount(), EFixedSemanticsNames[static_cast<int>(uniform.impl.getSemantics())]);
+                    ImGui::BulletText("%s %s[%u] (%s)", shortName(uniform.impl.getInternalDataType()), uniform.getName(), uniform.getElementCount(), EFixedSemanticsNames[static_cast<int>(uniform.impl.getSemantics())]);
                 }
                 else
                 {
                     ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-                    if (ImGui::TreeNode(uniform.getName(), "%s %s[%u]:", shortName(uniform.impl.getDataType()), uniform.getName(), uniform.getElementCount()))
+                    if (ImGui::TreeNode(uniform.getName(), "%s %s[%u]:", shortName(uniform.impl.getInternalDataType()), uniform.getName(), uniform.getElementCount()))
                     {
                         if (boundObj != nullptr)
                             draw(boundObj->impl);
@@ -1132,9 +1143,9 @@ namespace ramses_internal
         const ramses::TextureSamplerExternal*  textureSamplerExternal;
         ramses::status_t                       status = ramses::StatusOK;
 
-        switch (uniform.getDataType())
+        switch (*uniform.getDataType())
         {
-        case ramses::EEffectInputDataType_Float:
+        case ramses::EDataType::Float:
             vec1.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec1.data());
             if (ramses::StatusOK == status)
@@ -1147,7 +1158,7 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_Vector2F:
+        case ramses::EDataType::Vector2F:
             vec2.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec2.data());
             if (ramses::StatusOK == status)
@@ -1160,7 +1171,7 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_Vector3F:
+        case ramses::EDataType::Vector3F:
             vec3.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec3.data());
             if (ramses::StatusOK == status)
@@ -1173,7 +1184,7 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_Vector4F:
+        case ramses::EDataType::Vector4F:
             vec4.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec4.data());
             if (ramses::StatusOK == status)
@@ -1186,7 +1197,7 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_Int32:
+        case ramses::EDataType::Int32:
             vec1i.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec1i.data());
             if (ramses::StatusOK == status)
@@ -1199,7 +1210,7 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_Vector2I:
+        case ramses::EDataType::Vector2I:
             vec2i.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec2i.data());
             if (ramses::StatusOK == status)
@@ -1212,7 +1223,7 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_Vector3I:
+        case ramses::EDataType::Vector3I:
             vec3i.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec3i.data());
             if (ramses::StatusOK == status)
@@ -1225,7 +1236,7 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_Vector4I:
+        case ramses::EDataType::Vector4I:
             vec4i.resize(uniform.getElementCount());
             status = appearance.getInputValue(uniform, uniform.getElementCount(), vec4i.data());
             if (ramses::StatusOK == status)
@@ -1238,36 +1249,36 @@ namespace ramses_internal
                 }
             }
             break;
-        case ramses::EEffectInputDataType_TextureSampler2D:
-        case ramses::EEffectInputDataType_TextureSampler3D:
-        case ramses::EEffectInputDataType_TextureSamplerCube:
+        case ramses::EDataType::TextureSampler2D:
+        case ramses::EDataType::TextureSampler3D:
+        case ramses::EDataType::TextureSamplerCube:
             status = appearance.getInputTexture(uniform, textureSampler);
             if (ramses::StatusOK == status)
             {
                 draw(textureSampler->impl);
             }
             break;
-        case ramses::EEffectInputDataType_TextureSampler2DMS:
+        case ramses::EDataType::TextureSampler2DMS:
             status = appearance.getInputTextureMS(uniform, textureSamplerMS);
             if (ramses::StatusOK == status)
             {
                 draw(textureSamplerMS->impl);
             }
             break;
-        case ramses::EEffectInputDataType_TextureSamplerExternal:
+        case ramses::EDataType::TextureSamplerExternal:
             status = appearance.getInputTextureExternal(uniform, textureSamplerExternal);
             if (ramses::StatusOK == status)
             {
                 draw(textureSamplerExternal->impl);
             }
             break;
-        case ramses::EEffectInputDataType_Invalid:
-        case ramses::EEffectInputDataType_UInt16:
-        case ramses::EEffectInputDataType_UInt32:
-        case ramses::EEffectInputDataType_Matrix22F:
-        case ramses::EEffectInputDataType_Matrix33F:
-        case ramses::EEffectInputDataType_Matrix44F:
-            ImGui::Text("tbd. %s", EnumToString(uniform.impl.getDataType()));
+        case ramses::EDataType::UInt16:
+        case ramses::EDataType::UInt32:
+        case ramses::EDataType::Matrix22F:
+        case ramses::EDataType::Matrix33F:
+        case ramses::EDataType::Matrix44F:
+        case ramses::EDataType::ByteBlob:
+            ImGui::Text("tbd. %s", EnumToString(uniform.impl.getInternalDataType()));
             break;
         }
 
@@ -1461,30 +1472,31 @@ namespace ramses_internal
             {
                 ramses::UniformInput uniform;
                 effect.getUniformInput(i, uniform);
+                assert(uniform.isValid());
                 const ramses::TextureSampler* textureSampler;
                 const ramses::TextureSamplerMS* textureSamplerMS;
                 const ramses::TextureSamplerExternal* textureSamplerExternal;
-                switch (uniform.impl.getUniformInputDataType())
+                switch (*uniform.getDataType())
                 {
-                    case ramses::EEffectInputDataType_TextureSampler2D:
-                    case ramses::EEffectInputDataType_TextureSampler3D:
-                    case ramses::EEffectInputDataType_TextureSamplerCube:
-                        if (0 == ref->impl.getInputTexture(uniform.impl, textureSampler))
-                            if (textureSampler == &obj.getRamsesObject())
-                                return true;
-                        break;
-                    case ramses::EEffectInputDataType_TextureSampler2DMS:
-                        if (0 == ref->impl.getInputTextureMS(uniform.impl, textureSamplerMS))
-                            if (textureSamplerMS == &obj.getRamsesObject())
-                                return true;
-                        break;
-                    case ramses::EEffectInputDataType_TextureSamplerExternal:
-                        if (0 == ref->impl.getInputTextureExternal(uniform.impl, textureSamplerExternal))
-                            if (textureSamplerExternal == &obj.getRamsesObject())
-                                return true;
-                        break;
-                    default:
-                        break;
+                case ramses::EDataType::TextureSampler2D:
+                case ramses::EDataType::TextureSampler3D:
+                case ramses::EDataType::TextureSamplerCube:
+                    if (ref->impl.getInputTexture(uniform.impl, textureSampler) == ramses::StatusOK)
+                        if (textureSampler == &obj.getRamsesObject())
+                            return true;
+                    break;
+                case ramses::EDataType::TextureSampler2DMS:
+                    if (ref->impl.getInputTextureMS(uniform.impl, textureSamplerMS) == ramses::StatusOK)
+                        if (textureSamplerMS == &obj.getRamsesObject())
+                            return true;
+                    break;
+                case ramses::EDataType::TextureSamplerExternal:
+                    if (ref->impl.getInputTextureExternal(uniform.impl, textureSamplerExternal) == ramses::StatusOK)
+                        if (textureSamplerExternal == &obj.getRamsesObject())
+                            return true;
+                    break;
+                default:
+                    break;
                 }
             }
             return false;

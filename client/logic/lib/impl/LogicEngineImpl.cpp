@@ -248,7 +248,7 @@ namespace rlogic::internal
             return nullptr;
         }
 
-        if (actualUniformInput.getDataType() != ramses::EEffectInputDataType_Matrix44F
+        if (*actualUniformInput.getDataType() != ramses::EDataType::Matrix44F
             || actualUniformInput.getElementCount() != joints.size())
         {
             m_errors.add("Cannot create SkinBinding, provided uniform input must be of type array of Matrix4x4 with element count matching number of joints.", nullptr, EErrorType::Other);

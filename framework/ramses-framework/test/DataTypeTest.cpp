@@ -120,6 +120,12 @@ namespace ramses
         static_assert(4u == GetNumberOfComponents(EDataType::Matrix22F), "Invalid number of components");
         static_assert(9u == GetNumberOfComponents(EDataType::Matrix33F), "Invalid number of components");
         static_assert(16u == GetNumberOfComponents(EDataType::Matrix44F), "Invalid number of components");
+
+        static_assert(0u == GetNumberOfComponents(EDataType::TextureSampler2D), "Invalid number of components");
+        static_assert(0u == GetNumberOfComponents(EDataType::TextureSampler2DMS), "Invalid number of components");
+        static_assert(0u == GetNumberOfComponents(EDataType::TextureSampler3D), "Invalid number of components");
+        static_assert(0u == GetNumberOfComponents(EDataType::TextureSamplerCube), "Invalid number of components");
+        static_assert(0u == GetNumberOfComponents(EDataType::TextureSamplerExternal), "Invalid number of components");
     }
 
     TEST(EDatatype, CanReturnSizeOfComponentAtCompiletime)
@@ -138,6 +144,12 @@ namespace ramses
         static_assert(sizeof(float) == GetSizeOfComponent(EDataType::Matrix22F), "Invalid component size");
         static_assert(sizeof(float) == GetSizeOfComponent(EDataType::Matrix33F), "Invalid component size");
         static_assert(sizeof(float) == GetSizeOfComponent(EDataType::Matrix44F), "Invalid component size");
+
+        static_assert(0u == GetSizeOfComponent(EDataType::TextureSampler2D), "Invalid component size");
+        static_assert(0u == GetSizeOfComponent(EDataType::TextureSampler2DMS), "Invalid component size");
+        static_assert(0u == GetSizeOfComponent(EDataType::TextureSampler3D), "Invalid component size");
+        static_assert(0u == GetSizeOfComponent(EDataType::TextureSamplerCube), "Invalid component size");
+        static_assert(0u == GetSizeOfComponent(EDataType::TextureSamplerExternal), "Invalid component size");
     }
 
     TEST(EDatatype, CanReturnSizesAtCompiletime)
@@ -156,6 +168,12 @@ namespace ramses
         static_assert(sizeof(ramses::matrix22f) == GetSizeOfDataType(EDataType::Matrix22F), "Invalid data type size");
         static_assert(sizeof(ramses::matrix33f) == GetSizeOfDataType(EDataType::Matrix33F), "Invalid data type size");
         static_assert(sizeof(ramses::matrix44f) == GetSizeOfDataType(EDataType::Matrix44F), "Invalid data type size");
+
+        static_assert(0u == GetSizeOfDataType(EDataType::TextureSampler2D), "Invalid data type size");
+        static_assert(0u == GetSizeOfDataType(EDataType::TextureSampler2DMS), "Invalid data type size");
+        static_assert(0u == GetSizeOfDataType(EDataType::TextureSampler3D), "Invalid data type size");
+        static_assert(0u == GetSizeOfDataType(EDataType::TextureSamplerCube), "Invalid data type size");
+        static_assert(0u == GetSizeOfDataType(EDataType::TextureSamplerExternal), "Invalid data type size");
     }
 
     TEST(EDataType, EnsureGivesSameSizeOnPublicAPI)
@@ -174,6 +192,8 @@ namespace ramses
         static_assert(ramses::GetSizeOfDataType(ramses::EDataType::Matrix22F) == ramses_internal::EnumToSize(ramses_internal::EDataType::Matrix22F));
         static_assert(ramses::GetSizeOfDataType(ramses::EDataType::Matrix33F) == ramses_internal::EnumToSize(ramses_internal::EDataType::Matrix33F));
         static_assert(ramses::GetSizeOfDataType(ramses::EDataType::Matrix44F) == ramses_internal::EnumToSize(ramses_internal::EDataType::Matrix44F));
+
+        // not relevant for sampler types
     }
 
     TEST(EDataType, EnsureGivesSameNumberOfComponentsOnPublicAPI)
@@ -192,6 +212,8 @@ namespace ramses
         static_assert(ramses::GetNumberOfComponents(ramses::EDataType::Matrix22F) == ramses_internal::EnumToNumComponents(ramses_internal::EDataType::Matrix22F));
         static_assert(ramses::GetNumberOfComponents(ramses::EDataType::Matrix33F) == ramses_internal::EnumToNumComponents(ramses_internal::EDataType::Matrix33F));
         static_assert(ramses::GetNumberOfComponents(ramses::EDataType::Matrix44F) == ramses_internal::EnumToNumComponents(ramses_internal::EDataType::Matrix44F));
+
+        // not relevant for sampler types
     }
 
     TEST(EDataType, IsUniformInputDataType)
@@ -266,6 +288,17 @@ namespace ramses
         EXPECT_EQ(ramses::EDataType::Matrix22F, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::Matrix22F));
         EXPECT_EQ(ramses::EDataType::Matrix33F, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::Matrix33F));
         EXPECT_EQ(ramses::EDataType::Matrix44F, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::Matrix44F));
+        EXPECT_EQ(ramses::EDataType::TextureSampler2D, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::TextureSampler2D));
+        EXPECT_EQ(ramses::EDataType::TextureSampler2DMS, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::TextureSampler2DMS));
+        EXPECT_EQ(ramses::EDataType::TextureSampler3D, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::TextureSampler3D));
+        EXPECT_EQ(ramses::EDataType::TextureSamplerCube, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::TextureSamplerCube));
+        EXPECT_EQ(ramses::EDataType::TextureSamplerExternal, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::TextureSamplerExternal));
+
+        EXPECT_EQ(ramses::EDataType::Float, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::FloatBuffer));
+        EXPECT_EQ(ramses::EDataType::UInt16, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::UInt16Buffer));
+        EXPECT_EQ(ramses::EDataType::Vector2F, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::Vector2Buffer));
+        EXPECT_EQ(ramses::EDataType::Vector3F, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::Vector3Buffer));
+        EXPECT_EQ(ramses::EDataType::Vector4F, DataTypeUtils::ConvertDataTypeFromInternal(ramses_internal::EDataType::Vector4Buffer));
     }
 
     TEST(EDataType, PublicToInternal)
@@ -283,5 +316,10 @@ namespace ramses
         EXPECT_EQ(ramses_internal::EDataType::Matrix22F, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::Matrix22F));
         EXPECT_EQ(ramses_internal::EDataType::Matrix33F, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::Matrix33F));
         EXPECT_EQ(ramses_internal::EDataType::Matrix44F, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::Matrix44F));
+        EXPECT_EQ(ramses_internal::EDataType::TextureSampler2D, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::TextureSampler2D));
+        EXPECT_EQ(ramses_internal::EDataType::TextureSampler2DMS, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::TextureSampler2DMS));
+        EXPECT_EQ(ramses_internal::EDataType::TextureSampler3D, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::TextureSampler3D));
+        EXPECT_EQ(ramses_internal::EDataType::TextureSamplerCube, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::TextureSamplerCube));
+        EXPECT_EQ(ramses_internal::EDataType::TextureSamplerExternal, DataTypeUtils::ConvertDataTypeToInternal(ramses::EDataType::TextureSamplerExternal));
     }
 }

@@ -126,8 +126,8 @@ namespace ramses
         EXPECT_STREQ("vec3fInputArray", input.getName());
         EXPECT_EQ(3u, input.getElementCount());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Vector3F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Vector3F, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Vector3F, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Vector3F, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
         EXPECT_EQ(EEffectUniformSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(5u, input.impl.getInputIndex());
@@ -143,8 +143,8 @@ namespace ramses
         EXPECT_STREQ("matrix44fInput", input.getName());
         EXPECT_EQ(1u, input.getElementCount());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Matrix44F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Matrix44F, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Matrix44F, input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Matrix44F, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::ModelViewMatrix, input.impl.getSemantics());
         EXPECT_EQ(EEffectUniformSemantic::ModelViewMatrix, input.getSemantics());
         EXPECT_TRUE(input.isValid());
@@ -158,8 +158,8 @@ namespace ramses
 
         EXPECT_STREQ("vec2fArrayInput", input.getName());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Vector2F, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
         EXPECT_EQ(EEffectAttributeSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
@@ -174,8 +174,8 @@ namespace ramses
 
         EXPECT_STREQ("vec2fArrayInput", input.getName());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Vector2F, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::TextPositionsAttribute, input.impl.getSemantics());
         EXPECT_EQ(EEffectAttributeSemantic::TextPositions, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
@@ -190,8 +190,8 @@ namespace ramses
 
         EXPECT_STREQ("vec2fArrayInput", input.getName());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Vector2F, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::TextPositionsAttribute, input.impl.getSemantics());
         EXPECT_EQ(EEffectAttributeSemantic::TextPositions, input.getSemantics());
         EXPECT_TRUE(input.isValid());
@@ -206,8 +206,8 @@ namespace ramses
         EXPECT_STREQ("vec3fInputArray", input.getName());
         EXPECT_EQ(3u, input.getElementCount());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Vector3F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Vector3F, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Vector3F, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Vector3F, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
         EXPECT_EQ(EEffectUniformSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(5u, input.impl.getInputIndex());
@@ -226,13 +226,13 @@ namespace ramses
         UniformInput inputExternalTexture;
         EXPECT_EQ(StatusOK, effect->findUniformInput("textureExternalInput", inputExternalTexture));
 
-        EXPECT_EQ(EEffectInputDataType_TextureSampler2D, input2d.getDataType());
+        EXPECT_EQ(EDataType::TextureSampler2D, input2d.getDataType());
         EXPECT_TRUE(input2d.isValid());
-        EXPECT_EQ(EEffectInputDataType_TextureSampler3D, input3d.getDataType());
+        EXPECT_EQ(EDataType::TextureSampler3D, input3d.getDataType());
         EXPECT_TRUE(input3d.isValid());
-        EXPECT_EQ(EEffectInputDataType_TextureSamplerCube, inputcube.getDataType());
+        EXPECT_EQ(EDataType::TextureSamplerCube, inputcube.getDataType());
         EXPECT_TRUE(inputcube.isValid());
-        EXPECT_EQ(EEffectInputDataType_TextureSamplerExternal, inputExternalTexture.getDataType());
+        EXPECT_EQ(EDataType::TextureSamplerExternal, inputExternalTexture.getDataType());
         EXPECT_TRUE(inputExternalTexture.isValid());
     }
 
@@ -244,8 +244,8 @@ namespace ramses
 
         EXPECT_STREQ("vec2fArrayInput", input.getName());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Vector2F, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
         EXPECT_EQ(EEffectAttributeSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
@@ -260,8 +260,8 @@ namespace ramses
 
         EXPECT_STREQ("vec2fArrayInput", input.getName());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
+        EXPECT_EQ(EDataType::Vector2F, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::TextPositionsAttribute, input.impl.getSemantics());
         EXPECT_EQ(EEffectAttributeSemantic::TextPositions, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
@@ -276,8 +276,8 @@ namespace ramses
 
         EXPECT_STREQ("texture2dInput", input.getName());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
-        EXPECT_EQ(EEffectInputDataType_TextureSampler2D, input.getDataType());
-        EXPECT_EQ(ramses_internal::EDataType::TextureSampler2D, input.impl.getDataType());
+        EXPECT_EQ(EDataType::TextureSampler2D, *input.getDataType());
+        EXPECT_EQ(ramses_internal::EDataType::TextureSampler2D, input.impl.getInternalDataType());
         EXPECT_EQ(ramses_internal::EFixedSemantics::TextTexture, input.impl.getSemantics());
         EXPECT_EQ(EEffectUniformSemantic::TextTexture, input.getSemantics());
         EXPECT_EQ(22u, input.impl.getInputIndex());

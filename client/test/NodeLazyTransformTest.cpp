@@ -79,9 +79,9 @@ namespace ramses
         EXPECT_EQ(y, 0.0f);
         EXPECT_EQ(z, 0.0f);
 
-        ramses::quat q;
+        glm::quat q;
         EXPECT_EQ(this->m_node->getRotation(q), StatusOK);
-        EXPECT_EQ(q, ramses::quat());
+        EXPECT_EQ(q, glm::identity<glm::quat>());
 
         EXPECT_EQ(this->m_node->getScaling(x, y, z), StatusOK);
         EXPECT_EQ(x, 1.0f);

@@ -14,42 +14,6 @@
 namespace ramses
 {
     /**
-     * Specifies the data type of an input.
-    */
-    enum EInputType
-    {
-        EInputType_Invalid = 0,
-        EInputType_Float,
-        EInputType_Vector2f,
-        EInputType_Vector3f,
-        EInputType_Vector4f,
-        EInputType_Int16,
-        EInputType_Int32,
-        EInputType_UInt16,
-        EInputType_UInt32,
-        EInputType_Vector2i,
-        EInputType_Vector3i,
-        EInputType_Vector4i,
-        EInputType_Matrix22f,
-        EInputType_Matrix23f,
-        EInputType_Matrix24f,
-        EInputType_Matrix32f,
-        EInputType_Matrix33f,
-        EInputType_Matrix34f,
-        EInputType_Matrix42f,
-        EInputType_Matrix43f,
-        EInputType_Matrix44f,
-        EInputType_TextureSampler,
-
-        EInputType_AttributeUInt16,
-        EInputType_AttributeFloat,
-        EInputType_AttributeVector2f,
-        EInputType_AttributeVector3f,
-        EInputType_AttributeVector4f,
-        EInputType_NUMBER_OF_ELEMENTS
-    };
-
-    /**
     * Specifies the blending operation.
     */
     enum EBlendOperation
@@ -182,17 +146,6 @@ namespace ramses
         EDrawMode_LineStrip,
         EDrawMode_NUMBER_OF_ELEMENTS
     };
-
-
-
-    /**
-     * @brief Returns string representation for input type
-     * @details Useful for logging, etc.
-     *
-     * @param inputType The enum parameter for which you will get the string
-     * @return String representation of the input type
-     */
-    RAMSES_API const char* getInputTypeString(EInputType inputType);
 
     /**
      * @brief Returns string representation for blend operation

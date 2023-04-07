@@ -129,6 +129,11 @@ namespace ramses
         case EDataType::Matrix22F:
         case EDataType::Matrix33F:
         case EDataType::Matrix44F:
+        case EDataType::TextureSampler2D:
+        case EDataType::TextureSampler2DMS:
+        case EDataType::TextureSampler3D:
+        case EDataType::TextureSamplerCube:
+        case EDataType::TextureSamplerExternal:
             return false;
         }
 
@@ -174,44 +179,4 @@ namespace ramses
         static_assert(IsArrayResourceDataType<T>() || IsUniformInputDataType<T>(), "This type has no corresponding EDataType");
         return EDataType::ByteBlob;
     }
-
-    /**
-    * Data type to hold a quaternion
-    */
-    struct quat
-    {
-        /**
-        * Creates an identity quaternion
-        */
-        quat()
-            : quat(1.f, 0.f, 0.f, 0.f)
-        {
-        }
-
-        /**
-        * Creates a quaternion with the vector (qx, qy, qz) and the scalar qw
-        */
-        quat(float qw, float qx, float qy, float qz)
-            : x(qx)
-            , y(qy)
-            , z(qz)
-            , w(qw)
-        {
-        }
-
-        bool operator==(const quat& rhs) const
-        {
-            return (x == rhs.x) && (y == rhs.y) && (z == rhs.z) && (w == rhs.w);
-        }
-
-        bool operator!=(const quat& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
-        float x; ///< x coordinate of the quaternion's vector
-        float y; ///< y coordinate of the quaternion's vector
-        float z; ///< z coordinate of the quaternion's vector
-        float w; ///< scalar component of the quaternion
-    };
 }

@@ -9,48 +9,48 @@
 #pragma once
 
 #include "ramses-logic/EPropertyType.h"
-
-#include "ramses-client-api/EffectInputDataType.h"
-
+#include "ramses-framework-api/EDataType.h"
 #include <optional>
 
 namespace rlogic::internal
 {
-    static constexpr std::optional<EPropertyType> ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType type)
+    static constexpr std::optional<EPropertyType> ConvertRamsesUniformTypeToPropertyType(ramses::EDataType type)
     {
         switch (type)
         {
-        case ramses::EEffectInputDataType::EEffectInputDataType_Invalid:
-            return std::nullopt;
-        case ramses::EEffectInputDataType::EEffectInputDataType_Int32:
-            return std::make_optional(EPropertyType::Int32);
-        case ramses::EEffectInputDataType::EEffectInputDataType_UInt16:
-        case ramses::EEffectInputDataType::EEffectInputDataType_UInt32:
-            return std::nullopt;
-        case ramses::EEffectInputDataType::EEffectInputDataType_Float:
-            return std::make_optional(EPropertyType::Float);
-        case ramses::EEffectInputDataType::EEffectInputDataType_Vector2F:
-            return std::make_optional(EPropertyType::Vec2f);
-        case ramses::EEffectInputDataType::EEffectInputDataType_Vector3F:
-            return std::make_optional(EPropertyType::Vec3f);
-        case ramses::EEffectInputDataType::EEffectInputDataType_Vector4F:
-            return std::make_optional(EPropertyType::Vec4f);
-        case ramses::EEffectInputDataType::EEffectInputDataType_Vector2I:
-            return std::make_optional(EPropertyType::Vec2i);
-        case ramses::EEffectInputDataType::EEffectInputDataType_Vector3I:
-            return std::make_optional(EPropertyType::Vec3i);
-        case ramses::EEffectInputDataType::EEffectInputDataType_Vector4I:
+        case ramses::EDataType::Int32:
+            return EPropertyType::Int32;
+        case ramses::EDataType::Float:
+            return EPropertyType::Float;
+        case ramses::EDataType::Vector2F:
+            return EPropertyType::Vec2f;
+        case ramses::EDataType::Vector3F:
+            return EPropertyType::Vec3f;
+        case ramses::EDataType::Vector4F:
+            return EPropertyType::Vec4f;
+        case ramses::EDataType::Vector2I:
+            return EPropertyType::Vec2i;
+        case ramses::EDataType::Vector3I:
+            return EPropertyType::Vec3i;
+        case ramses::EDataType::Vector4I:
             return EPropertyType::Vec4i;
-        case ramses::EEffectInputDataType::EEffectInputDataType_Matrix22F:
-        case ramses::EEffectInputDataType::EEffectInputDataType_Matrix33F:
-        case ramses::EEffectInputDataType::EEffectInputDataType_Matrix44F:
-        case ramses::EEffectInputDataType::EEffectInputDataType_TextureSampler2D:
-        case ramses::EEffectInputDataType::EEffectInputDataType_TextureSampler3D:
-        case ramses::EEffectInputDataType::EEffectInputDataType_TextureSamplerCube:
-        case ramses::EEffectInputDataType::EEffectInputDataType_TextureSampler2DMS:
-        case ramses::EEffectInputDataType::EEffectInputDataType_TextureSamplerExternal:
+
+        // unsupported property types
+        case ramses::EDataType::UInt16:
+        case ramses::EDataType::UInt32:
+        case ramses::EDataType::Matrix22F:
+        case ramses::EDataType::Matrix33F:
+        case ramses::EDataType::Matrix44F:
+        case ramses::EDataType::TextureSampler2D:
+        case ramses::EDataType::TextureSampler3D:
+        case ramses::EDataType::TextureSamplerCube:
+        case ramses::EDataType::TextureSampler2DMS:
+        case ramses::EDataType::TextureSamplerExternal:
+        case ramses::EDataType::ByteBlob:
             return std::nullopt;
         }
+
+        assert(false);
         return std::nullopt;
     }
 }

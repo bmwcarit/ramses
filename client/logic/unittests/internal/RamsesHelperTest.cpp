@@ -14,23 +14,22 @@ namespace rlogic::internal
 {
     TEST(ARamsesHelper, ConvertsRamsesUniformTypeToEpropertyType)
     {
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Invalid));
-        EXPECT_EQ(EPropertyType::Int32, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Int32));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_UInt16));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_UInt32));
-        EXPECT_EQ(EPropertyType::Float, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Float));
-        EXPECT_EQ(EPropertyType::Vec2f, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Vector2F));
-        EXPECT_EQ(EPropertyType::Vec3f, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Vector3F));
-        EXPECT_EQ(EPropertyType::Vec4f, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Vector4F));
-        EXPECT_EQ(EPropertyType::Vec2i, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Vector2I));
-        EXPECT_EQ(EPropertyType::Vec3i, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Vector3I));
-        EXPECT_EQ(EPropertyType::Vec4i, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Vector4I));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Matrix22F));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Matrix33F));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_Matrix44F));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_TextureSampler2D));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_TextureSampler3D));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_TextureSamplerCube));
-        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EEffectInputDataType_TextureSamplerExternal));
+        EXPECT_EQ(EPropertyType::Int32, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Int32));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::UInt16));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::UInt32));
+        EXPECT_EQ(EPropertyType::Float, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Float));
+        EXPECT_EQ(EPropertyType::Vec2f, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Vector2F));
+        EXPECT_EQ(EPropertyType::Vec3f, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Vector3F));
+        EXPECT_EQ(EPropertyType::Vec4f, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Vector4F));
+        EXPECT_EQ(EPropertyType::Vec2i, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Vector2I));
+        EXPECT_EQ(EPropertyType::Vec3i, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Vector3I));
+        EXPECT_EQ(EPropertyType::Vec4i, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Vector4I));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Matrix22F));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Matrix33F));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::Matrix44F));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::TextureSampler2D));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::TextureSampler3D));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::TextureSamplerCube));
+        EXPECT_EQ(std::nullopt, ConvertRamsesUniformTypeToPropertyType(ramses::EDataType::TextureSamplerExternal));
     }
 }

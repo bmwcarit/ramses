@@ -282,5 +282,10 @@ namespace ramses
         EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::Matrix22F, 1u));
         EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::Matrix33F, 1u));
         EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::Matrix44F, 1u));
+        EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::TextureSampler2D, 1u));
+        EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::TextureSampler2DMS, 1u));
+        EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::TextureSampler3D, 1u));
+        EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::TextureSamplerCube, 1u));
+        EXPECT_EQ(nullptr, testScene.getScene().createArrayBuffer(EDataType::TextureSamplerExternal, 1u));
     }
 }

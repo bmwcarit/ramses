@@ -132,6 +132,7 @@ createModule(
                             ramses-common-base
                             lz4
                             fmt::fmt
+                            glm::glm
                             ramses-abseil
     # conditional values
     ${ramses-framework-TCP_MIXIN}

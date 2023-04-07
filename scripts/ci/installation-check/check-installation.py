@@ -24,13 +24,15 @@ def get_files_in_directory_recursive(path, ext):
     return res
 
 
-def get_source_api_headers(srcDir, pattern):
+def get_source_api_headers(srcDir, pattern, trim=True):
     headers = []
     pattern = re.compile(pattern)
     for path in subprocess.check_output(['git', 'ls-files'], cwd=srcDir, shell=False).decode('utf-8').split():
         match = pattern.match(path)
         if match:
-            rel_path = Path(path).relative_to(Path(match.group()))
+            rel_path = Path(path)
+            if trim:
+                rel_path = rel_path.relative_to(Path(match.group()))
             headers.append(str(rel_path))
 
     return headers
@@ -169,6 +171,8 @@ def main():
 
     # Extract header files from the source tree
     srcApiHeaders = get_source_api_headers(args.src_dir, '.*/((ramses-[^/]+-api)|logic)/include')
+    glmHeaders = get_source_api_headers(Path(args.src_dir) / 'external' / 'glm', 'glm', trim=False)
+    srcApiHeaders = srcApiHeaders + glmHeaders
 
     # check which headers are unexpected and which are missing
     unexpectedHeaders = list(set(installedHeaders) - set(srcApiHeaders))
@@ -185,6 +189,8 @@ def main():
     print("Checking strict header compilation")
     numPedanticErrors = 0
     for h in installedHeaders:
+        if h.startswith('glm'):
+            continue
         temp_file = "/tmp/ramses_pedantic_header.cpp"
         with open(temp_file, "w") as file:
             file.writelines(f"#include \"{h}\"\n\n")

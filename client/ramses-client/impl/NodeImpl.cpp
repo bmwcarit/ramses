@@ -389,17 +389,17 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t NodeImpl::setRotation(const quat& rotation)
+    status_t NodeImpl::setRotation(const glm::quat& rotation)
     {
         ramses_internal::Vector4 vec{rotation.x, rotation.y, rotation.z, rotation.w};
         return setRotationInternal(std::move(vec), ramses_internal::ERotationConvention::Quaternion);
     }
 
-    ramses::status_t NodeImpl::getRotation(quat& rotation) const
+    ramses::status_t NodeImpl::getRotation(glm::quat& rotation) const
     {
         if (!m_transformHandle.isValid())
         {
-            rotation = quat();
+            rotation = glm::identity<glm::quat>();
             return StatusOK;
         }
 
@@ -409,7 +409,7 @@ namespace ramses
         }
 
         const auto& value = getIScene().getRotation(m_transformHandle);
-        rotation = quat(value.w, value.x, value.y, value.z);
+        rotation = glm::quat(value.w, value.x, value.y, value.z);
         return StatusOK;
     }
 

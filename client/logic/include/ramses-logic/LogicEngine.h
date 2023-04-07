@@ -385,7 +385,7 @@ namespace rlogic
          *  - \c joints must contain at least 1 joint and no null pointers
          *  - \c inverseBindMatrices must be of equal size as \c joints (i.e. matrix per joint)
          *  - \c jointMatInput must point to a valid uniform input of the ramses::Effect used in \c appearanceBinding
-         *  - the shader uniform that \c jointMatInput points to must be of type array of ramses::EEffectInputDataType_Matrix44F
+         *  - the shader uniform that \c jointMatInput points to must be of type array of ramses::EDataType::Matrix44F
          *    with number of elements matching number of joints
          *  - \c jointMatInput must not be bound to any data object in its Ramses appearance
          * Attention! This method clears all previous errors! See also docs of #getErrors()

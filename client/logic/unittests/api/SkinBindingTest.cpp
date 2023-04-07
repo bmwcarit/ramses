@@ -99,7 +99,7 @@ namespace rlogic::internal
         const auto& skinImplConst = m_skin->m_skinBinding;
         EXPECT_EQ(&m_appearanceBinding->m_appearanceBinding, &skinImplConst.getAppearanceBinding());
 
-        EXPECT_EQ(ramses::EEffectInputDataType_Matrix44F, m_skin->getAppearanceUniformInput().getDataType());
+        EXPECT_EQ(ramses::EDataType::Matrix44F, *m_skin->getAppearanceUniformInput().getDataType());
         EXPECT_EQ(2u, m_skin->getAppearanceUniformInput().getElementCount());
     }
 

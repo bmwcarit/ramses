@@ -146,31 +146,23 @@ def main():
         r'asan_suppressions\.txt$',
         r'lsan_suppressions\.txt$',
         r'tsan_blacklist\.txt$',
-        r'logic/ci/config/sanitizer/tsan_suppressions\.txt$',
         r'maven_settings\.xml$',
         r'\.config$',
         r'\.conf$',
-        r'\.filepathesconfig$',
         r'^demo/android/DemoRamsesAndroidModule/src/main/AndroidManifest\.xml',
         # Excluded on purpose - add new lines reasonibly here!
-        r'\.patch$',        # License headers can't be added to patch files
         r'\.tmpl$',         # File content hash-dependent, can't modify
         r'\.md$',                   # Markdown files never need license
-        r'^integration/TestContent/res/BigString\.txt$',  # Test file with random content - doesn't need license
-        r'^cmake/templates/ramses-version\.in$',  # Just a template, doesn't need license
         r'.*/AndroidManifest\.xml$',  # formatting different due to xml restrictions
-        # json doesn't support comments - can't have license header
-        r'^scripts/integration_tests/proprietary/ramses_test_framework/templates/ramses\.json\.in',
         r'^CHANGELOG\.md$',  # Doesn't need a license
         r'^LICENSE\.txt$',   # Contains license info, not related to code/content
-        r'^logic/LICENSE\.txt$',
         r'^proprietary/oss/LICENSE\.txt$',  # Contains oss license info, not related to code/content
         r'^proprietary/oss/CHANGELOG\.md$',  # Doesn't need a license
         r'^.lfsconfig$',     # Doesn't need a license
         r'valgrind/suppressions$',
         r'\.spdx$',
         r'requirements\.txt',
-        r'^doc/doxygen/DoxygenLayout.xml$'
+        r'^doc/old_ramses/doxygen/DoxygenLayout.xml$'
     }
     files_license_header = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'.*'}, blacklist_license)
 

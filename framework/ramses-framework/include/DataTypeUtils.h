@@ -52,6 +52,29 @@ namespace ramses
             case ramses_internal::EDataType::ByteBlob:
                 return EDataType::ByteBlob;
 
+            // internal attribure array types are converted back to their element type on public API
+            case ramses_internal::EDataType::UInt16Buffer:
+                return EDataType::UInt16;
+            case ramses_internal::EDataType::FloatBuffer:
+                return EDataType::Float;
+            case ramses_internal::EDataType::Vector2Buffer:
+                return EDataType::Vector2F;
+            case ramses_internal::EDataType::Vector3Buffer:
+                return EDataType::Vector3F;
+            case ramses_internal::EDataType::Vector4Buffer:
+                return EDataType::Vector4F;
+
+            case ramses_internal::EDataType::TextureSampler2D:
+                return EDataType::TextureSampler2D;
+            case ramses_internal::EDataType::TextureSampler2DMS:
+                return EDataType::TextureSampler2DMS;
+            case ramses_internal::EDataType::TextureSampler3D:
+                return EDataType::TextureSampler3D;
+            case ramses_internal::EDataType::TextureSamplerCube:
+                return EDataType::TextureSamplerCube;
+            case ramses_internal::EDataType::TextureSamplerExternal:
+                return EDataType::TextureSamplerExternal;
+
             default:
                 assert(false);
                 return EDataType::ByteBlob;
@@ -90,6 +113,16 @@ namespace ramses
                 return ramses_internal::EDataType::Matrix44F;
             case EDataType::ByteBlob:
                 return ramses_internal::EDataType::ByteBlob;
+            case EDataType::TextureSampler2D:
+                return ramses_internal::EDataType::TextureSampler2D;
+            case EDataType::TextureSampler2DMS:
+                return ramses_internal::EDataType::TextureSampler2DMS;
+            case EDataType::TextureSampler3D:
+                return ramses_internal::EDataType::TextureSampler3D;
+            case EDataType::TextureSamplerCube:
+                return ramses_internal::EDataType::TextureSamplerCube;
+            case EDataType::TextureSamplerExternal:
+                return ramses_internal::EDataType::TextureSamplerExternal;
             }
 
             assert(false);

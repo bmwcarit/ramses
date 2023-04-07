@@ -166,7 +166,7 @@ namespace ramses_internal
     def test_project_and_builddir_predicates(self):
         entry = """/home/foobar/ramses/framework/file.h:45:1: error: namespace 'ramses_internal' not terminated with a closing comment [google-readability-namespace-comments]
 /home/foobar/src/other.h:45:1: error: namespace 'ramses_internal' not terminated with a closing comment [google-readability-namespace-comments]
-/home/foobar/ramses/build/dir/third.h:45:1: error: namespace 'ramses_internal' not terminated with a closing comment [google-readability-namespace-comments]"""
+/home/foobar/ramses/build/dir/third.h:45:1: error: namespace 'ramses_internal' not terminated with a closing comment [google-readability-namespace-comments]"""  # noqa E501 allow long string
         compdb_entry = compilationdb.CompilationEntry({
             'directory': '/home/foobar/ramses/build',
             'command': 'runme',

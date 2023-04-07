@@ -30,4 +30,9 @@ namespace ramses
     {
         return impl.isValid();
     }
+
+    std::optional<EDataType> EffectInput::getDataType() const
+    {
+        return impl.getDataType();
+    }
 }

@@ -258,12 +258,11 @@ namespace rlogic::internal
 
     std::optional<EPropertyType> RamsesAppearanceBindingImpl::GetPropertyTypeForUniform(const ramses::UniformInput& uniform)
     {
+        assert(uniform.isValid());
         // Can't bind semantic uniforms
         if (uniform.getSemantics() != ramses::EEffectUniformSemantic::Invalid)
-        {
             return std::nullopt;
-        }
 
-        return ConvertRamsesUniformTypeToPropertyType(uniform.getDataType());
+        return ConvertRamsesUniformTypeToPropertyType(*uniform.getDataType());
     }
 }

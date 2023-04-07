@@ -286,22 +286,22 @@ namespace ramses
         UniformInput uniform;
         EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(0u, uniform));
         EXPECT_STREQ("vs_uniform", uniform.getName());
-        EXPECT_EQ(EEffectInputDataType_Float, uniform.getDataType());
+        EXPECT_EQ(EDataType::Float, *uniform.getDataType());
         EXPECT_EQ(1u, uniform.getElementCount());
 
         EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(1u, uniform));
         EXPECT_STREQ("colorRG", uniform.getName());
-        EXPECT_EQ(EEffectInputDataType_Vector2F, uniform.getDataType());
+        EXPECT_EQ(EDataType::Vector2F, *uniform.getDataType());
         EXPECT_EQ(1u, uniform.getElementCount());
 
         EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(2u, uniform));
         EXPECT_STREQ("colorBA", uniform.getName());
-        EXPECT_EQ(EEffectInputDataType_Float, uniform.getDataType());
+        EXPECT_EQ(EDataType::Float, *uniform.getDataType());
         EXPECT_EQ(2u, uniform.getElementCount());
 
         EXPECT_EQ(StatusOK, loadedEffect->getUniformInput(3u, uniform));
         EXPECT_STREQ("gs_uniform", uniform.getName());
-        EXPECT_EQ(EEffectInputDataType_Float, uniform.getDataType());
+        EXPECT_EQ(EDataType::Float, *uniform.getDataType());
         EXPECT_EQ(1u, uniform.getElementCount());
 
         // check attributes
@@ -309,15 +309,15 @@ namespace ramses
         AttributeInput attrib;
         EXPECT_EQ(StatusOK, loadedEffect->getAttributeInput(0u, attrib));
         EXPECT_STREQ("a_position1", attrib.getName());
-        EXPECT_EQ(EEffectInputDataType_Vector3F, attrib.getDataType());
+        EXPECT_EQ(EDataType::Vector3F, *attrib.getDataType());
 
         EXPECT_EQ(StatusOK, loadedEffect->getAttributeInput(1u, attrib));
         EXPECT_STREQ("a_position2", attrib.getName());
-        EXPECT_EQ(EEffectInputDataType_Float, attrib.getDataType());
+        EXPECT_EQ(EDataType::Float, *attrib.getDataType());
 
         EXPECT_EQ(StatusOK, loadedEffect->getAttributeInput(2u, attrib));
         EXPECT_STREQ("a_position3", attrib.getName());
-        EXPECT_EQ(EEffectInputDataType_Float, attrib.getDataType());
+        EXPECT_EQ(EDataType::Float, *attrib.getDataType());
 
         // GS
         EXPECT_TRUE(loadedEffect->hasGeometryShader());

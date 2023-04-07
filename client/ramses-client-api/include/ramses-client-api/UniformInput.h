@@ -11,7 +11,7 @@
 
 #include "ramses-client-api/EffectInput.h"
 #include "ramses-client-api/EffectInputSemantic.h"
-#include "ramses-client-api/EffectInputDataType.h"
+#include "ramses-framework-api/EDataType.h"
 
 namespace ramses
 {
@@ -25,13 +25,6 @@ namespace ramses
         * @brief Constructor of UniformInput.
         */
         UniformInput();
-
-        /**
-        * @brief Returns the effect input data type.
-        *
-        * @return Effect input data type
-        */
-        [[nodiscard]] EEffectInputDataType getDataType() const;
 
         /**
         * @brief Returns the effect input semantics.

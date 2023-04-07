@@ -72,10 +72,14 @@ endif()
 
 # OpenGL Mathematics (glm)
 if (TARGET glm::glm)
-    message(STATUS "+ glm (existing target)")
+    get_target_property(glm_includes glm::glm INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "+ glm (existing target): ${glm_includes}")
 else()
     add_subdirectory(glm)
-    message(STATUS "+ glm")
+    message(STATUS "+ glm (internal)")
+    if(ramses-sdk_ENABLE_INSTALL)
+        install(DIRECTORY glm/glm DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+    endif()
 endif()
 
 # abseil library

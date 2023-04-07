@@ -43,7 +43,7 @@ option(ramses-sdk_BUILD_DAEMON "Build the ramses daemon." ON)
 option(ramses-sdk_TEXT_SUPPORT "Enable/disable the ramses text API." ON)
 option(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client-only shared library." OFF)
 option(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per-renderer shared libraries." ON)
-option(ramses-sdk_BUILD_DOCS "Build documentation (if Doxygen and Dot are found on the build host)." ON)
+option(ramses-sdk_FORCE_BUILD_DOCS "Build documentation, report error and abort if Doxygen and Dot are found on the system." OFF)
 option(ramses-sdk_ENABLE_WAYLAND_IVI "Build a version of ramses renderer which uses wayland-ivi surfaces." ON)
 option(ramses-sdk_ENABLE_WAYLAND_SHELL "Build a version of ramses renderer which uses wayland-shell surfaces." ON)
 option(ramses-sdk_ENABLE_TCP_SUPPORT "Enable use of TCP communication." ON)
@@ -58,6 +58,7 @@ option(ramses-sdk_USE_IMAGEMAGICK "Enable tests depending on image magick compar
 set(ramses-sdk_CPP_VERSION "17" CACHE STRING "Set used c++ version, must be 17 or 20")
 
 # find options
+option(ramses-sdk_ALLOW_PLATFORM_GLM "Enable to search for platform provided OpenGL Math libary (glm)." ON)
 option(ramses-sdk_ALLOW_PLATFORM_FREETYPE "Enable to search for platform provided freetype and harfbuzz." ON)
 option(ramses-sdk_ALLOW_CUSTOM_FREETYPE "Allow usage of custom freetype and harfbuzz if platform provided one was not found." ON)
 
@@ -148,6 +149,14 @@ set(RAMSES_INSTALL_LIBRARY_PATH     lib)
 set(RAMSES_INSTALL_ARCHIVE_PATH     lib)
 set(RAMSES_INSTALL_RESOURCES_PATH   "bin/res")
 
+if (ramses-sdk_ALLOW_PLATFORM_GLM)
+    find_package(glm QUIET)
+    if (glm_FOUND AND NOT TARGET glm::glm)
+        # older versions of glm may not export the "glm::glm" target, but "glm"
+        add_library(glm::glm ALIAS glm)
+    endif()
+endif()
+
 createBuildConfig()
 
 addSubdirectory(MODE AUTO PATH external)
@@ -204,7 +213,7 @@ if(ramses-sdk_BUILD_DEMOS)
     addSubdirectory(MODE AUTO PATH demo)
 endif()
 
-if(ramses-sdk_BUILD_TESTS)
+if(RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TOOLS AND NOT ramses-sdk_DISABLE_LOGIC)
     addSubdirectory(MODE ON PATH client/logic/tools)
     # TODO Fix the benchmarks - they need to link statically, ramses doesn't allow that currently
     # OR rework the benchmarks to only benchmark public API
@@ -212,7 +221,7 @@ if(ramses-sdk_BUILD_TESTS)
 endif()
 
 # Only enable testAssetProducer if built as top-level project
-if (RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TOOLS AND NOT ramses-sdk_DISABLE_LOGIC)
+if(RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TESTS AND NOT ramses-sdk_DISABLE_LOGIC)
     add_subdirectory(client/logic/unittests/testAssetProducer)
     add_custom_target(RL_REGEN_TEST_ASSETS
         COMMAND testAssetProducer ${PROJECT_SOURCE_DIR}/client/logic/unittests/res)
@@ -222,7 +231,7 @@ endif()
 include(cmake/ramses/createPackage.cmake)
 include(cmake/ramses/addCheckerTargets.cmake)
 
-if (ramses-sdk_BUILD_DOCS)
+if(RAMSES_TOP_LEVEL OR ramses-sdk_FORCE_BUILD_DOCS)
     add_subdirectory(doc)
 endif()
 

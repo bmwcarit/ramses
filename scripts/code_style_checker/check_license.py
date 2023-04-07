@@ -15,6 +15,8 @@ from common_modules import common
 
 
 G_PROP_FILES = [
+    'proprietary',
+    'zuul.d'
 ]
 
 # generate license regexes only once

@@ -96,7 +96,7 @@ namespace rlogic::internal
 
         static void ExpectQuat(ramses::Node& node, const vec4f& expectedValues)
         {
-            ramses::quat quat;
+            glm::quat quat;
             node.getRotation(quat);
             EXPECT_FLOAT_EQ(quat.x, expectedValues[0]);
             EXPECT_FLOAT_EQ(quat.y, expectedValues[1]);
@@ -380,12 +380,12 @@ namespace rlogic::internal
 
     TEST_P(ARamsesNodeBinding, DoesNotOverrideExistingQuaternionAfterRamsesNodeIsAssignedToBinding)
     {
-        ramses::quat quaternion{0.5f, 0.5f, -0.5f, 0.5f};
+        glm::quat quaternion{0.5f, 0.5f, -0.5f, 0.5f};
         m_node->setRotation(quaternion);
 
         m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion, "NodeBinding");
 
-        ramses::quat qOut;
+        glm::quat qOut;
         m_node->getRotation(qOut);
         EXPECT_EQ(quaternion, qOut);
     }
@@ -529,7 +529,7 @@ namespace rlogic::internal
 
     TEST_P(ARamsesNodeBinding_RotationTypes, TakesOverQuaternionFromRamsesNode_WhenEnumMatches)
     {
-        m_node->setRotation(ramses::quat(1.f, 2.f, 3.f, 4.f));
+        m_node->setRotation(glm::quat(1.f, 2.f, 3.f, 4.f));
         rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion, "NodeBinding");
 
         EXPECT_THAT(*binding->getInputs()->getChild("rotation")->get<vec4f>(), ::testing::ElementsAre(2.f, 3.f, 4.f, 1.f));

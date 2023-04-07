@@ -443,9 +443,9 @@ namespace ramses
         // default value is still set
         EXPECT_EQ(ERotationConvention::Euler_XYZ, node.getRotationConvention());
 
-        ramses::quat quaternion;
+        glm::quat quaternion;
         EXPECT_EQ(StatusOK, node.getRotation(quaternion));
-        EXPECT_EQ(quaternion, ramses::quat());
+        EXPECT_EQ(quaternion, glm::identity<glm::quat>());
 
         float x;
         float y;
@@ -463,12 +463,12 @@ namespace ramses
     {
         Node& node = this->createNode("node");
 
-        const quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
+        const glm::quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
         EXPECT_EQ(StatusOK, node.setRotation(q));
 
         const auto transformHandle = node.impl.getTransformHandle();
 
-        quat qOut;
+        glm::quat qOut;
         EXPECT_EQ(ramses::StatusOK, node.getRotation(qOut));
         EXPECT_EQ(qOut.x, q.x);
         EXPECT_EQ(qOut.y, q.y);
@@ -482,9 +482,9 @@ namespace ramses
     {
         Node& node = this->createNode("node");
 
-        const quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
+        const glm::quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
         EXPECT_EQ(StatusOK, node.setRotation(q));
-        quat qOut;
+        glm::quat qOut;
         EXPECT_EQ(ramses::StatusOK, node.getRotation(qOut));
 
         const auto transformHandle = node.impl.getTransformHandle();
@@ -515,12 +515,12 @@ namespace ramses
         EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z));
         EXPECT_EQ(ERotationConvention::Euler_XZX, node.getRotationConvention());
 
-        const quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
+        const glm::quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
         EXPECT_EQ(StatusOK, node.setRotation(q));
 
         const auto transformHandle = node.impl.getTransformHandle();
 
-        quat qOut;
+        glm::quat qOut;
         EXPECT_EQ(ramses::StatusOK, node.getRotation(qOut));
         EXPECT_EQ(qOut.x, q.x);
         EXPECT_EQ(qOut.y, q.y);
@@ -536,7 +536,7 @@ namespace ramses
     TYPED_TEST(NodeTest, getRotationReturnsErrorIfQuaternion)
     {
         Node& node = this->createNode("node");
-        quat  q{0.5f, 0.5f, 0.5f, -0.5f};
+        glm::quat  q{0.5f, 0.5f, 0.5f, -0.5f};
         EXPECT_EQ(StatusOK, node.setRotation(q));
         float x;
         float y;
@@ -548,7 +548,7 @@ namespace ramses
     TYPED_TEST(NodeTest, getRotationQuaternionReturnsErrorIfEuler)
     {
         Node& node = this->createNode("node");
-        quat  q;
+        glm::quat  q;
         EXPECT_EQ(StatusOK, node.setRotation(90.f, 0.f, 0.f));
         EXPECT_NE(StatusOK, node.getRotation(q));
     }
@@ -571,7 +571,7 @@ namespace ramses
     TYPED_TEST(NodeTest, getRotationQuaternionReturnsDefaultValuesWithoutSetBefore)
     {
         Node& node = this->createNode("node");
-        quat q;
+        glm::quat q;
         EXPECT_EQ(ERotationConvention::Euler_XYZ, node.getRotationConvention());
         EXPECT_EQ(ramses::StatusOK, node.getRotation(q));
         EXPECT_EQ(0.f, q.x);

@@ -13,6 +13,7 @@
 #include "ramses-client-api/EVisibilityMode.h"
 #include "ramses-client-api/ERotationConvention.h"
 #include "ramses-framework-api/DataTypes.h"
+#include "glm/gtc/quaternion.hpp"
 
 namespace ramses
 {
@@ -155,14 +156,14 @@ namespace ramses
 
         /**
         * @brief Sets the absolute rotation defined by a quaternion.
-        *        If this function is used to set, then only #ramses::Node::getRotation(quat&)const can be used to get the node rotation.
+        *        If this function is used to set, then only #ramses::Node::getRotation(glm::quat&)const can be used to get the node rotation.
         *
         * @param[in] rotation a normalized quaternion
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRotation(const quat& rotation);
+        status_t setRotation(const glm::quat& rotation);
 
         /**
         * @brief Returns the current rotation convention applied to the node
@@ -194,13 +195,13 @@ namespace ramses
         /**
         * @brief Retrieves the absolute rotation defined by a quaternion.
         *        This function will return an error if #ramses::Node::getRotationConvention() != #ramses::ERotationConvention::Quaternion
-        *        Default value is an identity quaternion: #ramses::quat::quat()
+        *        Default value is an identity quaternion: glm::identity<quat>()
         *
         * @param[out] rotation quaternion
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getRotation(quat& rotation) const;
+        status_t getRotation(glm::quat& rotation) const;
 
         /**
         * @brief Translates in all three directions with the given values.

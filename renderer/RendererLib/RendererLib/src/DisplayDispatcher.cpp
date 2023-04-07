@@ -90,10 +90,14 @@ namespace ramses_internal
             // in non-threaded mode overwrite the TLS log prefix before each display update
             ThreadLocalLog::SetPrefix(static_cast<int>(display.first.asMemoryHandle()));
 
-            if (m_displays.size() > 1u)
+            // avoid unnecessary context switch if running only single display
+            if (m_displays.size() > 1u || m_forceContextEnableNextLoop)
                 display.second.displayBundle->enableContext();
+
             display.second.displayBundle->doOneLoop(m_loopMode, sleepTime);
         }
+
+        m_forceContextEnableNextLoop = false;
     }
 
     void DisplayDispatcher::preprocessCommand(const RendererCommand::Variant& cmd)
@@ -269,6 +273,11 @@ namespace ramses_internal
 
             for (const auto& display : destroyedDisplays)
                 m_displays.erase(display);
+
+            // if there was any display destroyed make sure context of the remaining display(s) is enabled
+            // in the next doOneLoop (relevant only for non-threaded rendering)
+            if (!m_threadedDisplays && !destroyedDisplays.empty())
+                m_forceContextEnableNextLoop = true;
 
             m_cmdDispatchLoopsSinceLastEventDispatch = 0;
         }

@@ -40,7 +40,7 @@ namespace rlogic::internal
         assert(m_jointMatInput.isValid());
 
         assert(!m_appearanceBinding.getRamsesAppearance().isInputBound(m_jointMatInput));
-        assert(m_jointMatInput.getDataType() == ramses::EEffectInputDataType_Matrix44F);
+        assert(*m_jointMatInput.getDataType() == ramses::EDataType::Matrix44F);
         assert(m_jointMatInput.getElementCount() == m_joints.size());
 
         m_inverseBindMatrices.reserve(inverseBindMatrices.size());
@@ -143,7 +143,7 @@ namespace rlogic::internal
         ramses::UniformInput jointMatInput;
         if (skinBinding.jointMatUniformInputName())
             appearanceBinding->getRamsesAppearance().getEffect().findUniformInput(skinBinding.jointMatUniformInputName()->c_str(), jointMatInput);
-        if (!jointMatInput.isValid() || jointMatInput.getDataType() != ramses::EEffectInputDataType_Matrix44F || jointMatInput.getElementCount() != joints.size())
+        if (!jointMatInput.isValid() || *jointMatInput.getDataType() != ramses::EDataType::Matrix44F || jointMatInput.getElementCount() != joints.size())
         {
             errorReporting.add("Fatal error during loading of SkinBinding from serialized data: invalid or mismatching uniform input!", nullptr, EErrorType::BinaryVersionMismatch);
             return nullptr;

@@ -45,14 +45,19 @@ WARNING_DISABLE_GCC(-Wshadow)
         TextureSampler2DMS,
         TextureSampler3D,
         TextureSamplerCube,
-        Indices,        // special type that is not strictly typed by effect and both 16/32bit integer can be used
+
+        Indices, // special type that is not strictly typed by effect and both 16/32bit integer can be used
+
+        // these are special internal types used for effect attributes,
+        // essentially the type carries 2 bits of information - element type and that it is a buffer,
+        // see GlslToEffectConverter::replaceVertexAttributeWithBufferVariant
         UInt16Buffer,
         FloatBuffer,
         Vector2Buffer,
         Vector3Buffer,
         Vector4Buffer,
-        ByteBlob,
 
+        ByteBlob,
         TextureSamplerExternal,
 
         NUMBER_OF_ELEMENTS // must be last, used for checking

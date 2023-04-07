@@ -11,37 +11,6 @@
 
 namespace ramses
 {
-    static const char* const InputTypeNames[] =
-    {
-        "Invalid",
-        "Float",
-        "Vector2f",
-        "Vector3f",
-        "Vector4f",
-        "Int16",
-        "Int32",
-        "UInt16",
-        "UInt32",
-        "Vector2i",
-        "Vector3i",
-        "Vector4i",
-        "Matrix22f",
-        "Matrix23f",
-        "Matrix24f",
-        "Matrix32f",
-        "Matrix33f",
-        "Matrix34f",
-        "Matrix42f",
-        "Matrix43f",
-        "Matrix44f",
-        "TextureSampler",
-        "AttributeUInt16",
-        "AttributeFloat",
-        "AttributeVector2f",
-        "AttributeVector3f",
-        "AttributeVector4f",
-    };
-
     static const char* const BlendOperationNames[] =
     {
         "Disabled",
@@ -140,7 +109,6 @@ namespace ramses
         "LineStrip",
     };
 
-    ENUM_TO_STRING(EInputType, InputTypeNames, EInputType_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EBlendOperation, BlendOperationNames, EBlendOperation_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EBlendFactor, BlendFactorNames, EBlendFactor_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(ECullMode, CullModeNames, ECullMode_NUMBER_OF_ELEMENTS);
@@ -150,12 +118,6 @@ namespace ramses
     ENUM_TO_STRING(EStencilFunc, StencilFuncNames, EStencilFunc_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EStencilOperation, StencilOperationNames, EStencilOperation_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(EDrawMode, DrawModeNames, EDrawMode_NUMBER_OF_ELEMENTS);
-
-
-    const char* getInputTypeString(EInputType inputType)
-    {
-        return EnumToString(inputType);
-    }
 
     const char* getBlendOperationString(EBlendOperation blendOperation)
     {

@@ -35,6 +35,12 @@ namespace ramses
         Matrix22F,  ///< #ramses::matrix22f (two by two components of type float) (per data element if array)
         Matrix33F,  ///< #ramses::matrix33f (three by three components of type float) (per data element if array)
         Matrix44F,  ///< #ramses::matrix44f (four by four components of type float) (per data element if array)
+
+        TextureSampler2D,       ///< 2D Texture sampler data type
+        TextureSampler2DMS,     ///< 2D Texture sampler multi sampled data type
+        TextureSampler3D,       ///< 3D Texture sampler data type
+        TextureSamplerCube,     ///< Cube Texture sampler data type
+        TextureSamplerExternal, ///< External Texture sampler data type
     };
 
     /**
@@ -67,6 +73,13 @@ namespace ramses
             return 9u;
         case EDataType::Matrix44F:
             return 16u;
+
+        case EDataType::TextureSampler2D:
+        case EDataType::TextureSampler2DMS:
+        case EDataType::TextureSampler3D:
+        case EDataType::TextureSamplerCube:
+        case EDataType::TextureSamplerExternal:
+            return 0u;
         }
 
         assert(false);
@@ -104,6 +117,13 @@ namespace ramses
         case EDataType::Vector3I:
         case EDataType::Vector4I:
             return sizeof(int32_t);
+
+        case EDataType::TextureSampler2D:
+        case EDataType::TextureSampler2DMS:
+        case EDataType::TextureSampler3D:
+        case EDataType::TextureSamplerCube:
+        case EDataType::TextureSamplerExternal:
+            return 0u;
         }
 
         assert(false);

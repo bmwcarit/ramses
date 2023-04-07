@@ -10,6 +10,8 @@
 #define RAMSES_EFFECTINPUT_H
 
 #include "ramses-framework-api/StatusObject.h"
+#include "ramses-framework-api/EDataType.h"
+#include <optional>
 
 namespace ramses
 {
@@ -42,6 +44,13 @@ namespace ramses
         * @return Returns true if this EffectInput object is initialized and refers to an existing effect input
         */
         [[nodiscard]] bool isValid() const;
+
+        /**
+        * @brief Returns the effect input data type.
+        *
+        * @return Effect input data type if #isValid, std::nullopt otherwise
+        */
+        [[nodiscard]] std::optional<EDataType> getDataType() const;
 
     protected:
         /**

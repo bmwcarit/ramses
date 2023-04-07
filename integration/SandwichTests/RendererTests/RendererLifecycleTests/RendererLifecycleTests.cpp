@@ -1746,4 +1746,34 @@ namespace ramses_internal
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
     }
+
+    TEST_F(ARendererLifecycleTest, confidenceTest_contextEnabledWhenCreatingAndDestroyingDisplaysOBsInParticularOrder)
+    {
+        testScenesAndRenderer.initializeRenderer();
+        // create 2 displays, each with OB
+        const auto display1 = createDisplayForWindow(1u);
+        const auto ob1 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        const auto display2 = createDisplayForWindow(2u);
+        const auto ob2 = testRenderer.createOffscreenBuffer(display2, 16u, 16u, false);
+        ASSERT_TRUE(display1.isValid() && display2.isValid() && ob1.isValid() && ob2.isValid());
+        testRenderer.doOneLoop();
+
+        // create another OB on 1st display
+        const auto ob3 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        ASSERT_TRUE(ob3.isValid());
+        testRenderer.doOneLoop();
+
+        // destroy 2nd display/OB
+        testRenderer.destroyOffscreenBuffer(display2, ob2);
+        testRenderer.destroyDisplay(display2);
+        testRenderer.doOneLoop();
+
+        // create another OB on 1st display
+        // this requires context enabled on 1st display and would crash otherwise
+        const auto ob4 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        ASSERT_TRUE(ob4.isValid());
+        testRenderer.doOneLoop();
+
+        testScenesAndRenderer.destroyRenderer();
+    }
 }

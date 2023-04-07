@@ -16,11 +16,6 @@ namespace ramses
     {
     }
 
-    EEffectInputDataType AttributeInput::getDataType() const
-    {
-        return impl.getAttributeInputDataType();
-    }
-
     EEffectAttributeSemantic AttributeInput::getSemantics() const
     {
         return impl.getAttributeSemantics();

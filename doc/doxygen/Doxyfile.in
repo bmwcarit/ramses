@@ -1,5 +1,5 @@
 #  -------------------------------------------------------------------------
-#  Copyright (C) 2014 BMW Car IT GmbH
+#  Copyright (C) 2020 BMW AG
 #  -------------------------------------------------------------------------
 #  This Source Code Form is subject to the terms of the Mozilla Public
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,40 +11,20 @@
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project
 
-PROJECT_NAME           = "RAMSES Documentation"
-
-PROJECT_NUMBER         = "@RAMSES_VERSION@"
-
-PROJECT_BRIEF          = "Information for RAMSES users and developers"
-
-PROJECT_LOGO           = "@DOXYGEN_LOGO@"
-
 OUTPUT_DIRECTORY       = "@DOXYGEN_TARGET_DIR@"
 
-EXAMPLE_PATH           = "@DOXYGEN_EXAMPLE_PATH@"
-
-LAYOUT_FILE            = "@DOXYGEN_LAYOUT@"
-
-# hide classes in example applications or fwd declarations
-EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo
-
 INPUT                  = @DOXYGEN_INPUT@
-IMAGE_PATH             = @DOXYGEN_IMAGE_PATH@
-DOTFILE_DIRS           = @DOXYGEN_IMAGE_PATH@
+RECURSIVE              = YES
 
 INPUT_ENCODING         = ISO-8859-1
 
 FILE_PATTERNS          = *.h
-FILE_PATTERNS         += *.cpp
-FILE_PATTERNS         += *.dox
 
-EXTENSION_MAPPING      = dox=C++
-
-EXCLUDE_PATTERNS       = */test/*
-
+GENERATE_XML           = YES
 GENERATE_LATEX         = NO
-GENERATE_HTML          = YES
+GENERATE_HTML          = NO
 WARNINGS               = YES
+PREDEFINED             = RAMSES_API=
 WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_DOC_ERROR      = YES
 WARN_NO_PARAMDOC       = YES
@@ -52,9 +32,10 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXTRACT_ALL            = YES
 
-HAVE_DOT               = YES
-INTERACTIVE_SVG        = YES
-DOT_IMAGE_FORMAT       = svg
+# Make it easier to integrate reStructuredText directly in code
+ALIASES                = "rst=\verbatim embed:rst"
+ALIASES                += "endrst=\endverbatim"
+
 DOT_GRAPH_MAX_NODES    = 100
 
 WARN_LOGFILE           = DoxygenWarningLog.txt

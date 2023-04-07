@@ -190,7 +190,7 @@ namespace rlogic::internal
             if (m_rotationType == ERotationType::Quaternion)
             {
                 const auto& value = rotation.getValueAs<vec4f>();
-                status = m_ramsesNode.get().setRotation(ramses::quat(value[3], value[0], value[1], value[2]));
+                status = m_ramsesNode.get().setRotation(glm::quat(value[3], value[0], value[1], value[2]));
             }
             else
             {
@@ -270,7 +270,7 @@ namespace rlogic::internal
             vec4f rotationValue = {0.f, 0.f, 0.f, 1.f};
             if (rotationConvention == ramses::ERotationConvention::Quaternion)
             {
-                ramses::quat quaternion;
+                glm::quat quaternion;
                 ramsesNode.getRotation(quaternion);
                 rotationValue = {quaternion.x, quaternion.y, quaternion.z, quaternion.w};
             }
