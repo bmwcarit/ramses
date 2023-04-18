@@ -51,7 +51,7 @@ static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, 
 
     TransformHandle cameraTransformation = sceneAllocator.allocateTransform(cameraNodeHandle);
     scene.setTranslation(cameraTransformation, translation);
-    scene.setRotation(cameraTransformation, rotation, ERotationConvention::Legacy_ZYX);
+    scene.setRotation(cameraTransformation, Vector4(rotation), ERotationType::Euler_XYZ);
     scene.setScaling(cameraTransformation, scale);
     return cameraHandle;
 }
@@ -63,7 +63,7 @@ static void preparePickableObject(TransformationLinkCachedScene& scene, SceneAll
     scene.setPickableObjectCamera(pickableHandle, cameraHandle);
     TransformHandle pickableTransformation = sceneAllocator.allocateTransform(pickableNodeHandle);
     scene.setTranslation(pickableTransformation, translation);
-    scene.setRotation(pickableTransformation, rotation, ERotationConvention::Legacy_ZYX);
+    scene.setRotation(pickableTransformation, Vector4(rotation), ERotationType::Euler_XYZ);
     scene.setScaling(pickableTransformation, scale);
 }
 
@@ -351,14 +351,14 @@ TEST(IntersectionUtilsTest, findsPickedObjectInSceneWhenIntersected)
     const Vector2i dispResolution = { 1280, 480 };
 
     //Prepare PickableCamera
-    const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, 40.f, 0.f }, { 1.f, 1.f, 1.f });
+    const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, -40.f, 0.f }, { 1.f, 1.f, 1.f });
 
     //Prepare GeometryBuffer
     DataBufferHandle geometryBuffer = prepareGeometryBuffer(scene, sceneAllocator, vertexPositionsTriangle, sizeof(vertexPositionsTriangle));
 
     //Prepare PickableObject
     PickableObjectId pickableId(341u);
-    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId, { 0.1f, 1.0f, -1.0f }, { 70.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
+    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId, { 0.1f, 1.0f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
 
     //Testing scene for intersection
     const Vector2 coordsInViewportSpaceHit1 = {0.310937f, 0.354166f};
@@ -395,18 +395,18 @@ TEST(IntersectionUtilsTest, findsMultiplePickedObjectsNotOverlappingInSceneWhenI
     const Vector2i dispResolution = { 1280, 480 };
 
     //Prepare PickableCamera
-    const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, 40.f, 0.f }, { 1.f, 1.f, 1.f });
+    const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, -40.f, 0.f }, { 1.f, 1.f, 1.f });
 
     //Prepare GeometryBuffer
     DataBufferHandle geometryBuffer = prepareGeometryBuffer(scene, sceneAllocator, vertexPositionsTriangle, sizeof(vertexPositionsTriangle));
 
     //Prepare PickableObject1
     PickableObjectId pickableId(341u);
-    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId, { 0.1f, 1.0f, -1.0f }, { 70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
+    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId, { 0.1f, 1.0f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
 
     //Prepare PickableObject2
     PickableObjectId pickableId2(235u);
-    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId2, { 6.0f, 0.9f, -1.0f }, { 70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
+    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId2, { 6.0f, 0.9f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
 
     //Testing scene for intersection
     const Vector2 coordsInViewportSpaceHitPickable1 = { -0.382812f, 0.441667f };
@@ -434,18 +434,18 @@ TEST(IntersectionUtilsTest, findsMultiplePickedObjectsOverlappingInSceneWhenInte
     const Vector2i dispResolution = { 1280, 480 };
 
     //Prepare PickableCamera
-    const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, 40.f, 0.f }, { 1.f, 1.f, 1.f });
+    const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, -40.f, 0.f }, { 1.f, 1.f, 1.f });
 
     //Prepare GeometryBuffer
     DataBufferHandle geometryBuffer = prepareGeometryBuffer(scene, sceneAllocator, vertexPositionsTriangle, sizeof(vertexPositionsTriangle));
 
     //Prepare PickableObject1
     PickableObjectId pickableId(341u);
-    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId, { 0.1f, 1.0f, -1.0f }, { 70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
+    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId, { 0.1f, 1.0f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
 
     //Prepare PickableObject2
     PickableObjectId pickableId2(235u);
-    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId2, { 4.0f, 0.9f, -1.0f }, { 70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
+    preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId2, { 4.0f, 0.9f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
 
     //Testing scene for intersection
     const Vector2 coordsInViewportSpaceHitPickable1 = { -0.585938f, 0.575000f };

@@ -17,11 +17,11 @@ sudo ifconfig lo:1 10.0.2.2 netmask 255.255.255.0 up
 in a shell on the host system (This temporary assigns a second IP to the localhost interface used to communicate to the Android emulator. The step is only necessary with the emulator to simulate a normal network connection)
 - Go to the bin directory of the RAMSES linux build and execute in two separate shells
 ```shell
-./ramses-daemon -myip 10.0.2.2
+./ramses-daemon --ip 10.0.2.2
 ```
 and
 ```shell
-./ramses-test-client -i 10.0.2.2 -myip 10.0.2.2
+./ramses-test-client --daemon-ip 10.0.2.2 --ip 10.0.2.2
 ```
 to start a RAMSES daemon and a RAMSES client on the host system
 

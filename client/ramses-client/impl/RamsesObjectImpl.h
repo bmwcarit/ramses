@@ -37,7 +37,7 @@ namespace ramses
     {
     public:
         explicit RamsesObjectImpl(ERamsesObjectType type, const char* name);
-        virtual ~RamsesObjectImpl() override;
+        ~RamsesObjectImpl() override;
 
         void setObjectRegistry(IRamsesObjectRegistry& objectRegistry);
         void setObjectRegistryHandle(RamsesObjectHandle handle);
@@ -57,10 +57,10 @@ namespace ramses
 
         virtual void deinitializeFrameworkData() = 0;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
 
     protected:
-        virtual status_t addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const override;
+        status_t addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const override;
 
     private:
         ERamsesObjectType       m_type;

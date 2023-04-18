@@ -46,13 +46,13 @@ namespace ramses_internal
             m_sphereIndices.push_back(currentPositions);
             m_sphereIndices.push_back(currentPositions + 1);
             m_sphereIndices.push_back(currentPositions + 2);
-            m_spherePositions.push_back(p1);
-            m_spherePositions.push_back(p2);
-            m_spherePositions.push_back(p3);
+            m_spherePositions.push_back(p1.getAsVec3());
+            m_spherePositions.push_back(p2.getAsVec3());
+            m_spherePositions.push_back(p3.getAsVec3());
             // normals are same as point for unit sphere
-            m_sphereNormals.push_back(p1);
-            m_sphereNormals.push_back(p2);
-            m_sphereNormals.push_back(p3);
+            m_sphereNormals.push_back(p1.getAsVec3());
+            m_sphereNormals.push_back(p2.getAsVec3());
+            m_sphereNormals.push_back(p3.getAsVec3());
         }
         else
         {
@@ -83,7 +83,7 @@ namespace ramses_internal
     void CubeTextureScene::init(EState state)
     {
         m_transformNode = m_scene.createNode("cubeTransform");
-        m_transformNode->setTranslation(0.0f, 0.0f, -8.0f);
+        m_transformNode->setTranslation({0.0f, 0.0f, -8.0f});
         m_sphereMesh = m_scene.createMeshNode("Sphere");
         addMeshNodeToDefaultRenderGroup(*m_sphereMesh);
         m_sphereMesh->setParent(*m_transformNode);
@@ -105,9 +105,9 @@ namespace ramses_internal
 
         initializeUnitSphere();
 
-        const ramses::ArrayResource* pVertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(m_spherePositions.size()), &m_spherePositions[0].x);
-        const ramses::ArrayResource* pVertexNormals = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(m_sphereNormals.size()), &m_sphereNormals[0].x);
-        const ramses::ArrayResource* pIndices = m_scene.createArrayResource(ramses::EDataType::UInt16, static_cast<uint32_t>(m_sphereIndices.size()), &m_sphereIndices[0]);
+        const ramses::ArrayResource* pVertexPositions = m_scene.createArrayResource(static_cast<uint32_t>(m_spherePositions.size()), m_spherePositions.data());
+        const ramses::ArrayResource* pVertexNormals = m_scene.createArrayResource(static_cast<uint32_t>(m_sphereNormals.size()), m_sphereNormals.data());
+        const ramses::ArrayResource* pIndices = m_scene.createArrayResource(static_cast<uint32_t>(m_sphereIndices.size()), m_sphereIndices.data());
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput normalsInput;

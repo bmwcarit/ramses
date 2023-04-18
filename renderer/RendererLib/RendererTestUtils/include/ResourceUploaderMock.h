@@ -22,7 +22,7 @@ namespace ramses_internal
     public:
         ResourceUploaderMock();
 
-        MOCK_METHOD(absl::optional<DeviceResourceHandle> , uploadResource, (IRenderBackend&, const ResourceDescriptor&, UInt32&), (override));
+        MOCK_METHOD(std::optional<DeviceResourceHandle> , uploadResource, (IRenderBackend&, const ResourceDescriptor&, UInt32&), (override));
         MOCK_METHOD(void, unloadResource, (IRenderBackend&, EResourceType, ResourceContentHash, DeviceResourceHandle), (override));
         MOCK_METHOD(void, storeShaderInBinaryShaderCache, (IRenderBackend&, DeviceResourceHandle, const ResourceContentHash&, SceneId), (override));
 

@@ -106,7 +106,7 @@ namespace ramses_internal
             {
             }
 
-            virtual void run() override
+            void run() override
             {
                 m_started = true;
                 wl_display* display = (m_clientSocketFileDescriptor>=0) ?
@@ -124,17 +124,17 @@ namespace ramses_internal
                 m_ended = true;
             }
 
-            Bool couldConnectToEmbeddedCompositor() const
+            [[nodiscard]] Bool couldConnectToEmbeddedCompositor() const
             {
                 return m_result;
             }
 
-            Bool hasStarted() const
+            [[nodiscard]] Bool hasStarted() const
             {
                 return m_started;
             }
 
-            Bool hasEnded() const
+            [[nodiscard]] Bool hasEnded() const
             {
                 return m_ended;
             }

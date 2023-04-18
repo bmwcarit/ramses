@@ -47,7 +47,7 @@ namespace ramses
 
         template <typename OBJECT_TYPE>
         void      resolveDependencyIDImplAndStoreAsPointer(OBJECT_TYPE*& ptrId) const;
-        NodeImpl* getNodeImplForHandle(ramses_internal::NodeHandle) const;
+        [[nodiscard]] NodeImpl* getNodeImplForHandle(ramses_internal::NodeHandle) const;
 
     private:
         std::vector<RamsesObjectImpl*> m_objectImpls;
@@ -66,7 +66,7 @@ namespace ramses
         static ObjectIDType GetObjectIDNull();
 
         void serializeSceneObjectIds(bool flag);
-        bool getSerializeSceneObjectIds() const;
+        [[nodiscard]] bool getSerializeSceneObjectIds() const;
 
     private:
         bool         m_serializeSceneObjectIds = true;

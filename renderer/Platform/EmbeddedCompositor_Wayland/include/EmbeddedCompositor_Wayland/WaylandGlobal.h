@@ -17,7 +17,7 @@ namespace ramses_internal
     {
     public:
         explicit WaylandGlobal(wl_global* global);
-        virtual ~WaylandGlobal();
+        ~WaylandGlobal() override;
 
     private:
         wl_global* m_global;

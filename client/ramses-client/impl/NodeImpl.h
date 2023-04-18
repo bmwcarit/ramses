@@ -12,17 +12,18 @@
 // internal
 #include "SceneObjectImpl.h"
 #include "ramses-client-api/EVisibilityMode.h"
-#include "ramses-client-api/ERotationConvention.h"
+#include "ramses-client-api/ERotationType.h"
+#include "ramses-framework-api/DataTypes.h"
 
 // ramses framework
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/ERotationType.h"
 #include "Collections/Vector.h"
 
 namespace ramses_internal
 {
-    class Vector3;
+    class Vector4;
 }
 
 namespace ramses
@@ -34,13 +35,13 @@ namespace ramses
     {
     public:
         NodeImpl(SceneImpl& scene, ERamsesObjectType type, const char* nodeName);
-        virtual ~NodeImpl() override;
+        ~NodeImpl() override;
 
         void             initializeFrameworkData();
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
 
         status_t        addChild(NodeImpl& childNode);
         status_t        removeChild(NodeImpl& node);
@@ -62,20 +63,20 @@ namespace ramses
         NodeImpl*       getParentImpl();
         const NodeImpl* getParentImpl() const;
 
-        status_t        getModelMatrix(float(&modelMatrix)[16]) const;
-        status_t        getInverseModelMatrix(float(&inverseModelMatrix)[16]) const;
+        status_t        getModelMatrix(glm::mat4x4& modelMatrix) const;
+        status_t        getInverseModelMatrix(glm::mat4x4& inverseModelMatrix) const;
 
-        status_t translate(float x, float y, float z);
-        status_t setTranslation(float x, float y, float z);
-        status_t getTranslation(float& x, float& y, float& z) const;
-        status_t rotate(float x, float y, float z);
-        status_t setRotation(float x, float y, float z);
-        status_t setRotation(float x, float y, float z, ERotationConvention rotationConvention);
-        status_t getRotation(float& x, float& y, float& z) const;
-        status_t getRotation(float& x, float& y, float& z, ERotationConvention& rotationConvention) const;
-        status_t scale(float x, float y, float z);
-        status_t setScaling(float x, float y, float z);
-        status_t getScaling(float& x, float& y, float& z) const;
+        status_t translate(const vec3f& translation);
+        status_t setTranslation(const vec3f& translation);
+        status_t getTranslation(vec3f& translation) const;
+        status_t setRotation(const vec3f& rotation, ERotationType rotationType);
+        ERotationType getRotationType() const;
+        status_t getRotation(vec3f& rotation) const;
+        status_t setRotation(const quat& rotation);
+        status_t getRotation(quat& rotation) const;
+        status_t scale(const vec3f& scaling);
+        status_t setScaling(const vec3f& scaling);
+        status_t getScaling(vec3f& scaling) const;
 
         status_t setVisibility(EVisibilityMode mode);
         EVisibilityMode getVisibility() const;
@@ -93,7 +94,7 @@ namespace ramses
         using NodeVector = std::vector<NodeImpl *>;
 
         void removeChildInternally(NodeVector::iterator childIt);
-        status_t setRotationInternal(const ramses_internal::Vector3& rotation, ramses_internal::ERotationConvention rotationConventionInternal);
+        status_t setRotationInternal(ramses_internal::Vector4&& rotation, ramses_internal::ERotationType rotationType);
 
         ramses_internal::NodeHandle m_nodeHandle;
 

@@ -13,7 +13,7 @@
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-utils.h"
 #include <unordered_set>
 #include <cmath>
@@ -27,27 +27,10 @@
  * @brief Local Data Link Example
  */
 
-class RendererEventHandler : public ramses::RendererEventHandlerEmpty
+class RendererAndSceneStateEventHandler : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
 {
 public:
-    void windowClosed(ramses::displayId_t /*displayId*/) override
-    {
-        m_windowClosed = true;
-    }
-
-    bool isWindowClosed() const
-    {
-        return m_windowClosed;
-    }
-
-private:
-    bool m_windowClosed = false;
-};
-
-class SceneStateEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
-{
-public:
-    SceneStateEventHandler(ramses::RendererSceneControl& sceneControlApi, ramses::RamsesRenderer& renderer)
+    RendererAndSceneStateEventHandler(ramses::RendererSceneControl& sceneControlApi, ramses::RamsesRenderer& renderer)
         : m_sceneControlApi(sceneControlApi)
         , m_renderer(renderer)
     {
@@ -63,6 +46,17 @@ public:
         scenesWithCreatedProviderOrConsumer.insert(sceneId);
     }
 
+    void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    {
+        if (state == ramses::RendererSceneState::Ready)
+            mappedScenes.insert(sceneId);
+    }
+
+    void waitForSceneReady(ramses::sceneId_t sceneId)
+    {
+        waitUntilOrTimeout([&] { return mappedScenes.count(sceneId) != 0; });
+    }
+
     void waitForDataProviderOrConsumerCreated(ramses::sceneId_t sceneId)
     {
         while (scenesWithCreatedProviderOrConsumer.find(sceneId) == scenesWithCreatedProviderOrConsumer.end())
@@ -72,10 +66,35 @@ public:
         }
     }
 
+    void windowClosed(ramses::displayId_t) override
+    {
+        m_windowClosed = true;
+    }
+
+    bool isWindowClosed() const
+    {
+        return m_windowClosed;
+    }
+
 private:
+    bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction)
+    {
+        const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };
+        while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
+        {
+            m_renderer.doOneLoop();
+            m_renderer.dispatchEvents(*this);
+            m_sceneControlApi.dispatchEvents(*this);
+        }
+
+        return conditionFunction();
+    }
+
     ramses::RendererSceneControl& m_sceneControlApi;
     ramses::RamsesRenderer& m_renderer;
+    std::unordered_set<ramses::sceneId_t> mappedScenes;
     std::unordered_set<ramses::sceneId_t> scenesWithCreatedProviderOrConsumer;
+    bool m_windowClosed = false;
 };
 
 // Helper struct for triangle scene
@@ -87,7 +106,7 @@ public:
     // Textures that will be used as texture provider
     ramses::Texture2D* textures[2];
     // Data object that will be used as data consumer
-    ramses::DataVector4f* colorData;
+    ramses::DataObject* colorData;
     // Provider scene
     ramses::Scene* scene;
 };
@@ -102,7 +121,7 @@ struct QuadSceneInfo
     // Additional rotation chained after consumed transformation
     ramses::Node* rotateNode;
     // Data object that will be used as data provider
-    ramses::DataVector4f* colorData;
+    ramses::DataObject* colorData;
     // Consumer scene
     ramses::Scene* scene;
 };
@@ -124,10 +143,11 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -0.25f, -0.125f, 0.f, 0.25f, -0.125f, 0.f, 0.f, 0.125f, 0.f };
-    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-0.25f, -0.125f, 0.f}, ramses::vec3f{0.25f, -0.125f, 0.f}, ramses::vec3f{0.f, 0.125f, 0.f} };
+    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(4u, vertexPositionsData.data());
+
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -149,14 +169,14 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
     //bind input to data object
-    sceneInfo->colorData = sceneInfo->scene->createDataVector4f("colorData");
-    sceneInfo->colorData->setValue(1.0f, 0.0f, 0.3f, 1.0f);
+    sceneInfo->colorData = sceneInfo->scene->createDataObject(ramses::EDataType::Vector4F, "colorData");
+    sceneInfo->colorData->setValue(ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
     appearance->bindInput(colorInput, *sceneInfo->colorData);
 
     ramses::Node* rootTranslation = sceneInfo->scene->createNode("root scene translation node");
-    rootTranslation->setTranslation(0.0f, 0.0f, -1.0f);
+    rootTranslation->setTranslation({0.0f, 0.0f, -1.0f});
 
     sceneInfo->translateNode = sceneInfo->scene->createNode("triangle translation node");
     sceneInfo->translateNode->setParent(*rootTranslation);
@@ -193,18 +213,20 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -0.1f, -0.1f, 0.0f,
-                                    0.1f, -0.1f, 0.0f,
-                                    0.1f, 0.1f, 0.0f,
-                                    -0.1f, 0.1f, 0.0f };
-    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
-    float texCoordsArray[] = { 1.0f, 1.0f,
-                                0.0f, 1.0f,
-                                0.0f, 0.0f,
-                                1.0f, 0.0f };
-    ramses::ArrayResource* texCoords = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector2F, 4, texCoordsArray);
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 3, 0 };
-    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+        ramses::vec3f{-0.1f, -0.1f, 0.0f},
+        ramses::vec3f{0.1f, -0.1f, 0.0f},
+        ramses::vec3f{.1f, 0.1f, 0.0f},
+        ramses::vec3f{-0.1f, 0.1f, 0.0f} };
+    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(4u, vertexPositionsArray.data());
+    const std::array<ramses::vec2f, 4u> texCoordsArray{
+        ramses::vec2f{1.0f, 1.0f},
+        ramses::vec2f{0.0f, 1.0f},
+        ramses::vec2f{0.0f, 0.0f},
+        ramses::vec2f{1.0f, 0.0f} };
+    ramses::ArrayResource* texCoords = sceneInfo->scene->createArrayResource(4u, texCoordsArray.data());
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 3, 0 };
+    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(6u, indicesArray.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -230,7 +252,7 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 1.0f, 1.0f, 1.0f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 1.0f, 1.0f, 1.0f });
 
     ramses::UniformInput textureInput;
     effect->findUniformInput("textureSampler", textureInput);
@@ -253,24 +275,24 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
     sceneInfo->rotateNode->setParent(*sceneInfo->consumerNode);
 
     //create data object for providing color info (not used by any appearance)
-    sceneInfo->colorData = sceneInfo->scene->createDataVector4f("colorData");
-    sceneInfo->colorData->setValue(1.0f, 1.0f, 1.0f, 1.0f);
+    sceneInfo->colorData = sceneInfo->scene->createDataObject(ramses::EDataType::Vector4F, "colorData");
+    sceneInfo->colorData->setValue(ramses::vec4f{ 1.0f, 1.0f, 1.0f, 1.0f });
 
     return sceneInfo;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-datalink-example"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
@@ -343,7 +365,10 @@ int main(int argc, char* argv[])
 
     sceneControlAPI.flush();
 
-    SceneStateEventHandler eventHandler(sceneControlAPI, renderer);
+    RendererAndSceneStateEventHandler eventHandler(sceneControlAPI, renderer);
+    eventHandler.waitForSceneReady(triangleSceneId);
+    eventHandler.waitForSceneReady(quadSceneId);
+    eventHandler.waitForSceneReady(quadSceneId2);
     eventHandler.waitForDataProviderOrConsumerCreated(triangleSceneId);
     eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId);
     eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId2);
@@ -363,24 +388,25 @@ int main(int argc, char* argv[])
     // run animation
     uint32_t textureId = 0;
     uint64_t timeStamp = 0u;
-    RendererEventHandler rendererEventHandler;
-    while (!rendererEventHandler.isWindowClosed())
+    float rotationFactor = 0.f;
+    while (!eventHandler.isWindowClosed())
     {
-        renderer.dispatchEvents(rendererEventHandler);
+        renderer.dispatchEvents(eventHandler);
         if (timeStamp % 100 == 0)
         {
             textureId = (1 - textureId);
             triangleInfo->scene->updateTextureProvider(*triangleInfo->textures[textureId], textureProviderId);
         }
 
-        triangleInfo->translateNode->setTranslation(std::sin(timeStamp * 0.05f) * 0.2f, 0.0f, 0.0f);
+        triangleInfo->translateNode->setTranslation({std::sin(timeStamp * 0.05f) * 0.2f, 0.0f, 0.0f});
         triangleInfo->scene->flush();
-        quadInfo->rotateNode->rotate(0.0f, 0.0f, 1.0f);
+        rotationFactor += 1.f;
+        quadInfo->rotateNode->setRotation({0.0f, 0.0f, rotationFactor}, ramses::ERotationType::Euler_XYZ);
         quadInfo->scene->flush();
-        quadInfo2->rotateNode->rotate(0.0f, 1.0f, 0.0f);
+        quadInfo2->rotateNode->setRotation({0.0f, rotationFactor, 0.0f}, ramses::ERotationType::Euler_XYZ);
         quadInfo2->scene->flush();
 
-        quadInfo->colorData->setValue(std::sin(timeStamp * 0.1f), 0.0f, 0.5f, 1.0f);
+        quadInfo->colorData->setValue(ramses::vec4f{ std::sin(timeStamp * 0.1f), 0.0f, 0.5f, 1.0f });
 
         renderer.doOneLoop();
         timeStamp++;

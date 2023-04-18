@@ -60,42 +60,11 @@ namespace ramses_internal
     {
         const TransformHandle transform = this->m_scene.allocateTransform(this->m_scene.allocateNode());
 
-        const Vector3 rotation(4, 5, 6);
+        const Vector4 rotation(4, 5, 6, 1.f);
 
-        this->m_scene.setRotation(transform, rotation, ERotationConvention::XYX);
+        this->m_scene.setRotation(transform, rotation, ERotationType::Euler_XYX);
         EXPECT_EQ(rotation, this->m_scene.getRotation(transform));
-        EXPECT_EQ(ERotationConvention::XYX, this->m_scene.getRotationConvention(transform));
-    }
-
-    TYPED_TEST(AScene, SetsRotationForTransformUsingSetterForAnimations)
-    {
-        //skip test for ActionTestScene
-        if (std::is_same<TypeParam, ActionTestScene>::value)
-            return;
-
-        const TransformHandle transform = this->m_scene.allocateTransform(this->m_scene.allocateNode());
-
-        const Vector3 rotation(4, 5, 6);
-
-        this->m_scene.setRotation(transform, { 0.f, 0.f, 0.f }, ERotationConvention::Legacy_ZYX);
-        this->m_scene.setRotationForAnimation(transform, rotation);
-        EXPECT_EQ(rotation, this->m_scene.getRotation(transform));
-    }
-
-    TYPED_TEST(AScene, FailsToSetRotationForTransformUsingSetterForAnimationsForNonLegacyConvention)
-    {
-        //skip test for ActionTestScene
-        if (std::is_same<TypeParam, ActionTestScene>::value)
-            return;
-
-        const TransformHandle transform = this->m_scene.allocateTransform(this->m_scene.allocateNode());
-
-        const Vector3 initialRotation{ 1.f, 2.f, 3.f };
-        const Vector3 destRotation{ 4, 5, 6 };
-
-        this->m_scene.setRotation(transform, initialRotation, ERotationConvention::ZYX);
-        this->m_scene.setRotationForAnimation(transform, destRotation);
-        EXPECT_EQ(initialRotation, this->m_scene.getRotation(transform));
+        EXPECT_EQ(ERotationType::Euler_XYX, this->m_scene.getRotationType(transform));
     }
 
     TYPED_TEST(AScene, SetsScalingForTransform)

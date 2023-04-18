@@ -10,7 +10,6 @@
 #include "Utils/ConsoleLogAppender.h"
 #include "Utils/LogContext.h"
 #include "Utils/LogHelper.h"
-#include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "DltLogAppender/DltLogAppender.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
@@ -83,7 +82,7 @@ namespace ramses_internal
     }
 
 
-    void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration)
+    void RamsesLogger::initialize(const RamsesLoggerConfig& config, bool disableDLT, bool enableDLTApplicationRegistration)
     {
         if (m_isInitialized)
         {
@@ -103,26 +102,20 @@ namespace ramses_internal
         if (m_consoleLogLevelSetProgrammatically)
             logLevelConsole = m_consoleLogLevelProgrammatically;
 
-        // generic "-l" argument applies to all log levels
-        ArgumentString logLevelStr(parser, "l", "log-level", "");
-        ELogLevel logLevel;
-        if (LogHelper::StringToLogLevel(logLevelStr, logLevel))
+        // generic argument applies to all log levels
+        if (config.logLevel.has_value())
         {
-            logLevelContexts = logLevel;
-            logLevelConsole = logLevel;
+            logLevelContexts = config.logLevel.value();
+            logLevelConsole = config.logLevel.value();
             pushLogLevelToDltDaemon = true;
         }
 
-        // output specific loglevels can overwrite generic argument
-        ArgumentString logLevelAllContextsStr(parser, "cl", "log-level-contexts", "");
-        if (LogHelper::StringToLogLevel(logLevelAllContextsStr, logLevelContexts))
+        if (config.logLevelConsole.has_value())
         {
-            pushLogLevelToDltDaemon = true;
+            logLevelConsole = config.logLevelConsole.value();
         }
 
-        ArgumentString logLevelConsoleStr(parser, "lc", "log-level-console", "");
-        LogHelper::StringToLogLevel(logLevelConsoleStr, logLevelConsole);
-
+        // TODO: environment should probably not override explicit config
         //same for environment variable
         String envVarValue;
         if (PlatformEnvironmentVariables::get("RAMSES_LOGLEVEL", envVarValue))
@@ -136,6 +129,7 @@ namespace ramses_internal
             }
         }
 
+        // TODO: environment should probably not override explicit config
         UpdateConsoleLogLevelFromEnvVar(logLevelConsole);
 
         // apply loglevels
@@ -143,27 +137,25 @@ namespace ramses_internal
         m_consoleLogAppender.setLogLevel(logLevelConsole);
 
         // apply by context filter
-        ArgumentString logLevelContextsStr(parser, "clf", "log-level-contexts-filter", "");
-        if (logLevelContextsStr.hasValue())
+        if (!config.logLevelContexts.empty())
         {
-            applyContextFilterCommand(logLevelContextsStr);
+            for (const auto& cmd : config.logLevelContexts)
+            {
+                applyContextFilter(cmd.first, cmd.second);
+            }
             pushLogLevelToDltDaemon = true;
         }
 
         // create DLT adapter and appender
         if (!m_dltLogAppender && !disableDLT)
         {
-            const ramses_internal::ArgumentString dltAppId(parser, "dai", "dlt-app-id", idString);
-            const ramses_internal::ArgumentString dltAppDescription(parser, "dad", "dlt-app-description", descriptionString);
-            const String& dltAppIdAsString = dltAppId;
-
-            if (!dltAppIdAsString.empty())
+            if (!config.dltAppId.empty())
             {
                 if (!enableDLTApplicationRegistration)
                     LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: Reuse exising DLT application registration");
 
                 DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
-                if (dltAdapter->initialize(dltAppIdAsString, dltAppDescription, enableDLTApplicationRegistration,
+                if (dltAdapter->initialize(config.dltAppId, config.dltAppDescription, enableDLTApplicationRegistration,
                                            [this](const String& contextId_, int logLevel_) {
                                                dltLogLevelChangeCallback(contextId_, logLevel_);
                                            },
@@ -192,13 +184,6 @@ namespace ramses_internal
             LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: a user logger was added");
         }
 
-        ArgumentBool enableSmokeTestContext(parser, "estc", "enableSmokeTestContext", "");
-        if (!enableSmokeTestContext.wasDefined())
-        {
-            CONTEXT_SMOKETEST.setLogLevel(ELogLevel::Off);
-            CONTEXT_SMOKETEST.disableSetLogLevel();
-        }
-
         LOG_INFO(CONTEXT_FRAMEWORK, "Ramses log levels: Contexts " << RamsesLogger::GetLogLevelText(logLevelContexts) <<
                  ", Console " << RamsesLogger::GetLogLevelText(logLevelConsole));
     }
@@ -207,19 +192,24 @@ namespace ramses_internal
     {
         for (const auto& contextFilter : LogHelper::ParseContextFilters(command))
         {
-            if (LogContext* ctx = getLogContextById(contextFilter.second))
-            {
-                LOG_INFO(CONTEXT_FRAMEWORK, contextFilter.second << " | " << ctx->getContextName()
-                         << " | "
-                         << static_cast<Int32>(contextFilter.first)
-                         << " | "
-                         << RamsesLogger::GetLogLevelText(contextFilter.first));
-                ctx->setLogLevel(contextFilter.first);
-            }
-            else
-            {
-                LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::applyContextFilterCommand: unknown contextId " << contextFilter.second);
-            }
+            applyContextFilter(contextFilter.second, contextFilter.first);
+        }
+    }
+
+    void RamsesLogger::applyContextFilter(const String& contextId, ELogLevel logLevel)
+    {
+        if (LogContext* ctx = getLogContextById(contextId))
+        {
+            LOG_INFO(CONTEXT_FRAMEWORK, contextId << " | " << ctx->getContextName()
+                     << " | "
+                     << static_cast<Int32>(logLevel)
+                     << " | "
+                     << RamsesLogger::GetLogLevelText(logLevel));
+            ctx->setLogLevel(logLevel);
+        }
+        else
+        {
+            LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::applyContextFilterCommand: unknown contextId " << contextId);
         }
     }
 

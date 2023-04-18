@@ -14,8 +14,8 @@
 class TextureRenderingTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
 private:
     template <typename INTEGRATION_SCENE>
@@ -86,7 +86,6 @@ private:
         SamplerTest_ChangeData_TextureBufferToClientTexture,
         SamplerTest_ChangeData_ClientTextureToTextureBuffer,
         SamplerTest_ChangeData_ClientTextureToRenderBuffer,
-        SamplerTest_ChangeData_ClientTextureToStreamTexture
     };
 };
 

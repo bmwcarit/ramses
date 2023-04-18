@@ -27,16 +27,16 @@ namespace ramses_internal
         Bool                      createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
         Bool                      removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
 
-        Bool                      nodeHasDataLinkToProvider(SceneId consumerSceneID, NodeHandle consumerNodeHandle) const;
+        [[nodiscard]] Bool                      nodeHasDataLinkToProvider(SceneId consumerSceneID, NodeHandle consumerNodeHandle) const;
 
-        Matrix44f                 getLinkedTransformationFromDataProvider(ETransformationMatrixType matrixType, SceneId consumerSceneId, NodeHandle consumerNodeHandle) const;
+        [[nodiscard]] Matrix44f                 getLinkedTransformationFromDataProvider(ETransformationMatrixType matrixType, SceneId consumerSceneId, NodeHandle consumerNodeHandle) const;
         void                      propagateTransformationDirtinessToConsumers(SceneId providerSceneId, NodeHandle providerNodeHandle) const;
 
         using LinkManagerBase::getDependencyChecker;
         using LinkManagerBase::getSceneLinks;
 
     private:
-        DataSlotHandle getDataSlotForNode(SceneId sceneId, NodeHandle node) const;
+        [[nodiscard]] DataSlotHandle getDataSlotForNode(SceneId sceneId, NodeHandle node) const;
 
         using NodeToSlotMap = HashMap<NodeHandle, DataSlotHandle>;
         using SceneToNodeSlotMap = HashMap<SceneId, NodeToSlotMap>;

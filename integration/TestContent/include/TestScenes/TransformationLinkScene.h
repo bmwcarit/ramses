@@ -30,10 +30,10 @@ namespace ramses_internal
             TRANSFORMATION_CONSUMER_OVERRIDEN,
         };
 
-        static constexpr const ramses::dataProviderId_t transformProviderDataId{51u};
-        static constexpr const ramses::dataProviderId_t transformProviderDataId_Left{52u};
-        static constexpr const ramses::dataProviderId_t transformProviderDataId_Right{53u};
-        static constexpr const ramses::dataConsumerId_t transformConsumerDataId{54u};
+        static constexpr ramses::dataProviderId_t transformProviderDataId{51u};
+        static constexpr ramses::dataProviderId_t transformProviderDataId_Left{52u};
+        static constexpr ramses::dataProviderId_t transformProviderDataId_Right{53u};
+        static constexpr ramses::dataConsumerId_t transformConsumerDataId{54u};
 
     private:
         ramses::MeshNode* createTriangleMesh(ramses::TriangleAppearance::EColor color);

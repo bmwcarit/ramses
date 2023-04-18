@@ -36,7 +36,7 @@ namespace ramses_internal
         {
             ON_CALL(*this, execute()).WillByDefault(Invoke(this, &LongRunningTestTask::doSomethingLong));
         }
-        virtual ~LongRunningTestTask() override = default;
+        ~LongRunningTestTask() override = default;
         MOCK_METHOD(void, execute, (), (override));
         virtual void doSomethingLong()
         {
@@ -58,7 +58,7 @@ namespace ramses_internal
             , m_blockedExecutionStateEvent(blockedExecutionStateEvent)
         {
         }
-        virtual void execute() override
+        void execute() override
         {
             m_blockedExecutionStateEvent.signal();
             m_blockingLock.lock();

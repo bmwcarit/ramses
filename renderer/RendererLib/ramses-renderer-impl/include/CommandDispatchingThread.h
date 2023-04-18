@@ -25,10 +25,10 @@ namespace ramses_internal
     {
     public:
         CommandDispatchingThread(DisplayDispatcher& displayDispatcher, RendererCommandBuffer& commandBuffer, IThreadAliveNotifier& watchdog);
-        virtual ~CommandDispatchingThread() override;
+        ~CommandDispatchingThread() override;
 
     private:
-        virtual void run() override;
+        void run() override;
 
         DisplayDispatcher& m_displayDispatcher;
         RendererCommandBuffer& m_commandBuffer;

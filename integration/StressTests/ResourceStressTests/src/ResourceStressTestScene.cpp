@@ -60,7 +60,7 @@ namespace ramses_internal
 
         m_offscreenRenderPass.setRenderOrder(0);
         m_offscreenRenderPass.setClearFlags(ramses::EClearFlags_All);
-        m_offscreenRenderPass.setClearColor(0.4f, 0.1f, 0.0f, 1.0f);
+        m_offscreenRenderPass.setClearColor({0.4f, 0.1f, 0.0f, 1.0f});
 
         m_finalRenderPass.setClearFlags(ramses::EClearFlags_None);
         m_finalRenderPass.setRenderOrder(1);

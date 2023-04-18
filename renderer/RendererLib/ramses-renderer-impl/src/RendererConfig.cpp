@@ -18,12 +18,7 @@
 namespace ramses
 {
     RendererConfig::RendererConfig()
-        : RendererConfig(0, nullptr)
-    {
-    }
-
-    RendererConfig::RendererConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new RendererConfigImpl(argc, argv))
+        : StatusObject(*new RendererConfigImpl())
         , impl(static_cast<RendererConfigImpl&>(StatusObject::impl))
     {
     }
@@ -66,45 +61,12 @@ namespace ramses
         return status;
     }
 
-    status_t RendererConfig::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
-    {
-        const status_t status = impl.setWaylandEmbeddedCompositingSocketGroup(groupname);
-        LOG_HL_RENDERER_API1(status, groupname);
-        return status;
-    }
-
-    status_t RendererConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
-    {
-        const status_t status = impl.setWaylandEmbeddedCompositingSocketPermissions(permissions);
-        LOG_HL_RENDERER_API1(status, permissions);
-        return status;
-    }
-
-    status_t RendererConfig::setWaylandEmbeddedCompositingSocketName(const char* socketname)
-    {
-        const status_t status = impl.setWaylandEmbeddedCompositingSocketName(socketname);
-        LOG_HL_RENDERER_API1(status, socketname);
-        return status;
-    }
-
-    const char* RendererConfig::getWaylandEmbeddedCompositingSocketName() const
-    {
-        return impl.getWaylandEmbeddedCompositingSocketName();
-    }
-
-    status_t RendererConfig::setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor)
-    {
-        const status_t status = impl.setWaylandEmbeddedCompositingSocketFD(socketFileDescriptor);
-        LOG_HL_RENDERER_API1(status, socketFileDescriptor);
-        return status;
-    }
-
-    status_t RendererConfig::setSystemCompositorWaylandDisplay(const char* waylandDisplay)
+    status_t RendererConfig::setSystemCompositorWaylandDisplay(std::string_view waylandDisplay)
     {
         return impl.setSystemCompositorWaylandDisplay(waylandDisplay);
     }
 
-    const char* RendererConfig::getSystemCompositorWaylandDisplay() const
+    std::string_view RendererConfig::getSystemCompositorWaylandDisplay() const
     {
         return impl.getSystemCompositorWaylandDisplay();
     }

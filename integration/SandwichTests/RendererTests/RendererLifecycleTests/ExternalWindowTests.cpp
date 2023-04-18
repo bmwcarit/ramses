@@ -30,13 +30,13 @@ namespace ramses_internal
         class DummyEventHandler : public IWindowEventHandler
         {
         public:
-            virtual ~DummyEventHandler() override {};
+            ~DummyEventHandler() override {};
 
-            virtual void onKeyEvent(EKeyEventType , UInt32 , EKeyCode ) override {}
-            virtual void onMouseEvent(EMouseEventType , Int32 , Int32 ) override {}
-            virtual void onClose() override {}
-            virtual void onResize(UInt32 , UInt32 ) override {}
-            virtual void onWindowMove(Int32 , Int32) override {}
+            void onKeyEvent(EKeyEventType , UInt32 , EKeyCode ) override {}
+            void onMouseEvent(EMouseEventType , Int32 , Int32 ) override {}
+            void onClose() override {}
+            void onResize(UInt32 , UInt32 ) override {}
+            void onWindowMove(Int32 , Int32) override {}
         };
 
         ramses::DisplayConfig dispConfigExternalWindow = RendererTestUtils::CreateTestDisplayConfig(0u, false);

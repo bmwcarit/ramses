@@ -75,7 +75,7 @@ public:
 
     void createFileLoadingScene(ramses::sceneId_t sceneId, const ramses_internal::Vector3& cameraPosition, const ramses::RamsesFrameworkConfig& config, uint32_t sceneState, uint32_t vpWidth, uint32_t vpHeight);
 
-    const ramses::Scene& getScene(ramses::sceneId_t sceneId) const;
+    [[nodiscard]] const ramses::Scene& getScene(ramses::sceneId_t sceneId) const;
     ramses::Scene& getScene(ramses::sceneId_t sceneId);
 
     template <typename INTEGRATION_SCENE>

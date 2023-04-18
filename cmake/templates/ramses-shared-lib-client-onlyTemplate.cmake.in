@@ -10,21 +10,35 @@
 # find_package(ramses-shared-lib-client-only <RAMSES-VERSION> [REQUIRED])
 
 INCLUDE(FindPackageHandleStandardArgs)
+INCLUDE(CMakeFindDependencyMacro)
 SET(ramses-shared-lib-client-only_VERSION @RAMSES_VERSION@)
 
 @PACKAGE_INIT@
 
+
 #find include dir
 FIND_PATH(ramses-shared-lib-client-only_INCLUDE_DIRS ramses-client.h
-    HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+    HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
 )
+
+if(IS_DIRECTORY "${ramses-shared-lib-client-only_INCLUDE_DIRS}/glm")
+    add_library(glm::glm INTERFACE IMPORTED)
+    set_target_properties(glm::glm PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${ramses-shared-lib-client-only_INCLUDE_DIRS})
+else()
+    find_dependency(glm REQUIRED)
+
+    if(NOT TARGET glm::glm)
+        add_library(glm::glm ALIAS glm)
+    endif()
+endif()
+
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
 
     # no shlib versioning support on windows
     FIND_LIBRARY(ramses-shared-lib-client-only_LIBRARIES
         NAMES "ramses-shared-lib-client-only"
-        HINTS @PACKAGE_PROJECT_INSTALL_BINARY@
+        HINTS @PACKAGE_RAMSES_INSTALL_RUNTIME_PATH@
     )
 
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -32,7 +46,7 @@ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
     # require exact shlib version
     FIND_LIBRARY(ramses-shared-lib-client-only_LIBRARIES
         NAMES "libramses-shared-lib-client-only.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
     )
 
 ELSE()
@@ -64,6 +78,7 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
             set_target_properties(ramses-ramses-shared-lib-client-only PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib-client-only_LIBRARIES})
         endif()
         target_include_directories(ramses-ramses-shared-lib-client-only INTERFACE ${ramses-shared-lib-client-only_INCLUDE_DIRS})
+        target_link_libraries(ramses-ramses-shared-lib-client-only INTERFACE glm::glm)
 
         if (NOT TARGET ramses::client-only)
             add_library(ramses::client-only ALIAS ramses-ramses-shared-lib-client-only)

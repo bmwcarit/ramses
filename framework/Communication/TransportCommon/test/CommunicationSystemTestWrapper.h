@@ -19,18 +19,14 @@
 
 namespace ramses_internal
 {
-    class CommandLineParser;
-
     enum class ECommunicationSystemType
     {
         Tcp,
-        GenericSomeIP,
     };
 
     enum class EServiceType
     {
-        Ramses,
-        Dcsm
+        Ramses
     };
 
     // better output from gtest

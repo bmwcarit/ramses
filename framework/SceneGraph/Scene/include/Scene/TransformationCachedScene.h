@@ -29,21 +29,21 @@ namespace ramses_internal
     public:
         explicit TransformationCachedSceneT(const SceneInfo& sceneInfo = SceneInfo());
 
-        virtual void                    preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
+        void                    preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
 
         // From IScene
-        virtual NodeHandle              allocateNode(UInt32 childrenCount = 0u, NodeHandle node = NodeHandle::Invalid()) override;
-        virtual void                    releaseNode(NodeHandle node) override;
+        NodeHandle              allocateNode(UInt32 childrenCount = 0u, NodeHandle node = NodeHandle::Invalid()) override;
+        void                    releaseNode(NodeHandle node) override;
 
-        virtual void                    addChildToNode(NodeHandle parent, NodeHandle child) override;
-        virtual void                    removeChildFromNode(NodeHandle parent, NodeHandle child) override;
+        void                    addChildToNode(NodeHandle parent, NodeHandle child) override;
+        void                    removeChildFromNode(NodeHandle parent, NodeHandle child) override;
 
-        virtual TransformHandle         allocateTransform(NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) override;
-        virtual void                    releaseTransform(TransformHandle transform) override;
+        TransformHandle         allocateTransform(NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) override;
+        void                    releaseTransform(TransformHandle transform) override;
 
-        virtual void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
-        virtual void                    setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention) override;
-        virtual void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
+        void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
+        void                    setRotation(TransformHandle transform, const Vector4& rotation, ERotationType rotationType) override;
+        void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
 
         Matrix44f                       updateMatrixCache(ETransformationMatrixType matrixType, NodeHandle node) const;
         bool                            isMatrixCacheDirty(ETransformationMatrixType matrixType, NodeHandle node) const;

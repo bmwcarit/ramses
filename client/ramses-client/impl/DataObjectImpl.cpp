@@ -20,26 +20,24 @@
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include "DataTypeUtils.h"
 
 namespace ramses
 {
-    DataObjectImpl::DataObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name)
-        : SceneObjectImpl(scene, type, name)
-        , m_dataType(GetDataTypeForDataObjectType(type))
+    DataObjectImpl::DataObjectImpl(SceneImpl& scene, ERamsesObjectType ramsesType, EDataType dataType, const char* name)
+        : SceneObjectImpl{ scene, ramsesType, name }
+        , m_dataType{ dataType }
     {
     }
 
-    DataObjectImpl::~DataObjectImpl()
-    {
-        //done on deinitialization
-    }
+    DataObjectImpl::~DataObjectImpl() = default;
 
     void DataObjectImpl::initializeFrameworkData()
     {
         ramses_internal::ClientScene& scene = getIScene();
 
         // create data layout on scene
-        m_layoutHandle = scene.allocateDataLayout({ ramses_internal::DataFieldInfo(m_dataType) }, ramses_internal::ResourceContentHash::Invalid());
+        m_layoutHandle = scene.allocateDataLayout({ ramses_internal::DataFieldInfo(DataTypeUtils::ConvertDataTypeToInternal(m_dataType)) }, ramses_internal::ResourceContentHash::Invalid());
 
         // allocate data instance based on created layout
         m_dataReference = scene.allocateDataInstance(m_layoutHandle);
@@ -73,49 +71,19 @@ namespace ramses
 
         uint32_t enumType = 0u;
         inStream >> enumType;
-        m_dataType = static_cast<ramses_internal::EDataType>(enumType);
+        m_dataType = static_cast<EDataType>(enumType);
         inStream >> m_layoutHandle;
         inStream >> m_dataReference;
 
         return StatusOK;
     }
 
-    ramses_internal::EDataType DataObjectImpl::GetDataTypeForDataObjectType(ERamsesObjectType type)
-    {
-        switch (type)
-        {
-        case ERamsesObjectType_DataFloat:
-            return ramses_internal::EDataType::Float;
-        case ERamsesObjectType_DataVector2f:
-            return ramses_internal::EDataType::Vector2F;
-        case ERamsesObjectType_DataVector3f:
-            return ramses_internal::EDataType::Vector3F;
-        case ERamsesObjectType_DataVector4f:
-            return ramses_internal::EDataType::Vector4F;
-        case ERamsesObjectType_DataMatrix22f:
-            return ramses_internal::EDataType::Matrix22F;
-        case ERamsesObjectType_DataMatrix33f:
-            return ramses_internal::EDataType::Matrix33F;
-        case ERamsesObjectType_DataMatrix44f:
-            return ramses_internal::EDataType::Matrix44F;
-        case ERamsesObjectType_DataInt32:
-            return ramses_internal::EDataType::Int32;
-        case ERamsesObjectType_DataVector2i:
-            return ramses_internal::EDataType::Vector2I;
-        case ERamsesObjectType_DataVector3i:
-            return ramses_internal::EDataType::Vector3I;
-        case ERamsesObjectType_DataVector4i:
-            return ramses_internal::EDataType::Vector4I;
-        default:
-            assert(false);
-            return ramses_internal::EDataType::Invalid;
-        }
-    }
-
     template <typename T>
     status_t DataObjectImpl::setValue(const T& value)
     {
-        assert(ramses_internal::TypeToEDataTypeTraits<T>::DataType == m_dataType);
+        if (ramses_internal::TypeToEDataTypeTraits<T>::DataType != DataTypeUtils::ConvertDataTypeToInternal(m_dataType))
+            return addErrorEntry("DataObject::setValue failed, value type does not match DataObject data type");
+
         ramses_internal::ISceneDataArrayAccessor::SetDataArray<T>(&getIScene(), m_dataReference, ramses_internal::DataFieldHandle(0u), 1u, &value);
         return StatusOK;
     }
@@ -123,7 +91,9 @@ namespace ramses
     template <typename T>
     status_t DataObjectImpl::getValue(T& value) const
     {
-        assert(ramses_internal::TypeToEDataTypeTraits<T>::DataType == m_dataType);
+        if (ramses_internal::TypeToEDataTypeTraits<T>::DataType != DataTypeUtils::ConvertDataTypeToInternal(m_dataType))
+            return addErrorEntry("DataObject::getValue failed, value type does not match DataObject data type");
+
         const T* data = ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), m_dataReference, ramses_internal::DataFieldHandle(0u));
         assert(data != nullptr);
         value = data[0];
@@ -131,7 +101,7 @@ namespace ramses
         return StatusOK;
     }
 
-    ramses_internal::EDataType DataObjectImpl::getDataType() const
+    EDataType DataObjectImpl::getDataType() const
     {
         return m_dataType;
     }

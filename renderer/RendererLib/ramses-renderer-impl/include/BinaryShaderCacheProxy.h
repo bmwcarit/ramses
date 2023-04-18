@@ -20,19 +20,19 @@ namespace ramses
     {
     public:
         explicit BinaryShaderCacheProxy(ramses::IBinaryShaderCache& cache);
-        virtual ~BinaryShaderCacheProxy() override = default;
+        ~BinaryShaderCacheProxy() override = default;
 
-        virtual void deviceSupportsBinaryShaderFormats(const std::vector<ramses_internal::BinaryShaderFormatID>& supportedFormats) override;
+        void deviceSupportsBinaryShaderFormats(const std::vector<ramses_internal::BinaryShaderFormatID>& supportedFormats) override;
 
-        virtual bool hasBinaryShader(ramses_internal::ResourceContentHash effectHash) const override;
-        virtual uint32_t getBinaryShaderSize(ramses_internal::ResourceContentHash effectHash) const override;
-        virtual ramses_internal::BinaryShaderFormatID getBinaryShaderFormat(ramses_internal::ResourceContentHash effectHash) const override;
-        virtual void getBinaryShaderData(ramses_internal::ResourceContentHash effectHash, ramses_internal::UInt8* buffer, ramses_internal::UInt32 bufferSize) const override;
+        bool hasBinaryShader(ramses_internal::ResourceContentHash effectHash) const override;
+        uint32_t getBinaryShaderSize(ramses_internal::ResourceContentHash effectHash) const override;
+        ramses_internal::BinaryShaderFormatID getBinaryShaderFormat(ramses_internal::ResourceContentHash effectHash) const override;
+        void getBinaryShaderData(ramses_internal::ResourceContentHash effectHash, ramses_internal::UInt8* buffer, ramses_internal::UInt32 bufferSize) const override;
 
-        virtual bool shouldBinaryShaderBeCached(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId) const override;
-        virtual void storeBinaryShader(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, ramses_internal::BinaryShaderFormatID binaryShaderFormat) override;
-        virtual void binaryShaderUploaded(ramses_internal::ResourceContentHash effectHash, bool success) const override;
-        virtual std::once_flag& binaryShaderFormatsReported() override;
+        bool shouldBinaryShaderBeCached(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId) const override;
+        void storeBinaryShader(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, ramses_internal::BinaryShaderFormatID binaryShaderFormat) override;
+        void binaryShaderUploaded(ramses_internal::ResourceContentHash effectHash, bool success) const override;
+        std::once_flag& binaryShaderFormatsReported() override;
 
     private:
         ramses::IBinaryShaderCache& m_cache;

@@ -9,11 +9,13 @@
 #ifndef RAMSES_MATRIX33F_H
 #define RAMSES_MATRIX33F_H
 
-#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/ERotationType.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Math3d/Vector3.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
+#include "glm/mat3x3.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include <cassert>
 
@@ -28,6 +30,8 @@ namespace ramses_internal
         {
             struct
             {
+                // Matrix is stored column-wise (to fit GLSL convention), but elements are named row-wise
+                // E.g. m1x is the first row, and m23 is the 3rd element on the 2nd row
                 Float m11;
                 Float m21;
                 Float m31;
@@ -50,6 +54,7 @@ namespace ramses_internal
                             const Float _m31, const Float _m32, const Float _m33);
         explicit Matrix33f(const Matrix44f& otherMat44);
         constexpr Matrix33f(const Vector3& v1, const Vector3& v2, const Vector3& v3);
+        explicit Matrix33f(const glm::mat3& other);
         constexpr Matrix33f(const Matrix33f& other) = default;
         constexpr Matrix33f(Matrix33f&& other) noexcept = default;
         constexpr Matrix33f& operator=(const Matrix33f& other) = default;
@@ -68,11 +73,15 @@ namespace ramses_internal
         constexpr bool operator!=(const Matrix33f& other) const;
         Vector3 operator*(const Vector3& vec) const;
 
-        static Matrix33f RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention);
-        bool toRotationEuler(Vector3& rotation, ERotationConvention rotationConvention) const;
+        static Matrix33f Rotation(const Vector4& rotation, ERotationType rotationType);
+        bool toRotationEuler(Vector3& rotation, ERotationType rotationType) const;
 
         constexpr Float& m(UInt32 column, UInt32 row);
-        constexpr const Float& m(UInt32 column, UInt32 row) const;
+        [[nodiscard]] constexpr const Float& m(UInt32 column, UInt32 row) const;
+
+    private:
+        static Matrix33f RotationQuaternion(const Vector4& rotation);
+        static Matrix33f RotationEuler(const Vector3& rotation, ERotationType rotationType);
     };
 
     constexpr inline
@@ -107,6 +116,17 @@ namespace ramses_internal
         , m33(v3[2])
     {
     }
+
+    inline
+    Matrix33f::Matrix33f(const glm::mat3& other)
+    {
+        auto buf = glm::value_ptr(other);
+        for (size_t i = 0u; i < 9u; ++i)
+        {
+            data[i] = buf[i];
+        }
+    }
+
 
     constexpr inline
     void

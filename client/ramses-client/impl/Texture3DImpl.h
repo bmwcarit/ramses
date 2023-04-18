@@ -26,11 +26,11 @@ namespace ramses
             SceneImpl& scene,
             const char* name);
 
-        virtual ~Texture3DImpl() override;
+        ~Texture3DImpl() override;
 
         void initializeFromFrameworkData(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat textureFormat);
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t       getWidth() const;
         uint32_t       getHeight() const;

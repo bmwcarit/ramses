@@ -102,24 +102,24 @@ namespace ramses_internal
         const ramses::Effect* effect = getTestEffect("ramses-test-client-texturedWithColor");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
-        const float vertexPositionsArray[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray
         {
-            -0.5f, -0.5f, 0.f,
-            0.5f, -0.5f, 0.f,
-            -0.5f, 0.5f, 0.f,
-            0.5f, 0.5f, 0.f
+            ramses::vec3f{ -0.5f, -0.5f, 0.f },
+            ramses::vec3f{ 0.5f, -0.5f, 0.f },
+            ramses::vec3f{ -0.5f, 0.5f, 0.f },
+            ramses::vec3f{ 0.5f, 0.5f, 0.f }
         };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        const float textureCoordsArray[] = { 0.f, 0.f, 2.f, 0.f, 0.f, 2.f, 2.f, 2.f };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 0.f}, ramses::vec2f{2.f, 0.f}, ramses::vec2f{0.f, 2.f}, ramses::vec2f{2.f, 2.f} };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
         ramses::UniformInput colorInput;
         effect->findUniformInput("u_color", colorInput);
-        appearance->setInputValueVector4f(colorInput, modulateColor.x, modulateColor.y, modulateColor.z, modulateColor.w);
+        appearance->setInputValue(colorInput, modulateColor.getAsVec4());
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
@@ -148,7 +148,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(translation.x, translation.y, translation.z);
+        transNode->setTranslation({translation.x, translation.y, translation.z});
         meshNode->setParent(*transNode);
 
         return *meshNode;
@@ -167,7 +167,7 @@ namespace ramses_internal
         ramses::RenderTarget& renderTarget = *m_scene.createRenderTarget(rtDesc);
 
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags::EClearFlags_All);
     }
 
@@ -177,10 +177,10 @@ namespace ramses_internal
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
-        transNode.translate(0.0f, -0.5f, -5.0f);
+        transNode.translate({0.0f, -0.5f, -5.0f});
         if (state == DEPTH_WRITTEN_AND_READ)
         {
-            transNode.rotate(30.0f, 0.f, 0.f);
+            transNode.setRotation({-30.0f, 0.f, 0.f}, ramses::ERotationType::Euler_XYZ);
         }
 
         ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();

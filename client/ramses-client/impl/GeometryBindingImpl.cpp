@@ -186,7 +186,7 @@ namespace ramses
 
     ramses::ArrayBufferImpl* GeometryBindingImpl::findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const
     {
-        RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_DataBufferObject);
+        RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_ArrayBufferObject);
         while (const ArrayBuffer* dataBuffer = arrayBufferIter.getNext<ArrayBuffer>())
         {
             if (dataBuffer->impl.getDataBufferHandle() == dataBufferHandle)
@@ -326,7 +326,7 @@ namespace ramses
         if ((offset > 0 || stride > 0) && bufferResource.getElementType() != EDataType::ByteBlob)
             return addErrorEntry("GeometryBinding::setInputBuffer failed, custom stride/offset can be used only with array resources of type byte blob");
 
-        if (!dataTypeMatchesInputType(DataTypeUtils::ConvertDataTypeToInternal(bufferResource.getElementType()), input.getDataType()))
+        if (!dataTypeMatchesInputType(DataTypeUtils::ConvertDataTypeToInternal(bufferResource.getElementType()), input.getInternalDataType()))
             return addErrorEntry("GeometryBinding::setInputBuffer failed, array resource type does not match input data type");
 
         // data field index on low level scene is indexed starting after reserved slot for indices
@@ -359,7 +359,7 @@ namespace ramses
         if ((offset > 0 || stride > 0) && dataBuffer.getDataType() != EDataType::ByteBlob)
             return addErrorEntry("GeometryBinding::setInputBuffer failed, custom stride/offset can be used only with data buffers of type byte blob");
 
-        if (!dataTypeMatchesInputType(dataBufferDataType, input.getDataType()))
+        if (!dataTypeMatchesInputType(dataBufferDataType, input.getInternalDataType()))
             return addErrorEntry("GeometryBinding::setInputBuffer failed, vertex data buffer type does not match input data type");
 
         // data field index on low level scene is indexed starting after reserved slot for indices

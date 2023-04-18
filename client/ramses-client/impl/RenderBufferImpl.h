@@ -23,14 +23,14 @@ namespace ramses
     {
     public:
         RenderBufferImpl(SceneImpl& scene, const char* name);
-        virtual ~RenderBufferImpl() override;
+        ~RenderBufferImpl() override;
 
         void             initializeFrameworkData(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount);
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
 
         uint32_t            getWidth() const;
         uint32_t            getHeight() const;

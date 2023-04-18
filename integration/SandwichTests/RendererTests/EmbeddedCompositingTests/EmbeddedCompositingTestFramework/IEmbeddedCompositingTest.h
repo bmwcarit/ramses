@@ -17,18 +17,18 @@ namespace ramses_internal
     class IEmbeddedCompositingTest: public IRendererTest
     {
     public:
-        virtual ~IEmbeddedCompositingTest() {}
+        ~IEmbeddedCompositingTest() override {}
 
         virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) = 0;
         virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) = 0;
 
     private:
-        virtual void setUpTestCases(RendererTestsFramework& testFramework) final
+        void setUpTestCases(RendererTestsFramework& testFramework) final
         {
             setUpEmbeddedCompositingTestCases(static_cast<EmbeddedCompositingTestsFramework&>(testFramework));
         }
 
-        virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final
+        bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final
         {
             return runEmbeddedCompositingTestCase(static_cast<EmbeddedCompositingTestsFramework&>(testFramework), testCase);
         }

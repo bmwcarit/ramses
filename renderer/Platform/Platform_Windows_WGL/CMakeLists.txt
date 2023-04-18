@@ -6,26 +6,16 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    Platform_Windows_WGL
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Platform_Windows_WGL/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Platform_Windows_WGL/*.h
+                            src/*.cpp
     DEPENDENCIES            Window_Windows
                             Context_WGL
+                            Device_GL
                             ramses-renderer-lib
 )
 

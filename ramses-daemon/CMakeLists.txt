@@ -6,17 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    ramses-daemon
     TYPE                    BINARY
     ENABLE_INSTALL          ON
-
-    FILES_PRIVATE_HEADER    *.h
-    FILES_SOURCE            main.cpp
-
+    SRC_FILES               main.cpp
     DEPENDENCIES            ramses-framework
+                            ramses-cli
 )

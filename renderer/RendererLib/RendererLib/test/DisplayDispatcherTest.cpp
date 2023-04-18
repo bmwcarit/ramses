@@ -26,13 +26,13 @@ namespace ramses_internal
             m_displayDispatcher.m_expectedLoopModeForNewDisplays = ELoopMode::UpdateOnly;
         }
 
-        void update()
+        void update(bool expectForcedContextEnable = false)
         {
             m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
             for (const auto d : m_displayDispatcher.getDisplays())
             {
-                if (m_displayDispatcher.getDisplays().size() > 1u)
+                if (m_displayDispatcher.getDisplays().size() > 1u || expectForcedContextEnable)
                     EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(d), enableContext());
                 EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(d), doOneLoop(_, _));
             }
@@ -63,6 +63,7 @@ namespace ramses_internal
                 evt.displayHandle = displayHandle;
                 evts.push_back(evt);
             }));
+
             RendererEventVector events;
             m_displayDispatcher.dispatchRendererEvents(events);
             ASSERT_EQ(1u, events.size());
@@ -299,7 +300,6 @@ namespace ramses_internal
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene3, {} });
         m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene2 });
         // not stashed
-        m_commandBuffer.enqueueCommand(RendererCommand::FrameProfiler_Toggle{});
         m_commandBuffer.enqueueCommand(RendererCommand::LogInfo{});
         m_commandBuffer.enqueueCommand(RendererCommand::LogStatistics{});
         // only last one kept
@@ -307,7 +307,7 @@ namespace ramses_internal
         m_commandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{});
         m_commandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{});
 
-        expectCommandsCountPushed(display1, 15u);
+        expectCommandsCountPushed(display1, 14u);
         update();
 
         // will expect these commands to be pushed to any new display
@@ -557,6 +557,26 @@ namespace ramses_internal
         m_displayDispatcher.doOneLoop();
     }
 
+    TEST_F(ADisplayDispatcher, willEnableContextOnNextUpdateWheneverDisplayIsDestroyed)
+    {
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+        constexpr DisplayHandle display3{ 3u };
+        createDisplay(display1);
+        createDisplay(display2);
+        createDisplay(display3);
+        update(false);
+
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display3), dispatchRendererEvents(_));
+        destroyDisplay(display1);
+        update(true);
+
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_));
+        destroyDisplay(display3);
+        update(true);
+    }
+
     TEST_F(ADisplayDispatcher, sceneAvailableEventIsEmittedExactlyOnce)
     {
         constexpr SceneId scene1{ 123u };
@@ -696,6 +716,7 @@ namespace ramses_internal
         dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
 
         destroyDisplay(display1);
+        update(true);
 
         createDisplay(display2);
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });

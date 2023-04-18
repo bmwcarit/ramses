@@ -28,7 +28,7 @@ class RendererMock : public ramses_internal::Renderer
 public:
     RendererMock(DisplayHandle display, const ramses_internal::IPlatform& platform, const RendererScenes& rendererScenes,
         const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
-    virtual ~RendererMock() override;
+    ~RendererMock() override;
 
     MOCK_METHOD(void, markBufferWithSceneForRerender, (SceneId), (override));
     MOCK_METHOD(void, setClearFlags, (DeviceResourceHandle, uint32_t), (override));
@@ -43,13 +43,13 @@ class RendererMockWithMockDisplay : public RendererMock
 public:
     RendererMockWithMockDisplay(DisplayHandle display, const RendererScenes& rendererScenes,
         const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
-    virtual ~RendererMockWithMockDisplay() override;
+    ~RendererMockWithMockDisplay() override;
 
-    virtual IDisplayController* createDisplayControllerFromConfig(const ramses_internal::DisplayConfig& displayConfig) override;
+    IDisplayController* createDisplayControllerFromConfig(const ramses_internal::DisplayConfig& displayConfig) override;
 
-    virtual void markBufferWithSceneForRerender(SceneId sceneId) override;
-    virtual void setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags) override;
-    virtual void setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor) override;
+    void markBufferWithSceneForRerender(SceneId sceneId) override;
+    void setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags) override;
+    void setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor) override;
 
     using ramses_internal::Renderer::getDisplaySetup;
 

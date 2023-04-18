@@ -30,12 +30,12 @@ namespace ramses_internal
         {
         }
 
-        const String& getIp() const
+        [[nodiscard]] const String& getIp() const
         {
             return m_ip;
         }
 
-        UInt16 getPort() const
+        [[nodiscard]] UInt16 getPort() const
         {
             return m_port;
         }

@@ -10,9 +10,50 @@
 #include "gtest/gtest.h"
 #include "Utils/StringUtils.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
+    TEST(StringUtilsTest, trimStringLiterals)
+    {
+        {
+            using namespace  std::literals::string_view_literals;
+            EXPECT_STREQ("char A", StringUtils::Trim(" char A   "sv).c_str());
+        }
+        {
+            using namespace std::literals::string_literals;
+            EXPECT_STREQ("char A", StringUtils::Trim(" char A   "s).c_str());
+        }
+    }
+
+    TEST(StringUtilsTest, trimViewString)
+    {
+        using namespace  std::literals::string_view_literals;
+        {
+            auto sv = " char A   "sv;
+            EXPECT_EQ("char A"sv, StringUtils::TrimView(sv));
+        }
+        {
+            std::string s = "hello";
+            [[maybe_unused]] auto danglingStringView = StringUtils::TrimView(s + " world ");
+            // May fail or pass, depending on the compiler
+            // EXPECT_NE("hello world"sv, danglingStringView);
+            EXPECT_EQ("hello world"sv, StringUtils::Trim(s + " world "));
+        }
+        {
+            auto string = new std::string(" Hello ");
+            auto trimmedStringView = StringUtils::TrimView(*string);
+            auto trimmedString = StringUtils::Trim(*string);
+            EXPECT_EQ("Hello"sv, trimmedStringView);
+            EXPECT_EQ("Hello"sv, trimmedString);
+            delete string;
+            // May fail or pass, depending on the compiler
+            // EXPECT_NE("Hello"sv, trimmedStringView);
+            EXPECT_EQ("Hello"sv, trimmedString);
+        }
+    }
+
     TEST(StringUtilsTest, trimString)
     {
         EXPECT_STREQ("te st", StringUtils::Trim("  te st ").c_str());

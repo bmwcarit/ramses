@@ -27,7 +27,7 @@ namespace ramses_internal
     {
     public:
         explicit Platform_BaseMock(const RendererConfig& config);
-        virtual ~Platform_BaseMock() override;
+        ~Platform_BaseMock() override;
 
         MOCK_METHOD(bool, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
         MOCK_METHOD(bool, createContext, (const DisplayConfig& displayConfig), (override));

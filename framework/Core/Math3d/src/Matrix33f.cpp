@@ -34,7 +34,49 @@ namespace ramses_internal
         m33 = otherMat44.m33;
     }
 
-    Matrix33f Matrix33f::RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention)
+    Matrix33f Matrix33f::Rotation(const Vector4& rotation, ERotationType rotationType)
+    {
+        if (rotationType == ERotationType::Quaternion)
+        {
+            return RotationQuaternion(rotation);
+        }
+        else
+        {
+            return RotationEuler(Vector3(rotation), rotationType);
+        }
+    }
+
+    Matrix33f Matrix33f::RotationQuaternion(const Vector4& rotation)
+    {
+        const auto x  = rotation.x;
+        const auto y  = rotation.y;
+        const auto z  = rotation.z;
+        const auto w  = rotation.w;
+
+        const auto xx = x * x;
+        const auto yy = y * y;
+        const auto zz = z * z;
+        const auto xy = x * y;
+        const auto xz = x * z;
+        const auto xw = x * w;
+        const auto yz = y * z;
+        const auto yw = y * w;
+        const auto zw = z * w;
+
+        Matrix33f  result;
+        result.m11 = 1.f - 2.f * (yy + zz);
+        result.m12 = 2.f * (xy - zw);
+        result.m13 = 2.f * (xz + yw);
+        result.m21 = 2.f * (xy + zw);
+        result.m22 = 1.f - 2.f * (xx + zz);
+        result.m23 = 2.f * (yz - xw);
+        result.m31 = 2.f * (xz - yw);
+        result.m32 = 2.f * (yz + xw);
+        result.m33 = 1.f - 2.f * (xx + yy);
+        return result;
+    }
+
+    Matrix33f Matrix33f::RotationEuler(const Vector3& rotation, ERotationType rotationType)
     {
         // Get the rotation angles in radians
         const float rotX = PlatformMath::Deg2Rad(rotation.x);
@@ -52,51 +94,45 @@ namespace ramses_internal
         // Creation form below utilizes sign change in comparison to regular Euler rotation matrix construction.
         // This change is tolerated back when angles are extracted back from the matrix in toRotationEuler() method
 
-        switch (rotationConvention)
+        switch (rotationType)
         {
-        case ERotationConvention::Legacy_ZYX:
-            return Matrix33f(
-                cz * cy                 , cz * sy * sx + sz * cx    , sz * sx - cz * sy * cx,
-                -sz * cy                , cz * cx - sz * sy * sx    , sz * sy * cx + cz * sx,
-                sy                      , -cy * sx                  , cy * cx
-            );
-        case ERotationConvention::XYZ:
+        case ERotationType::Euler_ZYX:
             return Matrix33f(
                 cy * cz                 , -cy * sz                  , sy,
                 sx * sy * cz + cx * sz  , cx * cz - sx * sy * sz    , -sx * cy,
                 sx * sz - cx * sy * cz  , cx * sy * sz + sx * cz    , cx * cy
             );
-        case ERotationConvention::XZY:
+        case ERotationType::Euler_YZX:
             return Matrix33f(
                 cy * cz                 , -sz                       , cz * sy,
                 sx * sy + cx * cy * sz  , cx * cz                   , -cy * sx + cx * sy * sz,
                 -cx * sy  + cy * sx * sz, cz * sx                   , cx * cy + sx * sy * sz
             );
-        case ERotationConvention::YXZ:
+        case ERotationType::Euler_ZXY:
             return Matrix33f(
                 cy * cz + sx * sy * sz  , cz * sx * sy - cy * sz    , cx * sy,
                 cx * sz                 , cx * cz                   , -sx,
                 -cz * sy + cy * sx * sz , cy * cz * sx + sy * sz    , cx * cy
             );
-        case ERotationConvention::YZX:
+        case ERotationType::Euler_XZY:
             return Matrix33f(
                 cy * cz                 , sx * sy - cx * cy * sz    , cx * sy + cy * sx * sz,
                 sz                      , cx * cz                   , - cz * sx,
                 -cz * sy                , cy * sx + cx * sy * sz    , cx * cy - sx * sy * sz
             );
-        case ERotationConvention::ZXY:
+        case ERotationType::Euler_YXZ:
             return Matrix33f(
                 cy * cz - sx * sy * sz  , -cx * sz                  , cz * sy + cy * sx * sz,
                 cz * sx * sy + cy * sz  , cx * cz                   , -cy * cz * sx + sy * sz,
                 -cx * sy                , sx                        , cx * cy
             );
-        case ERotationConvention::ZYX:
+        case ERotationType::Euler_XYZ:
             return Matrix33f(
                 cz * cy                 , cz * sy * sx - sz * cx    , sz * sx + cz * sy * cx,
                 sz * cy                 , cz * cx + sz * sy * sx    , sz * sy * cx - cz * sx,
                 -sy                     , cy * sx                   , cy * cx
             );
-        case ERotationConvention::XYX: // [X0,Y,X1] = [x, y, z]
+        case ERotationType::Euler_XYX: // [X0,Y,X1] = [x, y, z]
         {
             const auto& sX0 = sx;
             const auto& cX0 = cx;
@@ -110,7 +146,7 @@ namespace ramses_internal
                 -sY * cX0               , cX1 * sX0 + cY * cX0 * sX1, cY *cX0 * cX1 - sX0 * sX1
             );
         }
-        case ERotationConvention::XZX: // [X0,Z,X1] = [x, y, z]
+        case ERotationType::Euler_XZX: // [X0,Z,X1] = [x, y, z]
         {
             const auto& sX0 = sx;
             const auto& cX0 = cx;
@@ -124,7 +160,7 @@ namespace ramses_internal
                 sZ * sX0                , cZ * cX1 * sX0 + cX0 * sX1, cX0 * cX1 - cZ * sX0 * sX1
             );
         }
-        case ERotationConvention::YXY: // [Y0,X,Y1] = [x, y, z]
+        case ERotationType::Euler_YXY: // [Y0,X,Y1] = [x, y, z]
         {
             const auto& sY0 = sx;
             const auto& cY0 = cx;
@@ -138,7 +174,7 @@ namespace ramses_internal
                 -cY1 * sY0 - cX * cY0 * sY1 , sX * cY0              , cX * cY0 * cY1 - sY0 * sY1
             );
         }
-        case ERotationConvention::YZY: // [Y0,Z,Y1] = [x, y, z]
+        case ERotationType::Euler_YZY: // [Y0,Z,Y1] = [x, y, z]
         {
             const auto& sY0 = sx;
             const auto& cY0 = cx;
@@ -152,7 +188,7 @@ namespace ramses_internal
                 -cZ * cY1 * sY0 - cY0 * sY1 , sZ * sY0              , cY0 * cY1 - cZ * sY0 * sY1
             );
         }
-        case ERotationConvention::ZXZ: // [Z0, X, Z1] = [x, y, z]
+        case ERotationType::Euler_ZXZ: // [Z0, X, Z1] = [x, y, z]
         {
             const auto& sZ0 = sx;
             const auto& cZ0 = cx;
@@ -167,7 +203,7 @@ namespace ramses_internal
                 sX * sZ1                    , sX * cZ1                      , cX
             );
         }
-        case ERotationConvention::ZYZ: // [Z0, Y, Z0] = [x, y, z]
+        case ERotationType::Euler_ZYZ: // [Z0, Y, Z0] = [x, y, z]
         {
             const auto& sZ0 = sx;
             const auto& cZ0 = cx;
@@ -188,7 +224,7 @@ namespace ramses_internal
         }
     }
 
-    bool Matrix33f::toRotationEuler(Vector3& rotation, ERotationConvention rotationConvention) const
+    bool Matrix33f::toRotationEuler(Vector3& rotation, ERotationType rotationType) const
     {
         // For details about factor calculation, see https://www.geometrictools.com/Documentation/EulerAngles.pdf
         bool singular = true;
@@ -196,45 +232,9 @@ namespace ramses_internal
         auto& y = rotation.y;
         auto& z = rotation.z;
 
-        switch (rotationConvention)
+        switch (rotationType)
         {
-        case ERotationConvention::Legacy_ZYX:
-        {
-            // Creation from Legacy_ZYX Euler angles utilizes sign change in comparison to regular Euler construction.
-            // This change is tolerated back in here by inverting the angles at the end of the function
-            if (m31 < 1.0f)
-            {
-                if (m31 > -1.0f)
-                {
-                    x = std::atan2(m32, m33);
-                    y = std::asin(-m31);
-                    z = std::atan2(m21, m11);
-                }
-                else
-                {
-                    x = 0.0f;// any arbitrary angle
-                    y = PlatformMath::PI_f / 2.0f;
-                    z = -std::atan2(-m23, m22);
-                    // Not a unique solution.
-                    singular = false;
-                }
-            }
-            else
-            {
-                x = 0.0f; // any arbitrary angle
-                y = -PlatformMath::PI_f / 2.0f;
-                z = std::atan2(-m23, m22);
-                // Not a unique solution.
-                singular = false;
-            }
-
-            // invert and convert radian values to degrees
-            x = -PlatformMath::Rad2Deg(x);
-            y = -PlatformMath::Rad2Deg(y);
-            z = -PlatformMath::Rad2Deg(z);
-        }
-        break;
-        case ERotationConvention::XYZ:
+        case ERotationType::Euler_ZYX:
         {
             if (m12 < 1.0f)
             {

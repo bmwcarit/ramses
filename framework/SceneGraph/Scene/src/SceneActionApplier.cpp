@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Scene/SceneActionApplier.h"
-#include "Scene/TransformPropertyType.h"
 #include "Scene/ResourceChanges.h"
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/PixelRectangle.h"
@@ -15,11 +14,7 @@
 #include "SceneAPI/Viewport.h"
 #include "SceneAPI/Camera.h"
 #include "SceneAPI/RenderBuffer.h"
-#include "SceneAPI/ERotationConvention.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
-#include "AnimationAPI/IAnimationSystem.h"
-#include "Animation/AnimationSystemFactory.h"
-#include "Animation/Animation.h"
+#include "SceneAPI/ERotationType.h"
 #include "Math3d/Vector4.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector2.h"
@@ -46,7 +41,7 @@
 
 namespace ramses_internal
 {
-    void SceneActionApplier::ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action, AnimationSystemFactory* animSystemFactory)
+    void SceneActionApplier::ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action)
     {
         switch (action.type())
         {
@@ -83,34 +78,33 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateTransform(nodeHandle, transformHandle), transformHandle);
             break;
         }
-        case ESceneActionId::SetTransformComponent:
+        case ESceneActionId::SetTranslation:
         {
             TransformHandle transform;
-            UInt32 component = 0;
             Vector3 vec;
-            action.read(component);
             action.read(transform);
             action.read(vec.data);
-            switch (component)
-            {
-            case ETransformPropertyType_Rotation:
-            {
-                ERotationConvention rotationConvention;
-                action.read(rotationConvention);
-                scene.setRotation(transform, vec, rotationConvention);
-                break;
-            }
-            case ETransformPropertyType_Scaling:
-            {
-                scene.setScaling(transform, vec);
-                break;
-            }
-            case ETransformPropertyType_Translation:
-            {
-                scene.setTranslation(transform, vec);
-                break;
-            }
-            };
+            scene.setTranslation(transform, vec);
+            break;
+        }
+        case ESceneActionId::SetRotation:
+        {
+            TransformHandle transform;
+            Vector4 vec;
+            ERotationType rotationType;
+            action.read(transform);
+            action.read(vec.data);
+            action.read(rotationType);
+            scene.setRotation(transform, vec, rotationType);
+            break;
+        }
+        case ESceneActionId::SetScaling:
+        {
+            TransformHandle transform;
+            Vector3 vec;
+            action.read(transform);
+            action.read(vec.data);
+            scene.setScaling(transform, vec);
             break;
         }
         case ESceneActionId::AllocateDataInstance:
@@ -512,39 +506,6 @@ namespace ramses_internal
             NodeHandle nodeHandle;
             action.read(nodeHandle);
             scene.releaseNode(nodeHandle);
-            break;
-        }
-        case ESceneActionId::AllocateStreamTexture:
-        {
-            StreamTextureHandle handle;
-            WaylandIviSurfaceId streamSource;
-            ResourceContentHash fallbackTextureHash;
-            String objectName;
-            UInt64 objectId;
-            action.read(handle);
-            action.read(streamSource);
-            action.read(fallbackTextureHash);
-            action.read(objectName);
-            action.read(objectId);
-            UNUSED(objectName);
-            UNUSED(objectId);
-            ALLOCATE_AND_ASSERT_HANDLE(scene.allocateStreamTexture(streamSource, fallbackTextureHash, handle), handle);
-            break;
-        }
-        case ESceneActionId::ReleaseStreamTexture:
-        {
-            StreamTextureHandle handle;
-            action.read(handle);
-            scene.releaseStreamTexture(handle);
-            break;
-        }
-        case ESceneActionId::SetForceFallback:
-        {
-            StreamTextureHandle handle;
-            bool forceFallback;
-            action.read(handle);
-            action.read(forceFallback);
-            scene.setForceFallbackImage(handle, forceFallback);
             break;
         }
         case ESceneActionId::AllocateRenderState:
@@ -1209,630 +1170,6 @@ namespace ramses_internal
             scene.requestSceneReferenceFlushNotifications(handle, enable);
             break;
         }
-        case ESceneActionId::AddAnimationSystem:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            UInt32 flags;
-            action.read(flags);
-            AnimationSystemSizeInformation sizeInfo;
-            action.read(sizeInfo.splineCount);
-            action.read(sizeInfo.dataBindCount);
-            action.read(sizeInfo.animationInstanceCount);
-            action.read(sizeInfo.animationCount);
-
-            IAnimationSystem* animationSystem = animSystemFactory->createAnimationSystem(flags, sizeInfo);
-            assert(animationSystem != nullptr);
-
-            if (animationSystem != nullptr)
-            {
-                scene.addAnimationSystem(animationSystem, animSystemHandle);
-            }
-
-            break;
-        }
-        case ESceneActionId::RemoveAnimationSystem:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            scene.removeAnimationSystem(animSystemHandle);
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetTime:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationTime::TimeStamp globalTimeStamp;
-            action.read(globalTimeStamp);
-            const AnimationTime globalTime(globalTimeStamp);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setTime(globalTime);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemAllocateSpline:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            UInt32 uintData;
-            action.read(uintData);
-            ESplineKeyType keyType = ESplineKeyType(uintData);
-            action.read(uintData);
-            EDataTypeID dataTypeID = EDataTypeID(uintData);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateSpline(keyType, dataTypeID, splineHandle), splineHandle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemAllocateDataBinding:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            TDataBindID dataBindID;
-            action.read(dataBindID);
-            MemoryHandle handle1;
-            action.read(handle1);
-            MemoryHandle handle2;
-            action.read(handle2);
-            DataBindHandle dataBindHandle;
-            action.read(dataBindHandle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateDataBinding(scene, dataBindID, handle1, handle2, dataBindHandle), dataBindHandle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemAllocateAnimationInstance:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            UInt32 interpType;
-            action.read(interpType);
-            EInterpolationType interpolationType = EInterpolationType(interpType);
-            UInt32 vecComp;
-            action.read(vecComp);
-            EVectorComponent vectorComponent = EVectorComponent(vecComp);
-            AnimationInstanceHandle handle;
-            action.read(handle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateAnimationInstance(splineHandle, interpolationType, vectorComponent, handle), handle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemAllocateAnimation:
-        {
-            String objectName;
-            UInt64 objectId;
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationInstanceHandle animInstHandle;
-            action.read(animInstHandle);
-            AnimationHandle handle;
-            action.read(handle);
-            action.read(objectName);
-            action.read(objectId);
-            UNUSED(objectName);
-            UNUSED(objectId);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                ALLOCATE_AND_ASSERT_HANDLE(animSystem->allocateAnimation(animInstHandle, handle), handle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemAddDataBindingToAnimationInstance:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationInstanceHandle animationInstanceHandle;
-            action.read(animationInstanceHandle);
-            DataBindHandle dataBindHandle;
-            action.read(dataBindHandle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->addDataBindingToAnimationInstance(animationInstanceHandle, dataBindHandle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicBool:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            bool value;
-            action.read(value);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicBool(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicInt32:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Int32 value;
-            action.read(value);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicInt32(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicFloat:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Float value;
-            action.read(value);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicFloat(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector2f:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector2 value;
-            action.read(value.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicVector2f(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector3f:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector3 value;
-            action.read(value.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicVector3f(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector4f:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector4 value;
-            action.read(value.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicVector4f(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector2i:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector2i value;
-            action.read(value.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicVector2i(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector3i:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector3i value;
-            action.read(value.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicVector3i(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector4i:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector4i value;
-            action.read(value.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyBasicVector4i(splineHandle, timeStamp, value);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsInt32:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Int32 value;
-            action.read(value);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsInt32(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsFloat:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Float value;
-            action.read(value);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsFloat(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector2f:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector2 value;
-            action.read(value.data);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsVector2f(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector3f:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector3 value;
-            action.read(value.data);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsVector3f(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector4f:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector4 value;
-            action.read(value.data);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsVector4f(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector2i:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector2i value;
-            action.read(value.data);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsVector2i(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector3i:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector3i value;
-            action.read(value.data);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsVector3i(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector4i:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineTimeStamp timeStamp;
-            action.read(timeStamp);
-            Vector4i value;
-            action.read(value.data);
-            Vector2 tanIn;
-            action.read(tanIn.data);
-            Vector2 tanOut;
-            action.read(tanOut.data);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setSplineKeyTangentsVector4i(splineHandle, timeStamp, value, tanIn, tanOut);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemRemoveSplineKey:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle splineHandle;
-            action.read(splineHandle);
-            SplineKeyIndex keyIndex;
-            action.read(keyIndex);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->removeSplineKey(splineHandle, keyIndex);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetAnimationStartTime:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationHandle handle;
-            action.read(handle);
-            AnimationTime::TimeStamp timeStamp;
-            action.read(timeStamp);
-            const AnimationTime startTime(timeStamp);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setAnimationStartTime(handle, timeStamp);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetAnimationStopTime:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationHandle handle;
-            action.read(handle);
-            AnimationTime::TimeStamp timeStamp;
-            action.read(timeStamp);
-            const AnimationTime startTime(timeStamp);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setAnimationStopTime(handle, timeStamp);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemSetAnimationProperties:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationHandle handle;
-            action.read(handle);
-            Float playbackSpeed;
-            action.read(playbackSpeed);
-            Animation::Flags flags;
-            action.read(flags);
-            AnimationTime::Duration loopDuration;
-            action.read(loopDuration);
-            AnimationTime::TimeStamp timeStamp;
-            action.read(timeStamp);
-            const AnimationTime globalTime(timeStamp);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->setAnimationProperties(handle, playbackSpeed, flags, loopDuration, globalTime);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemStopAnimationAndRollback:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationHandle handle;
-            action.read(handle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->stopAnimationAndRollback(handle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemRemoveSpline:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            SplineHandle handle;
-            action.read(handle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->removeSpline(handle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemRemoveDataBinding:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            DataBindHandle handle;
-            action.read(handle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->removeDataBinding(handle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemRemoveAnimationInstance:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationInstanceHandle handle;
-            action.read(handle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->removeAnimationInstance(handle);
-            }
-            break;
-        }
-        case ESceneActionId::AnimationSystemRemoveAnimation:
-        {
-            AnimationSystemHandle animSystemHandle;
-            action.read(animSystemHandle);
-            AnimationHandle handle;
-            action.read(handle);
-
-            IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
-            if (animSystem != nullptr)
-            {
-                animSystem->removeAnimation(handle);
-            }
-            break;
-        }
         case ESceneActionId::PreallocateSceneSize:
         {
             SceneSizeInformation sizeInfos;
@@ -1999,11 +1336,11 @@ namespace ramses_internal
         assert(action.isFullyRead());
     }
 
-    void SceneActionApplier::ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory)
+    void SceneActionApplier::ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions)
     {
         for (auto& reader : actions)
         {
-            ApplySingleActionOnScene(scene, reader, animSystemFactory);
+            ApplySingleActionOnScene(scene, reader);
         }
     }
 
@@ -2022,10 +1359,8 @@ namespace ramses_internal
         action.read(sizeInfo.renderTargetCount);
         action.read(sizeInfo.renderBufferCount);
         action.read(sizeInfo.textureSamplerCount);
-        action.read(sizeInfo.streamTextureCount);
         action.read(sizeInfo.dataSlotCount);
         action.read(sizeInfo.dataBufferCount);
-        action.read(sizeInfo.animationSystemCount);
         action.read(sizeInfo.textureBufferCount);
         action.read(sizeInfo.pickableObjectCount);
         action.read(sizeInfo.sceneReferenceCount);

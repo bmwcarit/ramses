@@ -14,6 +14,8 @@
 #include "Collections/IOutputStream.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
+#include <array>
+#include "glm/vec3.hpp"
 
 namespace ramses_internal
 {
@@ -37,12 +39,15 @@ namespace ramses_internal
         constexpr Vector3(const Float _x, const Float _y, const Float _z);
         explicit constexpr Vector3(const Float value);
         explicit Vector3(const Vector4& other);
+        explicit constexpr Vector3(const glm::vec3& other);
 
         constexpr Vector3(const Vector3& other) = default;
         constexpr Vector3& operator=(const Vector3& other) = default;
 
         constexpr void set(const Float _x, const Float _y, const Float _z);
         constexpr void set(const Float xyz);
+
+        [[nodiscard]] glm::vec3 getAsVec3() const;
 
         constexpr Vector3 operator+(const Vector3& other) const;
         constexpr Vector3 operator-(const Vector3& other) const;
@@ -63,12 +68,12 @@ namespace ramses_internal
         constexpr Float& operator[](const UInt32 index);
         constexpr const Float& operator[](const UInt32 index) const;
 
-        constexpr Float dot(const Vector3& other) const;
-        constexpr Vector3 inverse() const;
-        constexpr Vector3 cross(const Vector3& other) const;
+        [[nodiscard]] constexpr Float dot(const Vector3& other) const;
+        [[nodiscard]] constexpr Vector3 inverse() const;
+        [[nodiscard]] constexpr Vector3 cross(const Vector3& other) const;
 
-        Float length() const;
-        Vector3 normalize() const;
+        [[nodiscard]] Float length() const;
+        [[nodiscard]] Vector3 normalize() const;
 
         friend constexpr Vector3 operator*(const Float scalar, const Vector3&);
     };
@@ -86,13 +91,19 @@ namespace ramses_internal
     , y(value)
     , z(value)
     {
-
     }
 
     constexpr inline Vector3::Vector3(const Float _x, const Float _y, const Float _z)
         : x(_x)
         , y(_y)
         , z(_z)
+    {
+    }
+
+    constexpr inline Vector3::Vector3(const glm::vec3& other)
+        : x(other.x)
+        , y(other.y)
+        , z(other.z)
     {
     }
 
@@ -106,6 +117,11 @@ namespace ramses_internal
     constexpr inline void Vector3::set(const Float xyz)
     {
         x = y = z = xyz;
+    }
+
+    inline glm::vec3 Vector3::getAsVec3() const
+    {
+        return glm::vec3{x, y, z};
     }
 
     inline Float Vector3::length() const

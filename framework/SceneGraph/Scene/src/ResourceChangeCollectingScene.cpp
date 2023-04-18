@@ -131,23 +131,6 @@ namespace ramses_internal
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyRenderBuffer });
     }
 
-    StreamTextureHandle ResourceChangeCollectingScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
-    {
-        m_resourcesChanged = true;
-
-        StreamTextureHandle newHandle = TransformationCachedScene::allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
-        m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateStreamTexture });
-        return newHandle;
-    }
-
-    void ResourceChangeCollectingScene::releaseStreamTexture(StreamTextureHandle handle)
-    {
-        m_resourcesChanged = true;
-
-        TransformationCachedScene::releaseStreamTexture(handle);
-        m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyStreamTexture });
-    }
-
     BlitPassHandle ResourceChangeCollectingScene::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle /*= BlitPassHandle::Invalid()*/)
     {
         const BlitPassHandle newHandle = TransformationCachedScene::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);

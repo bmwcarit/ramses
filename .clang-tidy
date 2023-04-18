@@ -182,6 +182,7 @@ Checks:
     modernize-deprecated-headers,
     modernize-make-unique,
     modernize-make-shared,
+    modernize-use-override,
 
     performance-faster-string-find,
     performance-for-range-copy,
@@ -260,4 +261,6 @@ CheckOptions:
   - key: readability-implicit-bool-conversion.AllowIntegerConditions
     value: true
   - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: modernize-use-override.AllowOverrideAndFinal
     value: true

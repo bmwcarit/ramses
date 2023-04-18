@@ -33,7 +33,7 @@ namespace ramses
         {
         }
 
-        virtual void addData(const void* data, uint32_t size) override
+        void addData(const void* data, uint32_t size) override
         {
             m_checksum.addData(reinterpret_cast<const uint8_t*>(data), size);
             m_totalSize += size;
@@ -51,7 +51,7 @@ namespace ramses
         {
         }
 
-        virtual void addData(const void* data, uint32_t size) override
+        void addData(const void* data, uint32_t size) override
         {
             m_outputStream.write(data, size);
         }

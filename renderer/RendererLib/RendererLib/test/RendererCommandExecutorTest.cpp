@@ -137,56 +137,6 @@ TEST_F(ARendererCommandExecutor, setSceneDisplayBufferAssignment)
     doCommandExecutorLoop();
 }
 
-TEST_F(ARendererCommandExecutor, updatesWarpingMeshDataOnDisplay)
-{
-    addDisplayController();
-
-    m_commandBuffer.enqueueCommand(RendererCommand::UpdateWarpingData{ m_displayHandle, WarpingMeshData{} });
-
-    StrictMock<DisplayControllerMock>& displayControllerMock = *m_renderer.m_displayController;
-    EXPECT_CALL(displayControllerMock, isWarpingEnabled()).WillRepeatedly(Return(true));
-    EXPECT_CALL(displayControllerMock, setWarpingMeshData(_));
-    doCommandExecutorLoop();
-
-    const RendererEventVector events = consumeRendererEvents();
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(m_displayHandle, events.front().displayHandle);
-    EXPECT_EQ(ERendererEventType::WarpingDataUpdated, events.front().eventType);
-
-    removeDisplayController();
-}
-
-TEST_F(ARendererCommandExecutor, failsToUpdateWarpingMeshDataOnInvalidDisplay)
-{
-    const DisplayHandle dummyDisplay;
-
-    m_commandBuffer.enqueueCommand(RendererCommand::UpdateWarpingData{ dummyDisplay, WarpingMeshData{} });
-    doCommandExecutorLoop();
-
-    const RendererEventVector events = consumeRendererEvents();
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(dummyDisplay, events.front().displayHandle);
-    EXPECT_EQ(ERendererEventType::WarpingDataUpdateFailed, events.front().eventType);
-}
-
-TEST_F(ARendererCommandExecutor, failsToUpdateWarpingMeshDataOnDisplayWithNoWarping)
-{
-    addDisplayController();
-
-    m_commandBuffer.enqueueCommand(RendererCommand::UpdateWarpingData{ m_displayHandle, WarpingMeshData{} });
-
-    StrictMock<DisplayControllerMock>& displayControllerMock = *m_renderer.m_displayController;
-    EXPECT_CALL(displayControllerMock, isWarpingEnabled()).WillOnce(Return(false));
-    doCommandExecutorLoop();
-
-    const RendererEventVector events = consumeRendererEvents();
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(m_displayHandle, events.front().displayHandle);
-    EXPECT_EQ(ERendererEventType::WarpingDataUpdateFailed, events.front().eventType);
-
-    removeDisplayController();
-}
-
 TEST_F(ARendererCommandExecutor, readPixelsFromDisplayBuffer)
 {
     constexpr DisplayHandle display{ 1u };
@@ -305,20 +255,6 @@ TEST_F(ARendererCommandExecutor, linkStreamBufferToConsumer)
     m_commandBuffer.enqueueCommand(RendererCommand::LinkStreamBuffer{ buffer, consumerScene, consumerData });
 
     EXPECT_CALL(m_sceneUpdater, handleBufferToSceneDataLinkRequest(buffer, consumerScene, consumerData));
-    doCommandExecutorLoop();
-}
-
-TEST_F(ARendererCommandExecutor, setsStreamBufferState)
-{
-    constexpr StreamBufferHandle buffer{ 123u };
-    constexpr DisplayHandle display{ 1 };
-
-    m_commandBuffer.enqueueCommand(RendererCommand::SetStreamBufferState{ display, buffer, true });
-    EXPECT_CALL(m_sceneUpdater, setStreamBufferState(buffer, true));
-    doCommandExecutorLoop();
-
-    m_commandBuffer.enqueueCommand(RendererCommand::SetStreamBufferState{ display, buffer, false });
-    EXPECT_CALL(m_sceneUpdater, setStreamBufferState(buffer, false));
     doCommandExecutorLoop();
 }
 

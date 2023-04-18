@@ -32,7 +32,7 @@ public:
         m_windowClosed = true;
     }
 
-    bool isWindowClosed() const
+    [[nodiscard]] bool isWindowClosed() const
     {
         return m_windowClosed;
     }
@@ -56,7 +56,7 @@ public:
     {
     }
 
-    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
         m_scenes[sceneId] = state;
     }
@@ -77,10 +77,10 @@ private:
     SceneSet m_scenes;
 };
 /** \endcond */
-static constexpr unsigned VPWidth = 600;
-static constexpr unsigned VPHeight = 400;
-static constexpr unsigned DispWidth  = 1280;
-static constexpr unsigned DispHeight = 480;
+static constexpr int32_t VPWidth = 600;
+static constexpr int32_t VPHeight = 400;
+static constexpr int32_t DispWidth  = 1280;
+static constexpr int32_t DispHeight = 480;
 
 // Master scene's data provider IDs
 static constexpr ramses::dataProviderId_t VP1OffsetProviderId{ 333 };
@@ -104,16 +104,16 @@ ramses::Scene* createContentProviderScene(ramses::RamsesClient& client, ramses::
 
     ramses::PerspectiveCamera* camera = clientScene->createPerspectiveCamera("camera");
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
 
     /// [Viewport Link Example Content]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
     // Bind data objects to scene's camera viewport offset/size and mark as data consumers
-    const auto vpOffsetData = clientScene->createDataVector2i("vpOffset");
-    const auto vpSizeData = clientScene->createDataVector2i("vpSize");
-    vpOffsetData->setValue(0, 0);
-    vpSizeData->setValue(VPWidth, VPHeight);
+    const auto vpOffsetData = clientScene->createDataObject(ramses::EDataType::Vector2I, "vpOffset");
+    const auto vpSizeData = clientScene->createDataObject(ramses::EDataType::Vector2I, "vpSize");
+    vpOffsetData->setValue(ramses::vec2i{ 0, 0 });
+    vpSizeData->setValue(ramses::vec2i{ VPWidth, VPHeight });
     camera->bindViewportOffset(*vpOffsetData);
     camera->bindViewportSize(*vpSizeData);
     clientScene->createDataConsumer(*vpOffsetData, VPOffsetConsumerId);
@@ -126,10 +126,10 @@ ramses::Scene* createContentProviderScene(ramses::RamsesClient& client, ramses::
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
 
-    float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -6.f}, ramses::vec3f{1.f, 0.f, -6.f}, ramses::vec3f{0.f, 1.f, -6.f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-local-viewport-link.vert");
@@ -150,36 +150,22 @@ ramses::Scene* createContentProviderScene(ramses::RamsesClient& client, ramses::
     meshNode->setGeometryBinding(*geometry);
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::MeshNode*   meshNode2   = clientScene->createMeshNode("triangle mesh node");
+    ramses::MeshNode*   meshNode2   = clientScene->createMeshNode("triangle mesh node 2");
     ramses::Appearance* appearance2 = clientScene->createAppearance(*effect, "triangle appearance");
     meshNode2->setAppearance(*appearance2);
     meshNode2->setGeometryBinding(*geometry);
     renderGroup->addMeshNode(*meshNode2);
-    meshNode2->setTranslation(0, -10, -5);
-    meshNode2->setScaling(100, 100, 1);
-
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, 500.f);
-    spline1->setKey(10000u, 1000.f);
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(1.f);
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
+    meshNode2->setTranslation({0, -10, -5});
+    meshNode2->setScaling({100, 100, 1});
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
 
     // Create data objects to hold color and bind them to appearance inputs
-    auto color1 = clientScene->createDataVector4f();
-    auto color2 = clientScene->createDataVector4f();
-    color1->setValue(1.f, 1.f, 1.f, 1.f);
-    color1->setValue(0.5f, 0.5f, 0.5f, 1.f);
+    auto color1 = clientScene->createDataObject(ramses::EDataType::Vector4F);
+    auto color2 = clientScene->createDataObject(ramses::EDataType::Vector4F);
+    color1->setValue(ramses::vec4f{ 1.f, 1.f, 1.f, 1.f });
+    color1->setValue(ramses::vec4f{ 0.5f, 0.5f, 0.5f, 1.f });
     appearance->bindInput(colorInput, *color1);
     appearance2->bindInput(colorInput, *color2);
     clientScene->createDataConsumer(*color1, Color1ConsumerId);
@@ -194,15 +180,15 @@ ramses::Scene* createSceneMaster(ramses::RamsesClient& client, ramses::sceneId_t
 
     /// [Viewport Link Example Master]
     // In master scene create data objects and mark them as providers to control other scenes' viewports
-    const auto vp1offset = clientScene->createDataVector2i("vp1offset");
-    const auto vp1size = clientScene->createDataVector2i("vp1size");
-    const auto vp2offset = clientScene->createDataVector2i("vp2offset");
-    const auto vp2size = clientScene->createDataVector2i("vp2size");
+    const auto vp1offset = clientScene->createDataObject(ramses::EDataType::Vector2I, "vp1offset");
+    const auto vp1size = clientScene->createDataObject(ramses::EDataType::Vector2I, "vp1size");
+    const auto vp2offset = clientScene->createDataObject(ramses::EDataType::Vector2I, "vp2offset");
+    const auto vp2size = clientScene->createDataObject(ramses::EDataType::Vector2I, "vp2size");
 
-    vp1offset->setValue(0, 0);
-    vp1size->setValue(DispWidth, DispHeight);
-    vp2offset->setValue(0, 0);
-    vp2size->setValue(DispWidth, DispHeight);
+    vp1offset->setValue(ramses::vec2i{ 0, 0 });
+    vp1size->setValue(ramses::vec2i{ DispWidth, DispHeight });
+    vp2offset->setValue(ramses::vec2i{ 0, 0 });
+    vp2size->setValue(ramses::vec2i{ DispWidth, DispHeight });
 
     clientScene->createDataProvider(*vp1offset, VP1OffsetProviderId);
     clientScene->createDataProvider(*vp1size, VP1SizeProviderId);
@@ -211,15 +197,15 @@ ramses::Scene* createSceneMaster(ramses::RamsesClient& client, ramses::sceneId_t
     /// [Viewport Link Example Master]
 
     // Create data objects and mark them as providers to control content scenes colors
-    const auto color1 = clientScene->createDataVector4f("color1");
-    const auto color2 = clientScene->createDataVector4f("color2");
-    const auto color3 = clientScene->createDataVector4f("color3");
-    const auto color4 = clientScene->createDataVector4f("color4");
+    const auto color1 = clientScene->createDataObject(ramses::EDataType::Vector4F, "color1");
+    const auto color2 = clientScene->createDataObject(ramses::EDataType::Vector4F, "color2");
+    const auto color3 = clientScene->createDataObject(ramses::EDataType::Vector4F, "color3");
+    const auto color4 = clientScene->createDataObject(ramses::EDataType::Vector4F, "color4");
 
-    color1->setValue(1.f, 1.f, 0.3f, 1.f);
-    color2->setValue(0.f, 0.3f, 0.5f, 1.f);
-    color3->setValue(1.f, 0.f, 0.5f, 1.f);
-    color4->setValue(0.5f, 0.3f, 0.f, 1.f);
+    color1->setValue(ramses::vec4f{ 1.f, 1.f, 0.3f, 1.f });
+    color2->setValue(ramses::vec4f{ 0.f, 0.3f, 0.5f, 1.f });
+    color3->setValue(ramses::vec4f{ 1.f, 0.f, 0.5f, 1.f });
+    color4->setValue(ramses::vec4f{ 0.5f, 0.3f, 0.f, 1.f });
 
     clientScene->createDataProvider(*color1, Color1ProviderId);
     clientScene->createDataProvider(*color2, Color2ProviderId);
@@ -229,16 +215,16 @@ ramses::Scene* createSceneMaster(ramses::RamsesClient& client, ramses::sceneId_t
     return clientScene;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     // Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
     framework.connect();
@@ -261,23 +247,24 @@ int main(int argc, char* argv[])
 
     SceneStateEventHandler eventHandler(renderer);
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(50, 50, DispWidth, DispHeight);
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 
     sceneControlAPI.setSceneMapping(sceneId1, display);
     sceneControlAPI.setSceneMapping(sceneId2, display);
+    sceneControlAPI.setSceneMapping(sceneIdMaster, display);
     sceneControlAPI.setSceneState(sceneId1, ramses::RendererSceneState::Rendered);
     sceneControlAPI.setSceneState(sceneId2, ramses::RendererSceneState::Rendered);
     // Master scene does not need to be rendered, it only provides data to the other 2 scenes,
-    // it must be at least in Available state meaning its data is on renderer
-    sceneControlAPI.setSceneState(sceneIdMaster, ramses::RendererSceneState::Available);
+    // it must be at least in Ready state meaning its data is on renderer
+    sceneControlAPI.setSceneState(sceneIdMaster, ramses::RendererSceneState::Ready);
     sceneControlAPI.flush();
 
     eventHandler.waitForSceneState(sceneId1, ramses::RendererSceneState::Rendered);
     eventHandler.waitForSceneState(sceneId2, ramses::RendererSceneState::Rendered);
-    eventHandler.waitForSceneState(sceneIdMaster, ramses::RendererSceneState::Available);
+    eventHandler.waitForSceneState(sceneIdMaster, ramses::RendererSceneState::Ready);
 
 #if 1
     /// [Viewport Link Example]
@@ -298,30 +285,43 @@ int main(int argc, char* argv[])
 #endif
 
     // These are master scene's data objects linked to scene1 and scene2 cameras' viewports
-    auto scene1vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataVector2i>(*sceneMaster->findObjectByName("vp1offset"));
-    auto scene1vpSize = ramses::RamsesUtils::TryConvert<ramses::DataVector2i>(*sceneMaster->findObjectByName("vp1size"));
-    auto scene2vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataVector2i>(*sceneMaster->findObjectByName("vp2offset"));
-    auto scene2vpSize = ramses::RamsesUtils::TryConvert<ramses::DataVector2i>(*sceneMaster->findObjectByName("vp2size"));
+    auto scene1vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp1offset"));
+    auto scene1vpSize = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp1size"));
+    auto scene2vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp2offset"));
+    auto scene2vpSize = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp2size"));
 
     int animParam = 0;
     bool animInc = true;
 
+    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
+    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
+
     RendererEventHandler rendererEventHandler;
+    float rotationFactor = 0.f;
     while (!rendererEventHandler.isWindowClosed())
     {
         renderer.dispatchEvents(rendererEventHandler);
-        scene1vpOffset->setValue(VPWidth/8 + VPWidth/2 * animParam/100, VPHeight/8 + VPHeight/4 * animParam/100);
-        scene1vpSize->setValue(VPWidth/4 + VPWidth/2 * animParam/100, VPHeight/4 + VPHeight/4 * animParam/100);
-        const auto invAnimParam = 100 - animParam;
-        scene2vpOffset->setValue(DispWidth/2 - VPWidth/2 * invAnimParam/100, DispHeight - DispHeight/4 - VPHeight/4 * invAnimParam/100);
-        scene2vpSize->setValue(VPWidth/2 + VPWidth/2 * invAnimParam/100, VPHeight/4 + VPHeight/4 * invAnimParam/100);
-        sceneMaster->flush();
 
-        renderer.doOneLoop();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // animate master scene
+        scene1vpOffset->setValue(ramses::vec2i{ VPWidth / 8 + VPWidth / 2 * animParam / 100, VPHeight / 8 + VPHeight / 4 * animParam / 100 });
+        scene1vpSize->setValue(ramses::vec2i{ VPWidth / 4 + VPWidth / 2 * animParam / 100, VPHeight / 4 + VPHeight / 4 * animParam / 100 });
+        const auto invAnimParam = 100 - animParam;
+        scene2vpOffset->setValue(ramses::vec2i{ DispWidth / 2 - VPWidth / 2 * invAnimParam / 100, DispHeight - DispHeight / 4 - VPHeight / 4 * invAnimParam / 100 });
+        scene2vpSize->setValue(ramses::vec2i{ VPWidth / 2 + VPWidth / 2 * invAnimParam / 100, VPHeight / 4 + VPHeight / 4 * invAnimParam / 100 });
+        sceneMaster->flush();
 
         animParam = (animInc ? animParam + 1 : animParam - 1);
         if (animParam == 0 || animParam == 100)
             animInc = !animInc;
+
+        // animate content inside provider scenes
+        rotationFactor += 1.f;
+        meshScene1->setRotation({0.f, 0.f, 2 * rotationFactor}, ramses::ERotationType::Euler_XYZ);
+        scene1->flush();
+        meshScene2->setRotation({0.f, 0.f, 4 * rotationFactor}, ramses::ERotationType::Euler_XYZ);
+        scene2->flush();
+
+        renderer.doOneLoop();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

@@ -28,17 +28,17 @@ namespace ramses_internal
             m_flattenedRenderableIdx++;
         }
 
-        UInt32 getRenderPassIdx() const
+        [[nodiscard]] UInt32 getRenderPassIdx() const
         {
             return m_renderPassIdx;
         }
 
-        UInt32 getRenderableIdx() const
+        [[nodiscard]] UInt32 getRenderableIdx() const
         {
             return m_renderableIdx;
         }
 
-        UInt32 getFlattenedRenderableIdx() const
+        [[nodiscard]] UInt32 getFlattenedRenderableIdx() const
         {
             return m_flattenedRenderableIdx;
         }

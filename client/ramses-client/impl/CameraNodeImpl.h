@@ -19,15 +19,13 @@
 
 namespace ramses
 {
-    class DataVector2i;
-    class DataVector2f;
-    class DataVector4f;
+    class DataObject;
 
     class CameraNodeImpl final : public NodeImpl
     {
     public:
         CameraNodeImpl(SceneImpl& scene, ERamsesObjectType cameraType, const char* cameraName);
-        virtual ~CameraNodeImpl() override;
+        ~CameraNodeImpl() override;
 
         // Common for all camera types
         ramses_internal::ECameraProjectionType getProjectionType() const;
@@ -39,11 +37,11 @@ namespace ramses
         uint32_t getViewportHeight() const;
 
         void             initializeFrameworkData();
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
         ramses_internal::CameraHandle getCameraHandle() const;
 
         status_t setFrustum(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane);
@@ -58,11 +56,11 @@ namespace ramses
         float    getVerticalFieldOfView() const;
         float    getAspectRatio() const;
 
-        status_t getProjectionMatrix(float(&projectionMatrix)[16]) const;
+        status_t getProjectionMatrix(matrix44f& projectionMatrix) const;
 
-        status_t bindViewportOffset(const DataVector2i& offsetData);
-        status_t bindViewportSize(const DataVector2i& sizeData);
-        status_t bindFrustumPlanes(const DataVector4f& frustumPlanesData, const DataVector2f& nearFarData);
+        status_t bindViewportOffset(const DataObject& offsetData);
+        status_t bindViewportSize(const DataObject& sizeData);
+        status_t bindFrustumPlanes(const DataObject& frustumPlanesData, const DataObject& nearFarData);
         status_t unbindViewportOffset();
         status_t unbindViewportSize();
         status_t unbindFrustumPlanes();

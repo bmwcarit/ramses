@@ -15,7 +15,6 @@
 #include "SceneAPI/RendererSceneState.h"
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/SceneVersionTag.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererLib/EMouseEventType.h"
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyCode.h"
@@ -35,8 +34,6 @@ namespace ramses_internal
         DisplayDestroyFailed,
         ReadPixelsFromFramebuffer,
         ReadPixelsFromFramebufferFailed,
-        WarpingDataUpdated,
-        WarpingDataUpdateFailed,
         OffscreenBufferCreated,
         OffscreenBufferCreateFailed,
         OffscreenBufferDestroyed,
@@ -89,8 +86,6 @@ namespace ramses_internal
         WindowResizeEvent,
         StreamSurfaceAvailable,
         StreamSurfaceUnavailable,
-        StreamBufferEnabled,
-        StreamBufferDisabled,
         ObjectsPicked,
         FrameTimingReport,
         NUMBER_OF_ELEMENTS
@@ -105,8 +100,6 @@ namespace ramses_internal
         "DisplayDestroyFailed",
         "ReadPixelsFromFramebuffer",
         "ReadPixelsFromFramebufferFailed",
-        "WarpingDataUpdated",
-        "WarpingDataUpdateFailed",
         "OffscreenBufferCreated",
         "OffscreenBufferCreateFailed",
         "OffscreenBufferDestroyed",
@@ -156,8 +149,6 @@ namespace ramses_internal
         "WindowResizeEvent",
         "StreamSurfaceAvailable",
         "StreamSurfaceUnavailable",
-        "StreamBufferEnabled",
-        "StreamBufferDisabled",
         "ObjectsPicked",
         "FrameTimingReport",
     };
@@ -222,7 +213,6 @@ namespace ramses_internal
         WaylandIviSurfaceId         streamSourceId;
         PickableObjectIds           pickedObjectIds;
         FrameTimings                frameTimings;
-        bool                        isFirstDisplay;
         int                         dmaBufferFD = -1;
         uint32_t                    dmaBufferStride = 0u;
         uint32_t                    textureGlId = 0u;

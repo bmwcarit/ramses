@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         explicit TestStepCommand();
-        virtual Bool execute(Int& testStep) const override;
+        Bool execute(Int& testStep) const override;
 
         Int getCurrentTestStep();
         void waitForTestStepSetEvent(UInt32 timeoutMillisec = 0u);

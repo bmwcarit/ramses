@@ -12,19 +12,20 @@
 #include "ISceneGraphProviderComponent.h"
 #include "ISceneGraphConsumerComponent.h"
 
-#include "PlatformAbstraction/PlatformLock.h"
-#include "Collections/Pair.h"
 #include "ISceneGraphSender.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/SceneSizeInformation.h"
-#include "Collections/HashMap.h"
 #include "TransportCommon/IConnectionStatusListener.h"
-#include "Collections/HashSet.h"
-#include "Utils/IPeriodicLogSupplier.h"
-#include "ISceneProviderEventConsumer.h"
 #include "TransportCommon/ServiceHandlerInterfaces.h"
-#include <unordered_map>
+#include "ISceneProviderEventConsumer.h"
 #include "ERendererToClientEventType.h"
+#include "ramses-framework-api/EFeatureLevel.h"
+#include "Utils/IPeriodicLogSupplier.h"
+#include "PlatformAbstraction/PlatformLock.h"
+#include "Collections/HashMap.h"
+#include "Collections/HashSet.h"
+#include "Collections/Pair.h"
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -46,54 +47,60 @@ namespace ramses_internal
                                       public IPeriodicLogSupplier
     {
     public:
-        SceneGraphComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, IResourceProviderComponent& res, PlatformLock& frameworkLock);
-        virtual ~SceneGraphComponent() override;
+        SceneGraphComponent(
+            const Guid& myID,
+            ICommunicationSystem& communicationSystem,
+            IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier,
+            IResourceProviderComponent& res,
+            PlatformLock& frameworkLock,
+            ramses::EFeatureLevel featureLevel);
+        ~SceneGraphComponent() override;
 
-        virtual void setSceneRendererHandler(ISceneRendererHandler* sceneRendererHandler) override;
+        void setSceneRendererHandler(ISceneRendererHandler* sceneRendererHandler) override;
 
         // ISceneGraphSender
-        virtual void sendCreateScene(const Guid& to, const SceneId& sceneId, EScenePublicationMode mode) override;
-        virtual void sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode, StatisticCollectionScene& sceneStatistics) override;
-        virtual void sendPublishScene(SceneId sceneId, EScenePublicationMode mode, const String& name) override;
-        virtual void sendUnpublishScene(SceneId sceneId, EScenePublicationMode mode) override;
+        void sendCreateScene(const Guid& to, const SceneId& sceneId, EScenePublicationMode mode) override;
+        void sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode, StatisticCollectionScene& sceneStatistics) override;
+        void sendPublishScene(SceneId sceneId, EScenePublicationMode mode, const String& name) override;
+        void sendUnpublishScene(SceneId sceneId, EScenePublicationMode mode) override;
 
         // ISceneGraphConsumerComponent
-        virtual void subscribeScene(const Guid& to, SceneId sceneId) override;
-        virtual void unsubscribeScene(const Guid& to, SceneId sceneId) override;
-        virtual void sendSceneReferenceEvent(const Guid& to, SceneReferenceEvent const& event) override;
-        virtual void sendResourceAvailabilityEvent(const Guid& to, ResourceAvailabilityEvent const& event) override;
+        void subscribeScene(const Guid& to, SceneId sceneId) override;
+        void unsubscribeScene(const Guid& to, SceneId sceneId) override;
+        void sendSceneReferenceEvent(const Guid& to, SceneReferenceEvent const& event) override;
+        void sendResourceAvailabilityEvent(const Guid& to, ResourceAvailabilityEvent const& event) override;
 
         // IConnectionStatusListener
-        virtual void newParticipantHasConnected(const Guid& connnectedParticipant) override;
-        virtual void participantHasDisconnected(const Guid& disconnnectedParticipant) override;
+        void newParticipantHasConnected(const Guid& connnectedParticipant) override;
+        void participantHasDisconnected(const Guid& disconnnectedParticipant) override;
 
         // ISceneGraphProviderComponent
-        virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& eventConsumer) override;
-        virtual void handlePublishScene(SceneId sceneId, EScenePublicationMode publicationMode) override;
-        virtual void handleUnpublishScene(SceneId sceneId) override;
-        virtual bool handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
-        virtual void handleRemoveScene(SceneId sceneId) override;
+        void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& eventConsumer) override;
+        void handlePublishScene(SceneId sceneId, EScenePublicationMode publicationMode) override;
+        void handleUnpublishScene(SceneId sceneId) override;
+        bool handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
+        void handleRemoveScene(SceneId sceneId) override;
 
         // ISceneProviderServiceHandler
-        virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
-        virtual void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
-        virtual void handleRendererEvent(const SceneId& sceneId, const std::vector<Byte>& data, const Guid& rendererID) override;
+        void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
+        void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
+        void handleRendererEvent(const SceneId& sceneId, const std::vector<Byte>& data, const Guid& rendererID) override;
 
         // ISceneRendererServiceHandler
-        virtual void handleInitializeScene(const SceneId& sceneId, const Guid& providerID) override;
-        virtual void handleSceneUpdate(const SceneId& sceneId, absl::Span<const Byte> actionData, const Guid& providerID) override;
-        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID) override;
-        virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) override;
-        virtual void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) override;
+        void handleInitializeScene(const SceneId& sceneId, const Guid& providerID) override;
+        void handleSceneUpdate(const SceneId& sceneId, absl::Span<const Byte> actionData, const Guid& providerID) override;
+        void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, ramses::EFeatureLevel featureLevel) override;
+        void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) override;
+        void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) override;
 
         // IPeriodicLogSupplier
-        virtual void triggerLogMessageForPeriodicLog() override;
+        void triggerLogMessageForPeriodicLog() override;
 
         void connectToNetwork();
         void disconnectFromNetwork();
 
         // for testing only
-        const ClientSceneLogicBase* getClientSceneLogicForScene(SceneId sceneId) const;
+        [[nodiscard]] const ClientSceneLogicBase* getClientSceneLogicForScene(SceneId sceneId) const;
 
     private:
         void forwardToSceneProviderEventConsumer(SceneReferenceEvent const& event);
@@ -115,6 +122,8 @@ namespace ramses_internal
         SceneEventConsumerMap m_sceneEventConsumers;
 
         IResourceProviderComponent& m_resourceComponent;
+
+        ramses::EFeatureLevel m_featureLevel = ramses::EFeatureLevel_01;
 
         struct ReceivedScene
         {

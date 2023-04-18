@@ -64,7 +64,7 @@ namespace ramses_internal
         ramses::RenderTarget& renderTarget = createRenderTarget(state);
 
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags_All);
     }
 
@@ -78,7 +78,7 @@ namespace ramses_internal
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
-        transNode.translate(0.0f, -0.5f, -5.0f);
+        transNode.translate({0.0f, -0.5f, -5.0f});
 
         ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();
         renderGroup.addMeshNode(meshNode);
@@ -99,11 +99,11 @@ namespace ramses_internal
 
         if (state == ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH_STENCIL_BUFFER)
         {
-            farTriangleTransNode.translate(0.5f, 0.0f, 0.1f);
+            farTriangleTransNode.translate({0.5f, 0.0f, 0.1f});
         }
         else
         {
-            farTriangleTransNode.translate(0.5f, 0.0f, -0.1f);
+            farTriangleTransNode.translate({0.5f, 0.0f, -0.1f});
         }
 
         ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), ramses::TriangleAppearance::EColor_Blue);

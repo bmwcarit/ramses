@@ -6,22 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    Window_Wayland_Test
     TYPE                    STATIC_LIBRARY
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Window_Wayland_Test/*.h
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Window_Wayland_Test/*.h
     DEPENDENCIES            Window_Wayland
                             EGL
                             LinuxInput

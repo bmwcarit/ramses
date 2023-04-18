@@ -16,23 +16,23 @@ using namespace ramses_internal;
 void InterruptibleOffscreenBufferLinkTests::setUpTestCases(RendererTestsFramework& testFramework)
 {
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithOneScene, *this, "InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithOneScene")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithTwoScenes, *this, "InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithTwoScenes")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_InterruptionDoesNotAffectFrameBufferScene, *this, "InterruptibleOffscreenBufferLinkTest_InterruptionDoesNotAffectFrameBufferScene")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_TwoInterruptibleOBsEachWithOneScene, *this, "InterruptibleOffscreenBufferLinkTest_TwoInterruptibleOBsEachWithOneScene")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileInterrupted, *this, "InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileInterrupted")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted, *this, "InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered, *this, "InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted_SameBuffer, *this, "InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted_SameBuffer")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered_SameBuffer, *this, "InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered_SameBuffer")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
 }
 
 bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)

@@ -35,7 +35,7 @@ namespace
             m_sceneUpdate.flushInfos = update.flushInfos.copy();
         }
 
-        virtual bool MatchAndExplain(const SceneUpdate& updatearg, MatchResultListener* /*listener*/) const override
+        bool MatchAndExplain(const SceneUpdate& updatearg, MatchResultListener* /*listener*/) const override
         {
             const SceneActionCollection& arg = updatearg.actions;
             if (arg.numberOfActions() > 0 &&
@@ -58,12 +58,12 @@ namespace
             return updatearg.actions == m_sceneUpdate.actions;
         }
 
-        virtual void DescribeTo(::std::ostream* os) const override
+        void DescribeTo(::std::ostream* os) const override
         {
             *os << "is expected SceneActionCollection";
         }
 
-        virtual void DescribeNegationTo(::std::ostream* os) const override
+        void DescribeNegationTo(::std::ostream* os) const override
         {
             *os << "is not expected SceneActionCollection";
         }
@@ -81,7 +81,7 @@ class SceneGraphSenderMock : public ISceneGraphSender
 {
 public:
     SceneGraphSenderMock() {}
-    virtual ~SceneGraphSenderMock() override = default;
+    ~SceneGraphSenderMock() override = default;
     MOCK_METHOD(void, sendPublishScene, (SceneId sceneId, EScenePublicationMode publicationMode, const String& name), (override));
     MOCK_METHOD(void, sendUnpublishScene, (SceneId sceneId, EScenePublicationMode publicationMode), (override));
     MOCK_METHOD(void, sendCreateScene, (const Guid& to, const SceneId& sceneId, EScenePublicationMode publicationMode), (override));
@@ -105,7 +105,7 @@ public:
         , m_sceneLogic(m_sceneGraphProviderComponent, m_scene, m_resourceComponent, m_myID)
         , m_rendererID(1337)
         , m_arrayResourceRaw(new ArrayResource(EResourceType_IndexArray, 1, EDataType::UInt16, nullptr, ResourceCacheFlag_DoNotCache, String()))
-        , m_effectResourceRaw(new EffectResource(String("foo"), String(), String(), absl::nullopt, {}, {}, String(), ResourceCacheFlag_DoNotCache))
+        , m_effectResourceRaw(new EffectResource(String("foo"), String(), String(), EDrawMode::NUMBER_OF_ELEMENTS, {}, {}, String(), ResourceCacheFlag_DoNotCache))
         , m_textureResourceRaw(new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String()))
         , m_arrayResource(m_arrayResourceRaw)
         , m_effectResource(m_effectResourceRaw)
@@ -1029,7 +1029,7 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfNewResourcesTogetherWithFlush)
 
     const RenderTargetHandle renderTarget = this->m_scene.allocateRenderTarget();
     const RenderBufferHandle renderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R16, ERenderBufferAccessMode_ReadWrite, 0u });
-    const StreamTextureHandle streamTex = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{0u}, hash);
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, hash, {} });
     const BlitPassHandle blitpassHandle = this->m_scene.allocateBlitPass(RenderBufferHandle(1u), RenderBufferHandle(2u));
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& update, auto, auto, auto&)
@@ -1040,15 +1040,13 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfNewResourcesTogetherWithFlush)
         EXPECT_EQ(hash, resourceChanges.m_resourcesAdded[0]);
         EXPECT_EQ(0u, resourceChanges.m_resourcesRemoved.size());
 
-        EXPECT_EQ(4u, resourceChanges.m_sceneResourceActions.size());
+        EXPECT_EQ(3u, resourceChanges.m_sceneResourceActions.size());
         EXPECT_EQ(renderTarget, resourceChanges.m_sceneResourceActions[0].handle);
         EXPECT_EQ(ESceneResourceAction_CreateRenderTarget, resourceChanges.m_sceneResourceActions[0].action);
         EXPECT_EQ(renderBuffer, resourceChanges.m_sceneResourceActions[1].handle);
         EXPECT_EQ(ESceneResourceAction_CreateRenderBuffer, resourceChanges.m_sceneResourceActions[1].action);
-        EXPECT_EQ(streamTex, resourceChanges.m_sceneResourceActions[2].handle);
-        EXPECT_EQ(ESceneResourceAction_CreateStreamTexture, resourceChanges.m_sceneResourceActions[2].action);
-        EXPECT_EQ(blitpassHandle, resourceChanges.m_sceneResourceActions[3].handle);
-        EXPECT_EQ(ESceneResourceAction_CreateBlitPass, resourceChanges.m_sceneResourceActions[3].action);
+        EXPECT_EQ(blitpassHandle, resourceChanges.m_sceneResourceActions[2].handle);
+        EXPECT_EQ(ESceneResourceAction_CreateBlitPass, resourceChanges.m_sceneResourceActions[2].action);
     });
     this->expectResourceQueries({ this->m_arrayResource });
     this->m_sceneLogic.flushSceneActions({}, {});
@@ -1068,7 +1066,7 @@ TYPED_TEST(AClientSceneLogic_All, sendsResourcesTogetherWithFlush)
     std::iota(blob.data(), blob.data() + blob.size(), static_cast<uint8_t>(10));
     const ResourceContentHash hash = this->m_arrayResource->getHash();
 
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{0u}, hash);
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, hash, {} });
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& update, auto, auto, auto&)
         {
@@ -1088,7 +1086,7 @@ TYPED_TEST(AClientSceneLogic_All, flushClearsListsOfChangedResources)
     this->m_scene.allocateRenderable(this->m_scene.allocateNode());
     this->m_scene.allocateRenderTarget();
     this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R16, ERenderBufferAccessMode_ReadWrite, 0u });
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, this->m_arrayResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_arrayResource->getHash(), {} });
     this->m_scene.allocateBlitPass(RenderBufferHandle(1u), RenderBufferHandle(2u));
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& update, auto, auto, auto&)
@@ -1096,7 +1094,7 @@ TYPED_TEST(AClientSceneLogic_All, flushClearsListsOfChangedResources)
         auto& resourceChanges = update.flushInfos.resourceChanges;
         EXPECT_EQ(1u, resourceChanges.m_resourcesAdded.size());
         EXPECT_EQ(0u, resourceChanges.m_resourcesRemoved.size());
-        EXPECT_EQ(4u, resourceChanges.m_sceneResourceActions.size());
+        EXPECT_EQ(3u, resourceChanges.m_sceneResourceActions.size());
     });
     this->expectResourceQueries({ this->m_arrayResource });
     this->m_sceneLogic.flushSceneActions({}, {});
@@ -1124,7 +1122,7 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfObsoleteResourcesTogetherWithFlush)
     this->m_scene.allocateDataLayout({}, ResourceContentHash(45u, 0));
     const RenderTargetHandle renderTarget = this->m_scene.allocateRenderTarget();
     const RenderBufferHandle renderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R16, ERenderBufferAccessMode_ReadWrite, 0u });
-    const StreamTextureHandle streamTex = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, hash);
+    const DataSlotHandle dataSlot = this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, hash, {} });
     const BlitPassHandle blitpassHandle = this->m_scene.allocateBlitPass(RenderBufferHandle(1u), RenderBufferHandle(2u));
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _));
@@ -1133,7 +1131,7 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfObsoleteResourcesTogetherWithFlush)
 
     this->m_scene.releaseRenderTarget(renderTarget);
     this->m_scene.releaseRenderBuffer(renderBuffer);
-    this->m_scene.releaseStreamTexture(streamTex);
+    this->m_scene.releaseDataSlot(dataSlot);
     this->m_scene.releaseBlitPass(blitpassHandle);
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& update, auto, auto, auto&)
@@ -1145,15 +1143,13 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfObsoleteResourcesTogetherWithFlush)
         EXPECT_EQ(1u, resourceChanges.m_resourcesRemoved.size());
         EXPECT_EQ(hash,  resourceChanges.m_resourcesRemoved[0]);
 
-        EXPECT_EQ(4u, resourceChanges.m_sceneResourceActions.size());
+        EXPECT_EQ(3u, resourceChanges.m_sceneResourceActions.size());
         EXPECT_EQ(renderTarget, resourceChanges.m_sceneResourceActions[0].handle);
         EXPECT_EQ(ESceneResourceAction_DestroyRenderTarget, resourceChanges.m_sceneResourceActions[0].action);
         EXPECT_EQ(renderBuffer, resourceChanges.m_sceneResourceActions[1].handle);
         EXPECT_EQ(ESceneResourceAction_DestroyRenderBuffer, resourceChanges.m_sceneResourceActions[1].action);
-        EXPECT_EQ(streamTex, resourceChanges.m_sceneResourceActions[2].handle);
-        EXPECT_EQ(ESceneResourceAction_DestroyStreamTexture, resourceChanges.m_sceneResourceActions[2].action);
-        EXPECT_EQ(blitpassHandle, resourceChanges.m_sceneResourceActions[3].handle);
-        EXPECT_EQ(ESceneResourceAction_DestroyBlitPass, resourceChanges.m_sceneResourceActions[3].action);
+        EXPECT_EQ(blitpassHandle, resourceChanges.m_sceneResourceActions[2].handle);
+        EXPECT_EQ(ESceneResourceAction_DestroyBlitPass, resourceChanges.m_sceneResourceActions[2].action);
     });
     EXPECT_CALL(this->m_resourceComponent, resolveResources(_)).Times(AnyNumber()).WillRepeatedly(Return(ManagedResourceVector{}));
     EXPECT_CALL(this->m_resourceComponent, getResourceInfo(_)).Times(AnyNumber()).WillRepeatedly(ReturnRef(this->m_resInfo[0]));
@@ -1648,7 +1644,7 @@ TYPED_TEST(AClientSceneLogic_All, resolvesClientResourcesWhenFlushing)
     Mock::VerifyAndClearExpectations(&this->m_resourceComponent); // strict behavior for this test
 
     this->m_scene.allocateNode();
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{0u}, this->m_arrayResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_arrayResource->getHash(), {} });
     this->expectResourceQueries({ this->m_arrayResource });
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& update, auto, auto, auto&)
         {
@@ -1658,7 +1654,7 @@ TYPED_TEST(AClientSceneLogic_All, resolvesClientResourcesWhenFlushing)
     this->flush();
 
     this->m_scene.allocateNode();
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{0u}, this->m_textureResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(1u), {}, {}, this->m_textureResource->getHash(), {} });
     this->expectResourceQueries({ this->m_textureResource }, { this->m_arrayResource, this->m_textureResource });
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& update, auto, auto, auto&)
         {
@@ -1675,11 +1671,11 @@ TYPED_TEST(AClientSceneLogic_All, resolvesClientResourcesWhenFlushingUnpublished
     Mock::VerifyAndClearExpectations(&this->m_resourceComponent); // strict behavior for this test
 
     this->m_scene.allocateNode();
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_textureResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_textureResource->getHash(), {} });
     this->expectResourceQueries({ this->m_textureResource });
     this->flush();
     this->m_scene.allocateNode();
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_arrayResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(1u), {}, {}, this->m_arrayResource->getHash(), {} });
     this->expectResourceQueries({ this->m_arrayResource }, { this->m_arrayResource, this->m_textureResource });
     this->flush();
     this->publish();
@@ -1735,7 +1731,7 @@ TYPED_TEST(AClientSceneLogic_All, resolvesOldResourcesForNewSubscriber)
 {
     this->publish();
     this->m_scene.allocateNode();
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_textureResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_textureResource->getHash(), {} });
     this->expectResourceQueries({ this->m_textureResource }, {}, false, false, true);
     this->flush();
     this->m_scene.allocateNode();
@@ -1762,7 +1758,7 @@ TYPED_TEST(AClientSceneLogic_All, succeedsASecondFlushContainingAllSceneActionsA
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
 
-    auto streamTexHandle = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_arrayResource->getHash() );
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_arrayResource->getHash(), {} });
     auto rendHandle = this->m_scene.allocateRenderable(this->m_scene.allocateNode());
     auto layoutHandle = this->m_scene.allocateDataLayout({}, this->m_textureResource->getHash());
     auto instanceHandle = this->m_scene.allocateDataInstance(layoutHandle);
@@ -1772,7 +1768,7 @@ TYPED_TEST(AClientSceneLogic_All, succeedsASecondFlushContainingAllSceneActionsA
 
     Mock::VerifyAndClearExpectations(&this->m_resourceComponent); // strict behavior for this test
     this->m_scene.allocateNode();
-    auto streamTexHandle2 = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_effectResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(1u), {}, {}, this->m_effectResource->getHash(), {} });
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _)).WillOnce([&](const auto&, const auto& update, auto, auto, auto&)
         {
             auto& resourceChanges = update.flushInfos.resourceChanges;
@@ -1780,13 +1776,9 @@ TYPED_TEST(AClientSceneLogic_All, succeedsASecondFlushContainingAllSceneActionsA
 
             ASSERT_EQ(9u, update.actions.numberOfActions());
 
-            ASSERT_EQ(3u, resourceChanges.m_sceneResourceActions.size());
-            EXPECT_EQ(streamTexHandle, resourceChanges.m_sceneResourceActions[0].handle);
-            EXPECT_EQ(ESceneResourceAction_CreateStreamTexture, resourceChanges.m_sceneResourceActions[0].action);
-            EXPECT_EQ(renderTarget, resourceChanges.m_sceneResourceActions[1].handle);
-            EXPECT_EQ(ESceneResourceAction_CreateRenderTarget, resourceChanges.m_sceneResourceActions[1].action);
-            EXPECT_EQ(streamTexHandle2, resourceChanges.m_sceneResourceActions[2].handle);
-            EXPECT_EQ(ESceneResourceAction_CreateStreamTexture, resourceChanges.m_sceneResourceActions[2].action);
+            ASSERT_EQ(1u, resourceChanges.m_sceneResourceActions.size());
+            EXPECT_EQ(renderTarget, resourceChanges.m_sceneResourceActions[0].handle);
+            EXPECT_EQ(ESceneResourceAction_CreateRenderTarget, resourceChanges.m_sceneResourceActions[0].action);
         });
     this->expectResourceQueries({ this->m_textureResource, this->m_arrayResource, this->m_effectResource });
     EXPECT_TRUE(this->m_sceneLogic.flushSceneActions({}, {}));
@@ -1823,8 +1815,8 @@ TYPED_TEST(AClientSceneLogic_All, fillsResourceStatisticsWithZerosIfNoResourcesD
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, _, _, _)).Times(AnyNumber());
     this->publish();
     this->m_scene.allocateNode();
-    auto streamTexHandle = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), ResourceContentHash{ 0, 1 });
-    this->m_scene.releaseStreamTexture(streamTexHandle);
+    auto dataSlotHandle = this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, { 0, 1 }, {} });
+    this->m_scene.releaseDataSlot(dataSlotHandle);
     this->expectSceneSend();
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
@@ -1845,7 +1837,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfArrayResourceAddedA
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
 
-    auto tex1 = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_arrayResource->getHash());
+    const DataSlotHandle dataSlot = this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_arrayResource->getHash(), {} });
     this->expectResourceQueries({ this->m_arrayResource });
     this->flush();
 
@@ -1857,7 +1849,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfArrayResourceAddedA
     newArray->setResourceData(ResourceBlob{ 2 }, { 4u, 4u });
     ManagedResource newManRes(newArray);
 
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), newArray->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(1u), {}, {}, newArray->getHash(), {} });
     this->expectResourceQueries({ newManRes }, { this->m_arrayResource, newManRes });
     this->flush();
 
@@ -1865,7 +1857,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfArrayResourceAddedA
     this->expectStatistics(EResourceStatisticIndex_Effect, { 0, 0, 0 });
     this->expectStatistics(EResourceStatisticIndex_Texture, { 0, 0, 0 });
 
-    this->m_scene.releaseStreamTexture(tex1);
+    this->m_scene.releaseDataSlot(dataSlot);
     this->expectResourceQueries({}, { newManRes }, true);
     this->flush();
 
@@ -1885,7 +1877,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfEffectAddedAndRemov
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
 
-    auto tex1 = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_effectResource->getHash());
+    const DataSlotHandle dataSlot = this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_effectResource->getHash(), {} });
     this->expectResourceQueries({ this->m_effectResource });
     this->flush();
 
@@ -1893,17 +1885,17 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfEffectAddedAndRemov
     this->expectStatistics(EResourceStatisticIndex_Effect, { 1, 6, 6 });
     this->expectStatistics(EResourceStatisticIndex_Texture, { 0, 0, 0 });
 
-    ManagedResource newManRes(new EffectResource(String("f00"), String("bar"), String(), absl::nullopt, {}, {}, String(), ResourceCacheFlag_DoNotCache));
+    ManagedResource newManRes(new EffectResource(String("f00"), String("bar"), String(), EDrawMode::NUMBER_OF_ELEMENTS, {}, {}, String(), ResourceCacheFlag_DoNotCache));
 
     this->expectResourceQueries({ newManRes }, { this->m_effectResource, newManRes });
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), newManRes->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(1u), {}, {}, newManRes->getHash(), {} });
     this->flush();
 
     this->expectStatistics(EResourceStatisticIndex_ArrayResource, { 0, 0, 0 });
     this->expectStatistics(EResourceStatisticIndex_Effect, { 2, 7, 9 });
     this->expectStatistics(EResourceStatisticIndex_Texture, { 0, 0, 0 });
 
-    this->m_scene.releaseStreamTexture(tex1);
+    this->m_scene.releaseDataSlot(dataSlot);
     this->expectResourceQueries({}, { newManRes }, true);
     this->flush();
 
@@ -1923,7 +1915,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfTextureAddedAndRemo
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
 
-    auto tex1 = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_textureResource->getHash());
+    const DataSlotHandle dataSlot = this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_textureResource->getHash(), {} });
     this->expectResourceQueries({ this->m_textureResource });
     this->flush();
 
@@ -1935,7 +1927,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfTextureAddedAndRemo
     newTex->setResourceData(ResourceBlob{ 2 }, { 4u, 4u });
     ManagedResource newManRes(newTex);
 
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), newManRes->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, newManRes->getHash(), {} });
     this->expectResourceQueries({ newManRes }, { this->m_textureResource, newManRes });
     this->flush();
 
@@ -1944,7 +1936,7 @@ TYPED_TEST(AClientSceneLogic_All, updatesResourceStatisticsIfTextureAddedAndRemo
     this->expectStatistics(EResourceStatisticIndex_Texture, { 2, 1, 2 });
 
     this->expectResourceQueries({}, { newManRes }, true);
-    this->m_scene.releaseStreamTexture(tex1);
+    this->m_scene.releaseDataSlot(dataSlot);
     this->flush();
 
     this->expectStatistics(EResourceStatisticIndex_ArrayResource, { 0, 0, 0 });
@@ -1975,12 +1967,12 @@ TYPED_TEST(AClientSceneLogic_All, doesNotCallGetContentInfoWhenComponentDoesNotK
     this->m_sceneLogic.addSubscriber(this->m_rendererID);
     this->flush();
 
-    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_textureResource->getHash());
-    auto tex2 = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_effectResource->getHash());
+    this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_textureResource->getHash(), {} });
+    const DataSlotHandle dataSlot = this->m_scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), {}, {}, this->m_effectResource->getHash(), {} });
     this->expectResourceQueries({ this->m_textureResource,  this->m_effectResource });
     this->flush();
 
-    this->m_scene.releaseStreamTexture(tex2);
+    this->m_scene.releaseDataSlot(dataSlot);
     Mock::VerifyAndClearExpectations(&this->m_resourceComponent);
     EXPECT_CALL(this->m_resourceComponent, knowsResource(this->m_textureResource->getHash())).WillOnce(Return(false));
     EXPECT_CALL(this->m_resourceComponent, resolveResources(_)).Times(AtLeast(0)).WillRepeatedly(Return(ManagedResourceVector{ this->m_textureResource }));

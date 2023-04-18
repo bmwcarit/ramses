@@ -53,7 +53,6 @@ namespace ramses
         */
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         /**
         * @brief This method will be called when the data link between external buffer and scene's data slot is established.
         * @details This is a result of #ramses::RendererSceneControl::linkExternalBuffer call.
@@ -64,7 +63,19 @@ namespace ramses
         * @param success True if succeeded, false otherwise - check renderer logs for concrete error message.
         */
         virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
-#endif
+
+
+        /**
+        * @brief This method will be called when the data link between stream buffer and scene's data slot is established.
+        * @details This is a result of #ramses::RendererSceneControl::linkStreamBuffer call.
+        *
+        * @param streamBufferId The ID of stream buffer which is linked as data provider
+        * @param consumerScene The ID of scene where the data consumer slot is
+        * @param consumerId The ID of data consumer where the stream buffer is linked to
+        * @param success True if succeeded, false otherwise - check renderer logs for concrete error message.
+        */
+        virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) = 0;
+
 
         /**
         * @brief This method will be called when the data link between a data provider and data consumer is established.
@@ -196,8 +207,8 @@ namespace ramses
         *        which is passed to ramses::RendererSceneControl when the scene is rendered (see ramses::RendererSceneControl::handlePickEvent).
         *
         * @param[in] sceneId ID of scene to which the picked objects belong.
-        * @param[in] pickedObjects Pointer to first ID of the picked objects array.
-        *        This array is valid only for the time of calling this method.
+        * @param[in] pickedObjects Pointer to first ID of the picked objects array, this array is valid only for the time of calling this method.
+        *                          Picked objects are sorted from closest to farthest w.r.t. their assigned camera.
         * @param[in] pickedObjectsCount Number of picked object IDs in the \c pickedObjects array.
         */
         virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) = 0;
@@ -216,7 +227,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneStateChanged
         */
-        virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
+        void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
         {
             (void)sceneId;
             (void)state;
@@ -225,7 +236,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::offscreenBufferLinked
         */
-        virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
         {
             (void)offscreenBufferId;
             (void)consumerScene;
@@ -233,23 +244,32 @@ namespace ramses
             (void)success;
         }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::externalBufferLinked
         */
-        virtual void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        void externalBufferLinked(externalBufferId_t externalBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
         {
             (void)externalBufferId;
             (void)consumerScene;
             (void)consumerId;
             (void)success;
         }
-#endif
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::streamBufferLinked
+        */
+        void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        {
+            (void)streamBufferId;
+            (void)consumerScene;
+            (void)consumerId;
+            (void)success;
+        }
 
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataLinked
         */
-        virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
         {
             (void)providerScene;
             (void)providerId;
@@ -261,7 +281,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataUnlinked
         */
-        virtual void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
+        void dataUnlinked(sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override
         {
             (void)consumerScene;
             (void)consumerId;
@@ -271,7 +291,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataProviderCreated
         */
-        virtual void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) override
+        void dataProviderCreated(sceneId_t sceneId, dataProviderId_t dataProviderId) override
         {
             (void)sceneId;
             (void)dataProviderId;
@@ -280,7 +300,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataProviderDestroyed
         */
-        virtual void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) override
+        void dataProviderDestroyed(sceneId_t sceneId, dataProviderId_t dataProviderId) override
         {
             (void)sceneId;
             (void)dataProviderId;
@@ -289,7 +309,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataConsumerCreated
         */
-        virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
+        void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
         {
             (void)sceneId;
             (void)dataConsumerId;
@@ -298,7 +318,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::dataConsumerDestroyed
         */
-        virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
+        void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override
         {
             (void)sceneId;
             (void)dataConsumerId;
@@ -307,7 +327,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneFlushed
         */
-        virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag) override
+        void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag) override
         {
             (void)sceneId;
             (void)sceneVersionTag;
@@ -316,7 +336,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled
         */
-        virtual void sceneExpirationMonitoringEnabled(sceneId_t sceneId) override
+        void sceneExpirationMonitoringEnabled(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
@@ -324,7 +344,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringDisabled
         */
-        virtual void sceneExpirationMonitoringDisabled(sceneId_t sceneId) override
+        void sceneExpirationMonitoringDisabled(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
@@ -332,7 +352,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneExpired
         */
-        virtual void sceneExpired(sceneId_t sceneId) override
+        void sceneExpired(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
@@ -340,7 +360,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneRecoveredFromExpiration
         */
-        virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) override
+        void sceneRecoveredFromExpiration(sceneId_t sceneId) override
         {
             (void)sceneId;
         }
@@ -348,7 +368,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::streamAvailabilityChanged
         */
-        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
+        void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
         {
             (void)streamId;
             (void)available;
@@ -357,7 +377,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::objectsPicked
         */
-        virtual void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
+        void objectsPicked(sceneId_t sceneId, const pickableObjectId_t* pickedObjects, uint32_t pickedObjectsCount) override
         {
             (void)sceneId;
             (void)pickedObjects;

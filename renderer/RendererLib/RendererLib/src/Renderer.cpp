@@ -23,7 +23,7 @@
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "Platform_Base/Platform_Base.h"
 #include "Utils/ThreadLocalLogForced.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 
 namespace ramses_internal
 {
@@ -92,15 +92,6 @@ namespace ramses_internal
         return m_displayEventHandler;
     }
 
-    void Renderer::setWarpingMeshData(const WarpingMeshData& meshData)
-    {
-        auto& displayController = getDisplayController();
-        assert(displayController.isWarpingEnabled());
-        displayController.setWarpingMeshData(meshData);
-        // re-render framebuffer of the display
-        m_displayBuffersSetup.setDisplayBufferToBeRerendered(m_frameBufferDeviceHandle, true);
-    }
-
     void Renderer::createDisplayContext(const DisplayConfig& displayConfig)
     {
         LOG_TRACE(CONTEXT_PROFILING, "Renderer::createDisplayContext start creating display");
@@ -117,8 +108,6 @@ namespace ramses_internal
         m_displayBuffersSetup.registerDisplayBuffer(m_frameBufferDeviceHandle, { 0, 0, m_displayController->getDisplayWidth(), m_displayController->getDisplayHeight() }, DefaultClearColor, false, false);
         setClearColor(m_frameBufferDeviceHandle, displayConfig.getClearColor());
 
-        m_frameProfileRenderer = std::make_unique<FrameProfileRenderer>(m_displayController->getRenderBackend().getDevice(), m_displayController->getDisplayWidth(), m_displayController->getDisplayHeight());
-
         LOG_TRACE(CONTEXT_PROFILING, "RamsesRenderer::createDisplayContext finished creating display");
     }
 
@@ -126,8 +115,6 @@ namespace ramses_internal
     {
         assert(hasDisplayController());
         assert(!hasAnyBufferWithInterruptedRendering());
-
-        m_frameProfileRenderer.reset();
 
         if (m_platform.getSystemCompositorController() != nullptr)
             systemCompositorDestroyIviSurface(m_displayController->getRenderBackend().getWindow().getWaylandIviSurfaceID());
@@ -252,7 +239,7 @@ namespace ramses_internal
 
         // FB was marked for re-render but has no shown scenes -> clear it
         const auto& assignedScenes = displayBufferInfo.scenes;
-        const bool hasAnyShownScene = absl::c_any_of(assignedScenes, [](const auto& s) { return s.shown; });
+        const bool hasAnyShownScene = std::any_of(std::cbegin(assignedScenes), std::cend(assignedScenes), [](const auto& s) { return s.shown; });
         if (!hasAnyShownScene)
             m_displayController->clearBuffer(m_frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
@@ -265,10 +252,6 @@ namespace ramses_internal
                 onSceneWasRendered(scene);
             }
         }
-
-        m_displayController->executePostProcessing();
-
-        m_frameProfileRenderer->renderStatistics(m_profilerStatistics);
 
         processScheduledScreenshots(m_frameBufferDeviceHandle);
 
@@ -348,7 +331,7 @@ namespace ramses_internal
                 // remove buffer from list of buffers to re-render as soon as we start rendering into it (even if it gets interrupted later on)
                 m_displayBuffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
                 // clear buffer only if we just started rendering into it and no scene shown to keep expected behavior (no scene -> clear buffer)
-                const bool hasAnyShownScene = absl::c_any_of(assignedScenes, [](const auto& s) { return s.shown; });
+                const bool hasAnyShownScene = std::any_of(std::cbegin(assignedScenes), std::cend(assignedScenes), [](const auto& s) { return s.shown; });
                 if (!hasAnyShownScene)
                     m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
                 else
@@ -464,7 +447,7 @@ namespace ramses_internal
         assert(hasDisplayController());
         assert(m_rendererScenes.hasScene(sceneId));
 
-        getBufferSceneIsAssignedTo(sceneId);
+        std::ignore = getBufferSceneIsAssignedTo(sceneId); // TODO: remove or assert
         m_displayBuffersSetup.assignSceneToDisplayBuffer(sceneId, buffer, globalSceneOrder);
     }
 
@@ -523,11 +506,6 @@ namespace ramses_internal
         return m_profilerStatistics;
     }
 
-    MemoryStatistics& Renderer::getMemoryStatistics()
-    {
-        return m_memoryStatistics;
-    }
-
     Bool Renderer::hasSystemCompositorController() const
     {
         return m_platform.getSystemCompositorController() != nullptr;
@@ -555,10 +533,9 @@ namespace ramses_internal
         // The initialization of display controller below needs active context
         renderBackend->getContext().enable();
 
-        const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
         const UInt32 numSamples = config.getAntialiasingSampleCount();
 
-        return new DisplayController(*renderBackend, numSamples, postProcessorEffects);
+        return new DisplayController(*renderBackend, numSamples);
     }
 
     void Renderer::setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags)
@@ -641,12 +618,6 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_PROFILING, "Renderer::resetRenderInterruptState");
         m_rendererInterruptState = RendererInterruptState{};
-    }
-
-    FrameProfileRenderer& Renderer::getFrameProfileRenderer()
-    {
-        assert(m_frameProfileRenderer);
-        return *m_frameProfileRenderer;
     }
 
     void Renderer::updateSystemCompositorController() const

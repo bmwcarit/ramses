@@ -11,7 +11,7 @@
 
 #include "ramses-renderer-api/Types.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-renderer-api/DcsmContentControl.h"
+#include "ramses-framework-api/DataTypes.h"
 #include "StatusObjectImpl.h"
 #include "CommandDispatchingThread.h"
 #include "RendererLib/RendererCommandBuffer.h"
@@ -26,7 +26,6 @@
 #include "RendererCommands/TriggerPickEvent.h"
 #include "RendererCommands/SetClearColor.h"
 #include "RendererCommands/SetSkippingOfUnmodifiedBuffers.h"
-#include "RendererCommands/ShowFrameProfiler.h"
 #include "RendererCommands/SystemCompositorControllerListIviSurfaces.h"
 #include "RendererCommands/SystemCompositorControllerSetLayerVisibility.h"
 #include "RendererCommands/SystemCompositorControllerSetSurfaceVisibility.h"
@@ -50,7 +49,6 @@ namespace ramses
     class RendererConfig;
     class DisplayConfig;
     class IRendererEventHandler;
-    class WarpingMeshData;
 
     class RamsesRendererImpl : public StatusObjectImpl
     {
@@ -67,26 +65,21 @@ namespace ramses
         ramses_internal::DisplayDispatcher& getDisplayDispatcher();
 
         RendererSceneControl* getSceneControlAPI();
-        DcsmContentControl* createDcsmContentControl();
 
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible, EDepthBufferType depthBufferType);
         displayBufferId_t createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, ramses_internal::DmaBufferFourccFormat dmaBufferFourccFormat, ramses_internal::DmaBufferUsageFlags dmaBufferUsageFlags, ramses_internal::DmaBufferModifiers dmaBufferModifiers);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
         status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
-        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
+        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, const vec4f& color);
         status_t getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
 
         streamBufferId_t allocateStreamBuffer();
         streamBufferId_t createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source);
         status_t destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer);
-        status_t setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state);
 
         externalBufferId_t createExternalBuffer(displayId_t display);
         status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalTexture);
-        bool getExternalBufferGlId(displayId_t display, externalBufferId_t externalTexture, uint32_t& textureGlId) const;
-
         status_t readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-        status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
 
         status_t systemCompositorSetIviSurfaceVisibility(uint32_t surfaceId, bool visibility);
         status_t systemCompositorSetIviSurfaceOpacity(uint32_t surfaceId, float opacity);
@@ -104,9 +97,8 @@ namespace ramses
         status_t stopThread();
         bool isThreadRunning() const;
         bool isThreaded() const;
-        status_t setMaximumFramerate(float maximumFramerate);
-        status_t setMaximumFramerate(float maximumFramerate, displayId_t display);
-        float getMaximumFramerate() const;
+        status_t setFramerateLimit(displayId_t displayId, float fpsLimit);
+        float getFramerateLimit(displayId_t displayId) const;
         status_t setLoopMode(ELoopMode loopMode);
         ELoopMode getLoopMode() const;
         status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
@@ -148,17 +140,8 @@ namespace ramses
         };
         std::vector<OffscreenDmaBufferInfo>                                         m_offscreenDmaBufferInfos;
 
-        struct ExternalBufferInfo
-        {
-            displayId_t display;
-            externalBufferId_t externalBuffer;
-            uint32_t glId;
-        };
-        std::vector<ExternalBufferInfo>                                             m_externalBufferInfos;
-
         ramses_internal::ELoopMode                                                  m_loopMode;
         std::unique_ptr<ramses_internal::CommandDispatchingThread>                  m_commandDispatchingThread;
-        float m_maxFramerate = 1000000.f / ramses_internal::DefaultMinFrameDuration.count();
         bool m_diplayThreadUpdating = false;
 
         enum ERendererLoopThreadType
@@ -174,7 +157,6 @@ namespace ramses
         // use custom deleter to achieve that with unique ptr
         template <typename T> using UniquePtrWithDeleter = std::unique_ptr<T, std::function<void(T*)>>;
         UniquePtrWithDeleter<RendererSceneControl> m_sceneControlAPI;
-        UniquePtrWithDeleter<DcsmContentControl> m_dcsmContentControl;
 
         // keep allocated containers which are used to swap internal data
         ramses_internal::RendererEventVector m_tempRendererEvents;

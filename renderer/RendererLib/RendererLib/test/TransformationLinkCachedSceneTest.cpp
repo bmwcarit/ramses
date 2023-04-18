@@ -346,10 +346,27 @@ namespace ramses_internal
         //reset translations
         setAllTranslations(true);
 
-        providerScene.setRotation(providerSceneTransform, { 10.f, 0.f, 0.f }, ERotationConvention::ZYX); //only X-Axis
+        providerScene.setRotation(providerSceneTransform, { 10.f, 0.f, 0.f, 1.f }, ERotationType::Euler_XYZ); //only X-Axis
 
-        consumer1Scene.setRotation(consumer1SceneTransform2, { 0.f, 10.f, 0.f }, ERotationConvention::XYZ); //only Y-Axis
-        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::RotationEuler({ 10.f, 10.f, 0.f }, ERotationConvention::XYZ), consumer1Scene);
+        consumer1Scene.setRotation(consumer1SceneTransform2, { 0.f, 10.f, 0.f, 1.f }, ERotationType::Euler_ZYX); //only Y-Axis
+        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation({ 10.f, 10.f, 0.f, 1.f }, ERotationType::Euler_ZYX), consumer1Scene);
+    }
+
+    TEST_F(ATransformationLinkCachedScene, providerOverridesEulerWithQuaternion)
+    {
+        const Vector4 rProvider = {0.5f, 0.5f, 0.5f, 0.5f};
+        const Vector4 rConsumer = {30.f, 0.f, 0.f, 1.f};
+
+        // reset translations
+        setAllTranslations(true);
+        consumer1Scene.setRotation(consumer1SceneTransform, rConsumer, ERotationType::Euler_XYZ);
+        providerScene.setRotation(providerSceneTransform, rProvider, ERotationType::Quaternion);
+
+        linkConsumer1SceneToProviderScene();
+        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation(rProvider, ERotationType::Quaternion), consumer1Scene);
+
+        sceneLinksManager.removeDataLink(consumer1Scene.getSceneId(), consumer1SceneConsumerId);
+        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation(rConsumer, ERotationType::Euler_XZY), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, fallsBackToOriginalTransformationWhenProviderSlotIsRemoved)
@@ -371,8 +388,8 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         providerScene.releaseDataSlot(providerSceneProviderSlotHandle);
 
@@ -383,8 +400,8 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenConsumerSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         consumer1Scene.releaseDataSlot(consumer1SceneConsumerSlotHandle);
 
@@ -395,8 +412,8 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderTransformationChanges)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         const Vector3 newRootTranslation(1.f);
         providerScene.setTranslation(providerSceneRootTransform, newRootTranslation);
@@ -409,25 +426,25 @@ namespace ramses_internal
     {
         linkConsumer1SceneToProviderScene();
 
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         setAllTranslations(true);
-        const Vector3 rotation{ 10.f, 20.f, 30.f };
-        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::ZYX);
+        const Vector4 rotation{ 10.f, 20.f, 30.f, 1.f };
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationType::Euler_XYZ);
 
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::RotationEuler(rotation, ERotationConvention::ZYX), consumer1Scene);
+        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Rotation(rotation, ERotationType::Euler_XYZ), consumer1Scene);
 
-        //change convention
-        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::XYZ);
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ), consumer1Scene);
+        //change rotationType
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationType::Euler_ZYX);
+        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Rotation(rotation, ERotationType::Euler_ZYX), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSceneRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         rendererScenes.destroyScene(providerScene.getSceneId());
 

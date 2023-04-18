@@ -22,7 +22,7 @@ namespace ramses_internal
 
     void Context_Base::ParseContextExtensionsHelper(const Char* extensionNativeString, StringSet& extensionsOut)
     {
-        extensionsOut = StringUtils::TokenizeToSet(StringUtils::Trim(extensionNativeString));
+        extensionsOut = StringUtils::TokenizeToSet(StringUtils::TrimView(extensionNativeString));
     }
 
     void Context_Base::parseContextExtensions(const Char* extensionNativeString)

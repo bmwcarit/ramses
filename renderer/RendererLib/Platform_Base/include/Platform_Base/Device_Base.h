@@ -23,12 +23,12 @@ namespace ramses_internal
         explicit Device_Base(IContext& context);
 
         // from IDevice
-        virtual uint32_t getAndResetDrawCallCount() override;
-        virtual void     drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
-        virtual void     drawTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
-        virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const override;
+        uint32_t getAndResetDrawCallCount() override;
+        void     drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
+        void     drawTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
+        [[nodiscard]] uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const override;
 
-        const RendererLimits& getRendererLimits() const;
+        [[nodiscard]] const RendererLimits& getRendererLimits() const;
 
     protected:
         const IContext&       m_context;

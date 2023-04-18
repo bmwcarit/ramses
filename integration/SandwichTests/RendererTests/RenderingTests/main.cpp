@@ -7,25 +7,46 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererTestUtils.h"
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
 #include "Utils/StringUtils.h"
 #include "RenderingTests.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
+#include "ramses-cli.h"
 
 using namespace ramses_internal;
 using namespace ramses;
 
 int main(int argc, const char *argv[])
 {
-    CommandLineParser parser(argc, argv);
-    ArgumentBool generateBitmaps(parser, "gb", "generate-bitmaps");
-    ArgumentString filterInTest(parser, "fi", "filterIn", "*");
-    ArgumentString filterOutTest(parser, "fo", "filterOut", "");
-    ArgumentUInt32 repeatTestCount(parser, "rc", "repeatCount", 1);
+    CLI::App cli;
 
-    std::vector<ramses_internal::String> filterInTestStrings = StringUtils::Tokenize(filterInTest, ':');
-    std::vector<ramses_internal::String> filterOutTestStrings = StringUtils::Tokenize(filterOutTest, ':');
+    bool generateBitmaps = false;
+    std::string filterIn = "*";
+    std::string filterOut;
+    uint32_t    repeatCount = 1u;
+    ramses::RamsesFrameworkConfig config;
+    ramses::RendererConfig        rendererConfig;
+    ramses::DisplayConfig         displayConfig;
+
+    try
+    {
+        cli.add_flag("--gb,--generate-bitmaps", generateBitmaps);
+        cli.add_option("--fi,--filter-in", filterIn);
+        cli.add_option("--fo,--filter-out", filterOut);
+        cli.add_option("--rc,--repeat", repeatCount);
+        cli.add_option("--gtest_output"); // added by cmake/ctest
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
+    }
+    catch (const CLI::Error& error)
+    {
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
+
+    std::vector<ramses_internal::String> filterInTestStrings = StringUtils::Tokenize(filterIn.c_str(), ':');
+    std::vector<ramses_internal::String> filterOutTestStrings = StringUtils::Tokenize(filterOut.c_str(), ':');
 
     // TODO Violin try to find better solution than this
     // Convenience filtering for desktop debugging
@@ -39,11 +60,10 @@ int main(int argc, const char *argv[])
     }
 #endif
 
-    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
-    const ramses::RamsesFrameworkConfig config(argc, argv);
+    RendererTestUtils::SetDefaultConfigForAllTests(rendererConfig, displayConfig);
     RenderingTests renderingTests(filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
 
-    for (ramses_internal::UInt32 i = 0; i < repeatTestCount; ++i)
+    for (ramses_internal::UInt32 i = 0; i < repeatCount; ++i)
     {
         const bool renderingTestsSuccess = renderingTests.runTests();
         renderingTests.logReport();

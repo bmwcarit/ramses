@@ -22,11 +22,11 @@ namespace ramses_internal
     public:
         ThreadWatchdog(const ThreadWatchdogConfig& watchdogConfig, ramses::ERamsesThreadIdentifier identifier);
 
-        uint64_t registerThread() override final;
-        void unregisterThread(uint64_t identifier) override final;
+        uint64_t registerThread() final override;
+        void unregisterThread(uint64_t identifier) final override;
 
-        virtual void notifyAlive(uint64_t identifier) override final;
-        virtual std::chrono::milliseconds calculateTimeout() const override final;
+        void notifyAlive(uint64_t identifier) final override;
+        std::chrono::milliseconds calculateTimeout() const final override;
 
     private:
         void checkNotifyPlatform();

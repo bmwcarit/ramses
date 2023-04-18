@@ -16,7 +16,7 @@
 #include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
 
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "poll.h"
 
 #include <algorithm>
@@ -24,7 +24,7 @@
 
 namespace ramses_internal
 {
-    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI(const String& waylandDisplay)
+    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI(std::string_view waylandDisplay)
         : m_waylandDisplay(waylandDisplay)
     {
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI (" << waylandDisplay << ")");
@@ -355,7 +355,7 @@ namespace ramses_internal
 
     void SystemCompositorController_Wayland_IVI::deleteControllerSurface(IVIControllerSurface& controllerSurface)
     {
-        auto it = absl::c_find_if(m_controllerSurfaces, [&](const auto& s){ return s.get() == & controllerSurface; });
+        auto it = std::find_if(std::begin(m_controllerSurfaces), std::end(m_controllerSurfaces), [&](const auto& s){ return s.get() == & controllerSurface; });
 
         if (it == m_controllerSurfaces.end())
         {
@@ -369,7 +369,7 @@ namespace ramses_internal
 
     IVIControllerSurface* SystemCompositorController_Wayland_IVI::getControllerSurface(WaylandIviSurfaceId iviId) const
     {
-        auto it = absl::c_find_if(m_controllerSurfaces, [&](const auto& s){ return s->getIVIId() == iviId; });
+        auto it = std::find_if(std::begin(m_controllerSurfaces), std::end(m_controllerSurfaces), [&](const auto& s){ return s->getIVIId() == iviId; });
 
         if (it == m_controllerSurfaces.end())
             return nullptr;
@@ -379,7 +379,7 @@ namespace ramses_internal
 
     IVIControllerScreen*  SystemCompositorController_Wayland_IVI::getControllerScreen(uint32_t screenId) const
     {
-        auto it = absl::c_find_if(m_controllerScreens, [&](const auto& s){ return s->getScreenId() == screenId; });
+        auto it = std::find_if(std::begin(m_controllerScreens), std::end(m_controllerScreens), [&](const auto& s){ return s->getScreenId() == screenId; });
 
         if (it == m_controllerScreens.end())
             return nullptr;

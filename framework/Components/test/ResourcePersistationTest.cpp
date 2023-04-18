@@ -196,7 +196,7 @@ namespace ramses_internal
     TEST_F(AResourcePersistation, WriteRead_EffectResource)
     {
         const ResourceCacheFlag flag(15u);
-        EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", flag);
+        EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", flag);
 
         auto loadedEffectResource = createLoadedResource<EffectResource>(effectResource, EResourceType_Effect);
 
@@ -205,6 +205,7 @@ namespace ramses_internal
         EXPECT_STREQ(effectResource.getGeometryShader(), loadedEffectResource->getGeometryShader());
         ASSERT_EQ(flag, loadedEffectResource->getCacheFlag());
         EXPECT_EQ(String("effect name"), loadedEffectResource->getName());
+        EXPECT_EQ(EDrawMode::Lines, loadedEffectResource->getGeometryShaderInputType());
     }
 
     TEST(ResourcePersistation, sandwich_writeThreeResources_ReadOneBackBasedTableOfContentsInformation)
@@ -234,7 +235,7 @@ namespace ramses_internal
         ManagedResource managedRes2{ &res2, dummyManagedResourceCallback };
         const ResourceContentHash hash2 = managedRes2->getHash();
 
-        EffectResource res3("foo", "bar", "qux", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", flag3);
+        EffectResource res3("foo", "bar", "qux", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", flag3);
         ManagedResource managedRes3{ &res3, dummyManagedResourceCallback };
         const ResourceContentHash hash3 = managedRes3->getHash();
 
@@ -282,7 +283,7 @@ namespace ramses_internal
     static std::pair<std::vector<Byte>, ResourceFileEntry> getDummyResourceData()
     {
         BinaryOutputStream outStream;
-        EffectResource res("foo", "bar", "qux", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", ResourceCacheFlag(0));
+        EffectResource res("foo", "bar", "qux", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", ResourceCacheFlag(0));
         NiceMock<ManagedResourceDeleterCallbackMock> managedResourceDeleter;
         ResourceDeleterCallingCallback dummyManagedResourceCallback(managedResourceDeleter);
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };

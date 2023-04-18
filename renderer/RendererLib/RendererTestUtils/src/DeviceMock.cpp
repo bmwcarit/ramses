@@ -25,7 +25,6 @@ namespace ramses_internal
     const DeviceResourceHandle DeviceMock::FakeDmaRenderBufferDeviceHandle(7778u);
     const DeviceResourceHandle DeviceMock::FakeTextureSamplerDeviceHandle(8888u);
     const DeviceResourceHandle DeviceMock::FakeBlitPassRenderTargetDeviceHandle(9999u);
-    constexpr BinaryShaderFormatID DeviceMock::FakeSupportedBinaryShaderFormat;
 
     DeviceMock::DeviceMock()
     {

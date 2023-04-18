@@ -28,57 +28,57 @@ namespace ramses
         {
         }
 
-        virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
+        void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
         {
             m_scenes[sceneId].state = state;
         }
 
-        virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersion) override
+        void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersion) override
         {
             m_scenes[sceneId].version = sceneVersion;
         }
 
-        virtual void sceneExpired(sceneId_t sceneId) override
+        void sceneExpired(sceneId_t sceneId) override
         {
             m_scenes[sceneId].expired = true;
         }
 
-        virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) override
+        void sceneRecoveredFromExpiration(sceneId_t sceneId) override
         {
             m_scenes[sceneId].expired = false;
         }
 
-        virtual void displayCreated(displayId_t displayId, ERendererEventResult result) override
+        void displayCreated(displayId_t displayId, ERendererEventResult result) override
         {
             if (result == ERendererEventResult_OK)
                 m_displays.insert(displayId);
         }
 
-        virtual void displayDestroyed(displayId_t displayId, ERendererEventResult result) override
+        void displayDestroyed(displayId_t displayId, ERendererEventResult result) override
         {
             if (result == ERendererEventResult_OK)
                 m_displays.erase(displayId);
         }
 
-        virtual void offscreenBufferCreated(displayId_t, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
+        void offscreenBufferCreated(displayId_t, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             if (result == ERendererEventResult_OK)
                 m_offscreenBuffers.insert({ offscreenBufferId, false });
         }
 
-        virtual void offscreenBufferDestroyed(displayId_t, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
+        void offscreenBufferDestroyed(displayId_t, displayBufferId_t offscreenBufferId, ERendererEventResult result) override
         {
             if (result == ERendererEventResult_OK)
                 m_offscreenBuffers.erase(offscreenBufferId);
         }
 
-        virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t, dataConsumerId_t, bool success) override
+        void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t, dataConsumerId_t, bool success) override
         {
             if (success)
                 m_offscreenBuffers[offscreenBufferId] = true;
         }
 
-        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
+        void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
         {
             if (available)
                 m_availableStreams.insert(streamId);

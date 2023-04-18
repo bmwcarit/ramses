@@ -34,7 +34,7 @@ namespace ramses_internal
             assert((texDesc.m_dataSizes.size() == 1) || !texDesc.m_generateMipChain);
         };
 
-        virtual ~TextureResource() override
+        ~TextureResource() override
         {
         };
 
@@ -73,7 +73,7 @@ namespace ramses_internal
             return m_generateMipChain;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override final
+        void serializeResourceMetadataToStream(IOutputStream& output) const final override
         {
             switch (getTypeID())
             {

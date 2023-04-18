@@ -36,21 +36,13 @@ namespace ramses_internal
         SceneActionCollection(const SceneActionCollection&) = delete;
         SceneActionCollection& operator=(const SceneActionCollection&) = delete;
 
-// C++14 does not require noexcept move constructor/assignments for std::vector moves
-// But with the exception of ghs compiler all std libs of our supported compilers guarantee
-// noexcept for this, so we can guarantee noexcept for SceneActionCollection moves as well.
-#ifdef __ghs__
-        SceneActionCollection(SceneActionCollection&&) = default;
-        SceneActionCollection& operator=(SceneActionCollection&&) = default;
-#else
         SceneActionCollection(SceneActionCollection&&) noexcept = default;
         SceneActionCollection& operator=(SceneActionCollection&&) noexcept = default;
-#endif
 
-        SceneActionCollection copy() const;
+        [[nodiscard]] SceneActionCollection copy() const;
 
         void clear();
-        bool empty() const;
+        [[nodiscard]] bool empty() const;
         void reserveAdditionalCapacity(UInt additionalDataCapacity, UInt additionalSceneActionsInformationCapacity);
 
         void append(const SceneActionCollection& other);
@@ -92,29 +84,29 @@ namespace ramses_internal
         void addRawSceneActionInformation(ESceneActionId type, UInt32 offset);
 
         // blob read access
-        const std::vector<Byte>& collectionData() const;
+        [[nodiscard]] const std::vector<Byte>& collectionData() const;
 
         // reading
         class Iterator;
         class SceneActionReader;
 
-        UInt32 numberOfActions() const;
+        [[nodiscard]] UInt32 numberOfActions() const;
 
-        Iterator begin() const;
-        Iterator end() const;
+        [[nodiscard]] Iterator begin() const;
+        [[nodiscard]] Iterator end() const;
 
-        SceneActionReader front() const;
-        SceneActionReader back() const;
+        [[nodiscard]] SceneActionReader front() const;
+        [[nodiscard]] SceneActionReader back() const;
         SceneActionReader operator[](UInt actionIndex) const;
 
         // read classes
         class SceneActionReader
         {
         public:
-            ESceneActionId type() const;
-            UInt32 size() const;
-            const Byte* data() const;
-            UInt32 offsetInCollection() const;
+            [[nodiscard]] ESceneActionId type() const;
+            [[nodiscard]] UInt32 size() const;
+            [[nodiscard]] const Byte* data() const;
+            [[nodiscard]] UInt32 offsetInCollection() const;
 
             // concrete types
             void read(String& str);
@@ -138,7 +130,7 @@ namespace ramses_internal
             // get pointer to written array of bytes and increment reader position
             void readWithoutCopy(const Byte*& data, UInt32& size);
 
-            bool isFullyRead() const;
+            [[nodiscard]] bool isFullyRead() const;
 
         private:
             friend SceneActionCollection;
@@ -150,16 +142,22 @@ namespace ramses_internal
             void readFromByteBlob(T& value);
             void readFromByteBlob(void* data, size_t size);
 
-            UInt32 offsetForIndex(UInt idx) const;
+            [[nodiscard]] UInt32 offsetForIndex(UInt idx) const;
 
             const SceneActionCollection* m_collection;
             UInt m_actionIndex;
             UInt m_readPosition;
         };
 
-        class Iterator : public std::iterator<std::forward_iterator_tag, SceneActionReader, UInt, SceneActionReader*, SceneActionReader&>
+        class Iterator
         {
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = SceneActionReader;
+            using difference_type = std::ptrdiff_t;
+            using pointer = SceneActionReader*;
+            using reference = SceneActionReader&;
+
             Iterator();
 
             bool operator!=(const Iterator& other) const;

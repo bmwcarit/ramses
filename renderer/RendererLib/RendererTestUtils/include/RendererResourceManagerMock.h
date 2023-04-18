@@ -61,8 +61,6 @@ public:
     MOCK_METHOD(void, unloadOffscreenBuffer, (OffscreenBufferHandle bufferHandle), (override));
     MOCK_METHOD(void, uploadStreamBuffer, (StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId), (override));
     MOCK_METHOD(void, unloadStreamBuffer, (StreamBufferHandle bufferHandle), (override));
-    MOCK_METHOD(void, uploadStreamTexture, (StreamTextureHandle bufferHandle, WaylandIviSurfaceId source, SceneId sceneId), (override));
-    MOCK_METHOD(void, unloadStreamTexture, (StreamTextureHandle bufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadBlitPassRenderTargets, (BlitPassHandle, RenderBufferHandle, RenderBufferHandle, SceneId), (override));
     MOCK_METHOD(void, unloadBlitPassRenderTargets, (BlitPassHandle, SceneId), (override));
     MOCK_METHOD(void, uploadDataBuffer, (DataBufferHandle dataBufferHandle, EDataBufferType dataBufferType, EDataType dataType, UInt32 elementCount, SceneId sceneId), (override));
@@ -86,16 +84,16 @@ public:
 class RendererResourceManagerRefCountMock : public RendererResourceManagerMock
 {
 public:
-    virtual ~RendererResourceManagerRefCountMock() override;
+    ~RendererResourceManagerRefCountMock() override;
 
-    virtual void referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
-    virtual void unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
-    virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
-    virtual void unreferenceAllResourcesForScene(SceneId sceneId) override;
+    void referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
+    void unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
+    [[nodiscard]] const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
+    void unreferenceAllResourcesForScene(SceneId sceneId) override;
 
     void expectNoResourceReferencesForScene(SceneId sceneId) const;
     void expectNoResourceReferences() const;
-    int getResourceRefCount(ResourceContentHash resource) const;
+    [[nodiscard]] int getResourceRefCount(ResourceContentHash resource) const;
 
 private:
     std::unordered_map<SceneId, std::unordered_map<ResourceContentHash, int>> m_refCounts;

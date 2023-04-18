@@ -32,7 +32,7 @@ namespace ramses_internal
         DynamicQuad_OffscreenRenderTarget(ramses::Scene& scene, ramses::RenderPass& offscreenRenderPass, const ScreenspaceQuad& screenspaceQuad);
         ~DynamicQuad_OffscreenRenderTarget() override;
 
-        virtual void recreate() override final;
+        void recreate() final override;
 
         // Needed for proper clean-up upon destruction (destroy scene -> mark objects destroyed -> destroy client resources)
         void markSceneObjectsDestroyed();

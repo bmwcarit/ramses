@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         DisplayDispatcherMock(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier);
-        virtual ~DisplayDispatcherMock() override;
+        ~DisplayDispatcherMock() override;
 
         MOCK_METHOD(Display, createDisplayBundle, (DisplayHandle), (override));
     };
@@ -30,15 +30,15 @@ namespace ramses_internal
     {
     public:
         DisplayDispatcherFacade(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier ,bool threaded);
-        virtual ~DisplayDispatcherFacade() override;
+        ~DisplayDispatcherFacade() override;
 
-        virtual Display createDisplayBundle(DisplayHandle displayHandle) override;
+        Display createDisplayBundle(DisplayHandle displayHandle) override;
 
         template <template<typename> class MOCK_TYPE = ::testing::StrictMock>
         MOCK_TYPE<DisplayBundleMock>* getDisplayBundleMock(DisplayHandle display);
         template <template<typename> class MOCK_TYPE = ::testing::StrictMock>
         MOCK_TYPE<DisplayThreadMock>* getDisplayThreadMock(DisplayHandle display);
-        DisplayHandleVector getDisplays() const;
+        [[nodiscard]] DisplayHandleVector getDisplays() const;
 
         RendererCommands m_expectedBroadcastCommandsForNewDisplays;
         RendererCommands m_expectedCommandsForNextCreatedDisplay;

@@ -25,6 +25,7 @@ namespace ramses_internal
 #if _WIN32
             return ::open(path, flags | O_BINARY);
 #else
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) system call
             return ::open(path, flags);
 #endif
         }

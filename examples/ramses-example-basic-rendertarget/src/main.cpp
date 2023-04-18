@@ -16,10 +16,10 @@
  * @brief Basic Rendertarget Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-rendertarget"));
     framework.connect();
 
@@ -27,18 +27,18 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic rendertarget scene");
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsQuadArray[] = { -1.5f, -0.75f, -1.f, 1.5f, -0.75f, -1.f, -1.5f, 0.75f, -1.f, 1.5f, 0.75f, -1.f };
-    ramses::ArrayResource* vertexPositionsQuad = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsQuadArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsQuadArray{ ramses::vec3f{-1.5f, -0.75f, -1.f}, ramses::vec3f{1.5f, -0.75f, -1.f}, ramses::vec3f{-1.5f, 0.75f, -1.f}, ramses::vec3f{1.5f, 0.75f, -1.f} };
+    ramses::ArrayResource* vertexPositionsQuad = scene->createArrayResource(4u, vertexPositionsQuadArray.data());
 
-    float vertexPositionsTriangleArray[] = { -0.5f, -0.5f, -1.f, 0.5f, -0.5f, -1.f, -0.5f, 0.5f, -1.f };
-    ramses::ArrayResource* vertexPositionsTriangle = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsTriangleArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsTriangleArray{ ramses::vec3f{-0.5f, -0.5f, -1.f}, ramses::vec3f{0.5f, -0.5f, -1.f}, ramses::vec3f{-0.5f, 0.5f, -1.f} };
+    ramses::ArrayResource* vertexPositionsTriangle = scene->createArrayResource(3u, vertexPositionsTriangleArray.data());
 
-    float textureCoordsArray[] = { -1.f, 0.f, 1.0f, 0.f, -1.f, 1.f, 1.0f, 1.f};
-    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{-1.f, 0.f}, ramses::vec2f{1.0f, 0.f}, ramses::vec2f{-1.f, 1.f}, ramses::vec2f{1.0f, 1.f} };
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(4u, textureCoordsArray.data());
 
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    ramses::ArrayResource* indicesQuad = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
-    ramses::ArrayResource* indicesTriangle = scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indicesQuad = scene->createArrayResource(6u, indicesArray.data());
+    ramses::ArrayResource* indicesTriangle = scene->createArrayResource(3u, indicesArray.data());
 
     ramses::EffectDescription triangleEffectDesc;
     triangleEffectDesc.setVertexShaderFromFile("res/ramses-example-basic-rendertarget-simple-color.vert");
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     // every render pass needs a camera to define rendering parameters
     // usage of a custom perspective camera for the render pass assigned to the render target
     ramses::Node* cameraTranslate = scene->createNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
+    cameraTranslate->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::PerspectiveCamera* cameraA = scene->createPerspectiveCamera("camera of renderpass A");
     cameraA->setParent(*cameraTranslate);
     cameraA->setFrustum(-0.1f, 0.1f, -0.1f, 0.1f, 1.f, 10.f);
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     ramses::RenderPass* renderPassA = scene->createRenderPass("renderpass A");
     ramses::RenderPass* renderPassB = scene->createRenderPass("renderpass B");
     renderPassB->setClearFlags(ramses::EClearFlags_None);
-    renderPassA->setClearColor(1.f, 1.f, 1.f, 1.f);
+    renderPassA->setClearColor({1.f, 1.f, 1.f, 1.f});
 
     // set valid cameras for the passes
     renderPassA->setCamera(*cameraA);
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     {
         ramses::UniformInput color;
         triangleEffect->findUniformInput("color", color);
-        appearanceA->setInputValueVector4f(color, 1.0f, 0.0f, 0.0f, 1.0f);
+        appearanceA->setInputValue(color, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
     }
 
     ramses::GeometryBinding* geometryA = scene->createGeometryBinding(*triangleEffect, "triangle geometry");

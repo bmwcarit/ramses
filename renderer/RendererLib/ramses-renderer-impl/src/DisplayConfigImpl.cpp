@@ -7,15 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "DisplayConfigImpl.h"
-#include "RendererLib/RendererConfigUtils.h"
 
 namespace ramses
 {
-    DisplayConfigImpl::DisplayConfigImpl(int32_t argc, char const* const* argv)
+    DisplayConfigImpl::DisplayConfigImpl()
         : StatusObjectImpl()
     {
-        ramses_internal::CommandLineParser parser(argc, argv);
-        ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, m_internalConfig);
     }
 
     status_t DisplayConfigImpl::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
@@ -82,12 +79,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::enableWarpingPostEffect()
-    {
-        m_internalConfig.setWarpingEnabled(true);
-        return StatusOK;
-    }
-
     status_t DisplayConfigImpl::setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID)
     {
         m_internalConfig.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(waylandIviLayerID.getValue()));
@@ -108,17 +99,6 @@ namespace ramses
     waylandIviSurfaceId_t DisplayConfigImpl::getWaylandIviSurfaceID() const
     {
         return waylandIviSurfaceId_t(m_internalConfig.getWaylandIviSurfaceID().getValue());
-    }
-
-    status_t DisplayConfigImpl::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)
-    {
-        m_internalConfig.setIntegrityRGLDeviceUnit(ramses_internal::IntegrityRGLDeviceUnit(rglDeviceUnit));
-        return StatusOK;
-    }
-
-    uint32_t DisplayConfigImpl::getIntegrityRGLDeviceUnit() const
-    {
-        return m_internalConfig.getIntegrityRGLDeviceUnit().getValue();
     }
 
     void* DisplayConfigImpl::getAndroidNativeWindow() const
@@ -156,9 +136,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::setClearColor(float red, float green, float blue, float alpha)
+    status_t DisplayConfigImpl::setClearColor(const vec4f& color)
     {
-        m_internalConfig.setClearColor(ramses_internal::Vector4(red, green, blue, alpha));
+        m_internalConfig.setClearColor(ramses_internal::Vector4(color));
         return StatusOK;
     }
 
@@ -202,15 +182,15 @@ namespace ramses
         return m_internalConfig.getWindowsWindowHandle().getValue();
     }
 
-    status_t DisplayConfigImpl::setWaylandDisplay(const char* waylandDisplay)
+    status_t DisplayConfigImpl::setWaylandDisplay(std::string_view waylandDisplay)
     {
         m_internalConfig.setWaylandDisplay(waylandDisplay);
         return StatusOK;
     }
 
-    const char* DisplayConfigImpl::getWaylandDisplay() const
+    std::string_view DisplayConfigImpl::getWaylandDisplay() const
     {
-        return m_internalConfig.getWaylandDisplay().c_str();
+        return m_internalConfig.getWaylandDisplay();
     }
 
     status_t DisplayConfigImpl::setAsyncEffectUploadEnabled(bool enabled)
@@ -219,15 +199,15 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
+    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketGroup(std::string_view groupname)
     {
         m_internalConfig.setWaylandEmbeddedCompositingSocketGroup(groupname);
         return StatusOK;
     }
 
-    const char* DisplayConfigImpl::getWaylandSocketEmbeddedGroup() const
+    std::string_view DisplayConfigImpl::getWaylandSocketEmbeddedGroup() const
     {
-        return m_internalConfig.getWaylandSocketEmbeddedGroup().c_str();
+        return m_internalConfig.getWaylandSocketEmbeddedGroup();
     }
 
     status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
@@ -242,15 +222,15 @@ namespace ramses
         return m_internalConfig.getWaylandSocketEmbeddedPermissions();
     }
 
-    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketName(const char* socketname)
+    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketName(std::string_view socketname)
     {
         m_internalConfig.setWaylandEmbeddedCompositingSocketName(socketname);
         return StatusOK;
     }
 
-    const char* DisplayConfigImpl::getWaylandEmbeddedCompositingSocketName() const
+    std::string_view DisplayConfigImpl::getWaylandEmbeddedCompositingSocketName() const
     {
-        return m_internalConfig.getWaylandSocketEmbedded().c_str();
+        return m_internalConfig.getWaylandSocketEmbedded();
     }
 
     status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketFD(int fd)
@@ -264,15 +244,15 @@ namespace ramses
         return m_internalConfig.getWaylandSocketEmbeddedFD();
     }
 
-    status_t DisplayConfigImpl::setPlatformRenderNode(const char* renderNode)
+    status_t DisplayConfigImpl::setPlatformRenderNode(std::string_view renderNode)
     {
         m_internalConfig.setPlatformRenderNode(renderNode);
         return StatusOK;
     }
 
-    const char* DisplayConfigImpl::getPlatformRenderNode() const
+    std::string_view DisplayConfigImpl::getPlatformRenderNode() const
     {
-        return m_internalConfig.getPlatformRenderNode().c_str();
+        return m_internalConfig.getPlatformRenderNode();
     }
 
     status_t DisplayConfigImpl::setSwapInterval(int32_t interval)
@@ -316,8 +296,8 @@ namespace ramses
     {
         status_t status = StatusObjectImpl::validate();
 
-        const ramses_internal::String& embeddedCompositorFilename = m_internalConfig.getWaylandSocketEmbedded();
-        int embeddedCompositorFileDescriptor                      = m_internalConfig.getWaylandSocketEmbeddedFD();
+        const auto embeddedCompositorFilename = m_internalConfig.getWaylandSocketEmbedded();
+        int embeddedCompositorFileDescriptor  = m_internalConfig.getWaylandSocketEmbeddedFD();
 
         if(embeddedCompositorFilename.size() == 0u && embeddedCompositorFileDescriptor < 0)
             status = addValidationMessage(EValidationSeverity_Info, "no socket information for EmbeddedCompositor set (neither file descriptor nor file name). No embedded compositor available.");

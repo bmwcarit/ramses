@@ -29,8 +29,8 @@ namespace ramses_internal
         MessagePool();
 
         UInt32      addMessage(const Char* message);
-        const Char* getMessage(UInt32 id) const;
-        bool        isMessageCached(UInt32 id) const;
+        [[nodiscard]] const Char* getMessage(UInt32 id) const;
+        [[nodiscard]] bool        isMessageCached(UInt32 id) const;
 
         static const Char* getSuccessText();
         static const Char* getUnknownText();

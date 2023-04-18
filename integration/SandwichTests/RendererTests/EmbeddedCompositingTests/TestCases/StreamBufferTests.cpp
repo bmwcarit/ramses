@@ -18,7 +18,6 @@ namespace ramses_internal
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, true);
         displayConfig.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
         displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
-        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
 
         testFramework.createTestCase(StreamBufferLinkedToSceneWithTwoSamplers, *this, "StreamBufferLinkedToSceneWithTwoSamplers").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(StreamBufferLinkedToTwoScenesWithSampler, *this, "StreamBufferLinkedToTwoScenesWithSampler").m_displayConfigs.push_back(displayConfig);

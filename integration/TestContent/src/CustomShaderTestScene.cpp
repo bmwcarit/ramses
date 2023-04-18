@@ -30,7 +30,7 @@ namespace ramses_internal
         meshNode->setAppearance(m_appearance);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -6.f);
+        transNode->setTranslation({0.f, 0.f, -6.f});
         meshNode->setParent(*transNode);
 
         m_appearance.setDrawMode(ramses::EDrawMode_TriangleStrip);
@@ -58,30 +58,30 @@ namespace ramses_internal
     void CustomShaderTestScene::createGeometry()
     {
         const uint16_t indiceData_ccw[] = { 0, 1, 2, 3 };
-        const ramses::ArrayResource& indices = *m_scene.createArrayResource(ramses::EDataType::UInt16, 4u, indiceData_ccw);
+        const ramses::ArrayResource& indices = *m_scene.createArrayResource(4u, indiceData_ccw);
         m_geometryBinding.setIndices(indices);
 
-        const float vertexPositionsData[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsData
         {
-            -1.f, 1.f, -1.f,
-            -1.f, -1.f, -1.f,
-            1.f, 1.f, -1.f,
-            1.f, -1.f, -1.f
+            ramses::vec3f{ -1.f, 1.f, -1.f },
+            ramses::vec3f{ -1.f, -1.f, -1.f },
+            ramses::vec3f{ 1.f, 1.f, -1.f },
+            ramses::vec3f{ 1.f, -1.f, -1.f }
         };
-        const ramses::ArrayResource& vertexPositions = *m_scene.createArrayResource(ramses::EDataType::Vector3F, 4u, vertexPositionsData);
+        const ramses::ArrayResource& vertexPositions = *m_scene.createArrayResource(4u, vertexPositionsData.data());
 
         ramses::AttributeInput positionsInput;
         m_effect.findAttributeInput("a_position", positionsInput);
         m_geometryBinding.setInputBuffer(positionsInput, vertexPositions);
 
-        const float texCoordsData[] =
+        const std::array<ramses::vec2f, 4u> texCoordsData
         {
-            0.f, 0.f,
-            0.f, 1.f,
-            1.f, 0.f,
-            1.f, 1.f
+            ramses::vec2f{ 0.f, 0.f },
+            ramses::vec2f{ 0.f, 1.f },
+            ramses::vec2f{ 1.f, 0.f },
+            ramses::vec2f{ 1.f, 1.f }
         };
-        const ramses::ArrayResource& texCoords = *m_scene.createArrayResource(ramses::EDataType::Vector2F, 4u, texCoordsData);
+        const ramses::ArrayResource& texCoords = *m_scene.createArrayResource(4u, texCoordsData.data());
 
         ramses::AttributeInput texCoordInput;
         m_effect.findAttributeInput("a_texcoord", texCoordInput);

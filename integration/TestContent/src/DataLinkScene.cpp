@@ -9,7 +9,7 @@
 #include "TestScenes/DataLinkScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/Appearance.h"
 
 #include "Scene/ClientScene.h"
@@ -17,9 +17,6 @@
 
 namespace ramses_internal
 {
-    constexpr const ramses::dataProviderId_t DataLinkScene::DataProviderId;
-    constexpr const ramses::dataConsumerId_t DataLinkScene::DataConsumerId;
-
     DataLinkScene::DataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
@@ -27,7 +24,7 @@ namespace ramses_internal
         ramses::Triangle triangle1(scene, *effect, ramses::TriangleAppearance::EColor_Red);
         ramses::Triangle triangle2(scene, *effect, ramses::TriangleAppearance::EColor_Green);
 
-        ramses::DataVector4f* colorData = scene.createDataVector4f("dataLinkColorData");
+        ramses::DataObject* colorData = scene.createDataObject(ramses::EDataType::Vector4F, "dataLinkColorData");
 
         triangle1.bindColor(*colorData);
         triangle2.bindColor(*colorData);
@@ -55,29 +52,29 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*mesh1);
         addMeshNodeToDefaultRenderGroup(*mesh2);
 
-        translate1->setTranslation(-1.5f, 0.f, -15.f);
-        translate2->setTranslation( 1.5f, 0.f, -15.f);
+        translate1->setTranslation({-1.5f, 0.f, -15.f});
+        translate2->setTranslation({1.5f, 0.f, -15.f});
 
         switch (state)
         {
         case DATA_PROVIDER:
             scene.createDataProvider(*colorData, DataProviderId);
-            colorData->setValue(1.f, 0.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 1.f, 0.f, 0.f, 1.f });
             break;
         case DATA_CONSUMER:
             scene.createDataConsumer(*colorData, DataConsumerId);
-            colorData->setValue(0.f, 1.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 0.f, 1.f, 0.f, 1.f });
             break;
         case DATA_CONSUMER_AND_PROVIDER:
         {
-            ramses::DataVector4f* colorData2 = scene.createDataVector4f();
+            auto colorData2 = scene.createDataObject(ramses::EDataType::Vector4F);
             triangle2.bindColor(*colorData2);
 
             scene.createDataProvider(*colorData, DataProviderId);
             scene.createDataConsumer(*colorData2, DataConsumerId);
 
-            colorData->setValue(0.f, 1.f, 1.f, 1.f);
-            colorData2->setValue(0.f, 0.f, 1.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 0.f, 1.f, 1.f, 1.f });
+            colorData2->setValue(ramses::vec4f{ 0.f, 0.f, 1.f, 1.f });
         }
             break;
         default:

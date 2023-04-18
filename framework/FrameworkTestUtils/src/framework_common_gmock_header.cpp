@@ -13,7 +13,6 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneId.h"
 #include "Scene/SceneActionCollection.h"
-#include "TransportCommon/SomeIPStackCommon.h"
 
 namespace ramses_internal
 {
@@ -48,10 +47,5 @@ namespace ramses_internal
     void PrintTo(const SceneInfo& si, ::std::ostream* os)
     {
         *os << "ScenInfo(sceneId " << si.sceneID.getValue() << ", name " << si.friendlyName.c_str() << ")";
-    }
-
-    void PrintTo(const SomeIPMsgHeader& hdr, ::std::ostream* os)
-    {
-        *os << fmt::to_string(hdr);
     }
 }

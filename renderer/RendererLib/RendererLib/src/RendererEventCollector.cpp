@@ -205,13 +205,12 @@ namespace ramses_internal
         pushToSceneControlEventQueue(std::move(event));
     }
 
-    void RendererEventCollector::addFrameTimingReport(DisplayHandle display, bool isFirstDisplay, std::chrono::microseconds maxLoopTime, std::chrono::microseconds avgLooptime)
+    void RendererEventCollector::addFrameTimingReport(DisplayHandle display, std::chrono::microseconds maxLoopTime, std::chrono::microseconds avgLooptime)
     {
         RendererEvent event{ ERendererEventType::FrameTimingReport };
         event.frameTimings.maximumLoopTimeWithinPeriod = maxLoopTime;
         event.frameTimings.averageLoopTimeWithinPeriod = avgLooptime;
         event.displayHandle = display;
-        event.isFirstDisplay = isFirstDisplay;
         pushToRendererEventQueue(std::move(event));
     }
 

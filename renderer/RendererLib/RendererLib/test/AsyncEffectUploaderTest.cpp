@@ -12,7 +12,7 @@
 #include "RendererLib/AsyncEffectUploader.h"
 #include "PlatformMock.h"
 #include "Utils/ThreadLocalLog.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "Watchdog/ThreadAliveNotifierMock.h"
 #include <thread>
 #include <memory>
@@ -31,7 +31,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(0);
         }
 
-        void TearDown()
+        void TearDown() override
         {
             EXPECT_CALL(notifier, unregisterThread(ThreadAliveNotifierMock::dummyThreadId)).Times(1);
         }
@@ -74,7 +74,7 @@ namespace ramses_internal
             for(uint32_t i = 0u; i < count; ++i)
             {
                 const auto randomString = std::to_string(++createdEffectCounter);
-                const EffectResource* effect = new EffectResource(randomString.c_str(), "", "", absl::nullopt, {}, {}, "", ResourceCacheFlag_DoNotCache);
+                const EffectResource* effect = new EffectResource(randomString.c_str(), "", "", EDrawMode::NUMBER_OF_ELEMENTS, {}, {}, "", ResourceCacheFlag_DoNotCache);
                 result.push_back(effect);
 
                 createdEffects.emplace_back(effect); //keep track of created resource to avoid mem-leak
@@ -117,9 +117,9 @@ namespace ramses_internal
             }
 
             EXPECT_EQ(resultShaders.size(), effectsToUpload.size());
-            EXPECT_TRUE(absl::c_all_of(effectsToUpload, [&](const auto& e)
+            EXPECT_TRUE(std::all_of(std::cbegin(effectsToUpload), std::cend(effectsToUpload), [&](const auto& e)
                 {
-                    return absl::c_find_if(resultShaders, [&e](const auto& u) {return e->getHash() == u.first; }) != resultShaders.cend();
+                    return std::find_if(std::cbegin(resultShaders), std::cend(resultShaders), [&e](const auto& u) {return e->getHash() == u.first; }) != resultShaders.cend();
                 }));
         }
 

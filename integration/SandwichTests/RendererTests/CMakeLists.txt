@@ -7,40 +7,41 @@
 #  -------------------------------------------------------------------------
 
 set(RendererTests-resources_MIXIN
-    RESOURCE_FOLDER         ../../TestContent/res
+    RESOURCE_FOLDERS        ../../TestContent/res
                             res
 
 )
 
-RENDERER_MODULE_PER_CONFIG_STATIC(RenderingTests
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
-
-    INCLUDE_BASE            RendererTestFramework
+expandModuleByPlatform(
+    NAME            RenderingTests
+    TYPE            BINARY
+    LINKED_TYPE     STATIC
+    ENABLE_INSTALL  ON
+    INCLUDE_PATHS           RendererTestFramework
                             RenderingTests
-
-    FILES_PRIVATE_HEADER    RenderingTests/*.h
+    SRC_FILES               RenderingTests/*.h
                             RendererTestFramework/*.h
-
-    FILES_SOURCE            RenderingTests/*.cpp
+                            RenderingTests/*.cpp
                             RendererTestFramework/*.cpp
 
     ${RendererTests-resources_MIXIN}
 
-    DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
+    DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils ramses-cli
 )
 
-RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
+expandModuleByPlatform(
+    NAME            RendererLifecycleTests
+    TYPE            BINARY
+    LINKED_TYPE     STATIC
+    ENABLE_INSTALL  ON
 
-    INCLUDE_BASE            RendererLifecycleTests
+    INCLUDE_PATHS           RendererLifecycleTests
                             RendererTestFramework
 
-    FILES_PRIVATE_HEADER    RendererLifecycleTests/*.h
+    SRC_FILES               RendererLifecycleTests/*.h
                             RendererTestFramework/*.h
 
-    FILES_SOURCE            RendererLifecycleTests/main.cpp
+                            RendererLifecycleTests/main.cpp
                             RendererLifecycleTests/RendererLifecycleTests.cpp
                             RendererTestFramework/*.cpp
 
@@ -48,78 +49,83 @@ RENDERER_MODULE_PER_CONFIG_STATIC(RendererLifecycleTests
 
     DEPENDENCIES            TestContent FrameworkTestUtils RendererTestUtils
                             ramses-gmock-main
+                            ramses-cli
 )
 
+# TODO Fix this...
 if(TARGET RendererLifecycleTests-windows-wgl-4-2-core)
     target_sources(RendererLifecycleTests-windows-wgl-4-2-core PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
-    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-windows-wgl-4-2-core)
+    folderizeTarget(RendererLifecycleTests-windows-wgl-4-2-core)
 endif()
 
 if(TARGET RendererLifecycleTests-windows-wgl-4-5)
     target_sources(RendererLifecycleTests-windows-wgl-4-5 PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
-    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-windows-wgl-4-5)
+    folderizeTarget(RendererLifecycleTests-windows-wgl-4-5)
 endif()
 
 if(TARGET RendererLifecycleTests-windows-wgl-es-3-0)
     target_sources(RendererLifecycleTests-windows-wgl-es-3-0 PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
-    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-windows-wgl-es-3-0)
+    folderizeTarget(RendererLifecycleTests-windows-wgl-es-3-0)
 endif()
 
 if(TARGET RendererLifecycleTests-x11-egl-es-3-0)
     target_sources(RendererLifecycleTests-x11-egl-es-3-0 PUBLIC "RendererLifecycleTests/ExternalWindowTests.cpp")
-    ACME_FOLDERIZE_TARGET(RendererLifecycleTests-x11-egl-es-3-0)
+    folderizeTarget(RendererLifecycleTests-x11-egl-es-3-0)
 endif()
 
-# TODO Violin/Alex add support for embedded compositing on a renderer with x11-backend
-ACME_MODULE(
-    NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
+if(TARGET platform-wayland-ivi-egl-es-3-0)
+    createModule(
+        NAME                    EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
+        TYPE                    BINARY
+        ENABLE_INSTALL          ON
 
-    INCLUDE_BASE            RendererTestFramework
-                            EmbeddedCompositingTests
-                            EmbeddedCompositingTests/EmbeddedCompositingTestFramework
-                            EmbeddedCompositingTests/TestWaylandApplication
-                            EmbeddedCompositingTests/TestCases
+        INCLUDE_PATHS           RendererTestFramework
+                                EmbeddedCompositingTests
+                                EmbeddedCompositingTests/EmbeddedCompositingTestFramework
+                                EmbeddedCompositingTests/TestWaylandApplication
+                                EmbeddedCompositingTests/TestCases
 
-    FILES_PRIVATE_HEADER    EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.h
-                            EmbeddedCompositingTests/TestWaylandApplication/*.h
-                            EmbeddedCompositingTests/TestCases/*.h
+        SRC_FILES               EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.h
+                                EmbeddedCompositingTests/TestWaylandApplication/*.h
+                                EmbeddedCompositingTests/TestCases/*.h
 
-    FILES_SOURCE            RendererTestFramework/*.cpp
-                            EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.cpp
-                            EmbeddedCompositingTests/TestWaylandApplication/*.cpp
-                            EmbeddedCompositingTests/TestCases/*.cpp
+                                RendererTestFramework/*.cpp
+                                EmbeddedCompositingTests/EmbeddedCompositingTestFramework/*.cpp
+                                EmbeddedCompositingTests/TestWaylandApplication/*.cpp
+                                EmbeddedCompositingTests/TestCases/*.cpp
 
-    ${RendererTests-resources_MIXIN}
+        ${RendererTests-resources_MIXIN}
 
-    DEPENDENCIES            ramses-renderer-lib
-                            platform-wayland-ivi-egl-es-3-0
-                            TestContent
-                            FrameworkTestUtils
-                            RendererTestUtils
-                            WaylandUtilities
-)
+        DEPENDENCIES            ramses-renderer-lib
+                                platform-wayland-ivi-egl-es-3-0
+                                TestContent
+                                FrameworkTestUtils
+                                RendererTestUtils
+                                WaylandUtilities
+                                ramses-cli
+    )
 
-# TODO(tobias/mohamed) Disable test broken by newer ubuntu 18.04 packages
-if(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0)
-    ACME_ADD_TEST(EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
-        RNDSANDWICHTEST_SWRAST
-         -lid 3 -scc --filterOut ShowStreamTextureAfterChangingSurfaceSize
-        )
+    # TODO(tobias/mohamed) Disable test broken by newer ubuntu 18.04 packages
+    makeTestFromTarget(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
+            SUFFIX RNDSANDWICHTEST_SWRAST
+            EXTRA_ARGS --ivi-layer 3 --ivi-control --filter-out ShowStreamTextureAfterChangingSurfaceSize
+            SKIPPABLE
+    )
 endif()
 
-RENDERER_MODULE_PER_CONFIG_STATIC(DmaOffscreenBufferRenderingTests
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
+expandModuleByPlatform(
+    NAME            DmaOffscreenBufferRenderingTests
+    TYPE            BINARY
+    LINKED_TYPE     STATIC
+    ENABLE_INSTALL  ON
 
-    INCLUDE_BASE            RendererTestFramework
+    INCLUDE_PATHS           RendererTestFramework
                             DmaOffscreenBufferRenderingTests
 
-    FILES_PRIVATE_HEADER    DmaOffscreenBufferRenderingTests/*.h
+    SRC_FILES               DmaOffscreenBufferRenderingTests/*.h
                             RendererTestFramework/*.h
 
-    FILES_SOURCE            DmaOffscreenBufferRenderingTests/*.cpp
+                            DmaOffscreenBufferRenderingTests/*.cpp
                             RendererTestFramework/*.cpp
 
     ${RendererTests-resources_MIXIN}
@@ -128,6 +134,7 @@ RENDERER_MODULE_PER_CONFIG_STATIC(DmaOffscreenBufferRenderingTests
                             FrameworkTestUtils
                             RendererTestUtils
                             Device_EGL_Extension
+                            ramses-cli
 )
 
 # Tests which are supposed to be run with valgrind
@@ -141,16 +148,19 @@ SET(GATE_PLATFORMS
     "wayland-ivi-egl-es-3-0"
 )
 
-IF (ramses-sdk_BUILD_TESTS)
-    FOREACH(TEST_PLATFORM ${RENDERER_CONFIG_LIST})
-        IF(TARGET platform-${TEST_PLATFORM})
-            ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
-                RNDSANDWICHTEST
-                -scc -lid 3
+if (ramses-sdk_BUILD_TESTS)
+    foreach(TEST_PLATFORM ${PLATFORM_LIST})
+        if(TARGET platform-${TEST_PLATFORM})
+            makeTestFromTarget(
+                TARGET RenderingTests-${TEST_PLATFORM}
+                SUFFIX RNDSANDWICHTEST
+                EXTRA_ARGS --ivi-control --ivi-layer 3
             )
-            ACME_ADD_TEST(RendererLifecycleTests-${TEST_PLATFORM}
-                RNDSANDWICHTEST_SWRAST
-                -scc -lid 3
+
+            makeTestFromTarget(
+                TARGET RendererLifecycleTests-${TEST_PLATFORM}
+                SUFFIX RNDSANDWICHTEST_SWRAST
+                EXTRA_ARGS --ivi-control --ivi-layer 3
             )
             # These tests don't work generally on emulated ES drivers
             #    MSAA and anisotropic filters are not strictly specified by OpenGL standard -> emulated driver don't support it
@@ -161,27 +171,31 @@ IF (ramses-sdk_BUILD_TESTS)
             LIST(FIND VALGRIND_PLATFORMS ${TEST_PLATFORM} _INDEX)
             IF(NOT ${_INDEX} LESS 0)
                 # A limited set of rendering tests executed in the gate (executing all tests takes too long)
-                ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
-                    RNDSANDWICHTEST_VALGRINDGATE
-                    -scc -lid 3 --filterIn TextTest_AccurateText:TextureTest_Texture2D_AddressMode
+                makeTestFromTarget(
+                    TARGET RenderingTests-${TEST_PLATFORM}
+                    SUFFIX RNDSANDWICHTEST_VALGRINDGATE
+                    EXTRA_ARGS --ivi-control --ivi-layer 3 --filter-in TextTest_AccurateText:TextureTest_Texture2D_AddressMode
                 )
                 # A limited set of renderer lifecycle tests executed in the gate (executing all tests takes too long)
-                ACME_ADD_TEST(RendererLifecycleTests-${TEST_PLATFORM}
-                    RNDSANDWICHTEST_VALGRINDGATE
-                     -scc -lid 3 --gtest_filter=*DestroyRenderer_ChangeScene_ThenRecreateRenderer*:*RecreateSceneWithSameId*
+                makeTestFromTarget(
+                    TARGET RendererLifecycleTests-${TEST_PLATFORM}
+                    SUFFIX RNDSANDWICHTEST_VALGRINDGATE
+                    EXTRA_ARGS --ivi-control --ivi-layer 3 --gtest_filter=*DestroyRenderer_ChangeScene_ThenRecreateRenderer*:*RecreateSceneWithSameId*
                 )
                 # A limited set of EC tests executed in the gate (executing all tests takes too long)
-                ACME_ADD_TEST(EmbeddedCompositingTests-${TEST_PLATFORM}
-                    RNDSANDWICHTEST_VALGRINDGATE
-                     -scc -lid 3 --filterIn ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
+                makeTestFromTarget(
+                    TARGET EmbeddedCompositingTests-${TEST_PLATFORM}
+                    SUFFIX RNDSANDWICHTEST_VALGRINDGATE
+                    EXTRA_ARGS --ivi-control --ivi-layer 3 --filter-in ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
                 )
             ENDIF()
 
             LIST(FIND GATE_PLATFORMS ${TEST_PLATFORM} _INDEX)
             IF(NOT ${_INDEX} LESS 0)
-                ACME_ADD_TEST(RenderingTests-${TEST_PLATFORM}
-                    RNDSANDWICHTEST_SWRAST
-                    -scc -lid 3 --filterOut ${SW_EMULATION_FILTER}
+                makeTestFromTarget(
+                    TARGET RenderingTests-${TEST_PLATFORM}
+                    SUFFIX RNDSANDWICHTEST_SWRAST
+                    EXTRA_ARGS --ivi-control --ivi-layer 3 --filter-out ${SW_EMULATION_FILTER}
                 )
             ENDIF()
         ENDIF()

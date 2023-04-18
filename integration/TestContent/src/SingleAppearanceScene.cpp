@@ -37,7 +37,7 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*meshNode);
 
             ramses::Node* trafoNode = m_scene.createNode("transformation node");
-            trafoNode->setTranslation(translation[i * 3 + 0], translation[i * 3 + 1], translation[i * 3 + 2]);
+            trafoNode->setTranslation({translation[i * 3 + 0], translation[i * 3 + 1], translation[i * 3 + 2]});
 
             meshNode->setParent(*trafoNode);
 
@@ -64,7 +64,7 @@ namespace ramses_internal
 
             ramses::UniformInput redgreenOffset;
             effectExt->findUniformInput("redgreen_offset", redgreenOffset);
-            appearance.setInputValueVector2f(redgreenOffset, 0.5f, 0.5f);
+            appearance.setInputValue(redgreenOffset, ramses::vec2f{ 0.5f, 0.5f });
 
             setAppearanceAndGeometryToAllMeshNodes(blueTriangle.GetAppearance(), blueTriangle.GetGeometry());
             setTriangleColor(blueTriangle.GetAppearance(), *effectExt, Vector4(0.0f, 0.0f, 1.0f, 1.0f));
@@ -86,6 +86,6 @@ namespace ramses_internal
     {
         ramses::UniformInput colorInput;
         effect.findUniformInput("color", colorInput);
-        appearance.setInputValueVector4f(colorInput, color.x, color.y, color.z, color.a);
+        appearance.setInputValue(colorInput, color.getAsVec4());
     }
 }

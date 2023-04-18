@@ -12,18 +12,23 @@
 namespace ramses
 {
     RamsesFrameworkConfig::RamsesFrameworkConfig()
-        : RamsesFrameworkConfig(0, nullptr)
-    {
-    }
-
-    RamsesFrameworkConfig::RamsesFrameworkConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new RamsesFrameworkConfigImpl(argc, argv))
+        : StatusObject(*new RamsesFrameworkConfigImpl())
         , impl(static_cast<RamsesFrameworkConfigImpl&>(StatusObject::impl))
     {
     }
 
     RamsesFrameworkConfig::~RamsesFrameworkConfig()
     {
+    }
+
+    status_t RamsesFrameworkConfig::setFeatureLevel(EFeatureLevel featureLevel)
+    {
+        return impl.setFeatureLevel(featureLevel);
+    }
+
+    EFeatureLevel RamsesFrameworkConfig::getFeatureLevel() const
+    {
+        return impl.getFeatureLevel();
     }
 
     status_t RamsesFrameworkConfig::setRequestedRamsesShellType(ERamsesShellType requestedShellType)
@@ -47,37 +52,72 @@ namespace ramses
         return impl.enableDLTApplicationRegistration(false);
     }
 
-    void RamsesFrameworkConfig::setDLTApplicationID(const char* id)
+    void RamsesFrameworkConfig::setDLTApplicationID(std::string_view id)
     {
         impl.setDLTApplicationID(id);
     }
 
-    const char* RamsesFrameworkConfig::getDLTApplicationID() const
+    std::string_view RamsesFrameworkConfig::getDLTApplicationID() const
     {
         return impl.getDLTApplicationID();
     }
 
-    void RamsesFrameworkConfig::setDLTApplicationDescription(const char* description)
+    void RamsesFrameworkConfig::setDLTApplicationDescription(std::string_view description)
     {
         impl.setDLTApplicationDescription(description);
     }
 
-    const char* RamsesFrameworkConfig::getDLTApplicationDescription() const
+    std::string_view RamsesFrameworkConfig::getDLTApplicationDescription() const
     {
         return impl.getDLTApplicationDescription();
     }
 
-    void RamsesFrameworkConfig::setPeriodicLogsEnabled(bool enabled)
+    void RamsesFrameworkConfig::setLogLevel(ELogLevel logLevel)
     {
-        impl.setPeriodicLogsEnabled(enabled);
+        impl.setLogLevel(logLevel);
     }
 
-    void RamsesFrameworkConfig::setInterfaceSelectionIPForTCPCommunication(const char* ip)
+    status_t RamsesFrameworkConfig::setLogLevel(std::string_view context, ELogLevel logLevel)
+    {
+        return impl.setLogLevel(context, logLevel);
+    }
+
+    void RamsesFrameworkConfig::setLogLevelConsole(ELogLevel logLevel)
+    {
+        impl.setLogLevelConsole(logLevel);
+    }
+
+    void RamsesFrameworkConfig::setPeriodicLogInterval(std::chrono::seconds interval)
+    {
+        impl.setPeriodicLogInterval(interval);
+    }
+
+    status_t RamsesFrameworkConfig::setParticipantGuid(uint64_t guid)
+    {
+        return impl.setParticipantGuid(guid);
+    }
+
+    status_t RamsesFrameworkConfig::setParticipantName(std::string_view name)
+    {
+        return impl.setParticipantName(name);
+    }
+
+    status_t RamsesFrameworkConfig::setConnectionSystem(EConnectionSystem connectionSystem)
+    {
+        return impl.setConnectionSystem(connectionSystem);
+    }
+
+    void RamsesFrameworkConfig::setInterfaceSelectionIPForTCPCommunication(std::string_view ip)
     {
         impl.m_tcpConfig.setIPAddress(ip);
     }
 
-    void RamsesFrameworkConfig::setDaemonIPForTCPCommunication(const char* ip)
+    void RamsesFrameworkConfig::setInterfaceSelectionPortForTCPCommunication(uint16_t port)
+    {
+        impl.m_tcpConfig.setPort(port);
+    }
+
+    void RamsesFrameworkConfig::setDaemonIPForTCPCommunication(std::string_view ip)
     {
         impl.m_tcpConfig.setDaemonIPAddress(ip);
     }
@@ -85,5 +125,12 @@ namespace ramses
     void RamsesFrameworkConfig::setDaemonPortForTCPCommunication(uint16_t port)
     {
         impl.m_tcpConfig.setDaemonPort(port);
+    }
+
+    status_t RamsesFrameworkConfig::setConnectionKeepaliveSettings(std::chrono::milliseconds interval, std::chrono::milliseconds timeout)
+    {
+        impl.m_tcpConfig.setAliveInterval(interval);
+        impl.m_tcpConfig.setAliveTimeout(timeout);
+        return StatusOK;
     }
 }

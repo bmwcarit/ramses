@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         explicit LogConnectionInfo(ICommunicationSystem& communicationSystem);
-        virtual bool executeInput(const std::vector<std::string>& input) override;
+        bool executeInput(const std::vector<std::string>& input) override;
 
     private:
         ICommunicationSystem& m_communicationSystem;

@@ -31,10 +31,10 @@ namespace ramses_internal
     {
     public:
         // returns the description of the argument
-        std::string description() const;
+        [[nodiscard]] std::string description() const;
 
         // returns all the concatenated keywords of the argument
-        std::string keywords() const;
+        [[nodiscard]] std::string keywords() const;
 
     protected:
         explicit RamshArgumentBase(const RamshTypeInfo& typeinfo, void* defaultValue = nullptr);
@@ -44,21 +44,21 @@ namespace ramses_internal
         }
 
         // amount of data consumed by the argument - usually 2 for data arguments (parameter name + data)
-        virtual UInt32 amountConsumed() const;
+        [[nodiscard]] virtual UInt32 amountConsumed() const;
 
         // try to set the argument's data with a given keyword (doesn't modify the argument itself, just returns a data object or nullptr if keyword doesn't match)
-        const RamshArgumentData* set(const std::string& keyword, const std::string& data) const;
+        [[nodiscard]] const RamshArgumentData* set(const std::string& keyword, const std::string& data) const;
 
-        const RamshArgumentData* forceSet(const std::string& data) const;
+        [[nodiscard]] const RamshArgumentData* forceSet(const std::string& data) const;
 
         // tries to get the value of the argument (converts the data) with a data object previously retrieved by calling set/forceSet
         template<typename T> bool getValue(const RamshArgumentData* data, T& value) const;
 
-        virtual std::string typeString() const = 0;
+        [[nodiscard]] virtual std::string typeString() const = 0;
 
-        virtual std::string defaultValueString() const = 0;
+        [[nodiscard]] virtual std::string defaultValueString() const = 0;
 
-        template<typename T> std::string defaultValueStringInternal() const;
+        template<typename T> [[nodiscard]] std::string defaultValueStringInternal() const;
 
         void registerKeywordInternal(const std::string& keyword);
 
@@ -117,9 +117,9 @@ namespace ramses_internal
         }
 
     protected:
-        std::string defaultValueString() const override;
+        [[nodiscard]] std::string defaultValueString() const override;
 
-        std::string typeString() const override;
+        [[nodiscard]] std::string typeString() const override;
     };
 
     template<typename T>
@@ -147,7 +147,7 @@ namespace ramses_internal
             : RamshArgument<bool>()
         {}
 
-        UInt32 amountConsumed() const override;
+        [[nodiscard]] UInt32 amountConsumed() const override;
     };
 
     struct RamshArgumentDataProvider
@@ -174,13 +174,13 @@ namespace ramses_internal
         template<typename T> RamshArgument<T>& addArgument();
 
         // returns the argument definition with a given index
-        RamshArgument<void>& getArgument(UInt32 index) const;
+        [[nodiscard]] RamshArgument<void>& getArgument(UInt32 index) const;
 
         // returns the argument definitions in a readable format
-        std::string argumentString() const;
+        [[nodiscard]] std::string argumentString() const;
 
         // parses the given input according to the argument definitions
-        RamshArgumentDataProvider parse(const std::vector<std::string>& in) const;
+        [[nodiscard]] RamshArgumentDataProvider parse(const std::vector<std::string>& in) const;
 
         // delete created argmuents
         ~RamshArgumentProvider();

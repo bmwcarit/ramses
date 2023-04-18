@@ -26,8 +26,8 @@ namespace ramses_internal
 {
     class IScene;
 
-    using DataInstanceValueVariant = absl::variant<
-        absl::monostate,
+    using DataInstanceValueVariant = std::variant<
+        std::monostate,
         float,
         int32_t,
         Vector2,

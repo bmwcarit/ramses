@@ -6,6 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 #include "TestScenes/TextScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
@@ -111,12 +113,12 @@ namespace ramses_internal
 
         for (auto textMesh : { m_meshUTF, m_meshASCII, m_meshDigits, m_meshChinese, m_meshLight, m_meshLightAutoHinting, m_meshShaping, m_meshShapingAutoHint, m_meshFontCascade, m_meshFontCascadeWithVerticalOffset })
         {
-            textMesh->getAppearance()->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.0f, 1.0f);
+            textMesh->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
             textMesh->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
             textMesh->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
         }
         for (auto textMesh : { m_meshChinese, m_meshFontCascade, m_meshFontCascadeWithVerticalOffset })
-            textMesh->getAppearance()->setInputValueVector4f(colorInput, 0.0f, 0.0f, 1.0f, 1.0f);
+            textMesh->getAppearance()->setInputValue(colorInput, ramses::vec4f{ 0.0f, 0.0f, 1.0f, 1.0f });
 
         ramses::Node* translateUTF = m_scene.createNode();
         ramses::Node* translateASCII = m_scene.createNode();
@@ -128,15 +130,15 @@ namespace ramses_internal
         ramses::Node* translateShaping = m_scene.createNode();
         ramses::Node* translateShapingAutoHint = m_scene.createNode();
 
-        translateUTF->setTranslation(2, 10, -1);
-        translateASCII->setTranslation(2, 80, -1);
-        translateDigits->setTranslation(2, 160, -1);
-        translateChinese->setTranslation(2, 75, -1);
-        translateLight->setTranslation(2, 120, -1);
-        translateLightAutoHinting->setTranslation(2, 90, -1);
-        translateFontCascade->setTranslation(2, 110, -1);
-        translateShaping->setTranslation(2, 10, -1);
-        translateShapingAutoHint->setTranslation(2, 80, -1);
+        translateUTF->setTranslation({2, 10, -1});
+        translateASCII->setTranslation({2, 80, -1});
+        translateDigits->setTranslation({2, 160, -1});
+        translateChinese->setTranslation({2, 75, -1});
+        translateLight->setTranslation({2, 120, -1});
+        translateLightAutoHinting->setTranslation({2, 90, -1});
+        translateFontCascade->setTranslation({2, 110, -1});
+        translateShaping->setTranslation({2, 10, -1});
+        translateShapingAutoHint->setTranslation({2, 80, -1});
 
         m_meshUTF->setParent(*translateUTF);
         m_meshASCII->setParent(*translateASCII);
@@ -205,46 +207,46 @@ namespace ramses_internal
         }
         case EState_SMOKE_TEST:
             m_textOrthoCamera->setViewport(0, 0, 480, 480);
-            float scalingFactor = 0.5f;
-            m_meshUTF->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshASCII->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshDigits->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshChinese->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshLight->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshLightAutoHinting->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshFontCascade->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshFontCascadeWithVerticalOffset->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshShaping->setScaling(scalingFactor, scalingFactor, scalingFactor);
-            m_meshShapingAutoHint->setScaling(scalingFactor, scalingFactor, scalingFactor);
+            const auto scaling = ramses::vec3f(0.5f);
+            m_meshUTF->setScaling(scaling);
+            m_meshASCII->setScaling(scaling);
+            m_meshDigits->setScaling(scaling);
+            m_meshChinese->setScaling(scaling);
+            m_meshLight->setScaling(scaling);
+            m_meshLightAutoHinting->setScaling(scaling);
+            m_meshFontCascade->setScaling(scaling);
+            m_meshFontCascadeWithVerticalOffset->setScaling(scaling);
+            m_meshShaping->setScaling(scaling);
+            m_meshShapingAutoHint->setScaling(scaling);
 
-            m_meshUTF->translate(0.f, 110.f, 0.f);
+            m_meshUTF->translate({0.f, 110.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshUTF, 0);
 
-            m_meshASCII->translate(0.f, 95.f, 0.f);
+            m_meshASCII->translate({0.f, 95.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshASCII, 0);
 
-            m_meshDigits->translate(0.f, -10.f, 0.f);
+            m_meshDigits->translate({0.f, -10.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshDigits, 0);
 
-            m_meshChinese->translate(0.f, 0.f, 0.f);
+            m_meshChinese->translate({0.f, 0.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshChinese, 0);
 
-            m_meshLight->translate(0.f, -15.f, 0.f);
+            m_meshLight->translate({0.f, -15.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshLight, 0);
 
-            m_meshLightAutoHinting->translate(0.f, 0.f, 0.f);
+            m_meshLightAutoHinting->translate({0.f, 0.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshLightAutoHinting, 0);
 
-            m_meshFontCascade->translate(0.f, -50.f, 0.f);
+            m_meshFontCascade->translate({0.f, -50.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshFontCascade, 0);
 
-            m_meshFontCascadeWithVerticalOffset->translate(0.f, -85.f, 0.f);
+            m_meshFontCascadeWithVerticalOffset->translate({0.f, -85.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshFontCascadeWithVerticalOffset, 0);
 
-            m_meshShaping->translate(0.f, 38.f, 0.f);
+            m_meshShaping->translate({0.f, 38.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshShaping, 0);
 
-            m_meshShapingAutoHint->translate(0.f, -43.f, 0.f);
+            m_meshShapingAutoHint->translate({0.f, -43.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshShapingAutoHint, 0);
         }
 
@@ -259,3 +261,5 @@ namespace ramses_internal
         }
     }
 }
+
+#endif

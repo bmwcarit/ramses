@@ -77,6 +77,17 @@
 #define LOG_HL_CLIENT_API11(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) \
         LOG_HL_CLIENT_API10(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 LOG_API_SEPERATOR arg11)
 
+#define LOG_HL_CLIENT_STATIC_API1(retval, arg1) \
+        LOG_HL_CLIENT_API_STR(LOG_STATIC_API_BASE(retval) << LOG_API_ARGUMENTS(arg1))
+#define LOG_HL_CLIENT_STATIC_API2(retval, arg1, arg2) \
+        LOG_HL_CLIENT_STATIC_API1(retval, arg1 LOG_API_SEPERATOR arg2)
+#define LOG_HL_CLIENT_STATIC_API3(retval, arg1, arg2, arg3) \
+        LOG_HL_CLIENT_STATIC_API2(retval, arg1, arg2 LOG_API_SEPERATOR arg3)
+#define LOG_HL_CLIENT_STATIC_API4(retval, arg1, arg2, arg3, arg4) \
+        LOG_HL_CLIENT_STATIC_API3(retval, arg1, arg2, arg3 LOG_API_SEPERATOR arg4)
+#define LOG_HL_CLIENT_STATIC_API5(retval, arg1, arg2, arg3, arg4, arg5) \
+        LOG_HL_CLIENT_STATIC_API4(retval, arg1, arg2, arg3, arg4 LOG_API_SEPERATOR arg5)
+
 // Renderer side macros
 #define LOG_HL_RENDERER_API_STR(str) \
         LOG_API_LOGLEVEL(ramses_internal::CONTEXT_HLAPI_RENDERER, str)

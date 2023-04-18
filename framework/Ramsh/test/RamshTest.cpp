@@ -16,7 +16,6 @@
 #include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/RamsesLogger.h"
-#include "Utils/CommandLineParser.h"
 
 namespace ramses_internal
 {
@@ -61,7 +60,7 @@ namespace ramses_internal
 
     class DummyRamshCommand : public RamshCommand
     {
-        virtual bool executeInput(const std::vector<std::string>& /*input*/) override
+        bool executeInput(const std::vector<std::string>& /*input*/) override
         {
             return true;
         }
@@ -336,7 +335,7 @@ namespace ramses_internal
                 : b(b_)
             {}
 
-            virtual bool executeInput(const std::vector<std::string>& /*input*/) override
+            bool executeInput(const std::vector<std::string>& /*input*/) override
             {
                 b = true;
                 return true;
@@ -392,7 +391,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void run() override
+        void run() override
         {
             logSomeMessage();
         }
@@ -448,10 +447,13 @@ namespace ramses_internal
             return input;
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             // reset loglevels back to default
-            GetRamsesLogger().initialize(CommandLineParser{0, nullptr}, "RAMS", "ramses", false, true);
+            RamsesLoggerConfig cfg;
+            cfg.dltAppId = "RAMS";
+            cfg.dltAppDescription = "ramses";
+            GetRamsesLogger().initialize(cfg, false, true);
         }
 
         Ramsh rsh;

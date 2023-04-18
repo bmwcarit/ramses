@@ -11,17 +11,15 @@
 
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "Utils/Image.h"
 
-#include "absl/types/optional.h"
+#include <optional>
 #include <chrono>
 
 namespace ramses
 {
     class RamsesRenderer;
     class RamsesDisplay;
-    class WarpingMeshData;
 }
 
 namespace ramses_internal
@@ -78,17 +76,19 @@ public:
     // All renderer tests should use this display config which makes window visible by default for Wayland
     static ramses::DisplayConfig CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible = true);
     static void SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::microseconds time);
-    static void SetCommandLineParamsForAllTests(const int argc, char const* const* argv);
-    static const ramses::WarpingMeshData& CreateTestWarpingMesh();
+    static void SetDefaultConfigForAllTests(const ramses::RendererConfig& rendererConfig, const ramses::DisplayConfig& displayConfig);
 
     static void SetWaylandDisplayForSystemCompositorControllerForAllTests(const ramses_internal::String& wd);
 
     static const float DefaultMaxAveragePercentPerPixel;
 
 private:
-    static absl::optional<std::chrono::microseconds> MaxFrameCallbackPollingTime;
-    static absl::optional<ramses_internal::String> WaylandDisplayForSystemCompositorController;
-    static std::vector<const char*> CommandLineArgs;
+    static std::optional<std::chrono::microseconds> MaxFrameCallbackPollingTime;
+    static std::optional<ramses_internal::String> WaylandDisplayForSystemCompositorController;
+
+    // config objects are not copyable..
+    static std::unique_ptr<ramses::RendererConfig> defaultRendererConfig;
+    static std::unique_ptr<ramses::DisplayConfig> defaultDisplayConfig;
 };
 
 #endif

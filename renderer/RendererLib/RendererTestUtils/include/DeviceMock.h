@@ -29,7 +29,6 @@ namespace ramses_internal
         DeviceMock();
         ~DeviceMock() override;
 
-        MOCK_METHOD(EDeviceTypeId, getDeviceTypeId, (), (const, override));
         MOCK_METHOD(Bool, init, ());
 
         MOCK_METHOD(void, clear, (UInt32), (override));

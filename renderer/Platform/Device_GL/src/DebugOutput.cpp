@@ -16,7 +16,7 @@
 
 namespace ramses_internal
 {
-#if defined(__linux__) || defined(__ghs__)
+#if defined(__linux__)
     #define GL_DEBUG_TYPE_ERROR                 GL_DEBUG_TYPE_ERROR_KHR
     #define GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR    GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR
     #define GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR   GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR
@@ -79,7 +79,7 @@ namespace ramses_internal
 
     Bool DebugOutput::loadExtensionFunctionPointer(const IContext& context)
     {
-#if defined(__linux__) || defined(__ghs__)
+#if defined(__linux__)
         glDebugMessageCallback =
             reinterpret_cast<PFNGLDEBUGMESSAGECALLBACKKHRPROC>(context.getProcAddress("glDebugMessageCallbackKHR"));
         glDebugMessageControl =

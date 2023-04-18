@@ -47,22 +47,22 @@ namespace ramses_internal
         void startDisplayThreadsUpdating();
         void stopDisplayThreadsUpdating();
         void setLoopMode(ELoopMode loopMode);
-        void setMinFrameDuration(std::chrono::microseconds minFrameDuration);
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration, DisplayHandle display);
+        [[nodiscard]] std::chrono::microseconds getMinFrameDuration(DisplayHandle display) const;
 
-        const RendererConfig& getRendererConfig() const;
+        [[nodiscard]] const RendererConfig& getRendererConfig() const;
 
         // needed for EC tests...
         IEmbeddedCompositingManager& getECManager(DisplayHandle display);
         IEmbeddedCompositor& getEC(DisplayHandle display);
 
         // needed for Renderer lifecycle tests...
-        bool hasSystemCompositorController() const;
+        [[nodiscard]] bool hasSystemCompositorController() const;
 
     protected:
         void preprocessCommand(const RendererCommand::Variant& cmd);
         void dispatchCommand(RendererCommand::Variant&& cmd);
-        bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
+        [[nodiscard]] bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
 
         struct Display
         {
@@ -98,10 +98,12 @@ namespace ramses_internal
         bool m_threadedDisplays = false;
         bool m_displayThreadsUpdating = true;
         ELoopMode m_loopMode = ELoopMode::UpdateAndRender;
-        std::chrono::microseconds m_generalMinFrameDuration {DefaultMinFrameDuration};
         std::unordered_map<DisplayHandle, std::chrono::microseconds> m_minFrameDurationsPerDisplay;
 
         IThreadAliveNotifier& m_notifier;
+
+        // flag to force context enable for next doOneLoop (relevant only for non-threaded mode)
+        bool m_forceContextEnableNextLoop = false;
 
         // to avoid re-allocs
         RendererCommands m_tmpCommands;

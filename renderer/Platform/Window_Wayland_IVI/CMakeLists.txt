@@ -6,51 +6,36 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF(ramses-sdk_ENABLE_WAYLAND_IVI)
-    ACME_MODULE(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
+if(ramses-sdk_ENABLE_WAYLAND_IVI)
+    createModule(
         NAME                    Window_Wayland_IVI
         TYPE                    STATIC_LIBRARY
         ENABLE_INSTALL          OFF
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
-        FILES_PRIVATE_HEADER    include/Window_Wayland_IVI/*.h
-        FILES_SOURCE            src/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
+        INCLUDE_PATHS           include
+        SRC_FILES               include/Window_Wayland_IVI/*.h
+                                src/*.cpp
         DEPENDENCIES            Window_Wayland
                                 wayland-ivi-extension
     )
-ENDIF()
 
-ACME_MODULE(
+    if (${ramses-sdk_BUILD_TESTS})
+        createModule(
+            NAME                    Window_Wayland_IVI_Test
+            TYPE                    BINARY
+            SRC_FILES            test/*.cpp
+                                    test/*.h
+            DEPENDENCIES            Window_Wayland_IVI
+                                    Window_Wayland_Test
+                                    SystemCompositorController_Wayland_IVI
+            )
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    Window_Wayland_IVI_Test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST
+            # This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            test/*.cpp
-                            test/*.h
+        makeTestFromTarget(
+            TARGET Window_Wayland_IVI_Test
+            SUFFIX RNDSANDWICHTEST_SWRAST
+            SKIPPABLE
+            EXTRA_ARGS --gtest_filter=-*AWindowWaylandWithEventHandling*)
+    endif()
 
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            Window_Wayland_IVI
-                            Window_Wayland_Test
-                            SystemCompositorController_Wayland_IVI
-)
-
-# This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)
+endif()

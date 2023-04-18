@@ -69,14 +69,11 @@ namespace ramses_internal
         const GLTextureInfo m_textureInfo;
     };
 
-    Device_GL::Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded, IDeviceExtension* deviceExtension)
+    Device_GL::Device_GL(IContext& context, IDeviceExtension* deviceExtension)
         : Device_Base(context)
         , m_activeShader(nullptr)
         , m_activePrimitiveDrawMode(EDrawMode::Triangles)
         , m_activeIndexArrayElementSizeBytes(2u)
-        , m_majorApiVersion(majorApiVersion)
-        , m_minorApiVersion(minorApiVersion)
-        , m_isEmbedded(isEmbedded)
         , m_debugOutput()
         , m_deviceExtension(deviceExtension)
         , m_emptyExternalTextureResource(m_resourceMapper.registerResource(std::make_unique<GPUResource>(0u, 0u)))
@@ -159,18 +156,6 @@ namespace ramses_internal
         m_limits.logLimits();
 
         return true;
-    }
-
-    EDeviceTypeId Device_GL::getDeviceTypeId() const
-    {
-        if (m_majorApiVersion == 3 && m_minorApiVersion == 0 && m_isEmbedded)
-            return EDeviceTypeId_GL_ES_3_0;
-        else if (m_majorApiVersion == 4 && m_minorApiVersion == 2 && !m_isEmbedded)
-            return EDeviceTypeId_GL_4_2_CORE;
-        else if (m_majorApiVersion == 4 && m_minorApiVersion == 5 && !m_isEmbedded)
-            return EDeviceTypeId_GL_4_5;
-        else
-            return EDeviceTypeId_INVALID;
     }
 
     void Device_GL::drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
@@ -1281,7 +1266,7 @@ namespace ramses_internal
 
         if (uploadSuccessful)
         {
-            LOG_INFO(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << shader.getName());
+            LOG_DEBUG(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << shader.getName());
             return m_resourceMapper.registerResource(std::make_unique<ShaderGPUResource_GL>(shader, programInfo));
         }
         else

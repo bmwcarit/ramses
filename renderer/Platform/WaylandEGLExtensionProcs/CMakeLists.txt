@@ -6,24 +6,13 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    WaylandEGLExtensionProcs
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/WaylandEGLExtensionProcs/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/WaylandEGLExtensionProcs/*.h
+                            src/*.cpp
     DEPENDENCIES            ramses-renderer-lib
                             wayland-zwp-linux-dmabuf-v1-extension
                             EGL

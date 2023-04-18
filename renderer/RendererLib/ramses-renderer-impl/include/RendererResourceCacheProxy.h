@@ -21,12 +21,12 @@ namespace ramses
     {
     public:
         explicit RendererResourceCacheProxy(ramses::IRendererResourceCache& cache);
-        virtual ~RendererResourceCacheProxy() override;
+        ~RendererResourceCacheProxy() override;
 
-        virtual bool hasResource(ramses_internal::ResourceContentHash resourceId, uint32_t& size) const override;
-        virtual bool getResourceData(ramses_internal::ResourceContentHash resourceId, uint8_t* buffer, uint32_t bufferSize) const override;
-        virtual bool shouldResourceBeCached(ramses_internal::ResourceContentHash resourceId, uint32_t resourceDataSize, ramses_internal::ResourceCacheFlag cacheFlag, ramses_internal::SceneId sceneId) const override;
-        virtual void storeResource(ramses_internal::ResourceContentHash resourceId, const uint8_t* resourceData, uint32_t resourceDataSize, ramses_internal::ResourceCacheFlag cacheFlag, ramses_internal::SceneId sceneId) override;
+        bool hasResource(ramses_internal::ResourceContentHash resourceId, uint32_t& size) const override;
+        bool getResourceData(ramses_internal::ResourceContentHash resourceId, uint8_t* buffer, uint32_t bufferSize) const override;
+        [[nodiscard]] bool shouldResourceBeCached(ramses_internal::ResourceContentHash resourceId, uint32_t resourceDataSize, ramses_internal::ResourceCacheFlag cacheFlag, ramses_internal::SceneId sceneId) const override;
+        void storeResource(ramses_internal::ResourceContentHash resourceId, const uint8_t* resourceData, uint32_t resourceDataSize, ramses_internal::ResourceCacheFlag cacheFlag, ramses_internal::SceneId sceneId) override;
 
     private:
 

@@ -33,10 +33,12 @@ namespace ramses
                 return ramses_internal::EBlendOperation::Min;
             case EBlendOperation_Max:
                 return ramses_internal::EBlendOperation::Max;
-            default:
-                assert(false);
-                return ramses_internal::EBlendOperation::Disabled;
+            case EBlendOperation_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EBlendOperation::Disabled;
         }
 
         static EBlendOperation GetBlendOperationFromInternal(ramses_internal::EBlendOperation blendOp)
@@ -55,10 +57,12 @@ namespace ramses
                 return EBlendOperation_Min;
             case ramses_internal::EBlendOperation::Max:
                 return EBlendOperation_Max;
-            default:
-                assert(false);
-                return EBlendOperation_Disabled;
+            case ramses_internal::EBlendOperation::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EBlendOperation_Disabled;
         }
 
         static ramses_internal::EBlendFactor GetBlendFactorInternal(EBlendFactor blendFactor)
@@ -95,10 +99,12 @@ namespace ramses
                 return ramses_internal::EBlendFactor::OneMinusConstAlpha;
             case EBlendFactor_AlphaSaturate:
                 return ramses_internal::EBlendFactor::AlphaSaturate;
-            default:
-                assert(false);
-                return ramses_internal::EBlendFactor::One;
+            case EBlendFactor_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EBlendFactor::One;
         }
 
         static EBlendFactor GetBlendFactorFromInternal(ramses_internal::EBlendFactor blendFactor)
@@ -136,10 +142,12 @@ namespace ramses
                 return EBlendFactor_OneMinusConstAlpha;
             case ramses_internal::EBlendFactor::AlphaSaturate:
                 return EBlendFactor_AlphaSaturate;
-            default:
-                assert(false);
-                return EBlendFactor_One;
+            case ramses_internal::EBlendFactor::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EBlendFactor_One;
         }
 
         static ramses_internal::ECullMode GetCullModeInternal(ECullMode cullMode)
@@ -154,10 +162,12 @@ namespace ramses
                 return ramses_internal::ECullMode::BackFacing;
             case ECullMode_FrontAndBackFacing:
                 return ramses_internal::ECullMode::FrontAndBackFacing;
-            default:
-                assert(false);
-                return ramses_internal::ECullMode::Invalid;
+            case ECullMode_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::ECullMode::Disabled;
         }
 
         static ECullMode GetCullModeFromInternal(ramses_internal::ECullMode cullMode)
@@ -172,10 +182,12 @@ namespace ramses
                 return ECullMode_BackFacing;
             case ramses_internal::ECullMode::FrontAndBackFacing:
                 return ECullMode_FrontAndBackFacing;
-            default:
-                assert(false);
-                return ECullMode_Disabled;
+            case ramses_internal::ECullMode::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ECullMode_Disabled;
         }
 
         static ramses_internal::EDepthWrite GetDepthWriteInternal(EDepthWrite depthWrite)
@@ -186,10 +198,12 @@ namespace ramses
                 return ramses_internal::EDepthWrite::Disabled;
             case EDepthWrite_Enabled:
                 return ramses_internal::EDepthWrite::Enabled;
-            default:
-                assert(false);
-                return ramses_internal::EDepthWrite::Enabled;
+            case EDepthWrite_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EDepthWrite::Enabled;
         }
 
         static EDepthWrite GetDepthWriteFromInternal(ramses_internal::EDepthWrite depthWrite)
@@ -200,10 +214,12 @@ namespace ramses
                 return EDepthWrite_Disabled;
             case ramses_internal::EDepthWrite::Enabled:
                 return EDepthWrite_Enabled;
-            default:
-                assert(false);
-                return EDepthWrite_Enabled;
+            case ramses_internal::EDepthWrite::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EDepthWrite_Enabled;
         }
 
         static ramses_internal::EScissorTest GetScissorTestInternal(EScissorTest scissorTest)
@@ -214,10 +230,12 @@ namespace ramses
                 return ramses_internal::EScissorTest::Disabled;
             case EScissorTest_Enabled:
                 return ramses_internal::EScissorTest::Enabled;
-            default:
-                assert(false);
-                return ramses_internal::EScissorTest::Disabled;
+            case EScissorTest_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EScissorTest::Disabled;
         }
 
         static EScissorTest GetScissorTestFromInternal(ramses_internal::EScissorTest scissorTest)
@@ -228,10 +246,12 @@ namespace ramses
                 return EScissorTest_Disabled;
             case ramses_internal::EScissorTest::Enabled:
                 return EScissorTest_Enabled;
-            default:
-                assert(false);
-                return EScissorTest_Disabled;
+            case ramses_internal::EScissorTest::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EScissorTest_Disabled;
         }
 
         static ramses_internal::EDepthFunc GetDepthFuncInternal(EDepthFunc depthFunc)
@@ -256,10 +276,12 @@ namespace ramses
                 return ramses_internal::EDepthFunc::Equal;
             case EDepthFunc_NotEqual:
                 return ramses_internal::EDepthFunc::NotEqual;
-            default:
-                assert(false);
-                return ramses_internal::EDepthFunc::Invalid;
+            case EDepthFunc_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EDepthFunc::Disabled;
         }
 
         static EDepthFunc GetDepthFuncFromInternal(ramses_internal::EDepthFunc depthFunc)
@@ -284,10 +306,12 @@ namespace ramses
                 return EDepthFunc_Equal;
             case ramses_internal::EDepthFunc::NotEqual:
                 return EDepthFunc_NotEqual;
-            default:
-                assert(false);
-                return EDepthFunc_LessEqual;
+            case ramses_internal::EDepthFunc::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EDepthFunc_LessEqual;
         }
 
         static ramses_internal::EStencilFunc GetStencilFuncInternal(EStencilFunc stencilFunc)
@@ -312,10 +336,12 @@ namespace ramses
                 return ramses_internal::EStencilFunc::Greater;
             case EStencilFunc_GreaterEqual:
                 return ramses_internal::EStencilFunc::GreaterEqual;
-            default:
-                assert(false);
-                return ramses_internal::EStencilFunc::Disabled;
+            case EStencilFunc_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EStencilFunc::Disabled;
         }
 
         static EStencilFunc GetStencilFuncFromInternal(ramses_internal::EStencilFunc stencilFunc)
@@ -340,10 +366,12 @@ namespace ramses
                 return EStencilFunc_Greater;
             case ramses_internal::EStencilFunc::GreaterEqual:
                 return EStencilFunc_GreaterEqual;
-            default:
-                assert(false);
-                return EStencilFunc_Disabled;
+            case ramses_internal::EStencilFunc::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EStencilFunc_Disabled;
         }
 
         static ramses_internal::EStencilOp GetStencilOperationInternal(EStencilOperation stencilOp)
@@ -366,10 +394,12 @@ namespace ramses
                 return ramses_internal::EStencilOp::DecrementWrap;
             case EStencilOperation_Invert:
                 return ramses_internal::EStencilOp::Invert;
-            default:
-                assert(false);
-                return ramses_internal::EStencilOp::Keep;
+            case EStencilOperation_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EStencilOp::Keep;
         }
 
         static EStencilOperation GetStencilOperationFromInternal(ramses_internal::EStencilOp stencilOp)
@@ -392,10 +422,12 @@ namespace ramses
                 return EStencilOperation_DecrementWrap;
             case ramses_internal::EStencilOp::Invert:
                 return EStencilOperation_Invert;
-            default:
-                assert(false);
-                return EStencilOperation_Keep;
+            case ramses_internal::EStencilOp::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EStencilOperation_Keep;
         }
 
         static ramses_internal::EDrawMode GetDrawModeInternal(EDrawMode mode)
@@ -416,14 +448,19 @@ namespace ramses
                 return ramses_internal::EDrawMode::TriangleFan;
             case EDrawMode_LineStrip:
                 return ramses_internal::EDrawMode::LineStrip;
-            default:
-                assert(false);
-                return ramses_internal::EDrawMode::Triangles;
+            case EDrawMode_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ramses_internal::EDrawMode::Triangles;
         }
 
         static bool GeometryShaderCompatibleWithDrawMode(EDrawMode geometryShaderInputType, EDrawMode drawMode)
         {
+            // only basic 'variant' (i.e. no strip/fan) of a primitive is allowed as GS input declaration
+            assert(geometryShaderInputType == EDrawMode_Points || geometryShaderInputType == EDrawMode_Lines || geometryShaderInputType == EDrawMode_Triangles);
+
             switch (drawMode)
             {
             case EDrawMode_Points:
@@ -436,9 +473,12 @@ namespace ramses
             case EDrawMode_TriangleStrip:
             case EDrawMode_TriangleFan:
                 return geometryShaderInputType == EDrawMode_Triangles;
-            default:
-                return false;
+            case EDrawMode_NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return false;
         }
 
         static EDrawMode GetDrawModeFromInternal(ramses_internal::EDrawMode drawMode)
@@ -459,10 +499,12 @@ namespace ramses
                 return EDrawMode_TriangleFan;
             case ramses_internal::EDrawMode::LineStrip:
                 return EDrawMode_LineStrip;
-            default:
-                assert(false);
-                return EDrawMode_Triangles;
+            case ramses_internal::EDrawMode::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EDrawMode_Triangles;
         }
     };
 }

@@ -14,9 +14,6 @@
 #include "Scene/ResourceChangeCollectingScene.h"
 #include "Scene/DataLayoutCachedScene.h"
 #include <vector>
-#include "Animation/AnimationSystemFactory.h"
-#include "AnimationAPI/IAnimationSystem.h"
-#include "Animation/AnimationSystem.h"
 
 using namespace testing;
 
@@ -141,19 +138,6 @@ namespace ramses_internal
         this->runTest(allocateF, releaseF, this->m_scene.getTextureSamplers());
     }
 
-    TYPED_TEST(AnIteratableScene, CanIterateOverAnimationSystems)
-    {
-        AnimationSystemFactory animSystemFactory(EAnimationSystemOwner_Renderer);
-
-        auto allocateF = [&]() {
-            IAnimationSystem* animSystem = animSystemFactory.createAnimationSystem(EAnimationSystemFlags_FullProcessing, AnimationSystemSizeInformation());
-            return this->m_scene.addAnimationSystem(animSystem);
-        };
-
-        auto releaseF = std::bind(&TypeParam::removeAnimationSystem, &this->m_scene, std::placeholders::_1);
-        this->runTest(allocateF, releaseF, this->m_scene.getAnimationSystems());
-    }
-
     TYPED_TEST(AnIteratableScene, CanIterateOverRenderGroups)
     {
         auto allocateF = std::bind(&TypeParam::allocateRenderGroup, &this->m_scene, 0u, 0u, RenderGroupHandle{});
@@ -198,13 +182,6 @@ namespace ramses_internal
         auto allocateF = std::bind(&TypeParam::allocateRenderBuffer, &this->m_scene, renderBuffer, RenderBufferHandle{});
         auto releaseF = std::bind(&TypeParam::releaseRenderBuffer, &this->m_scene, std::placeholders::_1);
         this->runTest(allocateF, releaseF, this->m_scene.getRenderBuffers());
-    }
-
-    TYPED_TEST(AnIteratableScene, CanIterateOverStreamTextures)
-    {
-        auto allocateF = std::bind(&TypeParam::allocateStreamTexture, &this->m_scene, WaylandIviSurfaceId{1u}, ResourceContentHash{}, StreamTextureHandle{});
-        auto releaseF = std::bind(&TypeParam::releaseStreamTexture, &this->m_scene, std::placeholders::_1);
-        this->runTest(allocateF, releaseF, this->m_scene.getStreamTextures());
     }
 
     TYPED_TEST(AnIteratableScene, CanIterateOverDataBuffers)

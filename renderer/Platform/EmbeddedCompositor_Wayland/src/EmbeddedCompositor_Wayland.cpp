@@ -21,7 +21,7 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 #include "PlatformAbstraction/PlatformTime.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include <unistd.h>
 
 namespace ramses_internal
@@ -314,7 +314,7 @@ namespace ramses_internal
 
     const IWaylandSurface& EmbeddedCompositor_Wayland::findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
-        const auto it = absl::c_find_if(m_surfaces, [&](const auto surface){ return surface->getIviSurfaceId() == streamTextureSourceId;});
+        const auto it = std::find_if(std::cbegin(m_surfaces), std::cend(m_surfaces), [&](const auto surface){ return surface->getIviSurfaceId() == streamTextureSourceId;});
         return **it;
     }
 

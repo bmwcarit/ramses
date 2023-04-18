@@ -15,7 +15,6 @@
 #include "RendererLib/DisplayConfig.h"
 #include "SceneAPI/SceneId.h"
 #include "RendererAPI/Types.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector4.h"
 
@@ -128,11 +127,6 @@ namespace ramses_internal
             handleBufferDestroyRequest(cmd.streamBuffer, cmd.display);
         }
 
-        void operator()(const RendererCommand::SetStreamBufferState& cmd)
-        {
-            setStreamBufferState(cmd.streamBuffer, cmd.display, cmd.newState);
-        }
-
         void operator()(const RendererCommand::CreateExternalBuffer& cmd)
         {
             handleExternalBufferCreateRequest(cmd.externalBuffer, cmd.display);
@@ -218,11 +212,6 @@ namespace ramses_internal
             logInfo(cmd.topic, cmd.verbose, cmd.nodeFilter);
         }
 
-        void operator()(const RendererCommand::UpdateWarpingData& cmd)
-        {
-            updateWarpingData(cmd.display, cmd.data);
-        }
-
         void operator()(const RendererCommand::SetLimits_FrameBudgets& cmd)
         {
             setLimitsFrameBudgets(cmd.limitForSceneResourcesUploadMicrosec, cmd.limitForResourcesUploadMicrosec, cmd.limitForOffscreenBufferRenderMicrosec);
@@ -264,7 +253,6 @@ namespace ramses_internal
         MOCK_METHOD(void, handleBufferDestroyRequest, (OffscreenBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleBufferCreateRequest, (StreamBufferHandle, DisplayHandle, WaylandIviSurfaceId));
         MOCK_METHOD(void, handleBufferDestroyRequest, (StreamBufferHandle, DisplayHandle));
-        MOCK_METHOD(void, setStreamBufferState, (StreamBufferHandle, DisplayHandle, bool));
         MOCK_METHOD(void, handleExternalBufferCreateRequest, (ExternalBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleExternalBufferDestroyRequest, (ExternalBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (OffscreenBufferHandle, SceneId, DataSlotId));
@@ -281,7 +269,6 @@ namespace ramses_internal
         MOCK_METHOD(void, systemCompositorSetIviSurfaceDestRectangle, (WaylandIviSurfaceId, int32_t, int32_t, int32_t, int32_t));
         MOCK_METHOD(void, systemCompositorScreenshot, (const String&, int32_t));
         MOCK_METHOD(void, logInfo, (ERendererLogTopic, bool, NodeHandle));
-        MOCK_METHOD(void, updateWarpingData, (DisplayHandle, const WarpingMeshData&));
         MOCK_METHOD(void, setLimitsFrameBudgets, (uint64_t, uint64_t, uint64_t));
         MOCK_METHOD(void, setSkippingOfUnmodifiedBuffers, (bool));
         MOCK_METHOD(void, handleConfirmationEcho, (DisplayHandle, const String&));

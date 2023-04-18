@@ -13,6 +13,7 @@
 # GL_VERSION is overridden for some systems
 
 INCLUDE(FindPackageHandleStandardArgs)
+INCLUDE(CMakeFindDependencyMacro)
 SET(ramses-shared-lib_VERSION @RAMSES_VERSION@)
 
 @PACKAGE_INIT@
@@ -32,14 +33,25 @@ ENDIF()
 # find include dir
 IF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
     FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
-        HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+        HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
         CMAKE_FIND_ROOT_PATH_BOTH
     )
 ELSE()
     FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
-        HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+        HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
     )
 ENDIF()
+
+if(IS_DIRECTORY "${ramses-shared-lib_INCLUDE_DIRS}/glm")
+    add_library(glm::glm INTERFACE IMPORTED)
+    set_target_properties(glm::glm PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${ramses-shared-lib_INCLUDE_DIRS})
+else()
+    find_dependency(glm REQUIRED)
+
+    if(NOT TARGET glm::glm)
+        add_library(glm::glm ALIAS glm)
+    endif()
+endif()
 
 # find library
 IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
@@ -62,7 +74,7 @@ IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
     # no shlib versioning support on windows
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
         NAMES "${RAMSES_GL_LIB}"
-        HINTS @PACKAGE_PROJECT_INSTALL_BINARY@
+        HINTS @PACKAGE_RAMSES_INSTALL_RUNTIME_PATH@
     )
 
 ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-X11")
@@ -72,7 +84,7 @@ ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-X11")
     # require exact shlib version
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
         NAMES "libramses-shared-lib-x11-egl-es-3-0.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
     )
 
 ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-WAYLAND")
@@ -82,7 +94,7 @@ ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-WAYLAND")
     # require exact shlib version
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
         NAMES "libramses-shared-lib-wayland-ivi-egl-es-3-0.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
     )
 
 ELSEIF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
@@ -92,7 +104,7 @@ ELSEIF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
     # no shlib versioning support on Android
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
         NAMES "libramses-shared-lib-android-egl-es-3-0.so"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
         CMAKE_FIND_ROOT_PATH_BOTH
     )
 
@@ -125,6 +137,7 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
             set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib_LIBRARIES})
         endif()
         target_include_directories(ramses-ramses-shared-lib INTERFACE ${ramses-shared-lib_INCLUDE_DIRS})
+        target_link_libraries(ramses-ramses-shared-lib INTERFACE glm::glm)
 
         if (NOT TARGET ramses::ramses)
             add_library(ramses::ramses ALIAS ramses-ramses-shared-lib)

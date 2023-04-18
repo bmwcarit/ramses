@@ -6,25 +6,14 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    ramses-test-client
     TYPE                    BINARY
     ENABLE_INSTALL          ON
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/*.h
-    FILES_SOURCE            src/*.cpp
-    RESOURCE_FOLDER         ../../TestContent/res
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    SRC_FILES               include/*.h
+                            src/*.cpp
+    RESOURCE_FOLDERS        ../../TestContent/res
     DEPENDENCIES            ramses-framework
                             TestContent
+                            ramses-cli
 )

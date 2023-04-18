@@ -38,7 +38,7 @@ namespace ramses_internal
         void removeStatisticCollectionScene(const SceneId& sceneId);
 
     private:
-        virtual void run() override final;
+        void run() final override;
         void printVersion();
         void printStatistic();
 

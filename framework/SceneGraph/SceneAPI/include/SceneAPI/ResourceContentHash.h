@@ -40,7 +40,7 @@ namespace ramses_internal
             return ResourceContentHash();
         }
 
-        constexpr inline bool isValid() const
+        [[nodiscard]] constexpr inline bool isValid() const
         {
             return *this != Invalid();
         }

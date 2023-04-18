@@ -23,16 +23,16 @@ namespace ramses_internal
     public:
         EmbeddedCompositingManager(IDevice& device, IEmbeddedCompositor& embeddedCompositor, ITextureUploadingAdapter& textureUploadingAdapter);
 
-        virtual void refStream(WaylandIviSurfaceId source) override;
-        virtual void unrefStream(WaylandIviSurfaceId source) override;
+        void refStream(WaylandIviSurfaceId source) override;
+        void unrefStream(WaylandIviSurfaceId source) override;
 
-        virtual void dispatchStateChangesOfSources(WaylandIviSurfaceIdVector& streamsWithAvailabilityChanged, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams) override;
-        virtual void processClientRequests() override;
-        virtual Bool hasUpdatedContentFromStreamSourcesToUpload() const override;
-        virtual void uploadResourcesAndGetUpdates(StreamSourceUpdates& updatedStreams) override;
-        virtual void notifyClients() override;
-        virtual DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(WaylandIviSurfaceId source) const override;
-        virtual Bool hasRealCompositor() const override; //TODO Mohamed: remove this as soon as EC dummy is removed
+        void dispatchStateChangesOfSources(WaylandIviSurfaceIdVector& streamsWithAvailabilityChanged, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams) override;
+        void processClientRequests() override;
+        [[nodiscard]] Bool hasUpdatedContentFromStreamSourcesToUpload() const override;
+        void uploadResourcesAndGetUpdates(StreamSourceUpdates& updatedStreams) override;
+        void notifyClients() override;
+        [[nodiscard]] DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(WaylandIviSurfaceId source) const override;
+        [[nodiscard]] Bool hasRealCompositor() const override; //TODO Mohamed: remove this as soon as EC dummy is removed
 
     private:
         struct StreamTextureSourceInfo

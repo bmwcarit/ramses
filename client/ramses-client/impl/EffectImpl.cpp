@@ -29,7 +29,7 @@ namespace ramses
     {
     }
 
-    void EffectImpl::initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, absl::optional<ramses_internal::EDrawMode> geometryShaderInputType)
+    void EffectImpl::initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, std::optional<EDrawMode> geometryShaderInputType)
     {
         m_effectUniformInputs = uniformInputs;
         m_effectAttributeInputs = attributeInputs;
@@ -57,8 +57,8 @@ namespace ramses
             outStream << static_cast<uint32_t>(input.semantics);
         }
 
-        // TODO (backported) enable this once 27 merged to master
-        //outStream << static_cast<uint32_t>(m_geometryShaderInputType);
+        const int32_t gsInputType = (m_geometryShaderInputType ? static_cast<int32_t>(*m_geometryShaderInputType) : -1);
+        outStream << gsInputType;
 
         return StatusOK;
     }
@@ -102,10 +102,10 @@ namespace ramses
             m_effectAttributeInputs[i].semantics = static_cast<ramses_internal::EFixedSemantics>(semanticAsUInt);
         }
 
-        // TODO (backported) enable this once 27 merged to master
-        //ramses_internal::EDrawMode geometryShaderInputType;
-        //inStream >> geometryShaderInputType;
-        //m_geometryShaderInputType = geometryShaderInputType;
+        int32_t gsInputType = -1;
+        inStream >> gsInputType;
+        if (gsInputType >= 0)
+            m_geometryShaderInputType = static_cast<EDrawMode>(gsInputType);
 
         return StatusOK;
     }
@@ -263,7 +263,7 @@ namespace ramses
             return addErrorEntry((ramses_internal::StringOutputStream() << "Effect::getGeometryShaderInputType: failed, effect '" << getName() << "' has no geometry shader attached to it!").c_str());
         }
 
-        inputType = AppearanceUtils::GetDrawModeFromInternal(*m_geometryShaderInputType);
+        inputType = *m_geometryShaderInputType;
         return StatusOK;
     }
 }

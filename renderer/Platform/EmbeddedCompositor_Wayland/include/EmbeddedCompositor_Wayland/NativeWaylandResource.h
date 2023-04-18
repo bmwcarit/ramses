@@ -51,13 +51,13 @@ namespace ramses_internal
         NativeWaylandResource();
         explicit NativeWaylandResource(wl_resource* resource);
 
-        virtual int getVersion() override;
-        virtual void postError(uint32_t code, const String& message) override;
-        virtual void* getUserData() override;
-        virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback) override;
-        virtual void addDestroyListener(wl_listener* listener) override;
-        virtual wl_resource* getLowLevelHandle() override;
-        virtual void destroy() override;
+        int getVersion() override;
+        void postError(uint32_t code, const String& message) override;
+        void* getUserData() override;
+        void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback) override;
+        void addDestroyListener(wl_listener* listener) override;
+        wl_resource* getLowLevelHandle() override;
+        void destroy() override;
 
     protected:
         wl_resource* m_resource;

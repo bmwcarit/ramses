@@ -15,10 +15,10 @@
 * @brief Basic GLSL Import Example
 */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-effect-from-glsl"));
     framework.connect();
 
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -37,10 +37,10 @@ int main(int argc, char* argv[])
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsData[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
-    uint16_t indexData[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indexData);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{0.f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = scene->createArrayResource(3u, indexData.data());
 
     /// [Basic GLSL Import Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -65,8 +65,8 @@ int main(int argc, char* argv[])
     ramses::UniformInput scaleAndShearInput;
     effect->findUniformInput("u_transformations", scaleAndShearInput);
 
-    float scaleAndShearArrayData[] = { 0.3f, 0.6f, 0.0f, 0.0f, 0.3f, 0.6f, 0.0f, 0.0f };
-    appearance->setInputValueVector4f(scaleAndShearInput, 2, scaleAndShearArrayData);
+    const ramses::vec4f scaleAndShearArrayData[2] = { ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f}, ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f} };
+    appearance->setInputValue(scaleAndShearInput, 2, scaleAndShearArrayData);
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 0.1f, 0.5f, 0.2f, 1.0);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 0.1f, 0.5f, 0.2f, 1.f });
 
     /// [Basic GLSL Import Example]
 

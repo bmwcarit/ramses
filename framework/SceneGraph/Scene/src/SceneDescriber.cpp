@@ -13,13 +13,13 @@
 #include "SceneAPI/RenderGroup.h"
 #include "SceneAPI/PixelRectangle.h"
 #include "SceneAPI/TextureSamplerStates.h"
-#include "SceneAPI/StreamTexture.h"
-#include "Animation/AnimationSystemDescriber.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
 #include "Math3d/Matrix22f.h"
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
+#include "Math3d/Vector2.h"
+#include "Math3d/Vector2i.h"
 
 namespace ramses_internal
 {
@@ -41,7 +41,6 @@ namespace ramses_internal
         RecreateDataLayouts(             source, collector);
         RecreateDataInstances(           source, collector);
         RecreateCameras(                 source, collector);
-        RecreateAnimationSystems(        source, collector);
         RecreateRenderGroups(            source, collector);
         RecreateRenderPasses(            source, collector);
         RecreateBlitPasses(              source, collector);
@@ -50,7 +49,6 @@ namespace ramses_internal
         RecreateTextureBuffers(          source, collector);
         RecreateTextureSamplers(         source, collector);
         RecreateRenderBuffersAndTargets( source, collector);
-        RecreateStreamTextures(          source, collector);
         RecreateDataSlots(               source, collector);
         RecreateSceneReferences(         source, collector);
     }
@@ -112,20 +110,20 @@ namespace ramses_internal
             if (source.isTransformAllocated(t))
             {
                 const Vector3& translation = source.getTranslation(t);
-                if (translation != Vector3(0.f))
+                if (translation != IScene::IdentityTranslation)
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Translation, t, translation, {});
+                    collector.setTranslation(t, translation);
                 }
-                const Vector3& rotation = source.getRotation(t);
-                if (rotation != Vector3(0.f))
+                const Vector4& rotation = source.getRotation(t);
+                if (rotation != IScene::IdentityRotation)
                 {
-                    const auto rotationConvention = source.getRotationConvention(t);
-                    collector.setTransformComponent(ETransformPropertyType_Rotation, t, rotation, rotationConvention);
+                    const auto rotationType = source.getRotationType(t);
+                    collector.setRotation(t, rotation, rotationType);
                 }
                 const Vector3& scaling = source.getScaling(t);
-                if (scaling != Vector3(1.0f))
+                if (scaling != IScene::IdentityScaling)
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Scaling, t, scaling, {});
+                    collector.setScaling(t, scaling);
                 }
             }
         }
@@ -345,22 +343,6 @@ namespace ramses_internal
         }
     }
 
-    void SceneDescriber::RecreateAnimationSystems(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        // send all animation systems
-        for (auto animId = AnimationSystemHandle(0); animId < source.getAnimationSystemCount(); ++animId)
-        {
-            if (source.isAnimationSystemAllocated(animId))
-            {
-                // animation system
-                const IAnimationSystem* animSystem = source.getAnimationSystem(animId);
-                assert(animSystem != nullptr);
-                collector.addAnimationSystem(animId, animSystem->getFlags(), animSystem->getTotalSizeInformation());
-                AnimationSystemDescriber::DescribeAnimationSystem(*animSystem, collector, animId);
-            }
-        }
-    }
-
     void SceneDescriber::RecreateRenderGroups(const IScene& source, SceneActionCollectionCreator& collector)
     {
         const UInt32 renderGroupTotalCount = source.getRenderGroupCount();
@@ -556,20 +538,6 @@ namespace ramses_internal
                     const RenderBufferHandle buffer = source.getRenderTargetRenderBuffer(renderTargetHandle, bufferIdx);
                     collector.addRenderTargetRenderBuffer(renderTargetHandle, buffer);
                 }
-            }
-        }
-    }
-
-    void SceneDescriber::RecreateStreamTextures(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        const UInt32 streamTextureCount = source.getStreamTextureCount();
-        for (StreamTextureHandle streamTextureHandle(0u); streamTextureHandle < streamTextureCount; ++streamTextureHandle)
-        {
-            if (source.isStreamTextureAllocated(streamTextureHandle))
-            {
-                const StreamTexture& streamTexture = source.getStreamTexture(streamTextureHandle);
-                collector.allocateStreamTexture(streamTexture.source, streamTexture.fallbackTexture, streamTextureHandle);
-                collector.setStreamTextureForceFallback(streamTextureHandle, streamTexture.forceFallbackTexture);
             }
         }
     }

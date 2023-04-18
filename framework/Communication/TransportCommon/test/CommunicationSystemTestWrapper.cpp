@@ -9,7 +9,6 @@
 #include "CommunicationSystemTestWrapper.h"
 #include "TransportCommon/CommunicationSystemFactory.h"
 #include "Common/ParticipantIdentifier.h"
-#include "Utils/CommandLineParser.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "TestRandom.h"
 #include "RamsesFrameworkConfigImpl.h"
@@ -25,9 +24,6 @@ namespace ramses_internal
         {
         case ECommunicationSystemType::Tcp:
             *os << "ECommunicationSystemType::Tcp";
-            return;
-        case ECommunicationSystemType::GenericSomeIP:
-            *os << "ECommunicationSystemType::GenericSomeIP";
             return;
         };
         *os << static_cast<int>(type) << " (INVALID ECommunicationSystemType)";
@@ -111,8 +107,7 @@ namespace ramses_internal
         : id(id_.isValid() ? id_ : Guid(TestRandom::Get(255, std::numeric_limits<size_t>::max())))
         , state(state_)
     {
-        ramses::RamsesFrameworkConfigImpl config(0, nullptr);
-        config.enableProtocolVersionOffset();
+        ramses::RamsesFrameworkConfigImpl config;
 
         commSystem = CommunicationSystemFactory::ConstructCommunicationSystem(config, ParticipantIdentifier(id, name), frameworkLock, statisticCollection);
         state.knownCommunicationSystems.push_back(this);
@@ -136,9 +131,6 @@ namespace ramses_internal
         case EServiceType::Ramses:
             commSystem->getRamsesConnectionStatusUpdateNotifier().registerForConnectionUpdates(&statusUpdateListener);
             break;
-        case EServiceType::Dcsm:
-            commSystem->getDcsmConnectionStatusUpdateNotifier().registerForConnectionUpdates(&statusUpdateListener);
-            break;
         }
     }
 
@@ -148,9 +140,6 @@ namespace ramses_internal
         {
         case EServiceType::Ramses:
             commSystem->getRamsesConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&statusUpdateListener);
-            break;
-        case EServiceType::Dcsm:
-            commSystem->getDcsmConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&statusUpdateListener);
             break;
         }
     }

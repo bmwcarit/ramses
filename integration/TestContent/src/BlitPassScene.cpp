@@ -96,7 +96,7 @@ namespace ramses_internal
         ramses::RenderTarget& renderTarget = createRenderTarget(state);
 
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags_All);
     }
 
@@ -107,7 +107,7 @@ namespace ramses_internal
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
-        transNode.translate(0.0f, -0.5f, -5.0f);
+        transNode.translate({0.0f, -0.5f, -5.0f});
 
         ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();
         renderGroup.addMeshNode(meshNode);
@@ -163,7 +163,7 @@ namespace ramses_internal
 
         ramses::RenderTarget& renderTarget = createBlittingRenderTarget(state);
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(0.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({0.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags_All);
     }
 
@@ -181,7 +181,7 @@ namespace ramses_internal
         if (BLITS_DEPTH_BUFFER == state ||
             BLITS_DEPTH_STENCIL_BUFFER == state)
         {
-            transNode.translate(0.0f, -0.0f, -5.1f);
+            transNode.translate({0.0f, -0.0f, -5.1f});
         }
         else
         {
@@ -199,7 +199,7 @@ namespace ramses_internal
 
             ramses::Node& transNode2 = *m_scene.createNode();
             transNode2.addChild(meshNode2);
-            transNode2.translate(0.0f, -0.8f, -4.9f);
+            transNode2.translate({0.0f, -0.8f, -4.9f});
 
             renderGroup.addMeshNode(meshNode2);
         }

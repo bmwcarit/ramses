@@ -17,7 +17,6 @@ namespace ramses_internal
     {
         *os << "Fullscreen=" << config.getFullscreenState();
         *os << "\nBorderlesss=" << config.getBorderlessState();
-        *os << "\nWarping=" << config.isWarpingEnabled();
 
         *os << "\nAntialiasing samples=" << config.getAntialiasingSampleCount();
 
@@ -25,7 +24,7 @@ namespace ramses_internal
         *os << "\nWindowHeight=" << config.getDesiredWindowHeight();
         *os << "\nWindowPositionX=" << config.getWindowPositionX();
         *os << "\nWindowPositionY=" << config.getWindowPositionY();
-        *os << "\nWaylandSocketEmbedded=" << config.getWaylandSocketEmbedded().c_str();
+        *os << "\nWaylandSocketEmbedded=" << config.getWaylandSocketEmbedded();
         *os << "\nWaylandSocketEmbeddedFD=" << config.getWaylandSocketEmbeddedFD();
     }
 

@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERCONFIGIMPL_H
 
 #include "RendererLib/RendererConfig.h"
-#include "Utils/CommandLineParser.h"
 #include "StatusObjectImpl.h"
 
 namespace ramses
@@ -21,23 +20,12 @@ namespace ramses
     class RendererConfigImpl : public StatusObjectImpl
     {
     public:
-        RendererConfigImpl(int32_t argc, char const* const* argv);
+        RendererConfigImpl();
 
         status_t enableSystemCompositorControl();
-        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
-        const char* getWaylandSocketEmbeddedGroup() const;
 
-        status_t setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
-        uint32_t getWaylandSocketEmbeddedPermissions() const;
-
-        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
-        const char* getWaylandEmbeddedCompositingSocketName() const;
-
-        status_t setWaylandEmbeddedCompositingSocketFD(int fd);
-        int getWaylandSocketEmbeddedFD() const;
-
-        status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
-        const char* getSystemCompositorWaylandDisplay() const;
+        status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
+        std::string_view getSystemCompositorWaylandDisplay() const;
 
         status_t setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec);
 
@@ -55,8 +43,6 @@ namespace ramses
 
         //impl methods
         const ramses_internal::RendererConfig& getInternalRendererConfig() const;
-
-        virtual status_t validate() const override;
 
     private:
         ramses_internal::RendererConfig    m_internalConfig;

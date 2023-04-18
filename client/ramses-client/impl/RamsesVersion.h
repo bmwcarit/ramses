@@ -10,6 +10,7 @@
 #define RAMSES_INTERNAL_RAMSESVERSION_H
 
 #include "Collections/String.h"
+#include "ramses-framework-api/EFeatureLevel.h"
 
 namespace ramses_internal
 {
@@ -26,8 +27,8 @@ namespace ramses_internal
             UInt32 minor;
         };
 
-        void WriteToStream(IOutputStream& stream, const String& versionString, const String& gitHash);
-        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion);
+        void WriteToStream(IOutputStream& stream, const String& versionString, const String& gitHash, ramses::EFeatureLevel featureLevel);
+        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion, ramses::EFeatureLevel& outFeatureLevel);
         bool MatchesMajorMinor(UInt32 currentMajor, UInt32 currentMinor, const VersionInfo& in);
     }
 }

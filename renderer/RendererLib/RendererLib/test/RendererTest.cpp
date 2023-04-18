@@ -22,7 +22,7 @@
 #include "RendererMock.h"
 #include "ComponentMocks.h"
 #include "TestSceneHelper.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "Utils/ThreadLocalLog.h"
 
 using namespace ramses_internal;
@@ -47,7 +47,7 @@ public:
             ON_CALL(renderer.m_platform, getSystemCompositorController()).WillByDefault(Return(&renderer.m_platform.systemCompositorControllerMock));
     }
 
-    virtual ~ARenderer()
+    ~ARenderer() override
     {
         if (renderer.hasDisplayController())
             destroyDisplayController();
@@ -97,7 +97,6 @@ public:
             // normally render executor clears, in some cases (no scene assigned) renderer clears instead
             if (expectRendererClear != EClearFlags_None)
                 EXPECT_CALL(*renderer.m_displayController, clearBuffer(DisplayControllerMock::FakeFrameBufferHandle, expectRendererClear, clearColor));
-            EXPECT_CALL(*renderer.m_displayController, executePostProcessing()).InSequence(SeqRender);
         }
         else
         {
@@ -998,7 +997,7 @@ TEST_P(ARenderer, takeMultipleScreenshotsOfADisplayOverritesPreviousScreenshot)
 
     auto screenshots1 = renderer.dispatchProcessedScreenshots();
     ASSERT_EQ(1u, screenshots1.size());
-    const auto& screenshots1FB = absl::c_find_if(screenshots1, [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
+    const auto& screenshots1FB = std::find_if(std::cbegin(screenshots1), std::cend(screenshots1), [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
     ASSERT_NE(screenshots1.cend(), screenshots1FB);
 
     // check that screenshot request got deleted
@@ -1027,7 +1026,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.setRenderPassCamera(pass, camera);
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
@@ -1043,7 +1042,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.setRenderPassRenderOnce(pass, true);
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
@@ -1055,7 +1054,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     EXPECT_EQ(pass, passesToRender[0].getRenderPassHandle());
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
@@ -1493,31 +1492,6 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
     // no change
     expectFrameBufferRendered(false);
     doOneRendererLoop();
-    expectFrameBufferRendered(false);
-    doOneRendererLoop();
-}
-
-TEST_P(ARenderer, rerendersFramebufferIfWarpingDataChanged)
-{
-    createDisplayController();
-    EXPECT_CALL(*renderer.m_displayController, isWarpingEnabled()).WillRepeatedly(Return(true));
-
-    expectFrameBufferRendered(true);
-    expectSwapBuffers();
-    doOneRendererLoop();
-
-    // no change
-    expectFrameBufferRendered(false);
-    doOneRendererLoop();
-
-    // changing warping data causes re-render
-    EXPECT_CALL(*renderer.m_displayController, setWarpingMeshData(_));
-    renderer.setWarpingMeshData({});
-    expectFrameBufferRendered(true);
-    expectSwapBuffers();
-    doOneRendererLoop();
-
-    // no change
     expectFrameBufferRendered(false);
     doOneRendererLoop();
 }

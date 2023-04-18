@@ -38,7 +38,7 @@ namespace ramses_internal
         {
         }
 
-        ScreenspaceQuad createSubQuad(const Vector4& quadSubregionAsFloats) const
+        [[nodiscard]] ScreenspaceQuad createSubQuad(const Vector4& quadSubregionAsFloats) const
         {
             Vector4 subQuadCoords(
                 (m_quadX + quadSubregionAsFloats.x * m_quadWidth)   / m_widthOfScreen,
@@ -50,7 +50,7 @@ namespace ramses_internal
             return ScreenspaceQuad(m_widthOfScreen, m_heightOfScreen, subQuadCoords);
         }
 
-        Vector3 getVertex(EScreenspaceQuadVertex vertex, UInt jitterRange) const
+        [[nodiscard]] Vector3 getVertex(EScreenspaceQuadVertex vertex, UInt jitterRange) const
         {
             Vector3 screenspaceVertexWithNoise;
 
@@ -76,20 +76,20 @@ namespace ramses_internal
             return screenspaceVertexWithNoise;
         }
 
-        uint32_t getWidthOfScreen() const
+        [[nodiscard]] uint32_t getWidthOfScreen() const
         {
             return m_widthOfScreen;
         }
 
-        uint32_t getHeightOfScreen() const
+        [[nodiscard]] uint32_t getHeightOfScreen() const
         {
             return m_heightOfScreen;
         }
 
-        ramses::OrthographicCamera& createOrthoCamera(ramses::Scene& scene) const
+        [[nodiscard]] ramses::OrthographicCamera& createOrthoCamera(ramses::Scene& scene) const
         {
             ramses::Node* cameraTranslation = scene.createNode();
-            cameraTranslation->setTranslation(0.0f, 0.0f, 0.5f);
+            cameraTranslation->setTranslation({0.0f, 0.0f, 0.5f});
 
             ramses::OrthographicCamera& camera = *scene.createOrthographicCamera();
             camera.setFrustum(0.0f, static_cast<float>(m_widthOfScreen), 0.0f, static_cast<float>(m_heightOfScreen), 0.1f, 100.f);

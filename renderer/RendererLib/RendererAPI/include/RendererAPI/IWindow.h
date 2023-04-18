@@ -10,7 +10,6 @@
 #define RAMSES_IWINDOW_H
 
 #include "Types.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
@@ -22,18 +21,18 @@ namespace ramses_internal
         virtual bool init() = 0;
         virtual Bool setFullscreen(Bool fullscreen) = 0;
         virtual bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) = 0;
-        virtual Bool canRenderNewFrame() const = 0;
+        [[nodiscard]] virtual Bool canRenderNewFrame() const = 0;
         virtual void handleEvents() = 0;
         virtual void frameRendered() = 0;
-        virtual UInt32 getWidth() const = 0;
-        virtual UInt32 getHeight() const = 0;
-        virtual Float getAspectRatio() const = 0;
-        virtual Int32 getPosX() const = 0;
-        virtual Int32 getPosY() const = 0;
+        [[nodiscard]] virtual UInt32 getWidth() const = 0;
+        [[nodiscard]] virtual UInt32 getHeight() const = 0;
+        [[nodiscard]] virtual Float getAspectRatio() const = 0;
+        [[nodiscard]] virtual Int32 getPosX() const = 0;
+        [[nodiscard]] virtual Int32 getPosY() const = 0;
         virtual void setTitle(const String& title) = 0;
-        virtual const String& getTitle() const = 0;
-        virtual bool hasTitle() const = 0;
-        virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const = 0;
+        [[nodiscard]] virtual const String& getTitle() const = 0;
+        [[nodiscard]] virtual bool hasTitle() const = 0;
+        [[nodiscard]] virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const = 0;
     };
 }
 

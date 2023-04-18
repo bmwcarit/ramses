@@ -14,6 +14,8 @@
 #include "Math3d/Vector3.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
+#include <array>
+#include "glm/vec4.hpp"
 
 namespace ramses_internal
 {
@@ -43,12 +45,16 @@ namespace ramses_internal
         explicit constexpr Vector4(const Float value);
         explicit constexpr Vector4(const Vector3& other);
         constexpr Vector4(Float _x, Float _y, Float _z, Float _w);
+        explicit constexpr Vector4(const std::array<float, 4u>& values);
+        explicit constexpr Vector4(const glm::vec4& other);
 
         constexpr Vector4(const Vector4& other) = default;
         constexpr Vector4& operator=(const Vector4& other) = default;
 
         constexpr void set(Float _x, Float _y, Float _z, Float _w);
         constexpr void set(Float xyzw);
+
+        [[nodiscard]] glm::vec4 getAsVec4() const;
 
         constexpr Vector4 operator+(const Vector4& other) const;
         constexpr void operator+=(const Vector4& other);
@@ -69,9 +75,9 @@ namespace ramses_internal
         constexpr Float& operator[](const UInt32 index);
         constexpr const Float& operator[](const UInt32 index) const;
 
-        constexpr Float dot(const Vector4& other) const;
-        constexpr Vector4 cross(const Vector4& other) const;
-        Float length() const;
+        [[nodiscard]] constexpr Float dot(const Vector4& other) const;
+        [[nodiscard]] constexpr Vector4 cross(const Vector4& other) const;
+        [[nodiscard]] Float length() const;
 
         friend constexpr Vector4 operator*(const Float scalar, const Vector4&);
     };
@@ -101,6 +107,18 @@ namespace ramses_internal
     {
     }
 
+    constexpr inline
+        Vector4::Vector4(const std::array<float, 4u>& values)
+        : Vector4(values[0], values[1], values[2], values[3])
+    {
+    }
+
+    constexpr inline
+        Vector4::Vector4(const glm::vec4& other)
+        : Vector4(other.x, other.y, other.z, other.w)
+    {
+    }
+
     constexpr inline Vector4::Vector4(const Vector3& other)
         : x(other.x)
         , y(other.y)
@@ -120,6 +138,11 @@ namespace ramses_internal
     constexpr inline void Vector4::set(Float xyzw)
     {
         x = y = z = w = xyzw;
+    }
+
+    inline glm::vec4 Vector4::getAsVec4() const
+    {
+        return glm::vec4{x, y, z, w};
     }
 
     inline Float Vector4::length() const

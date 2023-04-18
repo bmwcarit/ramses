@@ -26,9 +26,6 @@
 
 namespace ramses_internal
 {
-    constexpr const ramses::dataProviderId_t TextureLinkScene::DataProviderId;
-    constexpr const ramses::dataConsumerId_t TextureLinkScene::DataConsumerId;
-
     TextureLinkScene::TextureLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
@@ -58,8 +55,8 @@ namespace ramses_internal
             ramses::Node* scale1 = scene.createNode();
             ramses::Node* scale2 = scene.createNode();
 
-            scale1->setScaling(5.0f, 5.0f, 5.0f);
-            scale2->setScaling(5.0f, 5.0f, 5.0f);
+            scale1->setScaling({5.0f, 5.0f, 5.0f});
+            scale2->setScaling({5.0f, 5.0f, 5.0f});
 
             scale1->setParent(*translate1);
             scale2->setParent(*translate2);
@@ -76,11 +73,11 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*mesh1);
         addMeshNodeToDefaultRenderGroup(*mesh2);
 
-        translate1->setTranslation(-1.5f, 0.f, -15.f);
-        translate2->setTranslation(1.5f, 0.f, -15.f);
+        translate1->setTranslation({-1.5f, 0.f, -15.f});
+        translate2->setTranslation({1.5f, 0.f, -15.f});
 
-        const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 3u, textureCoordsArray);
+        const std::array<ramses::vec2f, 3u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f} };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(3u, textureCoordsArray.data());
 
         ramses::AttributeInput texCoordsInput;
         effect->findAttributeInput("a_texcoord", texCoordsInput);
@@ -130,7 +127,7 @@ namespace ramses_internal
             rtdesc.addRenderBuffer(fallBackBuffer);
             ramses::RenderTarget* renderTarget = m_scene.createRenderTarget(rtdesc);
             renderPassClear.setRenderTarget(renderTarget);
-            renderPassClear.setClearColor(1.0f, 1.0f, 0.f, 1.0f);
+            renderPassClear.setClearColor({1.0f, 1.0f, 0.f, 1.0f});
 
             const ramses::TextureSamplerMS& sampler = *m_scene.createTextureSamplerMS(fallBackBuffer, "samplerMSConsumer");
 
@@ -142,9 +139,9 @@ namespace ramses_internal
 
             ramses::UniformInput sampleCountInput;
             appearance1.getEffect().findUniformInput("sampleCount", sampleCountInput);
-            appearance1.setInputValueInt32(sampleCountInput, 4u);
+            appearance1.setInputValue(sampleCountInput, 4);
             appearance2.getEffect().findUniformInput("sampleCount", sampleCountInput);
-            appearance2.setInputValueInt32(sampleCountInput, 4u);
+            appearance2.setInputValue(sampleCountInput, 4);
 
             scene.createTextureConsumer(sampler, DataConsumerId);
         }

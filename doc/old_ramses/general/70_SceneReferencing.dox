@@ -1,0 +1,121 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2020 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page SceneReferencing Scene Referencing
+
+# The concept
+
+There are two main roles in the Ramses ecosystem:
+    - content provider (ramses::RamsesClient)
+        - create and offer content
+        - modify content based on application logic
+    - content consumer (ramses::RamsesRenderer + ramses::RendererSceneControl)
+        - accept/assign content from providers
+        - control content rendering state based on application logic
+
+If one application implements both of these roles, it has full control over the rendered result. If the provider and consumer are two different applications
+then each takes care of its own part and thanks to Ramses a large number of use cases can be achieved without any additional communication channel.
+
+Now imagine a situation where there are 3 participants, each being a separate application:
+    - content provider A
+        - provides content not knowing where and how it ends up used (e.g. navigation map)
+    - content provider/consumer B
+        - accepts content from A, uses it inside its own content and offers the result as new content (e.g. navigation map extended with additional overlay elements)
+    - content consumer C
+        - accepts the single composited content from B and controls its rendering state
+
+The participant B represents a new role which combines the two basic roles of provider and consumer. The important aspect to realize here is that C does not
+know anything about A and does not care about its content, it only takes content from B. Whether content from B nests other contents or not is irrelevant for C.
+Using this content nesting approach allows a nice and clearly defined separation of responsibilities between various components. In theory it can also scale
+to arbitrary number of nesting layers and arbitrary number of contents nested in each layer.
+
+# The concept vs Ramses
+
+Applying this concept on Ramses level reveals a problem - the content to be nested coming from lower layer carries a very limited set of information -
+scene ID and maybe some extra metadata. Also there is typically just one ramses::RamsesRenderer for given content
+and it is owned by a consumer which in case of nesting is in the top layer, so it is inaccessible from any other layer.
+
+# Scene Referencing
+
+To tackle the problem Ramses provides a scene referencing API which allows any scene to 'reference' another scene just by its scene ID,
+this establishes a master scene and referenced scene relationship. It is important to realize that this does NOT expose any of the referenced scene's
+Ramses objects (meshnodes, appearances, ...) to the master scene. Instead the API allows to change the referenced scenes rendering states similar
+to the ramses::RendererSceneControl API, i.e. rendering state, render order, data linking etc., see the ramses::Scene and ramses::SceneReference API docs for details.
+Even though limited, this already gives a number of possibilities how to composite/nest scenes together.
+
+Overview of the example above, now with scene referencing:
+    - content provider A
+        - creates and publishes sceneA
+    - content provider/consumer B
+        - creates and maintains its own sceneB
+        - creates scene reference for sceneA in sceneB (sceneB becomes master of sceneA)
+        - maintains sceneA's states using scene referencing API
+        - publishes sceneB
+    - content consumer C
+        - maintains sceneB's states using scene control API
+
+Consumer C knows nothing about provider A on application level which is one of the key goals of the initial concept. However down there,
+in consumer C's renderer, all the data is available to render sceneA as part of its master sceneB.
+<b>Scene referencing is essentially a remote control of renderering states limited to the scene being referenced.</b>
+
+In order to make all this technically possible there are several rules, guarantees and limitations:
+    - a scene can be referenced by one master only at a time
+    - RamsesRenderer guarantees that referenced scene will never have higher rendering state than its master (higher state can however be requested from API and will be just kept back)
+    - RamsesRenderer guarantees to show/hide master scene with all its references at once (assuming conditions for each scene involved to be ready/showable are met)
+    - referenced scene inherits display mapping and display buffer assignment from its master
+    - referenced scene's render order is relative to its master scene's render order
+
+Check out the scene referencing example in Ramses SDK to get the feeling of how to use the API for a basic use case.
+
+# Scene Referencing events
+
+The mechanism of events dispatching is used in several Ramses APIs and it is not different with scene referencing. With scene referencing however we deal
+with two remote participants (referenced scene's provider and consumer with renderer), both contributing to the overall state. This makes it even
+more important to use the events carefully as means of synchronization and correct sequence of commands.
+
+One event in particular can be helpful to achieve well defined behavior - a versioned flush applied event (ramses::IClientEventHandler::sceneReferenceFlushed).
+As stated above master scene has no access to referenced scene's internals, it can only request state changes for the scene as a whole on renderer's side.
+But Ramses scene can be flushed with a version tag, the said event is emitted whenever a referenced scene is flushed with version tag and that flush
+is fully applied to the scene on renderer's side. The version tag itself is a user defined value, so there can be an agreement how to interprete the value
+by the application logic (see ramses::Scene::flush).
+
+# Understanding READY state
+
+The READY state is probably the most important state and should always be used as synchronization point whenever there is need to show a scene/content
+'at once' (with minimal delay), Ramses guarantees to show any given READY scene in the very next frame after the show request. This is essential if a collection
+of scenes/contents need to appear together, which is probably the case whenever scene referencing is used. Ramses scene in state READY (ramses::RendererSceneControl::setSceneState)
+means that it is mapped to display, assigned to display buffer, its resources are uploaded and it is ready to be shown within a single frame.
+
+Typical example of a desired sequence of state requests/events would then look like this:
+
+<table>
+<tr><th>Provider                                           <th>Consumer/Provider (master scene)                    <th>Consumer with renderer
+<tr><td>prepare *sceneA*                                   <td>prepare *sceneB*                                    <td>set up renderer
+<tr><td>publish *sceneA*                                   <td>publish *sceneB*                                    <td>
+<tr><td>                                                   <td>create *sceneA* reference                           <td>
+<tr><td><td><td>
+<tr><td>update *sceneA* (optionally flush with version tag)<td>                                                    <td>
+<tr><td>                                                   <td> (optionally wait for version tag)                  <td>
+<tr><td>                                                   <td>request *sceneA* reference **READY**                <td>
+<tr><td>                                                   <td>...                                                 <td> (*sceneA* gets uploaded by Ramses internal logic)
+<tr><td>                                                   <td>request *sceneA* reference **RENDERED** (*see note below*)<td>
+<tr><td><td><td>
+<tr><td>                                                   <td>                                                    <td> set *sceneB* to **RENDERED**
+<tr><td>                                                   <td>                                                    <td> (both *sceneA* and *sceneB* are shown together)
+</table>
+
+It is important to prepare and set all the content you are nesting to a state which is desired to be rendered. Good practice is to synchronize using the scene version tag,
+that way the consumer can make sure that the scene it is consuming is in the correct state before requesting it to be READY/RENDERED.
+
+Note regarding requesting the scene reference RENDERED: remember that a referenced scene's rendering state on renderer's side will be kept back to never be higher
+than master scene's state so it is safe to request RENDERED right away, it can even replace the READY request (state change events will anyway be reported one by one,
+so there will be event that scene reference is READY even when requested RENDERED right away).
+
+*/

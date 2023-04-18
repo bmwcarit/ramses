@@ -28,7 +28,7 @@ protected:
         ThreadLocalLog::SetPrefix(1);
     }
 
-    const RendererEvent getRendererEvent(UInt32 index) const
+    [[nodiscard]] const RendererEvent getRendererEvent(UInt32 index) const
     {
         const auto events = m_eventCollector.getRendererEvents();
         if (events.size() <= index)

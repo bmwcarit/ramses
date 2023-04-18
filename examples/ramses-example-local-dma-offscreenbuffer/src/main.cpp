@@ -54,7 +54,6 @@
  */
 
 //parameters to control the example
-static constexpr ramses::waylandIviSurfaceId_t CompositingSurfaceId{ 789u };
 static constexpr uint32_t OffscreenBufferWidth = 200u;
 static constexpr uint32_t OffscreenBufferHeight = 200u;
 static constexpr uint32_t DisplayWidth = 800u;
@@ -101,7 +100,7 @@ public:
     {
     }
 
-    virtual void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
+    void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
     {
         if(result == ramses::ERendererEventResult_OK)
         {
@@ -116,12 +115,12 @@ public:
             printf("Error: Failed read pixels!!\n");
     }
 
-    virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
+    void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
     {
         m_scenes[sceneId].state = state;
     }
 
-    virtual void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
+    void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -129,7 +128,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult_FAIL != result)
         {
@@ -137,7 +136,7 @@ public:
         }
     }
 
-    virtual void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
+    void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
     {
         if (success)
         {
@@ -229,19 +228,19 @@ ramses::Effect& createEffect(ramses::Scene& scene, const std::string& effectName
 ramses::MeshNode& createQuadWithTexture(ramses::Scene& scene, ramses::Effect& effect, ramses::TextureSampler& textureSampler)
 {
     const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::ArrayResource* indices = scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const ramses::ArrayResource* indices = scene.createArrayResource(6u, indicesArray);
 
-    const float vertexPositionsArray[] =
+    const std::array<ramses::vec3f, 4u> vertexPositionsArray
     {
-        -1.f, -1.f, 0.f,
-        1.f, -1.f, 0.f,
-        -1.f, 1.f, 0.f,
-        1.f, 1.f, 0.f
+        ramses::vec3f{ -1.f, -1.f, 0.f },
+        ramses::vec3f{ 1.f, -1.f, 0.f },
+        ramses::vec3f{ -1.f, 1.f, 0.f },
+        ramses::vec3f{ 1.f, 1.f, 0.f }
     };
-    const ramses::ArrayResource* vertexPositions = scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const ramses::ArrayResource* vertexPositions = scene.createArrayResource(4u, vertexPositionsArray.data());
 
-    const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f };
-    const ramses::ArrayResource* textureCoords = scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f} };
+    const ramses::ArrayResource* textureCoords = scene.createArrayResource(4u, textureCoordsArray.data());
 
     ramses::Appearance* appearance = scene.createAppearance(effect, "quad appearance");
     ramses::GeometryBinding* geometry = scene.createGeometryBinding(effect, "quad geometry");
@@ -265,7 +264,7 @@ ramses::MeshNode& createQuadWithTexture(ramses::Scene& scene, ramses::Effect& ef
     return *meshNode;
 }
 
-ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, ramses::waylandIviSurfaceId_t streamId, const std::string& processingOutputSamplerName)
+ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const std::string& processingOutputSamplerName)
 {
     //scene consists of two quads with textures
     //the left quad is stream tex input rendered as is
@@ -273,7 +272,7 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "main scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("main scene camera");
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     camera->setFrustum(-2.f, 2.f, -2.f, 2.f, 0.1f, 100.f);
     camera->setViewport(0, 0u, DisplayWidth, DisplayHeight);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("main scene render pass");
@@ -286,16 +285,16 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
 
     // Create fallback texture to show when sampler not linked to an offscreen buffer
     ramses::Texture2D& fallbackTexture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-dma-offscreenbuffer-fallback.png", *clientScene);
-    ramses::StreamTexture& streamTexture = *clientScene->createStreamTexture(fallbackTexture, streamId, "main scene composited tex sampler");
     ramses::TextureSampler& streamtextureSampler = *clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat,
                                                                                 ramses::ETextureAddressMode_Repeat,
                                                                                 ramses::ETextureSamplingMethod_Linear,
                                                                                 ramses::ETextureSamplingMethod_Linear,
-                                                                                streamTexture,
+                                                                                fallbackTexture,
+                                                                                1u,
                                                                                 "mainSceneStreamTexSampler");
 
     auto& meshCompositedTexture = createQuadWithTexture(*clientScene, effect, streamtextureSampler);
-    meshCompositedTexture.setTranslation(-1.f, 0.f, 0.f);
+    meshCompositedTexture.setTranslation({-1.f, 0.f, 0.f});
     renderGroup->addMeshNode(meshCompositedTexture);
 
     ramses::TextureSampler& outputTextureSampler = *clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat,
@@ -307,19 +306,19 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
                                                                                 processingOutputSamplerName.c_str());
 
     auto& meshOutputTexture = createQuadWithTexture(*clientScene, effect, outputTextureSampler);
-    meshOutputTexture.setTranslation(1.f, 0.f, 0.f);
+    meshOutputTexture.setTranslation({1.f, 0.f, 0.f});
     renderGroup->addMeshNode(meshOutputTexture);
 
     return *clientScene;
 }
 
-ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, ramses::waylandIviSurfaceId_t streamId)
+ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
 {
     //scene consists of one quad with a the stream texture that fills whole OB where scene is rendered
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "source scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("source scene camera");
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
     camera->setViewport(0, 0u, OffscreenBufferWidth, OffscreenBufferHeight);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("source scene pass");
@@ -332,12 +331,12 @@ ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t
 
     // Create fallback texture to show when sampler not linked to an offscreen buffer
     ramses::Texture2D& fallbackTexture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-dma-offscreenbuffer-fallback.png", *clientScene);
-    ramses::StreamTexture& streamTexture = *clientScene->createStreamTexture(fallbackTexture, streamId, "source composited tex sampler");
     ramses::TextureSampler& streamtextureSampler = *clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat,
                                                                                ramses::ETextureAddressMode_Repeat,
                                                                                ramses::ETextureSamplingMethod_Linear,
                                                                                ramses::ETextureSamplingMethod_Linear,
-                                                                               streamTexture,
+                                                                               fallbackTexture,
+                                                                               1u,
                                                                                "source stream tex sampler");
 
     auto& meshCompositedTexture = createQuadWithTexture(*clientScene, effect, streamtextureSampler);
@@ -491,13 +490,13 @@ bool doProcessing(ramses::displayBufferId_t inputBuffer, ramses::displayBufferId
     return true;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses::RamsesFrameworkConfig config;
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-example-local-dma-offscreenbuffer"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
 
     //Set big enough max frame poll time in order to wait for every frame to finish
     //This is essential to avoid skipping any frames
@@ -513,7 +512,7 @@ int main(int argc, char* argv[])
     SceneStateEventHandler eventHandler(renderer);
 
     //Create display and OBs
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
     displayConfig.setPlatformRenderNode("/dev/dri/renderD128");
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
@@ -560,17 +559,17 @@ int main(int argc, char* argv[])
     //disable clearing for OBs in order to control when does content get overwritten
     //for example, the content of the write OBs (final result after processing) is written to memory
     //on CPU side, so GPU should not clear that content while rendering
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferRead1, ramses::EClearFlags_None);
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferRead2, ramses::EClearFlags_None);
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferWrite1, ramses::EClearFlags_None);
-    ramses::RamsesRenderer::setDisplayBufferClearFlags(renderer, display, dmaOffscreenBufferWrite2, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead1, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead2, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite1, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite2, ramses::EClearFlags_None);
     renderer.flush();
 
     const ramses::dataConsumerId_t samplerConsumerId(457u);
 
     const ramses::sceneId_t mainSceneId{1u};
     const std::string& processingOutputSamplerName = "processingOutputTexSampler";
-    ramses::Scene& mainScene = createMainScene(client, mainSceneId, CompositingSurfaceId, processingOutputSamplerName);
+    ramses::Scene& mainScene = createMainScene(client, mainSceneId, processingOutputSamplerName);
     const ramses::TextureSampler& processingOutputSampler = *ramses::RamsesUtils::TryConvert<ramses::TextureSampler>(*mainScene.findObjectByName(processingOutputSamplerName.c_str()));
     mainScene.createTextureConsumer(processingOutputSampler, samplerConsumerId);
 
@@ -582,7 +581,7 @@ int main(int argc, char* argv[])
     eventHandler.waitForSceneState(mainSceneId, ramses::RendererSceneState::Rendered);
 
     const ramses::sceneId_t sourceSceneId{2u};
-    ramses::Scene& sourceScene = createSourceScene(client, sourceSceneId, CompositingSurfaceId);
+    ramses::Scene& sourceScene = createSourceScene(client, sourceSceneId);
     sourceScene.flush();
     sourceScene.publish();
 

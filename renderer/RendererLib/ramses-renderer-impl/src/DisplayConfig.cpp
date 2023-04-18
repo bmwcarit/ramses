@@ -16,12 +16,7 @@
 namespace ramses
 {
     DisplayConfig::DisplayConfig()
-        : DisplayConfig(0, nullptr)
-    {
-    }
-
-    DisplayConfig::DisplayConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new DisplayConfigImpl(argc, argv))
+        : StatusObject(*new DisplayConfigImpl())
         , impl(static_cast<DisplayConfigImpl&>(StatusObject::impl))
     {
     }
@@ -79,13 +74,6 @@ namespace ramses
         return impl.getMultiSamplingSamples(numSamples);
     }
 
-    status_t DisplayConfig::enableWarpingPostEffect()
-    {
-        const status_t status = impl.enableWarpingPostEffect();
-        LOG_HL_RENDERER_API_NOARG(status);
-        return status;
-    }
-
     status_t DisplayConfig::setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID)
     {
         const status_t status = impl.setWaylandIviLayerID(waylandIviLayerID);
@@ -110,33 +98,21 @@ namespace ramses
         return impl.getWaylandIviSurfaceID();
     }
 
-    status_t DisplayConfig::setWaylandDisplay(const char* waylandDisplay)
+    status_t DisplayConfig::setWaylandDisplay(std::string_view waylandDisplay)
     {
         return impl.setWaylandDisplay(waylandDisplay);
     }
 
-    const char* DisplayConfig::getWaylandDisplay() const
+    std::string_view DisplayConfig::getWaylandDisplay() const
     {
         return impl.getWaylandDisplay();
     }
 
-    status_t DisplayConfig::setAsyncEffectUploadEnabled(DisplayConfig& config, bool enabled)
+    status_t DisplayConfig::setAsyncEffectUploadEnabled(bool enabled)
     {
-        const status_t status = config.impl.setAsyncEffectUploadEnabled(enabled);
-        LOG_HL_RENDERER_STATIC_API1(status, enabled);
+        const status_t status = impl.setAsyncEffectUploadEnabled(enabled);
+        LOG_HL_RENDERER_API1(status, enabled);
         return status;
-    }
-
-    status_t DisplayConfig::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)
-    {
-        const status_t status = impl.setIntegrityRGLDeviceUnit(rglDeviceUnit);
-        LOG_HL_RENDERER_API1(status, rglDeviceUnit);
-        return status;
-    }
-
-    uint32_t DisplayConfig::getIntegrityRGLDeviceUnit() const
-    {
-        return impl.getIntegrityRGLDeviceUnit();
     }
 
     void* DisplayConfig::getAndroidNativeWindow() const
@@ -177,17 +153,17 @@ namespace ramses
         return status;
     }
 
-    status_t DisplayConfig::setClearColor(float red, float green, float blue, float alpha)
+    status_t DisplayConfig::setClearColor(const vec4f& color)
     {
-        const status_t status = impl.setClearColor(red, green, blue, alpha);
-        LOG_HL_RENDERER_API4(status, red, green, blue, alpha);
+        const status_t status = impl.setClearColor(color);
+        LOG_HL_RENDERER_API4(status, color.r, color.g, color.b, color.a);
         return status;
     }
 
-    status_t DisplayConfig::setDepthStencilBufferType(DisplayConfig& config, EDepthBufferType depthBufferType)
+    status_t DisplayConfig::setDepthStencilBufferType(EDepthBufferType depthBufferType)
     {
-        const auto status = config.impl.setDepthStencilBufferType(depthBufferType);
-        LOG_HL_RENDERER_STATIC_API1(status, depthBufferType);
+        const auto status = impl.setDepthStencilBufferType(depthBufferType);
+        LOG_HL_RENDERER_API1(status, depthBufferType);
         return status;
     }
 
@@ -215,17 +191,17 @@ namespace ramses
         return impl.getWindowsWindowHandle();
     }
 
-    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketName(const char* socketname)
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketName(std::string_view socketname)
     {
         return impl.setWaylandEmbeddedCompositingSocketName(socketname);
     }
 
-    const char *DisplayConfig::getWaylandEmbeddedCompositingSocketName() const
+    std::string_view DisplayConfig::getWaylandEmbeddedCompositingSocketName() const
     {
         return impl.getWaylandEmbeddedCompositingSocketName();
     }
 
-    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(std::string_view groupname)
     {
         return impl.setWaylandEmbeddedCompositingSocketGroup(groupname);
     }
@@ -240,7 +216,7 @@ namespace ramses
         return impl.setWaylandEmbeddedCompositingSocketPermissions(permissions);
     }
 
-    status_t DisplayConfig::setPlatformRenderNode(const char* renderNode)
+    status_t DisplayConfig::setPlatformRenderNode(std::string_view renderNode)
     {
         return impl.setPlatformRenderNode(renderNode);
     }

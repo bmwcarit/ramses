@@ -7,12 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "ActionTestScene.h"
+#include "Scene/SceneActionApplier.h"
 
 namespace ramses_internal
 {
     ActionTestScene::ActionTestScene(const SceneInfo& sceneInfo)
         : m_scene(sceneInfo)
-        , m_actionApplier(const_cast<Scene&>(m_scene))   // this const cast is needed to enforce usage of converter instead of m_scene
         , m_actionCollector()
     {
     }
@@ -308,14 +308,14 @@ namespace ramses_internal
         return m_scene.getTranslation(handle);
     }
 
-    const Vector3& ActionTestScene::getRotation(TransformHandle handle) const
+    const Vector4& ActionTestScene::getRotation(TransformHandle handle) const
     {
         return m_scene.getRotation(handle);
     }
 
-    ERotationConvention ActionTestScene::getRotationConvention(TransformHandle handle) const
+    ERotationType ActionTestScene::getRotationType(TransformHandle handle) const
     {
-        return m_scene.getRotationConvention(handle);
+        return m_scene.getRotationType(handle);
     }
 
     const Vector3& ActionTestScene::getScaling(TransformHandle handle) const
@@ -329,15 +329,10 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void ActionTestScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationType rotationType)
     {
-        m_actionCollector.setRotation(handle, rotation, convention);
+        m_actionCollector.setRotation(handle, rotation, rotationType);
         flushPendingSceneActions();
-    }
-
-    void ActionTestScene::setRotationForAnimation(TransformHandle, const Vector3&)
-    {
-        assert(false && "Should only be called from Animations without creation of any scene actions");
     }
 
     void ActionTestScene::setScaling(TransformHandle handle, const Vector3& scaling)
@@ -705,39 +700,6 @@ namespace ramses_internal
         return m_scene.isTextureSamplerAllocated(samplerHandle);
     }
 
-    AnimationSystemHandle ActionTestScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle animSystemHandle)
-    {
-        auto handle = m_actionCollector.addAnimationSystem(animationSystem, animSystemHandle);
-        flushPendingSceneActions();
-        return handle;
-    }
-
-    void ActionTestScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        m_actionCollector.removeAnimationSystem(animSystemHandle);
-        flushPendingSceneActions();
-    }
-
-    const IAnimationSystem* ActionTestScene::getAnimationSystem(AnimationSystemHandle animSystemHandle) const
-    {
-        return m_scene.getAnimationSystem(animSystemHandle);
-    }
-
-    IAnimationSystem* ActionTestScene::getAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        return const_cast<Scene&>(m_scene).getAnimationSystem(animSystemHandle);
-    }
-
-    bool ActionTestScene::isAnimationSystemAllocated(AnimationSystemHandle animSystemHandle) const
-    {
-        return m_scene.isAnimationSystemAllocated(animSystemHandle);
-    }
-
-    UInt32 ActionTestScene::getAnimationSystemCount() const
-    {
-        return m_scene.getAnimationSystemCount();
-    }
-
     SceneSizeInformation ActionTestScene::getSceneSizeInformation() const
     {
         return m_scene.getSceneSizeInformation();
@@ -879,40 +841,6 @@ namespace ramses_internal
     const RenderBuffer& ActionTestScene::getRenderBuffer(RenderBufferHandle handle) const
     {
         return m_scene.getRenderBuffer(handle);
-    }
-
-    StreamTextureHandle ActionTestScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
-    {
-        const StreamTextureHandle handle = m_actionCollector.allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
-        flushPendingSceneActions();
-        return handle;
-    }
-
-    void ActionTestScene::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        m_actionCollector.releaseStreamTexture(streamTextureHandle);
-        flushPendingSceneActions();
-    }
-
-    bool ActionTestScene::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.isStreamTextureAllocated(streamTextureHandle);
-    }
-
-    UInt32 ActionTestScene::getStreamTextureCount() const
-    {
-        return m_scene.getStreamTextureCount();
-    }
-
-    void ActionTestScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        m_actionCollector.setForceFallbackImage(streamTextureHandle, forceFallbackImage);
-        flushPendingSceneActions();
-    }
-
-    const StreamTexture& ActionTestScene::getStreamTexture(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.getStreamTexture(streamTextureHandle);
     }
 
     DataBufferHandle ActionTestScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)
@@ -1232,8 +1160,8 @@ namespace ramses_internal
 
     void ActionTestScene::flushPendingSceneActions()
     {
-        SceneActionCollection& actionCollector = m_actionCollector.getSceneActionCollection();
-        m_actionApplier.applyActionsOnScene(actionCollector);
+        SceneActionCollection& actionCollection = m_actionCollector.getSceneActionCollection();
+        SceneActionApplier::ApplyActionsOnScene(const_cast<Scene&>(m_scene), actionCollection);
         m_actionCollector.getSceneActionCollection().clear();
     }
 

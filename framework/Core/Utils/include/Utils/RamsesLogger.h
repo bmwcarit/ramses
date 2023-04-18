@@ -18,11 +18,23 @@
 #include "Collections/String.h"
 #include <mutex>
 #include <memory>
+#include <optional>
+#include <map>
 
 namespace ramses_internal
 {
-    class CommandLineParser;
     class DltLogAppender;
+
+    struct RamsesLoggerConfig
+    {
+        // generic argument applies to all log levels
+        std::optional<ELogLevel> logLevel;
+        std::optional<ELogLevel> logLevelConsole;
+        // output specific loglevels can overwrite generic argument
+        std::map<String, ELogLevel> logLevelContexts; // TODO: std::unordered_map<std::string, ELogLevel>
+        String dltAppId = "RAMS";
+        String dltAppDescription = "RAMS-DESC";
+    };
 
     struct LogContextInformation
     {
@@ -37,27 +49,27 @@ namespace ramses_internal
         RamsesLogger();
         ~RamsesLogger();
 
-        void initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration);
+        void initialize(const RamsesLoggerConfig& config, bool disableDLT, bool enableDLTApplicationRegistration);
 
         LogContext& createContext(const char* name, const char* id);
 
-        bool isDltAppenderActive() const;
+        [[nodiscard]] bool isDltAppenderActive() const;
 
         void log(const LogMessage& msg);
 
         void applyContextFilterCommand(const String& command);
-        std::vector<LogContextInformation> getAllContextsInformation() const;
+        [[nodiscard]] std::vector<LogContextInformation> getAllContextsInformation() const;
 
         void setLogLevelForContexts(ELogLevel logLevel);
 
         void setConsoleLogLevel(ELogLevel logLevel);
         void setConsoleLogLevelProgrammatically(ELogLevel logLevel);
-        ELogLevel getConsoleLogLevel() const;
+        [[nodiscard]] ELogLevel getConsoleLogLevel() const;
 
         void setAfterConsoleLogCallback(const std::function<void()>& callback);
         void removeAfterConsoleLogCallback();
 
-        bool transmitFile(const String& path, bool deleteFile) const;
+        [[nodiscard]] bool transmitFile(const String& path, bool deleteFile) const;
         bool registerInjectionCallback(LogContext& ctx, UInt32 serviceId, int (*callback)(UInt32 serviceId, void* data, UInt32 length));
 
         static const char* GetLogLevelText(ELogLevel logLevel);
@@ -68,6 +80,7 @@ namespace ramses_internal
         static const ELogLevel LogLevelDefault_Contexts = ELogLevel::Info;
         static const ELogLevel LogLevelDefault_Console = ELogLevel::Info;
 
+        void applyContextFilter(const String& context, ELogLevel logLevel);
 
         static void UpdateConsoleLogLevelFromDefine(ELogLevel& loglevel);
         static void UpdateConsoleLogLevelFromEnvVar(ELogLevel& loglevel);

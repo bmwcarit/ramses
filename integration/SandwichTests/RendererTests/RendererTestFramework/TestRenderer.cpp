@@ -8,9 +8,7 @@
 
 #include "TestRenderer.h"
 #include "ramses-renderer-api/RendererConfig.h"
-#include "ramses-renderer-api/WarpingMeshData.h"
 #include "RendererAPI/IRenderBackend.h"
-#include "RendererLib/FrameProfileRenderer.h"
 #include "RamsesRendererImpl.h"
 #include "RendererSceneControlImpl.h"
 #include "RendererAndSceneTestEventHandler.h"
@@ -156,9 +154,9 @@ namespace ramses_internal
     {
         ramses::displayBufferId_t offscreenBufferId;
         if (interruptible)
-            offscreenBufferId = ramses::RamsesRenderer::createInterruptibleOffscreenBuffer(*m_renderer, displayId, width, height, depthBufferType);
+            offscreenBufferId = m_renderer->createInterruptibleOffscreenBuffer(displayId, width, height, depthBufferType);
         else
-            offscreenBufferId = ramses::RamsesRenderer::createOffscreenBuffer(*m_renderer, displayId, width, height, sampleCount, depthBufferType);
+            offscreenBufferId = m_renderer->createOffscreenBuffer(displayId, width, height, sampleCount, depthBufferType);
         m_renderer->flush();
 
         ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
@@ -196,13 +194,13 @@ namespace ramses_internal
 
     void TestRenderer::setClearFlags(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, uint32_t clearFlags)
     {
-        m_renderer->setDisplayBufferClearFlags(*m_renderer, displayId, buffer, clearFlags);
+        m_renderer->setDisplayBufferClearFlags(displayId, buffer, clearFlags);
         m_renderer->flush();
     }
 
     void TestRenderer::setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor)
     {
-        m_renderer->setDisplayBufferClearColor(displayId, buffer, clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+        m_renderer->setDisplayBufferClearColor(displayId, buffer, {clearColor.r, clearColor.g, clearColor.b, clearColor.a});
         m_renderer->flush();
     }
 
@@ -213,7 +211,7 @@ namespace ramses_internal
 
     ramses::streamBufferId_t TestRenderer::createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source)
     {
-        const auto bufferId = m_renderer->impl.createStreamBuffer(displayId, source);
+        const auto bufferId = m_renderer->createStreamBuffer(displayId, source);
         m_renderer->flush();
 
         return bufferId;
@@ -247,12 +245,6 @@ namespace ramses_internal
     {
         m_sceneControlAPI->unlinkData(consumerScene, consumerId);
         m_sceneControlAPI->flush();
-    }
-
-    void TestRenderer::updateWarpingMeshData(ramses::displayId_t displayId, const ramses::WarpingMeshData& warpingMeshData)
-    {
-        m_renderer->updateWarpingMeshData(displayId, warpingMeshData);
-        m_renderer->flush();
     }
 
     bool TestRenderer::performScreenshotCheck(
@@ -293,15 +285,6 @@ namespace ramses_internal
             width,
             height,
             imageFile);
-    }
-
-    void TestRenderer::toggleRendererFrameProfiler(uint32_t timeHeight, uint32_t counterHeight)
-    {
-        RendererCommands cmds;
-        cmds.push_back(RendererCommand::FrameProfiler_Toggle{ true });
-        cmds.push_back(RendererCommand::FrameProfiler_TimingGraphHeight{ timeHeight });
-        cmds.push_back(RendererCommand::FrameProfiler_CounterGraphHeight{ counterHeight });
-        m_renderer->impl.pushAndConsumeRendererCommands(cmds);
     }
 
     void TestRenderer::readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)

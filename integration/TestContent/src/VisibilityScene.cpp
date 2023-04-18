@@ -31,8 +31,8 @@ namespace ramses_internal
         triangle2mesh->setGeometryBinding(triangle2.GetGeometry());
         addMeshNodeToDefaultRenderGroup(*triangle1mesh);
         addMeshNodeToDefaultRenderGroup(*triangle2mesh);
-        triangle1mesh->setTranslation(-1.f, 0.f, -1.f);
-        triangle2mesh->setTranslation(1.f, 0.f, -1.f);
+        triangle1mesh->setTranslation({-1.f, 0.f, -1.f});
+        triangle2mesh->setTranslation({1.f, 0.f, -1.f});
 
         setState(state);
     }

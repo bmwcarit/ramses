@@ -7,19 +7,12 @@
 #  -------------------------------------------------------------------------
 
 MODULE_WITH_SHARED_LIBRARY(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    DemoRamsesJNIInterface
     TYPE                    SHARED_LIBRARY
     ENABLE_INSTALL          ON
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/*.h
-    FILES_SOURCE            src/*.cpp
+    INCLUDE_PATHS           include
+    SRC_FILES               include/*.h
+                            src/*.cpp
 
     DEPENDENCIES            AndroidSDK
 )

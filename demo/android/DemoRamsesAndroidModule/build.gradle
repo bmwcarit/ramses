@@ -26,7 +26,7 @@ android {
         externalNativeBuild {
             cmake {
                 targets "DemoRamsesJNIInterface"
-                arguments "-Dramses-sdk_ENABLE_DLT=0"
+                arguments "-Dramses-sdk_ENABLE_DLT=0", "-Dramses-sdk_ENABLE_FLATBUFFERS_GENERATION=0"
             }
         }
     }

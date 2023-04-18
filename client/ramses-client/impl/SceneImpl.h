@@ -11,11 +11,11 @@
 
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/EVisibilityMode.h"
-#include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/SceneReference.h"
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/TextureSwizzle.h"
+#include "ramses-framework-api/EDataType.h"
 
 // internal
 #include "ClientObjectImpl.h"
@@ -31,7 +31,6 @@
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/EDataSlotType.h"
 #include "SceneAPI/TextureSampler.h"
-#include "AnimationAPI/IAnimationSystem.h"
 #include "Resource/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 
@@ -60,27 +59,14 @@ namespace ramses
     class Node;
     class Effect;
     class MeshNode;
-    class AnimationSystem;
-    class AnimationSystemRealTime;
     class GeometryBinding;
-    class AnimationSystemImpl;
     class AttributeInput;
     class NodeImpl;
     class RenderGroup;
     class RenderPass;
     class RenderBuffer;
     class RenderTarget;
-    class DataFloat;
-    class DataVector2f;
-    class DataVector3f;
-    class DataVector4f;
-    class DataMatrix22f;
-    class DataMatrix33f;
-    class DataMatrix44f;
-    class DataInt32;
-    class DataVector2i;
-    class DataVector3i;
-    class DataVector4i;
+    class DataObject;
     class SceneConfigImpl;
     class RenderTargetDescriptionImpl;
     class BlitPass;
@@ -88,7 +74,6 @@ namespace ramses
     class TextureSampler;
     class TextureSamplerMS;
     class TextureSamplerExternal;
-    class StreamTexture;
     class Texture2D;
     class Texture3D;
     class TextureCube;
@@ -109,13 +94,13 @@ namespace ramses
     {
     public:
         SceneImpl(ramses_internal::ClientScene& scene, const SceneConfigImpl& sceneConfig, RamsesClient& ramsesClient);
-        virtual ~SceneImpl() override;
+        ~SceneImpl() override;
 
         void             initializeFrameworkData();
-        virtual void     deinitializeFrameworkData() override final;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override final;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override final;
-        virtual status_t validate() const override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t validate() const override;
 
         status_t            publish(EScenePublicationMode publicationMode = EScenePublicationMode_LocalAndRemote);
         status_t            unpublish();
@@ -124,7 +109,6 @@ namespace ramses
         EScenePublicationMode getPublicationModeSetFromSceneConfig() const;
 
         status_t saveToFile(const char* fileName, bool compress) const;
-        bool saveResources(std::string const& fileName, bool compress) const;
 
         PerspectiveCamera*  createPerspectiveCamera(const char* name);
         OrthographicCamera* createOrthographicCamera(const char* name);
@@ -132,7 +116,6 @@ namespace ramses
         Appearance*         createAppearance(const Effect& effect, const char* name);
         AppearanceImpl*     createAppearanceImpl(const char* name);
 
-        StreamTexture*      createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name);
         GeometryBinding*    createGeometryBinding(const Effect& effect, const char* name);
 
         Node*               createNode(const char* name);
@@ -192,14 +175,6 @@ namespace ramses
             const Texture2DBuffer& textureBuffer,
             const char* name);
 
-        ramses::TextureSampler* createTextureSampler(
-            ETextureAddressMode wrapUMode,
-            ETextureAddressMode wrapVMode,
-            ETextureSamplingMethod minSamplingMethod,
-            ETextureSamplingMethod magSamplingMethod,
-            const StreamTexture& streamTexture,
-            const char* name);
-
         ramses::TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
 
         ramses::TextureSamplerExternal* createTextureSamplerExternal(
@@ -207,17 +182,7 @@ namespace ramses
                 ETextureSamplingMethod magSamplingMethod,
                 const char* name);
 
-        DataFloat*     createDataFloat(const char* name);
-        DataVector2f*  createDataVector2f(const char* name);
-        DataVector3f*  createDataVector3f(const char* name);
-        DataVector4f*  createDataVector4f(const char* name);
-        DataMatrix22f* createDataMatrix22f(const char* name);
-        DataMatrix33f* createDataMatrix33f(const char* name);
-        DataMatrix44f* createDataMatrix44f(const char* name);
-        DataInt32*     createDataInt32(const char* name);
-        DataVector2i*  createDataVector2i(const char* name);
-        DataVector3i*  createDataVector3i(const char* name);
-        DataVector4i*  createDataVector4i(const char* name);
+        DataObject*     createDataObject(EDataType dataType, const char* name);
 
         status_t createTransformationDataProvider(const Node& node, dataProviderId_t id);
         status_t createTransformationDataConsumer(const Node& node, dataConsumerId_t id);
@@ -228,9 +193,6 @@ namespace ramses
         status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id);
         status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t id);
         status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t id);
-
-        AnimationSystem*         createAnimationSystem(uint32_t flags, const char* name);
-        AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags, const char* name);
 
         ArrayBuffer*             createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name);
         ArrayBufferImpl*         createArrayBufferImpl(EDataType dataType, uint32_t numElements, const char* name);
@@ -251,7 +213,8 @@ namespace ramses
         status_t resetUniformTimeMs();
         int32_t getUniformTimeMs() const;
 
-        ArrayResource* createArrayResource(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
+        template <typename T>
+        ArrayResource* createArrayResource(uint32_t numElements, const T* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
         Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
         TextureCube* createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
@@ -321,7 +284,6 @@ namespace ramses
         RenderPass* createRenderPassInternal(const char* name);
         void registerCreatedObject(SceneObject& object);
         void registerCreatedResourceObject(Resource& resource);
-        AnimationSystemImpl& createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name);
 
         void removeAllDataSlotsForNode(const Node& node);
 
@@ -339,7 +301,6 @@ namespace ramses
         status_t destroyCamera(Camera& camera);
         status_t destroyRenderGroup(RenderGroup& group);
         status_t destroyMeshNode(MeshNode& mesh);
-        status_t destroyAnimationSystem(AnimationSystem& animationSystem);
         status_t destroyNode(Node& node);
         status_t destroyDataObject(DataObject& dataObject);
         status_t destroyResource(Resource& resource);

@@ -12,6 +12,9 @@
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
 #include "ramses-framework-api/APIExport.h"
+#include "ramses-framework-api/EFeatureLevel.h"
+#include <chrono>
+#include <string_view>
 
 namespace ramses
 {
@@ -28,17 +31,34 @@ namespace ramses
         RamsesFrameworkConfig();
 
         /**
-        * @brief Constructor of RamsesFrameworkConfig using command line parameters
-        *
-        * @param[in] argc Number of strings in argv array
-        * @param[in] argv Command line parameters as array of string
-        */
-        RamsesFrameworkConfig(int32_t argc, char const* const* argv);
-
-        /**
         * @brief Destructor of RamsesFrameworkConfig
         */
         ~RamsesFrameworkConfig() override;
+
+        /**
+        * @brief Set feature level
+        *
+        * Sets feature level that will be used when creating #ramses::RamsesFramework.
+        * #ramses::RamsesClient and #ramses::RamsesRenderer created from this framework will only be able to connect
+        * to client/renderer using a compatible feature level.
+        * Only files exported using the exact same feature level can be loaded into #ramses::RamsesClient created
+        * from this framework.
+        * See #ramses::EFeatureLevel for more details.
+        *
+        * @param[in] featureLevel feature level to use (default is #ramses::EFeatureLevel_01)
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setFeatureLevel(EFeatureLevel featureLevel);
+
+        /**
+        * @brief Get feature level
+        *
+        * Gets feature level that was set using #setFeatureLevel.
+        *
+        * @return currently set feature level.
+        */
+        [[nodiscard]] EFeatureLevel getFeatureLevel() const;
 
         /**
          * @brief Request a certain type of ramses shell
@@ -74,7 +94,7 @@ namespace ramses
         /**
          * @brief Disable DLT application registration
          *
-         * When set and DLT is enabled ramses expects DLT_REGISTER_APP beeing called before
+         * When set and DLT is enabled ramses expects DLT_REGISTER_APP being called before
          * RamsesFramework construction and DLT_UNREGISTER_APP after RamsesFramework destruction.
          * Ramses will add its context to the existing application.
          *
@@ -90,64 +110,142 @@ namespace ramses
         *
         * @param[in] id to use as DLT application id
         */
-        void setDLTApplicationID(const char* id);
+        void setDLTApplicationID(std::string_view id);
 
         /**
         * @brief Return the DLT application id value set in configuration object
         *
-        * @return dlt application id value set in this configuration object
+        * @return DLT application id value set in this configuration object
         */
-        const char* getDLTApplicationID() const;
+        [[nodiscard]] std::string_view getDLTApplicationID() const;
 
         /**
         * @brief Set the application description for DLT
         *
         * @param[in] description to use as DLT application description
         */
-        void setDLTApplicationDescription(const char* description);
+        void setDLTApplicationDescription(std::string_view description);
 
         /**
         * @brief Return the DLT application description set in configuration object
         *
-        * @return dlt application description set in this configuration object
+        * @return DLT application description set in this configuration object
         */
-        const char* getDLTApplicationDescription() const;
+        [[nodiscard]] std::string_view getDLTApplicationDescription() const;
 
         /**
-        * @brief Enables or disables the periodic log messages provided by the Ramses framework
+        * @brief Sets the log level for all contexts
         *
-        * If enabled the Ramses framework periodically logs information about the Ramses version, connected participants, scene states etc.
-        * Please leave enabled in a production environment as the provided information is important for error analysis.
-        *
-        * The default value is enabled.
-        *
-        * @param[in] enabled If true the periodic logs are enabled
+        * @param[in] logLevel the log level to be applied
         */
-        void setPeriodicLogsEnabled(bool enabled);
+        void setLogLevel(ELogLevel logLevel);
+
+        /**
+        * @brief Sets the log level for the provided context
+        *
+        * @param[in] context the log context to modify
+        * @param[in] logLevel the log level to be applied
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setLogLevel(std::string_view context, ELogLevel logLevel);
+
+        /**
+        * @brief Sets the maximum log level for all contexts on console output
+        *
+        * Other outputs are not affected.
+        *
+        * @param[in] logLevel the log level to be applied
+        */
+        void setLogLevelConsole(ELogLevel logLevel);
+
+        /**
+        * @brief Sets the logging interval for the periodic log messages
+        *
+        * The Ramses framework periodically logs information about the Ramses version, connected participants, scene states etc.
+        * Please leave unchanged in a production environment as the provided information is important for error analysis.
+        *
+        * Default value is 2 seconds. A value of 0 disables logging.
+        *
+        * @param[in] interval logging interval in seconds.
+        */
+        void setPeriodicLogInterval(std::chrono::seconds interval);
+
+        /**
+        * @brief Sets the participant identifier
+        *
+        * The guid identifies the ramses participant in a distributed rendering setup.
+        * It is auto-generated by default.
+        * Guid values < 256 are reserved and may not be used (an error will be returned)
+        *
+        * @param[in] guid participant identifier
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setParticipantGuid(uint64_t guid);
+
+        /**
+        * @brief Sets the participant name in a distributed rendering setup
+        *
+        * Default value is an empty string.
+        *
+        * @param[in] name human readable participant name
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setParticipantName(std::string_view name);
+
+        /**
+        * @brief Sets the connection system for a distributed setup
+        *
+        * @param[in] connectionSystem the connection system to use (default: TCP)
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setConnectionSystem(EConnectionSystem connectionSystem);
 
         /**
         * @brief Sets the IP address that is used to select the local network interface
-        * The value is only evaluated if SOME/IP is not used. This communication type is intended for prototype use-cases only.
         *
         * @param[in] ip IP to use
         */
-        void setInterfaceSelectionIPForTCPCommunication(const char* ip);
+        void setInterfaceSelectionIPForTCPCommunication(std::string_view ip);
+
+        /**
+        * @brief Sets the port that is used to select the local network interface
+        *
+        * @param[in] port Port to use
+        */
+        void setInterfaceSelectionPortForTCPCommunication(uint16_t port);
 
         /**
         * @brief Sets the IP address of the communication daemon
-        * The value is only evaluated if SOME/IP is not used. This communication type is intended for prototype use-cases only.
         *
         * @param[in] ip IP to use
         */
-        void setDaemonIPForTCPCommunication(const char* ip);
+        void setDaemonIPForTCPCommunication(std::string_view ip);
 
         /**
         * @brief Sets the port of the communication daemon
-        * The value is only evaluated if SOME/IP is not used. This communication type is intended for prototype use-cases only.
         *
         * @param[in] port Port to use
         */
         void setDaemonPortForTCPCommunication(uint16_t port);
+
+        /**
+        * @brief Configures the network connection monitoring
+        *
+        * In a distributed setup ramses participants repeatedly send keepalive messages to other participants within the given time interval.
+        * If no keepalive is received for the given timeout, the remote will be considered stalled and disconnected.
+        * This prevents ramses renderers from showing old content from stalled clients.
+        *
+        * @param interval time interval for sending keepalive messages
+        * @param timeout maximum time to tolerate a missing keepalive message
+        *
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setConnectionKeepaliveSettings(std::chrono::milliseconds interval, std::chrono::milliseconds timeout);
 
         /**
         * Stores internal data for implementation specifics of RamsesFrameworkConfig
@@ -156,16 +254,14 @@ namespace ramses
 
         /**
          * @brief Deleted copy constructor
-         * @param other unused
          */
-        RamsesFrameworkConfig(const RamsesFrameworkConfig& other) = delete;
+        RamsesFrameworkConfig(const RamsesFrameworkConfig&) = delete;
 
         /**
          * @brief Deleted copy assignment
-         * @param other unused
          * @return unused
          */
-        RamsesFrameworkConfig& operator=(const RamsesFrameworkConfig& other) = delete;
+        RamsesFrameworkConfig& operator=(const RamsesFrameworkConfig&) = delete;
     };
 
 }

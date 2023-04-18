@@ -28,7 +28,6 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
 
     EXPECT_EQ(defaultDisplayConfig.getFullscreenState(), displayConfig.getFullscreenState());
     EXPECT_EQ(defaultDisplayConfig.getBorderlessState(), displayConfig.getBorderlessState());
-    EXPECT_EQ(defaultDisplayConfig.isWarpingEnabled(), displayConfig.isWarpingEnabled());
     EXPECT_EQ(defaultDisplayConfig.getKeepEffectsUploaded(), displayConfig.getKeepEffectsUploaded());
 
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingSampleCount(), displayConfig.getAntialiasingSampleCount());
@@ -122,22 +121,10 @@ TEST_F(ADisplayConfig, setsAndGetsMultisampling)
     EXPECT_EQ(2u, sampleCount);
 }
 
-TEST_F(ADisplayConfig, enablesWarping)
-{
-    EXPECT_EQ(ramses::StatusOK, config.enableWarpingPostEffect());
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().isWarpingEnabled());
-}
-
 TEST_F(ADisplayConfig, disablesKeepingOfEffectsInVRAM)
 {
     EXPECT_EQ(ramses::StatusOK, config.keepEffectsUploaded(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
-}
-
-TEST_F(ADisplayConfig, setsNativeDisplayID)
-{
-    EXPECT_EQ(ramses::StatusOK, config.setIntegrityRGLDeviceUnit(2u));
-    EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getIntegrityRGLDeviceUnit().getValue());
 }
 
 TEST_F(ADisplayConfig, setsWindowIVIVisible)
@@ -149,8 +136,8 @@ TEST_F(ADisplayConfig, setsWindowIVIVisible)
 TEST_F(ADisplayConfig, setsAndGetsWaylandDisplay)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWaylandDisplay("xxx"));
-    EXPECT_STREQ("xxx", config.getWaylandDisplay());
-    EXPECT_STREQ("xxx", config.impl.getInternalDisplayConfig().getWaylandDisplay().c_str());
+    EXPECT_EQ("xxx", config.getWaylandDisplay());
+    EXPECT_EQ("xxx", config.impl.getInternalDisplayConfig().getWaylandDisplay());
 }
 
 TEST_F(ADisplayConfig, setsAndGetsWaylandIviSurfaceId)
@@ -181,9 +168,9 @@ TEST_F(ADisplayConfig, IsValidUponConstruction)
 
 TEST_F(ADisplayConfig, canBeCopyConstructed)
 {
-    config.enableWarpingPostEffect();
+    config.setResizable(true);
     const ramses::DisplayConfig otherConfig(config);
-    EXPECT_TRUE(otherConfig.impl.getInternalDisplayConfig().isWarpingEnabled());
+    EXPECT_TRUE(otherConfig.impl.getInternalDisplayConfig().isResizable());
 }
 
 TEST_F(ADisplayConfig, setClearColor)
@@ -192,7 +179,7 @@ TEST_F(ADisplayConfig, setClearColor)
     const float green = 0.2f;
     const float blue = 0.3f;
     const float alpha = 0.4f;
-    EXPECT_EQ(ramses::StatusOK, config.setClearColor(red, green, blue, alpha));
+    EXPECT_EQ(ramses::StatusOK, config.setClearColor({red, green, blue, alpha}));
 
     const ramses_internal::Vector4& clearColor = config.impl.getInternalDisplayConfig().getClearColor();
     EXPECT_EQ(clearColor.r, red);
@@ -203,20 +190,20 @@ TEST_F(ADisplayConfig, setClearColor)
 
 TEST_F(ADisplayConfig, setDepthStencilBufferType)
 {
-    EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setDepthStencilBufferType(config, ramses::EDepthBufferType_Depth));
+    EXPECT_EQ(ramses::StatusOK, config.setDepthStencilBufferType(ramses::EDepthBufferType_Depth));
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, config.impl.getInternalDisplayConfig().getDepthStencilBufferType());
 }
 
 TEST_F(ADisplayConfig, setAsyncEffectUploadEnabled)
 {
-    EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setAsyncEffectUploadEnabled(config, false));
+    EXPECT_EQ(ramses::StatusOK, config.setAsyncEffectUploadEnabled(false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().isAsyncEffectUploadEnabled());
 }
 
 TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketGroup)
 {
     config.setWaylandEmbeddedCompositingSocketGroup("permissionGroup");
-    EXPECT_STREQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
+    EXPECT_EQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
 }
 
 TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketPermissions)
@@ -233,7 +220,7 @@ TEST_F(ADisplayConfig, cannotSetInvalidEmbeddedCompositingSocketPermissions)
 TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketname)
 {
     config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
-    EXPECT_STREQ("wayland-x123", config.getWaylandEmbeddedCompositingSocketName());
+    EXPECT_EQ("wayland-x123", config.getWaylandEmbeddedCompositingSocketName());
 }
 
 TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketFD)
@@ -245,7 +232,7 @@ TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketFD)
 TEST_F(ADisplayConfig, canSetPlatformRenderNode)
 {
     config.setPlatformRenderNode("abcd");
-    EXPECT_STREQ("abcd", config.impl.getPlatformRenderNode());
+    EXPECT_EQ("abcd", config.impl.getPlatformRenderNode());
 }
 
 TEST_F(ADisplayConfig, canSetSwapInterval)
@@ -270,3 +257,4 @@ TEST_F(ADisplayConfig, canSetResourceUploadBatchSize)
     EXPECT_NE(ramses::StatusOK, config.setResourceUploadBatchSize(0));
     EXPECT_EQ(1u, config.impl.getResourceUploadBatchSize());
 }
+

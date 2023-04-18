@@ -19,7 +19,7 @@ namespace ramses
     public:
         static bool RegisterClientFactory();
 
-        virtual ClientUniquePtr createClient(RamsesFrameworkImpl* impl, const char* applicationName) const override;
+        ClientUniquePtr createClient(RamsesFrameworkImpl* impl, const char* applicationName) const override;
     };
 }
 #endif

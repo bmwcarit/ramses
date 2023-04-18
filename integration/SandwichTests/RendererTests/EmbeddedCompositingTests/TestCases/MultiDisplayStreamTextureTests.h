@@ -16,8 +16,8 @@ namespace ramses_internal
     class MultiDisplayStreamTextureTests : public IEmbeddedCompositingTest
     {
     public:
-        virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
-        virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+        void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
+        bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
     private:
         enum
@@ -25,8 +25,6 @@ namespace ramses_internal
             TwoDisplaysWithCompositingOnFirstDisplayOnly,
             TwoDisplaysWithCompositingOnSecondDisplayOnly,
             TwoDisplaysWithCompositingOnBothDisplays,
-            SingleDisplayWithCompositing_SetOnRendererConfig,
-            TwoDisplaysWithCompositingOnFirstDisplayOnly_SetOnRendererConfig,
         };
 
 

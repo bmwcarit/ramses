@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorControllerScreenshot(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(String& fileName, int32_t& screenIviId) const override;
+        Bool execute(String& fileName, int32_t& screenIviId) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

@@ -9,6 +9,8 @@
 #ifndef RAMSES_TEXTSCENE_BASE_H
 #define RAMSES_TEXTSCENE_BASE_H
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 #include "IntegrationScene.h"
 #include "ramses-text-api/FontInstanceId.h"
 #include "ramses-text-api/TextLine.h"
@@ -34,4 +36,5 @@ namespace ramses_internal
     };
 }
 
+#endif
 #endif

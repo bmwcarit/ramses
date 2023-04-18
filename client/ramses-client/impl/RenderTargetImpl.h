@@ -23,12 +23,12 @@ namespace ramses
     {
     public:
         RenderTargetImpl(SceneImpl& scene, const char* name);
-        virtual ~RenderTargetImpl() override;
+        ~RenderTargetImpl() override;
 
         void             initializeFrameworkData(const RenderTargetDescriptionImpl& rtDesc);
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t getWidth() const;
         uint32_t getHeight() const;

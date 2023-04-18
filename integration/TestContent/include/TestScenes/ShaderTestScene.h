@@ -30,7 +30,7 @@ namespace ramses_internal
         };
 
     private:
-        String getEffectNameFromState(UInt32 state) const;
+        [[nodiscard]] String getEffectNameFromState(UInt32 state) const;
         void initInputs(UInt32 state);
 
         ramses::Effect&   m_effect;

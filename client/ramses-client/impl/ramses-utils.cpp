@@ -18,8 +18,7 @@
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/TextureSwizzle.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 
 #include "EffectImpl.h"
 #include "MeshNodeImpl.h"
@@ -30,9 +29,11 @@
 #include "Math3d/ProjectionParams.h"
 #include "Utils/File.h"
 #include "Utils/LogMacros.h"
+#include "SceneDumper.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "lodepng.h"
+#include <iostream>
 
 namespace ramses
 {
@@ -343,7 +344,7 @@ namespace ramses
         return nodeId_t(node.impl.getNodeHandle().asMemoryHandle());
     }
 
-    bool RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataVector4f& frustumPlanesData, DataVector2f& nearFarPlanesData)
+    bool RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataObject& frustumPlanesData, DataObject& nearFarPlanesData)
     {
         const auto params = ramses_internal::ProjectionParams::Perspective(fov, aspectRatio, nearPlane, farPlane);
         if (!params.isValid())
@@ -352,20 +353,31 @@ namespace ramses
             return false;
         }
 
-        if (frustumPlanesData.setValue(params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane) != StatusOK ||
-            nearFarPlanesData.setValue(params.nearPlane, params.farPlane) != StatusOK)
+        if (frustumPlanesData.setValue(ramses::vec4f{ params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane }) != StatusOK ||
+            nearFarPlanesData.setValue(ramses::vec2f{ params.nearPlane, params.farPlane }) != StatusOK)
             return false;
 
         return true;
     }
+
+    void RamsesUtils::DumpUnrequiredSceneObjects(const Scene& scene)
+    {
+        LOG_INFO_F(ramses_internal::CONTEXT_CLIENT, [&](ramses_internal::StringOutputStream& output) {
+            SceneDumper sceneDumper{ scene.impl };
+            sceneDumper.dumpUnrequiredObjects(output);
+            });
+    }
+
+    void RamsesUtils::DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out)
+    {
+        ramses_internal::StringOutputStream output;
+        SceneDumper sceneDumper{ scene.impl };
+        sceneDumper.dumpUnrequiredObjects(output);
+        out << output.release();
+    }
 }
 
 // include all RamsesObject to instantiate conversion templates
-#include "ramses-client-api/AnimatedProperty.h"
-#include "ramses-client-api/Animation.h"
-#include "ramses-client-api/AnimationSequence.h"
-#include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Camera.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -375,49 +387,13 @@ namespace ramses
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/BlitPass.h"
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataInt32.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector3f.h"
-#include "ramses-client-api/DataVector3i.h"
-#include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/DataMatrix22f.h"
-#include "ramses-client-api/DataMatrix33f.h"
-#include "ramses-client-api/DataMatrix44f.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/SceneReference.h"
-#include "ramses-client-api/SplineBezierFloat.h"
-#include "ramses-client-api/SplineBezierInt32.h"
-#include "ramses-client-api/SplineBezierVector2f.h"
-#include "ramses-client-api/SplineBezierVector2i.h"
-#include "ramses-client-api/SplineBezierVector3f.h"
-#include "ramses-client-api/SplineBezierVector3i.h"
-#include "ramses-client-api/SplineBezierVector4f.h"
-#include "ramses-client-api/SplineBezierVector4i.h"
-#include "ramses-client-api/SplineLinearFloat.h"
-#include "ramses-client-api/SplineLinearInt32.h"
-#include "ramses-client-api/SplineLinearVector2f.h"
-#include "ramses-client-api/SplineLinearVector2i.h"
-#include "ramses-client-api/SplineLinearVector3f.h"
-#include "ramses-client-api/SplineLinearVector3i.h"
-#include "ramses-client-api/SplineLinearVector4f.h"
-#include "ramses-client-api/SplineLinearVector4i.h"
-#include "ramses-client-api/SplineStepBool.h"
-#include "ramses-client-api/SplineStepFloat.h"
-#include "ramses-client-api/SplineStepInt32.h"
-#include "ramses-client-api/SplineStepVector2f.h"
-#include "ramses-client-api/SplineStepVector2i.h"
-#include "ramses-client-api/SplineStepVector3f.h"
-#include "ramses-client-api/SplineStepVector3i.h"
-#include "ramses-client-api/SplineStepVector4f.h"
-#include "ramses-client-api/SplineStepVector4i.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
@@ -435,49 +411,17 @@ namespace ramses
 INSTANTIATE_CONVERT_TEMPLATE(ClientObject)
 INSTANTIATE_CONVERT_TEMPLATE(RamsesObject)
 INSTANTIATE_CONVERT_TEMPLATE(SceneObject)
-INSTANTIATE_CONVERT_TEMPLATE(AnimationObject)
 INSTANTIATE_CONVERT_TEMPLATE(RamsesClient)
 INSTANTIATE_CONVERT_TEMPLATE(Scene)
-INSTANTIATE_CONVERT_TEMPLATE(AnimationSystem)
-INSTANTIATE_CONVERT_TEMPLATE(AnimationSystemRealTime)
 INSTANTIATE_CONVERT_TEMPLATE(Node)
 INSTANTIATE_CONVERT_TEMPLATE(MeshNode)
 INSTANTIATE_CONVERT_TEMPLATE(Camera)
 INSTANTIATE_CONVERT_TEMPLATE(PerspectiveCamera)
 INSTANTIATE_CONVERT_TEMPLATE(OrthographicCamera)
 INSTANTIATE_CONVERT_TEMPLATE(Effect)
-INSTANTIATE_CONVERT_TEMPLATE(AnimatedProperty)
-INSTANTIATE_CONVERT_TEMPLATE(Animation)
-INSTANTIATE_CONVERT_TEMPLATE(AnimationSequence)
 INSTANTIATE_CONVERT_TEMPLATE(Appearance)
 INSTANTIATE_CONVERT_TEMPLATE(GeometryBinding)
 INSTANTIATE_CONVERT_TEMPLATE(PickableObject)
-INSTANTIATE_CONVERT_TEMPLATE(Spline)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepBool)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepFloat)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepInt32)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector2f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector3f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector4f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector2i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector3i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineStepVector4i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearFloat)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearInt32)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector2f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector3f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector4f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector2i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector3i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineLinearVector4i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierFloat)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierInt32)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector2f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector3f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector4f)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector2i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector3i)
-INSTANTIATE_CONVERT_TEMPLATE(SplineBezierVector4i)
 INSTANTIATE_CONVERT_TEMPLATE(Resource)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2D)
 INSTANTIATE_CONVERT_TEMPLATE(Texture3D)
@@ -492,18 +436,6 @@ INSTANTIATE_CONVERT_TEMPLATE(TextureSamplerExternal)
 INSTANTIATE_CONVERT_TEMPLATE(RenderBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(RenderTarget)
 INSTANTIATE_CONVERT_TEMPLATE(DataObject)
-INSTANTIATE_CONVERT_TEMPLATE(DataFloat)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector2f)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector3f)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector4f)
-INSTANTIATE_CONVERT_TEMPLATE(DataMatrix22f)
-INSTANTIATE_CONVERT_TEMPLATE(DataMatrix33f)
-INSTANTIATE_CONVERT_TEMPLATE(DataMatrix44f)
-INSTANTIATE_CONVERT_TEMPLATE(DataInt32)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector2i)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector3i)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector4i)
 INSTANTIATE_CONVERT_TEMPLATE(ArrayBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2DBuffer)
-INSTANTIATE_CONVERT_TEMPLATE(StreamTexture)
 INSTANTIATE_CONVERT_TEMPLATE(SceneReference)

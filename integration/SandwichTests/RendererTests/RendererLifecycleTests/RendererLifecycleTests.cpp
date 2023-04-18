@@ -13,7 +13,7 @@
 #include "ReadPixelCallbackHandler.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "TestScenes/TextureBufferScene.h"
-#include "TestScenes/DataBufferScene.h"
+#include "TestScenes/ArrayBufferScene.h"
 #include "TestScenes/TextScene.h"
 #include "TestScenes/FileLoadingScene.h"
 #include "TestScenes/Texture2DFormatScene.h"
@@ -25,7 +25,7 @@
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-client-api/DataInt32.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/SceneReference.h"
 #include "RamsesObjectTypeUtils.h"
 
@@ -185,6 +185,7 @@ namespace ramses_internal
         testScenesAndRenderer.destroyRenderer();
     }
 
+#if defined(RAMSES_TEXT_ENABLED)
     TEST_F(ARendererLifecycleTest, DestroyRenderer_ChangeScene_ThenRecreateRenderer)
     {
         const ramses::sceneId_t sceneId = createScene<TextScene>(TextScene::EState_INITIAL);
@@ -215,6 +216,7 @@ namespace ramses_internal
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
     }
+#endif
 
     TEST_F(ARendererLifecycleTest, UnsubscribeRenderer_ChangeScene_ThenResubscribeRenderer)
     {
@@ -350,7 +352,7 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));
 
         // create data to change
-        ramses::DataInt32* data = testScenesAndRenderer.getScenesRegistry().getScene(sceneId).createDataInt32();
+        auto data = testScenesAndRenderer.getScenesRegistry().getScene(sceneId).createDataObject(ramses::EDataType::Int32);
         testScenesAndRenderer.flush(sceneId);
 
         testScenesAndRenderer.publish(sceneId);
@@ -471,7 +473,7 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, RemapScenesWithDynamicResourcesToOtherDisplay)
     {
         const ramses::sceneId_t sceneId1 = createScene<TextureBufferScene>(TextureBufferScene::EState_RGBA8_OneMip_ScaledDown, Vector3(-0.1f, -0.1f, 15.0f), 200u, 200u); // stretch a bit by using bigger viewport
-        const ramses::sceneId_t sceneId2 = createScene<DataBufferScene>(DataBufferScene::INDEX_DATA_BUFFER_UINT16, Vector3(-2.0f, -2.0f, 15.0f));
+        const ramses::sceneId_t sceneId2 = createScene<ArrayBufferScene>(ArrayBufferScene::INDEX_DATA_BUFFER_UINT16, Vector3(-2.0f, -2.0f, 15.0f));
         testScenesAndRenderer.initializeRenderer();
         const ramses::displayId_t display1 = createDisplayForWindow(0u);
         const ramses::displayId_t display2 = createDisplayForWindow(1u);
@@ -617,11 +619,11 @@ namespace ramses_internal
 
         explicit ReferencedSceneStateEventHandler(ReferenceStateMap&& targetStateMap) : m_targetStateMap{ std::move(targetStateMap) } {}
 
-        virtual void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
+        void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
         {
             m_currentStateMap[sceneRef.getReferencedSceneId()] = state;
         }
-        virtual bool waitCondition() const override
+        bool waitCondition() const override
         {
             return m_currentStateMap == m_targetStateMap;
         }
@@ -720,14 +722,14 @@ namespace ramses_internal
         {
         public:
             EventHandler(TestScenesAndRenderer& tester_, ramses::sceneId_t sceneMasterId_) : m_tester(tester_), m_sceneMasterId(sceneMasterId_) {}
-            virtual void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
+            void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
             {
                 if (state == ramses::RendererSceneState::Ready)
                     sceneRef.requestState(ramses::RendererSceneState::Rendered);
                 m_tester.flush(m_sceneMasterId);
                 m_states[sceneRef.getReferencedSceneId()] = state;
             }
-            virtual bool waitCondition() const override
+            bool waitCondition() const override
             {
                 return 2u == m_states.size()
                     && std::all_of(m_states.cbegin(), m_states.cend(), [](const auto& it) { return it.second == ramses::RendererSceneState::Rendered; });
@@ -759,11 +761,11 @@ namespace ramses_internal
     class ReferencedSceneFlushEventHandler : public TestClientEventHandler
     {
     public:
-        virtual void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t versionTag) override
+        void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t versionTag) override
         {
             m_lastReportedVersion = versionTag;
         }
-        virtual bool waitCondition() const override
+        [[nodiscard]] bool waitCondition() const override
         {
             return m_lastReportedVersion != ramses::InvalidSceneVersionTag;
         }
@@ -1446,7 +1448,7 @@ namespace ramses_internal
     {
         struct ExpirationCounter final : public ramses::RendererSceneControlEventHandlerEmpty
         {
-            virtual void sceneExpired(ramses::sceneId_t) override
+            void sceneExpired(ramses::sceneId_t) override
             {
                 numExpirationEvents++;
             }
@@ -1742,6 +1744,36 @@ namespace ramses_internal
         testRenderer.waitForFlush(sceneId, ramses::sceneVersionTag_t{ 1u });
 
         testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
+    TEST_F(ARendererLifecycleTest, confidenceTest_contextEnabledWhenCreatingAndDestroyingDisplaysOBsInParticularOrder)
+    {
+        testScenesAndRenderer.initializeRenderer();
+        // create 2 displays, each with OB
+        const auto display1 = createDisplayForWindow(1u);
+        const auto ob1 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        const auto display2 = createDisplayForWindow(2u);
+        const auto ob2 = testRenderer.createOffscreenBuffer(display2, 16u, 16u, false);
+        ASSERT_TRUE(display1.isValid() && display2.isValid() && ob1.isValid() && ob2.isValid());
+        testRenderer.doOneLoop();
+
+        // create another OB on 1st display
+        const auto ob3 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        ASSERT_TRUE(ob3.isValid());
+        testRenderer.doOneLoop();
+
+        // destroy 2nd display/OB
+        testRenderer.destroyOffscreenBuffer(display2, ob2);
+        testRenderer.destroyDisplay(display2);
+        testRenderer.doOneLoop();
+
+        // create another OB on 1st display
+        // this requires context enabled on 1st display and would crash otherwise
+        const auto ob4 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        ASSERT_TRUE(ob4.isValid());
+        testRenderer.doOneLoop();
+
         testScenesAndRenderer.destroyRenderer();
     }
 }

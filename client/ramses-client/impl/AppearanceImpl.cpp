@@ -31,6 +31,7 @@
 #include "Math3d/Matrix22f.h"
 #include "SceneAPI/EDataType.h"
 #include "ObjectIteratorImpl.h"
+#include "DataTypeUtils.h"
 #include <algorithm>
 
 namespace ramses
@@ -87,20 +88,15 @@ namespace ramses
         return StatusOK;
     }
 
-    ramses::status_t AppearanceImpl::setBlendingColor(float red, float green, float blue, float alpha)
+    ramses::status_t AppearanceImpl::setBlendingColor(const vec4f& color)
     {
-        getIScene().setRenderStateBlendColor(m_renderStateHandle, { red, green, blue, alpha });
+        getIScene().setRenderStateBlendColor(m_renderStateHandle, ramses_internal::Vector4{ color });
         return StatusOK;
     }
 
-    ramses::status_t AppearanceImpl::getBlendingColor(float& red, float& green, float& blue, float& alpha) const
+    ramses::status_t AppearanceImpl::getBlendingColor(vec4f& color) const
     {
-        const ramses_internal::RenderState& rs = getIScene().getRenderState(m_renderStateHandle);
-        red = rs.blendColor.r;
-        green = rs.blendColor.g;
-        blue = rs.blendColor.b;
-        alpha = rs.blendColor.a;
-
+        color = getIScene().getRenderState(m_renderStateHandle).blendColor.getAsVec4();
         return StatusOK;
     }
 
@@ -462,10 +458,10 @@ namespace ramses
             return addErrorEntry("Appearance::set failed, input is not properly initialized or cannot be used with this appearance.");
         }
 
-        const auto result = std::find(valueDataType.begin(), valueDataType.end(),input.getDataType());
+        const auto result = std::find(valueDataType.begin(), valueDataType.end(), input.getInternalDataType());
         if (result == valueDataType.end())
         {
-            return addErrorEntry(::fmt::format("Appearance::set failed, value type does not match input data type {}", EnumToString(input.getDataType())));
+            return addErrorEntry(::fmt::format("Appearance::set failed, value type does not match input data type {}", EnumToString(input.getInternalDataType())));
         }
 
         if (input.getElementCount() != valueElementCount)
@@ -529,7 +525,7 @@ namespace ramses
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
         if (isBindable)
         {
-            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getDataType());
+            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getInternalDataType());
             const T* currentValues = ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), dataReference, ramses_internal::DataFieldHandle(0u));
             if (ramses_internal::PlatformMemory::Compare(currentValues, values, 1u * sizeof(T)) != 0)
             {
@@ -568,12 +564,12 @@ namespace ramses
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
         if (isBindable)
         {
-            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getDataType());
-            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), dataReference, ramses_internal::DataFieldHandle(0u)), EnumToSize(input.getDataType()));
+            const ramses_internal::DataInstanceHandle dataReference = getDataReference(dataField, input.getInternalDataType());
+            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), dataReference, ramses_internal::DataFieldHandle(0u)), EnumToSize(input.getInternalDataType()));
         }
         else
         {
-            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), m_uniformInstance, dataField), elementCount * EnumToSize(input.getDataType()));
+            ramses_internal::PlatformMemory::Copy(values, ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), m_uniformInstance, dataField), elementCount * EnumToSize(input.getInternalDataType()));
         }
 
         return StatusOK;
@@ -661,18 +657,14 @@ namespace ramses
     status_t AppearanceImpl::bindInput(const EffectInputImpl& input, const DataObjectImpl& dataObject)
     {
         if (!isFromTheSameSceneAs(dataObject))
-        {
             return addErrorEntry("Appearance::bindInput failed, dataObject is not from the same scene as this appearance");
-        }
 
-        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, {dataObject.getDataType()}));
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, {DataTypeUtils::ConvertDataTypeToInternal(dataObject.getDataType())}));
 
         const uint32_t inputIndex = input.getInputIndex();
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
         if (bindableInput == nullptr)
-        {
             return addErrorEntry("Appearance::bindInput failed, given uniform input cannot be bound to a DataObject.");
-        }
 
         return bindInputInternal(input, dataObject);
     }
@@ -749,35 +741,23 @@ namespace ramses
     template status_t AppearanceImpl::getInputValue<int32_t>(const EffectInputImpl&, uint32_t, int32_t*) const;
     template status_t AppearanceImpl::setInputValue<float>(const EffectInputImpl&, uint32_t, const float*);
     template status_t AppearanceImpl::getInputValue<float>(const EffectInputImpl&, uint32_t, float*) const;
-    template status_t AppearanceImpl::setInputValue<ramses_internal::Vector2i>(const EffectInputImpl&, uint32_t, const ramses_internal::Vector2i*);
-    template status_t AppearanceImpl::getInputValue<ramses_internal::Vector2i>(const EffectInputImpl&, uint32_t, ramses_internal::Vector2i*) const;
-    template status_t AppearanceImpl::setInputValue<ramses_internal::Vector3i>(const EffectInputImpl&, uint32_t, const ramses_internal::Vector3i*);
-    template status_t AppearanceImpl::getInputValue<ramses_internal::Vector3i>(const EffectInputImpl&, uint32_t, ramses_internal::Vector3i*) const;
-    template status_t AppearanceImpl::setInputValue<ramses_internal::Vector4i>(const EffectInputImpl&, uint32_t, const ramses_internal::Vector4i*);
-    template status_t AppearanceImpl::getInputValue<ramses_internal::Vector4i>(const EffectInputImpl&, uint32_t, ramses_internal::Vector4i*) const;
-    template status_t AppearanceImpl::setInputValue<ramses_internal::Vector2>(const EffectInputImpl&, uint32_t, const ramses_internal::Vector2*);
-    template status_t AppearanceImpl::getInputValue<ramses_internal::Vector2>(const EffectInputImpl&, uint32_t, ramses_internal::Vector2*) const;
-    template status_t AppearanceImpl::setInputValue<ramses_internal::Vector3>(const EffectInputImpl&, uint32_t, const ramses_internal::Vector3*);
-    template status_t AppearanceImpl::getInputValue<ramses_internal::Vector3>(const EffectInputImpl&, uint32_t, ramses_internal::Vector3*) const;
-    template status_t AppearanceImpl::setInputValue<ramses_internal::Vector4>(const EffectInputImpl&, uint32_t, const ramses_internal::Vector4*);
-    template status_t AppearanceImpl::getInputValue<ramses_internal::Vector4>(const EffectInputImpl&, uint32_t, ramses_internal::Vector4*) const;
 
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector2i, int32_t>(const EffectInputImpl&, uint32_t, const int32_t*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector2i, int32_t>(const EffectInputImpl&, uint32_t, int32_t*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector3i, int32_t>(const EffectInputImpl&, uint32_t, const int32_t*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector3i, int32_t>(const EffectInputImpl&, uint32_t, int32_t*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector4i, int32_t>(const EffectInputImpl&, uint32_t, const int32_t*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector4i, int32_t>(const EffectInputImpl&, uint32_t, int32_t*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector2, float>(const EffectInputImpl&, uint32_t, const float*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector2, float>(const EffectInputImpl&, uint32_t, float*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector3, float>(const EffectInputImpl&, uint32_t, const float*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector3, float>(const EffectInputImpl&, uint32_t, float*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector4, float>(const EffectInputImpl&, uint32_t, const float*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector4, float>(const EffectInputImpl&, uint32_t, float*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Matrix22f, float>(const EffectInputImpl&, uint32_t, const float*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Matrix22f, float>(const EffectInputImpl&, uint32_t, float*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Matrix33f, float>(const EffectInputImpl&, uint32_t, const float*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Matrix33f, float>(const EffectInputImpl&, uint32_t, float*) const;
-    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Matrix44f, float>(const EffectInputImpl&, uint32_t, const float*);
-    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Matrix44f, float>(const EffectInputImpl&, uint32_t, float*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector2i, vec2i>(const EffectInputImpl&, uint32_t, const vec2i*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector2i, vec2i>(const EffectInputImpl&, uint32_t, vec2i*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector3i, vec3i>(const EffectInputImpl&, uint32_t, const vec3i*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector3i, vec3i>(const EffectInputImpl&, uint32_t, vec3i*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector4i, vec4i>(const EffectInputImpl&, uint32_t, const vec4i*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector4i, vec4i>(const EffectInputImpl&, uint32_t, vec4i*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector2, vec2f>(const EffectInputImpl&, uint32_t, const vec2f*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector2, vec2f>(const EffectInputImpl&, uint32_t, vec2f*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector3, vec3f>(const EffectInputImpl&, uint32_t, const vec3f*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector3, vec3f>(const EffectInputImpl&, uint32_t, vec3f*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Vector4, vec4f>(const EffectInputImpl&, uint32_t, const vec4f*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Vector4, vec4f>(const EffectInputImpl&, uint32_t, vec4f*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Matrix22f, matrix22f>(const EffectInputImpl&, uint32_t, const matrix22f*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Matrix22f, matrix22f>(const EffectInputImpl&, uint32_t, matrix22f*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Matrix33f, matrix33f>(const EffectInputImpl&, uint32_t, const matrix33f*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Matrix33f, matrix33f>(const EffectInputImpl&, uint32_t, matrix33f*) const;
+    template status_t AppearanceImpl::setInputValueWithElementTypeCast<ramses_internal::Matrix44f, matrix44f>(const EffectInputImpl&, uint32_t, const matrix44f*);
+    template status_t AppearanceImpl::getInputValueWithElementTypeCast<ramses_internal::Matrix44f, matrix44f>(const EffectInputImpl&, uint32_t, matrix44f*) const;
 }

@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/WarpingMeshData.h"
 
 #include "RamsesFrameworkImpl.h"
 #include "RamsesRendererImpl.h"
@@ -46,14 +45,10 @@ namespace ramses_internal
             m_renderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
         }
 
-        ramses::displayId_t addDisplay(bool warpingEnabled = false)
+        ramses::displayId_t addDisplay()
         {
             //Create a display
             ramses::DisplayConfig displayConfig;
-            if (warpingEnabled)
-            {
-                displayConfig.enableWarpingPostEffect();
-            }
             EXPECT_EQ(ramses::StatusOK, displayConfig.validate());
             return m_renderer.createDisplay(displayConfig);
         }
@@ -119,51 +114,6 @@ namespace ramses_internal
         m_handler.expectDisplayDestroyed(displayId, ramses::ERendererEventResult_FAIL);
     }
 
-    TEST_F(ARamsesRendererDispatch, generatesEventForWarpingMeshDataUpdate)
-    {
-        ramses::displayId_t displayId = addDisplay(true);
-        updateAndDispatch(m_handler);
-        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
-
-        const uint16_t indices[3] = { 0 };
-        const float vertices[9] = { 0.f };
-        const ramses::WarpingMeshData warpData(3, indices, 3, vertices, vertices);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.updateWarpingMeshData(displayId, warpData));
-
-        updateAndDispatch(m_handler);
-
-        m_handler.expectWarpingMeshDataUpdated(displayId, ramses::ERendererEventResult_OK);
-    }
-
-    TEST_F(ARamsesRendererDispatch, generatesFAILEventForWarpingMeshDataUpdateOfInvalidDisplay)
-    {
-        const ramses::displayId_t invalidDisplay(1u);
-        const uint16_t indices[3] = { 0 };
-        const float vertices[9] = { 0.f };
-        const ramses::WarpingMeshData warpData(3, indices, 3, vertices, vertices);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.updateWarpingMeshData(invalidDisplay, warpData));
-
-        updateAndDispatch(m_handler);
-
-        m_handler.expectWarpingMeshDataUpdated(invalidDisplay, ramses::ERendererEventResult_FAIL);
-    }
-
-    TEST_F(ARamsesRendererDispatch, generatesEventForWarpingMeshDataUpdateOfDisplayWithoutWarping)
-    {
-        ramses::displayId_t displayId = addDisplay(false);
-        updateAndDispatch(m_handler);
-        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
-
-        const uint16_t indices[3] = { 0 };
-        const float vertices[9] = { 0.f };
-        const ramses::WarpingMeshData warpData(3, indices, 3, vertices, vertices);
-        EXPECT_EQ(ramses::StatusOK, m_renderer.updateWarpingMeshData(displayId, warpData));
-
-        updateAndDispatch(m_handler);
-
-        m_handler.expectWarpingMeshDataUpdated(displayId, ramses::ERendererEventResult_FAIL);
-    }
-
     TEST_F(ARamsesRendererDispatch, generatesEventForOffscreenBufferCreation)
     {
         ramses::displayId_t displayId = addDisplay();
@@ -207,7 +157,6 @@ namespace ramses_internal
         m_handler.expectOffscreenBufferDestroyed(displayId, bufferId, ramses::ERendererEventResult_FAIL);
     }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
     TEST_F(ARamsesRendererDispatch, generatesEventForExternalBufferCreation)
     {
         ramses::displayId_t displayId = addDisplay();
@@ -250,7 +199,6 @@ namespace ramses_internal
         updateAndDispatch(m_handler);
         m_handler.expectExternalBufferDestroyed(displayId, bufferId, ramses::ERendererEventResult_FAIL);
     }
-#endif
 
     TEST_F(ARamsesRendererDispatch, generatesEventForWindowClosed)
     {

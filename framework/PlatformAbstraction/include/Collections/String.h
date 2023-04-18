@@ -16,7 +16,7 @@
 #include "PlatformAbstraction/Hash.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include <string>
 #include <cctype>
 
@@ -32,7 +32,7 @@ namespace ramses_internal
 
         explicit String(const std::string& other);
         explicit String(std::string&& other);
-        explicit String(absl::string_view sv);
+        explicit String(std::string_view sv);
 
         String(const String& other) = default;
         String(String&& other) noexcept = default;
@@ -63,11 +63,11 @@ namespace ramses_internal
         RNODISCARD bool operator==(const String& other) const;
         RNODISCARD bool operator==(const std::string& other) const;
         RNODISCARD bool operator==(const char* other) const;
-        RNODISCARD bool operator==(absl::string_view other) const;
+        RNODISCARD bool operator==(std::string_view other) const;
         RNODISCARD bool operator!=(const String& other) const;
         RNODISCARD bool operator!=(const std::string& other) const;
         RNODISCARD bool operator!=(const char* other) const;
-        RNODISCARD bool operator!=(absl::string_view other) const;
+        RNODISCARD bool operator!=(std::string_view other) const;
 
         String& append(const String& other);
         String& append(const std::string& other);
@@ -85,7 +85,7 @@ namespace ramses_internal
         RNODISCARD bool operator<(const String& other) const;
         RNODISCARD bool operator>(const String& other) const;
 
-        operator absl::string_view() const noexcept;  // NOLINT(google-explicit-constructor) implicit conversion as in std::string
+        operator std::string_view() const noexcept;  // NOLINT(google-explicit-constructor) implicit conversion as in std::string
 
         /**
          * Swaps this string with another
@@ -97,7 +97,7 @@ namespace ramses_internal
         RNODISCARD const std::string& stdRef() const;
         RNODISCARD std::string& stdRef();
 
-        static constexpr const size_t npos = std::string::npos;
+        static constexpr auto npos = std::string::npos;
 
     private:
         std::string m_string;
@@ -160,12 +160,12 @@ namespace ramses_internal
         return b != a;
     }
 
-    inline bool operator==(absl::string_view a, const String& b)
+    inline bool operator==(std::string_view a, const String& b)
     {
         return b == a;
     }
 
-    inline bool operator!=(absl::string_view a, const String& b)
+    inline bool operator!=(std::string_view a, const String& b)
     {
         return b != a;
     }
@@ -229,7 +229,7 @@ namespace ramses_internal
     {
     }
 
-    inline String::String(absl::string_view sv)
+    inline String::String(std::string_view sv)
         : m_string(sv)
     {
     }
@@ -297,7 +297,7 @@ namespace ramses_internal
         return m_string == other;
     }
 
-    inline bool String::operator==(absl::string_view other) const
+    inline bool String::operator==(std::string_view other) const
     {
         return m_string == other;
     }
@@ -317,7 +317,7 @@ namespace ramses_internal
         return !operator==(other);
     }
 
-    inline bool String::operator!=(absl::string_view other) const
+    inline bool String::operator!=(std::string_view other) const
     {
         return m_string != other;
     }
@@ -473,7 +473,7 @@ namespace ramses_internal
         return m_string;
     }
 
-    inline String::operator absl::string_view() const noexcept
+    inline String::operator std::string_view() const noexcept
     {
         return m_string;
     }

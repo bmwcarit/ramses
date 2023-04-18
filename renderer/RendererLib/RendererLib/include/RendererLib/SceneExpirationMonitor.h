@@ -35,7 +35,7 @@ namespace ramses_internal
 
         void onDestroyed(SceneId sceneId);
 
-        FlushTime::Clock::time_point getExpirationTimestampOfRenderedScene(SceneId sceneId) const;
+        [[nodiscard]] FlushTime::Clock::time_point getExpirationTimestampOfRenderedScene(SceneId sceneId) const;
 
     private:
         struct TimeStampTag

@@ -8,6 +8,7 @@
 
 #include "Platform_Windows_WGL/Platform_Windows_WGL.h"
 #include "Context_WGL/Context_WGL.h"
+#include "Device_GL/Device_GL.h"
 #include "Window_Windows/Window_Windows.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "RendererLib/DisplayConfig.h"
@@ -71,5 +72,25 @@ namespace ramses_internal
         }
 
         return false;
+    }
+
+    bool Platform_Windows_WGL::createDevice()
+    {
+        assert(m_context);
+        auto device = std::make_unique<Device_GL>(*m_context, nullptr);
+        if (device->init())
+            m_device = std::move(device);
+
+        return m_device.get() != nullptr;
+    }
+
+    bool Platform_Windows_WGL::createDeviceUploading()
+    {
+        assert(m_contextUploading);
+        auto device = std::make_unique<Device_GL>(*m_contextUploading, nullptr);
+        if (device->init())
+            m_deviceUploading = std::move(device);
+
+        return m_deviceUploading.get() != nullptr;
     }
 }

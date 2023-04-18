@@ -44,51 +44,8 @@ namespace ramses_internal
             return controller;
         }
 
-        IDisplayController& createDisplayControllerWithWarping()
-        {
-            using namespace testing;
-            InSequence seq;
-            expectCreationSequence();
-
-            EXPECT_CALL(m_renderBackend.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(2u);
-            EXPECT_CALL(m_renderBackend.deviceMock, uploadRenderTarget(_));
-
-            EXPECT_CALL(m_renderBackend.deviceMock, uploadShader(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, registerShader(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexBuffer(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, uploadVertexBufferData(_, _, _));
-            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexBuffer(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, uploadVertexBufferData(_, _, _));
-            EXPECT_CALL(m_renderBackend.deviceMock, allocateIndexBuffer(_, _));
-            EXPECT_CALL(m_renderBackend.deviceMock, uploadIndexBufferData(_, _, _));
-            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexArray(_));
-
-            IDisplayController& controller = *new DisplayController(m_renderBackend, 1u, EPostProcessingEffect_Warping);
-            const DeviceResourceHandle expectedRenderTargetHandle = DeviceMock::FakeRenderTargetDeviceHandle;
-            EXPECT_EQ(expectedRenderTargetHandle, controller.getDisplayBuffer());
-
-            return controller;
-        }
-
         void destroyDisplayController(IDisplayController& controller)
         {
-            delete &controller;
-        }
-
-        void destroyDisplayControllerWithWarping(IDisplayController& controller)
-        {
-            using namespace testing;
-            InSequence seq;
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteVertexArray(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteVertexBuffer(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteIndexBuffer(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteVertexBuffer(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteShader(_));
-
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteRenderTarget(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteRenderBuffer(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, deleteRenderBuffer(_));
-
             delete &controller;
         }
 

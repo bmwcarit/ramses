@@ -28,11 +28,6 @@
 
 namespace ramses_internal
 {
-    constexpr DataFieldHandle Camera::ViewportOffsetField;
-    constexpr DataFieldHandle Camera::ViewportSizeField;
-    constexpr DataFieldHandle Camera::FrustumPlanesField;
-    constexpr DataFieldHandle Camera::FrustumNearFarPlanesField;
-
     template <template<typename, typename> class MEMORYPOOL>
     SceneT<MEMORYPOOL>::SceneT(const SceneInfo& sceneInfo)
         : m_name(sceneInfo.friendlyName)
@@ -50,13 +45,6 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     SceneT<MEMORYPOOL>::~SceneT()
     {
-        for (auto i = AnimationSystemHandle(0); i < getAnimationSystemCount(); ++i)
-        {
-            if (isAnimationSystemAllocated(i))
-            {
-                removeAnimationSystem(i);
-            }
-        }
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -218,41 +206,6 @@ namespace ramses_internal
     const RenderBuffer& SceneT<MEMORYPOOL>::getRenderBuffer(RenderBufferHandle handle) const
     {
         return *m_renderBuffers.getMemory(handle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    StreamTextureHandle SceneT<MEMORYPOOL>::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle handle /*= StreamTextureHandle::Invalid()*/)
-    {
-        const StreamTextureHandle streamTextureHandle = m_streamTextures.allocate(handle);
-        StreamTexture* streamTexture = m_streamTextures.getMemory(streamTextureHandle);
-        assert(nullptr != streamTexture);
-        streamTexture->fallbackTexture = fallbackTextureHash;
-        streamTexture->source = streamSource;
-        return streamTextureHandle;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        m_streamTextures.release(streamTextureHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    UInt32 SceneT<MEMORYPOOL>::getStreamTextureCount() const
-    {
-        return m_streamTextures.getTotalCount();
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        m_streamTextures.getMemory(streamTextureHandle)->forceFallbackTexture = forceFallbackImage;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const StreamTexture& SceneT<MEMORYPOOL>::getStreamTexture(StreamTextureHandle streamTextureHandle) const
-    {
-        return *m_streamTextures.getMemory(streamTextureHandle);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -508,42 +461,6 @@ namespace ramses_internal
     const BlitPass& SceneT<MEMORYPOOL>::getBlitPass(BlitPassHandle passHandle) const
     {
         return *m_blitPasses.getMemory(passHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    AnimationSystemHandle SceneT<MEMORYPOOL>::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
-    {
-        assert(nullptr != animationSystem);
-        const auto handle = m_animationSystems.allocate(externalHandle);
-        *m_animationSystems.getMemory(handle) = animationSystem;
-        animationSystem->setHandle(handle);
-        return handle;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::removeAnimationSystem(AnimationSystemHandle handle)
-    {
-        delete getAnimationSystem(handle);
-        m_animationSystems.release(handle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle)
-    {
-        // Non-const version of getAnimationSystem cast to its const version to avoid duplicating code
-        return const_cast<IAnimationSystem*>((const_cast<const SceneT&>(*this)).getAnimationSystem(handle));
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const IAnimationSystem* SceneT<MEMORYPOOL>::getAnimationSystem(AnimationSystemHandle handle) const
-    {
-        return m_animationSystems.isAllocated(handle) ? *m_animationSystems.getMemory(handle) : nullptr;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    UInt32 SceneT<MEMORYPOOL>::getAnimationSystemCount() const
-    {
-        return m_animationSystems.getTotalCount();
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1105,10 +1022,8 @@ namespace ramses_internal
         m_renderTargets.preallocateSize(sizeInfo.renderTargetCount);
         m_renderBuffers.preallocateSize(sizeInfo.renderBufferCount);
         m_textureSamplers.preallocateSize(sizeInfo.textureSamplerCount);
-        m_streamTextures.preallocateSize(sizeInfo.streamTextureCount);
         m_dataSlots.preallocateSize(sizeInfo.dataSlotCount);
         m_dataBuffers.preallocateSize(sizeInfo.dataBufferCount);
-        m_animationSystems.preallocateSize(sizeInfo.animationSystemCount);
         m_textureBuffers.preallocateSize(sizeInfo.textureBufferCount);
         m_pickableObjects.preallocateSize(sizeInfo.pickableObjectCount);
         m_sceneReferences.preallocateSize(sizeInfo.sceneReferenceCount);
@@ -1147,15 +1062,15 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector3& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
+    const Vector4& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
     {
         return m_transforms.getMemory(handle)->rotation;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    ERotationConvention SceneT<MEMORYPOOL>::getRotationConvention(TransformHandle handle) const
+    ERotationType SceneT<MEMORYPOOL>::getRotationType(TransformHandle handle) const
     {
-        return m_transforms.getMemory(handle)->rotationConvention;
+        return m_transforms.getMemory(handle)->rotationType;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1171,23 +1086,11 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector4& rotation, ERotationType rotationType)
     {
         auto transformMemory = m_transforms.getMemory(handle);
         transformMemory->rotation = rotation;
-        transformMemory->rotationConvention = convention;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotationForAnimation(TransformHandle handle, const Vector3& rotation)
-    {
-        if(m_transforms.getMemory(handle)->rotationConvention != ERotationConvention::Legacy_ZYX)
-        {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Scene::setRotationForAnimation: failed to animate rotation for node :" << getTransformNode(handle) << " that does not use legacy rotation convention.");
-            return;
-        }
-
-        setRotation(handle, rotation, ERotationConvention::Legacy_ZYX);
+        transformMemory->rotationType = rotationType;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1286,14 +1189,11 @@ namespace ramses_internal
         sizeInfo.renderTargetCount = m_renderTargets.getTotalCount();
         sizeInfo.renderBufferCount = m_renderBuffers.getTotalCount();
         sizeInfo.textureSamplerCount = m_textureSamplers.getTotalCount();
-        sizeInfo.streamTextureCount = m_streamTextures.getTotalCount();
         sizeInfo.dataSlotCount = m_dataSlots.getTotalCount();
         sizeInfo.dataBufferCount = m_dataBuffers.getTotalCount();
         sizeInfo.textureBufferCount = m_textureBuffers.getTotalCount();
         sizeInfo.pickableObjectCount = m_pickableObjects.getTotalCount();
         sizeInfo.sceneReferenceCount = m_sceneReferences.getTotalCount();
-        sizeInfo.animationSystemCount = m_animationSystems.getTotalCount();
-
         return sizeInfo;
     }
 

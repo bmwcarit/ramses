@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplayConfig.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -34,16 +35,6 @@ namespace ramses_internal
     void DisplayConfig::setWaylandIviSurfaceID(WaylandIviSurfaceId waylandIviSurfaceID)
     {
         m_waylandIviSurfaceID = waylandIviSurfaceID;
-    }
-
-    IntegrityRGLDeviceUnit DisplayConfig::getIntegrityRGLDeviceUnit() const
-    {
-        return m_integrityRGLDeviceUnit;
-    }
-
-    void DisplayConfig::setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit)
-    {
-        m_integrityRGLDeviceUnit = rglDeviceUnit;
     }
 
     AndroidNativeWindowPtr DisplayConfig::getAndroidNativeWindow() const
@@ -133,16 +124,6 @@ namespace ramses_internal
         m_windowPositionY = posy;
     }
 
-    void DisplayConfig::setWarpingEnabled(Bool enabled)
-    {
-        m_warpingEnabled = enabled;
-    }
-
-    Bool DisplayConfig::isWarpingEnabled() const
-    {
-        return m_warpingEnabled;
-    }
-
     void DisplayConfig::setKeepEffectsUploaded(Bool enabled)
     {
         m_keepEffectsUploaded = enabled;
@@ -193,12 +174,12 @@ namespace ramses_internal
         return m_depthStencilBufferType;
     }
 
-    void DisplayConfig::setWaylandDisplay(const String& waylandDisplay)
+    void DisplayConfig::setWaylandDisplay(std::string_view waylandDisplay)
     {
-        m_waylandDisplay = waylandDisplay;
+        m_waylandDisplay = String(waylandDisplay);
     }
 
-    const String& DisplayConfig::getWaylandDisplay() const
+    std::string_view DisplayConfig::getWaylandDisplay() const
     {
         return m_waylandDisplay;
     }
@@ -232,9 +213,9 @@ namespace ramses_internal
     {
         return m_asyncEffectUploadEnabled;
     }
-    void DisplayConfig::setWaylandEmbeddedCompositingSocketName(const String& socket)
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketName(std::string_view socket)
     {
-        m_waylandSocketEmbedded = socket;
+        m_waylandSocketEmbedded = String(socket);
     }
 
     void DisplayConfig::setWaylandEmbeddedCompositingSocketFD(int fd)
@@ -242,12 +223,12 @@ namespace ramses_internal
         m_waylandSocketEmbeddedFD = fd;
     }
 
-    const String& DisplayConfig::getWaylandSocketEmbedded() const
+    std::string_view DisplayConfig::getWaylandSocketEmbedded() const
     {
         return m_waylandSocketEmbedded;
     }
 
-    const String& DisplayConfig::getWaylandSocketEmbeddedGroup() const
+    std::string_view DisplayConfig::getWaylandSocketEmbeddedGroup() const
     {
         return m_waylandSocketEmbeddedGroupName;
     }
@@ -257,9 +238,9 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedFD;
     }
 
-    void DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions)
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(std::string_view groupNameForSocketPermissions)
     {
-        m_waylandSocketEmbeddedGroupName = groupNameForSocketPermissions;
+        m_waylandSocketEmbeddedGroupName = String(groupNameForSocketPermissions);
     }
 
     bool DisplayConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
@@ -275,12 +256,12 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedPermissions;
     }
 
-    void DisplayConfig::setPlatformRenderNode(const String& renderNode)
+    void DisplayConfig::setPlatformRenderNode(std::string_view renderNode)
     {
-        m_platformRenderNode = renderNode;
+        m_platformRenderNode = String(renderNode);
     }
 
-    const String& DisplayConfig::getPlatformRenderNode() const
+    std::string_view DisplayConfig::getPlatformRenderNode() const
     {
         return m_platformRenderNode;
     }
@@ -330,7 +311,6 @@ namespace ramses_internal
         return
             m_fullscreen                 == other.m_fullscreen &&
             m_borderless                 == other.m_borderless &&
-            m_warpingEnabled             == other.m_warpingEnabled &&
             m_antiAliasingSamples        == other.m_antiAliasingSamples &&
             m_desiredWindowWidth         == other.m_desiredWindowWidth &&
             m_desiredWindowHeight        == other.m_desiredWindowHeight &&
@@ -338,7 +318,6 @@ namespace ramses_internal
             m_windowPositionY            == other.m_windowPositionY &&
             m_waylandIviLayerID          == other.m_waylandIviLayerID &&
             m_waylandIviSurfaceID        == other.m_waylandIviSurfaceID &&
-            m_integrityRGLDeviceUnit     == other.m_integrityRGLDeviceUnit &&
             m_startVisibleIvi            == other.m_startVisibleIvi &&
             m_resizable                  == other.m_resizable &&
             m_gpuMemoryCacheSize         == other.m_gpuMemoryCacheSize &&

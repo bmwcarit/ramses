@@ -18,7 +18,6 @@ namespace ramses
 
 namespace ramses_internal
 {
-    struct SceneCommandForceFallback;
     struct SceneCommandFlushSceneVersion;
     struct SceneCommandValidationRequest;
     struct SceneCommandDumpSceneToFile;
@@ -32,7 +31,6 @@ namespace ramses_internal
             : m_scene(scene)
         {}
 
-        void operator()(const SceneCommandForceFallback& cmd);
         void operator()(const SceneCommandFlushSceneVersion& cmd);
         void operator()(const SceneCommandValidationRequest& cmd);
         void operator()(const SceneCommandDumpSceneToFile& cmd) const;

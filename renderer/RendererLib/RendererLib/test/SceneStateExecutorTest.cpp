@@ -35,7 +35,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             // make sure all test cases dispatch all collected events
             RendererEventVector resultEvents;
@@ -163,8 +163,6 @@ namespace ramses_internal
         StrictMock<RendererSceneEventSenderMock> rendererSceneSender;
         SceneStateExecutor sceneStateExecutor;
     };
-
-    constexpr SceneId ASceneStateExecutor::sceneId;
 
     TEST_F(ASceneStateExecutor, canPublishUnknownScene)
     {

@@ -19,7 +19,6 @@
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/TextureBuffer.h"
 #include "SceneAPI/GeometryDataBuffer.h"
-#include "SceneAPI/StreamTexture.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/RenderTarget.h"
 #include "SceneAPI/BlitPass.h"
@@ -80,7 +79,6 @@ namespace ramses_internal
         memoryInfos.push_back(createMemInfo("BlitPasses",      iscene.getBlitPassCount(),       [](uint32_t){return sizeof(BlitPass);}));
         memoryInfos.push_back(createMemInfo("RenderBuffers",   iscene.getRenderBufferCount(),   [](uint32_t){return sizeof(RenderBuffer);}));
         memoryInfos.push_back(createMemInfo("TextureSamplers", iscene.getTextureSamplerCount(), [](uint32_t){return sizeof(TextureSampler);}));
-        memoryInfos.push_back(createMemInfo("StreamTextures",  iscene.getStreamTextureCount(),  [](uint32_t){return sizeof(StreamTexture);}));
         memoryInfos.push_back(createMemInfo("DataSlots",       iscene.getDataSlotCount(),       [](uint32_t){return sizeof(DataSlot);}));
 
         memoryInfos.push_back(createMemInfo("Nodes",           iscene.getNodeCount(), [&iscene](uint32_t h){

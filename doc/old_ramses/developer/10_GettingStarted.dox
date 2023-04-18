@@ -1,0 +1,170 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2012 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+/**
+
+@page GettingStarted Getting started with RAMSES
+
+\anchor buildingRamses
+# Building RAMSES
+In order to build RAMSES, some tools are required:
+- git (recent version with proper submodule support)
+- CMake (\>= 3.8)
+
+optional:
+- doxygen (for documentation)
+- python (for code style checking)
+
+## Clone Repository
+RAMSES is managed in a git repository, which pulls in additional build dependencies using git submodules.
+All these external dependencies are contained in \<ramses-sdk-root\>/external/.
+Take care to update the submodules to the expected state before building.
+
+You can either checkout recursively
+
+    $ git clone --recursive repositoryLocation
+
+or update submodules manually
+
+    $ git clone repositoryLocation
+    $ cd ramses-sdk
+    $ git submodule update --init --recursive
+
+## Configure Build Environment
+The RAMSES build scripts are based on CMake, but we avoided writing plain CMake build scripts for each module of the project.
+Instead we use a centralized set of CMake macros for project configuration, which are called ACME2 ("Another CMake Extension 2").
+Having centralized scripts greatly improves maintainability of our build scripts and guarantees the same behaviour for each module of RAMSES.
+ACME2 is pulled into the build environment as git submodule together with other build dependencies.
+
+Concerning build environment setup, ACME2 is fully transparent.
+RAMSES can be treated as standard CMake project.
+
+For some platforms RAMSES requires the use of a toolchain file to define some compiler constants.
+The RAMSES build environment contains a set of standard CMake toolchain files as a starting point.
+These example toolchain files are located in
+
+    <ramses-sdk-root>/cmake/toolchain
+
+
+### Example: generation of a Makefile build environment on Linux 64 bit host
+
+    $ mkdir <build-dir>
+    $ cd <build-dir>
+    $ cmake -DCMAKE_TOOLCHAIN_FILE=<ramses-sdk-root>/cmake/toolchain/Linux_X86_64.toolchain <ramses-sdk-root>
+    & make
+
+
+CMake specific build flags
+- `CMAKE_INSTALL_PREFIX=<path>`
+
+  configure target directory for install build target
+
+- `CMAKE_BUILD_TYPE=<Debug|Release>`
+
+  set build configuration, if not specified, RAMSES will default to "Release".
+
+Common build flags (created by ACME2) include
+- `ramses-sdk_BUILD_TESTS:[ON|OFF]`
+  - `ON`: enable build of RAMSES unit tests
+  - `OFF`: disable build of RAMSES unit tests
+- `ramses-sdk_<path>_<module>:[ON|OFF|AUTO]`
+  - `ON`: enable build of module
+  - `OFF`: disable build of module
+  - `AUTO`: build enabled, if dependencies are resolved; otherwise build is disabled
+- `ramses-sdk_BUILD_EXAMPLES:[ON|OFF]`
+- `ramses-sdk_BUILD_SMOKE_TESTS:[ON|OFF]`
+
+## Build
+After CMake has successfully created the build environment, build the RAMSES project as required by your selected build environment, e.g.
+- Makefile: make
+- Visual Studio: F7
+- KDevelop: F8
+- XCode: Ctrl + B
+- QtCreator: Ctrl + B
+
+## [Optional] Install
+CMake creates an install target in most cases, which will copy all build results into the directory defined in CMAKE_INSTALL_PREFIX.
+Triggering the install target depends on the selected CMake generator and the build environment, e.g.
+- Makefile: make install
+- Most IDEs (Visual Studio, KDevelop, XCode, QtCreator, ...): build install target
+
+## [Optional] Package
+Our ACME2 build scripts internally configure CPack to support platform specific packaging.
+Triggering the package target depends on the selected CMake generator and the build environment, e.g.
+- Makefile: make package
+- Most IDEs (Visual Studio, KDevelop, XCode, QtCreator, ...): build package target
+
+\anchor running
+# Running RAMSES
+
+## Run Unit Tests
+The unit tests of RAMSES are based on GTest (Google Test) library, so all unit test binaries inherit all gtest features like shuffling, generating XML reports or filtering of tests to be executed.
+Unit tests are internally registered at CTest to support best integration of unit test execution into various IDEs. Depending on the used CMake generator, unit tests can be executed by
+- running 'make test' for Makefile based systems
+- executing target 'RUN_TESTS' in Visual Studio
+
+## Run RAMSES Test Scenario
+A minimal test scenario for RAMSES includes three applications:
+- Daemon: central controller for content distribution
+- Renderer: render content to visual representation on display
+- Client: provide content to be rendered
+
+### Run Daemon
+The RAMSES Daemon component is simply started without any special arguments.
+
+    $ cd <CMAKE_INSTALL_PREFIX>/bin
+    $ ./ramses-daemon
+
+It will enable its communication framework (currently Ethernet IPv4) and wait for incoming connections.
+A RAMSES setup always requires exactly one daemon to be available within the communication network.
+Any RAMSES component (Renderers, Clients) needs to know how to connect to the daemon (IP address in current implementation).
+
+### Run Renderer
+The RAMSES renderer component creates a dedicated renderer binary for each supported platform, e.g.
+
+Renderer Name                          | Description
+---------------------------------------|---------------------------------------------
+ramses-renderer-x11-egl-es-3-0         | OpenGL ES 3.0 Renderer for X11 backend
+ramses-renderer-wayland-ivi-egl-es-3-0 | OpenGL ES 3.0 Renderer for Wayland Backend
+ramses-renderer-windows-wgl-4-2-core   | OpenGL 4.2 Renderer for Windows
+ramses-renderer-windows-wgl-4-5        | OpenGL 4.5 Renderer for Windows
+
+All renderer binaries share the same set of command line arguments.
+Run with '-help' to see available command line parameters.
+
+
+### Run Client Application
+All RAMSES client applications need a connection to RAMSES daemon to register their content.
+All current client applications interpret the command line flag
+- `--daemon-ip <ip_address>`
+
+as IP address of the daemon to connect to.
+If no IP address is provided, 'localhost' is silently used as daemon address.
+
+The client applications are located in
+
+    <CMAKE_INSTALL_PREFIX>/bin
+
+Most client applications load resource files (e.g. .RAMSES files), which are located in
+
+    <CMAKE_INSTALL_PREFIX>/bin/res
+
+Clients expect the resources in
+
+    <working_dir>/res
+
+directory.
+Take care to start the clients with a working directory of \<CMAKE_INSTALL_PREFIX\>/bin,
+where res folder can be resolved. Otherwise expect misbehaviour of client applications.
+
+#### Example: Start a basic example, connect to ramses-daemon at IP 1.2.3.4
+
+    $ cd <CMAKE_INSTALL_PREFIX>/bin
+    $ ./ramses-example-basic-geometry --daemon-ip 1.2.3.4
+
+*/

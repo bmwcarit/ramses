@@ -11,7 +11,6 @@
 
 #include "Resource/ResourceBase.h"
 #include "Resource/EffectInputInformation.h"
-#include "absl/types/optional.h"
 
 namespace ramses_internal
 {
@@ -22,14 +21,14 @@ namespace ramses_internal
     {
     public:
         EffectResource(const String& vertexShader, const String& fragmentShader, const String& geometryShader,
-            absl::optional<EDrawMode> geometryShaderInputType, const EffectInputInformationVector& uniformInputs,
+            EDrawMode geometryShaderInputType, const EffectInputInformationVector& uniformInputs,
             const EffectInputInformationVector& attributeInputs, const String& name, ResourceCacheFlag cacheFlag);
 
         const char* getVertexShader() const;
         const char* getFragmentShader() const;
         const char* getGeometryShader() const;
 
-        absl::optional<EDrawMode> getGeometryShaderInputType() const;
+        EDrawMode getGeometryShaderInputType() const;
 
         const EffectInputInformationVector& getUniformInputs() const;
         const EffectInputInformationVector& getAttributeInputs() const;
@@ -37,11 +36,11 @@ namespace ramses_internal
         DataFieldHandle getUniformDataFieldHandleByName(const String& name) const;
         DataFieldHandle getAttributeDataFieldHandleByName(const String& name) const;
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override;
+        void serializeResourceMetadataToStream(IOutputStream& output) const override;
         static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name);
 
     private:
-        EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, absl::optional<EDrawMode> geometryShaderInputType,
+        EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, EDrawMode geometryShaderInputType,
             const String& name, UInt32 fragmentShaderOffset, UInt32 geometryShaderOffset, ResourceCacheFlag cacheFlag);
 
         static void WriteInputVector(IOutputStream& stream, const EffectInputInformationVector& inputVector);
@@ -51,7 +50,7 @@ namespace ramses_internal
         const EffectInputInformationVector m_attributeInputs;
         const UInt32 m_fragmentShaderOffset;
         const UInt32 m_geometryShaderOffset;
-        const absl::optional<EDrawMode> m_geometryShaderInputType;
+        const EDrawMode m_geometryShaderInputType;
 
     };
 }

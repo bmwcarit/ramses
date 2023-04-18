@@ -26,7 +26,7 @@ namespace ramses_internal
         IOutputStream& write(const void* data, size_t size) override;
 
         EStatus getPos(size_t& position);
-        EStatus getState() const;
+        [[nodiscard]] EStatus getState() const;
 
     private:
         File& m_file;

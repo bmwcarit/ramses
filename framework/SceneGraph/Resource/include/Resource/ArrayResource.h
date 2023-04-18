@@ -34,7 +34,7 @@ namespace ramses_internal
             return m_elementType;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override
+        void serializeResourceMetadataToStream(IOutputStream& output) const override
         {
             output << static_cast<UInt32>(getElementCount());
             output << static_cast<UInt32>(getElementType());

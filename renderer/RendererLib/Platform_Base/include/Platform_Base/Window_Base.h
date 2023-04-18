@@ -21,24 +21,23 @@ namespace ramses_internal
     public:
         Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
 
-        Bool canRenderNewFrame() const override;
+        [[nodiscard]] Bool canRenderNewFrame() const override;
         void frameRendered() override;
-        Int32 getPosX() const override final;
-        Int32 getPosY() const override final;
+        [[nodiscard]] Int32 getPosX() const final override;
+        [[nodiscard]] Int32 getPosY() const final override;
 
-        UInt32 getWidth() const override final;
-        UInt32 getHeight() const override final;
-        Float  getAspectRatio() const override final;
+        [[nodiscard]] UInt32 getWidth() const final override;
+        [[nodiscard]] UInt32 getHeight() const final override;
+        [[nodiscard]] Float  getAspectRatio() const final override;
 
-        const String& getTitle() const override final;
+        [[nodiscard]] const String& getTitle() const final override;
         void setTitle(const String& title) override;
 
-        UInt32 getMSAASampleCount() const;
+        [[nodiscard]] UInt32 getMSAASampleCount() const;
 
-        virtual IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const final;
-        virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
+        [[nodiscard]] WaylandIviSurfaceId getWaylandIviSurfaceID() const final override;
 
-        virtual bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
+        bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
     protected:
         String m_windowName;
@@ -52,7 +51,6 @@ namespace ramses_internal
         Int32 m_posX;
         Int32 m_posY;
 
-        const IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         const WaylandIviSurfaceId m_waylandIviSurfaceID;
         const Bool m_resizable;
     };

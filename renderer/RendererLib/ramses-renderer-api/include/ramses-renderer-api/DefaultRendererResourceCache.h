@@ -32,7 +32,7 @@ namespace ramses
         /**
         * @brief Destructor of DefaultRendererResourceCache
         */
-        virtual ~DefaultRendererResourceCache() override;
+        ~DefaultRendererResourceCache() override;
 
         /**
         * @brief Called by RamsesRenderer to ask for a resource with the given id.
@@ -68,7 +68,7 @@ namespace ramses
         *                 using the same resource, only the first scene id is guaranteed to be reported.
         * @return true if the cache wants to store the resource.
         */
-        bool shouldResourceBeCached(rendererResourceId_t resourceId, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId) const override;
+        [[nodiscard]] bool shouldResourceBeCached(rendererResourceId_t resourceId, uint32_t resourceDataSize, resourceCacheFlag_t cacheFlag, sceneId_t sceneId) const override;
 
         /**
         * @brief Called by RamsesRenderer with the final resource for storing. This is called

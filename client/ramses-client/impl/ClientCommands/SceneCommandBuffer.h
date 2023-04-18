@@ -19,12 +19,6 @@
 namespace ramses_internal
 {
     // Commands
-    struct SceneCommandForceFallback
-    {
-        String streamTextureName;
-        bool   forceFallback;
-    };
-
     struct SceneCommandFlushSceneVersion
     {
         ramses::sceneVersionTag_t sceneVersion;
@@ -60,8 +54,7 @@ namespace ramses_internal
         void execute(V&& visitor);
 
     private:
-        using CommandVariant = absl::variant<SceneCommandForceFallback,
-                                           SceneCommandFlushSceneVersion,
+        using CommandVariant = std::variant<SceneCommandFlushSceneVersion,
                                            SceneCommandValidationRequest,
                                            SceneCommandDumpSceneToFile,
                                            SceneCommandLogResourceMemoryUsage>;
@@ -87,7 +80,7 @@ namespace ramses_internal
         }
 
         for (const auto& v : localBuffer)
-            absl::visit(visitor, v);
+            std::visit(visitor, v);
     }
 }
 #endif

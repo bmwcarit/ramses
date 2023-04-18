@@ -138,19 +138,19 @@ namespace ramses_internal
     void ActionCollectingScene::setScaling(TransformHandle handle, const Vector3& scaling)
     {
         ResourceChangeCollectingScene::setScaling(handle, scaling);
-        m_creator.setTransformComponent(ETransformPropertyType_Scaling, handle, scaling, {});
+        m_creator.setScaling(handle, scaling);
     }
 
-    void ActionCollectingScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void ActionCollectingScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationType rotationType)
     {
-        ResourceChangeCollectingScene::setRotation(handle, rotation, convention);
-        m_creator.setTransformComponent(ETransformPropertyType_Rotation, handle, rotation, convention);
+        ResourceChangeCollectingScene::setRotation(handle, rotation, rotationType);
+        m_creator.setRotation(handle, rotation, rotationType);
     }
 
     void ActionCollectingScene::setTranslation(TransformHandle handle, const Vector3& translation)
     {
         ResourceChangeCollectingScene::setTranslation(handle, translation);
-        m_creator.setTransformComponent(ETransformPropertyType_Translation, handle, translation, {});
+        m_creator.setTranslation(handle, translation);
     }
 
     void ActionCollectingScene::removeChildFromNode(NodeHandle parent, NodeHandle child)
@@ -415,20 +415,6 @@ namespace ramses_internal
         m_creator.removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
     }
 
-    AnimationSystemHandle ActionCollectingScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
-    {
-        auto handle = ResourceChangeCollectingScene::addAnimationSystem(animationSystem, externalHandle);
-        m_creator.addAnimationSystem(handle, animationSystem->getFlags(), animationSystem->getTotalSizeInformation());
-        return handle;
-    }
-
-    void ActionCollectingScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        // SceneAction must be created first because animationSystemID is deleted with next call!
-        m_creator.removeAnimationSystem(animSystemHandle);
-        ResourceChangeCollectingScene::removeAnimationSystem(animSystemHandle);
-    }
-
     ramses_internal::RenderPassHandle ActionCollectingScene::allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle handle /*= InvalidRenderPassHandle*/)
     {
         const RenderPassHandle handleActual = ResourceChangeCollectingScene::allocateRenderPass(renderGroupCount, handle);
@@ -627,25 +613,6 @@ namespace ramses_internal
     {
         ResourceChangeCollectingScene::setRenderPassClearFlag(pass, clearFlag);
         m_creator.setRenderPassClearFlag(pass, clearFlag);
-    }
-
-    StreamTextureHandle ActionCollectingScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle /*= StreamTextureHandle::Invalid()*/)
-    {
-        const StreamTextureHandle handleActual = ResourceChangeCollectingScene::allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
-        m_creator.allocateStreamTexture(streamSource, fallbackTextureHash, handleActual);
-        return handleActual;
-    }
-
-    void ActionCollectingScene::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        ResourceChangeCollectingScene::releaseStreamTexture(streamTextureHandle);
-        m_creator.releaseStreamTexture(streamTextureHandle);
-    }
-
-    void ActionCollectingScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        ResourceChangeCollectingScene::setForceFallbackImage(streamTextureHandle, forceFallbackImage);
-        m_creator.setStreamTextureForceFallback(streamTextureHandle, forceFallbackImage);
     }
 
     DataBufferHandle ActionCollectingScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)

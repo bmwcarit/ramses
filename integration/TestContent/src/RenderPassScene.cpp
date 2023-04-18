@@ -30,14 +30,14 @@ namespace ramses_internal
         ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(*meshNode1);
         translateNode->addChild(*meshNode2);
-        translateNode->translate(0.0f, 0.0f, -12.0f);
+        translateNode->translate({0.0f, 0.0f, -12.0f});
 
         ramses::Camera& camera1 = createCameraWithDefaultParameters();
         ramses::Camera& camera2 = createCameraWithDefaultParameters();
 
         ramses::Node* cameraTranslateNode = m_scene.createNode();
         camera2.setParent(*cameraTranslateNode);
-        cameraTranslateNode->translate(-1.5f, -1.5f, 5.0f);
+        cameraTranslateNode->translate({-1.5f, -1.5f, 5.0f});
 
         ramses::RenderPass* renderPass1 = m_scene.createRenderPass();
         ramses::RenderPass* renderPass2 = m_scene.createRenderPass();

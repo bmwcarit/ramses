@@ -97,9 +97,9 @@ namespace ramses_internal
         void waitOnFrameCallback(TestApplicationSurfaceId surfaceId);
         void getWindowSize(TestApplicationSurfaceId surfaceId, uint32_t& width, uint32_t& height) const;
 
-        SHMBuffer* getFreeSHMBuffer(uint32_t width, uint32_t height);
-        uint32_t getNumberOfAllocatedSHMBuffer() const;
-        bool getIsSHMBufferFree(uint32_t buffer) const;
+        [[nodiscard]] SHMBuffer* getFreeSHMBuffer(uint32_t width, uint32_t height);
+        [[nodiscard]] uint32_t getNumberOfAllocatedSHMBuffer() const;
+        [[nodiscard]] bool getIsSHMBufferFree(uint32_t buffer) const;
         void getWaylandOutputTestParams(bool& errorsFound, WaylandOutputTestParams& waylandOutputParams) const;
 
     private:
@@ -151,8 +151,8 @@ namespace ramses_internal
         bool createEGLWindow(TestWaylandWindow& window);
         void terminateEGL();
 
-        TestWaylandWindow& getWindow(TestApplicationSurfaceId surfaceId) const;
-        wl_shell_surface& getShellSurface(TestApplicationShellSurfaceId shellSurfaceId) const;
+        [[nodiscard]] TestWaylandWindow& getWindow(TestApplicationSurfaceId surfaceId) const;
+        [[nodiscard]] wl_shell_surface& getShellSurface(TestApplicationShellSurfaceId shellSurfaceId) const;
 
         using WindowsHashMap = HashMap<TestApplicationSurfaceId, TestWaylandWindow*>;
         using ShellSurfacesHashMap = HashMap<TestApplicationShellSurfaceId, wl_shell_surface *>;

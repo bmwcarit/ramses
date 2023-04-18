@@ -21,7 +21,6 @@ enum ERendererEventTestType
     ERendererEventTestType_OffscreenBufferCreated,
     ERendererEventTestType_OffscreenBufferDestroyed,
     ERendererEventTestType_PixelsRead,
-    ERendererEventTestType_WarpingUpdated,
     ERendererEventTestType_DisplayCreated,
     ERendererEventTestType_DisplayDestroyed,
     ERendererEventTestType_WindowClosed,
@@ -93,7 +92,7 @@ public:
         EXPECT_TRUE(m_events.empty());
     }
 
-    virtual void offscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    void offscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferCreated;
@@ -103,7 +102,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    void offscreenBufferDestroyed(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_OffscreenBufferDestroyed;
@@ -113,7 +112,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::displayBufferId_t displayBufferId, ramses::ERendererEventResult result) override
+    void framebufferPixelsRead(const uint8_t* /*pixelData*/, const uint32_t /*pixelDataSize*/, ramses::displayId_t displayId, ramses::displayBufferId_t displayBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_PixelsRead;
@@ -123,16 +122,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void warpingMeshDataUpdated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
-    {
-        RendererTestEvent event;
-        event.eventType = ERendererEventTestType_WarpingUpdated;
-        event.result = result;
-        event.displayId = displayId;
-        m_events.push_back(event);
-    }
-
-    virtual void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
+    void displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DisplayCreated;
@@ -141,7 +131,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
+    void displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_DisplayDestroyed;
@@ -150,7 +140,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void windowClosed(ramses::displayId_t displayId) override
+    void windowClosed(ramses::displayId_t displayId) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowClosed;
@@ -158,7 +148,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void windowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height) override
+    void windowResized(ramses::displayId_t displayId, uint32_t width, uint32_t height) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowResized;
@@ -168,7 +158,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void windowMoved(ramses::displayId_t displayId, int32_t posX, int32_t posY) override
+    void windowMoved(ramses::displayId_t displayId, int32_t posX, int32_t posY) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_WindowMoved;
@@ -178,7 +168,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode) override
+    void keyEvent(ramses::displayId_t displayId, ramses::EKeyEvent keyEvent, uint32_t keyModifiers, ramses::EKeyCode keyCode) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_KeyEvent;
@@ -189,7 +179,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void mouseEvent(ramses::displayId_t displayId, ramses::EMouseEvent mouseEvent, int32_t mousePosX, int32_t mousePosY) override
+    void mouseEvent(ramses::displayId_t displayId, ramses::EMouseEvent mouseEvent, int32_t mousePosX, int32_t mousePosY) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_MouseEvent;
@@ -200,8 +190,7 @@ public:
         m_events.push_back(event);
     }
 
-#ifdef RAMSES_ENABLE_EXTERNAL_BUFFER_EVENTS
-    virtual void externalBufferCreated(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, uint32_t textureGlId, ramses::ERendererEventResult result) override
+    void externalBufferCreated(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, uint32_t textureGlId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_ExternalBufferCreated;
@@ -212,7 +201,7 @@ public:
         m_events.push_back(event);
     }
 
-    virtual void externalBufferDestroyed(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, ramses::ERendererEventResult result) override
+    void externalBufferDestroyed(ramses::displayId_t displayId, ramses::externalBufferId_t externalBufferId, ramses::ERendererEventResult result) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_ExternalBufferDestroyed;
@@ -221,7 +210,6 @@ public:
         event.result = result;
         m_events.push_back(event);
     }
-#endif
 
     void expectOffscreenBufferCreated(ramses::displayId_t displayId, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
@@ -268,15 +256,6 @@ public:
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_PixelsRead;
-        event.result = result;
-        event.displayId = displayId;
-        expectEvent(event);
-    }
-
-    void expectWarpingMeshDataUpdated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
-    {
-        RendererTestEvent event;
-        event.eventType = ERendererEventTestType_WarpingUpdated;
         event.result = result;
         event.displayId = displayId;
         expectEvent(event);
@@ -350,10 +329,11 @@ public:
         expectEvent(event);
     }
 
-    virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTimeMilliseconds, std::chrono::microseconds averageLooptimeMilliseconds) override
+    void renderThreadLoopTimings(ramses::displayId_t displayId, std::chrono::microseconds maximumLoopTimeMilliseconds, std::chrono::microseconds averageLooptimeMilliseconds) override
     {
         RendererTestEvent event;
         event.eventType = ERendererEventTestType_RenderThreadPeriodicLoopTimes;
+        event.displayId = displayId;
         event.renderthread_maximumLoopTime = maximumLoopTimeMilliseconds;
         event.renderthread_avg_looptime = averageLooptimeMilliseconds;
         expectEvent(event);

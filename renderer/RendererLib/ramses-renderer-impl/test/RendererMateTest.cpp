@@ -66,7 +66,7 @@ protected:
         clearCommands();
     }
 
-    bool isSceneShown() const
+    [[nodiscard]] bool isSceneShown() const
     {
         return rendererMate.getLastReportedSceneState(sceneId) == ramses::RendererSceneState::Rendered;
     }

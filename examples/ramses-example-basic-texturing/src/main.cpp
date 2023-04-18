@@ -16,10 +16,10 @@
  * @brief Basic Texturing Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-texturing"));
     framework.connect();
 
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -42,15 +42,14 @@ int main(int argc, char* argv[])
     //                 This should not be the case for real applications.
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -0.5f, 0.f, -1.f, 0.5f, 0.f, -1.f, -0.5f, 1.f, -1.f, 0.5f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsQuadArray{ ramses::vec3f{-0.5f, 0.f, -1.f}, ramses::vec3f{0.5f, 0.f, -1.f}, ramses::vec3f{-0.5f, 1.f, -1.f}, ramses::vec3f{0.5f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(4u, vertexPositionsQuadArray.data());
 
-    float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};
-    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f} };
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(4u, textureCoordsArray.data());
 
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
-
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indices = scene->createArrayResource(6u, indicesArray.data());
 
     // texture
     ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-basic-texturing-texture.png", *scene);

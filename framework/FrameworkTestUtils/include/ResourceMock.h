@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         ResourceMock(ResourceContentHash hash, EResourceType typeId);
-        virtual ~ResourceMock() override;
+        ~ResourceMock() override;
 
         MOCK_METHOD(const ResourceBlob&, getResourceData, (), (const, override));
         MOCK_METHOD(const CompressedResourceBlob&, getCompressedResourceData, (), (const, override));
@@ -38,12 +38,12 @@ namespace ramses_internal
         MOCK_METHOD(ResourceCacheFlag, getCacheFlag, (), (const, override));
         MOCK_METHOD(const String&, getName, (), (const, override));
 
-        virtual const ResourceContentHash& getHash() const override
+        [[nodiscard]] const ResourceContentHash& getHash() const override
         {
             return m_hash;
         }
 
-        virtual EResourceType getTypeID() const override
+        [[nodiscard]] EResourceType getTypeID() const override
         {
             return m_typeId;
         }
@@ -68,7 +68,7 @@ namespace ramses_internal
 
         MOCK_METHOD(void, Die, ());
 
-        virtual ~ResourceWithDestructorMock()
+        ~ResourceWithDestructorMock() override
         {
             Die();
         }

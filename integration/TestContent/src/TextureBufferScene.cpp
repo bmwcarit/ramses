@@ -41,24 +41,22 @@ namespace ramses_internal
         m_quadMesh.setIndexCount(4);
 
         const uint16_t indicesData[] = { 0, 1, 3, 2 };
-
-        const float verticesData[] = {
-            0.0f, 0.0f, -1.0f,
-            1.0f, 0.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-            0.0f, 1.0f, -1.0f
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ 0.0f, 0.0f, -1.0f },
+            ramses::vec3f{ 1.0f, 0.0f, -1.0f },
+            ramses::vec3f{ 1.0f, 1.0f, -1.0f },
+            ramses::vec3f{ 0.0f, 1.0f, -1.0f }
+        };
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ 1.0f, 0.0f },
+            ramses::vec2f{ 1.0f, 1.0f },
+            ramses::vec2f{ 0.0f, 1.0f }
         };
 
-        const float textureCoordData[] = {
-            0.0f, 0.0f,
-            1.0f, 0.0f,
-            1.0f, 1.0f,
-            0.0f, 1.0f
-        };
-
-        const auto indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 4u, indicesData);
-        const auto vertices = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4u, verticesData);
-        const auto texcoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4u, textureCoordData);
+        const auto indices = m_scene.createArrayResource(4u, indicesData);
+        const auto vertices = m_scene.createArrayResource(4u, vertexPositionsArray.data());
+        const auto texcoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         m_geometrySingleMip.setIndices(*indices);
         m_geometryAllMips.setIndices(*indices);
@@ -89,7 +87,7 @@ namespace ramses_internal
     void TextureBufferScene::setOrthoCamera(const Vector3& cameraPosition)
     {
         ramses::Node* cameraTranslate = m_scene.createNode();
-        cameraTranslate->setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        cameraTranslate->setTranslation({cameraPosition.x, cameraPosition.y, cameraPosition.z});
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
         orthoCamera->setFrustum(0.0f, 1.0f, 0.0f, 1.0f, 0.1f, 100.f);
         orthoCamera->setViewport(0, 0, getDefaultCamera().getViewportWidth(), getDefaultCamera().getViewportHeight());
@@ -228,7 +226,7 @@ namespace ramses_internal
         if (EState_RGBA8_OneMip_ScaledDown == state)
         {
             ramses::Node* scale = m_scene.createNode();
-            scale->setScaling(0.2f, 0.2f, 0.2f);
+            scale->setScaling({0.2f, 0.2f, 0.2f});
             m_quadMesh.setParent(*scale);
         }
 
@@ -253,7 +251,7 @@ namespace ramses_internal
 
             ramses::UniformInput mipInput;
             m_effectSingleMip.findUniformInput("u_mip", mipInput);
-            m_appearanceSingleMip.setInputValueInt32(mipInput, mipToFetch);
+            m_appearanceSingleMip.setInputValue(mipInput, mipToFetch);
         }
 
         m_scene.flush();

@@ -77,7 +77,7 @@ namespace ramses_internal
             }
         }
 
-        constexpr size_t maxSize() const noexcept
+        [[nodiscard]] constexpr size_t maxSize() const noexcept
         {
             return N;
         }
@@ -116,7 +116,7 @@ namespace ramses_internal
                 m_counter = newValue;
         }
 
-        DataType getCounterValue() const
+        [[nodiscard]] DataType getCounterValue() const
         {
             return m_counter.load();
         }
@@ -161,7 +161,7 @@ namespace ramses_internal
         virtual void resetSummaries();
         virtual void nextTimeInterval();
 
-        UInt32 getNumberTimeIntervalsSinceLastSummaryReset() const;
+        [[nodiscard]] UInt32 getNumberTimeIntervalsSinceLastSummaryReset() const;
 
     protected:
         UInt32 m_numberTimeIntervalsSinceLastSummaryReset;
@@ -170,9 +170,9 @@ namespace ramses_internal
     class StatisticCollectionFramework : public StatisticCollection
     {
     public:
-        virtual void reset() override;
-        virtual void resetSummaries() override;
-        virtual void nextTimeInterval() override;
+        void reset() override;
+        void resetSummaries() override;
+        void nextTimeInterval() override;
 
         StatisticEntry<UInt32, SummaryEntry> statMessagesSent;
         StatisticEntry<UInt32, SummaryEntry> statMessagesReceived;
@@ -198,9 +198,9 @@ namespace ramses_internal
     class StatisticCollectionScene : public StatisticCollection
     {
     public:
-        virtual void reset() override;
-        virtual void resetSummaries() override;
-        virtual void nextTimeInterval() override;
+        void reset() override;
+        void resetSummaries() override;
+        void nextTimeInterval() override;
 
         StatisticEntry<UInt32, SummaryEntry> statFlushesTriggered;
         StatisticEntry<UInt32, SummaryEntry> statObjectsCreated;

@@ -91,29 +91,31 @@ namespace ramses_internal
         static const uint16_t indicesData[] = { 0, 1, 3, 2 };
 
         // Vertex positions in normalized screen space, i.e. fraction of the screen (0.0f == bottom/left, 1.0f == top/right)
-        Vector3 vertexPositionsData[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsData
         {
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u)
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u).getAsVec3()
         };
 
-        float vertexTexcoordsData[] = {
-            0.f, 0.f,
-            1.f, 0.f,
-            1.f, 1.f,
-            0.f, 1.f
+        std::array<ramses::vec2f, 4u> vertexTexcoordsData
+        {
+            ramses::vec2f{ 0.f, 0.f },
+            ramses::vec2f{ 1.f, 0.f },
+            ramses::vec2f{ 1.f, 1.f },
+            ramses::vec2f{ 0.f, 1.f }
         };
 
-        for (size_t t = 0; t < sizeof(vertexTexcoordsData) / sizeof(float); ++t)
+        for (auto& tc : vertexTexcoordsData)
         {
-            vertexTexcoordsData[t] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
+            tc[0] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
+            tc[1] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }
 
         m_indices->updateData(0u, 4, indicesData);
-        m_vertexPos->updateData(0u, 4, &vertexPositionsData[0].x);
-        m_texCoords->updateData(0u, 4, vertexTexcoordsData);
+        m_vertexPos->updateData(0u, 4, vertexPositionsData.data());
+        m_texCoords->updateData(0u, 4, vertexTexcoordsData.data());
 
         std::unique_ptr<uint8_t[]> rawData(new uint8_t[DynamicTextureWidth * DynamicTextureHeight * 3]);
 

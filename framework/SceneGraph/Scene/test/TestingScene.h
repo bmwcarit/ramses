@@ -16,8 +16,6 @@
 #include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/RenderGroupUtils.h"
-#include "Animation/AnimationSystem.h"
-#include "Scene/SceneDataBinding.h"
 #include <array>
 
 namespace ramses_internal
@@ -32,22 +30,29 @@ namespace ramses_internal
             scene.allocateNode(0u, child);
             scene.allocateNode(0u, childChild1);
             scene.allocateNode(0u, childChild2);
+            scene.allocateNode(0u, childChild3);
             scene.allocateNode(0u, cameraNode);
 
             scene.addChildToNode(parent, child);
             scene.addChildToNode(child, childChild1);
             scene.addChildToNode(child, childChild2);
+            scene.addChildToNode(child, childChild3);
 
             scene.allocateTransform(childChild1, t1);
             scene.allocateTransform(childChild2, t2);
+            scene.allocateTransform(childChild3, t3);
 
             scene.setTranslation(t1, t1Translation);
-            scene.setRotation   (t1, t1Rotation   , ERotationConvention::ZYZ);
+            scene.setRotation   (t1, Vector4(t1Rotation)   , ERotationType::Euler_ZYZ);
             scene.setScaling    (t1, t1Scaling    );
 
             scene.setTranslation(t2, t2Translation);
-            scene.setRotation   (t2, t2Rotation   , ERotationConvention::XYX);
+            scene.setRotation   (t2, Vector4(t2Rotation)   , ERotationType::Euler_XYX);
             scene.setScaling    (t2, t2Scaling    );
+
+            scene.setTranslation(t3, t3Translation);
+            scene.setRotation   (t3, t3Rotation, ERotationType::Quaternion);
+            scene.setScaling    (t3, t3Scaling    );
 
             scene.allocateRenderState(renderState);
             scene.setRenderStateBlendFactors(renderState, EBlendFactor::One, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::DstAlpha);
@@ -95,12 +100,8 @@ namespace ramses_internal
             scene.allocateDataInstance(scene.allocateDataLayout({ ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I}, ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I} },
                                                                 ResourceContentHash::Invalid()), cameraDataInstance);
 
-            scene.allocateStreamTexture(streamSource, ResourceContentHash(234, 0), streamTexture);
-            scene.setForceFallbackImage(streamTexture, true);
-
             scene.allocateTextureSampler({ samplerStates, textureHash }, samplerWithTextureResource);
             scene.allocateTextureSampler({ samplerStates, renderBuffer }, samplerWithRenderBuffer);
-            scene.allocateTextureSampler({ samplerStates, streamTexture }, samplerWithStreamTexture);
             scene.allocateTextureSampler({ samplerStates, texture2DBuffer }, samplerWithTextureBuffer);
             scene.allocateTextureSampler({ samplerStates, TextureSampler::ContentType::ExternalTexture, ResourceContentHash::Invalid(), InvalidMemoryHandle }, samplerWithExternalTexture);
 
@@ -108,7 +109,7 @@ namespace ramses_internal
             scene.setDataSingleFloat(uniformData, DataFieldHandle(0u), 0.5f);
             const Vector4 dataVec4fArray[2] = { Vector4(0.0f, 1.0f, 2.0f, 3.0f), Vector4(4.0f, 5.0f, 6.0f, 7.0f) };
             scene.setDataVector4fArray(uniformData, DataFieldHandle(1), 2, dataVec4fArray);
-            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::RotationEuler({ 5.0f, 4.0f, 3.0f }, ERotationConvention::Legacy_ZYX));
+            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationType::Euler_XYZ));
             scene.setDataSingleMatrix44f(uniformData, DataFieldHandle(3), Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }));
             scene.setDataTextureSamplerHandle(uniformData, DataFieldHandle(4), samplerWithTextureResource);
             scene.setDataReference(uniformData, DataFieldHandle(5), dataRef);
@@ -181,19 +182,6 @@ namespace ramses_internal
             scene.requestSceneReferenceState(sceneRef, RendererSceneState::Ready);
             scene.requestSceneReferenceFlushNotifications(sceneRef, true);
             scene.setSceneReferenceRenderOrder(sceneRef, -13);
-
-            AnimationSystem& animationSystem = *new AnimationSystem{ EAnimationSystemFlags_Default, AnimationSystemSizeInformation{} };
-            scene.addAnimationSystem(&animationSystem, animSystem);
-            animationSystem.allocateSpline(ESplineKeyType_Basic, EDataTypeID_Vector3f, spline);
-            animationSystem.setSplineKeyBasicVector3f(spline, 99u, Vector3(111.f, -999.f, 66.f));
-            using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
-            animationSystem.allocateDataBinding(scene, ContainerTraitsClass::TransformNode_Rotation, t1.asMemoryHandle(), InvalidMemoryHandle, dataBind);
-            animationSystem.allocateAnimationInstance(spline, EInterpolationType_Linear, EVectorComponent_All, animInstance);
-            animationSystem.addDataBindingToAnimationInstance(animInstance, dataBind);
-            animationSystem.allocateAnimation(animInstance, animation);
-            animationSystem.setAnimationProperties(animation, 2.f, Animation::EAnimationFlags_Relative, 0u, 0u);
-            animationSystem.setAnimationStartTime(animation, 5000u);
-            animationSystem.setAnimationStopTime(animation, 10000u);
         }
 
         const SCENE& getScene() const
@@ -216,13 +204,11 @@ namespace ramses_internal
             CheckRenderPassesEquivalentTo<OTHERSCENE>(otherScene);
             CheckBlitPassesEquivalentTo<OTHERSCENE>(otherScene);
             CheckRenderBuffersAndTargetsEquivalentTo<OTHERSCENE>(otherScene);
-            CheckStreamTexturesEquivalentTo<OTHERSCENE>(otherScene);
             CheckDataBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckTextureBuffersEquivalentTo<OTHERSCENE>(otherScene);
             CheckDataSlotsEquivalentTo<OTHERSCENE>(otherScene);
             CheckPickableObjectsEquivalentTo<OTHERSCENE>(otherScene);
             CheckSceneReferencesEquivalentTo<OTHERSCENE>(otherScene);
-            CheckAnimationsEquivalentTo<OTHERSCENE>(otherScene);
         }
 
         template <typename OTHERSCENE>
@@ -232,15 +218,18 @@ namespace ramses_internal
             EXPECT_TRUE(otherScene.isNodeAllocated(child));
             EXPECT_TRUE(otherScene.isNodeAllocated(childChild1));
             EXPECT_TRUE(otherScene.isNodeAllocated(childChild2));
+            EXPECT_TRUE(otherScene.isNodeAllocated(childChild3));
 
             EXPECT_FALSE(otherScene.getParent(parent).isValid());
             EXPECT_TRUE(otherScene.getParent(child).isValid());
             EXPECT_TRUE(otherScene.getParent(childChild1).isValid());
             EXPECT_TRUE(otherScene.getParent(childChild2).isValid());
+            EXPECT_TRUE(otherScene.getParent(childChild3).isValid());
 
             EXPECT_EQ(parent, otherScene.getParent(child));
             EXPECT_EQ(child, otherScene.getParent(childChild1));
             EXPECT_EQ(child, otherScene.getParent(childChild2));
+            EXPECT_EQ(child, otherScene.getParent(childChild3));
         }
 
         template <typename OTHERSCENE>
@@ -248,21 +237,29 @@ namespace ramses_internal
         {
             EXPECT_TRUE(otherScene.isTransformAllocated(t1));
             EXPECT_TRUE(otherScene.isTransformAllocated(t2));
+            EXPECT_TRUE(otherScene.isTransformAllocated(t3));
 
             EXPECT_TRUE(otherScene.getTransformNode(t1).isValid());
             EXPECT_TRUE(otherScene.getTransformNode(t2).isValid());
+            EXPECT_TRUE(otherScene.getTransformNode(t3).isValid());
 
             EXPECT_EQ(childChild1, otherScene.getTransformNode(t1));
             EXPECT_EQ(childChild2, otherScene.getTransformNode(t2));
+            EXPECT_EQ(childChild3, otherScene.getTransformNode(t3));
 
             EXPECT_EQ(t1Translation, otherScene.getTranslation (t1));
             EXPECT_EQ(t1Scaling    , otherScene.getScaling     (t1));
-            EXPECT_EQ(ERotationConvention::ZYZ, otherScene.getRotationConvention(t1));
+            EXPECT_EQ(ERotationType::Euler_ZYZ, otherScene.getRotationType(t1));
 
             EXPECT_EQ(t2Translation, otherScene.getTranslation (t2));
             EXPECT_EQ(t2Scaling    , otherScene.getScaling     (t2));
-            EXPECT_EQ(t2Rotation   , otherScene.getRotation    (t2));
-            EXPECT_EQ(ERotationConvention::XYX, otherScene.getRotationConvention(t2));
+            EXPECT_EQ(Vector4(t2Rotation), otherScene.getRotation    (t2));
+            EXPECT_EQ(ERotationType::Euler_XYX, otherScene.getRotationType(t2));
+
+            EXPECT_EQ(t3Translation, otherScene.getTranslation (t3));
+            EXPECT_EQ(t3Scaling    , otherScene.getScaling     (t3));
+            EXPECT_EQ(t3Rotation, otherScene.getRotation    (t3));
+            EXPECT_EQ(ERotationType::Quaternion, otherScene.getRotationType(t3));
         }
 
         template <typename OTHERSCENE>
@@ -394,7 +391,7 @@ namespace ramses_internal
             EXPECT_EQ(Vector4(0.0f, 1.0f, 2.0f, 3.0f), dataVec4fArray[0]);
             EXPECT_EQ(Vector4(4.0f, 5.0f, 6.0f, 7.0f), dataVec4fArray[1]);
 
-            EXPECT_EQ(Matrix33f::RotationEuler({ 5.0f, 4.0f, 3.0f }, ERotationConvention::Legacy_ZYX), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
+            EXPECT_EQ(Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationType::Euler_XYZ), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
             EXPECT_EQ(Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }), otherScene.getDataSingleMatrix44f(uniformData, DataFieldHandle(3u)));
             EXPECT_EQ(samplerWithTextureResource, otherScene.getDataTextureSamplerHandle(uniformData, DataFieldHandle(4u)));
             EXPECT_EQ(dataRef, otherScene.getDataReference(uniformData, DataFieldHandle(5u)));
@@ -407,7 +404,6 @@ namespace ramses_internal
         {
             EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithTextureResource));
             EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithRenderBuffer));
-            EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithStreamTexture));
             EXPECT_TRUE(otherScene.isTextureSamplerAllocated(samplerWithTextureBuffer));
             EXPECT_EQ(samplerStates.m_addressModeU, otherScene.getTextureSampler(samplerWithTextureResource).states.m_addressModeU);
             EXPECT_EQ(samplerStates.m_addressModeV, otherScene.getTextureSampler(samplerWithTextureResource).states.m_addressModeV);
@@ -418,11 +414,9 @@ namespace ramses_internal
 
             EXPECT_EQ(textureHash, otherScene.getTextureSampler(samplerWithTextureResource).textureResource);
             EXPECT_EQ(renderBuffer.asMemoryHandle(), otherScene.getTextureSampler(samplerWithRenderBuffer).contentHandle);
-            EXPECT_EQ(streamTexture.asMemoryHandle(), otherScene.getTextureSampler(samplerWithStreamTexture).contentHandle);
             EXPECT_EQ(texture2DBuffer.asMemoryHandle(), otherScene.getTextureSampler(samplerWithTextureBuffer).contentHandle);
             EXPECT_EQ(TextureSampler::ContentType::ClientTexture, otherScene.getTextureSampler(samplerWithTextureResource).contentType);
             EXPECT_EQ(TextureSampler::ContentType::RenderBuffer, otherScene.getTextureSampler(samplerWithRenderBuffer).contentType);
-            EXPECT_EQ(TextureSampler::ContentType::StreamTexture, otherScene.getTextureSampler(samplerWithStreamTexture).contentType);
             EXPECT_EQ(TextureSampler::ContentType::TextureBuffer, otherScene.getTextureSampler(samplerWithTextureBuffer).contentType);
         }
 
@@ -522,15 +516,6 @@ namespace ramses_internal
         }
 
         template <typename OTHERSCENE>
-        void CheckStreamTexturesEquivalentTo(const OTHERSCENE& otherScene) const
-        {
-            EXPECT_TRUE(otherScene.isStreamTextureAllocated(streamTexture));
-            EXPECT_EQ(streamSource, otherScene.getStreamTexture(streamTexture).source);
-            EXPECT_EQ(ResourceContentHash(234, 0), otherScene.getStreamTexture(streamTexture).fallbackTexture);
-            EXPECT_TRUE(otherScene.getStreamTexture(streamTexture).forceFallbackTexture);
-        }
-
-        template <typename OTHERSCENE>
         void CheckDataBuffersEquivalentTo(const OTHERSCENE& otherScene) const
         {
             ASSERT_TRUE(otherScene.isDataBufferAllocated(indexDataBuffer));
@@ -622,12 +607,6 @@ namespace ramses_internal
             EXPECT_TRUE(sr.flushNotifications);
         }
 
-        template <typename OTHERSCENE>
-        void CheckAnimationsEquivalentTo(const OTHERSCENE& otherScene) const
-        {
-            EXPECT_TRUE(otherScene.isAnimationSystemAllocated(animSystem));
-        }
-
         SCENE                       scene;
 
         const ResourceContentHash   indexArrayHash                  {111u, 0};
@@ -645,6 +624,9 @@ namespace ramses_internal
         const Vector3               t2Translation                   {0.5f, 1.5f, 2.0f};
         const Vector3               t2Rotation                      {1.3f, 1.6f, 2.1f};
         const Vector3               t2Scaling                       {2.3f, 3.6f, 4.1f};
+        const Vector3               t3Translation                   {3.5f, 4.5f, 5.0f};
+        const Vector4               t3Rotation                      {0.5f, -0.5f, 0.5f, 0.5f};
+        const Vector3               t3Scaling                       {5.0f, 4.0f, 3.0f};
         const DataSlotId            dataSlotId                      {15};
         const DataInstanceHandle    dataRef                         {124u};
         // Bounding geometry data
@@ -658,16 +640,17 @@ namespace ramses_internal
         const NodeHandle             child                          {15u};
         const NodeHandle             childChild1                    {12u};
         const NodeHandle             childChild2                    {21u};
+        const NodeHandle             childChild3                    {31u};
         const NodeHandle             cameraNode                     {23u};
         const DataInstanceHandle     cameraDataInstance             {23u};
         const TransformHandle        t1                             {35u};
         const TransformHandle        t2                             {39u};
+        const TransformHandle        t3                             {41u};
         const RenderableHandle       renderable                     {43u};
         const RenderableHandle       renderable2                    {44u};
         const RenderTargetHandle     renderTarget                   {45u};
         const RenderBufferHandle     renderBuffer                   {46u};
         const RenderBufferHandle     renderBuffer2                  {47u};
-        const StreamTextureHandle    streamTexture                  {47u};
         const RenderPassHandle       renderPass                     {49u};
         const BlitPassHandle         blitPass                       {50u};
         const RenderStateHandle      renderState                    {51u};
@@ -677,7 +660,6 @@ namespace ramses_internal
         const DataInstanceHandle     geometryData                   {56u};
         const TextureSamplerHandle   samplerWithTextureResource     {57u};
         const TextureSamplerHandle   samplerWithRenderBuffer        {58u};
-        const TextureSamplerHandle   samplerWithStreamTexture       {59u};
         const TextureSamplerHandle   samplerWithTextureBuffer       {60u};
         const TextureSamplerHandle   samplerWithExternalTexture     {61u};
         const DataSlotHandle         transformDataSlot              {58u};
@@ -695,13 +677,7 @@ namespace ramses_internal
         const PickableObjectHandle   pickableHandle                 { 68u };
         const PickableObjectId       pickableId                     { 69u };
         const SceneReferenceHandle   sceneRef                       { 70u };
-        const WaylandIviSurfaceId    streamSource                   { 71u };
         const SceneId                sceneRefSceneId                { 123 };
-        const AnimationSystemHandle  animSystem                     { 210u };
-        const SplineHandle           spline                         { 211u };
-        const DataBindHandle         dataBind                       { 212u };
-        const AnimationInstanceHandle animInstance                  { 213u };
-        const AnimationHandle        animation                      { 214u };
     };
 }
 
