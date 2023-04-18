@@ -29,19 +29,7 @@
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/IClientEventHandler.h"
-
-// Data bindings
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataInt32.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector3f.h"
-#include "ramses-client-api/DataVector3i.h"
-#include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/DataMatrix22f.h"
-#include "ramses-client-api/DataMatrix33f.h"
-#include "ramses-client-api/DataMatrix44f.h"
+#include "ramses-client-api/DataObject.h"
 
 // Effect
 #include "ramses-client-api/EffectDescription.h"

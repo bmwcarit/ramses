@@ -66,7 +66,7 @@ namespace rlogic
         * See #rlogic::ELuaSavingMode for the available options and their implications.
         * Note that this is just a hint and the export logic will decide what to actually export,
         * depending on availabilty of Lua source code or bytecode:
-        *  - if only source code is available (always the case when using #rlogic::EFeatureLevel_01)
+        *  - if only source code is available
         *    then only source code is exported regardless of the selected saving \c mode
         *  - if only byte code is available then only bytecode is exported regardless of the selected saving \c mode
         *  - if both source and bytecode are available then the selected saving \c mode is applied

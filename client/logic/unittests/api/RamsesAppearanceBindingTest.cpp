@@ -76,7 +76,7 @@ namespace rlogic::internal
         {
             RamsesAppearanceBindingImpl binding(*m_appearance, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesAppearanceBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesAppearanceBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -111,7 +111,7 @@ namespace rlogic::internal
         {
             RamsesAppearanceBindingImpl binding(*m_appearance, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesAppearanceBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesAppearanceBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -311,7 +311,7 @@ namespace rlogic::internal
         {
             RamsesAppearanceBindingImpl binding(*m_appearance, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesAppearanceBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesAppearanceBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -577,41 +577,41 @@ namespace rlogic::internal
             ramses::vec2f result{ 0.0f, 0.0f };
             ASSERT_EQ(ramses::StatusOK, appearance.getEffect().findUniformInput("vec2Uniform", uniform));
             appearance.getInputValue(uniform, result);
-            EXPECT_THAT(result, ::testing::ElementsAre(0.1f, 0.2f));
+            EXPECT_EQ(result, vec2f(0.1f, 0.2f));
         }
         {
             ramses::vec3f result{ 0.0f, 0.0f, 0.0f };
             ASSERT_EQ(ramses::StatusOK, appearance.getEffect().findUniformInput("vec3Uniform", uniform));
             appearance.getInputValue(uniform, result);
-            EXPECT_THAT(result, ::testing::ElementsAre(1.1f, 1.2f, 1.3f));
+            EXPECT_EQ(result, vec3f(1.1f, 1.2f, 1.3f));
         }
         {
             ramses::vec4f result{ 0.0f, 0.0f, 0.0f, 0.0f };
             ASSERT_EQ(ramses::StatusOK, appearance.getEffect().findUniformInput("vec4Uniform", uniform));
             appearance.getInputValue(uniform, result);
-            EXPECT_THAT(result, ::testing::ElementsAre(2.1f, 2.2f, 2.3f, 2.4f));
+            EXPECT_EQ(result, vec4f(2.1f, 2.2f, 2.3f, 2.4f));
 
             ASSERT_EQ(ramses::StatusOK, appearance.getEffect().findUniformInput("vec4Uniform_shouldHaveDefaultValue", uniform));
             appearance.getInputValue(uniform, result);
-            EXPECT_THAT(result, ::testing::ElementsAre(0.0f, 0.0f, 0.0f, 0.0f));
+            EXPECT_EQ(result, vec4f(0.0f, 0.0f, 0.0f, 0.0f));
         }
         {
             ramses::vec2i result{ 0, 0 };
             ASSERT_EQ(ramses::StatusOK, appearance.getEffect().findUniformInput("ivec2Uniform", uniform));
             appearance.getInputValue(uniform, result);
-            EXPECT_THAT(result, ::testing::ElementsAre(1, 2));
+            EXPECT_EQ(result, vec2i(1, 2));
         }
         {
             ramses::vec3i result{ 0, 0, 0 };
             ASSERT_EQ(ramses::StatusOK, appearance.getEffect().findUniformInput("ivec3Uniform", uniform));
             appearance.getInputValue(uniform, result);
-            EXPECT_THAT(result, ::testing::ElementsAre(3, 4, 5));
+            EXPECT_EQ(result, vec3i(3, 4, 5));
         }
         {
             ramses::vec4i result{ 0, 0, 0, 0 };
             ASSERT_EQ(ramses::StatusOK, appearance.getEffect().findUniformInput("ivec4Uniform", uniform));
             appearance.getInputValue(uniform, result);
-            EXPECT_THAT(result, ::testing::ElementsAre(6, 7, 8, 9));
+            EXPECT_EQ(result, vec4i(6, 7, 8, 9));
         }
         // Arrays
         {
@@ -771,30 +771,30 @@ namespace rlogic::internal
                 EXPECT_FLOAT_EQ(42.42f, *inputs->getChild("floatUniform")->get<float>());
                 EXPECT_EQ(42, *inputs->getChild("intUniform")->get<int32_t>());
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("intUniform")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("vec2Uniform")->get<vec2f>(), ::testing::ElementsAre(0.1f, 0.2f));
+                EXPECT_EQ(*inputs->getChild("vec2Uniform")->get<vec2f>(), vec2f(0.1f, 0.2f));
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("vec2Uniform")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("vec3Uniform")->get<vec3f>(), ::testing::ElementsAre(1.1f, 1.2f, 1.3f));
+                EXPECT_EQ(*inputs->getChild("vec3Uniform")->get<vec3f>(), vec3f(1.1f, 1.2f, 1.3f));
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("vec3Uniform")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("vec4Uniform")->get<vec4f>(), ::testing::ElementsAre(2.1f, 2.2f, 2.3f, 2.4f));
+                EXPECT_EQ(*inputs->getChild("vec4Uniform")->get<vec4f>(), vec4f(2.1f, 2.2f, 2.3f, 2.4f));
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("vec4Uniform")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("vec4Uniform_shouldHaveDefaultValue")->get<vec4f>(), ::testing::ElementsAre(.0f, .0f, .0f, .0f));
+                EXPECT_EQ(*inputs->getChild("vec4Uniform_shouldHaveDefaultValue")->get<vec4f>(), vec4f(.0f, .0f, .0f, .0f));
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("vec4Uniform_shouldHaveDefaultValue")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("ivec2Uniform")->get<vec2i>(), ::testing::ElementsAre(1, 2));
+                EXPECT_EQ(*inputs->getChild("ivec2Uniform")->get<vec2i>(), vec2i(1, 2));
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("ivec2Uniform")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("ivec3Uniform")->get<vec3i>(), ::testing::ElementsAre(3, 4, 5));
+                EXPECT_EQ(*inputs->getChild("ivec3Uniform")->get<vec3i>(), vec3i(3, 4, 5));
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("ivec3Uniform")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("ivec4Uniform")->get<vec4i>(), ::testing::ElementsAre(6, 7, 8, 9));
+                EXPECT_EQ(*inputs->getChild("ivec4Uniform")->get<vec4i>(), vec4i(6, 7, 8, 9));
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("ivec4Uniform")->m_impl->getPropertySemantics());
 
                 // Arrays
                 EXPECT_EQ(EPropertyType::Array, inputs->getChild("ivec2Array")->getType());
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("ivec2Array")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("ivec2Array")->getChild(0)->get<vec2i>(), ::testing::ElementsAre(11, 12));
-                EXPECT_THAT(*inputs->getChild("ivec2Array")->getChild(1)->get<vec2i>(), ::testing::ElementsAre(13, 14));
+                EXPECT_EQ(*inputs->getChild("ivec2Array")->getChild(0)->get<vec2i>(), vec2i(11, 12));
+                EXPECT_EQ(*inputs->getChild("ivec2Array")->getChild(1)->get<vec2i>(), vec2i(13, 14));
                 EXPECT_EQ(EPropertyType::Array, inputs->getChild("vec2Array")->getType());
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("vec2Array")->m_impl->getPropertySemantics());
-                EXPECT_THAT(*inputs->getChild("vec2Array")->getChild(0)->get<vec2f>(), ::testing::ElementsAre(.11f, .12f));
-                EXPECT_THAT(*inputs->getChild("vec2Array")->getChild(1)->get<vec2f>(), ::testing::ElementsAre(.13f, .14f));
+                EXPECT_EQ(*inputs->getChild("vec2Array")->getChild(0)->get<vec2f>(), vec2f(.11f, .12f));
+                EXPECT_EQ(*inputs->getChild("vec2Array")->getChild(1)->get<vec2f>(), vec2f(.13f, .14f));
             };
 
             expectValues();
@@ -831,7 +831,7 @@ namespace rlogic::internal
     TEST_F(ARamsesAppearanceBinding_WithRamses_AndFiles, ProducesError_WhenHavingLinkToAppearance_ButNoSceneWasProvided)
     {
         {
-            LogicEngine tempEngineForSaving;
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
             tempEngineForSaving.createRamsesAppearanceBinding(*m_appearance, "AppBinding");
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "WithRamsesAppearance.bin"));
         }

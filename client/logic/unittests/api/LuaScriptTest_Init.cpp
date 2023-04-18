@@ -198,7 +198,7 @@ namespace rlogic
         WithTempDirectory tmpFolder;
 
         {
-            LogicEngine tmpLogicEngine;
+            LogicEngine tmpLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto* script = tmpLogicEngine.createLuaScript(R"(
                 function init()
                     GLOBAL.number = 5
@@ -404,7 +404,7 @@ namespace rlogic
     {
         WithTempDirectory tmpFolder;
         {
-            LogicEngine otherLogic;
+            LogicEngine otherLogic{ m_logicEngine.getFeatureLevel() };
             LuaScript* script = otherLogic.createLuaScript(R"(
                 function init()
                     GLOBAL.outputDefinition = {

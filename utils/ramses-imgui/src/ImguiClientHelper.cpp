@@ -115,8 +115,8 @@ namespace ramses_internal
 
         imguicamera->setFrustum(0.0f, float(width), -float(height), 0.0f, 0.1f, 1.0f);
         imguicamera->setViewport(0, 0, width, height);
-        imguicamera->translate(0.0f, 0.0f, 0.5f);
-        imguicamera->scale(1.0, -1.0f, 1.0f);
+        imguicamera->translate({0.0f, 0.0f, 0.5f});
+        imguicamera->scale({1.0, -1.0f, 1.0f});
 
         ramses::RenderPass* renderPass = m_imguiscene->createRenderPass("imgui render pass");
         renderPass->setClearFlags(ramses::EClearFlags_None);

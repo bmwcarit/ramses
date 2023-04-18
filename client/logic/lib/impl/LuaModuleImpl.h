@@ -11,7 +11,6 @@
 #include "impl/LogicObjectImpl.h"
 #include "internals/LuaCompilationUtils.h"
 #include "internals/SolWrapper.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "ramses-logic/ELuaSavingMode.h"
 #include <string>
 
@@ -57,8 +56,7 @@ namespace rlogic::internal
             SolState& solState,
             const rlogic_serialization::LuaModule& module,
             ErrorReporting& errorReporting,
-            DeserializationMap& deserializationMap,
-            EFeatureLevel featureLevel);
+            DeserializationMap& deserializationMap);
 
     private:
         std::string m_sourceCode;

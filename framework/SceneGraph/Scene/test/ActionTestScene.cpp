@@ -313,9 +313,9 @@ namespace ramses_internal
         return m_scene.getRotation(handle);
     }
 
-    ERotationConvention ActionTestScene::getRotationConvention(TransformHandle handle) const
+    ERotationType ActionTestScene::getRotationType(TransformHandle handle) const
     {
-        return m_scene.getRotationConvention(handle);
+        return m_scene.getRotationType(handle);
     }
 
     const Vector3& ActionTestScene::getScaling(TransformHandle handle) const
@@ -329,9 +329,9 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationConvention convention)
+    void ActionTestScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationType rotationType)
     {
-        m_actionCollector.setRotation(handle, rotation, convention);
+        m_actionCollector.setRotation(handle, rotation, rotationType);
         flushPendingSceneActions();
     }
 

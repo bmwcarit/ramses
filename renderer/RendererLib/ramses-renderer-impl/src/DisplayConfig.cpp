@@ -153,10 +153,10 @@ namespace ramses
         return status;
     }
 
-    status_t DisplayConfig::setClearColor(float red, float green, float blue, float alpha)
+    status_t DisplayConfig::setClearColor(const vec4f& color)
     {
-        const status_t status = impl.setClearColor(red, green, blue, alpha);
-        LOG_HL_RENDERER_API4(status, red, green, blue, alpha);
+        const status_t status = impl.setClearColor(color);
+        LOG_HL_RENDERER_API4(status, color.r, color.g, color.b, color.a);
         return status;
     }
 

@@ -10,7 +10,7 @@
 #define RAMSES_TOPOLOGYTRANSFORM_H
 
 #include "SceneAPI/Handles.h"
-#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/ERotationType.h"
 #include "SceneAPI/IScene.h"
 #include "Math3d/Vector3.h"
 #include "Utils/AssertMovable.h"
@@ -22,7 +22,7 @@ namespace ramses_internal
         Vector3 translation = IScene::IdentityTranslation;
         Vector4 rotation    = IScene::IdentityRotation;
         Vector3 scaling     = IScene::IdentityScaling;
-        ERotationConvention rotationConvention = ERotationConvention::Euler_XYZ;
+        ERotationType rotationType = ERotationType::Euler_XYZ;
 
         NodeHandle node;
     };

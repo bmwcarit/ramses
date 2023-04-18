@@ -37,7 +37,7 @@ namespace rlogic
             camera = scene->createPerspectiveCamera();
             camera->setFrustum(20.0f, 1.0f, 0.1f, 100.0f);
             camera->setViewport(0, 0, 800, 800);
-            camera->setTranslation(0.0f, 0.0f, 5.0f);
+            camera->setTranslation({0.0f, 0.0f, 5.0f});
             renderPass = scene->createRenderPass();
             renderPass->setClearFlags(ramses::EClearFlags_None);
             renderPass->setCamera(*camera);

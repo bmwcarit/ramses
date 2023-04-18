@@ -12,7 +12,7 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include <cassert>
 
 namespace ramses_internal
@@ -159,7 +159,7 @@ namespace ramses_internal
             m_meshNode2->setGeometryBinding(m_whiteTriangle.GetGeometry());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
             m_meshNode3->setGeometryBinding(m_blueTriangle.GetGeometry());
-            m_meshNode3->translate(0.f, -1.f, 0.f);
+            m_meshNode3->translate({0.f, -1.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
@@ -186,8 +186,8 @@ namespace ramses_internal
             getDefaultCamera().setParent(*rotate);
             rotate->setParent(*translate);
 
-            translate->setTranslation(-3.f, 3.5f, 0.f);
-            rotate->setRotation(-2.0f, -22.0f, -60.0f, ramses::ERotationConvention::Euler_XYZ);
+            translate->setTranslation({-3.f, 3.5f, 0.f});
+            rotate->setRotation({-2.0f, -22.0f, -60.0f}, ramses::ERotationType::Euler_XYZ);
             break;
         case FACE_CULLING:
             m_CCWTriangle.GetAppearance().setCullingMode(ramses::ECullMode_BackFacing);
@@ -312,13 +312,13 @@ namespace ramses_internal
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
-            ramses::DataVector4f* colorData = m_scene.createDataVector4f();
+            ramses::DataObject* colorData = m_scene.createDataObject(ramses::EDataType::Vector4F);
             assert(colorData != nullptr);
-            colorData->setValue(0.f, 0.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 0.f, 0.f, 0.f, 1.f });
             m_redTriangle.bindColor(*colorData);
             m_greenTriangle.bindColor(*colorData);
             m_blueTriangle.bindColor(*colorData);
-            colorData->setValue(1.f, 0.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 1.f, 0.f, 0.f, 1.f });
         }
             break;
         case THREE_TRIANGLES_WITH_UNSHARED_COLOR:
@@ -326,16 +326,16 @@ namespace ramses_internal
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
-            ramses::DataVector4f* colorData = m_scene.createDataVector4f();
+            ramses::DataObject* colorData = m_scene.createDataObject(ramses::EDataType::Vector4F);
             assert(colorData != nullptr);
             m_redTriangle.bindColor(*colorData);
             m_greenTriangle.bindColor(*colorData);
             m_blueTriangle.bindColor(*colorData);
-            colorData->setValue(1.f, 0.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 1.f, 0.f, 0.f, 1.f });
             m_redTriangle.unbindColor();
             m_greenTriangle.unbindColor();
             m_blueTriangle.unbindColor();
-            colorData->setValue(0.f, 1.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 0.f, 1.f, 0.f, 1.f });
         }
             break;
         case EULER_ROTATION_CONVENTIONS:
@@ -389,27 +389,27 @@ namespace ramses_internal
 
         if (state == EULER_ROTATION_CONVENTIONS)
         {
-            transNode1->setTranslation(-1.f, -1.f, -15.f);
-            transNode2->setTranslation(-1.f, 0.f , -15.f);
-            transNode3->setTranslation(-1.f, 1.f , -15.f);
-            transNode4->setTranslation(1.f , -1.f, -15.f);
-            transNode5->setTranslation(1.f , 0.f , -15.f);
-            transNode6->setTranslation(1.f , 1.f , -15.f);
+            transNode1->setTranslation({-1.f, -1.f, -15.f});
+            transNode2->setTranslation({-1.f, 0.f, -15.f});
+            transNode3->setTranslation({-1.f, 1.f, -15.f});
+            transNode4->setTranslation({1.f, -1.f, -15.f});
+            transNode5->setTranslation({1.f, 0.f, -15.f});
+            transNode6->setTranslation({1.f, 1.f, -15.f});
 
-            transNode1->setRotation(0.f , 0.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
-            transNode2->setRotation(0.f , 60.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
-            transNode3->setRotation(60.f, 60.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
-            transNode4->setRotation(45.f, 60.f, 45.f, ramses::ERotationConvention::Euler_ZYZ);
+            transNode1->setRotation({0.f, 0.f, 45.f}, ramses::ERotationType::Euler_ZYX);
+            transNode2->setRotation({0.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYX);
+            transNode3->setRotation({60.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYX);
+            transNode4->setRotation({45.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYZ);
 
             ramses::Node* transNode5Child = m_scene.createNode();
             transNode5->addChild(*transNode5Child);
-            transNode5->setRotation(60.f, 0.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
-            transNode5Child->setRotation(0.f, 60.f, 45.f, ramses::ERotationConvention::Euler_XZY);
+            transNode5->setRotation({60.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYZ);
+            transNode5Child->setRotation({0.f, 60.f, 45.f}, ramses::ERotationType::Euler_XZY);
 
             ramses::Node* transNode6Child = m_scene.createNode();
             transNode6->addChild(*transNode6Child);
-            transNode6->setRotation(-80.f, -60.f, -45.f, ramses::ERotationConvention::Euler_XYZ);
-            transNode6Child->setRotation(80.f, 60.f, 45.f, ramses::ERotationConvention::Euler_ZYX);
+            transNode6->setRotation({-80.f, -60.f, -45.f}, ramses::ERotationType::Euler_XYZ);
+            transNode6Child->setRotation({80.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYX);
 
             m_meshNode1->setParent(*transNode1);
             m_meshNode2->setParent(*transNode2);
@@ -420,15 +420,15 @@ namespace ramses_internal
         }
         else
         {
-            transNode1->setTranslation(0.f, -0.2f, -12.f);
-            transNode2->setTranslation(-0.2f, 0.f, -11.f);
-            transNode3->setTranslation(0.2f, 0.2f, -10.f);
-            transNode4->setTranslation(-0.2f, -0.2f, -9.f);
-            transNode5->setTranslation(-0.3f, -0.2f, -8.f);
-            transNode6->setTranslation(2.0f, -0.6f, -12.f);
+            transNode1->setTranslation({0.f, -0.2f, -12.f});
+            transNode2->setTranslation({-0.2f, 0.f, -11.f});
+            transNode3->setTranslation({0.2f, 0.2f, -10.f});
+            transNode4->setTranslation({-0.2f, -0.2f, -9.f});
+            transNode5->setTranslation({-0.3f, -0.2f, -8.f});
+            transNode6->setTranslation({2.0f, -0.6f, -12.f});
 
             ramses::Node* transNode7 = m_scene.createNode();
-            transNode7->setTranslation(1.0f, 0.6f, -12.f);
+            transNode7->setTranslation({1.0f, 0.6f, -12.f});
 
             m_meshNode1->setParent(*transNode1);
             m_meshNode2->setParent(*transNode2);

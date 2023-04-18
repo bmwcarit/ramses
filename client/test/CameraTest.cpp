@@ -11,9 +11,7 @@
 #include "ClientTestUtils.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "DataObjectImpl.h"
 #include "CameraNodeImpl.h"
@@ -103,7 +101,7 @@ namespace ramses
 
     TYPED_TEST(ACamera, reportsErrorIfTryingToRetrieveProjectionMatrixWithoutBeingInitialized)
     {
-        float projMat[16] = { 0.f };
+        matrix44f projMat;
         EXPECT_NE(StatusOK, this->camera->getProjectionMatrix(projMat));
     }
 
@@ -146,12 +144,12 @@ namespace ramses
         const auto projType = (this->camera->getType() == ERamsesObjectType_PerspectiveCamera ? ramses_internal::ECameraProjectionType::Perspective : ramses_internal::ECameraProjectionType::Orthographic);
         const ramses_internal::Matrix44f expectedMatrix = ramses_internal::CameraMatrixHelper::ProjectionMatrix(ramses_internal::ProjectionParams::Frustum(projType, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
 
-        float projMatData[16] = { 0.f };
+        matrix44f projMatData;
         EXPECT_EQ(StatusOK, this->camera->getProjectionMatrix(projMatData));
 
         for (uint32_t i = 0u; i < 16u; ++i)
         {
-            EXPECT_FLOAT_EQ(expectedMatrix.data[i], projMatData[i]);
+            EXPECT_FLOAT_EQ(expectedMatrix.data[i], projMatData[i/4][i%4]);
         }
     }
 
@@ -164,8 +162,8 @@ namespace ramses
 
     TYPED_TEST(ACamera, canBindViewportData)
     {
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
 
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
@@ -176,17 +174,27 @@ namespace ramses
 
     TYPED_TEST(ACamera, canBindFrustumPlanesData)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+    }
+
+    TYPED_TEST(ACamera, failsToBindViewportIfWrongType)
+    {
+        const auto wrongDataObject = this->m_scene.createDataObject(EDataType::Vector3F);
+        EXPECT_NE(StatusOK, this->camera->bindViewportOffset(*wrongDataObject));
+        EXPECT_NE(StatusOK, this->camera->bindViewportSize(*wrongDataObject));
+
+        EXPECT_FALSE(this->camera->isViewportOffsetBound());
+        EXPECT_FALSE(this->camera->isViewportSizeBound());
     }
 
     TYPED_TEST(ACamera, failsToBindViewportDataIfDataObjectFromDifferentScene)
     {
         auto otherScene = this->client.createScene(sceneId_t{ this->m_scene.getSceneId().getValue() + 1 });
-        const auto do1 = otherScene->createDataVector2i();
-        const auto do2 = otherScene->createDataVector2i();
+        const auto do1 = otherScene->createDataObject(EDataType::Vector2I);
+        const auto do2 = otherScene->createDataObject(EDataType::Vector2I);
 
         EXPECT_NE(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_NE(StatusOK, this->camera->bindViewportSize(*do2));
@@ -195,11 +203,23 @@ namespace ramses
         EXPECT_FALSE(this->camera->isViewportSizeBound());
     }
 
+    TYPED_TEST(ACamera, failsToBindFrustumIfWrongType)
+    {
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        const auto wrongDataObject = this->m_scene.createDataObject(EDataType::Vector3F);
+        EXPECT_NE(StatusOK, this->camera->bindFrustumPlanes(*do1, *wrongDataObject));
+        EXPECT_FALSE(this->camera->isFrustumPlanesBound());
+
+        EXPECT_NE(StatusOK, this->camera->bindFrustumPlanes(*wrongDataObject, *do2));
+        EXPECT_FALSE(this->camera->isFrustumPlanesBound());
+    }
+
     TYPED_TEST(ACamera, failsToBindFrustumDataIfDataObjectFromDifferentScene)
     {
         auto otherScene = this->client.createScene(sceneId_t{ this->m_scene.getSceneId().getValue() + 1 });
-        const auto do1 = otherScene->createDataVector4f();
-        const auto do2 = otherScene->createDataVector2f();
+        const auto do1 = otherScene->createDataObject(EDataType::Vector4F);
+        const auto do2 = otherScene->createDataObject(EDataType::Vector2F);
 
         EXPECT_NE(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_FALSE(this->camera->isFrustumPlanesBound());
@@ -207,8 +227,8 @@ namespace ramses
 
     TYPED_TEST(ACamera, canUnbindViewportData)
     {
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
 
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
@@ -229,8 +249,8 @@ namespace ramses
 
     TYPED_TEST(ACamera, canUnbindFrustumPlanesData)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
 
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
@@ -245,10 +265,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound)
     {
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(3, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 3, 4 });
 
         EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
 
@@ -265,10 +285,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsReferencedFrustumPlanesValuesWhenBound)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, 2, 3, 4);
-        do2->setValue(5, 6);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, 2.f, 3.f, 4.f });
+        do2->setValue(vec2f{ 5.f, 6.f });
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
 
@@ -285,10 +305,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsCorrectViewportValuesWhenBoundFromOneDataObjectToAnother)
     {
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(3, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 3, 4 });
 
         EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
 
@@ -315,20 +335,20 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsCorrectFrustumValuesWhenBoundFromOneDataObjectToAnother)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, 2, 3, 4);
-        do2->setValue(5, 6);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, 2.f, 3.f, 4.f });
+        do2->setValue(vec2f{ 5.f, 6.f });
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
 
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
 
-        const auto do3 = this->m_scene.createDataVector4f();
-        const auto do4 = this->m_scene.createDataVector2f();
-        do3->setValue(-1, -2, -3, -4);
-        do4->setValue(-5, -6);
+        const auto do3 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do4 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do3->setValue(vec4f{ -1.f, -2.f, -3.f, -4.f });
+        do4->setValue(vec2f{ -5.f, -6.f });
 
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do3, *do4));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
@@ -343,10 +363,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound_alsoWhenChangedInDataObject)
     {
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(3, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 3, 4 });
 
         EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
 
@@ -360,8 +380,8 @@ namespace ramses
         EXPECT_EQ(3u, this->camera->getViewportWidth());
         EXPECT_EQ(4u, this->camera->getViewportHeight());
 
-        do1->setValue(11, 22);
-        do2->setValue(33, 44);
+        do1->setValue(vec2i{ 11, 22 });
+        do2->setValue(vec2i{ 33, 44 });
 
         EXPECT_EQ(11, this->camera->getViewportX());
         EXPECT_EQ(22, this->camera->getViewportY());
@@ -371,18 +391,18 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsReferencedFrustumValuesWhenBound_alsoWhenChangedInDataObject)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, 2, 3, 4);
-        do2->setValue(5, 6);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, 2.f, 3.f, 4.f });
+        do2->setValue(vec2f{ 5.f, 6.f });
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
 
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
 
-        do1->setValue(-1, -2, -3, -4);
-        do2->setValue(-5, -6);
+        do1->setValue(vec4f{ -1.f, -2.f, -3.f, -4.f });
+        do2->setValue(vec2f{ -5.f, -6.f });
 
         EXPECT_EQ(-1.f, this->camera->getLeftPlane());
         EXPECT_EQ(-2.f, this->camera->getRightPlane());
@@ -396,8 +416,8 @@ namespace ramses
     {
         auto camera2 = &this->template createObject<TypeParam>("camera");
 
-        const auto do1 = this->m_scene.createDataVector2i();
-        do1->setValue(3, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 3, 4 });
 
         EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
         EXPECT_EQ(StatusOK, camera2->setViewport(-11, -22, 166, 322));
@@ -416,7 +436,7 @@ namespace ramses
         EXPECT_EQ(3u, camera2->getViewportWidth());
         EXPECT_EQ(4u, camera2->getViewportHeight());
 
-        do1->setValue(11, 22);
+        do1->setValue(vec2i{ 11, 22 });
 
         EXPECT_EQ(11, this->camera->getViewportX());
         EXPECT_EQ(22, this->camera->getViewportY());
@@ -430,10 +450,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, canBindDataToTwoCamerasFrustum)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, 2, 3, 4);
-        do2->setValue(5, 6);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, 2.f, 3.f, 4.f });
+        do2->setValue(vec2f{ 5.f, 6.f });
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
         auto camera2 = &this->template createObject<TypeParam>("camera");
@@ -457,8 +477,8 @@ namespace ramses
         EXPECT_EQ(5.f, camera2->getNearPlane());
         EXPECT_EQ(6.f, camera2->getFarPlane());
 
-        do1->setValue(-1, -2, -3, -4);
-        do2->setValue(-5, -6);
+        do1->setValue(vec4f{ -1.f, -2.f, -3.f, -4.f });
+        do2->setValue(vec2f{ -5.f, -6.f });
         EXPECT_EQ(-1.f, this->camera->getLeftPlane());
         EXPECT_EQ(-2.f, this->camera->getRightPlane());
         EXPECT_EQ(-3.f, this->camera->getBottomPlane());
@@ -475,10 +495,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsOriginalViewportValuesWhenUnbound)
     {
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(3, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 3, 4 });
 
         EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
 
@@ -503,10 +523,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, getsOriginalFrustumValuesWhenUnbound)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, 2, 3, 4);
-        do2->setValue(5, 6);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, 2.f, 3.f, 4.f });
+        do2->setValue(vec2f{ 5.f, 6.f });
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
 
@@ -525,8 +545,8 @@ namespace ramses
 
     TYPED_TEST(ACamera, viewportValueSetIfBoundOnlyAffectsOriginalValueThatBecomesActiveAfterUnbound)
     {
-        const auto do1 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
 
         EXPECT_EQ(StatusOK, this->camera->setViewport(-1, -2, 16, 32));
 
@@ -556,10 +576,10 @@ namespace ramses
 
     TYPED_TEST(ACamera, frustumValueSetIfBoundOnlyAffectOriginalValuesThatBecomeActiveAfterUnbound)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, 2, 3, 4);
-        do2->setValue(5, 6);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, 2.f, 3.f, 4.f });
+        do2->setValue(vec2f{ 5.f, 6.f });
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
 
@@ -592,10 +612,10 @@ namespace ramses
         // make frustum valid - not testing frustum validity here
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
 
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(3, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 3, 4 });
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
         EXPECT_EQ(StatusOK, this->camera->validate());
@@ -606,10 +626,10 @@ namespace ramses
         // make frustum valid - not testing frustum validity here
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
 
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(3, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 3, 4 });
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
         EXPECT_EQ(StatusOK, this->camera->validate());
@@ -626,10 +646,10 @@ namespace ramses
         // make viewport valid - not testing viewport validity here
         EXPECT_EQ(StatusOK, this->camera->setViewport(0, 0, 16, 16));
 
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(-1, 1, -1, 1);
-        do2->setValue(1, 10);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ -1.f, 1.f, -1.f, 1.f });
+        do2->setValue(vec2f{ 1.f, 10.f });
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         // bound values valid
         EXPECT_EQ(StatusOK, this->camera->validate());
@@ -644,10 +664,10 @@ namespace ramses
         // make frustum valid - not testing frustum validity here
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
 
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(0, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 0, 4 });
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
         EXPECT_NE(StatusOK, this->camera->validate());
@@ -658,10 +678,10 @@ namespace ramses
         // make viewport valid - not testing viewport validity here
         EXPECT_EQ(StatusOK, this->camera->setViewport(0, 0, 16, 16));
 
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, -1, 1, -1);
-        do2->setValue(1, 10);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, -1.f, 1.f, -1.f });
+        do2->setValue(vec2f{ 1.f, 10.f });
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_NE(StatusOK, this->camera->validate());
     }
@@ -673,10 +693,10 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, this->camera->setViewport(0, 0, 16, 16));
 
-        const auto do1 = this->m_scene.createDataVector2i();
-        const auto do2 = this->m_scene.createDataVector2i();
-        do1->setValue(1, 2);
-        do2->setValue(0, 4);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector2I);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2I);
+        do1->setValue(vec2i{ 1, 2 });
+        do2->setValue(vec2i{ 0, 4 });
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
         EXPECT_NE(StatusOK, this->camera->validate());
@@ -689,10 +709,10 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
 
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
-        do1->setValue(1, -1, 1, -1);
-        do2->setValue(1, 10);
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
+        do1->setValue(vec4f{ 1.f, -1.f, 1.f, -1.f });
+        do2->setValue(vec2f{ 1.f, 10.f });
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_NE(StatusOK, this->camera->validate());
     }
@@ -740,8 +760,8 @@ namespace ramses
 
     TEST_F(APerspectiveCamera, canBindFrustumAndGetOriginalValuesWhenUnbound)
     {
-        const auto do1 = this->m_scene.createDataVector4f();
-        const auto do2 = this->m_scene.createDataVector2f();
+        const auto do1 = this->m_scene.createDataObject(EDataType::Vector4F);
+        const auto do2 = this->m_scene.createDataObject(EDataType::Vector2F);
         EXPECT_TRUE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(45.f, 2.3f, 2.f, 20.f, *do1, *do2));
 
         EXPECT_EQ(StatusOK, this->camera->setFrustum(19.f, 1.33f, 0.1f, 1.f));

@@ -53,9 +53,9 @@ namespace rlogic::internal
         std::reference_wrapper<PropertyImpl> m_wrappedProperty;
         std::vector<WrappedLuaProperty> m_wrappedChildProperties;
 
-        template <typename T, int N>
+        template <typename T>
         [[nodiscard]] sol::object extractVectorComponent(sol::this_state solState, const sol::object& index) const;
-        template <typename T, int N>
+        template <typename T>
         void setVectorComponents(const sol::object& rhs);
 
         void setChildValue(size_t index, const sol::object& rhs);

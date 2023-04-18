@@ -62,9 +62,9 @@ namespace ramses_internal
 
         const Vector4 rotation(4, 5, 6, 1.f);
 
-        this->m_scene.setRotation(transform, rotation, ERotationConvention::Euler_XYX);
+        this->m_scene.setRotation(transform, rotation, ERotationType::Euler_XYX);
         EXPECT_EQ(rotation, this->m_scene.getRotation(transform));
-        EXPECT_EQ(ERotationConvention::Euler_XYX, this->m_scene.getRotationConvention(transform));
+        EXPECT_EQ(ERotationType::Euler_XYX, this->m_scene.getRotationType(transform));
     }
 
     TYPED_TEST(AScene, SetsScalingForTransform)

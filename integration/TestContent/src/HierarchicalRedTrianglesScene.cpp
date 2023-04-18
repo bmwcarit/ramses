@@ -42,7 +42,7 @@ namespace ramses_internal
                 meshNode->setGeometryBinding(redTriangle.GetGeometry());
 
                 ramses::Node* transNode = m_scene.createNode();
-                transNode->setTranslation(-1.f + column * 2, -3.f + row * 2, -30.f);
+                transNode->setTranslation({-1.f + column * 2, -3.f + row * 2, -30.f});
                 transNode->setParent(*subGroupNode);
 
                 if (row == 0 || row == 1)
@@ -51,20 +51,20 @@ namespace ramses_internal
                 }
                 else if (column == 0)
                 {
-                    m_scaleNode1.setScaling(1.f, 1.f, 1.f);
+                    m_scaleNode1.setScaling({1.f, 1.f, 1.f});
                     m_scaleNode1.setParent(*transNode);
                     meshNode->setParent(m_scaleNode1);
                 }
                 else if (column == 1)
                 {
-                    m_rotateNode1.setRotation(0.f, 0.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
+                    m_rotateNode1.setRotation({0.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYZ);
                     m_rotateNode1.setParent(*transNode);
                     meshNode->setParent(m_rotateNode1);
                 }
                 else if (column == 2)
                 {
-                    m_scaleNode2.setScaling(1.f, 1.f, 1.f);
-                    m_rotateNode2.setRotation(0.f, 0.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
+                    m_scaleNode2.setScaling({1.f, 1.f, 1.f});
+                    m_rotateNode2.setRotation({0.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYZ);
                     m_rotateNode2.setParent(*transNode);
                     m_scaleNode2.setParent(m_rotateNode2);
                     meshNode->setParent(m_scaleNode2);
@@ -95,10 +95,10 @@ namespace ramses_internal
             m_groupNode->setVisibility(ramses::EVisibilityMode::Off);
             break;
         case ROTATE_AND_SCALE:
-            m_scaleNode1.setScaling(0.3f, 1.f, 1.f);
-            m_rotateNode1.setRotation(0.f, 0.f, -90.f, ramses::ERotationConvention::Euler_XYZ);
-            m_scaleNode2.setScaling(0.3f, 1.f, 1.f);
-            m_rotateNode2.setRotation(0.f, 0.f, -90.f, ramses::ERotationConvention::Euler_XYZ);
+            m_scaleNode1.setScaling({0.3f, 1.f, 1.f});
+            m_rotateNode1.setRotation({0.f, 0.f, -90.f}, ramses::ERotationType::Euler_XYZ);
+            m_scaleNode2.setScaling({0.3f, 1.f, 1.f});
+            m_rotateNode2.setRotation({0.f, 0.f, -90.f}, ramses::ERotationType::Euler_XYZ);
             break;
         case DELETE_MESHNODE:
             destroySubTree(m_subGroup2Node);

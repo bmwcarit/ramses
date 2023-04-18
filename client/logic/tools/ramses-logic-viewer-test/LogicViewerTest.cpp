@@ -22,7 +22,7 @@ namespace rlogic::internal
 
         static void createLogicFile()
         {
-            LogicEngine engine{ EFeatureLevel_Latest };
+            LogicEngine engine{ ramses::EFeatureLevel_Latest };
             engine.createLuaScript(R"(
                 function interface(IN,OUT)
                     IN.paramInt32 = Type:Int32()

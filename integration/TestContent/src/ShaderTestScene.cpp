@@ -31,7 +31,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(m_triangle.GetGeometry());
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -12.f);
+        transNode->setTranslation({0.f, 0.f, -12.f});
         meshNode->setParent(*transNode);
 
         initInputs(state);

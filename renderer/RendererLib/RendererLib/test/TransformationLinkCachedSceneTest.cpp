@@ -346,10 +346,10 @@ namespace ramses_internal
         //reset translations
         setAllTranslations(true);
 
-        providerScene.setRotation(providerSceneTransform, { 10.f, 0.f, 0.f, 1.f }, ERotationConvention::Euler_XYZ); //only X-Axis
+        providerScene.setRotation(providerSceneTransform, { 10.f, 0.f, 0.f, 1.f }, ERotationType::Euler_XYZ); //only X-Axis
 
-        consumer1Scene.setRotation(consumer1SceneTransform2, { 0.f, 10.f, 0.f, 1.f }, ERotationConvention::Euler_ZYX); //only Y-Axis
-        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation({ 10.f, 10.f, 0.f, 1.f }, ERotationConvention::Euler_ZYX), consumer1Scene);
+        consumer1Scene.setRotation(consumer1SceneTransform2, { 0.f, 10.f, 0.f, 1.f }, ERotationType::Euler_ZYX); //only Y-Axis
+        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation({ 10.f, 10.f, 0.f, 1.f }, ERotationType::Euler_ZYX), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, providerOverridesEulerWithQuaternion)
@@ -359,14 +359,14 @@ namespace ramses_internal
 
         // reset translations
         setAllTranslations(true);
-        consumer1Scene.setRotation(consumer1SceneTransform, rConsumer, ERotationConvention::Euler_XYZ);
-        providerScene.setRotation(providerSceneTransform, rProvider, ERotationConvention::Quaternion);
+        consumer1Scene.setRotation(consumer1SceneTransform, rConsumer, ERotationType::Euler_XYZ);
+        providerScene.setRotation(providerSceneTransform, rProvider, ERotationType::Quaternion);
 
         linkConsumer1SceneToProviderScene();
-        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation(rProvider, ERotationConvention::Quaternion), consumer1Scene);
+        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation(rProvider, ERotationType::Quaternion), consumer1Scene);
 
         sceneLinksManager.removeDataLink(consumer1Scene.getSceneId(), consumer1SceneConsumerId);
-        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation(rConsumer, ERotationConvention::Euler_XZY), consumer1Scene);
+        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Rotation(rConsumer, ERotationType::Euler_XZY), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, fallsBackToOriginalTransformationWhenProviderSlotIsRemoved)
@@ -431,13 +431,13 @@ namespace ramses_internal
 
         setAllTranslations(true);
         const Vector4 rotation{ 10.f, 20.f, 30.f, 1.f };
-        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::Euler_XYZ);
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationType::Euler_XYZ);
 
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Rotation(rotation, ERotationConvention::Euler_XYZ), consumer1Scene);
+        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Rotation(rotation, ERotationType::Euler_XYZ), consumer1Scene);
 
-        //change convention
-        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::Euler_ZYX);
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Rotation(rotation, ERotationConvention::Euler_ZYX), consumer1Scene);
+        //change rotationType
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationType::Euler_ZYX);
+        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Rotation(rotation, ERotationType::Euler_ZYX), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSceneRemoved)

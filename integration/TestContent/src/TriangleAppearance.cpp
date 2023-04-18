@@ -17,7 +17,7 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 
 namespace ramses
 {
@@ -64,7 +64,7 @@ namespace ramses
         UNUSED(status);
     }
 
-    void TriangleAppearance::bindColor(const DataVector4f& colorDataObject)
+    void TriangleAppearance::bindColor(const DataObject& colorDataObject)
     {
         const status_t status = m_appearance.bindInput(m_colorInput, colorDataObject);
         assert(status == StatusOK);

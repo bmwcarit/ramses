@@ -22,7 +22,7 @@
 #include "SceneAPI/MipMapSize.h"
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/RendererSceneState.h"
-#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/ERotationType.h"
 
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
@@ -137,10 +137,10 @@ namespace ramses_internal
         [[nodiscard]] virtual NodeHandle                  getTransformNode                (TransformHandle handle) const = 0;
         [[nodiscard]] virtual const Vector3&              getTranslation                  (TransformHandle handle) const = 0;
         [[nodiscard]] virtual const Vector4&              getRotation                     (TransformHandle handle) const = 0;
-        [[nodiscard]] virtual ERotationConvention         getRotationConvention           (TransformHandle handle) const = 0;
+        [[nodiscard]] virtual ERotationType         getRotationType           (TransformHandle handle) const = 0;
         [[nodiscard]] virtual const Vector3&              getScaling                      (TransformHandle handle) const = 0;
         virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) = 0;
-        virtual void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationConvention convention) = 0;
+        virtual void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationType rotationType) = 0;
         virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) = 0;
 
         virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) = 0;

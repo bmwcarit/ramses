@@ -42,8 +42,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::RamsesMeshNodeBinding> RamsesMeshNodeBindingImpl::Serialize(
         const RamsesMeshNodeBindingImpl& meshNodeBinding,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& serializationMap,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& serializationMap)
     {
         const auto logicObject = LogicObjectImpl::Serialize(meshNodeBinding, builder);
         const auto fbRamsesRef = RamsesBindingImpl::SerializeRamsesReference(meshNodeBinding.m_ramsesMeshNode, builder);

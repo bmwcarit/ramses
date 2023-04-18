@@ -95,11 +95,11 @@ int main()
         textLine->meshNode->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
     }
 
-    textLine1->meshNode->setTranslation(20.0f, 220.0f, -0.5f);
-    textLine2->meshNode->setTranslation(20.0f, 170.0f, -0.5f);
-    textLine3->meshNode->setTranslation(20.0f, 120.0f, -0.5f);
-    textLine4->meshNode->setTranslation(20.0f, 70.0f , -0.5f);
-    textLine5->meshNode->setTranslation(20.0f, 20.0f , -0.5f);
+    textLine1->meshNode->setTranslation({20.0f, 220.0f, -0.5f});
+    textLine2->meshNode->setTranslation({20.0f, 170.0f, -0.5f});
+    textLine3->meshNode->setTranslation({20.0f, 120.0f, -0.5f});
+    textLine4->meshNode->setTranslation({20.0f, 70.0f , -0.5f});
+    textLine5->meshNode->setTranslation({20.0f, 20.0f , -0.5f});
 
     renderGroup->addMeshNode(*textLine1->meshNode);
     renderGroup->addMeshNode(*textLine2->meshNode);

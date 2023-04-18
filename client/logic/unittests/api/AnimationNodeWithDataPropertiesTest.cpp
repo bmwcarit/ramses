@@ -82,7 +82,7 @@ namespace rlogic::internal
             EXPECT_FLOAT_EQ(expectedValue, val);
         }
 
-        LogicEngine m_logicEngine;
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
         DataArray* m_dataFloat1 = nullptr;
         DataArray* m_dataFloat2 = nullptr;
         SaveFileConfig m_configSaveFileWithoutValidation;
@@ -240,7 +240,7 @@ namespace rlogic::internal
         WithTempDirectory tempDir;
 
         {
-            LogicEngine otherEngine;
+            LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
 
             const auto data1 = otherEngine.createDataArray(std::vector<float>{ 0.f, 1.f, 2.f }, "data1");
             const auto data2 = otherEngine.createDataArray(std::vector<float>{ 0.f, 10.f, 20.f }, "data2");
@@ -289,7 +289,7 @@ namespace rlogic::internal
         WithTempDirectory tempDir;
 
         {
-            LogicEngine otherEngine;
+            LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
 
             const auto data1 = otherEngine.createDataArray(std::vector<float>{ 0.f, 1.f, 2.f }, "data1");
             const auto data2 = otherEngine.createDataArray(std::vector<float>{ 0.f, 10.f, 20.f }, "data2");

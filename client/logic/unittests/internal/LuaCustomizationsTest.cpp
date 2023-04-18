@@ -15,6 +15,7 @@
 #include "internals/LuaCompilationUtils.h"
 #include "internals/ErrorReporting.h"
 #include "internals/PropertyTypeExtractor.h"
+#include "glm/gtx/range.hpp"
 #include <numeric>
 
 namespace rlogic::internal
@@ -124,7 +125,7 @@ namespace rlogic::internal
             {
                 using VecClassType = typename PropertyEnumToType<VECTYPE>::TYPE;
                 VecClassType vecData;
-                std::iota(vecData.begin(), vecData.end(), static_cast<typename VecClassType::value_type>(100));
+                std::iota(begin(vecData), end(vecData), static_cast<typename VecClassType::value_type>(100));
 
                 createTestProperty<VECTYPE>(name, vecData);
             }
@@ -539,7 +540,7 @@ namespace rlogic::internal
             local mod = {}
             mod.mytable = {nested = {a = 42}}
             return mod
-            )", "", errors, {}, EFeatureLevel_01, false);
+            )", "", errors, {}, false);
         ASSERT_TRUE(errors.getErrors().empty());
 
         sol::load_result loadResult = solState.loadScript(R"(
@@ -755,7 +756,7 @@ namespace rlogic::internal
             mod.mytable = {
                 nested = {a = 11, b = 12}}
             return mod
-            )", "", errors, {}, EFeatureLevel_01, false);
+            )", "", errors, {}, false);
         ASSERT_TRUE(errors.getErrors().empty());
 
         sol::load_result loadResult = solState.loadScript(R"(
@@ -964,7 +965,7 @@ namespace rlogic::internal
             mod.mytable = {
                 nested = {[1] = 11, [2] = 12}}
             return mod
-            )", "", errors, {}, EFeatureLevel_01, false);
+            )", "", errors, {}, false);
         ASSERT_TRUE(errors.getErrors().empty());
 
         // Check that iterating over custom indexed table works and the order is the same (ascending by numeric index)

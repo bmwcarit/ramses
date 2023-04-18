@@ -13,9 +13,7 @@
 
 namespace ramses
 {
-    class DataVector2i;
-    class DataVector2f;
-    class DataVector4f;
+    class DataObject;
 
     /**
     * @brief   The #Camera base class is part of a scene and defines a view into the scene
@@ -173,55 +171,54 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getProjectionMatrix(float (&projectionMatrix)[16]) const;
+        status_t getProjectionMatrix(matrix44f& projectionMatrix) const;
 
         /**
         * @brief Binds a #ramses::DataObject to be used as source for viewport offset values.
-        *
         * @details In addition to #setViewport, which sets viewport parameters directly,
-        *          a #ramses::DataVector2i can be bound to viewport offset and size.
+        *          a #ramses::DataObject can be bound to viewport offset and size.
         *          When a #ramses::DataObject is bound the values from it override those set using #setViewport,
         *          see #ramses::DataObject for possible use cases.
         *
-        * @param[in] offsetData Data object with 2 integers that will be used as source for viewport offset values
+        * @param[in] offsetData Data object of type #ramses::EDataType::Vector2I that will be used as source for viewport offset values
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t bindViewportOffset(const DataVector2i& offsetData);
+        status_t bindViewportOffset(const DataObject& offsetData);
 
         /**
         * @brief Binds a #ramses::DataObject to be used as source for viewport size values.
         *
         * @details In addition to #setViewport, which sets viewport parameters directly,
-        *          a #ramses::DataVector2i can be bound to viewport offset and size.
+        *          a #ramses::DataObject can be bound to viewport offset and size.
         *          When a #ramses::DataObject is bound the values from it override those set using #setViewport,
         *          see #ramses::DataObject for possible use cases.
         *
-        * @param[in] sizeData Data object with 2 integers that will be used as source for viewport size values
+        * @param[in] sizeData Data object of type #ramses::EDataType::Vector2I that will be used as source for viewport size values
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t bindViewportSize(const DataVector2i& sizeData);
+        status_t bindViewportSize(const DataObject& sizeData);
 
         /**
         * @brief Binds #ramses::DataObject to be used as source for frustum planes values.
         *
         * @details In addition to #setFrustum (alternatively #ramses::PerspectiveCamera::setFrustum), which sets
-        *          frustum planes directly, a #ramses::DataVector4f can be bound to provide values for left, right,
-        *          bottom, top planes and a #ramses::DataVector2f for near and far planes.
+        *          frustum planes directly, a #ramses::DataObject can be bound to provide values for left, right,
+        *          bottom, top planes and another #ramses::DataObject for near and far planes.
         *          When a #ramses::DataObject is bound the values from it override those set using #setFrustum,
         *          see #ramses::DataObject for possible use cases.
         *          See #ramses::RamsesUtils::SetPerspectiveCameraFrustumToDataObjects providing way to conveniently
         *          set perspective frustum on data objects also with basic validity checking.
         *
-        * @param[in] frustumPlanesData Data object with 4 floats that will be used as source for frustum planes values.
+        * @param[in] frustumPlanesData Data object of type #ramses::EDataType::Vector4F that will be used as source for frustum planes values.
         *                              The (x, y, z, w) floats represent (left, right, bottom, top) frustum planes.
-        * @param[in] nearFarPlanesData Data object with 2 floats that will be used as source for frustum planes values.
+        * @param[in] nearFarPlanesData Data object of type #ramses::EDataType::Vector2F that will be used as source for frustum planes values.
         *                              The (x, y) floats represent (near, far) frustum planes.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t bindFrustumPlanes(const DataVector4f& frustumPlanesData, const DataVector2f& nearFarPlanesData);
+        status_t bindFrustumPlanes(const DataObject& frustumPlanesData, const DataObject& nearFarPlanesData);
 
         /**
         * @brief Unbinds any bound #ramses::DataObject from viewport offset (see #bindViewportOffset).

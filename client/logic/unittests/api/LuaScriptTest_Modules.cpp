@@ -79,7 +79,7 @@ namespace rlogic::internal
             return config;
         }
 
-        LogicEngine m_logicEngine;
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
     };
 
     TEST_F(ALuaScriptWithModule, CanBeCreated)
@@ -474,7 +474,7 @@ namespace rlogic::internal
         EXPECT_TRUE(m_logicEngine.update());
         EXPECT_EQ(4, *script->getOutputs()->getChild("vec4isize")->get<int32_t>());
         EXPECT_EQ(2, *script->getOutputs()->getChild("vec2fsize")->get<int32_t>());
-        EXPECT_THAT(*script->getOutputs()->getChild("vec4i")->get<vec4i>(), ::testing::ElementsAre(4, 5, 6, 7));
+        EXPECT_EQ(*script->getOutputs()->getChild("vec4i")->get<vec4i>(), vec4i(4, 5, 6, 7));
         EXPECT_FLOAT_EQ(0.1f, (*script->getOutputs()->getChild("vec2f")->get<vec2f>())[0]);
         EXPECT_FLOAT_EQ(-0.3f, (*script->getOutputs()->getChild("vec2f")->get<vec2f>())[1]);
     }
@@ -642,7 +642,7 @@ namespace rlogic::internal
         WithTempDirectory tempDir;
 
         {
-            LogicEngine logic;
+            LogicEngine logic{ m_logicEngine.getFeatureLevel() };
             // 2 scripts, one module used by first script, other module used by both scripts
             const auto module1 = logic.createLuaModule(m_moduleSourceCode, {}, "mymodule1");
             const auto module2 = logic.createLuaModule(m_moduleSourceCode2, {}, "mymodule2");
@@ -843,7 +843,7 @@ namespace rlogic::internal
                     OUT.array_of_structs[2].address.number = 42
                 end)";
 
-            LogicEngine otherLogicEngine;
+            LogicEngine otherLogicEngine{ m_logicEngine.getFeatureLevel() };
 
             LuaModule* module = otherLogicEngine.createLuaModule(moduleDefiningInterfaceType);
             ASSERT_NE(nullptr, module);

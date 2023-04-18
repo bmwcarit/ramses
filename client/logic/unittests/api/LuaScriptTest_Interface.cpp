@@ -385,12 +385,12 @@ namespace rlogic
         EXPECT_EQ("", *nameString->get<std::string>());
         EXPECT_TRUE(enabledBool->get<bool>());
         EXPECT_FALSE(*enabledBool->get<bool>());
-        EXPECT_THAT(*vec_2f->get<vec2f>(), ::testing::ElementsAre(0.0f, 0.0f));
-        EXPECT_THAT(*vec_3f->get<vec3f>(), ::testing::ElementsAre(0.0f, 0.0f, 0.0f));
-        EXPECT_THAT(*vec_4f->get<vec4f>(), ::testing::ElementsAre(0.0f, 0.0f, 0.0f, 0.0f));
-        EXPECT_THAT(*vec_2i->get<vec2i>(), ::testing::ElementsAre(0, 0));
-        EXPECT_THAT(*vec_3i->get<vec3i>(), ::testing::ElementsAre(0, 0, 0));
-        EXPECT_THAT(*vec_4i->get<vec4i>(), ::testing::ElementsAre(0, 0, 0, 0));
+        EXPECT_EQ(*vec_2f->get<vec2f>(), vec2f(0.0f, 0.0f));
+        EXPECT_EQ(*vec_3f->get<vec3f>(), vec3f(0.0f, 0.0f, 0.0f));
+        EXPECT_EQ(*vec_4f->get<vec4f>(), vec4f(0.0f, 0.0f, 0.0f, 0.0f));
+        EXPECT_EQ(*vec_2i->get<vec2i>(), vec2i(0, 0));
+        EXPECT_EQ(*vec_3i->get<vec3i>(), vec3i(0, 0, 0));
+        EXPECT_EQ(*vec_4i->get<vec4i>(), vec4i(0, 0, 0, 0));
     }
 
     TEST_F(ALuaScript_Interface, AssignsDefaultValuesToItsOutputs)
@@ -469,7 +469,7 @@ namespace rlogic
                 EXPECT_TRUE(array_float->getChild(i)->get<float>());
                 EXPECT_FLOAT_EQ(0.0f, *array_float->getChild(i)->get<float>());
                 EXPECT_TRUE(array_vec2f->getChild(i)->get<vec2f>());
-                EXPECT_THAT(*array_vec2f->getChild(i)->get<vec2f>(), testing::ElementsAre(0.0f, 0.0f));
+                EXPECT_EQ(*array_vec2f->getChild(i)->get<vec2f>(), vec2f(0.0f, 0.0f));
             }
         }
     }
@@ -653,7 +653,7 @@ namespace rlogic
     // Need to keep as confidence test to safeguard against regressions
     TEST_F(ALuaScript_Interface, Bugfix_Confidence_HandlesComplexTypeDeclarationWithNestedStructs)
     {
-        rlogic::LogicEngine logicEngine;
+        rlogic::LogicEngine logicEngine{ m_logicEngine.getFeatureLevel() };
 
         std::string scriptText = R"(
             function interface(IN,OUT)

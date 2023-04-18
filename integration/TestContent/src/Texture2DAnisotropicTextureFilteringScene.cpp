@@ -155,7 +155,7 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
 
         ramses::Node* translateNode = m_scene.createNode();
-        translateNode->setTranslation(x, y, 0.0f);
+        translateNode->setTranslation({x, y, 0.0f});
 
         mesh->setParent(*translateNode);
 

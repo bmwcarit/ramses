@@ -9,7 +9,6 @@
 #pragma once
 
 #include "ramses-logic/EPropertyType.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "impl/LogicObjectImpl.h"
 #include <string>
 #include <variant>
@@ -46,8 +45,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::DataArray> Serialize(
             const DataArrayImpl& data,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<DataArrayImpl> Deserialize(
             const rlogic_serialization::DataArray& data,

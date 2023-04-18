@@ -17,6 +17,15 @@ Class Index
     :caption: Ramses Client API
 
 
+    IBinaryShaderCache
+    RamsesRenderer
+    DisplayConfig
+    RendererSceneControl
+    IRendererEventHandler
+    IRendererSceneControlEventHandler
+    RamsesFrameworkConfig
+    RendererConfig
+    StatusObject
     Appearance
     ArrayBuffer
     ArrayResource
@@ -24,18 +33,7 @@ Class Index
     BlitPass
     Camera
     ClientObject
-    DataFloat
-    DataInt32
-    DataMatrix22f
-    DataMatrix33f
-    DataMatrix44f
     DataObject
-    DataVector2f
-    DataVector2i
-    DataVector3f
-    DataVector3i
-    DataVector4f
-    DataVector4i
     EffectDescription
     Effect
     EffectInput
@@ -84,7 +82,7 @@ Class Index
     EStencilFunc
     EStencilOperation
     EDrawMode
-    ERotationConvention
+    ERotationType
     EScenePublicationMode
     EVisibilityMode
     ETextureSamplingMethod
@@ -159,9 +157,7 @@ Class Index
     EInterpolationType
     ELogMessageType
     EPropertyType
-    ERotationType
     EStandardModule
-    EFeatureLevel
     ELuaSavingMode
     vec2f
     vec3f

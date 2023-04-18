@@ -31,10 +31,6 @@ namespace rlogic::internal
 {
     class ARamsesRenderGroupBinding : public ALogicEngine
     {
-    public:
-        ARamsesRenderGroupBinding() : ALogicEngine{ EFeatureLevel_03 }
-        {
-        }
     };
 
     TEST_F(ARamsesRenderGroupBinding, HasANameAfterCreation)

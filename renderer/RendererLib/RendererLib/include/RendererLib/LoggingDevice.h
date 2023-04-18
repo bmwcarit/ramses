@@ -20,8 +20,6 @@ namespace ramses_internal
     public:
         LoggingDevice(const IDevice& deviceDelegate, RendererLogContext& context);
 
-        [[nodiscard]] EDeviceTypeId getDeviceTypeId() const final override;
-
         void setConstant(DataFieldHandle field, UInt32 count, const Float* value) override;
         void setConstant(DataFieldHandle field, UInt32 count, const Vector2* value) override;
         void setConstant(DataFieldHandle field, UInt32 count, const Vector3* value) override;

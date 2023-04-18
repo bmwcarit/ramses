@@ -46,13 +46,13 @@ namespace ramses_internal
             m_sphereIndices.push_back(currentPositions);
             m_sphereIndices.push_back(currentPositions + 1);
             m_sphereIndices.push_back(currentPositions + 2);
-            m_spherePositions.push_back(ramses::vec3f{ p1.getAsArray() });
-            m_spherePositions.push_back(ramses::vec3f{ p2.getAsArray() });
-            m_spherePositions.push_back(ramses::vec3f{ p3.getAsArray() });
+            m_spherePositions.push_back(p1.getAsVec3());
+            m_spherePositions.push_back(p2.getAsVec3());
+            m_spherePositions.push_back(p3.getAsVec3());
             // normals are same as point for unit sphere
-            m_sphereNormals.push_back(ramses::vec3f{ p1.getAsArray() });
-            m_sphereNormals.push_back(ramses::vec3f{ p2.getAsArray() });
-            m_sphereNormals.push_back(ramses::vec3f{ p3.getAsArray() });
+            m_sphereNormals.push_back(p1.getAsVec3());
+            m_sphereNormals.push_back(p2.getAsVec3());
+            m_sphereNormals.push_back(p3.getAsVec3());
         }
         else
         {
@@ -83,7 +83,7 @@ namespace ramses_internal
     void CubeTextureScene::init(EState state)
     {
         m_transformNode = m_scene.createNode("cubeTransform");
-        m_transformNode->setTranslation(0.0f, 0.0f, -8.0f);
+        m_transformNode->setTranslation({0.0f, 0.0f, -8.0f});
         m_sphereMesh = m_scene.createMeshNode("Sphere");
         addMeshNodeToDefaultRenderGroup(*m_sphereMesh);
         m_sphereMesh->setParent(*m_transformNode);

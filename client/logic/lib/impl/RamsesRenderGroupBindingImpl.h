@@ -10,7 +10,6 @@
 
 #include "impl/RamsesBindingImpl.h"
 #include "impl/RamsesRenderGroupBindingElementsImpl.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include <memory>
 
 namespace ramses
@@ -48,8 +47,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::RamsesRenderGroupBinding> Serialize(
             const RamsesRenderGroupBindingImpl& renderGroupBinding,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<RamsesRenderGroupBindingImpl> Deserialize(
             const rlogic_serialization::RamsesRenderGroupBinding& renderGroupBinding,

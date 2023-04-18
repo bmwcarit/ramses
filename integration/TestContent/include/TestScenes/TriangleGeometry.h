@@ -20,7 +20,6 @@ namespace ramses
     class ArrayResourceInput;
     class Effect;
     class UniformInput;
-    class DataVector4f;
 
     class TriangleGeometry
     {

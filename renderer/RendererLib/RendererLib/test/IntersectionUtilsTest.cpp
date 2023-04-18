@@ -51,7 +51,7 @@ static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, 
 
     TransformHandle cameraTransformation = sceneAllocator.allocateTransform(cameraNodeHandle);
     scene.setTranslation(cameraTransformation, translation);
-    scene.setRotation(cameraTransformation, Vector4(rotation), ERotationConvention::Euler_XYZ);
+    scene.setRotation(cameraTransformation, Vector4(rotation), ERotationType::Euler_XYZ);
     scene.setScaling(cameraTransformation, scale);
     return cameraHandle;
 }
@@ -63,7 +63,7 @@ static void preparePickableObject(TransformationLinkCachedScene& scene, SceneAll
     scene.setPickableObjectCamera(pickableHandle, cameraHandle);
     TransformHandle pickableTransformation = sceneAllocator.allocateTransform(pickableNodeHandle);
     scene.setTranslation(pickableTransformation, translation);
-    scene.setRotation(pickableTransformation, Vector4(rotation), ERotationConvention::Euler_XYZ);
+    scene.setRotation(pickableTransformation, Vector4(rotation), ERotationType::Euler_XYZ);
     scene.setScaling(pickableTransformation, scale);
 }
 

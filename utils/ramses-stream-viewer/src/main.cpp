@@ -73,7 +73,7 @@ public:
         auto camera = m_scene->createPerspectiveCamera("my camera");
         camera->setViewport(0, 0, displayWidth, displayHeight);
         camera->setFrustum(19.f, static_cast<float>(displayWidth) / static_cast<float>(displayHeight), 0.1f, 1500.f);
-        camera->setTranslation(0.0f, 0.0f, 5.0f);
+        camera->setTranslation({0.0f, 0.0f, 5.0f});
         m_renderPass = m_scene->createRenderPass("my render pass");
         m_renderPass->setClearFlags(ramses::EClearFlags_None);
         m_renderPass->setCamera(*camera);
@@ -299,7 +299,7 @@ int main(int argc, char* argv[])
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     ramses::RendererConfig rendererConfig;
     ramses::DisplayConfig  displayConfig;
-    displayConfig.setClearColor(0.5f, 0.f, 0.f, 1.f);
+    displayConfig.setClearColor({0.5f, 0.f, 0.f, 1.f});
 
     CLI::App cli;
     try

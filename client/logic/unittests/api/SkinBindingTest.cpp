@@ -19,6 +19,7 @@
 #include "internals/DeserializationMap.h"
 
 #include "generated/SkinBindingGen.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace rlogic::internal
 {
@@ -26,14 +27,13 @@ namespace rlogic::internal
     {
     public:
         ASkinBinding()
-            : ALogicEngine{ EFeatureLevel_04 }
-            , m_appearance{ m_scene->createAppearance(createTestEffect()) }
+            : m_appearance{ m_scene->createAppearance(createTestEffect()) }
         {
             m_appearance->getEffect().findUniformInput("jointMat", m_uniform);
 
             // add some transformations to the joints before calculating inverse mats and creating skin
-            m_jointNodes[0]->setTranslation(1.f, 2.f, 3.f);
-            m_jointNodes[1]->setRotation(10.f, 20.f, 30.f);
+            m_jointNodes[0]->setTranslation({1.f, 2.f, 3.f});
+            m_jointNodes[1]->setRotation({10.f, 20.f, 30.f});
 
             m_skin = createSkinBinding();
         }
@@ -52,11 +52,8 @@ namespace rlogic::internal
             std::vector<matrix44f> inverseMats;
             inverseMats.resize(2u);
 
-            float tempData[16]; // NOLINT(modernize-avoid-c-arrays) Ramses uses C array in matrix getters
-            m_jointNodes[0]->getInverseModelMatrix(tempData);
-            std::copy(std::begin(tempData), std::end(tempData), inverseMats[0].begin());
-            m_jointNodes[1]->getInverseModelMatrix(tempData);
-            std::copy(std::begin(tempData), std::end(tempData), inverseMats[1].begin());
+            m_jointNodes[0]->getInverseModelMatrix(inverseMats[0]);
+            m_jointNodes[1]->getInverseModelMatrix(inverseMats[1]);
 
             return m_logicEngine.createSkinBinding(m_joints, inverseMats, *m_appearanceBinding, m_uniform, "skin");
         }
@@ -127,17 +124,17 @@ namespace rlogic::internal
         const matrix44f mat1 = uniformData[0];
         const matrix44f mat2 = uniformData[1];
 
-        for (size_t i = 0u; i < 16u; ++i)
-            EXPECT_NEAR(expectedMat[i], mat1[i], 1e-7f) << i;
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat[i/4][i%4], mat1[i/4][i%4], 1e-7f) << i;
 
-        for (size_t i = 0u; i < 16u; ++i)
-            EXPECT_NEAR(expectedMat[i], mat2[i], 1e-7f) << i;
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat[i/4][i%4], mat2[i/4][i%4], 1e-7f) << i;
     }
 
     TEST_F(ASkinBinding, UpdatesBoundUniformOnJointChange)
     {
-        m_jointNodes[0]->setRotation(-1.f, -2.f, -3.f);
-        m_jointNodes[1]->setTranslation(-1.f, -2.f, -3.f);
+        m_jointNodes[0]->setRotation({-1.f, -2.f, -3.f});
+        m_jointNodes[1]->setTranslation({-1.f, -2.f, -3.f});
         EXPECT_TRUE(m_logicEngine.update());
 
         const matrix44f expectedMat1 = {
@@ -158,11 +155,11 @@ namespace rlogic::internal
         const matrix44f mat1 = uniformData[0];
         const matrix44f mat2 = uniformData[1];
 
-        for (size_t i = 0u; i < 16u; ++i)
-            EXPECT_NEAR(expectedMat1[i], mat1[i], 1e-4f) << i;
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat1[i/4][i%4], mat1[i/4][i%4], 1e-4f) << i;
 
-        for (size_t i = 0u; i < 16u; ++i)
-            EXPECT_NEAR(expectedMat2[i], mat2[i], 1e-4f) << i;
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat2[i/4][i%4], mat2[i/4][i%4], 1e-4f) << i;
     }
 
     class ASkinBinding_SerializationLifecycle : public ASkinBinding

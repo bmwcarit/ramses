@@ -25,6 +25,7 @@
 #include <array>
 #include <thread>
 #include <cmath>
+#include <glm/gtc/type_ptr.hpp>
 
 /**
 * This example demonstrates how to use SkinBinding for basic bone animation.
@@ -66,10 +67,7 @@ int main()
      */
     auto [scene, appearance] = CreateSceneWithSkinnableMesh(*renderer.getClient());
 
-    /**
-    * Skin binding requires feature level 04 or higher
-    */
-    rlogic::LogicEngine logicEngine{ rlogic::EFeatureLevel_04 };
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Show the scene on the renderer
@@ -82,7 +80,7 @@ int main()
     */
     auto skeletonJoint1 = scene->createNode();
     auto skeletonJoint2 = scene->createNode();
-    skeletonJoint2->setTranslation(0.f, 1.f, 0.f);
+    skeletonJoint2->setTranslation({0.f, 1.f, 0.f});
     const auto skeletonJointBinding1 = logicEngine.createRamsesNodeBinding(*skeletonJoint1);
     const auto skeletonJointBinding2 = logicEngine.createRamsesNodeBinding(*skeletonJoint2);
 
@@ -98,13 +96,10 @@ int main()
     * Inverse binding matrices often come with asset data but here we utilize Ramses
     * to calculate them for us and then convert to a data container suited for later use.
     */
-    float tempData[16]; // NOLINT(modernize-avoid-c-arrays) Ramses uses C array in matrix getters
     rlogic::matrix44f inverseBindMatrix1{};
     rlogic::matrix44f inverseBindMatrix2{};
-    skeletonJoint1->getInverseModelMatrix(tempData);
-    std::copy(std::begin(tempData), std::end(tempData), inverseBindMatrix1.begin());
-    skeletonJoint2->getInverseModelMatrix(tempData);
-    std::copy(std::begin(tempData), std::end(tempData), inverseBindMatrix2.begin());
+    skeletonJoint1->getInverseModelMatrix(inverseBindMatrix1);
+    skeletonJoint2->getInverseModelMatrix(inverseBindMatrix2);
 
     /**
     * Now prepare the inputs for #rlogic::SkinBinding creation, we will need:
@@ -176,7 +171,7 @@ SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client)
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(SimpleRenderer::GetDisplaySize()[0])/float(SimpleRenderer::GetDisplaySize()[1]), 0.1f, 100.0f);
     camera->setViewport(0, 0, SimpleRenderer::GetDisplaySize()[0], SimpleRenderer::GetDisplaySize()[1]);
-    camera->setTranslation(0.0f, 1.0f, 10.0f);
+    camera->setTranslation({0.0f, 1.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
     renderPass->setClearFlags(ramses::EClearFlags_None);

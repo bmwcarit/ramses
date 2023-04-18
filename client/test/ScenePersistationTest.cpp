@@ -23,17 +23,7 @@
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector3f.h"
-#include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/DataMatrix22f.h"
-#include "ramses-client-api/DataMatrix33f.h"
-#include "ramses-client-api/DataMatrix44f.h"
-#include "ramses-client-api/DataInt32.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector3i.h"
-#include "ramses-client-api/DataVector4i.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/ArrayBuffer.h"
@@ -437,7 +427,7 @@ namespace ramses
         effect->findUniformInput("u_FragColorR", fragColorR);
         effect->findUniformInput("u_FragColorG", fragColorG);
 
-        DataFloat* fragColorDataObject = this->m_scene.createDataFloat();
+        auto fragColorDataObject = this->m_scene.createDataObject(EDataType::Float);
         fragColorDataObject->setValue(123.f);
 
         appearance->setInputValue(fragColorR, 567.f);
@@ -460,7 +450,7 @@ namespace ramses
         ASSERT_TRUE(loadedAppearance->isInputBound(fragColorGOut));
         float resultG = 0.f;
         const DataObject& fragColorDataObjectOut = *loadedAppearance->getDataObjectBoundToInput(fragColorGOut);
-        RamsesObjectTypeUtils::ConvertTo<DataFloat>(fragColorDataObjectOut).getValue(resultG);
+        fragColorDataObjectOut.getValue(resultG);
         EXPECT_EQ(123.f, resultG);
     }
 
@@ -1024,10 +1014,10 @@ namespace ramses
         grandParent->addChild(*parent);
         child->setParent(*parent);
 
-        child->setTranslation(1, 2, 3);
+        child->setTranslation({1, 2, 3});
         child->setVisibility(EVisibilityMode::Invisible);
-        child->setRotation(1, 2, 3, ERotationConvention::Euler_XYX);
-        child->setScaling(1, 2, 3);
+        child->setRotation({1, 2, 3}, ERotationType::Euler_XYX);
+        child->setScaling({1, 2, 3});
 
         doWriteReadCycle();
 
@@ -1044,32 +1034,26 @@ namespace ramses
         EXPECT_EQ(1u, loadedParent->getChildCount());
         EXPECT_EQ(0u, loadedChild->getChildCount());
 
-        float tx = 0;
-        float ty = 0;
-        float tz = 0;
-        EXPECT_EQ(StatusOK, loadedChild->getTranslation(tx, ty, tz));
-        EXPECT_FLOAT_EQ(1, tx);
-        EXPECT_FLOAT_EQ(2, ty);
-        EXPECT_FLOAT_EQ(3, tz);
+        vec3f translation;
+        EXPECT_EQ(StatusOK, loadedChild->getTranslation(translation));
+        EXPECT_FLOAT_EQ(1, translation.x);
+        EXPECT_FLOAT_EQ(2, translation.y);
+        EXPECT_FLOAT_EQ(3, translation.z);
 
         EXPECT_EQ(loadedChild->getVisibility(), EVisibilityMode::Invisible);
 
-        float rx = 0;
-        float ry = 0;
-        float rz = 0;
-        EXPECT_EQ(StatusOK, loadedChild->getRotation(rx, ry, rz));
-        EXPECT_FLOAT_EQ(1, rx);
-        EXPECT_FLOAT_EQ(2, ry);
-        EXPECT_FLOAT_EQ(3, rz);
-        EXPECT_EQ(ERotationConvention::Euler_XYX, loadedChild->getRotationConvention());
+        vec3f rotation;
+        EXPECT_EQ(StatusOK, loadedChild->getRotation(rotation));
+        EXPECT_FLOAT_EQ(1, rotation.x);
+        EXPECT_FLOAT_EQ(2, rotation.y);
+        EXPECT_FLOAT_EQ(3, rotation.z);
+        EXPECT_EQ(ERotationType::Euler_XYX, loadedChild->getRotationType());
 
-        float sx = 0;
-        float sy = 0;
-        float sz = 0;
-        EXPECT_EQ(StatusOK, loadedChild->getScaling(sx, sy, sz));
-        EXPECT_FLOAT_EQ(1, sx);
-        EXPECT_FLOAT_EQ(2, sy);
-        EXPECT_FLOAT_EQ(3, sz);
+        vec3f scale;
+        EXPECT_EQ(StatusOK, loadedChild->getScaling(scale));
+        EXPECT_FLOAT_EQ(1, scale.x);
+        EXPECT_FLOAT_EQ(2, scale.y);
+        EXPECT_FLOAT_EQ(3, scale.z);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithTranslation)
@@ -1077,7 +1061,7 @@ namespace ramses
         Node* node = this->m_scene.createNode("translate node 1");
         Node* child = this->m_scene.createNode("groupnode child");
 
-        node->setTranslation(1, 2, 3);
+        node->setTranslation({1, 2, 3});
         node->addChild(*child);
 
         doWriteReadCycle();
@@ -1090,13 +1074,11 @@ namespace ramses
 
         EXPECT_EQ(1u, node->getChildCount());
         EXPECT_EQ(loadedChild, loadedTranslateNode->getChild(0u));
-        float x = 0;
-        float y = 0;
-        float z = 0;
-        EXPECT_EQ(StatusOK, node->getTranslation(x, y, z));
-        EXPECT_FLOAT_EQ(1, x);
-        EXPECT_FLOAT_EQ(2, y);
-        EXPECT_FLOAT_EQ(3, z);
+        vec3f translation;
+        EXPECT_EQ(StatusOK, node->getTranslation(translation));
+        EXPECT_FLOAT_EQ(1, translation.x);
+        EXPECT_FLOAT_EQ(2, translation.y);
+        EXPECT_FLOAT_EQ(3, translation.z);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithRotation)
@@ -1104,7 +1086,7 @@ namespace ramses
         Node* node = this->m_scene.createNode("rotate node 1");
         Node* child = this->m_scene.createNode("groupnode child");
 
-        node->setRotation(1, 2, 3, ERotationConvention::Euler_ZYX);
+        node->setRotation({1, 2, 3}, ERotationType::Euler_ZYX);
         child->setParent(*node);
         doWriteReadCycle();
 
@@ -1116,14 +1098,12 @@ namespace ramses
 
         EXPECT_EQ(1u, loadedRotateNode->getChildCount());
         EXPECT_EQ(loadedChild, loadedRotateNode->getChild(0u));
-        float x = 0;
-        float y = 0;
-        float z = 0;
-        EXPECT_EQ(StatusOK, loadedRotateNode->getRotation(x, y, z));
-        EXPECT_FLOAT_EQ(1, x);
-        EXPECT_FLOAT_EQ(2, y);
-        EXPECT_FLOAT_EQ(3, z);
-        EXPECT_EQ(ERotationConvention::Euler_ZYX, loadedRotateNode->getRotationConvention());
+        vec3f rotation;
+        EXPECT_EQ(StatusOK, loadedRotateNode->getRotation(rotation));
+        EXPECT_FLOAT_EQ(1, rotation.x);
+        EXPECT_FLOAT_EQ(2, rotation.y);
+        EXPECT_FLOAT_EQ(3, rotation.z);
+        EXPECT_EQ(ERotationType::Euler_ZYX, loadedRotateNode->getRotationType());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithScaling)
@@ -1131,7 +1111,7 @@ namespace ramses
         Node* node = this->m_scene.createNode("scale node");
         Node* child = this->m_scene.createNode("groupnode child");
 
-        node->setScaling(1, 2, 3);
+        node->setScaling({1, 2, 3});
         child->setParent(*node);
         doWriteReadCycle();
 
@@ -1143,13 +1123,11 @@ namespace ramses
 
         EXPECT_EQ(1u, loadedScaleNode->getChildCount());
         EXPECT_EQ(loadedChild, loadedScaleNode->getChild(0u));
-        float x = 0;
-        float y = 0;
-        float z = 0;
-        EXPECT_EQ(StatusOK, loadedScaleNode->getScaling(x, y, z));
-        EXPECT_FLOAT_EQ(1, x);
-        EXPECT_FLOAT_EQ(2, y);
-        EXPECT_FLOAT_EQ(3, z);
+        vec3f scale;
+        EXPECT_EQ(StatusOK, loadedScaleNode->getScaling(scale));
+        EXPECT_FLOAT_EQ(1, scale.x);
+        EXPECT_FLOAT_EQ(2, scale.y);
+        EXPECT_FLOAT_EQ(3, scale.z);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteATextureSampler)
@@ -1459,211 +1437,21 @@ namespace ramses
         EXPECT_EQ(ramses_internal::EDataSlotType_TransformationConsumer, this->m_sceneLoaded->impl.getIScene().getDataSlot(slotHandle).type);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataFloat)
+    TEST_F(ASceneLoadedFromFile, canReadWriteDataObject)
     {
         float setValue = 5.0f;
-        DataFloat* data = this->m_scene.createDataFloat("floatData");
+        auto data = this->m_scene.createDataObject(EDataType::Float, "floatData");
 
         EXPECT_EQ(StatusOK, data->setValue(setValue));
 
         doWriteReadCycle();
 
-        const DataFloat* loadedData = this->getObjectForTesting<DataFloat>("floatData");
+        const auto loadedData = this->getObjectForTesting<DataObject>("floatData");
         ASSERT_TRUE(loadedData);
         float loadedValue = 0.0f;
+        EXPECT_EQ(EDataType::Float, loadedData->getDataType());
         EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue));
         EXPECT_EQ(setValue, loadedValue);
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataVector2f)
-    {
-        float setValue[] = { 1.0f, 2.0f };
-        DataVector2f* data = this->m_scene.createDataVector2f("vec2fData");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue[0], setValue[1]));
-
-        doWriteReadCycle();
-
-        const DataVector2f* loadedData = this->getObjectForTesting<DataVector2f>("vec2fData");
-        ASSERT_TRUE(loadedData);
-        float loadedValue[] = { 0.0f, 0.0f };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue[0], loadedValue[1]));
-
-        for (uint32_t i = 0; i < 2; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataVector3f)
-    {
-        float setValue[] = { 1.0f, 2.0f, 3.0f };
-        DataVector3f* data = this->m_scene.createDataVector3f("vec3fData");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue[0], setValue[1], setValue[2]));
-
-        doWriteReadCycle();
-
-        const DataVector3f* loadedData = this->getObjectForTesting<DataVector3f>("vec3fData");
-        ASSERT_TRUE(loadedData);
-        float loadedValue[] = { 0.0f, 0.0f, 0.0f };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue[0], loadedValue[1], loadedValue[2]));
-
-        for (uint32_t i = 0; i < 3; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataVector4f)
-    {
-        float setValue[] = { 1.0f, 2.0f, 3.0f, 4.0f };
-        DataVector4f* data = this->m_scene.createDataVector4f("vec4fData");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue[0], setValue[1], setValue[2], setValue[3]));
-
-        doWriteReadCycle();
-
-        const DataVector4f* loadedData = this->getObjectForTesting<DataVector4f>("vec4fData");
-        ASSERT_TRUE(loadedData);
-        float loadedValue[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue[0], loadedValue[1], loadedValue[2], loadedValue[3]));
-        for (uint32_t i = 0; i < 4; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataMatrix22f)
-    {
-        const float setValue[] = { 1.0f, 2.0f, 3.0f, 4.0f };
-        DataMatrix22f* data = this->m_scene.createDataMatrix22f("matrix22Data");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue));
-
-        doWriteReadCycle();
-
-        const DataMatrix22f* loadedData = this->getObjectForTesting<DataMatrix22f>("matrix22Data");
-        ASSERT_TRUE(loadedData);
-        float loadedValue[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue));
-        for (uint32_t i = 0; i < 4u; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataMatrix33f)
-    {
-        const float setValue[] = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f };
-        DataMatrix33f* data = this->m_scene.createDataMatrix33f("matrix33Data");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue));
-
-        doWriteReadCycle();
-
-        const DataMatrix33f* loadedData = this->getObjectForTesting<DataMatrix33f>("matrix33Data");
-        ASSERT_TRUE(loadedData);
-        float loadedValue[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue));
-        for (uint32_t i = 0; i < 9u; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataMatrix44f)
-    {
-        float setValue[] = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f };
-        DataMatrix44f* data = this->m_scene.createDataMatrix44f("matrix44Data");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue));
-
-        doWriteReadCycle();
-
-        const DataMatrix44f* loadedData = this->getObjectForTesting<DataMatrix44f>("matrix44Data");
-        ASSERT_TRUE(loadedData);
-        float loadedValue[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue));
-        for (uint32_t i = 0; i < 16; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataInt32)
-    {
-        int32_t setValue = 5;
-        DataInt32* data = this->m_scene.createDataInt32("int32Data");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue));
-
-        doWriteReadCycle();
-
-        const DataInt32* loadedData = this->getObjectForTesting<DataInt32>("int32Data");
-        ASSERT_TRUE(loadedData);
-        int32_t loadedValue = 0;
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue));
-        EXPECT_EQ(setValue, loadedValue);
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataVector2i)
-    {
-        int32_t setValue[] = { 1, 2 };
-        DataVector2i* data = this->m_scene.createDataVector2i("vec2iData");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue[0], setValue[1]));
-
-        doWriteReadCycle();
-
-        const DataVector2i* loadedData = this->getObjectForTesting<DataVector2i>("vec2iData");
-        ASSERT_TRUE(loadedData);
-        int32_t loadedValue[] = { 0, 0 };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue[0], loadedValue[1]));
-
-        for (uint32_t i = 0; i < 2; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataVector3i)
-    {
-        int32_t setValue[] = { 1, 2, 3 };
-        DataVector3i* data = this->m_scene.createDataVector3i("vec3iData");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue[0], setValue[1], setValue[2]));
-
-        doWriteReadCycle();
-
-        const DataVector3i* loadedData = this->getObjectForTesting<DataVector3i>("vec3iData");
-        ASSERT_TRUE(loadedData);
-        int32_t loadedValue[] = { 0, 0, 0 };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue[0], loadedValue[1], loadedValue[2]));
-
-        for (uint32_t i = 0; i < 3; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataVector4i)
-    {
-        int32_t setValue[] = { 1, 2, 3, 4 };
-        DataVector4i* data = this->m_scene.createDataVector4i("vec4iData");
-
-        EXPECT_EQ(StatusOK, data->setValue(setValue[0], setValue[1], setValue[2], setValue[3]));
-
-        doWriteReadCycle();
-
-        const DataVector4i* loadedData = this->getObjectForTesting<DataVector4i>("vec4iData");
-        ASSERT_TRUE(loadedData);
-        int32_t loadedValue[] = { 0, 0, 0, 0 };
-        EXPECT_EQ(StatusOK, loadedData->getValue(loadedValue[0], loadedValue[1], loadedValue[2], loadedValue[3]));
-        for (uint32_t i = 0; i < 4; i++)
-        {
-            EXPECT_EQ(setValue[i], loadedValue[i]);
-        }
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteSceneReferences)
@@ -1725,9 +1513,9 @@ namespace ramses
         auto child = &this->template createObject<ramses::Node>("child");
         auto parent = &this->template createObject<ramses::Node>("parent");
 
-        node->setTranslation(1, 2, 3);
-        node->setRotation(4, 5, 6, ERotationConvention::Euler_XZX);
-        node->setScaling(7, 8, 9);
+        node->setTranslation({1, 2, 3});
+        node->setRotation({4, 5, 6}, ERotationType::Euler_XZX);
+        node->setScaling({7, 8, 9});
         node->addChild(*child);
         node->setParent(*parent);
 
@@ -1746,22 +1534,20 @@ namespace ramses
         ASSERT_EQ(1u, loadedSuperNode->getChildCount());
         EXPECT_EQ(loadedChild, loadedSuperNode->getChild(0u));
         EXPECT_EQ(loadedParent, loadedSuperNode->getParent());
-        float x = 0;
-        float y = 0;
-        float z = 0;
-        EXPECT_EQ(StatusOK, loadedSuperNode->getTranslation(x, y, z));
-        EXPECT_FLOAT_EQ(1, x);
-        EXPECT_FLOAT_EQ(2, y);
-        EXPECT_FLOAT_EQ(3, z);
-        EXPECT_EQ(StatusOK, loadedSuperNode->getRotation(x, y, z));
-        EXPECT_FLOAT_EQ(4, x);
-        EXPECT_FLOAT_EQ(5, y);
-        EXPECT_FLOAT_EQ(6, z);
-        EXPECT_EQ(ERotationConvention::Euler_XZX, loadedSuperNode->getRotationConvention());
-        EXPECT_EQ(StatusOK, loadedSuperNode->getScaling(x, y, z));
-        EXPECT_FLOAT_EQ(7, x);
-        EXPECT_FLOAT_EQ(8, y);
-        EXPECT_FLOAT_EQ(9, z);
+        vec3f value;
+        EXPECT_EQ(StatusOK, loadedSuperNode->getTranslation(value));
+        EXPECT_FLOAT_EQ(1, value.x);
+        EXPECT_FLOAT_EQ(2, value.y);
+        EXPECT_FLOAT_EQ(3, value.z);
+        EXPECT_EQ(StatusOK, loadedSuperNode->getRotation(value));
+        EXPECT_FLOAT_EQ(4, value.x);
+        EXPECT_FLOAT_EQ(5, value.y);
+        EXPECT_FLOAT_EQ(6, value.z);
+        EXPECT_EQ(ERotationType::Euler_XZX, loadedSuperNode->getRotationType());
+        EXPECT_EQ(StatusOK, loadedSuperNode->getScaling(value));
+        EXPECT_FLOAT_EQ(7, value.x);
+        EXPECT_FLOAT_EQ(8, value.y);
+        EXPECT_FLOAT_EQ(9, value.z);
 
         EXPECT_EQ(loadedSuperNode->getVisibility(), EVisibilityMode::Invisible);
     }

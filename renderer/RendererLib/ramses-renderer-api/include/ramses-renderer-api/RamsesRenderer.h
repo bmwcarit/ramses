@@ -12,6 +12,7 @@
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-framework-api/RamsesFramework.h"
+#include "ramses-framework-api/DataTypes.h"
 
 namespace ramses
 {
@@ -440,14 +441,11 @@ namespace ramses
         * @param[in] display Id of display that the buffer to set clear color belongs to.
         * @param[in] displayBuffer Id of display buffer to set clear color,
         *                          if #ramses::displayBufferId_t::Invalid() is passed then the clear color is set for display's framebuffer.
-        * @param[in] r Clear color red channel value [0,1]
-        * @param[in] g Clear color green channel value [0,1]
-        * @param[in] b Clear color blue channel value [0,1]
-        * @param[in] a Clear color alpha channel value [0,1]
+        * @param[in] color Clear color (rgba, channel values in range [0,1])
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
+        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, const vec4f& color);
 
         /**
         * @brief   Updates display window size after a resize event on windows not owned by renderer.

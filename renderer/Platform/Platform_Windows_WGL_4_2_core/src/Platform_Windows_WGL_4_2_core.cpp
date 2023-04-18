@@ -7,8 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Windows_WGL_4_2_core/Platform_Windows_WGL_4_2_core.h"
-#include "Context_WGL/Context_WGL.h"
-#include "Device_GL/Device_GL.h"
 #include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
@@ -21,26 +19,6 @@ namespace ramses_internal
     Platform_Windows_WGL_4_2_core::Platform_Windows_WGL_4_2_core(const RendererConfig& rendererConfig)
         : Platform_Windows_WGL(rendererConfig)
     {
-    }
-
-    bool Platform_Windows_WGL_4_2_core::createDevice()
-    {
-        assert(m_context);
-        auto device = std::make_unique<Device_GL>(*m_context, uint8_t{ 4 }, uint8_t{ 2 }, false, nullptr);
-        if (device->init())
-            m_device = std::move(device);
-
-        return m_device.get() != nullptr;
-    }
-
-    bool Platform_Windows_WGL_4_2_core::createDeviceUploading()
-    {
-        assert(m_contextUploading);
-        auto device = std::make_unique<Device_GL>(*m_contextUploading, uint8_t{ 4 }, uint8_t{ 2 }, false, nullptr);
-        if (device->init())
-            m_deviceUploading = std::move(device);
-
-        return m_deviceUploading.get() != nullptr;
     }
 
     const Int32* Platform_Windows_WGL_4_2_core::getContextAttributes()

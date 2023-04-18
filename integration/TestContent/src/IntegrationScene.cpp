@@ -27,7 +27,7 @@ namespace ramses_internal
     {
         m_defaultCamera.setViewport(0, 0, vpWidth, vpHeight);
         m_defaultCamera.setFrustum(19.f, float(vpWidth) / vpHeight, 0.1f, 1500.f);
-        m_defaultCameraTranslationNode.setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        m_defaultCameraTranslationNode.setTranslation({cameraPosition.x, cameraPosition.y, cameraPosition.z});
         m_defaultCamera.setParent(m_defaultCameraTranslationNode);
         m_defaultRenderPass.setCamera(m_defaultCamera);
         m_defaultRenderPass.addRenderGroup(m_defaultRenderGroup);

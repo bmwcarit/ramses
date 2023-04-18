@@ -109,7 +109,7 @@ end
 )";
 
 const auto iniFile = R"(
-[Window][Logic Viewer (FeatureLevel 05)]
+[Window][Logic Viewer (FeatureLevel 01)]
 Pos=0,0
 Size=540,720
 Collapsed=0
@@ -303,7 +303,7 @@ namespace rlogic::internal
 
         void createLogicFile()
         {
-            LogicEngine engine{ EFeatureLevel_Latest };
+            LogicEngine engine{ ramses::EFeatureLevel_Latest };
 
             auto* interface = engine.createLuaInterface(R"(
                 function interface(IN,OUT)
@@ -378,7 +378,7 @@ namespace rlogic::internal
                 end
             )", {}, "allTypesScript");
 
-            auto* nodeBinding = engine.createRamsesNodeBinding(*m_scene.meshNode, rlogic::ERotationType::Euler_XYZ, "myNode");
+            auto* nodeBinding = engine.createRamsesNodeBinding(*m_scene.meshNode, ramses::ERotationType::Euler_XYZ, "myNode");
 
             engine.createRamsesAppearanceBinding(*m_scene.appearance, "myAppearance");
             engine.createRamsesCameraBinding(*m_scene.camera, "myCamera");
@@ -1311,7 +1311,7 @@ rlogic.meshNodeBindings["myMeshNode"]["IN"]["instanceCount"].value = 1)", rtrim(
 
     TEST_F(ALogicViewerAppUIUpdateReport, updateReport)
     {
-        setup(R"([Window][Logic Viewer (FeatureLevel 05)]
+        setup(R"([Window][Logic Viewer (FeatureLevel 01)]
 Pos=0,0
 Size=540,720
 Collapsed=0

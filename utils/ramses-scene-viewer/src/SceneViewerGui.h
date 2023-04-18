@@ -108,7 +108,7 @@ namespace ramses_internal
         void drawTextureSampler(ramses::TextureSamplerImpl& obj);
         void drawArrayResource(ramses::ArrayResourceImpl& obj);
         void drawArrayBuffer(ramses::ArrayBufferImpl& obj);
-        void drawDataObject(ramses::DataObjectImpl& obj);
+        void drawDataObject(ramses::DataObject& obj);
         void drawSceneReference(ramses::SceneReferenceImpl& obj);
         void drawDataSlot(const ramses_internal::DataSlot& obj);
 

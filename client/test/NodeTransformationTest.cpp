@@ -38,87 +38,87 @@ namespace ramses
 
     TYPED_TEST(NodeTransformationTest, setTranslate)
     {
-        ramses_internal::Vector3 initialTranslation(0.f, 0.f, 0.f);
-        ramses_internal::Vector3 actualTranslation;
-        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation.x, actualTranslation.y, actualTranslation.z));
+        vec3f initialTranslation(0.f, 0.f, 0.f);
+        vec3f actualTranslation;
+        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation));
         EXPECT_EQ(initialTranslation, actualTranslation);
 
-        ramses_internal::Vector3 translationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector.x, translationVector.y, translationVector.z));
-        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation.x, actualTranslation.y, actualTranslation.z));
+        vec3f translationVector(1.2f, 2.3f, 4.5f);
+        EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector));
+        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation));
         EXPECT_EQ(translationVector, actualTranslation);
     }
 
     TYPED_TEST(NodeTransformationTest, translate)
     {
-        ramses_internal::Vector3 initialTranslation(0.f, 0.f, 0.f);
-        ramses_internal::Vector3 actualTranslation;
-        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation.x, actualTranslation.y, actualTranslation.z));
+        vec3f initialTranslation(0.f, 0.f, 0.f);
+        vec3f actualTranslation;
+        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation));
         EXPECT_EQ(initialTranslation, actualTranslation);
 
-        ramses_internal::Vector3 translationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_EQ(StatusOK, this->m_node->translate(translationVector.x, translationVector.y, translationVector.z));
-        EXPECT_EQ(StatusOK, this->m_node->translate(translationVector.x, translationVector.y, translationVector.z));
-        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation.x, actualTranslation.y, actualTranslation.z));
-        EXPECT_EQ(2 * translationVector, actualTranslation);
+        vec3f translationVector(1.2f, 2.3f, 4.5f);
+        EXPECT_EQ(StatusOK, this->m_node->translate(translationVector));
+        EXPECT_EQ(StatusOK, this->m_node->translate(translationVector));
+        EXPECT_EQ(StatusOK, this->m_node->getTranslation(actualTranslation));
+        EXPECT_EQ(2.f * translationVector, actualTranslation);
     }
 
     TYPED_TEST(NodeTransformationTest, setRotation)
     {
-        ramses_internal::Vector3 initialRotation(0.f, 0.f, 0.f);
-        ramses_internal::Vector3 actualRotation;
-        EXPECT_EQ(StatusOK, this->m_node->getRotation(actualRotation.x, actualRotation.y, actualRotation.z));
-        EXPECT_EQ(ERotationConvention::Euler_XYZ, this->m_node->getRotationConvention());
+        vec3f initialRotation(0.f, 0.f, 0.f);
+        vec3f actualRotation;
+        EXPECT_EQ(StatusOK, this->m_node->getRotation(actualRotation));
+        EXPECT_EQ(ERotationType::Euler_XYZ, this->m_node->getRotationType());
         EXPECT_EQ(initialRotation, actualRotation);
 
-        ramses_internal::Vector3 rotationVector_1(1.2f, 2.3f, 4.5f);
-        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector_1.x, rotationVector_1.y, rotationVector_1.z, ERotationConvention::Euler_ZYX));
-        EXPECT_EQ(StatusOK, this->m_node->getRotation(actualRotation.x, actualRotation.y, actualRotation.z));
+        vec3f rotationVector_1(1.2f, 2.3f, 4.5f);
+        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector_1, ERotationType::Euler_ZYX));
+        EXPECT_EQ(StatusOK, this->m_node->getRotation(actualRotation));
         EXPECT_EQ(rotationVector_1, actualRotation);
-        EXPECT_EQ(ERotationConvention::Euler_ZYX, this->m_node->getRotationConvention());
+        EXPECT_EQ(ERotationType::Euler_ZYX, this->m_node->getRotationType());
 
-        ramses_internal::Vector3 rotationVector_2(2.2f, 3.3f, 5.5f);
-        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector_2.x, rotationVector_2.y, rotationVector_2.z, ERotationConvention::Euler_ZYZ));
-        EXPECT_EQ(StatusOK, this->m_node->getRotation(actualRotation.x, actualRotation.y, actualRotation.z));
+        vec3f rotationVector_2(2.2f, 3.3f, 5.5f);
+        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector_2, ERotationType::Euler_ZYZ));
+        EXPECT_EQ(StatusOK, this->m_node->getRotation(actualRotation));
         EXPECT_EQ(rotationVector_2, actualRotation);
-        EXPECT_EQ(ERotationConvention::Euler_ZYZ, this->m_node->getRotationConvention());
+        EXPECT_EQ(ERotationType::Euler_ZYZ, this->m_node->getRotationType());
     }
 
     TYPED_TEST(NodeTransformationTest, setScaling)
     {
-        ramses_internal::Vector3 initialScaling(1.f, 1.f, 1.f);
-        ramses_internal::Vector3 actualScale;
-        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale.x, actualScale.y, actualScale.z));
+        vec3f initialScaling(1.f, 1.f, 1.f);
+        vec3f actualScale;
+        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale));
         EXPECT_EQ(initialScaling, actualScale);
 
-        ramses_internal::Vector3 scalingVector_1(1.2f, 2.3f, 4.5f);
-        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector_1.x, scalingVector_1.y, scalingVector_1.z));
-        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale.x, actualScale.y, actualScale.z));
+        vec3f scalingVector_1(1.2f, 2.3f, 4.5f);
+        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector_1));
+        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale));
         EXPECT_EQ(scalingVector_1, actualScale);
 
-        ramses_internal::Vector3 scalingVector_2(2.2f, 3.3f, 5.5f);
-        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector_2.x, scalingVector_2.y, scalingVector_2.z));
-        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale.x, actualScale.y, actualScale.z));
+        vec3f scalingVector_2(2.2f, 3.3f, 5.5f);
+        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector_2));
+        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale));
         EXPECT_EQ(scalingVector_2, actualScale);
     }
 
     TYPED_TEST(NodeTransformationTest, scale)
     {
-        ramses_internal::Vector3 initialScaling(1.f, 1.f, 1.f);
-        ramses_internal::Vector3 actualScale;
-        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale.x, actualScale.y, actualScale.z));
+        vec3f initialScaling(1.f, 1.f, 1.f);
+        vec3f actualScale;
+        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale));
         EXPECT_EQ(initialScaling, actualScale);
 
-        ramses_internal::Vector3 scalingVector_1(4.f, 6.f, 8.f);
-        EXPECT_EQ(StatusOK, this->m_node->scale(scalingVector_1.x, scalingVector_1.y, scalingVector_1.z));
-        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale.x, actualScale.y, actualScale.z));
+        vec3f scalingVector_1(4.f, 6.f, 8.f);
+        EXPECT_EQ(StatusOK, this->m_node->scale(scalingVector_1));
+        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale));
         EXPECT_EQ(scalingVector_1, actualScale);
 
-        ramses_internal::Vector3 scalingVector_2(0.5f, 0.5f, 0.5f);
-        EXPECT_EQ(StatusOK, this->m_node->scale(scalingVector_2.x, scalingVector_2.y, scalingVector_2.z));
+        vec3f scalingVector_2(0.5f, 0.5f, 0.5f);
+        EXPECT_EQ(StatusOK, this->m_node->scale(scalingVector_2));
 
-        ramses_internal::Vector3 resultVector(2.f, 3.f, 4.f);
-        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale.x, actualScale.y, actualScale.z));
+        vec3f resultVector(2.f, 3.f, 4.f);
+        EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale));
         EXPECT_EQ(resultVector, actualScale);
     }
 
@@ -141,30 +141,30 @@ namespace ramses
         this->m_node->addChild(*child1);
         child0->addChild(*grandChild);
 
-        EXPECT_EQ(StatusOK, this->m_node    ->setRotation(10.f, 0.f , 0.f , ramses::ERotationConvention::Euler_ZYX));
-        EXPECT_EQ(StatusOK, child0          ->setRotation(0.f , 20.f, 0.f , ramses::ERotationConvention::Euler_XYZ));
-        EXPECT_EQ(StatusOK, child1          ->setRotation(0.f , 20.f, 30.f, ramses::ERotationConvention::Euler_ZYZ));
-        EXPECT_EQ(StatusOK, grandChild      ->setRotation(0.f ,  0.f, 30.f, ramses::ERotationConvention::Euler_XZY));
+        EXPECT_EQ(StatusOK, this->m_node->setRotation({10.f, 0.f, 0.f}, ramses::ERotationType::Euler_ZYX));
+        EXPECT_EQ(StatusOK, child0->setRotation({0.f, 20.f, 0.f}, ramses::ERotationType::Euler_XYZ));
+        EXPECT_EQ(StatusOK, child1->setRotation({0.f, 20.f, 30.f}, ramses::ERotationType::Euler_ZYZ));
+        EXPECT_EQ(StatusOK, grandChild->setRotation({0.f, 0.f, 30.f}, ramses::ERotationType::Euler_XZY));
 
         //expected matrices for rotation after transformation chain is applied
-        const auto expectedNodeRotationMatrix           = ramses_internal::Matrix44f::Rotation({ 10.f , 0.f , 0.f, 1.f  }, ramses_internal::ERotationConvention::Euler_ZYX);
-        const auto expectedChild0RorationMatrix         = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 0.f, 1.f  }, ramses_internal::ERotationConvention::Euler_ZYX);
-        const auto expectedChild1RorationMatrix         = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationConvention::Euler_ZYX);
-        const auto expectedGrandChildRorationMatrix     = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationConvention::Euler_ZYX);
+        const auto expectedNodeRotationMatrix           = ramses_internal::Matrix44f::Rotation({ 10.f , 0.f , 0.f, 1.f  }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedChild0RorationMatrix         = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 0.f, 1.f  }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedChild1RorationMatrix         = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedGrandChildRorationMatrix     = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
 
-        ramses_internal::Matrix44f resultNodeMatrix;
-        ramses_internal::Matrix44f resultChild0Matrix;
-        ramses_internal::Matrix44f resultChild1Matrix;
-        ramses_internal::Matrix44f resultGrandChildMatrix;
-        this->m_node->getModelMatrix(resultNodeMatrix.data);
-        child0      ->getModelMatrix(resultChild0Matrix.data);
-        child1      ->getModelMatrix(resultChild1Matrix.data);
-        grandChild  ->getModelMatrix(resultGrandChildMatrix.data);
+        matrix44f resultNodeMatrix;
+        matrix44f resultChild0Matrix;
+        matrix44f resultChild1Matrix;
+        matrix44f resultGrandChildMatrix;
+        this->m_node->getModelMatrix(resultNodeMatrix);
+        child0      ->getModelMatrix(resultChild0Matrix);
+        child1      ->getModelMatrix(resultChild1Matrix);
+        grandChild  ->getModelMatrix(resultGrandChildMatrix);
 
-        expectMatrixFloatEqual(expectedNodeRotationMatrix       , resultNodeMatrix);
-        expectMatrixFloatEqual(expectedChild0RorationMatrix     , resultChild0Matrix);
-        expectMatrixFloatEqual(expectedChild1RorationMatrix     , resultChild1Matrix);
-        expectMatrixFloatEqual(expectedGrandChildRorationMatrix , resultGrandChildMatrix);
+        expectMatrixFloatEqual(expectedNodeRotationMatrix       , ramses_internal::Matrix44f(resultNodeMatrix));
+        expectMatrixFloatEqual(expectedChild0RorationMatrix     , ramses_internal::Matrix44f(resultChild0Matrix));
+        expectMatrixFloatEqual(expectedChild1RorationMatrix     , ramses_internal::Matrix44f(resultChild1Matrix));
+        expectMatrixFloatEqual(expectedGrandChildRorationMatrix , ramses_internal::Matrix44f(resultGrandChildMatrix));
     }
 
     template <typename T>
@@ -195,48 +195,48 @@ namespace ramses
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setTranslateWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
-        ramses_internal::Vector3 translationVector(1.2f, 2.3f, 4.5f);
+        vec3f translationVector(1.2f, 2.3f, 4.5f);
         EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
-        EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector.x, translationVector.y, translationVector.z));
+        EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
 
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector.x, translationVector.y, translationVector.z));
+        EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector));
         this->m_scene.flush();
         EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setRotationWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
-        ramses_internal::Vector3 rotationVector(1.2f, 2.3f, 4.5f);
+        vec3f rotationVector(1.2f, 2.3f, 4.5f);
         EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
-        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector.x, rotationVector.y, rotationVector.z, ERotationConvention::Euler_YXZ));
+        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector, ERotationType::Euler_YXZ));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
 
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector.x, rotationVector.y, rotationVector.z, ERotationConvention::Euler_YXZ));
+        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector, ERotationType::Euler_YXZ));
         this->m_scene.flush();
         EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }
 
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setScalingWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
-        ramses_internal::Vector3 scalingVector(1.2f, 2.3f, 4.5f);
+        vec3f scalingVector(1.2f, 2.3f, 4.5f);
         EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
-        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector.x, scalingVector.y, scalingVector.z));
+        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
 
         Mock::VerifyAndClearExpectations(this);
         this->sceneActionsCollector.resetCollecting();
 
-        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector.x, scalingVector.y, scalingVector.z));
+        EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector));
         this->m_scene.flush();
         EXPECT_EQ(0u, this->sceneActionsCollector.getNumberOfActions());  // flush empty and optimized away
     }

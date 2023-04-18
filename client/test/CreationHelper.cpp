@@ -21,17 +21,7 @@
 #include "ramses-client-api/EffectInputSemantic.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/RenderGroup.h"
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector3f.h"
-#include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/DataMatrix22f.h"
-#include "ramses-client-api/DataMatrix33f.h"
-#include "ramses-client-api/DataMatrix44f.h"
-#include "ramses-client-api/DataInt32.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector3i.h"
-#include "ramses-client-api/DataVector4i.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/PickableObject.h"
@@ -194,58 +184,9 @@ namespace ramses
         return m_scene->createGeometryBinding(*createObjectOfType<Effect>("geometry_binding_effect"), name);
     }
 
-    template <> DataFloat* CreationHelper::createObjectOfType<DataFloat>(const char* name)
+    template <> DataObject* CreationHelper::createObjectOfType<DataObject>(const char* name)
     {
-        return m_scene->createDataFloat(name);
-    }
-
-    template <> DataVector2f* CreationHelper::createObjectOfType<DataVector2f>(const char* name)
-    {
-        return m_scene->createDataVector2f(name);
-    }
-
-    template <> DataVector3f* CreationHelper::createObjectOfType<DataVector3f>(const char* name)
-    {
-        return m_scene->createDataVector3f(name);
-    }
-
-    template <> DataVector4f* CreationHelper::createObjectOfType<DataVector4f>(const char* name)
-    {
-        return m_scene->createDataVector4f(name);
-    }
-
-    template <> DataMatrix22f* CreationHelper::createObjectOfType<DataMatrix22f>(const char* name)
-    {
-        return m_scene->createDataMatrix22f(name);
-    }
-
-    template <> DataMatrix33f* CreationHelper::createObjectOfType<DataMatrix33f>(const char* name)
-    {
-        return m_scene->createDataMatrix33f(name);
-    }
-
-    template <> DataMatrix44f* CreationHelper::createObjectOfType<DataMatrix44f>(const char* name)
-    {
-        return m_scene->createDataMatrix44f(name);
-    }
-
-    template <> DataInt32* CreationHelper::createObjectOfType<DataInt32>(const char* name)
-    {
-        return m_scene->createDataInt32(name);
-    }
-
-    template <> DataVector2i* CreationHelper::createObjectOfType<DataVector2i>(const char* name)
-    {
-        return m_scene->createDataVector2i(name);
-    }
-
-    template <> DataVector3i* CreationHelper::createObjectOfType<DataVector3i>(const char* name)
-    {
-        return m_scene->createDataVector3i(name);
-    }
-    template <> DataVector4i* CreationHelper::createObjectOfType<DataVector4i>(const char* name)
-    {
-        return m_scene->createDataVector4i(name);
+        return m_scene->createDataObject(EDataType::Float, name);
     }
 
     template <> ArrayBuffer* CreationHelper::createObjectOfType<ArrayBuffer>(const char* name)

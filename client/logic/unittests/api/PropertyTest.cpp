@@ -337,16 +337,13 @@ namespace rlogic::internal
         vec3f vec3fValue = *aVec3f.get<vec3f>();
         vec4f vec4fValue = *aVec4f.get<vec4f>();
 
-        ASSERT_EQ(2u, vec2fValue.size());
         EXPECT_FLOAT_EQ(0.0f, vec2fValue[0]);
         EXPECT_FLOAT_EQ(0.0f, vec2fValue[1]);
 
-        ASSERT_EQ(3u, vec3fValue.size());
         EXPECT_FLOAT_EQ(0.0f, vec3fValue[0]);
         EXPECT_FLOAT_EQ(0.0f, vec3fValue[1]);
         EXPECT_FLOAT_EQ(0.0f, vec3fValue[2]);
 
-        ASSERT_EQ(4u, vec4fValue.size());
         EXPECT_FLOAT_EQ(0.0f, vec4fValue[0]);
         EXPECT_FLOAT_EQ(0.0f, vec4fValue[1]);
         EXPECT_FLOAT_EQ(0.0f, vec4fValue[2]);
@@ -356,16 +353,13 @@ namespace rlogic::internal
         vec3i vec3iValue = *aVec3i.get<vec3i>();
         vec4i vec4iValue = *aVec4i.get<vec4i>();
 
-        ASSERT_EQ(2u, vec2iValue.size());
         EXPECT_EQ(0, vec2iValue[0]);
         EXPECT_EQ(0, vec2iValue[1]);
 
-        ASSERT_EQ(3u, vec3iValue.size());
         EXPECT_EQ(0, vec3iValue[0]);
         EXPECT_EQ(0, vec3iValue[1]);
         EXPECT_EQ(0, vec3iValue[2]);
 
-        ASSERT_EQ(4u, vec4iValue.size());
         EXPECT_EQ(0, vec4iValue[0]);
         EXPECT_EQ(0, vec4iValue[1]);
         EXPECT_EQ(0, vec4iValue[2]);

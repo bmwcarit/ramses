@@ -37,7 +37,7 @@ namespace ramses_internal
         ramses::Appearance& appearance = *scene.createAppearance(*effect, "appearance");
 
         ramses::Node* trafoNode = m_scene.createNode("transformation node");
-        trafoNode->setTranslation(-1.0f, 0.0f, -12.0f);
+        trafoNode->setTranslation({-1.0f, 0.0f, -12.0f});
 
         ramses::MeshNode* meshNode = m_scene.createMeshNode("triangle mesh node");
         meshNode->setParent(*trafoNode);

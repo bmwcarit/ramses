@@ -139,31 +139,6 @@ namespace
     };
 }
 
-#elif defined(__ghs__)
-namespace
-{
-    class ConsoleInputImpl final
-    {
-    public:
-        bool init()
-        {
-            return false;
-        }
-
-        ~ConsoleInputImpl()
-        {
-        }
-
-        bool readChar(char& c)
-        {
-            return false;
-        }
-
-        void interruptReadChar()
-        {
-        }
-    };
-}
 #else
 
 #include <sys/select.h>

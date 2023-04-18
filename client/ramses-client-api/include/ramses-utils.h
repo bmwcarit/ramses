@@ -26,8 +26,7 @@ namespace ramses
     class Scene;
     class Texture2D;
     class UniformInput;
-    class DataVector2f;
-    class DataVector4f;
+    class DataObject;
     struct MipLevelData;
     struct CubeMipLevelData;
 
@@ -182,11 +181,11 @@ namespace ramses
         *                        but typically matches the viewport aspect ratio.
         * @param[in] nearPlane Near plane of the camera frustum, must be > 0.
         * @param[in] farPlane Far plane of the camera frustum, must be > nearPlane.
-        * @param[in] frustumPlanesData Data object where resulting first 4 frustum planes will be set to.
-        * @param[in] nearFarPlanesData Data object where resulting near/far frustum planes will be set to.
+        * @param[in] frustumPlanesData Data object where resulting first 4 frustum planes will be set to, must be created with #ramses::EDataType::Vector4F.
+        * @param[in] nearFarPlanesData Data object where resulting near/far frustum planes will be set to, must be created with #ramses::EDataType::Vector2F.
         * @return True for success, false otherwise.
         */
-        static bool SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataVector4f& frustumPlanesData, DataVector2f& nearFarPlanesData);
+        static bool SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataObject& frustumPlanesData, DataObject& nearFarPlanesData);
 
         /**
          * @brief Convenience wrapper for RamsesClient::loadSceneFromMemory with automatic deleter

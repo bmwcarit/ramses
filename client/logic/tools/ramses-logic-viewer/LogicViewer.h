@@ -113,7 +113,7 @@ namespace rlogic
             sol::optional<sol::table> m_tbl;
         };
 
-        LogicViewer(EFeatureLevel engineFeatureLevel, ScreenshotFunc screenshotFunc);
+        LogicViewer(ramses::EFeatureLevel engineFeatureLevel, ScreenshotFunc screenshotFunc);
 
         [[nodiscard]] bool loadRamsesLogic(const std::string& filename, ramses::Scene* scene);
 

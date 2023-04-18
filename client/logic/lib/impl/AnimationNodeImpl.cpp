@@ -16,6 +16,7 @@
 #include "internals/ErrorReporting.h"
 #include "generated/AnimationNodeGen.h"
 #include "fmt/format.h"
+#include "glm/gtx/range.hpp"
 #include <cmath>
 
 namespace rlogic::internal
@@ -232,12 +233,12 @@ namespace rlogic::internal
         else
         {
             T val = lowerVal;
-            auto valIt = val.begin();
-            auto lowerValIt = lowerVal.cbegin();
-            auto upperValIt = upperVal.cbegin();
+            auto valIt = begin(val);
+            auto lowerValIt = begin(lowerVal);
+            auto upperValIt = begin(upperVal);
 
             // decompose vecXy and interpolate each component separately
-            for (; valIt != val.cend(); ++valIt, ++lowerValIt, ++upperValIt)
+            for (; valIt != end(val); ++valIt, ++lowerValIt, ++upperValIt)
                 *valIt = interpolateKeyframes_linear(*lowerValIt, *upperValIt, interpRatio);
 
             return val;
@@ -276,16 +277,16 @@ namespace rlogic::internal
         else
         {
             T val = lowerVal;
-            auto valIt = val.begin();
-            auto lowerValIt = lowerVal.cbegin();
-            auto upperValIt = upperVal.cbegin();
-            auto lowerTangentOutIt = lowerTangentOut.cbegin();
-            auto upperTangentInIt = upperTangentIn.cbegin();
-            assert(lowerVal.size() == lowerTangentOut.size());
-            assert(lowerVal.size() == upperTangentIn.size());
+            auto valIt = begin(val);
+            auto lowerValIt = begin(lowerVal);
+            auto upperValIt = begin(upperVal);
+            auto lowerTangentOutIt = begin(lowerTangentOut);
+            auto upperTangentInIt = begin(upperTangentIn);
+            assert((end(lowerVal) - begin(lowerVal)) == (end(lowerTangentOut) - begin(lowerTangentOut)));
+            assert((end(lowerVal) - begin(lowerVal)) == (end(upperTangentIn) - begin(upperTangentIn)));
 
             // decompose vecXy and interpolate each component separately
-            for (; valIt != val.cend(); ++valIt, ++lowerValIt, ++upperValIt, ++lowerTangentOutIt, ++upperTangentInIt)
+            for (; valIt != end(val); ++valIt, ++lowerValIt, ++upperValIt, ++lowerTangentOutIt, ++upperTangentInIt)
                 *valIt = interpolateKeyframes_cubic(*lowerValIt, *upperValIt, *lowerTangentOutIt, *upperTangentInIt, interpRatio, timeBetweenKeys);
 
             return val;

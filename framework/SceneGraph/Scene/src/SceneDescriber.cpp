@@ -117,8 +117,8 @@ namespace ramses_internal
                 const Vector4& rotation = source.getRotation(t);
                 if (rotation != IScene::IdentityRotation)
                 {
-                    const auto rotationConvention = source.getRotationConvention(t);
-                    collector.setRotation(t, rotation, rotationConvention);
+                    const auto rotationType = source.getRotationType(t);
+                    collector.setRotation(t, rotation, rotationType);
                 }
                 const Vector3& scaling = source.getScaling(t);
                 if (scaling != IScene::IdentityScaling)

@@ -54,7 +54,7 @@ int main()
      * After loadFromFile() returns, the bindings which point to Ramses objects will point
      * to objects from the scene provided as an argument.
      */
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
     logicEngine.loadFromFile(ramsesLogicFile, scene);
 
     /**
@@ -92,8 +92,8 @@ int main()
     triangleRotationScript->getInputs()->getChild("time_msec")->set<int32_t>(300);
     logicEngine.update();
 
-    std::array<float, 3> nodeRotation{};
-    triangleNodeBinding->getRamsesNode().getRotation(nodeRotation[0], nodeRotation[1], nodeRotation[2]);
+    ramses::vec3f nodeRotation;
+    triangleNodeBinding->getRamsesNode().getRotation(nodeRotation);
 
     std::cout << "\n\nRamses node rotation after loading from file and updating: {" << nodeRotation[0] << ", " << nodeRotation[1] << ", " << nodeRotation[2] << "}\n\n";
 
@@ -119,7 +119,7 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string&
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, 1.0f, 0.1f, 100.0f);
     camera->setViewport(0, 0, 800, 800);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass();
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -173,8 +173,8 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string&
     /**
      * Create a temporary LogicEngine instance for creating and saving a simple script which references a ramses Node
      */
-    rlogic::LogicEngine logicEngine;
-    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*meshNode, rlogic::ERotationType::Euler_XYZ, "link to triangle node");
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*meshNode, ramses::ERotationType::Euler_XYZ, "link to triangle node");
 
     /**
      * Create a simple script which sets the rotation values of a node based on simulated time

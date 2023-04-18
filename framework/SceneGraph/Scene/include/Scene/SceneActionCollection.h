@@ -36,16 +36,8 @@ namespace ramses_internal
         SceneActionCollection(const SceneActionCollection&) = delete;
         SceneActionCollection& operator=(const SceneActionCollection&) = delete;
 
-// C++14 does not require noexcept move constructor/assignments for std::vector moves
-// But with the exception of ghs compiler all std libs of our supported compilers guarantee
-// noexcept for this, so we can guarantee noexcept for SceneActionCollection moves as well.
-#ifdef __ghs__
-        SceneActionCollection(SceneActionCollection&&) = default;
-        SceneActionCollection& operator=(SceneActionCollection&&) = default;
-#else
         SceneActionCollection(SceneActionCollection&&) noexcept = default;
         SceneActionCollection& operator=(SceneActionCollection&&) noexcept = default;
-#endif
 
         [[nodiscard]] SceneActionCollection copy() const;
 

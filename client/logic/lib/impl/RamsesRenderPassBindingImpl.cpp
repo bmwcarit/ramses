@@ -46,8 +46,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::RamsesRenderPassBinding> RamsesRenderPassBindingImpl::Serialize(
         const RamsesRenderPassBindingImpl& renderPassBinding,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& serializationMap,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& serializationMap)
     {
         const auto logicObject = LogicObjectImpl::Serialize(renderPassBinding, builder);
         const auto fbRamsesRef = RamsesBindingImpl::SerializeRamsesReference(renderPassBinding.m_ramsesRenderPass, builder);
@@ -151,8 +150,7 @@ namespace rlogic::internal
         PropertyImpl& clearColor = *getInputs()->getChild(EPropertyIndex_ClearColor)->m_impl;
         if (clearColor.checkForBindingInputNewValueAndReset())
         {
-            const auto clearColorValue = clearColor.getValueAs<vec4f>();
-            status = m_ramsesRenderPass.get().setClearColor(clearColorValue[0], clearColorValue[1], clearColorValue[2], clearColorValue[3]);
+            status = m_ramsesRenderPass.get().setClearColor(clearColor.getValueAs<vec4f>());
             if (status != ramses::StatusOK)
                 return LogicNodeRuntimeError{ m_ramsesRenderPass.get().getStatusMessage(status) };
         }
@@ -186,8 +184,7 @@ namespace rlogic::internal
 
         binding.getInputs()->getChild(EPropertyIndex_RenderOrder)->m_impl->initializeBindingInputValue(PropertyValue{ ramsesRenderPass.getRenderOrder() });
 
-        vec4f clearColor;
-        ramsesRenderPass.getClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
+        vec4f clearColor = ramsesRenderPass.getClearColor();
         binding.getInputs()->getChild(EPropertyIndex_ClearColor)->m_impl->initializeBindingInputValue(PropertyValue{ clearColor });
 
         binding.getInputs()->getChild(EPropertyIndex_RenderOnce)->m_impl->initializeBindingInputValue(PropertyValue{ ramsesRenderPass.isRenderOnce() });

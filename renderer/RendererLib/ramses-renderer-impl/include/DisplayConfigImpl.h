@@ -12,6 +12,7 @@
 #include "ramses-renderer-api/Types.h"
 #include "RendererLib/DisplayConfig.h"
 #include "StatusObjectImpl.h"
+#include "ramses-framework-api/DataTypes.h"
 
 namespace CLI
 {
@@ -44,7 +45,7 @@ namespace ramses
         status_t setResizable(bool resizable);
         status_t keepEffectsUploaded(bool enable);
         status_t setGPUMemoryCacheSize(uint64_t size);
-        status_t setClearColor(float red, float green, float blue, float alpha);
+        status_t setClearColor(const vec4f& color);
         status_t setOffscreen(bool offscreenFlag);
         status_t setDepthStencilBufferType(EDepthBufferType depthBufferType);
         status_t setX11WindowHandle(unsigned long x11WindowHandle);

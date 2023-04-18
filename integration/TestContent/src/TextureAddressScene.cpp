@@ -73,7 +73,7 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(x, y, -12.5f);
+        transNode->setTranslation({x, y, -12.5f});
 
         mesh->setParent(*transNode);
         transNode->setParent(*m_groupNode);

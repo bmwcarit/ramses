@@ -30,17 +30,6 @@
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/RenderTarget.h"
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector3f.h"
-#include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector3i.h"
-#include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/DataMatrix22f.h"
-#include "ramses-client-api/DataMatrix33f.h"
-#include "ramses-client-api/DataMatrix44f.h"
-#include "ramses-client-api/DataInt32.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/ArrayResource.h"
@@ -415,80 +404,10 @@ namespace ramses
         return status;
     }
 
-    DataFloat* Scene::createDataFloat(const char* name)
+    DataObject* Scene::createDataObject(EDataType dataType, const char* name)
     {
-        DataFloat* dataObject = impl.createDataFloat(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataVector2f* Scene::createDataVector2f(const char* name)
-    {
-        DataVector2f* dataObject = impl.createDataVector2f(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataVector3f* Scene::createDataVector3f(const char* name)
-    {
-        DataVector3f* dataObject = impl.createDataVector3f(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataVector4f* Scene::createDataVector4f(const char* name)
-    {
-        DataVector4f* dataObject = impl.createDataVector4f(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataMatrix22f* Scene::createDataMatrix22f(const char* name)
-    {
-        DataMatrix22f* dataObject = impl.createDataMatrix22f(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataMatrix33f* Scene::createDataMatrix33f(const char* name)
-    {
-        DataMatrix33f* dataObject = impl.createDataMatrix33f(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataMatrix44f* Scene::createDataMatrix44f(const char* name)
-    {
-        DataMatrix44f* dataObject = impl.createDataMatrix44f(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataInt32* Scene::createDataInt32(const char* name)
-    {
-        DataInt32* dataObject = impl.createDataInt32(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataVector2i* Scene::createDataVector2i(const char* name)
-    {
-        DataVector2i* dataObject = impl.createDataVector2i(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataVector3i* Scene::createDataVector3i(const char* name)
-    {
-        DataVector3i* dataObject = impl.createDataVector3i(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
-        return dataObject;
-    }
-
-    DataVector4i* Scene::createDataVector4i(const char* name)
-    {
-        DataVector4i* dataObject = impl.createDataVector4i(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), name);
+        DataObject* dataObject = impl.createDataObject(dataType, name);
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(dataObject), dataType, name);
         return dataObject;
     }
 

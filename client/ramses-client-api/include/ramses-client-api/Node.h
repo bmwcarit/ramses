@@ -11,9 +11,8 @@
 
 #include "ramses-client-api/SceneObject.h"
 #include "ramses-client-api/EVisibilityMode.h"
-#include "ramses-client-api/ERotationConvention.h"
+#include "ramses-client-api/ERotationType.h"
 #include "ramses-framework-api/DataTypes.h"
-#include "glm/gtc/quaternion.hpp"
 
 namespace ramses
 {
@@ -122,7 +121,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getModelMatrix(float(&modelMatrix)[16]) const;
+        status_t getModelMatrix(matrix44f& modelMatrix) const;
 
         /**
         * @brief Gets inverse model (world in scene space) matrix computed from the scene graph.
@@ -134,140 +133,118 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getInverseModelMatrix(float(&inverseModelMatrix)[16]) const;
+        status_t getInverseModelMatrix(matrix44f& inverseModelMatrix) const;
 
         /**
         * @brief Sets the absolute rotation in all three directions for right-handed rotation using the chosen Euler
         *        angles rotation convention. If this function is used to set, then only
-        *        #ramses::Node::getRotation(float&,float&,float&)const can be used to get node rotation.
-        *        Will return an error if the given rotationConvention is not an Euler convention.
+        *        #ramses::Node::getRotation(vec3f&)const can be used to get node rotation.
+        *        Will return an error if the given rotationType is not an Euler convention.
         *
-        * @param[in] x The value in degrees for the rotation around x-axis in case of Tait-Bryan conventions, for Proper Euler conventions specifies
-                       the rotation angle for the first angle in the convention name.
-        * @param[in] y The value in degrees for the rotation around y-axis in case of Tait-Bryan conventions, for Proper Euler conventions specifies
-                       the rotation angle for the second angle in the convention name.
-        * @param[in] z The value in degrees for the rotation around z-axis in case of Tait-Bryan conventions, for Proper Euler conventions specifies
-                       the rotation angle for the third angle in the convention name.
-        * @param[in] rotationConvention The rotation convention to use for calculation of rotation matrix. Default value set to Euler_XYZ rotation convention.
+        * @param[in] rotation Euler angles in degrees
+        * @param[in] rotationType The rotation convention to use for calculation of rotation matrix. Default value set to Euler_XYZ rotation convention.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRotation(float x, float y, float z, ERotationConvention rotationConvention = ERotationConvention::Euler_XYZ);
+        status_t setRotation(const vec3f& rotation, ERotationType rotationType = ERotationType::Euler_XYZ);
 
         /**
         * @brief Sets the absolute rotation defined by a quaternion.
-        *        If this function is used to set, then only #ramses::Node::getRotation(glm::quat&)const can be used to get the node rotation.
+        *        If this function is used to set, then only #ramses::Node::getRotation(quat&)const can be used to get the node rotation.
         *
         * @param[in] rotation a normalized quaternion
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRotation(const glm::quat& rotation);
+        status_t setRotation(const quat& rotation);
 
         /**
-        * @brief Returns the current rotation convention applied to the node
+        * @brief Returns the current rotation type applied to the node
         *        The value is modified by #ramses::Node::setRotation().
-        *        Default rotation convention is #ramses::ERotationConvention::Euler_XYZ
+        *        Default rotation type is #ramses::ERotationType::Euler_XYZ
         *
-        * @return rotation convention
+        * @return rotation type
         */
-        [[nodiscard]] ERotationConvention getRotationConvention() const;
+        [[nodiscard]] ERotationType getRotationType() const;
 
         /**
         * @brief Retrieves the absolute rotation for right-handed rotation in all three directions for the used Euler
         *        angles rotation convention. This function will return an error if no Euler rotation convention is set
-        *        (check #ramses::Node::getRotationConvention() before)
+        *        (check #ramses::Node::getRotationType() before)
         *
         *        Default value is 0 for all components.
         *
-        * @param[out] x Current value in degrees for rotation around x-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
-                       the rotation angle for the first angle in the convention name.
-        * @param[out] y Current value in degrees for rotation around y-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
-                       the rotation angle for the second angle in the convention name.
-        * @param[out] z Current value in degrees for rotation around z-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
-                       the rotation angle for the third angle in the convention name.
+        * @param[out] rotation Euler angles in degrees
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getRotation(float& x, float& y, float& z) const;
+        status_t getRotation(vec3f& rotation) const;
 
         /**
         * @brief Retrieves the absolute rotation defined by a quaternion.
-        *        This function will return an error if #ramses::Node::getRotationConvention() != #ramses::ERotationConvention::Quaternion
+        *        This function will return an error if #ramses::Node::getRotationType() != #ramses::ERotationType::Quaternion
         *        Default value is an identity quaternion: glm::identity<quat>()
         *
         * @param[out] rotation quaternion
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getRotation(glm::quat& rotation) const;
+        status_t getRotation(quat& rotation) const;
 
         /**
         * @brief Translates in all three directions with the given values.
         *
-        * @param[in] x Float with relative translation from origin on x-axis.
-        * @param[in] y Float with relative translation from origin on y-axis.
-        * @param[in] z Float with relative translation from origin on z-axis.
+        * @param[in] translation relative translation from origin.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t translate(float x, float y, float z);
+        status_t translate(const vec3f& translation);
 
         /**
         * @brief Sets the absolute translation  the absolute values.
         *
-        * @param[in] x Float with absolute translation value in x-axis.
-        * @param[in] y Float with absolute translation value in y-axis.
-        * @param[in] z Float with absolute translation value in z-axis.
+        * @param[in] translation absolute translation value
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setTranslation(float x, float y, float z);
+        status_t setTranslation(const vec3f& translation);
 
         /**
         * @brief Retrieves the current absolute translation.
         *
-        * @param[out] x Current translation on x-axis.
-        * @param[out] y Current translation on y-axis.
-        * @param[out] z Current translation on z-axis.
+        * @param[out] translation Current translation
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getTranslation(float& x, float& y, float& z) const;
+        status_t getTranslation(vec3f& translation) const;
 
         /**
         * @brief Scales in all three directions with the given values.
         *
-        * @param[in] x The relative scaling factor which in x-dimension.
-        * @param[in] y The relative scaling factor which in y-dimension.
-        * @param[in] z The relative scaling factor which in z-dimension.
+        * @param[in] scaling The relative scaling factor.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t scale(float x, float y, float z);
+        status_t scale(const vec3f& scaling);
 
         /**
         * @brief Sets the absolute scale in all three dimensions.
         *
-        * @param[in] x The scaling factor in x-dimension.
-        * @param[in] y The scaling factor in y-dimension.
-        * @param[in] z The scaling factor in z-dimension.
+        * @param[in] scaling scaling factor.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setScaling(float x, float y, float z);
+        status_t setScaling(const vec3f& scaling);
 
         /**
         * @brief Retrieves the current absolute scale in all three dimensions.
         *
-        * @param[out] x The current scaling in x-dimension.
-        * @param[out] y The current scaling in y-dimension.
-        * @param[out] z The current scaling in z-dimension.
+        * @param[out] scaling The current scaling factor.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getScaling(float& x, float& y, float& z) const;
+        status_t getScaling(vec3f& scaling) const;
 
         /**
         * @brief Sets the visibility of the Node.

@@ -87,8 +87,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::RamsesAppearanceBinding> RamsesAppearanceBindingImpl::Serialize(
         const RamsesAppearanceBindingImpl& binding,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& serializationMap,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& serializationMap)
     {
         auto ramsesReference = RamsesBindingImpl::SerializeRamsesReference(binding.m_ramsesAppearance, builder);
 

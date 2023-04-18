@@ -8,9 +8,7 @@
 
 // API
 #include "ramses-client-api/Camera.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 
 // internal
 #include "CameraNodeImpl.h"
@@ -89,26 +87,26 @@ namespace ramses
         return impl.getFarPlane();
     }
 
-    status_t Camera::getProjectionMatrix(float(&projectionMatrix)[16]) const
+    status_t Camera::getProjectionMatrix(matrix44f& projectionMatrix) const
     {
         return impl.getProjectionMatrix(projectionMatrix);
     }
 
-    status_t Camera::bindViewportOffset(const DataVector2i& offsetData)
+    status_t Camera::bindViewportOffset(const DataObject& offsetData)
     {
         const status_t status = impl.bindViewportOffset(offsetData);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(offsetData));
         return status;
     }
 
-    status_t Camera::bindViewportSize(const DataVector2i& sizeData)
+    status_t Camera::bindViewportSize(const DataObject& sizeData)
     {
         const status_t status = impl.bindViewportSize(sizeData);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(sizeData));
         return status;
     }
 
-    status_t Camera::bindFrustumPlanes(const DataVector4f& frustumPlanesData, const DataVector2f& nearFarPlanesData)
+    status_t Camera::bindFrustumPlanes(const DataObject& frustumPlanesData, const DataObject& nearFarPlanesData)
     {
         const status_t status = impl.bindFrustumPlanes(frustumPlanesData, nearFarPlanesData);
         LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(frustumPlanesData), LOG_API_RAMSESOBJECT_STRING(nearFarPlanesData));

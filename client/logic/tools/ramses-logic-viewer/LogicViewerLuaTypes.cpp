@@ -25,6 +25,34 @@
 #include "ramses-logic/Property.h"
 #include "internals/SolHelper.h"
 #include "fmt/format.h"
+#include "glm/gtx/range.hpp"
+
+namespace glm
+{
+    template <int N, typename T, qualifier Q>
+    int sol_lua_push(sol::types<vec<N,T,Q>>, lua_State* L, const vec<N,T,Q>& value)
+    {
+        auto vectable = sol::table::create(L, N);
+        for (const auto& v : value)
+        {
+            vectable.add(v);
+        }
+        int amount = sol::stack::push(L, vectable);
+        return amount;
+    }
+
+    template <int N, typename T, qualifier Q>
+    vec<N,T,Q> sol_lua_get(sol::types<vec<N,T,Q>>, lua_State* L, int index, sol::stack::record& tracking)
+    {
+        sol::lua_table vectable = sol::stack::get<sol::lua_table>(L, index, tracking);
+        vec<N, T, Q> result;
+        for (glm::length_t i = 0; i < N; ++i)
+        {
+            result[i] = vectable[i + 1];
+        }
+        return result;
+    }
+}
 
 namespace rlogic
 {

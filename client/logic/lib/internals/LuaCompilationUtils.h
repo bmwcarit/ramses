@@ -11,8 +11,6 @@
 #include "impl/LuaConfigImpl.h"
 #include "internals/SolWrapper.h"
 
-#include "ramses-logic/EFeatureLevel.h"
-
 #include <string>
 #include <memory>
 #include <optional>
@@ -75,7 +73,6 @@ namespace rlogic::internal
             sol::bytecode byteCodeFromPrecompiledScript,
             std::unique_ptr<Property> inputsFromPrecompiledScript,
             std::unique_ptr<Property> outputsFromPrecompiledScript,
-            EFeatureLevel featureLevel,
             bool enableDebugLogFunctions);
 
         [[nodiscard]] static std::optional<LuaCompiledInterface> CompileInterface(
@@ -95,7 +92,6 @@ namespace rlogic::internal
             std::string_view name,
             ErrorReporting& errorReporting,
             sol::bytecode byteCodeFromPrecompiledModule,
-            EFeatureLevel featureLevel,
             bool enableDebugLogFunctions);
 
         [[nodiscard]] static bool CheckModuleName(std::string_view name);

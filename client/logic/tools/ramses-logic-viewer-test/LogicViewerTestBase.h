@@ -134,7 +134,7 @@ namespace rlogic::internal
 
     protected:
         WithTempDirectory m_withTempDirectory;
-        LogicViewer viewer{ EFeatureLevel_Latest, doScreenshot };
+        LogicViewer viewer{ ramses::EFeatureLevel_Latest, doScreenshot };
         RamsesTestSetup m_ramses;
         ramses::Scene* m_scene = { m_ramses.createScene() };
         ramses::Node* m_node = { m_scene->createNode() };

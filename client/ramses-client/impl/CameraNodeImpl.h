@@ -19,9 +19,7 @@
 
 namespace ramses
 {
-    class DataVector2i;
-    class DataVector2f;
-    class DataVector4f;
+    class DataObject;
 
     class CameraNodeImpl final : public NodeImpl
     {
@@ -58,11 +56,11 @@ namespace ramses
         float    getVerticalFieldOfView() const;
         float    getAspectRatio() const;
 
-        status_t getProjectionMatrix(float(&projectionMatrix)[16]) const;
+        status_t getProjectionMatrix(matrix44f& projectionMatrix) const;
 
-        status_t bindViewportOffset(const DataVector2i& offsetData);
-        status_t bindViewportSize(const DataVector2i& sizeData);
-        status_t bindFrustumPlanes(const DataVector4f& frustumPlanesData, const DataVector2f& nearFarData);
+        status_t bindViewportOffset(const DataObject& offsetData);
+        status_t bindViewportSize(const DataObject& sizeData);
+        status_t bindFrustumPlanes(const DataObject& frustumPlanesData, const DataObject& nearFarData);
         status_t unbindViewportOffset();
         status_t unbindViewportSize();
         status_t unbindFrustumPlanes();

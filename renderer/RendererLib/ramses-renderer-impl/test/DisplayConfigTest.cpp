@@ -179,7 +179,7 @@ TEST_F(ADisplayConfig, setClearColor)
     const float green = 0.2f;
     const float blue = 0.3f;
     const float alpha = 0.4f;
-    EXPECT_EQ(ramses::StatusOK, config.setClearColor(red, green, blue, alpha));
+    EXPECT_EQ(ramses::StatusOK, config.setClearColor({red, green, blue, alpha}));
 
     const ramses_internal::Vector4& clearColor = config.impl.getInternalDisplayConfig().getClearColor();
     EXPECT_EQ(clearColor.r, red);

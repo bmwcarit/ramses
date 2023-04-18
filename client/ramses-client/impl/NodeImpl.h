@@ -12,15 +12,14 @@
 // internal
 #include "SceneObjectImpl.h"
 #include "ramses-client-api/EVisibilityMode.h"
-#include "ramses-client-api/ERotationConvention.h"
+#include "ramses-client-api/ERotationType.h"
 #include "ramses-framework-api/DataTypes.h"
 
 // ramses framework
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/ERotationType.h"
 #include "Collections/Vector.h"
-#include "glm/gtc/quaternion.hpp"
 
 namespace ramses_internal
 {
@@ -64,20 +63,20 @@ namespace ramses
         NodeImpl*       getParentImpl();
         const NodeImpl* getParentImpl() const;
 
-        status_t        getModelMatrix(float(&modelMatrix)[16]) const;
-        status_t        getInverseModelMatrix(float(&inverseModelMatrix)[16]) const;
+        status_t        getModelMatrix(glm::mat4x4& modelMatrix) const;
+        status_t        getInverseModelMatrix(glm::mat4x4& inverseModelMatrix) const;
 
-        status_t translate(float x, float y, float z);
-        status_t setTranslation(float x, float y, float z);
-        status_t getTranslation(float& x, float& y, float& z) const;
-        status_t setRotation(float x, float y, float z, ERotationConvention rotationConvention);
-        ERotationConvention getRotationConvention() const;
-        status_t getRotation(float& x, float& y, float& z) const;
-        status_t setRotation(const glm::quat& rotation);
-        status_t getRotation(glm::quat& rotation) const;
-        status_t scale(float x, float y, float z);
-        status_t setScaling(float x, float y, float z);
-        status_t getScaling(float& x, float& y, float& z) const;
+        status_t translate(const vec3f& translation);
+        status_t setTranslation(const vec3f& translation);
+        status_t getTranslation(vec3f& translation) const;
+        status_t setRotation(const vec3f& rotation, ERotationType rotationType);
+        ERotationType getRotationType() const;
+        status_t getRotation(vec3f& rotation) const;
+        status_t setRotation(const quat& rotation);
+        status_t getRotation(quat& rotation) const;
+        status_t scale(const vec3f& scaling);
+        status_t setScaling(const vec3f& scaling);
+        status_t getScaling(vec3f& scaling) const;
 
         status_t setVisibility(EVisibilityMode mode);
         EVisibilityMode getVisibility() const;
@@ -95,7 +94,7 @@ namespace ramses
         using NodeVector = std::vector<NodeImpl *>;
 
         void removeChildInternally(NodeVector::iterator childIt);
-        status_t setRotationInternal(ramses_internal::Vector4&& rotation, ramses_internal::ERotationConvention rotationConvention);
+        status_t setRotationInternal(ramses_internal::Vector4&& rotation, ramses_internal::ERotationType rotationType);
 
         ramses_internal::NodeHandle m_nodeHandle;
 

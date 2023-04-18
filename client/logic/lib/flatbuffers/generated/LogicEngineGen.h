@@ -398,7 +398,7 @@ inline const rlogic_serialization::LogicEngine *GetSizePrefixedLogicEngine(const
 }
 
 inline const char *LogicEngineIdentifier() {
-  return "rl01";
+  return "rl28";
 }
 
 inline bool LogicEngineBufferHasIdentifier(const void *buf) {

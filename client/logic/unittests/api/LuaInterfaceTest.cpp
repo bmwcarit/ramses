@@ -46,7 +46,7 @@ namespace rlogic::internal
             end
         )";
 
-        LogicEngine m_logicEngine;
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
     };
 
     TEST_F(ALuaInterface, CanCompileLuaInterface)
@@ -939,7 +939,7 @@ namespace rlogic::internal
 
     TEST_F(ALuaInterfaceWithModule, FailsToBeCreatedWhenUsingModuleFromAnotherLogicInstance)
     {
-        LogicEngine otherLogicEngine;
+        LogicEngine otherLogicEngine{ m_logicEngine.getFeatureLevel() };
         const auto luaModule = otherLogicEngine.createLuaModule(m_moduleSrc1);
         LuaConfig config;
         config.addDependency("mymod", *luaModule);
@@ -959,7 +959,7 @@ namespace rlogic::internal
     {
         WithTempDirectory tempDir;
         {
-            LogicEngine logicEngine{ EFeatureLevel_01 };
+            LogicEngine logicEngine{ m_logicEngine.getFeatureLevel() };
             const auto luaModule = logicEngine.createLuaModule(m_moduleSrc1);
             LuaConfig config;
             config.addDependency("mymod", *luaModule);
@@ -1060,7 +1060,7 @@ namespace rlogic::internal
 
         // Serialize
         {
-            LogicEngine otherEngine;
+            LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
             const LuaScript* inputsScript = otherEngine.createLuaScript(R"LUA_SCRIPT(
                 function interface(IN,OUT)
                     IN.param1 = Type:Int32()

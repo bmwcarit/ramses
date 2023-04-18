@@ -11,7 +11,6 @@
 
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "Utils/Image.h"
 
 #include <optional>

@@ -103,7 +103,7 @@ int main()
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
-    meshNode->setTranslation(0.0f, 0.0f, -5.0f);
+    meshNode->setTranslation({0.0f, 0.0f, -5.0f});
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered

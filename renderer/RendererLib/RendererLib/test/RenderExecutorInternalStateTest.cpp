@@ -183,7 +183,7 @@ namespace ramses_internal
         const RenderGroupHandle renderGroup = m_sceneAllocator.allocateRenderGroup();
         m_scene.addRenderGroupToRenderPass(renderPass, renderGroup, 0);
         m_scene.addRenderableToRenderGroup(renderGroup, renderable, 0);
-        m_scene.setRotation(renderableTransform, Vector4(1, 2, 3, 1), ERotationConvention::Euler_XYZ);
+        m_scene.setRotation(renderableTransform, Vector4(1, 2, 3, 1), ERotationType::Euler_XYZ);
 
         NiceMock<ResourceDeviceHandleAccessorMock> resourceAccessor;
         m_scene.updateRenderablesAndResourceCache(resourceAccessor);

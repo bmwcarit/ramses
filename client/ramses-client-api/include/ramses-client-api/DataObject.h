@@ -10,13 +10,15 @@
 #define RAMSES_DATAOBJECT_H
 
 #include "ramses-client-api/SceneObject.h"
+#include "ramses-framework-api/EDataType.h"
+#include "ramses-framework-api/DataTypes.h"
 
 namespace ramses
 {
     /**
-    * @brief   The DataObject is a base class for data container for storing data in a scene.
-    * @details A concretely typed data object (see derived classes) can be bound to some inputs
-    *          of some object types (e.g. #ramses::Appearance::bindInput or #ramses::Camera::bindViewportOffset).
+    * @brief   The DataObject is a data container for storing data within a scene.
+    * @details The DataObject can be bound to some inputs of some object types
+    *          (e.g. #ramses::Appearance::bindInput or #ramses::Camera::bindViewportOffset).
     *          When a data object is bound to an input the data object value overrides whatever was previously
     *          set to that input using its direct setter.
     *          A single #DataObject can be bound to multiple inputs (also to other #ramses::RamsesObject types
@@ -28,6 +30,35 @@ namespace ramses
     class RAMSES_API DataObject : public SceneObject
     {
     public:
+        /**
+        * @brief Returns the data type this #DataObject holds.
+        *
+        * @return data type held in this #DataObject
+        */
+        [[nodiscard]] EDataType getDataType() const;
+
+        /**
+         * @brief   Sets/updates the stored value.
+         * @details Type of \c value must match #getDataType (see #ramses::GetEDataType).
+         *
+         * @param[in] value new value.
+         * @return status == 0 for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        template <typename T>
+        status_t setValue(T&& value);
+
+        /**
+         * @brief Gets the stored value.
+         * @details Type of \c value must match #getDataType (see #ramses::GetEDataType).
+         *
+         * @param[out] value stored value.
+         * @return status == 0 for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        template <typename T>
+        status_t getValue(T& value) const;
+
         /**
         * Stores internal data for implementation specifics
         */
@@ -50,7 +81,25 @@ namespace ramses
         * @brief Destructor for a DataObject
         */
         ~DataObject() override;
+
+    private:
+        /// Internal implementation of #setValue
+        template <typename T> RAMSES_API status_t setValueInternal(T&& value);
+        /// Internal implementation of #getValue
+        template <typename T> RAMSES_API status_t getValueInternal(T& value) const;
     };
+
+    template <typename T> status_t DataObject::setValue(T&& value)
+    {
+        static_assert(IsUniformInputDataType<T>(), "Unsupported data type!");
+        return setValueInternal(std::forward<T>(value));
+    }
+
+    template <typename T> status_t DataObject::getValue(T& value) const
+    {
+        static_assert(IsUniformInputDataType<T>(), "Unsupported data type!");
+        return getValueInternal<T>(value);
+    }
 }
 
 #endif

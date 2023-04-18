@@ -245,7 +245,7 @@ namespace ramses
                 is >> b;
                 is >> separator;
                 is >> a;
-                config.setClearColor(r, g, b, a);
+                config.setClearColor({r, g, b, a});
                 return !is.fail() && (is.rdbuf()->in_avail() == 0);
             }, "set clear color (rgba)");
     }

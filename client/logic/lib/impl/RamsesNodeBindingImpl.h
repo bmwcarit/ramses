@@ -9,12 +9,10 @@
 #pragma once
 
 #include "impl/RamsesBindingImpl.h"
-#include "ramses-logic/ERotationType.h"
 #include "ramses-logic/EPropertyType.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "internals/SerializationMap.h"
 #include "internals/DeserializationMap.h"
-#include "ramses-client-api/ERotationConvention.h"
+#include "ramses-client-api/ERotationType.h"
 
 #include <memory>
 
@@ -53,7 +51,7 @@ namespace rlogic::internal
     {
     public:
         // Move-able (noexcept); Not copy-able
-        explicit RamsesNodeBindingImpl(ramses::Node& ramsesNode, ERotationType rotationType, std::string_view name, uint64_t id, EFeatureLevel featureLevel);
+        explicit RamsesNodeBindingImpl(ramses::Node& ramsesNode, ramses::ERotationType rotationType, std::string_view name, uint64_t id);
         ~RamsesNodeBindingImpl() noexcept override = default;
         RamsesNodeBindingImpl(const RamsesNodeBindingImpl& other) = delete;
         RamsesNodeBindingImpl& operator=(const RamsesNodeBindingImpl& other) = delete;
@@ -61,29 +59,26 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::RamsesNodeBinding> Serialize(
             const RamsesNodeBindingImpl& nodeBinding,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<RamsesNodeBindingImpl> Deserialize(
             const rlogic_serialization::RamsesNodeBinding& nodeBinding,
             const IRamsesObjectResolver& ramsesResolver,
             ErrorReporting& errorReporting,
-            DeserializationMap& deserializationMap,
-            EFeatureLevel featureLevel);
+            DeserializationMap& deserializationMap);
 
         [[nodiscard]] ramses::Node& getRamsesNode() const;
 
-        [[nodiscard]] ERotationType getRotationType() const;
+        [[nodiscard]] ramses::ERotationType getRotationType() const;
 
         std::optional<LogicNodeRuntimeError> update() override;
 
         void createRootProperties() final;
 
     private:
-        static void ApplyRamsesValuesToInputProperties(RamsesNodeBindingImpl& binding, ramses::Node& ramsesNode, EFeatureLevel featureLevel);
+        static void ApplyRamsesValuesToInputProperties(RamsesNodeBindingImpl& binding, ramses::Node& ramsesNode);
 
         std::reference_wrapper<ramses::Node> m_ramsesNode;
-        ERotationType m_rotationType;
-        EFeatureLevel m_featureLevel;
+        ramses::ERotationType m_rotationType;
     };
 }

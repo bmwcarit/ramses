@@ -11,62 +11,24 @@
 #include "ramses-framework-api/EDataType.h"
 #include <array>
 #include <cassert>
+#include "glm/mat4x4.hpp"
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 namespace ramses
 {
-    /// Data type to hold vector2 float values
-    struct vec2f : std::array<float, 2>
-    {
-        template <typename... Args> explicit vec2f(Args &&... args) : std::array<float, 2>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold vector3 float values
-    struct vec3f : std::array<float, 3>
-    {
-        template <typename... Args> explicit vec3f(Args &&... args) : std::array<float, 3>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold vector4 float values
-    struct vec4f : std::array<float, 4>
-    {
-        template <typename... Args> explicit vec4f(Args &&... args) : std::array<float, 4>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold vector2 integer values
-    struct vec2i : std::array<int32_t, 2>
-    {
-        template <typename... Args> explicit vec2i(Args &&... args) : std::array<int32_t, 2>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold vector3 integer values
-    struct vec3i : std::array<int32_t, 3>
-    {
-        template <typename... Args> explicit vec3i(Args &&... args) : std::array<int32_t, 3>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold vector4 integer values
-    struct vec4i : std::array<int32_t, 4>
-    {
-        template <typename... Args> explicit vec4i(Args &&... args) : std::array<int32_t, 4>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold float matrix 2x2 values. Stored in column-major shape (the first 2 values correspond to the first matrix column)
-    struct matrix22f : std::array<float, 4>
-    {
-        template <typename... Args> explicit matrix22f(Args &&... args) : std::array<float, 4>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold float matrix 3x3 values. Stored in column-major shape (the first 3 values correspond to the first matrix column)
-    struct matrix33f : std::array<float, 9>
-    {
-        template <typename... Args> explicit matrix33f(Args &&... args) : std::array<float, 9>{std::forward<Args>(args)...} {}
-    };
-
-    /// Data type to hold float matrix 4x4 values. Stored in column-major shape (the first 4 values correspond to the first matrix column)
-    struct matrix44f : std::array<float, 16>
-    {
-        template <typename... Args> explicit matrix44f(Args &&... args) : std::array<float, 16>{std::forward<Args>(args)...} {}
-    };
+    using vec2f = glm::vec2;
+    using vec3f = glm::vec3;
+    using vec4f = glm::vec4;
+    using vec2i = glm::ivec2;
+    using vec3i = glm::ivec3;
+    using vec4i = glm::ivec4;
+    using matrix22f = glm::mat2;
+    using matrix33f = glm::mat3;
+    using matrix44f = glm::mat4;
+    using quat = glm::quat;
 
     using Byte = unsigned char;
 
@@ -129,6 +91,42 @@ namespace ramses
         case EDataType::Matrix22F:
         case EDataType::Matrix33F:
         case EDataType::Matrix44F:
+        case EDataType::TextureSampler2D:
+        case EDataType::TextureSampler2DMS:
+        case EDataType::TextureSampler3D:
+        case EDataType::TextureSamplerCube:
+        case EDataType::TextureSamplerExternal:
+            return false;
+        }
+
+        assert(false);
+        return false;
+    }
+
+    /**
+    * @brief Query of data type compatibility with #ramses::DataObject.
+    * @param[in] dataType Data type to check if compatible
+    * @return true if given #ramses::EDataType can be used with #ramses::DataObject
+    */
+    constexpr bool IsDataObjectDataType(EDataType dataType)
+    {
+        switch (dataType)
+        {
+        case EDataType::Int32:
+        case EDataType::Float:
+        case EDataType::Vector2F:
+        case EDataType::Vector3F:
+        case EDataType::Vector4F:
+        case EDataType::Vector2I:
+        case EDataType::Vector3I:
+        case EDataType::Vector4I:
+        case EDataType::Matrix22F:
+        case EDataType::Matrix33F:
+        case EDataType::Matrix44F:
+            return true;
+        case EDataType::UInt16:
+        case EDataType::UInt32:
+        case EDataType::ByteBlob:
         case EDataType::TextureSampler2D:
         case EDataType::TextureSampler2DMS:
         case EDataType::TextureSampler3D:

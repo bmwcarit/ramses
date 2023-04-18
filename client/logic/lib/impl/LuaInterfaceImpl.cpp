@@ -24,8 +24,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::LuaInterface> LuaInterfaceImpl::Serialize(
         const LuaInterfaceImpl& luaInterface,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& serializationMap,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& serializationMap)
     {
         const auto logicObject = LogicObjectImpl::Serialize(luaInterface, builder);
         const auto propertyObject = PropertyImpl::Serialize(*luaInterface.getInputs()->m_impl, builder, serializationMap);

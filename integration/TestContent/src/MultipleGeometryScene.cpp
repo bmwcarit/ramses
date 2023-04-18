@@ -45,7 +45,7 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode[i]);
 
             ramses::Node* trafoNode = m_scene.createNode("transformation node");
-            trafoNode->setTranslation(translation[i * 3 + 0], translation[i * 3 + 1], translation[i * 3 + 2]);
+            trafoNode->setTranslation({translation[i * 3 + 0], translation[i * 3 + 1], translation[i * 3 + 2]});
 
             m_meshNode[i]->setParent(*trafoNode);
             m_meshNode[i]->setAppearance(*appearance);

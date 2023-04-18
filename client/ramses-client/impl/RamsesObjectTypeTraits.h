@@ -90,24 +90,13 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerMS, ERamsesObjectType_TextureSamplerMS, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RenderBuffer, ERamsesObjectType_RenderBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RenderTarget, ERamsesObjectType_RenderTarget, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataFloat, ERamsesObjectType_DataFloat, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector2f, ERamsesObjectType_DataVector2f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector3f, ERamsesObjectType_DataVector3f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector4f, ERamsesObjectType_DataVector4f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataMatrix22f, ERamsesObjectType_DataMatrix22f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataMatrix33f, ERamsesObjectType_DataMatrix33f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataMatrix44f, ERamsesObjectType_DataMatrix44f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataInt32, ERamsesObjectType_DataInt32, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector2i, ERamsesObjectType_DataVector2i, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector3i, ERamsesObjectType_DataVector3i, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector4i, ERamsesObjectType_DataVector4i, ERamsesObjectType_DataObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RamsesObject, ERamsesObjectType_RamsesObject, ERamsesObjectType_Invalid, false);
     DEFINE_RAMSES_OBJECT_TRAITS(ClientObject, ERamsesObjectType_ClientObject, ERamsesObjectType_RamsesObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(SceneObject, ERamsesObjectType_SceneObject, ERamsesObjectType_ClientObject, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Node, ERamsesObjectType_Node, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Camera, ERamsesObjectType_Camera, ERamsesObjectType_Node, false);
     DEFINE_RAMSES_OBJECT_TRAITS(Resource, ERamsesObjectType_Resource, ERamsesObjectType_SceneObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataObject, ERamsesObjectType_DataObject, ERamsesObjectType_SceneObject, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(DataObject, ERamsesObjectType_DataObject, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(ArrayBuffer, ERamsesObjectType_ArrayBufferObject, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Texture2DBuffer, ERamsesObjectType_Texture2DBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(SceneReference, ERamsesObjectType_SceneReference, ERamsesObjectType_SceneObject, true);
@@ -163,17 +152,6 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_ArrayBufferObject)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture2DBuffer)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataFloat)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector2f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector3f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataMatrix22f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataMatrix33f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataMatrix44f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataInt32)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector2i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector3i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4i)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneReference)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerExternal)
     DEFINE_RAMSES_OBJECT_TRAITS_LIST_END()

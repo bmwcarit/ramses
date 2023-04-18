@@ -31,19 +31,14 @@
 
 namespace rlogic
 {
-    LogicEngine::LogicEngine() noexcept
-        : m_impl(std::make_unique<internal::LogicEngineImpl>(EFeatureLevel::EFeatureLevel_01))
-    {
-    }
-
-    LogicEngine::LogicEngine(EFeatureLevel featureLevel) noexcept
+    LogicEngine::LogicEngine(ramses::EFeatureLevel featureLevel) noexcept
         : m_impl(std::make_unique<internal::LogicEngineImpl>(featureLevel))
     {
     }
 
     LogicEngine::~LogicEngine() noexcept = default;
 
-    EFeatureLevel LogicEngine::getFeatureLevel() const
+    ramses::EFeatureLevel LogicEngine::getFeatureLevel() const
     {
         return m_impl->getFeatureLevel();
     }
@@ -56,12 +51,6 @@ namespace rlogic
     Collection<T> LogicEngine::getLogicObjectsInternal() const
     {
         return Collection<T>(m_impl->getApiObjects().getApiObjectContainer<T>());
-    }
-
-    template<typename T>
-    size_t LogicEngine::getSerializedSizeInternal() const
-    {
-        return m_impl->getSerializedSize<T>();
     }
 
     template <typename T>
@@ -130,7 +119,7 @@ namespace rlogic
         return m_impl->extractLuaDependencies(source, callbackFunc);
     }
 
-    RamsesNodeBinding* LogicEngine::createRamsesNodeBinding(ramses::Node& ramsesNode, ERotationType rotationType /* = ERotationType::Euler_XYZ*/, std::string_view name)
+    RamsesNodeBinding* LogicEngine::createRamsesNodeBinding(ramses::Node& ramsesNode, ramses::ERotationType rotationType /* = ramses::ERotationType::Euler_XYZ*/, std::string_view name)
     {
         return m_impl->createRamsesNodeBinding(ramsesNode, rotationType, name);
     }
@@ -252,12 +241,12 @@ namespace rlogic
         return m_impl->loadFromBuffer(rawBuffer, bufferSize, ramsesScene, enableMemoryVerification);
     }
 
-    bool LogicEngine::GetFeatureLevelFromFile(std::string_view filename, EFeatureLevel& detectedFeatureLevel)
+    bool LogicEngine::GetFeatureLevelFromFile(std::string_view filename, ramses::EFeatureLevel& detectedFeatureLevel)
     {
         return internal::LogicEngineImpl::GetFeatureLevelFromFile(filename, detectedFeatureLevel);
     }
 
-    bool LogicEngine::GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, EFeatureLevel& detectedFeatureLevel)
+    bool LogicEngine::GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, ramses::EFeatureLevel& detectedFeatureLevel)
     {
         return internal::LogicEngineImpl::GetFeatureLevelFromBuffer(logname, buffer, bufferSize, detectedFeatureLevel);
     }
@@ -287,9 +276,15 @@ namespace rlogic
         return m_impl->isLinked(logicNode);
     }
 
-    size_t LogicEngine::getTotalSerializedSize() const
+    size_t LogicEngine::getTotalSerializedSize(ELuaSavingMode luaSavingMode) const
     {
-        return m_impl->getTotalSerializedSize();
+        return m_impl->getTotalSerializedSize(luaSavingMode);
+    }
+
+    template<typename T>
+    size_t LogicEngine::getSerializedSizeInternal(ELuaSavingMode luaSavingMode) const
+    {
+        return m_impl->getSerializedSize<T>(luaSavingMode);
     }
 
     const std::vector<PropertyLink>& LogicEngine::getPropertyLinks() const
@@ -355,19 +350,19 @@ namespace rlogic
     template RAMSES_API DataArray* LogicEngine::createDataArrayInternal<vec4i>(const std::vector<vec4i>&, std::string_view);
     template RAMSES_API DataArray* LogicEngine::createDataArrayInternal<std::vector<float>>(const std::vector<std::vector<float>>&, std::string_view);
 
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LogicObject>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LuaScript>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LuaModule>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LuaInterface>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesNodeBinding>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesAppearanceBinding>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesCameraBinding>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesRenderPassBinding>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesRenderGroupBinding>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesMeshNodeBinding>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<SkinBinding>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<DataArray>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<AnimationNode>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<TimerNode>() const;
-    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<AnchorPoint>() const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LogicObject>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LuaScript>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LuaModule>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<LuaInterface>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesNodeBinding>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesAppearanceBinding>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesCameraBinding>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesRenderPassBinding>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesRenderGroupBinding>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RamsesMeshNodeBinding>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<SkinBinding>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<DataArray>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<AnimationNode>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<TimerNode>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<AnchorPoint>(ELuaSavingMode) const;
 }

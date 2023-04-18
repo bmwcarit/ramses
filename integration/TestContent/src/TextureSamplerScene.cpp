@@ -90,7 +90,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -4.f);
+        transNode->setTranslation({0.f, 0.f, -4.f});
         meshNode->setParent(*transNode);
 
         addMeshNodeToDefaultRenderGroup(*meshNode);
@@ -130,7 +130,7 @@ namespace ramses_internal
             rtDesc.addRenderBuffer(*buffer);
             const auto rt = m_scene.createRenderTarget(rtDesc);
             auto rp = m_scene.createRenderPass();
-            rp->setClearColor(0.f, 0.f, 1.f, 1.f);
+            rp->setClearColor({0.f, 0.f, 1.f, 1.f});
             rp->setClearFlags(ramses::EClearFlags_All);
             rp->setRenderOrder(-1);
             auto camera = m_scene.createOrthographicCamera();

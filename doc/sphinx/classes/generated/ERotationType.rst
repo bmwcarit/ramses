@@ -14,5 +14,5 @@
 ERotationType
 ==========================================
 
-.. doxygenenum:: rlogic::ERotationType
+.. doxygenenum:: ramses::ERotationType
 

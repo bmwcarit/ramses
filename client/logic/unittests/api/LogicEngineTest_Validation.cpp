@@ -17,18 +17,12 @@
 
 #include "LogTestUtils.h"
 #include "WithTempDirectory.h"
-#include "FeatureLevelTestValues.h"
 #include "RamsesTestUtils.h"
 
 namespace rlogic
 {
     class ALogicEngine_Validation : public ALogicEngine
     {
-    protected:
-        explicit ALogicEngine_Validation(EFeatureLevel featureLevel = EFeatureLevel_01)
-            : ALogicEngine{ featureLevel }
-        {
-        }
     };
 
     TEST_F(ALogicEngine_Validation, LogsNoWarningsWhenSavingFile_WhenContentValid)
@@ -61,7 +55,7 @@ namespace rlogic
 
         WithTempDirectory tmpDir;
         // Cause some validation issues on purpose
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         nodeBinding.getInputs()->getChild("scaling")->set<vec3f>({1.5f, 1.f, 1.f});
 
         m_logicEngine.saveToFile("noWarnings.rlogic");
@@ -99,7 +93,7 @@ namespace rlogic
 
         WithTempDirectory tmpDir;
         // Cause some validation issues on purpose
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         nodeBinding.getInputs()->getChild("scaling")->set<vec3f>({ 1.5f, 1.f, 1.f });
 
         SaveFileConfig conf;
@@ -117,7 +111,7 @@ namespace rlogic
     TEST_F(ALogicEngine_Validation, ProducesWarningIfBindingValuesHaveDirtyValue)
     {
         // Create a binding in a "dirty" state - has a non-default value, but update() wasn't called and didn't pass the value to ramses
-        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "binding");
+        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
 
         const auto* intf = m_logicEngine.createLuaInterface(m_interfaceSourceCode, "intf");
         m_logicEngine.link(*intf->getOutputs()->getChild("param_vec3f"), *nodeBinding->getInputs()->getChild("scaling"));
@@ -152,11 +146,10 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    class ALogicEngine_ValidatingDanglingNodes : public ALogicEngineBase, public ::testing::TestWithParam<EFeatureLevel>
+    class ALogicEngine_ValidatingDanglingNodes : public ALogicEngine
     {
     protected:
-        explicit ALogicEngine_ValidatingDanglingNodes()
-            : ALogicEngineBase(GetParam())
+        ALogicEngine_ValidatingDanglingNodes()
         {
             createValidTestSetup();
         }
@@ -206,14 +199,9 @@ namespace rlogic
         LuaScript* m_testScript = nullptr;
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALogicEngine_ValidatingDanglingNodesTests,
-        ALogicEngine_ValidatingDanglingNodes,
-        rlogic::internal::GetFeatureLevelTestValues());
-
     // -- scripts -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoLinks)
     {
         auto* script = m_logicEngine.createLuaScript(m_scriptSrc, {}, "scr");
         ASSERT_NE(nullptr, script);
@@ -225,7 +213,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoIngoingLinks)
     {
         auto* script = m_logicEngine.createLuaScript(m_scriptSrc, {}, "scr");
         ASSERT_NE(nullptr, script);
@@ -238,7 +226,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoOutgoingLinks)
     {
         auto* script = m_logicEngine.createLuaScript(m_scriptSrc, {}, "scr");
         ASSERT_NE(nullptr, script);
@@ -251,7 +239,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfScriptHasIngoingAndOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfScriptHasIngoingAndOutgoingLinks)
     {
         auto* script = m_logicEngine.createLuaScript(m_scriptSrc, {}, "scr");
         ASSERT_NE(nullptr, script);
@@ -265,7 +253,7 @@ namespace rlogic
 
     // -- interfaces -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfInterfaceHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfInterfaceHasNoIngoingLinks)
     {
         LuaInterface* intf = m_logicEngine.createLuaInterface(R"(
             function interface(INOUT)
@@ -282,9 +270,9 @@ namespace rlogic
 
     // -- node bindings -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfNodeBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfNodeBindingHasNoIngoingLinks)
     {
-        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "binding");
+        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
         ASSERT_NE(nullptr, nodeBind);
 
         auto warnings = m_logicEngine.validate();
@@ -293,9 +281,9 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfNodeBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfNodeBindingHasIngoingLinks)
     {
-        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "binding");
+        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
         ASSERT_NE(nullptr, nodeBind);
 
         linkNodeInput(*nodeBind, "scaling", "paramVec3f");
@@ -307,7 +295,7 @@ namespace rlogic
 
     // -- appearance bindings -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAppearanceBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAppearanceBindingHasNoIngoingLinks)
     {
         auto* appearanceBind = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "binding");
         ASSERT_NE(nullptr, appearanceBind);
@@ -318,7 +306,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAppearanceBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAppearanceBindingHasIngoingLinks)
     {
         auto* appearanceBind = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "binding");
         ASSERT_NE(nullptr, appearanceBind);
@@ -332,7 +320,7 @@ namespace rlogic
 
     // -- camera bindings -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfCameraBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfCameraBindingHasNoIngoingLinks)
     {
         auto* cameraBind = m_logicEngine.createRamsesCameraBinding(*m_camera, "binding");
         ASSERT_NE(nullptr, cameraBind);
@@ -343,7 +331,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfCameraBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfCameraBindingHasIngoingLinks)
     {
         auto* cameraBind = m_logicEngine.createRamsesCameraBinding(*m_camera, "binding");
         ASSERT_NE(nullptr, cameraBind);
@@ -357,11 +345,8 @@ namespace rlogic
 
     // -- render pass bindings -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderPassBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderPassBindingHasNoIngoingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_02)
-            GTEST_SKIP();
-
         auto* passBind = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "binding");
         ASSERT_NE(nullptr, passBind);
 
@@ -371,11 +356,8 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderPassBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderPassBindingHasIngoingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_02)
-            GTEST_SKIP();
-
         auto* passBind = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "binding");
         ASSERT_NE(nullptr, passBind);
 
@@ -388,11 +370,8 @@ namespace rlogic
 
     // -- render group bindings -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderGroupBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderGroupBindingHasNoIngoingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_03)
-            GTEST_SKIP();
-
         RamsesRenderGroupBindingElements elements;
         elements.addElement(*m_meshNode, "mesh");
         auto* binding = m_logicEngine.createRamsesRenderGroupBinding(*m_renderGroup, elements, "binding");
@@ -404,11 +383,8 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderGroupBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderGroupBindingHasIngoingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_03)
-            GTEST_SKIP();
-
         RamsesRenderGroupBindingElements elements;
         elements.addElement(*m_meshNode, "mesh");
         auto* binding = m_logicEngine.createRamsesRenderGroupBinding(*m_renderGroup, elements, "binding");
@@ -423,11 +399,8 @@ namespace rlogic
 
     // -- mesh node bindings -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfMeshNodeBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfMeshNodeBindingHasNoIngoingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_05)
-            GTEST_SKIP();
-
         m_logicEngine.createRamsesMeshNodeBinding(*m_meshNode, "binding");
 
         auto warnings = m_logicEngine.validate();
@@ -436,11 +409,8 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfMeshNodeBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfMeshNodeBindingHasIngoingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_05)
-            GTEST_SKIP();
-
         const auto binding = m_logicEngine.createRamsesMeshNodeBinding(*m_meshNode, "binding");
         ASSERT_NE(nullptr, binding);
 
@@ -452,7 +422,7 @@ namespace rlogic
 
     // -- animations -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoLinks)
     {
         const auto* m_dataFloat = m_logicEngine.createDataArray(std::vector<float>{ 1.f, 2.f, 3.f });
         const auto* m_dataVec2 = m_logicEngine.createDataArray(std::vector<vec2f>{ { 1.f, 2.f }, { 3.f, 4.f }, { 5.f, 6.f } });
@@ -469,7 +439,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoOutgoingLinks)
     {
         const auto* m_dataFloat = m_logicEngine.createDataArray(std::vector<float>{ 1.f, 2.f, 3.f });
         const auto* m_dataVec2 = m_logicEngine.createDataArray(std::vector<vec2f>{ { 1.f, 2.f }, { 3.f, 4.f }, { 5.f, 6.f } });
@@ -487,7 +457,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoIngoingLinks)
     {
         const auto* m_dataFloat = m_logicEngine.createDataArray(std::vector<float>{ 1.f, 2.f, 3.f });
         const auto* m_dataVec2 = m_logicEngine.createDataArray(std::vector<vec2f>{ { 1.f, 2.f }, { 3.f, 4.f }, { 5.f, 6.f } });
@@ -505,7 +475,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnimationHasIngoingAndOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnimationHasIngoingAndOutgoingLinks)
     {
         const auto* m_dataFloat = m_logicEngine.createDataArray(std::vector<float>{ 1.f, 2.f, 3.f });
         const auto* m_dataVec2 = m_logicEngine.createDataArray(std::vector<vec2f>{ { 1.f, 2.f }, { 3.f, 4.f }, { 5.f, 6.f } });
@@ -524,7 +494,7 @@ namespace rlogic
 
     // -- timers -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfTimerHasNoOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfTimerHasNoOutgoingLinks)
     {
         auto* timer = m_logicEngine.createTimerNode("timer");
         ASSERT_NE(nullptr, timer);
@@ -535,7 +505,7 @@ namespace rlogic
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&WarningData::type, ::testing::Eq(EWarningType::UnusedContent))));
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfTimerHasOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfTimerHasOutgoingLinks)
     {
         auto* timer = m_logicEngine.createTimerNode("timer");
         ASSERT_NE(nullptr, timer);
@@ -548,12 +518,9 @@ namespace rlogic
 
     // -- anchor points -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnchorPointHasNoOutgoingLinksAndItsBindingsNoIncomingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnchorPointHasNoOutgoingLinksAndItsBindingsNoIncomingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_02)
-            GTEST_SKIP();
-
-        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodeBinding");
+        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodeBinding");
         auto* cameraBind = m_logicEngine.createRamsesCameraBinding(*m_camera, "cameraBinding");
         auto* anchor = m_logicEngine.createAnchorPoint(*nodeBind, *cameraBind, "anchorBinding");
         ASSERT_NE(nullptr, anchor);
@@ -562,12 +529,9 @@ namespace rlogic
         EXPECT_TRUE(m_logicEngine.validate().empty());
     }
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnchorPointHasOutgoingLink)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnchorPointHasOutgoingLink)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_02)
-            GTEST_SKIP();
-
-        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodeBinding");
+        auto* nodeBind = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodeBinding");
         auto* cameraBind = m_logicEngine.createRamsesCameraBinding(*m_camera, "cameraBinding");
         auto* anchor = m_logicEngine.createAnchorPoint(*nodeBind, *cameraBind, "anchorBinding");
         ASSERT_NE(nullptr, anchor);
@@ -580,11 +544,8 @@ namespace rlogic
 
     // -- skin bindings -- //
 
-    TEST_P(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningWhenCheckingSkinBindingAndItsBindingsHaveNoIncomingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningWhenCheckingSkinBindingAndItsBindingsHaveNoIncomingLinks)
     {
-        if (m_logicEngine.getFeatureLevel() < EFeatureLevel_04)
-            GTEST_SKIP();
-
         const auto skin = createSkinBinding(m_logicEngine);
         ASSERT_NE(nullptr, skin);
 

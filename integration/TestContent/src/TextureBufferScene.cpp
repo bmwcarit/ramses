@@ -87,7 +87,7 @@ namespace ramses_internal
     void TextureBufferScene::setOrthoCamera(const Vector3& cameraPosition)
     {
         ramses::Node* cameraTranslate = m_scene.createNode();
-        cameraTranslate->setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        cameraTranslate->setTranslation({cameraPosition.x, cameraPosition.y, cameraPosition.z});
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
         orthoCamera->setFrustum(0.0f, 1.0f, 0.0f, 1.0f, 0.1f, 100.f);
         orthoCamera->setViewport(0, 0, getDefaultCamera().getViewportWidth(), getDefaultCamera().getViewportHeight());
@@ -226,7 +226,7 @@ namespace ramses_internal
         if (EState_RGBA8_OneMip_ScaledDown == state)
         {
             ramses::Node* scale = m_scene.createNode();
-            scale->setScaling(0.2f, 0.2f, 0.2f);
+            scale->setScaling({0.2f, 0.2f, 0.2f});
             m_quadMesh.setParent(*scale);
         }
 

@@ -28,6 +28,7 @@
 #include "ramses-logic/SkinBinding.h"
 #include "internals/StdFilesystemWrapper.h"
 #include "fmt/format.h"
+#include "glm/gtc/type_ptr.hpp"
 
 #ifndef _MSC_VER
 #pragma GCC diagnostic push
@@ -59,23 +60,35 @@ namespace rlogic
 {
     namespace
     {
-        const char* EnumToString(ERotationType t)
+        const char* EnumToString(ramses::ERotationType t)
         {
             switch (t)
             {
-            case ERotationType::Euler_ZYX:
-                return "Euler_ZYX";
-            case ERotationType::Euler_YZX:
-                return "Euler_YZX";
-            case ERotationType::Euler_ZXY:
-                return "Euler_ZXY";
-            case ERotationType::Euler_XZY:
-                return "Euler_XZY";
-            case ERotationType::Euler_YXZ:
-                return "Euler_YXZ";
-            case ERotationType::Euler_XYZ:
+            case ramses::ERotationType::Euler_XYZ:
                 return "Euler_XYZ";
-            case ERotationType::Quaternion:
+            case ramses::ERotationType::Euler_XZY:
+                return "Euler_XZY";
+            case ramses::ERotationType::Euler_YXZ:
+                return "Euler_YXZ";
+            case ramses::ERotationType::Euler_YZX:
+                return "Euler_YZX";
+            case ramses::ERotationType::Euler_ZXY:
+                return "Euler_ZXY";
+            case ramses::ERotationType::Euler_ZYX:
+                return "Euler_ZYX";
+            case ramses::ERotationType::Euler_XYX:
+                return "Euler_XYX";
+            case ramses::ERotationType::Euler_XZX:
+                return "Euler_XZX";
+            case ramses::ERotationType::Euler_YXY:
+                return "Euler_YXY";
+            case ramses::ERotationType::Euler_YZY:
+                return "Euler_YZY";
+            case ramses::ERotationType::Euler_ZXZ:
+                return "Euler_ZXZ";
+            case ramses::ERotationType::Euler_ZYZ:
+                return "Euler_ZYZ";
+            case ramses::ERotationType::Quaternion:
                 return "Quaternion";
             }
             return "";
@@ -942,7 +955,7 @@ namespace rlogic
         {
             if (ImGui::DragFloat4("Clear color", m_clearColor.data(), 0.1f, 0.f, 1.f))
             {
-                m_renderer->setDisplayBufferClearColor(m_displayId, m_displayBufferId, m_clearColor[0], m_clearColor[1], m_clearColor[2], m_clearColor[3]);
+                m_renderer->setDisplayBufferClearColor(m_displayId, m_displayBufferId, {m_clearColor[0], m_clearColor[1], m_clearColor[2], m_clearColor[3]});
                 m_renderer->flush();
             }
 
@@ -1115,7 +1128,7 @@ namespace rlogic
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {})", name, value[0], value[1]).c_str());
             }
-            else if (ImGui::DragFloat2(name, value.data(), 0.1f))
+            else if (ImGui::DragFloat2(name, glm::value_ptr(value), 0.1f))
             {
                 prop->set(value);
             }
@@ -1127,7 +1140,7 @@ namespace rlogic
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {})", name, value[0], value[1], value[2]).c_str());
             }
-            else if (ImGui::DragFloat3(name, value.data(), 0.1f))
+            else if (ImGui::DragFloat3(name, glm::value_ptr(value), 0.1f))
             {
                 prop->set(value);
             }
@@ -1139,7 +1152,7 @@ namespace rlogic
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {}, {})", name, value[0], value[1], value[2], value[3]).c_str());
             }
-            else if (ImGui::DragFloat4(name, value.data(), 0.1f))
+            else if (ImGui::DragFloat4(name, glm::value_ptr(value), 0.1f))
             {
                 prop->set(value);
             }
@@ -1151,7 +1164,7 @@ namespace rlogic
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {})", name, value[0], value[1]).c_str());
             }
-            else if (ImGui::DragInt2(name, value.data(), 0.1f))
+            else if (ImGui::DragInt2(name, glm::value_ptr(value), 0.1f))
             {
                 prop->set(value);
             }
@@ -1163,7 +1176,7 @@ namespace rlogic
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {})", name, value[0], value[1], value[2]).c_str());
             }
-            else if (ImGui::DragInt3(name, value.data(), 0.1f))
+            else if (ImGui::DragInt3(name, glm::value_ptr(value), 0.1f))
             {
                 prop->set(value);
             }
@@ -1175,7 +1188,7 @@ namespace rlogic
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {}, {})", name, value[0], value[1], value[2], value[3]).c_str());
             }
-            else if (ImGui::DragInt4(name, value.data(), 0.1f))
+            else if (ImGui::DragInt4(name, glm::value_ptr(value), 0.1f))
             {
                 prop->set(value);
             }

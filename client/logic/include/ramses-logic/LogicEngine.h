@@ -9,11 +9,10 @@
 #pragma once
 
 #include "ramses-framework-api/APIExport.h"
+#include "ramses-client-api/ERotationType.h"
 #include "ramses-logic/AnimationTypes.h"
 #include "ramses-logic/Collection.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "ramses-logic/EPropertyType.h"
-#include "ramses-logic/ERotationType.h"
 #include "ramses-logic/ErrorData.h"
 #include "ramses-logic/LogicEngineReport.h"
 #include "ramses-logic/LuaConfig.h"
@@ -21,6 +20,7 @@
 #include "ramses-logic/WarningData.h"
 #include "ramses-logic/PropertyLink.h"
 #include "ramses-logic/DataTypes.h"
+#include "ramses-framework-api/EFeatureLevel.h"
 
 #include <vector>
 #include <string_view>
@@ -77,23 +77,15 @@ namespace rlogic
     {
     public:
         /**
-        * Constructor of #LogicEngine.
-        * When using this constructor, the #LogicEngine feature level will be set to the base (#rlogic::EFeatureLevel_01),
-        * therefore do not use this constructor if there are other feature levels (see #rlogic::EFeatureLevel)
-        * that should be accessible, see additional constructor #LogicEngine(EFeatureLevel) for details.
-        */
-        RAMSES_API LogicEngine() noexcept;
-
-        /**
         * Constructor of #LogicEngine with a feature level specified.
-        * See #rlogic::EFeatureLevel for more details what features are available.
+        * See #ramses::EFeatureLevel for more details what features are available.
         *
         * @param featureLevel Feature level to activate in this #LogicEngine instance. A feature level always includes
         *                     a previous feature level if any, e.g. a feature level released after base level will contain
         *                     all features from base level, however base level will include only base level features
-        *                     and none from a newer feature level.
+        *                     and none from a newer feature level. Use #ramses::EFeatureLevel_Latest to get all available features.
         */
-        RAMSES_API explicit LogicEngine(EFeatureLevel featureLevel) noexcept;
+        RAMSES_API explicit LogicEngine(ramses::EFeatureLevel featureLevel) noexcept;
 
         /**
         * Destructor of #LogicEngine
@@ -102,11 +94,11 @@ namespace rlogic
 
         /**
         * Returns the feature level this #LogicEngine instance was configured to use when created.
-        * See #LogicEngine(EFeatureLevel) and #rlogic::EFeatureLevel for more details.
+        * See #LogicEngine(ramses::EFeatureLevel) and #ramses::EFeatureLevel for more details.
         *
         * @return feature level this #LogicEngine instance was configured to use
         */
-        [[nodiscard]] RAMSES_API EFeatureLevel getFeatureLevel() const;
+        [[nodiscard]] RAMSES_API ramses::EFeatureLevel getFeatureLevel() const;
 
         /**
         * Returns an iterable #rlogic::Collection of all instances of \c T created by this #LogicEngine.
@@ -273,7 +265,7 @@ namespace rlogic
         /**
          * Creates a new #rlogic::RamsesNodeBinding which can be used to set the properties of a Ramses Node object.
          * The initial values of the binding's properties are loaded from the \p ramsesNode. Rotation values are
-         * taken over from the \p ramsesNode only if the conventions are compatible (see \ref rlogic::ERotationType).
+         * taken over from the \p ramsesNode only if the conventions are compatible (see \ref ramses::ERotationType).
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
@@ -284,7 +276,7 @@ namespace rlogic
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
          */
-        RAMSES_API RamsesNodeBinding* createRamsesNodeBinding(ramses::Node& ramsesNode, ERotationType rotationType = ERotationType::Euler_XYZ, std::string_view name = "");
+        RAMSES_API RamsesNodeBinding* createRamsesNodeBinding(ramses::Node& ramsesNode, ramses::ERotationType rotationType = ramses::ERotationType::Euler_XYZ, std::string_view name = "");
 
         /**
          * Creates a new #rlogic::RamsesAppearanceBinding which can be used to set the properties of a Ramses Appearance object.
@@ -317,8 +309,6 @@ namespace rlogic
          * for each frustum plane also for perspective camera. See #rlogic::RamsesCameraBinding for details.
          * Note that ramses::OrthographicCamera binding will always have frustum planes as properties whether #createRamsesCameraBinding
          * or #createRamsesCameraBindingWithFrustumPlanes is used to create it.
-         * #rlogic::RamsesCameraBinding with frustum planes can only be created with #rlogic::EFeatureLevel_02 or higher enabled,
-         * see #LogicEngine(EFeatureLevel).
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
@@ -332,7 +322,6 @@ namespace rlogic
 
         /**
          * Creates a new #rlogic::RamsesRenderPassBinding which can be used to set the properties of a ramses::RenderPass object.
-         * #rlogic::RamsesRenderPassBinding can only be created with #rlogic::EFeatureLevel_02 or higher enabled, see #LogicEngine(EFeatureLevel).
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
@@ -346,7 +335,6 @@ namespace rlogic
 
         /**
          * Creates a new #rlogic::RamsesRenderGroupBinding which can be used to control some properties of a ramses::RenderGroup object.
-         * #rlogic::RamsesRenderGroupBinding can only be created with #rlogic::EFeatureLevel_03 or higher enabled, see #LogicEngine(EFeatureLevel).
          * #rlogic::RamsesRenderGroupBinding can be used to control render order of elements it contains on Ramses side - ramses::MeshNode or ramses::RenderGroup,
          * the elements to control must be provided explicitly at creation time, see #rlogic::RamsesRenderGroupBindingElements and #rlogic::RamsesRenderGroupBinding
          * to learn how these elements form the binding's input properties.
@@ -364,7 +352,6 @@ namespace rlogic
 
         /**
          * Creates a new #rlogic::RamsesMeshNodeBinding which can be used to control some properties of a ramses::MeshNode object.
-         * #rlogic::RamsesMeshNodeBinding can only be created with #rlogic::EFeatureLevel_04 or higher enabled, see #LogicEngine(EFeatureLevel).
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
@@ -378,7 +365,6 @@ namespace rlogic
 
         /**
          * Creates a new #rlogic::SkinBinding which can be used for vertex skinning (bone animations).
-         * #rlogic::SkinBinding can only be created with #rlogic::EFeatureLevel_04 or higher enabled, see #LogicEngine(EFeatureLevel).
          * Refer to #rlogic::SkinBinding and examples for all the information needed how to use this object.
          *
          * These conditions must be met in order for the creation to succeed:
@@ -454,7 +440,6 @@ namespace rlogic
         /**
         * Creates a new #rlogic::AnchorPoint that can be used to calculate projected coordinates of given ramses::Node when viewed using given ramses::Camera.
         * See #rlogic::AnchorPoint for more details and usage of this special purpose logic node.
-        * #rlogic::AnchorPoint can only be created with #rlogic::EFeatureLevel_02 or higher enabled, see #LogicEngine(EFeatureLevel).
         *
         * Attention! This method clears all previous errors! See also docs of #getErrors()
         *
@@ -771,21 +756,25 @@ namespace rlogic
 
         /**
         * Calculates the serialized size of all objects contained in this LogicEngine instance.
-        * Note that size of scripts and modules will be estimated as if using the default #rlogic::ELuaSavingMode::ByteCodeOnly in #rlogic::SaveFileConfig::setLuaSavingMode.
+        * Note that the returned size will differ from actual size when saved to a file but the difference should be no more than several bytes
+        * (file header, meta information, etc.).
+        * @param luaSavingMode calculate with Lua code saved as source string, binary or both, see #rlogic::SaveFileConfig::setLuaSavingMode),
+        *                      default is #rlogic::ELuaSavingMode::SourceAndByteCode.
         * @return size in bytes of the serialized LogicEngine.
         */
-        [[nodiscard]] RAMSES_API size_t getTotalSerializedSize() const;
+        [[nodiscard]] RAMSES_API size_t getTotalSerializedSize(ELuaSavingMode luaSavingMode = ELuaSavingMode::SourceAndByteCode) const;
 
         /**
-        * Calculates the serialized size of a specific type of objects contained in this LogicEngine instance.
+        * Calculates the serialized size of all objects of a specific type in this LogicEngine instance.
         * \c T must be a concrete logic object type (e.g. #rlogic::LuaScript). For the logic type LogicObject the size of all logic objects will be returned.
-        * Note that size of scripts or modules will be estimated as if using the default #rlogic::ELuaSavingMode::ByteCodeOnly in #rlogic::SaveFileConfig::setLuaSavingMode.
         *
-        * @tparam T Logic object type
+        * @tparam T Logic object type to calculate size for
+        * @param luaSavingMode calculate with Lua code saved as source string, binary or both, see #rlogic::SaveFileConfig::setLuaSavingMode),
+        *                      default is #rlogic::ELuaSavingMode::SourceAndByteCode (relevant only for object types containing Lua code).
         * @return size in bytes of the serialized objects.
         */
         template<typename T>
-        [[nodiscard]] size_t getSerializedSize() const;
+        [[nodiscard]] size_t getSerializedSize(ELuaSavingMode luaSavingMode = ELuaSavingMode::SourceAndByteCode) const;
 
         /**
         * Attempts to parse feature level from a Ramses Logic file.
@@ -794,7 +783,7 @@ namespace rlogic
         * @param[out] detectedFeatureLevel feature level detected in given file (valid only if parsing successful!)
         * @return true if parsing was successful, false otherwise.
         */
-        [[nodiscard]] RAMSES_API static bool GetFeatureLevelFromFile(std::string_view filename, EFeatureLevel& detectedFeatureLevel);
+        [[nodiscard]] RAMSES_API static bool GetFeatureLevelFromFile(std::string_view filename, ramses::EFeatureLevel& detectedFeatureLevel);
 
         /**
         * Attempts to parse feature level from a Ramses Logic buffer.
@@ -805,7 +794,7 @@ namespace rlogic
         * @param[out] detectedFeatureLevel feature level detected in given file (valid only if parsing successful!)
         * @return true if parsing was successful, false otherwise.
         */
-        [[nodiscard]] RAMSES_API static bool GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, EFeatureLevel& detectedFeatureLevel);
+        [[nodiscard]] RAMSES_API static bool GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, ramses::EFeatureLevel& detectedFeatureLevel);
 
         /**
         * Copy Constructor of LogicEngine is deleted because logic engines hold named resources and are not supposed to be copied
@@ -851,10 +840,11 @@ namespace rlogic
         /**
         * Internal implementation of type specific size getter
         * @tparam T Logic object type
+        * @param luaSavingMode calculate with Lua code saved as source string, binary or both
         * @return size in bytes of the serialized objects.
         */
         template<typename T>
-        [[nodiscard]] RAMSES_API size_t getSerializedSizeInternal() const;
+        [[nodiscard]] RAMSES_API size_t getSerializedSizeInternal(ELuaSavingMode luaSavingMode) const;
 
         /**
         * Internal implementation of object finder
@@ -939,9 +929,9 @@ namespace rlogic
     }
 
     template<typename T>
-    size_t LogicEngine::getSerializedSize() const
+    size_t LogicEngine::getSerializedSize(ELuaSavingMode luaSavingMode) const
     {
         StaticTypeCheck<T>();
-        return getSerializedSizeInternal<T>();
+        return getSerializedSizeInternal<T>(luaSavingMode);
     }
 }

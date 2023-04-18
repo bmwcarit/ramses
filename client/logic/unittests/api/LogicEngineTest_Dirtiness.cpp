@@ -17,18 +17,12 @@
 #include "impl/LogicNodeImpl.h"
 #include "internals/ApiObjects.h"
 
-#include "FeatureLevelTestValues.h"
 #include "RamsesTestUtils.h"
 
 namespace rlogic::internal
 {
     class ALogicEngine_DirtinessBase : public ALogicEngineBase
     {
-    public:
-        explicit ALogicEngine_DirtinessBase(EFeatureLevel featureLevel = EFeatureLevel_01) : ALogicEngineBase{ featureLevel }
-        {
-        }
-
     protected:
         ApiObjects& m_apiObjects = { m_logicEngine.m_impl->getApiObjects() };
 
@@ -68,20 +62,11 @@ namespace rlogic::internal
         )";
     };
 
-    class ALogicEngine_Dirtiness : public ALogicEngine_DirtinessBase, public ::testing::TestWithParam<EFeatureLevel>
+    class ALogicEngine_Dirtiness : public ALogicEngine_DirtinessBase, public ::testing::Test
     {
-    public:
-        ALogicEngine_Dirtiness() : ALogicEngine_DirtinessBase{ GetParam() }
-        {
-        }
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALogicEngine_DirtinessTests,
-        ALogicEngine_Dirtiness,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ALogicEngine_Dirtiness, CreatedObjectsAreDirtyAfterCreating)
+    TEST_F(ALogicEngine_Dirtiness, CreatedObjectsAreDirtyAfterCreating)
     {
         const auto obj1 = m_logicEngine.createLuaScript(m_valid_empty_script);
         EXPECT_TRUE(obj1->m_impl.isDirty());
@@ -89,97 +74,72 @@ namespace rlogic::internal
         EXPECT_TRUE(obj2->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, CreatedBindingsAreNotDirtyAfterCreating)
+    TEST_F(ALogicEngine_Dirtiness, CreatedBindingsAreNotDirtyAfterCreating)
     {
-        const auto obj3 = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        const auto obj3 = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         EXPECT_FALSE(obj3->m_impl.isDirty());
         const auto obj4 = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "");
         EXPECT_FALSE(obj4->m_impl.isDirty());
-
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            const auto obj5 = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "");
-            EXPECT_FALSE(obj5->m_impl.isDirty());
-        }
-        if (GetParam() >= EFeatureLevel_03)
-        {
-            const auto obj6 = createRenderGroupBinding();
-            EXPECT_FALSE(obj6->m_impl.isDirty());
-        }
-        if (GetParam() >= EFeatureLevel_05)
-        {
-            const auto obj = m_logicEngine.createRamsesMeshNodeBinding(*m_meshNode);
-            EXPECT_FALSE(obj->m_impl.isDirty());
-        }
+        const auto obj5 = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "");
+        EXPECT_FALSE(obj5->m_impl.isDirty());
+        const auto obj6 = createRenderGroupBinding();
+        EXPECT_FALSE(obj6->m_impl.isDirty());
+        const auto obj = m_logicEngine.createRamsesMeshNodeBinding(*m_meshNode);
+        EXPECT_FALSE(obj->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, DirtyAfterCreatingNodeBinding_AndChangingInput)
+    TEST_F(ALogicEngine_Dirtiness, DirtyAfterCreatingNodeBinding_AndChangingInput)
     {
-        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         nodeBinding->getInputs()->getChild("scaling")->set(vec3f{1.5f, 1.f, 1.f});
         EXPECT_TRUE(nodeBinding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, DirtyAfterCreatingAppearanceBinding_AndChangingInput)
+    TEST_F(ALogicEngine_Dirtiness, DirtyAfterCreatingAppearanceBinding_AndChangingInput)
     {
         RamsesAppearanceBinding* appBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "");
         appBinding->getInputs()->getChild("floatUniform")->set(15.f);
         EXPECT_TRUE(appBinding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, DirtyAfterCreatingCameraBinding_AndChangingInput)
+    TEST_F(ALogicEngine_Dirtiness, DirtyAfterCreatingCameraBinding_AndChangingInput)
     {
         RamsesCameraBinding* camBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "");
         camBinding->getInputs()->getChild("viewport")->getChild("width")->set<int32_t>(15);
         EXPECT_TRUE(camBinding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, DirtyAfterCreatingRenderPassBinding_AndChangingInput)
+    TEST_F(ALogicEngine_Dirtiness, DirtyAfterCreatingRenderPassBinding_AndChangingInput)
     {
-        if (GetParam() < EFeatureLevel_02)
-            GTEST_SKIP();
-
         RamsesRenderPassBinding* binding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "");
         binding->getInputs()->getChild("enabled")->set(false);
         EXPECT_TRUE(binding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, DirtyAfterCreatingRenderGroupBinding_AndChangingInput)
+    TEST_F(ALogicEngine_Dirtiness, DirtyAfterCreatingRenderGroupBinding_AndChangingInput)
     {
-        if (GetParam() < EFeatureLevel_03)
-            GTEST_SKIP();
-
         auto binding = createRenderGroupBinding();
         binding->getInputs()->getChild("renderOrders")->getChild("mesh")->set(42);
         EXPECT_TRUE(binding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, DirtyAfterCreatingMeshNodeBinding_AndChangingInput)
+    TEST_F(ALogicEngine_Dirtiness, DirtyAfterCreatingMeshNodeBinding_AndChangingInput)
     {
-        if (GetParam() < EFeatureLevel_05)
-            GTEST_SKIP();
-
         auto binding = m_logicEngine.createRamsesMeshNodeBinding(*m_meshNode);
         binding->getInputs()->getChild("vertexOffset")->set(42);
         EXPECT_TRUE(binding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, NotDirty_AfterCreatingObjectsAndCallingUpdate)
+    TEST_F(ALogicEngine_Dirtiness, NotDirty_AfterCreatingObjectsAndCallingUpdate)
     {
         const auto obj1 = m_logicEngine.createLuaScript(m_valid_empty_script);
         const auto obj2 = m_logicEngine.createLuaInterface(m_valid_empty_interface, "iface name");
-        const auto obj3 = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        const auto obj3 = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         const auto obj4 = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "");
         const auto obj5 = m_logicEngine.createRamsesCameraBinding(*m_camera, "");
-        const RamsesRenderPassBinding* obj6 = nullptr;
-        const RamsesRenderGroupBinding* obj7 = nullptr;
-        const RamsesMeshNodeBinding* obj8 = nullptr;
-        if (GetParam() >= EFeatureLevel_02)
-            obj6 = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "");
-        if (GetParam() >= EFeatureLevel_03)
-            obj7 = createRenderGroupBinding();
-        if (GetParam() >= EFeatureLevel_05)
-            obj8 = m_logicEngine.createRamsesMeshNodeBinding(*m_meshNode);
+        const auto obj6 = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "");
+        const auto obj7 = createRenderGroupBinding();
+        const auto obj8 = m_logicEngine.createRamsesMeshNodeBinding(*m_meshNode);
 
         m_logicEngine.update();
         EXPECT_FALSE(obj1->m_impl.isDirty());
@@ -187,21 +147,12 @@ namespace rlogic::internal
         EXPECT_FALSE(obj3->m_impl.isDirty());
         EXPECT_FALSE(obj4->m_impl.isDirty());
         EXPECT_FALSE(obj5->m_impl.isDirty());
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            EXPECT_FALSE(obj6->m_impl.isDirty());
-        }
-        if (GetParam() >= EFeatureLevel_03)
-        {
-            EXPECT_FALSE(obj7->m_impl.isDirty());
-        }
-        if (GetParam() >= EFeatureLevel_05)
-        {
-            EXPECT_FALSE(obj8->m_impl.isDirty());
-        }
+        EXPECT_FALSE(obj6->m_impl.isDirty());
+        EXPECT_FALSE(obj7->m_impl.isDirty());
+        EXPECT_FALSE(obj8->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, Dirty_AfterSettingScriptInput)
+    TEST_F(ALogicEngine_Dirtiness, Dirty_AfterSettingScriptInput)
     {
         LuaScript* script = m_logicEngine.createLuaScript(m_minimal_script);
         m_logicEngine.update();
@@ -213,7 +164,7 @@ namespace rlogic::internal
         EXPECT_FALSE(script->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, Dirty_AfterSettingNestedScriptInput)
+    TEST_F(ALogicEngine_Dirtiness, Dirty_AfterSettingNestedScriptInput)
     {
         LuaScript* script = m_logicEngine.createLuaScript(m_nested_properties_script);
         m_logicEngine.update();
@@ -225,7 +176,7 @@ namespace rlogic::internal
         EXPECT_FALSE(script->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, Dirty_AfterSettingInterfaceInput)
+    TEST_F(ALogicEngine_Dirtiness, Dirty_AfterSettingInterfaceInput)
     {
         LuaInterface* intf = m_logicEngine.createLuaInterface(m_minimal_interface, "iface name");
         m_logicEngine.update();
@@ -237,9 +188,9 @@ namespace rlogic::internal
         EXPECT_FALSE(intf->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, Dirty_WhenSettingBindingInputToDefaultValue)
+    TEST_F(ALogicEngine_Dirtiness, Dirty_WhenSettingBindingInputToDefaultValue)
     {
-        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         m_logicEngine.update();
 
         // zeroes is the default value
@@ -254,9 +205,9 @@ namespace rlogic::internal
         EXPECT_TRUE(binding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, Dirty_WhenSettingBindingInputToDifferentValue)
+    TEST_F(ALogicEngine_Dirtiness, Dirty_WhenSettingBindingInputToDifferentValue)
     {
-        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         m_logicEngine.update();
 
         // Set non-default value, and then set again to different value
@@ -402,7 +353,7 @@ namespace rlogic::internal
         EXPECT_FALSE(intf->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_Dirtiness, Dirty_WhenScriptHadRuntimeError)
+    TEST_F(ALogicEngine_Dirtiness, Dirty_WhenScriptHadRuntimeError)
     {
         const std::string_view scriptWithError = R"(
             function interface(IN,OUT)
@@ -420,7 +371,7 @@ namespace rlogic::internal
 
     // This is a bit of a special case, but an important one. If script A provides a value for script B and script A has an error
     // AFTER it set a new value to B, then script B will be dirty (and not executed!) until the error in script A was fixed
-    TEST_P(ALogicEngine_Dirtiness, KeepsDirtynessStateOfDependentScript_UntilErrorInSourceScriptIsFixed)
+    TEST_F(ALogicEngine_Dirtiness, KeepsDirtynessStateOfDependentScript_UntilErrorInSourceScriptIsFixed)
     {
         const std::string_view scriptWithFixableError = R"(
             function interface(IN,OUT)
@@ -475,37 +426,32 @@ namespace rlogic::internal
         )";
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALogicEngine_BindingDirtinessTests,
-        ALogicEngine_BindingDirtiness,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ALogicEngine_BindingDirtiness, NotDirtyAfterConstruction)
+    TEST_F(ALogicEngine_BindingDirtiness, NotDirtyAfterConstruction)
     {
         EXPECT_FALSE(m_apiObjects.bindingsDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, NotDirtyAfterCreatingScript)
+    TEST_F(ALogicEngine_BindingDirtiness, NotDirtyAfterCreatingScript)
     {
         m_logicEngine.createLuaScript(m_valid_empty_script);
         EXPECT_FALSE(m_apiObjects.bindingsDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, NotDirtyAfterCreatingNodeBinding)
+    TEST_F(ALogicEngine_BindingDirtiness, NotDirtyAfterCreatingNodeBinding)
     {
-        m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         EXPECT_FALSE(m_apiObjects.bindingsDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, NotDirtyAfterCreatingAppearanceBinding)
+    TEST_F(ALogicEngine_BindingDirtiness, NotDirtyAfterCreatingAppearanceBinding)
     {
         m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "");
         EXPECT_FALSE(m_apiObjects.bindingsDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, Dirty_WhenSettingBindingInputToDefaultValue)
+    TEST_F(ALogicEngine_BindingDirtiness, Dirty_WhenSettingBindingInputToDefaultValue)
     {
-        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         m_logicEngine.update();
 
         // zeroes is the default value
@@ -520,9 +466,9 @@ namespace rlogic::internal
         EXPECT_TRUE(m_apiObjects.bindingsDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, Dirty_WhenSettingBindingInputToDifferentValue)
+    TEST_F(ALogicEngine_BindingDirtiness, Dirty_WhenSettingBindingInputToDifferentValue)
     {
-        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         m_logicEngine.update();
 
         // Set non-default value, and then set again to different value
@@ -533,10 +479,10 @@ namespace rlogic::internal
         EXPECT_TRUE(m_apiObjects.bindingsDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, Dirty_WhenAddingLink)
+    TEST_F(ALogicEngine_BindingDirtiness, Dirty_WhenAddingLink)
     {
         LuaScript* script = m_logicEngine.createLuaScript(m_bindningDataScript);
-        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         m_logicEngine.update();
 
         m_logicEngine.link(*script->getOutputs()->getChild("vec3f"), *binding->getInputs()->getChild("rotation"));
@@ -547,10 +493,10 @@ namespace rlogic::internal
         EXPECT_FALSE(m_apiObjects.bindingsDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, NotDirty_WhenRemovingLink)
+    TEST_F(ALogicEngine_BindingDirtiness, NotDirty_WhenRemovingLink)
     {
         LuaScript* script = m_logicEngine.createLuaScript(m_bindningDataScript);
-        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         m_logicEngine.link(*script->getOutputs()->getChild("vec3f"), *binding->getInputs()->getChild("rotation"));
         m_logicEngine.update();
 
@@ -567,10 +513,10 @@ namespace rlogic::internal
 
     // Special case, but worth testing as we want that bindings are always
     // executed when adding link, even if the link was just "re-added"
-    TEST_P(ALogicEngine_BindingDirtiness, Dirty_WhenReAddingLink)
+    TEST_F(ALogicEngine_BindingDirtiness, Dirty_WhenReAddingLink)
     {
         LuaScript* script = m_logicEngine.createLuaScript(m_bindningDataScript);
-        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         ASSERT_TRUE(m_logicEngine.link(*script->getOutputs()->getChild("vec3f"), *binding->getInputs()->getChild("rotation")));
         m_logicEngine.update();
 
@@ -586,7 +532,7 @@ namespace rlogic::internal
         EXPECT_FALSE(binding->m_impl.isDirty());
     }
 
-    TEST_P(ALogicEngine_BindingDirtiness, Dirty_WhenSettingDataToNestedAppearanceBindingInputs)
+    TEST_F(ALogicEngine_BindingDirtiness, Dirty_WhenSettingDataToNestedAppearanceBindingInputs)
     {
         // Vertex shader with array -> results in nested binding inputs
         const std::string_view vertShader_array = R"(

@@ -17,7 +17,7 @@
  */
 int main()
 {
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a simple script which multiplies two numbers and stores the result in a string
     rlogic::LuaScript* multiplyScript = logicEngine.createLuaScript(R"(

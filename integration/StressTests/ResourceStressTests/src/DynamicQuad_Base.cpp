@@ -57,10 +57,10 @@ namespace ramses_internal
 
         const ramses::vec3f vertexPositionsData[] =
         {
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u).getAsArray() },
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u).getAsArray() },
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u).getAsArray() },
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u).getAsArray() }
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u).getAsVec3()
         };
 
         ramses::vec2f vertexTexcoordsData[] = {

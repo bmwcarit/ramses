@@ -119,7 +119,7 @@ namespace ramses_internal
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
         ramses::UniformInput colorInput;
         effect->findUniformInput("u_color", colorInput);
-        appearance->setInputValue(colorInput, ramses::vec4f{ modulateColor.getAsArray() });
+        appearance->setInputValue(colorInput, modulateColor.getAsVec4());
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
@@ -148,7 +148,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(translation.x, translation.y, translation.z);
+        transNode->setTranslation({translation.x, translation.y, translation.z});
         meshNode->setParent(*transNode);
 
         return *meshNode;
@@ -167,7 +167,7 @@ namespace ramses_internal
         ramses::RenderTarget& renderTarget = *m_scene.createRenderTarget(rtDesc);
 
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags::EClearFlags_All);
     }
 
@@ -177,10 +177,10 @@ namespace ramses_internal
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
-        transNode.translate(0.0f, -0.5f, -5.0f);
+        transNode.translate({0.0f, -0.5f, -5.0f});
         if (state == DEPTH_WRITTEN_AND_READ)
         {
-            transNode.setRotation(-30.0f, 0.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
+            transNode.setRotation({-30.0f, 0.f, 0.f}, ramses::ERotationType::Euler_XYZ);
         }
 
         ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();

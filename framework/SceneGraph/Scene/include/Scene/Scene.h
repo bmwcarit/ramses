@@ -137,10 +137,10 @@ namespace ramses_internal
         [[nodiscard]] NodeHandle                  getTransformNode                (TransformHandle handle) const final override;
         [[nodiscard]] const Vector3&              getTranslation                  (TransformHandle handle) const final override;
         [[nodiscard]] const Vector4&              getRotation                     (TransformHandle handle) const final override;
-        [[nodiscard]] ERotationConvention         getRotationConvention           (TransformHandle handle) const final override;
+        [[nodiscard]] ERotationType         getRotationType           (TransformHandle handle) const final override;
         [[nodiscard]] const Vector3&              getScaling                      (TransformHandle handle) const final override;
         void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationConvention convention) override;
+        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationType rotationType) override;
         void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
         [[nodiscard]] const TransformMemoryPool&              getTransforms                   () const;
 

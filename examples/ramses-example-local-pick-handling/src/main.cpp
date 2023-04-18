@@ -135,16 +135,16 @@ int main()
     ramses::OrthographicCamera* orthographicCamera = clientScene->createOrthographicCamera("my orthographicCamera");
     orthographicCamera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
     orthographicCamera->setViewport(0, 0, 1280, 480);
-    orthographicCamera->translate(.2f, 0.f, 5.f);
-    orthographicCamera->setRotation(0.f, -5.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
-    orthographicCamera->scale(1.f, 2.f, 1.f);
+    orthographicCamera->translate({.2f, 0.f, 5.f});
+    orthographicCamera->setRotation({0.f, -5.f, 0.f}, ramses::ERotationType::Euler_XYZ);
+    orthographicCamera->scale({1.f, 2.f, 1.f});
 
     ramses::PerspectiveCamera* perspectiveCamera = clientScene->createPerspectiveCamera("my perspectiveCamera");
     perspectiveCamera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 100.f);
     perspectiveCamera->setViewport(perspViewportOffsetX, perspViewportOffsetY, perspViewportWidth, perspViewportHeight);
-    perspectiveCamera->translate(0.f, 0.f, 11.f);
-    perspectiveCamera->setRotation(0.f, -12.f, -4.f, ramses::ERotationConvention::Euler_XYZ);
-    perspectiveCamera->scale(1.f, 2.f, 1.f);
+    perspectiveCamera->translate({0.f, 0.f, 11.f});
+    perspectiveCamera->setRotation({0.f, -12.f, -4.f}, ramses::ERotationType::Euler_XYZ);
+    perspectiveCamera->scale({1.f, 2.f, 1.f});
     ramses::RenderPass* renderPassA = clientScene->createRenderPass("my render pass A");
     ramses::RenderPass* renderPassB = clientScene->createRenderPass("my render pass B");
     renderPassA->setClearFlags(ramses::EClearFlags_None);
@@ -190,16 +190,16 @@ int main()
     ramses::MeshNode* meshNode2 = clientScene->createMeshNode("triangle mesh node 2");
 
     meshNode->setAppearance(*appearanceA);
-    meshNode->setTranslation(1.5f, -0.3f, 0.4f);
-    meshNode->setRotation(-12.f, -30.f, -10.f, ramses::ERotationConvention::Euler_XYZ);
-    meshNode->setScaling(1.2f, 1.5f, 0.7f);
+    meshNode->setTranslation({1.5f, -0.3f, 0.4f});
+    meshNode->setRotation({-12.f, -30.f, -10.f}, ramses::ERotationType::Euler_XYZ);
+    meshNode->setScaling({1.2f, 1.5f, 0.7f});
     meshNode->setGeometryBinding(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroupA->addMeshNode(*meshNode);
 
-    meshNode2->setTranslation(1.f, 0.0f, 0.0f);
-    meshNode2->setRotation(-10.f, -34.f, -19.f, ramses::ERotationConvention::Euler_XYZ);
-    meshNode2->setScaling(0.5f, 0.5f, 0.5f);
+    meshNode2->setTranslation({1.f, 0.0f, 0.0f});
+    meshNode2->setRotation({-10.f, -34.f, -19.f}, ramses::ERotationType::Euler_XYZ);
+    meshNode2->setScaling({0.5f, 0.5f, 0.5f});
     meshNode2->setAppearance(*appearanceB);
     meshNode2->setGeometryBinding(*geometry);
     renderGroupB->addMeshNode(*meshNode2);

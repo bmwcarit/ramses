@@ -33,7 +33,7 @@
 
 namespace rlogic::internal
 {
-    class ALogicEngine_Compatibility : public ALogicEngineBase, public ::testing::TestWithParam<EFeatureLevel>
+    class ALogicEngine_Compatibility : public ALogicEngineBase, public ::testing::TestWithParam<ramses::EFeatureLevel>
     {
     public:
         ALogicEngine_Compatibility() : ALogicEngineBase{ GetParam() }
@@ -41,16 +41,16 @@ namespace rlogic::internal
         }
 
     protected:
-        static const char* GetFileIdentifier(EFeatureLevel featureLevel = GetParam())
+        static const char* GetFileIdentifier()
         {
-            return featureLevel == EFeatureLevel_01 ? rlogic_serialization::LogicEngineIdentifier() : "rl02";
+            return rlogic_serialization::LogicEngineIdentifier();
         }
 
         void createFlatLogicEngineData(
             ramses::RamsesVersion ramsesVersion,
             rlogic::RamsesLogicVersion logicVersion,
             const char* fileId = GetFileIdentifier(),
-            EFeatureLevel featureLevel = GetParam())
+            ramses::EFeatureLevel featureLevel = GetParam())
         {
             ApiObjects emptyApiObjects{ featureLevel };
 
@@ -96,8 +96,8 @@ namespace rlogic::internal
 
     TEST_P(ALogicEngine_Compatibility, FallsBackToFeatureLevel01IfUnknownFeatureLevelRequested)
     {
-        LogicEngine logicEngine{ static_cast<EFeatureLevel>(999) };
-        EXPECT_EQ(EFeatureLevel_01, logicEngine.getFeatureLevel());
+        LogicEngine logicEngine{ static_cast<ramses::EFeatureLevel>(999) };
+        EXPECT_EQ(ramses::EFeatureLevel_01, logicEngine.getFeatureLevel());
     }
 
     TEST_P(ALogicEngine_Compatibility, ProducesErrorIfDeserilizedFromFileReferencingIncompatibleRamsesVersion)
@@ -144,19 +144,12 @@ namespace rlogic::internal
         EXPECT_FALSE(m_logicEngine.loadFromFile("temp.bin"));
         auto errors = m_logicEngine.getErrors();
         ASSERT_EQ(1u, errors.size());
-        if (GetParam() == EFeatureLevel_01)
-        {
-            EXPECT_THAT(errors[0].message, ::testing::HasSubstr(fmt::format("Version mismatch while loading binary data! Expected version '01', but found '99'")));
-        }
-        else
-        {
-            EXPECT_THAT(errors[0].message, ::testing::HasSubstr(fmt::format("Version mismatch while loading binary data! Expected version '02', but found '99'")));
-        }
+        EXPECT_THAT(errors[0].message, ::testing::HasSubstr(fmt::format("Version mismatch while loading binary data! Expected version '28', but found '99'")));
     }
 
     TEST_P(ALogicEngine_Compatibility, CanDeserializeSameFeatureLevelVersion)
     {
-        const EFeatureLevel featureLevel = GetParam();
+        const ramses::EFeatureLevel featureLevel = GetParam();
         createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(), featureLevel);
         ASSERT_TRUE(FileUtils::SaveBinary("temp.bin", m_fbBuilder.GetBufferPointer(), m_fbBuilder.GetSize()));
 
@@ -165,66 +158,22 @@ namespace rlogic::internal
         EXPECT_TRUE(logicEngine.getErrors().empty());
     }
 
-    TEST_P(ALogicEngine_Compatibility, EarlyErrorIfDeserializedFromIncompatibleFeatureLevelVersionInFileIdentifier)
-    {
-        // this test is not parametrized
-        if (GetParam() != EFeatureLevel_01)
-            GTEST_SKIP();
-
-        // mismatch in file identifier can happen only if either file or engine are feature level 01,
-        // from 02 onwards feature level is checked using standard flatbuffer entry, tested in tests below
-        const std::vector<std::pair<EFeatureLevel, EFeatureLevel>> combinations{
-            { EFeatureLevel_01, EFeatureLevel_02 },
-            { EFeatureLevel_01, EFeatureLevel_03 },
-            { EFeatureLevel_01, EFeatureLevel_04 },
-            { EFeatureLevel_01, EFeatureLevel_05 },
-            { EFeatureLevel_02, EFeatureLevel_01 },
-            { EFeatureLevel_03, EFeatureLevel_01 },
-            { EFeatureLevel_04, EFeatureLevel_01 },
-            { EFeatureLevel_05, EFeatureLevel_01 }
-        };
-
-        for (const auto& comb : combinations)
-        {
-            const EFeatureLevel fileFeatureLevel = comb.first;
-            const EFeatureLevel engineFeatureLevel = comb.second;
-
-            createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(fileFeatureLevel), fileFeatureLevel);
-            ASSERT_TRUE(FileUtils::SaveBinary("temp.bin", m_fbBuilder.GetBufferPointer(), m_fbBuilder.GetSize()));
-
-            LogicEngine logicEngine{ engineFeatureLevel };
-            EXPECT_FALSE(logicEngine.loadFromFile("temp.bin"));
-            const auto& errors = logicEngine.getErrors();
-            ASSERT_EQ(1u, errors.size());
-            EXPECT_THAT(errors[0].message, ::testing::HasSubstr(fmt::format("file 'temp.bin' (size:")));
-            EXPECT_THAT(errors[0].message, ::testing::HasSubstr(fmt::format("Feature level mismatch! ")));
-            if (fileFeatureLevel == EFeatureLevel_01)
-            {
-                EXPECT_THAT(errors[0].message, ::testing::HasSubstr(fmt::format("Loaded file with feature level 1 but LogicEngine was instantiated with feature level {}", engineFeatureLevel)));
-            }
-            else
-            {
-                EXPECT_THAT(errors[0].message, ::testing::HasSubstr(fmt::format("Loaded file with feature level >=2 but LogicEngine was instantiated with feature level {}", engineFeatureLevel)));
-            }
-        }
-    }
-
     TEST_P(ALogicEngine_Compatibility, ProducesErrorIfDeserializedFromIncompatibleFeatureLevelVersion)
     {
         // this test is not parametrized
-        if (GetParam() != EFeatureLevel_01)
+        if (GetParam() != ramses::EFeatureLevel_01)
             GTEST_SKIP();
 
         // test all mismatching combinations
-        for (EFeatureLevel fileFeatureLevel : AllFeatureLevels)
+        for (ramses::EFeatureLevel fileFeatureLevel : ramses::AllFeatureLevels)
         {
-            for (EFeatureLevel engineFeatureLevel : AllFeatureLevels)
+            for (ramses::EFeatureLevel engineFeatureLevel : ramses::AllFeatureLevels)
             {
                 if (fileFeatureLevel == engineFeatureLevel)
                     continue;
 
                 // note - use file identifier matching engine otherwise load fails already when checking file identifier (tested above)
-                createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(engineFeatureLevel), fileFeatureLevel);
+                createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(), fileFeatureLevel);
                 ASSERT_TRUE(FileUtils::SaveBinary("temp.bin", m_fbBuilder.GetBufferPointer(), m_fbBuilder.GetSize()));
 
                 LogicEngine logicEngine{ engineFeatureLevel };
@@ -239,18 +188,18 @@ namespace rlogic::internal
 
     TEST_P(ALogicEngine_Compatibility, CanParseFeatureLevelFromFile)
     {
-        const EFeatureLevel featureLevel = GetParam();
+        const ramses::EFeatureLevel featureLevel = GetParam();
         createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(), featureLevel);
         ASSERT_TRUE(FileUtils::SaveBinary("temp.bin", m_fbBuilder.GetBufferPointer(), m_fbBuilder.GetSize()));
 
-        EFeatureLevel detectedFeatureLevel = EFeatureLevel_01;
+        ramses::EFeatureLevel detectedFeatureLevel = ramses::EFeatureLevel_01;
         ASSERT_TRUE(LogicEngine::GetFeatureLevelFromFile("temp.bin", detectedFeatureLevel));
         EXPECT_EQ(featureLevel, detectedFeatureLevel);
     }
 
     TEST_P(ALogicEngine_Compatibility, FailsToParseFeatureLevelFromNotExistingFile)
     {
-        EFeatureLevel detectedFeatureLevel = EFeatureLevel_01;
+        ramses::EFeatureLevel detectedFeatureLevel = ramses::EFeatureLevel_01;
         EXPECT_FALSE(LogicEngine::GetFeatureLevelFromFile("doesntexist", detectedFeatureLevel));
     }
 
@@ -259,24 +208,24 @@ namespace rlogic::internal
         const std::string invalidData{"invaliddata"};
         ASSERT_TRUE(FileUtils::SaveBinary("temp.bin", invalidData.data(), invalidData.size()));
 
-        EFeatureLevel detectedFeatureLevel = EFeatureLevel_01;
+        ramses::EFeatureLevel detectedFeatureLevel = ramses::EFeatureLevel_01;
         EXPECT_FALSE(LogicEngine::GetFeatureLevelFromFile("temp.bin", detectedFeatureLevel));
     }
 
     TEST_P(ALogicEngine_Compatibility, FailsToParseFeatureLevelFromValidFileButUnknownFeatureLevel)
     {
-        createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(), static_cast<EFeatureLevel>(999));
+        createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(), static_cast<ramses::EFeatureLevel>(999));
         ASSERT_TRUE(FileUtils::SaveBinary("temp.bin", m_fbBuilder.GetBufferPointer(), m_fbBuilder.GetSize()));
 
-        EFeatureLevel detectedFeatureLevel = EFeatureLevel_01;
+        ramses::EFeatureLevel detectedFeatureLevel = ramses::EFeatureLevel_01;
         EXPECT_FALSE(LogicEngine::GetFeatureLevelFromFile("temp.bin", detectedFeatureLevel));
     }
 
     TEST_P(ALogicEngine_Compatibility, CanParseFeatureLevelFromBuffer)
     {
-        const EFeatureLevel featureLevel = GetParam();
+        const ramses::EFeatureLevel featureLevel = GetParam();
         createFlatLogicEngineData(ramses::GetRamsesVersion(), GetRamsesLogicVersion(), GetFileIdentifier(), featureLevel);
-        EFeatureLevel detectedFeatureLevel = EFeatureLevel_01;
+        ramses::EFeatureLevel detectedFeatureLevel = ramses::EFeatureLevel_01;
         ASSERT_TRUE(LogicEngine::GetFeatureLevelFromBuffer("temp.bin", m_fbBuilder.GetBufferPointer(), m_fbBuilder.GetSize(), detectedFeatureLevel));
         EXPECT_EQ(featureLevel, detectedFeatureLevel);
     }
@@ -327,6 +276,8 @@ namespace rlogic::internal
 
             const auto nodeBinding = logicEngine.findByName<RamsesNodeBinding>("nodebinding");
             ASSERT_NE(nullptr, nodeBinding);
+            EXPECT_NE(nullptr, nodeBinding->getInputs()->getChild("enabled"));
+            EXPECT_TRUE(logicEngine.isLinked(*nodeBinding));
             const auto cameraBinding = logicEngine.findByName<RamsesCameraBinding>("camerabinding");
             ASSERT_NE(nullptr, cameraBinding);
             const auto appearanceBinding = logicEngine.findByName<RamsesAppearanceBinding>("appearancebinding");
@@ -335,24 +286,11 @@ namespace rlogic::internal
 
             std::vector<PropertyLink> expectedLinks;
 
-            // VersionBreak There was a mess up with the test content, this is a workaround for it until next breaking change on logic engine
-            if(logicEngine.getFeatureLevel() == EFeatureLevel_01)
-            {
-                script1->getInputs()->getChild("floatInput")->set<float>(42.5f);
-            }
-            else
-            {
-                const auto intf = logicEngine.findByName<LuaInterface>("intf");
-                ASSERT_NE(nullptr, intf);
-                intf->getInputs()->getChild("struct")->getChild("floatInput")->set<float>(42.5f);
-                expectedLinks.push_back({ intf->getOutputs()->getChild("struct")->getChild("floatInput"), script1->getInputs()->getChild("floatInput"), false });
-            }
-
-            if (logicEngine.getFeatureLevel() >= EFeatureLevel_02)
-            {
-                expectedLinks.push_back({ script1->getOutputs()->getChild("boolOutput"), nodeBinding->getInputs()->getChild("enabled"), false });
-            }
-
+            const auto intf = logicEngine.findByName<LuaInterface>("intf");
+            ASSERT_NE(nullptr, intf);
+            intf->getInputs()->getChild("struct")->getChild("floatInput")->set<float>(42.5f);
+            expectedLinks.push_back({ intf->getOutputs()->getChild("struct")->getChild("floatInput"), script1->getInputs()->getChild("floatInput"), false });
+            expectedLinks.push_back({ script1->getOutputs()->getChild("boolOutput"), nodeBinding->getInputs()->getChild("enabled"), false });
             expectedLinks.push_back({ script1->getOutputs()->getChild("floatOutput"), script2->getInputs()->getChild("floatInput"), false });
             expectedLinks.push_back({ script1->getOutputs()->getChild("nodeTranslation"), nodeBinding->getInputs()->getChild("translation"), false });
             expectedLinks.push_back({ script2->getOutputs()->getChild("cameraViewport")->getChild("offsetX"), cameraBinding->getInputs()->getChild("viewport")->getChild("offsetX"), false });
@@ -370,8 +308,10 @@ namespace rlogic::internal
             vec3f translation;
             auto node = ramses::RamsesUtils::TryConvert<ramses::Node>(*ramsesScene.findObjectByName("test node"));
             auto camera = ramses::RamsesUtils::TryConvert<ramses::OrthographicCamera>(*ramsesScene.findObjectByName("test camera"));
-            node->getTranslation(translation[0], translation[1], translation[2]);
-            EXPECT_THAT(translation, ::testing::ElementsAre(42.5f, 2.f, 3.f));
+            node->getTranslation(translation);
+            EXPECT_EQ(translation, vec3f(42.5f, 2.f, 3.f));
+            // test that linked value from script propagated to ramses scene
+            EXPECT_EQ(ramses::EVisibilityMode::Off, node->getVisibility());
 
             EXPECT_EQ(camera->getViewportX(), 45);
             EXPECT_EQ(camera->getViewportY(), 47);
@@ -391,14 +331,6 @@ namespace rlogic::internal
             EXPECT_FLOAT_EQ(1.5f, floatValue);
 
             EXPECT_EQ(957, *logicEngine.findByName<LuaScript>("script2")->getOutputs()->getChild("nestedModulesResult")->get<int32_t>());
-        }
-
-        static void expectFeatureLevel02Content(const LogicEngine& logicEngine, ramses::Scene& ramsesScene)
-        {
-            const auto nodeBinding = logicEngine.findByName<RamsesNodeBinding>("nodebinding");
-            ASSERT_TRUE(nodeBinding);
-            EXPECT_TRUE(logicEngine.isLinked(*nodeBinding));
-            EXPECT_NE(nullptr, nodeBinding->getInputs()->getChild("enabled"));
 
             EXPECT_TRUE(logicEngine.findByName<RamsesRenderPassBinding>("renderpassbinding"));
             EXPECT_TRUE(logicEngine.findByName<AnchorPoint>("anchorpoint"));
@@ -409,35 +341,7 @@ namespace rlogic::internal
             EXPECT_EQ(4u, cameraBindingPersp->getInputs()->getChild("frustum")->getChildCount());
             EXPECT_EQ(6u, cameraBindingPerspWithFrustumPlanes->getInputs()->getChild("frustum")->getChildCount());
 
-            // test that linked value from script propagated to ramses scene
-            const auto node = ramses::RamsesUtils::TryConvert<ramses::Node>(*ramsesScene.findObjectByName("test node"));
-            ASSERT_TRUE(node);
-            EXPECT_EQ(ramses::EVisibilityMode::Off, node->getVisibility());
-        }
-
-        static void expectFeatureLevel02ContentNotPresent(const LogicEngine& logicEngine)
-        {
-            const auto nodeBinding = logicEngine.findByName<RamsesNodeBinding>("nodebinding");
-            ASSERT_TRUE(nodeBinding);
-            EXPECT_EQ(nullptr, nodeBinding->getInputs()->getChild("enabled"));
-            EXPECT_FALSE(logicEngine.findByName<LogicObject>("renderpassbinding"));
-            EXPECT_FALSE(logicEngine.findByName<LogicObject>("anchorpoint"));
-            EXPECT_FALSE(logicEngine.findByName<LogicObject>("dataarrayOfArrays"));
-        }
-
-        static void expectFeatureLevel03Content(const LogicEngine& logicEngine)
-        {
             EXPECT_TRUE(logicEngine.findByName<RamsesRenderGroupBinding>("rendergroupbinding"));
-        }
-
-        static void expectFeatureLevel03ContentNotPresent(const LogicEngine& logicEngine)
-        {
-            EXPECT_FALSE(logicEngine.findByName<LogicObject>("rendergroupbinding"));
-            EXPECT_FALSE(logicEngine.findByName<LogicObject>("dataarrayOfArrays"));
-        }
-
-        static void expectFeatureLevel04Content(const LogicEngine& logicEngine)
-        {
             EXPECT_TRUE(logicEngine.findByName<SkinBinding>("skin"));
             const auto dataArray = logicEngine.findByName<DataArray>("dataarrayOfArrays");
             ASSERT_TRUE(dataArray);
@@ -447,21 +351,17 @@ namespace rlogic::internal
             ASSERT_TRUE(data);
             const std::vector<std::vector<float>> expectedData{ { 1.f, 2.f, 3.f, 4.f, 5.f }, { 6.f, 7.f, 8.f, 9.f, 10.f } };
             EXPECT_EQ(expectedData, *data);
-        }
-
-        static void expectFeatureLevel04ContentNotPresent(const LogicEngine& logicEngine)
-        {
-            EXPECT_FALSE(logicEngine.findByName<LogicObject>("skin"));
-        }
-
-        static void expectFeatureLevel05Content(const LogicEngine& logicEngine)
-        {
             EXPECT_TRUE(logicEngine.findByName<RamsesMeshNodeBinding>("meshnodebinding"));
         }
 
-        static void expectFeatureLevel05ContentNotPresent(const LogicEngine& logicEngine)
+        static void expectFeatureLevel02Content(const LogicEngine& /*logicEngine*/, ramses::Scene& /*ramsesScene*/)
         {
-            EXPECT_FALSE(logicEngine.findByName<LogicObject>("meshnodebinding"));
+            // features added in future feature level expected to be present
+        }
+
+        static void expectFeatureLevel02ContentNotPresent(const LogicEngine& /*logicEngine*/)
+        {
+            // features added in future feature level expected NOT to be present in previous feature levels
         }
 
         static void checkContents(LogicEngine& logicEngine, ramses::Scene& scene)
@@ -470,19 +370,10 @@ namespace rlogic::internal
             // higher feature level always contains content supported by lower level
             switch (logicEngine.getFeatureLevel())
             {
-            case EFeatureLevel_05:
-                expectFeatureLevel05Content(logicEngine);
-                [[fallthrough]];
-            case EFeatureLevel_04:
-                expectFeatureLevel04Content(logicEngine);
-                [[fallthrough]];
-            case EFeatureLevel_03:
-                expectFeatureLevel03Content(logicEngine);
-                [[fallthrough]];
-            case EFeatureLevel_02:
-                expectFeatureLevel02Content(logicEngine, scene);
-                [[fallthrough]];
-            case EFeatureLevel_01:
+            //case ramses::EFeatureLevel_02:
+            //    expectFeatureLevel02Content(logicEngine, scene);
+            //    [[fallthrough]];
+            case ramses::EFeatureLevel_01:
                 checkBaseContents(logicEngine, scene);
                 break;
             }
@@ -491,20 +382,11 @@ namespace rlogic::internal
             // lower feature level never contains content supported only in higher level
             switch (logicEngine.getFeatureLevel())
             {
-            case EFeatureLevel_01:
+            case ramses::EFeatureLevel_01:
                 expectFeatureLevel02ContentNotPresent(logicEngine);
-                [[fallthrough]];
-            case EFeatureLevel_02:
-                expectFeatureLevel03ContentNotPresent(logicEngine);
-                [[fallthrough]];
-            case EFeatureLevel_03:
-                expectFeatureLevel04ContentNotPresent(logicEngine);
-                [[fallthrough]];
-            case EFeatureLevel_04:
-                expectFeatureLevel05ContentNotPresent(logicEngine);
-                [[fallthrough]];
-            case EFeatureLevel_05:
-                break;
+            //    [[fallthrough]];
+            //case EFeatureLevel_02:
+            //    break;
             }
         }
 
@@ -523,19 +405,12 @@ namespace rlogic::internal
             checkContents(logicEngineAnother, scene);
         }
 
-        ramses::Scene* loadRamsesScene(EFeatureLevel featureLevel) {
+        ramses::Scene* loadRamsesScene(ramses::EFeatureLevel featureLevel)
+        {
             switch(featureLevel)
             {
-            case EFeatureLevel_01:
-                return &m_ramses.loadSceneFromFile("res/unittests/testScene_01.ramses");
-            case EFeatureLevel_02:
-                return &m_ramses.loadSceneFromFile("res/unittests/testScene_02.ramses");
-            case EFeatureLevel_03:
-                return &m_ramses.loadSceneFromFile("res/unittests/testScene_03.ramses");
-            case EFeatureLevel_04:
-                return &m_ramses.loadSceneFromFile("res/unittests/testScene_04.ramses");
-            case EFeatureLevel_05:
-                return &m_ramses.loadSceneFromFile("res/unittests/testScene_05.ramses");
+            case ramses::EFeatureLevel_01:
+                return &m_ramses.loadSceneFromFile("res/testScene_01.ramses");
             }
             return nullptr;
         }
@@ -543,83 +418,16 @@ namespace rlogic::internal
         RamsesTestSetup m_ramses;
     };
 
-    // TODO vaclav - following tests use files generated in rlogic when using ramses27 as external lib, r27 did not have a feature level token
-    // (introduced in r28) so these files are not possible to load anymore, they would have to be re-generated.
-    // However feature levels in rlogic will be flattened so these tests will probably become obsolete - TBD as part of another story
-    TEST_F(ALogicEngine_Binary_Compatibility, DISABLED_CanLoadAndUpdateABinaryFileExportedWithLastCompatibleVersionOfEngine_FeatureLevel01)
+    TEST_F(ALogicEngine_Binary_Compatibility, CanLoadAndUpdateABinaryFileExportedWithLastCompatibleVersionOfEngine_FeatureLevel01)
     {
-        EFeatureLevel featureLevel = EFeatureLevel_02;
-        EXPECT_TRUE(LogicEngine::GetFeatureLevelFromFile("res/unittests/testLogic_01.rlogic", featureLevel));
-        EXPECT_EQ(EFeatureLevel_01, featureLevel);
+        ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_Latest;
+        EXPECT_TRUE(LogicEngine::GetFeatureLevelFromFile("res/testLogic_01.rlogic", featureLevel));
+        EXPECT_EQ(ramses::EFeatureLevel_01, featureLevel);
 
-        ramses::Scene* scene = loadRamsesScene(EFeatureLevel_01);
+        ramses::Scene* scene = loadRamsesScene(ramses::EFeatureLevel_01);
         ASSERT_TRUE(scene);
-        LogicEngine logicEngine;
-        ASSERT_TRUE(logicEngine.loadFromFile("res/unittests/testLogic_01.rlogic", scene));
-        EXPECT_TRUE(logicEngine.update());
-
-        checkContents(logicEngine, *scene);
-        saveAndReloadAndCheckContents(logicEngine, *scene);
-    }
-
-    TEST_F(ALogicEngine_Binary_Compatibility, DISABLED_CanLoadAndUpdateABinaryFileExportedWithLastCompatibleVersionOfEngine_FeatureLevel02)
-    {
-        EFeatureLevel featureLevel = EFeatureLevel_01;
-        EXPECT_TRUE(LogicEngine::GetFeatureLevelFromFile("res/unittests/testLogic_02.rlogic", featureLevel));
-        EXPECT_EQ(EFeatureLevel_02, featureLevel);
-
-        ramses::Scene* scene = loadRamsesScene(EFeatureLevel_02);
-        ASSERT_TRUE(scene);
-        LogicEngine logicEngine{ EFeatureLevel_02 };
-        ASSERT_TRUE(logicEngine.loadFromFile("res/unittests/testLogic_02.rlogic", scene));
-        EXPECT_TRUE(logicEngine.update());
-
-        checkContents(logicEngine, *scene);
-        saveAndReloadAndCheckContents(logicEngine, *scene);
-    }
-
-    TEST_F(ALogicEngine_Binary_Compatibility, DISABLED_CanLoadAndUpdateABinaryFileExportedWithLastCompatibleVersionOfEngine_FeatureLevel03)
-    {
-        EFeatureLevel featureLevel = EFeatureLevel_01;
-        EXPECT_TRUE(LogicEngine::GetFeatureLevelFromFile("res/unittests/testLogic_03.rlogic", featureLevel));
-        EXPECT_EQ(EFeatureLevel_03, featureLevel);
-
-        ramses::Scene* scene = loadRamsesScene(EFeatureLevel_03);
-        ASSERT_TRUE(scene);
-        LogicEngine logicEngine{ EFeatureLevel_03 };
-        ASSERT_TRUE(logicEngine.loadFromFile("res/unittests/testLogic_03.rlogic", scene));
-        EXPECT_TRUE(logicEngine.update());
-
-        checkContents(logicEngine, *scene);
-        saveAndReloadAndCheckContents(logicEngine, *scene);
-    }
-
-    TEST_F(ALogicEngine_Binary_Compatibility, DISABLED_CanLoadAndUpdateABinaryFileExportedWithLastCompatibleVersionOfEngine_FeatureLevel04)
-    {
-        EFeatureLevel featureLevel = EFeatureLevel_01;
-        EXPECT_TRUE(LogicEngine::GetFeatureLevelFromFile("res/unittests/testLogic_04.rlogic", featureLevel));
-        EXPECT_EQ(EFeatureLevel_04, featureLevel);
-
-        ramses::Scene* scene = loadRamsesScene(EFeatureLevel_04);
-        ASSERT_TRUE(scene);
-        LogicEngine logicEngine{ EFeatureLevel_04 };
-        ASSERT_TRUE(logicEngine.loadFromFile("res/unittests/testLogic_04.rlogic", scene));
-        EXPECT_TRUE(logicEngine.update());
-
-        checkContents(logicEngine, *scene);
-        saveAndReloadAndCheckContents(logicEngine, *scene);
-    }
-
-    TEST_F(ALogicEngine_Binary_Compatibility, DISABLED_CanLoadAndUpdateABinaryFileExportedWithLastCompatibleVersionOfEngine_FeatureLevel05)
-    {
-        EFeatureLevel featureLevel = EFeatureLevel_01;
-        EXPECT_TRUE(LogicEngine::GetFeatureLevelFromFile("res/unittests/testLogic_05.rlogic", featureLevel));
-        EXPECT_EQ(EFeatureLevel_05, featureLevel);
-
-        ramses::Scene* scene = loadRamsesScene(EFeatureLevel_05);
-        ASSERT_TRUE(scene);
-        LogicEngine logicEngine{ EFeatureLevel_05 };
-        ASSERT_TRUE(logicEngine.loadFromFile("res/unittests/testLogic_05.rlogic", scene));
+        LogicEngine logicEngine{ featureLevel };
+        ASSERT_TRUE(logicEngine.loadFromFile("res/testLogic_01.rlogic", scene));
         EXPECT_TRUE(logicEngine.update());
 
         checkContents(logicEngine, *scene);

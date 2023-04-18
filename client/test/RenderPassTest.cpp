@@ -453,15 +453,14 @@ namespace ramses
 
     TEST_F(ARenderPass, setsItsClearColor)
     {
-        float c[4];
-        renderpass.getClearColor(c[0], c[1], c[2], c[3]);
+        auto c = renderpass.getClearColor();
         EXPECT_EQ(0.f, c[0]);
         EXPECT_EQ(0.f, c[1]);
         EXPECT_EQ(0.f, c[2]);
         EXPECT_EQ(1.f, c[3]);
 
-        EXPECT_EQ(StatusOK, renderpass.setClearColor(0.1f, 0.2f, 0.3f, 0.4f));
-        renderpass.getClearColor(c[0], c[1], c[2], c[3]);
+        EXPECT_EQ(StatusOK, renderpass.setClearColor({0.1f, 0.2f, 0.3f, 0.4f}));
+        c = renderpass.getClearColor();
         EXPECT_EQ(0.1f, c[0]);
         EXPECT_EQ(0.2f, c[1]);
         EXPECT_EQ(0.3f, c[2]);

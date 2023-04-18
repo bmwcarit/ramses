@@ -136,9 +136,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::setClearColor(float red, float green, float blue, float alpha)
+    status_t DisplayConfigImpl::setClearColor(const vec4f& color)
     {
-        m_internalConfig.setClearColor(ramses_internal::Vector4(red, green, blue, alpha));
+        m_internalConfig.setClearColor(ramses_internal::Vector4(color));
         return StatusOK;
     }
 

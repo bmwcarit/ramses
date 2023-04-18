@@ -60,7 +60,7 @@ int main()
      */
     auto [scene, tri] = CreateSceneWithTriangle(*renderer.getClient());
 
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Create a binding object which serves as a bridge between logic nodes and animations on one end
@@ -252,7 +252,7 @@ SceneAndNode CreateSceneWithTriangle(ramses::RamsesClient& client)
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, 1280.f/480.f, 0.1f, 100.0f);
     camera->setViewport(0, 0, 1280, 480);
-    camera->setTranslation(0.0f, 0.0f, 15.0f);
+    camera->setTranslation({0.0f, 0.0f, 15.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass();
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -298,7 +298,7 @@ SceneAndNode CreateSceneWithTriangle(ramses::RamsesClient& client)
     meshNode->setAppearance(*appearance);
     meshNode->setIndexCount(3);
     meshNode->setGeometryBinding(*geometry);
-    meshNode->setScaling(0.05f, 0.05f, 0.05f); // adjust triangle size
+    meshNode->setScaling({0.05f, 0.05f, 0.05f}); // adjust triangle size
     renderGroup->addMeshNode(*meshNode);
 
     auto parentTranslationNode = scene->createNode();
@@ -309,7 +309,7 @@ SceneAndNode CreateSceneWithTriangle(ramses::RamsesClient& client)
     // or camera transformation/frustum.
     auto parentScaleNode = scene->createNode();
     parentTranslationNode->setParent(*parentScaleNode);
-    parentScaleNode->setScaling(6.f, 6.f, 6.f);
+    parentScaleNode->setScaling({6.f, 6.f, 6.f});
 
     scene->flush();
     scene->publish();

@@ -111,7 +111,7 @@ namespace ramses_internal
 
         std::unique_ptr<Device_GL> createDeviceInternal(IContext& context, IDeviceExtension* deviceExtension)
         {
-            auto device = std::make_unique<Device_GL>(context, uint8_t{ 3 }, uint8_t{ 0 }, true, deviceExtension);
+            auto device = std::make_unique<Device_GL>(context, deviceExtension);
             if (device->init())
                 return device;
 

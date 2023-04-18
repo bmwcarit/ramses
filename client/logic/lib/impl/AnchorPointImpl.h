@@ -42,8 +42,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::AnchorPoint> Serialize(
             const AnchorPointImpl& anchorPoint,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<AnchorPointImpl> Deserialize(
             const rlogic_serialization::AnchorPoint& anchorPoint,

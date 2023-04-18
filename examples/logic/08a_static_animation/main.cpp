@@ -58,7 +58,7 @@ int main()
      */
     auto [scene, tri1, tri2] = CreateSceneWithTriangles(*renderer.getClient());
 
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Create a binding object which serves as a bridge between logic nodes and animations on one end
@@ -232,7 +232,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, 1280.f/800.f, 0.1f, 100.0f);
     camera->setViewport(0, 0, 1280, 800);
-    camera->setTranslation(0.0f, 0.0f, 10.0f);
+    camera->setTranslation({0.0f, 0.0f, 10.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass();
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -283,8 +283,8 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
     meshNode2->setIndexCount(3);
     meshNode2->setGeometryBinding(*geometry);
 
-    meshNode1->setTranslation(-1.f, -0.8f, 0.f);
-    meshNode2->setTranslation(1.f, -0.8f, 0.f);
+    meshNode1->setTranslation({-1.f, -0.8f, 0.f});
+    meshNode2->setTranslation({1.f, -0.8f, 0.f});
 
     renderGroup->addMeshNode(*meshNode1);
     renderGroup->addMeshNode(*meshNode2);

@@ -8,7 +8,7 @@
     -------------------------------------------------------------------------
 
 ========================================
-Ramses Logic documentation
+Ramses documentation
 ========================================
 
 .. toctree::
@@ -25,9 +25,15 @@ Ramses Logic documentation
 
 .. toctree::
     :maxdepth: 3
-    :caption: Viewer
+    :caption: Core API
 
-    viewer
+    core
+
+.. toctree::
+    :maxdepth: 3
+    :caption: Logic API
+
+    logic
 
 .. toctree::
     :maxdepth: 3
@@ -37,9 +43,9 @@ Ramses Logic documentation
 
 .. toctree::
     :maxdepth: 3
-    :caption: API
+    :caption: Viewer
 
-    api
+    viewer
 
 .. toctree::
     :maxdepth: 3

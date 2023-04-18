@@ -13,7 +13,7 @@
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-utils.h"
 #include <unordered_set>
 #include <cmath>
@@ -106,7 +106,7 @@ public:
     // Textures that will be used as texture provider
     ramses::Texture2D* textures[2];
     // Data object that will be used as data consumer
-    ramses::DataVector4f* colorData;
+    ramses::DataObject* colorData;
     // Provider scene
     ramses::Scene* scene;
 };
@@ -121,7 +121,7 @@ struct QuadSceneInfo
     // Additional rotation chained after consumed transformation
     ramses::Node* rotateNode;
     // Data object that will be used as data provider
-    ramses::DataVector4f* colorData;
+    ramses::DataObject* colorData;
     // Consumer scene
     ramses::Scene* scene;
 };
@@ -171,12 +171,12 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
     effect->findUniformInput("color", colorInput);
     appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
     //bind input to data object
-    sceneInfo->colorData = sceneInfo->scene->createDataVector4f("colorData");
-    sceneInfo->colorData->setValue(1.0f, 0.0f, 0.3f, 1.0f);
+    sceneInfo->colorData = sceneInfo->scene->createDataObject(ramses::EDataType::Vector4F, "colorData");
+    sceneInfo->colorData->setValue(ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
     appearance->bindInput(colorInput, *sceneInfo->colorData);
 
     ramses::Node* rootTranslation = sceneInfo->scene->createNode("root scene translation node");
-    rootTranslation->setTranslation(0.0f, 0.0f, -1.0f);
+    rootTranslation->setTranslation({0.0f, 0.0f, -1.0f});
 
     sceneInfo->translateNode = sceneInfo->scene->createNode("triangle translation node");
     sceneInfo->translateNode->setParent(*rootTranslation);
@@ -275,8 +275,8 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
     sceneInfo->rotateNode->setParent(*sceneInfo->consumerNode);
 
     //create data object for providing color info (not used by any appearance)
-    sceneInfo->colorData = sceneInfo->scene->createDataVector4f("colorData");
-    sceneInfo->colorData->setValue(1.0f, 1.0f, 1.0f, 1.0f);
+    sceneInfo->colorData = sceneInfo->scene->createDataObject(ramses::EDataType::Vector4F, "colorData");
+    sceneInfo->colorData->setValue(ramses::vec4f{ 1.0f, 1.0f, 1.0f, 1.0f });
 
     return sceneInfo;
 }
@@ -398,15 +398,15 @@ int main()
             triangleInfo->scene->updateTextureProvider(*triangleInfo->textures[textureId], textureProviderId);
         }
 
-        triangleInfo->translateNode->setTranslation(std::sin(timeStamp * 0.05f) * 0.2f, 0.0f, 0.0f);
+        triangleInfo->translateNode->setTranslation({std::sin(timeStamp * 0.05f) * 0.2f, 0.0f, 0.0f});
         triangleInfo->scene->flush();
         rotationFactor += 1.f;
-        quadInfo->rotateNode->setRotation(0.0f, 0.0f, rotationFactor, ramses::ERotationConvention::Euler_XYZ);
+        quadInfo->rotateNode->setRotation({0.0f, 0.0f, rotationFactor}, ramses::ERotationType::Euler_XYZ);
         quadInfo->scene->flush();
-        quadInfo2->rotateNode->setRotation(0.0f, rotationFactor, 0.0f, ramses::ERotationConvention::Euler_XYZ);
+        quadInfo2->rotateNode->setRotation({0.0f, rotationFactor, 0.0f}, ramses::ERotationType::Euler_XYZ);
         quadInfo2->scene->flush();
 
-        quadInfo->colorData->setValue(std::sin(timeStamp * 0.1f), 0.0f, 0.5f, 1.0f);
+        quadInfo->colorData->setValue(ramses::vec4f{ std::sin(timeStamp * 0.1f), 0.0f, 0.5f, 1.0f });
 
         renderer.doOneLoop();
         timeStamp++;

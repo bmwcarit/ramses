@@ -37,7 +37,7 @@ namespace rlogic::internal
         }
 
     protected:
-        LogicEngine m_logicEngine{ EFeatureLevel_Latest };
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
         DataArray* m_dataFloat = nullptr;
         DataArray* m_dataVec2 = nullptr;
         DataArray* m_dataVecVec = nullptr;

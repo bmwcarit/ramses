@@ -122,30 +122,30 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererPicking, generatesEventForObjectsPicked_regressionRoundingIssues)
     {
-        const ramses::pickableObjectId_t pickableId1(2u);
-        const ramses::pickableObjectId_t pickableId2(3u);
-        const std::array<ramses::vec3f, 3u> geometryData{ ramses::vec3f{-1.f, 0.f, 0.f}, ramses::vec3f{1.f, 0.f, 0.f}, ramses::vec3f{0.f, 1.f, 0.f} };
+        const ramses::pickableObjectId_t    pickableId1(2u);
+        const ramses::pickableObjectId_t    pickableId2(3u);
+        const std::array<ramses::vec3f, 3u> geometryData{ramses::vec3f{-1.f, 0.f, 0.f}, ramses::vec3f{1.f, 0.f, 0.f}, ramses::vec3f{0.f, 1.f, 0.f}};
 
         ramses::PerspectiveCamera* perspectiveCamera = m_scene.createPerspectiveCamera("my perspectiveCamera");
         perspectiveCamera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 100.f);
         perspectiveCamera->setViewport(0, 0, 1280, 480);
-        perspectiveCamera->translate(-4.f, 0.f, 11.f);
-        perspectiveCamera->setRotation(0.f, -40.f, 0.f, ramses::ERotationConvention::Euler_XYZ);
+        perspectiveCamera->translate({-4.f, 0.f, 11.f});
+        perspectiveCamera->setRotation({0.f, -40.f, 0.f}, ramses::ERotationType::Euler_XYZ);
 
         ramses::ArrayBuffer* pickableGeometryBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector3F, 3u, "geometryBuffer");
         pickableGeometryBuffer->updateData(0, 3, geometryData.data());
 
         ramses::PickableObject* pickableObject1 = m_scene.createPickableObject(*pickableGeometryBuffer, pickableId1, "pickableObject1");
         pickableObject1->setCamera(*perspectiveCamera);
-        pickableObject1->translate(0.1f, 1.0f, -1.0f);
-        pickableObject1->setRotation(-70.0f, 0.0f, 0.0f, ramses::ERotationConvention::Euler_XYZ);
-        pickableObject1->scale(3.0f, 3.0f, 3.0f);
+        pickableObject1->translate({0.1f, 1.0f, -1.0f});
+        pickableObject1->setRotation({-70.0f, 0.0f, 0.0f}, ramses::ERotationType::Euler_XYZ);
+        pickableObject1->scale({3.0f, 3.0f, 3.0f});
 
         ramses::PickableObject* pickableObject2 = m_scene.createPickableObject(*pickableGeometryBuffer, pickableId2, "pickableObject1");
         pickableObject2->setCamera(*perspectiveCamera);
-        pickableObject2->translate(6.0f, 0.9f, -1.0f);
-        pickableObject2->setRotation(-70.0f, 0.0f, 0.0f, ramses::ERotationConvention::Euler_XYZ);
-        pickableObject2->scale(3.0f, 3.0f, 3.0f);
+        pickableObject2->translate({6.0f, 0.9f, -1.0f});
+        pickableObject2->setRotation({-70.0f, 0.0f, 0.0f}, ramses::ERotationType::Euler_XYZ);
+        pickableObject2->scale({3.0f, 3.0f, 3.0f});
 
         m_scene.flush();
         updateAndDispatch();

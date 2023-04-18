@@ -43,17 +43,6 @@ namespace ramses
         "ERamsesObjectType_ArrayBufferObject",
         "ERamsesObjectType_Texture2DBuffer",
         "ERamsesObjectType_DataObject",
-        "ERamsesObjectType_DataFloat",
-        "ERamsesObjectType_DataVector2f",
-        "ERamsesObjectType_DataVector3f",
-        "ERamsesObjectType_DataVector4f",
-        "ERamsesObjectType_DataMatrix22f",
-        "ERamsesObjectType_DataMatrix33f",
-        "ERamsesObjectType_DataMatrix44f",
-        "ERamsesObjectType_DataInt32",
-        "ERamsesObjectType_DataVector2i",
-        "ERamsesObjectType_DataVector3i",
-        "ERamsesObjectType_DataVector4i",
         "ERamsesObjectType_SceneReference",
         "ERamsesObjectType_TextureSamplerExternal"
     };

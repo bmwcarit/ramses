@@ -147,7 +147,7 @@ namespace ramses_internal
 
         ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(*meshNode);
-        translateNode->translate(0.0f, -0.5f, -5.0f);
+        translateNode->translate({0.0f, -0.5f, -5.0f});
 
         ramses::RenderPass* renderPass = m_scene.createRenderPass();
         ramses::RenderGroup* renderGroup = m_scene.createRenderGroup();
@@ -160,7 +160,7 @@ namespace ramses_internal
         rtDesc.addRenderBuffer(m_renderBuffer);
         ramses::RenderTarget* renderTarget = m_scene.createRenderTarget(rtDesc);
         renderPass->setRenderTarget(renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags::EClearFlags_All);
     }
 
@@ -210,7 +210,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -4.f);
+        transNode->setTranslation({0.f, 0.f, -4.f});
         meshNode->setParent(*transNode);
 
         ramses::Camera& camera = createCameraWithDefaultParameters();

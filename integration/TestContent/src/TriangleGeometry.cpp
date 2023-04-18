@@ -17,7 +17,6 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/DataVector4f.h"
 #include "ramses-framework-api/DataTypes.h"
 
 namespace ramses

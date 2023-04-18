@@ -157,10 +157,10 @@ namespace ramses
         return status;
     }
 
-    status_t RamsesRenderer::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
+    status_t RamsesRenderer::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, const vec4f& color)
     {
-        const status_t status = impl.setDisplayBufferClearColor(display, displayBuffer, r, g, b, a);
-        LOG_HL_RENDERER_API6(status, display, displayBuffer, r, g, b, a);
+        const status_t status = impl.setDisplayBufferClearColor(display, displayBuffer, color);
+        LOG_HL_RENDERER_API6(status, display, displayBuffer, color.r, color.g, color.b, color.a);
         return status;
     }
 

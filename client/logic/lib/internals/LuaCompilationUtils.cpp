@@ -34,7 +34,6 @@ namespace rlogic::internal
         sol::bytecode byteCodeFromPrecompiledScript,
         std::unique_ptr<Property> inputsFromPrecompiledScript,
         std::unique_ptr<Property> outputsFromPrecompiledScript,
-        EFeatureLevel featureLevel,
         bool enableDebugLogFunctions)
     {
         sol::environment env = solState.createEnvironment(stdModules, userModules, enableDebugLogFunctions);
@@ -45,7 +44,7 @@ namespace rlogic::internal
         sol::load_result load_result{};
         sol::protected_function_result main_result{};
         sol::protected_function mainFunction{};
-        const std::string debuggingName = (featureLevel == EFeatureLevel_01 ? std::string(name) : "RL_lua_script");
+        const std::string debuggingName = "RL_lua_script";
 
         if (!byteCodeFromPrecompiledScript.empty())
         {
@@ -186,9 +185,7 @@ namespace rlogic::internal
             resultOutputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(extractedOutputsType, EPropertySemantics::ScriptOutput));
         }
 
-        sol::bytecode resultByteCode;
-        if(featureLevel >= EFeatureLevel_02)
-            resultByteCode = (byteCodeFromPrecompiledScript.empty() ? mainFunction.dump() : std::move(byteCodeFromPrecompiledScript));
+        sol::bytecode resultByteCode = (byteCodeFromPrecompiledScript.empty() ? mainFunction.dump() : std::move(byteCodeFromPrecompiledScript));
 
         EnvironmentProtection::SetEnvironmentProtectionLevel(env, EEnvProtectionFlag::RunFunction);
 
@@ -303,7 +300,6 @@ namespace rlogic::internal
         std::string_view name,
         ErrorReporting& errorReporting,
         sol::bytecode byteCodeFromPrecompiledModule,
-        EFeatureLevel featureLevel,
         bool enableDebugLogFunctions)
     {
         sol::environment env = solState.createEnvironment(stdModules, userModules, enableDebugLogFunctions);
@@ -316,7 +312,7 @@ namespace rlogic::internal
         sol::protected_function mainFunction{};
         sol::protected_function_result main_result{};
 
-        const std::string debuggingName = (featureLevel == EFeatureLevel_01 ? std::string(name) : "RL_lua_module");
+        const std::string debuggingName = "RL_lua_module";
         if (!byteCodeFromPrecompiledModule.empty())
         {
             ScopedEnvironmentProtection p(env, EEnvProtectionFlag::Module);
@@ -379,9 +375,7 @@ namespace rlogic::internal
         sol::table moduleTable = resultObj;
 
         //for serialization
-        sol::bytecode resultByteCode;
-        if(featureLevel >= EFeatureLevel_02)
-            resultByteCode = (byteCodeFromPrecompiledModule.empty() ? mainFunction.dump() : std::move(byteCodeFromPrecompiledModule));
+        sol::bytecode resultByteCode = (byteCodeFromPrecompiledModule.empty() ? mainFunction.dump() : std::move(byteCodeFromPrecompiledModule));
 
         auto compiledModule = LuaCompiledModule{
             LuaCompiledSource{

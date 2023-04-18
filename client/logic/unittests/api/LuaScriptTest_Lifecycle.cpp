@@ -66,7 +66,7 @@ namespace rlogic::internal
     TEST_F(ALuaScript_LifecycleWithFiles, NoOutputs)
     {
         {
-            LogicEngine tempLogicEngine;
+            LogicEngine tempLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto script = tempLogicEngine.createLuaScript(
                 R"(
                     function interface(IN,OUT)
@@ -104,7 +104,7 @@ namespace rlogic::internal
     TEST_F(ALuaScript_LifecycleWithFiles, Arrays)
     {
         {
-            LogicEngine tempLogicEngine;
+            LogicEngine tempLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto script = tempLogicEngine.createLuaScript(
                 R"(
                 function interface(IN,OUT)
@@ -149,7 +149,7 @@ namespace rlogic::internal
     TEST_F(ALuaScript_LifecycleWithFiles, NestedArray)
     {
         {
-            LogicEngine tempLogicEngine;
+            LogicEngine tempLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto script = tempLogicEngine.createLuaScript(
                 R"(
                 function interface(IN,OUT)
@@ -184,7 +184,7 @@ namespace rlogic::internal
             EXPECT_EQ("", nested_array->getChild(0u)->getName());
             EXPECT_EQ(EPropertyType::Vec3f, nested_array->getChild(0u)->getType());
             EXPECT_EQ(0u, nested_array->getChild(0u)->getChildCount());
-            EXPECT_THAT(*nested_array->getChild(0u)->get<vec3f>(), ::testing::ElementsAre(1.1f, 1.2f, 1.3f));
+            EXPECT_EQ(*nested_array->getChild(0u)->get<vec3f>(), vec3f(1.1f, 1.2f, 1.3f));
 
         }
     }
@@ -192,7 +192,7 @@ namespace rlogic::internal
     TEST_F(ALuaScript_LifecycleWithFiles, NestedProperties)
     {
         {
-            LogicEngine tempLogicEngine;
+            LogicEngine tempLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto script = tempLogicEngine.createLuaScript(
                 R"(
                 function interface(IN,OUT)
@@ -260,7 +260,7 @@ namespace rlogic::internal
     TEST_F(ALuaScript_LifecycleWithFiles, ArrayOfStructs)
     {
         {
-            LogicEngine tempLogicEngine;
+            LogicEngine tempLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto script = tempLogicEngine.createLuaScript(
                 R"(
                 function interface(IN,OUT)
@@ -345,7 +345,7 @@ namespace rlogic::internal
             )";
 
         {
-            LogicEngine tempLogicEngine;
+            LogicEngine tempLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto script = tempLogicEngine.createLuaScript(scriptSrc, {}, "MyScript");
 
             ASSERT_NE(nullptr, script);
@@ -396,7 +396,7 @@ namespace rlogic::internal
     TEST_F(ALuaScript_LifecycleWithFiles, OverwritesCurrentData_WhenLoadedASecondTimeFromTheSameFile)
     {
         {
-            LogicEngine tempLogicEngine;
+            LogicEngine tempLogicEngine{ m_logicEngine.getFeatureLevel() };
             auto script = tempLogicEngine.createLuaScript(
                 R"(
                 function interface(IN,OUT)

@@ -19,7 +19,7 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a script which initializes global variables in its init() method
     // They are used during the interface definition as well as at runtime

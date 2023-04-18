@@ -52,10 +52,7 @@ int main()
      */
     auto [scene, meshNode] = CreateSceneWithTriangles(*renderer.getClient());
 
-    /**
-    * Skin binding requires feature level 05 or higher.
-    */
-    rlogic::LogicEngine logicEngine{ rlogic::EFeatureLevel_05 };
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Show the scene on the renderer.
@@ -148,7 +145,7 @@ SceneAndMesh CreateSceneWithTriangles(ramses::RamsesClient& client)
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(SimpleRenderer::GetDisplaySize()[0])/float(SimpleRenderer::GetDisplaySize()[1]), 0.1f, 100.0f);
     camera->setViewport(0, 0, SimpleRenderer::GetDisplaySize()[0], SimpleRenderer::GetDisplaySize()[1]);
-    camera->setTranslation(0.0f, 1.0f, 10.0f);
+    camera->setTranslation({0.0f, 1.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
     renderPass->setClearFlags(ramses::EClearFlags_None);

@@ -55,8 +55,8 @@ namespace ramses_internal
             ramses::Node* scale1 = scene.createNode();
             ramses::Node* scale2 = scene.createNode();
 
-            scale1->setScaling(5.0f, 5.0f, 5.0f);
-            scale2->setScaling(5.0f, 5.0f, 5.0f);
+            scale1->setScaling({5.0f, 5.0f, 5.0f});
+            scale2->setScaling({5.0f, 5.0f, 5.0f});
 
             scale1->setParent(*translate1);
             scale2->setParent(*translate2);
@@ -73,8 +73,8 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*mesh1);
         addMeshNodeToDefaultRenderGroup(*mesh2);
 
-        translate1->setTranslation(-1.5f, 0.f, -15.f);
-        translate2->setTranslation(1.5f, 0.f, -15.f);
+        translate1->setTranslation({-1.5f, 0.f, -15.f});
+        translate2->setTranslation({1.5f, 0.f, -15.f});
 
         const std::array<ramses::vec2f, 3u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f} };
         const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(3u, textureCoordsArray.data());
@@ -127,7 +127,7 @@ namespace ramses_internal
             rtdesc.addRenderBuffer(fallBackBuffer);
             ramses::RenderTarget* renderTarget = m_scene.createRenderTarget(rtdesc);
             renderPassClear.setRenderTarget(renderTarget);
-            renderPassClear.setClearColor(1.0f, 1.0f, 0.f, 1.0f);
+            renderPassClear.setClearColor({1.0f, 1.0f, 0.f, 1.0f});
 
             const ramses::TextureSamplerMS& sampler = *m_scene.createTextureSamplerMS(fallBackBuffer, "samplerMSConsumer");
 

@@ -43,15 +43,15 @@ namespace ramses_internal
             scene.allocateTransform(childChild3, t3);
 
             scene.setTranslation(t1, t1Translation);
-            scene.setRotation   (t1, Vector4(t1Rotation)   , ERotationConvention::Euler_ZYZ);
+            scene.setRotation   (t1, Vector4(t1Rotation)   , ERotationType::Euler_ZYZ);
             scene.setScaling    (t1, t1Scaling    );
 
             scene.setTranslation(t2, t2Translation);
-            scene.setRotation   (t2, Vector4(t2Rotation)   , ERotationConvention::Euler_XYX);
+            scene.setRotation   (t2, Vector4(t2Rotation)   , ERotationType::Euler_XYX);
             scene.setScaling    (t2, t2Scaling    );
 
             scene.setTranslation(t3, t3Translation);
-            scene.setRotation   (t3, t3Rotation, ERotationConvention::Quaternion);
+            scene.setRotation   (t3, t3Rotation, ERotationType::Quaternion);
             scene.setScaling    (t3, t3Scaling    );
 
             scene.allocateRenderState(renderState);
@@ -109,7 +109,7 @@ namespace ramses_internal
             scene.setDataSingleFloat(uniformData, DataFieldHandle(0u), 0.5f);
             const Vector4 dataVec4fArray[2] = { Vector4(0.0f, 1.0f, 2.0f, 3.0f), Vector4(4.0f, 5.0f, 6.0f, 7.0f) };
             scene.setDataVector4fArray(uniformData, DataFieldHandle(1), 2, dataVec4fArray);
-            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationConvention::Euler_XYZ));
+            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationType::Euler_XYZ));
             scene.setDataSingleMatrix44f(uniformData, DataFieldHandle(3), Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }));
             scene.setDataTextureSamplerHandle(uniformData, DataFieldHandle(4), samplerWithTextureResource);
             scene.setDataReference(uniformData, DataFieldHandle(5), dataRef);
@@ -249,17 +249,17 @@ namespace ramses_internal
 
             EXPECT_EQ(t1Translation, otherScene.getTranslation (t1));
             EXPECT_EQ(t1Scaling    , otherScene.getScaling     (t1));
-            EXPECT_EQ(ERotationConvention::Euler_ZYZ, otherScene.getRotationConvention(t1));
+            EXPECT_EQ(ERotationType::Euler_ZYZ, otherScene.getRotationType(t1));
 
             EXPECT_EQ(t2Translation, otherScene.getTranslation (t2));
             EXPECT_EQ(t2Scaling    , otherScene.getScaling     (t2));
             EXPECT_EQ(Vector4(t2Rotation), otherScene.getRotation    (t2));
-            EXPECT_EQ(ERotationConvention::Euler_XYX, otherScene.getRotationConvention(t2));
+            EXPECT_EQ(ERotationType::Euler_XYX, otherScene.getRotationType(t2));
 
             EXPECT_EQ(t3Translation, otherScene.getTranslation (t3));
             EXPECT_EQ(t3Scaling    , otherScene.getScaling     (t3));
             EXPECT_EQ(t3Rotation, otherScene.getRotation    (t3));
-            EXPECT_EQ(ERotationConvention::Quaternion, otherScene.getRotationConvention(t3));
+            EXPECT_EQ(ERotationType::Quaternion, otherScene.getRotationType(t3));
         }
 
         template <typename OTHERSCENE>
@@ -391,7 +391,7 @@ namespace ramses_internal
             EXPECT_EQ(Vector4(0.0f, 1.0f, 2.0f, 3.0f), dataVec4fArray[0]);
             EXPECT_EQ(Vector4(4.0f, 5.0f, 6.0f, 7.0f), dataVec4fArray[1]);
 
-            EXPECT_EQ(Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationConvention::Euler_XYZ), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
+            EXPECT_EQ(Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationType::Euler_XYZ), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
             EXPECT_EQ(Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }), otherScene.getDataSingleMatrix44f(uniformData, DataFieldHandle(3u)));
             EXPECT_EQ(samplerWithTextureResource, otherScene.getDataTextureSamplerHandle(uniformData, DataFieldHandle(4u)));
             EXPECT_EQ(dataRef, otherScene.getDataReference(uniformData, DataFieldHandle(5u)));

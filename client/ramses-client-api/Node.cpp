@@ -93,81 +93,81 @@ namespace ramses
         return impl.removeParent();
     }
 
-    status_t Node::getModelMatrix(float(&modelMatrix)[16]) const
+    status_t Node::getModelMatrix(matrix44f& modelMatrix) const
     {
         return impl.getModelMatrix(modelMatrix);
     }
 
-    status_t Node::getInverseModelMatrix(float(&inverseModelMatrix)[16]) const
+    status_t Node::getInverseModelMatrix(matrix44f& inverseModelMatrix) const
     {
         return impl.getInverseModelMatrix(inverseModelMatrix);
     }
 
-    status_t Node::setRotation(float x, float y, float z, ERotationConvention rotationConvention)
+    status_t Node::setRotation(const vec3f& rotation, ERotationType rotationType)
     {
-        const status_t status = impl.setRotation(x, y, z, rotationConvention);
-        LOG_HL_CLIENT_API4(status, x, y, z, rotationConvention);
+        const status_t status = impl.setRotation(rotation, rotationType);
+        LOG_HL_CLIENT_API4(status, rotation.x, rotation.y, rotation.z, rotationType);
         return status;
     }
 
-    status_t Node::setRotation(const glm::quat& rotation)
+    status_t Node::setRotation(const quat& rotation)
     {
         const status_t status = impl.setRotation(rotation);
         LOG_HL_CLIENT_API4(status, rotation.w, rotation.x, rotation.y, rotation.z);
         return status;
     }
 
-    ramses::ERotationConvention Node::getRotationConvention() const
+    ramses::ERotationType Node::getRotationType() const
     {
-        return impl.getRotationConvention();
+        return impl.getRotationType();
     }
 
-    ramses::status_t Node::getRotation(float& x, float& y, float& z) const
-    {
-        return impl.getRotation(x, y, z);
-    }
-
-    ramses::status_t Node::getRotation(glm::quat& rotation) const
+    ramses::status_t Node::getRotation(vec3f& rotation) const
     {
         return impl.getRotation(rotation);
     }
 
-    ramses::status_t Node::translate(float x, float y, float z)
+    ramses::status_t Node::getRotation(quat& rotation) const
     {
-        const status_t status = impl.translate(x, y, z);
-        LOG_HL_CLIENT_API3(status, x, y, z);
+        return impl.getRotation(rotation);
+    }
+
+    ramses::status_t Node::translate(const vec3f& translation)
+    {
+        const status_t status = impl.translate(translation);
+        LOG_HL_CLIENT_API3(status, translation.x, translation.y, translation.z);
         return status;
     }
 
-    ramses::status_t Node::setTranslation(float x, float y, float z)
+    ramses::status_t Node::setTranslation(const vec3f& translation)
     {
-        const status_t status = impl.setTranslation(x, y, z);
-        LOG_HL_CLIENT_API3(status, x, y, z);
+        const status_t status = impl.setTranslation(translation);
+        LOG_HL_CLIENT_API3(status, translation.x, translation.y, translation.z);
         return status;
     }
 
-    ramses::status_t Node::getTranslation(float& x, float& y, float& z) const
+    ramses::status_t Node::getTranslation(vec3f& translation) const
     {
-        return impl.getTranslation(x, y, z);
+        return impl.getTranslation(translation);
     }
 
-    ramses::status_t Node::scale(float x, float y, float z)
+    ramses::status_t Node::scale(const vec3f& scaling)
     {
-        const status_t status = impl.scale(x, y, z);
-        LOG_HL_CLIENT_API3(status, x, y, z);
+        const status_t status = impl.scale(scaling);
+        LOG_HL_CLIENT_API3(status, scaling.x, scaling.y, scaling.z);
         return status;
     }
 
-    ramses::status_t Node::setScaling(float x, float y, float z)
+    ramses::status_t Node::setScaling(const vec3f& scaling)
     {
-        const status_t status = impl.setScaling(x, y, z);
-        LOG_HL_CLIENT_API3(status, x, y, z);
+        const status_t status = impl.setScaling(scaling);
+        LOG_HL_CLIENT_API3(status, scaling.x, scaling.y, scaling.z);
         return status;
     }
 
-    ramses::status_t Node::getScaling(float& x, float& y, float& z) const
+    ramses::status_t Node::getScaling(vec3f& scaling) const
     {
-        return impl.getScaling(x, y, z);
+        return impl.getScaling(scaling);
     }
 
     ramses::status_t Node::setVisibility(EVisibilityMode mode)

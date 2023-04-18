@@ -15,6 +15,8 @@
 #include <unordered_set>
 #include <thread>
 #include <cmath>
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 /**
  * @example ramses-example-local-client/src/main.cpp
@@ -95,7 +97,7 @@ int main()
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
-    meshNode->setTranslation(0.0f, 0.0f, -5.0f);
+    meshNode->setTranslation({0.0f, 0.0f, -5.0f});
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
@@ -112,12 +114,17 @@ int main()
     sceneControlAPI.flush();
 
     RendererEventHandler eventHandler;
-    float rotationZ = 0.f;
+    float factor = 0.f;
+    float step = 0.002f;
+    auto q1 = glm::angleAxis(glm::radians(-90.f), glm::vec3(0, 0, 1));
+    auto q2 = glm::angleAxis(glm::radians(90.f), glm::vec3(0, 0, 1));
+
     while (!eventHandler.isWindowClosed())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
-        rotationZ += 1.5f;
-        meshNode->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::Euler_XYZ);
+        factor += step;
+        meshNode->setRotation(glm::mix(q1, q2, factor));
         clientScene->flush();
+        if (factor >= 1.f || factor <= 0.f) step = -step;
     }
 }

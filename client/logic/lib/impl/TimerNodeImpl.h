@@ -9,7 +9,6 @@
 #pragma once
 
 #include "impl/LogicNodeImpl.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include <string>
 #include <optional>
 #include <chrono>
@@ -43,8 +42,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::TimerNode> Serialize(
             const TimerNodeImpl& timerNode,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<TimerNodeImpl> Deserialize(
             const rlogic_serialization::TimerNode& timerNodeFB,

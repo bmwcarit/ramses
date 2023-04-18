@@ -61,7 +61,7 @@ namespace ramses_internal
         ramses::Scene* scene = client.createScene(sceneId, sceneConfig);
 
         ramses::Node* cameraTranslation = scene->createNode("cameraPosition");
-        cameraTranslation->setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        cameraTranslation->setTranslation({cameraPosition.x, cameraPosition.y, cameraPosition.z});
         auto camera = scene->createPerspectiveCamera("fileLoading camera");
         camera->setViewport(0, 0, m_viewportWidth, m_viewportHeight);
         camera->setFrustum(19.f, float(m_viewportWidth) / m_viewportHeight, 0.1f, 1500.f);
@@ -177,9 +177,9 @@ namespace ramses_internal
         meshNode2->setParent(*transNode2);
         meshNode3->setParent(*transNode3);
 
-        transNode1->setTranslation(-0.133f, 0.f, 0.f);
-        transNode2->setTranslation(0.133f, 0.f, 0.f);
-        transNode3->setTranslation(0.f, -0.133f, 0.f);
+        transNode1->setTranslation({-0.133f, 0.f, 0.f});
+        transNode2->setTranslation({0.133f, 0.f, 0.f});
+        transNode3->setTranslation({0.f, -0.133f, 0.f});
     }
 
     void FileLoadingScene::loadFromFiles(ramses::RamsesClient& client, const String& folder)
@@ -188,7 +188,7 @@ namespace ramses_internal
 
         // make changes to loaded scene
         ramses::Node& loadedScaleNode = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Node>(*loadedScene->findObjectByName("scale node"));
-        loadedScaleNode.setScaling(2, 2, 2);
+        loadedScaleNode.setScaling({2, 2, 2});
         loadedScene->flush();
 
         loadedScene->flush();

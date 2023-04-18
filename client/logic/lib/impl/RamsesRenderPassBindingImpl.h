@@ -9,7 +9,6 @@
 #pragma once
 
 #include "impl/RamsesBindingImpl.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include <memory>
 
 namespace ramses
@@ -57,8 +56,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::RamsesRenderPassBinding> Serialize(
             const RamsesRenderPassBindingImpl& renderPassBinding,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<RamsesRenderPassBindingImpl> Deserialize(
             const rlogic_serialization::RamsesRenderPassBinding& renderPassBinding,

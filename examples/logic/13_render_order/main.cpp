@@ -55,10 +55,7 @@ int main()
      */
     auto [scene, renderGroup, triMesh1, triMesh2] = CreateSceneWithTriangles(*renderer.getClient());
 
-    /**
-    * Render group binding requires feature level 03 or higher
-    */
-    rlogic::LogicEngine logicEngine{ rlogic::EFeatureLevel_03 };
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * In order to create a render group binding we need to first specify what elements we want to expose for render order control,
@@ -127,7 +124,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(SimpleRenderer::GetDisplaySize()[0])/float(SimpleRenderer::GetDisplaySize()[1]), 0.1f, 100.0f);
     camera->setViewport(0, 0, SimpleRenderer::GetDisplaySize()[0], SimpleRenderer::GetDisplaySize()[1]);
-    camera->setTranslation(0.0f, 0.0f, 10.0f);
+    camera->setTranslation({0.0f, 0.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
     renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -189,7 +186,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
     meshNode2->setAppearance(*appearanceWhite);
     meshNode2->setIndexCount(3);
     meshNode2->setGeometryBinding(*geometry);
-    meshNode2->setTranslation(0.5f, -0.2f, 0.7f);
+    meshNode2->setTranslation({0.5f, -0.2f, 0.7f});
 
     renderGroup->addMeshNode(*meshNode1);
     renderGroup->addMeshNode(*meshNode2);

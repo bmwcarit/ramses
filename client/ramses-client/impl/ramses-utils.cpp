@@ -18,8 +18,7 @@
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/TextureSwizzle.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 
 #include "EffectImpl.h"
 #include "MeshNodeImpl.h"
@@ -345,7 +344,7 @@ namespace ramses
         return nodeId_t(node.impl.getNodeHandle().asMemoryHandle());
     }
 
-    bool RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataVector4f& frustumPlanesData, DataVector2f& nearFarPlanesData)
+    bool RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataObject& frustumPlanesData, DataObject& nearFarPlanesData)
     {
         const auto params = ramses_internal::ProjectionParams::Perspective(fov, aspectRatio, nearPlane, farPlane);
         if (!params.isValid())
@@ -354,8 +353,8 @@ namespace ramses
             return false;
         }
 
-        if (frustumPlanesData.setValue(params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane) != StatusOK ||
-            nearFarPlanesData.setValue(params.nearPlane, params.farPlane) != StatusOK)
+        if (frustumPlanesData.setValue(ramses::vec4f{ params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane }) != StatusOK ||
+            nearFarPlanesData.setValue(ramses::vec2f{ params.nearPlane, params.farPlane }) != StatusOK)
             return false;
 
         return true;
@@ -388,17 +387,7 @@ namespace ramses
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/BlitPass.h"
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataInt32.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector3f.h"
-#include "ramses-client-api/DataVector3i.h"
-#include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/DataMatrix22f.h"
-#include "ramses-client-api/DataMatrix33f.h"
-#include "ramses-client-api/DataMatrix44f.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -447,17 +436,6 @@ INSTANTIATE_CONVERT_TEMPLATE(TextureSamplerExternal)
 INSTANTIATE_CONVERT_TEMPLATE(RenderBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(RenderTarget)
 INSTANTIATE_CONVERT_TEMPLATE(DataObject)
-INSTANTIATE_CONVERT_TEMPLATE(DataFloat)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector2f)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector3f)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector4f)
-INSTANTIATE_CONVERT_TEMPLATE(DataMatrix22f)
-INSTANTIATE_CONVERT_TEMPLATE(DataMatrix33f)
-INSTANTIATE_CONVERT_TEMPLATE(DataMatrix44f)
-INSTANTIATE_CONVERT_TEMPLATE(DataInt32)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector2i)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector3i)
-INSTANTIATE_CONVERT_TEMPLATE(DataVector4i)
 INSTANTIATE_CONVERT_TEMPLATE(ArrayBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2DBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(SceneReference)

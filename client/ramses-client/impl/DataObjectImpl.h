@@ -11,14 +11,9 @@
 
 //internal
 #include "SceneObjectImpl.h"
-#include "SceneAPI/EDataType.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Matrix44f.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
+#include "ramses-framework-api/EDataType.h"
+#include "ramses-framework-api/DataTypes.h"
+#include "SceneAPI/Handles.h"
 
 namespace ramses_internal
 {
@@ -30,30 +25,26 @@ namespace ramses
     class DataObjectImpl final : public SceneObjectImpl
     {
     public:
-        DataObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
+        DataObjectImpl(SceneImpl& scene, ERamsesObjectType ramsesType, EDataType dataType, const char* name);
         ~DataObjectImpl() override;
 
-        void             initializeFrameworkData();
+        void     initializeFrameworkData();
         void     deinitializeFrameworkData() override;
 
         status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        // Setters for the stored value
+        EDataType getDataType() const;
+
         template <typename T>
         status_t setValue(const T& value);
-
-        // Getters for the stored value
         template <typename T>
         status_t getValue(T& value) const;
 
-        ramses_internal::EDataType getDataType() const;
         ramses_internal::DataInstanceHandle getDataReference() const;
 
     private:
-        static ramses_internal::EDataType GetDataTypeForDataObjectType(ERamsesObjectType type);
-
-        ramses_internal::EDataType m_dataType;
+        EDataType m_dataType;
 
         ramses_internal::DataLayoutHandle   m_layoutHandle;
         ramses_internal::DataInstanceHandle m_dataReference;

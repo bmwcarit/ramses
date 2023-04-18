@@ -12,6 +12,8 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Math3d/Vector2.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "glm/mat2x2.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace ramses_internal
 {
@@ -49,6 +51,8 @@ namespace ramses_internal
         * Constructor for initialize matrix with 4 single values
         */
         constexpr Matrix22f(const Float _m11, const Float _m12, const Float _m21, const Float _m22);
+
+        explicit Matrix22f(const glm::mat2& other);
 
         /**
         * Constructor to initialize matrix with one vector for each row
@@ -142,6 +146,16 @@ namespace ramses_internal
         , m12(v1[1])
         , m22(v2[1])
     {
+    }
+
+    inline
+    Matrix22f::Matrix22f(const glm::mat2& other)
+    {
+        auto buf = glm::value_ptr(other);
+        data[0] = buf[0];
+        data[1] = buf[1];
+        data[2] = buf[2];
+        data[3] = buf[3];
     }
 
     constexpr inline

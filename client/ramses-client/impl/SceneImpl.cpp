@@ -29,17 +29,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector3f.h"
-#include "ramses-client-api/DataVector4f.h"
-#include "ramses-client-api/DataMatrix22f.h"
-#include "ramses-client-api/DataMatrix33f.h"
-#include "ramses-client-api/DataMatrix44f.h"
-#include "ramses-client-api/DataInt32.h"
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector3i.h"
-#include "ramses-client-api/DataVector4i.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
@@ -178,6 +168,11 @@ namespace ramses
     {
         return *new T({}, scene, "");
     }
+    template <class T, typename std::enable_if<std::is_constructible<T, SceneImpl&, ERamsesObjectType, EDataType, const char*>::value, T>::type* = nullptr>
+    T& createImplHelper(SceneImpl& scene, ERamsesObjectType type)
+    {
+        return *new T(scene, type, EDataType::Int32, "");
+    }
 
     template <typename ObjectType, typename ObjectImplType>
     status_t SceneImpl::createAndDeserializeObjectImpls(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, uint32_t count)
@@ -283,38 +278,8 @@ namespace ramses
             case ERamsesObjectType_TextureSamplerExternal:
                 status = createAndDeserializeObjectImpls<TextureSamplerExternal, TextureSamplerImpl>(inStream, serializationContext, count);
                 break;
-            case ERamsesObjectType_DataFloat:
-                status = createAndDeserializeObjectImpls<DataFloat, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataVector2f:
-                status = createAndDeserializeObjectImpls<DataVector2f, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataVector3f:
-                status = createAndDeserializeObjectImpls<DataVector3f, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataVector4f:
-                status = createAndDeserializeObjectImpls<DataVector4f, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataMatrix22f:
-                status = createAndDeserializeObjectImpls<DataMatrix22f, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataMatrix33f:
-                status = createAndDeserializeObjectImpls<DataMatrix33f, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataMatrix44f:
-                status = createAndDeserializeObjectImpls<DataMatrix44f, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataInt32:
-                status = createAndDeserializeObjectImpls<DataInt32, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataVector2i:
-                status = createAndDeserializeObjectImpls<DataVector2i, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataVector3i:
-                status = createAndDeserializeObjectImpls<DataVector3i, DataObjectImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_DataVector4i:
-                status = createAndDeserializeObjectImpls<DataVector4i, DataObjectImpl>(inStream, serializationContext, count);
+            case ERamsesObjectType_DataObject:
+                status = createAndDeserializeObjectImpls<DataObject, DataObjectImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_ArrayBufferObject:
                 status = createAndDeserializeObjectImpls<ArrayBuffer, ArrayBufferImpl>(inStream, serializationContext, count);
@@ -499,17 +464,7 @@ namespace ramses
         case ERamsesObjectType_MeshNode:
             returnStatus = destroyMeshNode(RamsesObjectTypeUtils::ConvertTo<MeshNode>(object));
             break;
-        case ERamsesObjectType_DataFloat:
-        case ERamsesObjectType_DataVector2f:
-        case ERamsesObjectType_DataVector3f:
-        case ERamsesObjectType_DataVector4f:
-        case ERamsesObjectType_DataMatrix22f:
-        case ERamsesObjectType_DataMatrix33f:
-        case ERamsesObjectType_DataMatrix44f:
-        case ERamsesObjectType_DataInt32:
-        case ERamsesObjectType_DataVector2i:
-        case ERamsesObjectType_DataVector3i:
-        case ERamsesObjectType_DataVector4i:
+        case ERamsesObjectType_DataObject:
             returnStatus = destroyDataObject(RamsesObjectTypeUtils::ConvertTo<DataObject>(object));
             break;
         case ERamsesObjectType_TextureSampler:
@@ -1105,111 +1060,17 @@ namespace ramses
         return sampler;
     }
 
-    DataFloat* SceneImpl::createDataFloat(const char* name /* =0 */)
+    DataObject* SceneImpl::createDataObject(EDataType dataType, const char* name /* =0 */)
     {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataFloat, name);
+        if (!IsDataObjectDataType(dataType))
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createDataObject data type is not supported, see IsDataObjectDataType.");
+            return nullptr;
+        }
+
+        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataObject, dataType, name);
         pimpl.initializeFrameworkData();
-        DataFloat* dataObject = new DataFloat(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataVector2f* SceneImpl::createDataVector2f(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataVector2f, name);
-        pimpl.initializeFrameworkData();
-        DataVector2f* dataObject = new DataVector2f(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataVector3f* SceneImpl::createDataVector3f(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataVector3f, name);
-        pimpl.initializeFrameworkData();
-        DataVector3f* dataObject = new DataVector3f(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataVector4f* SceneImpl::createDataVector4f(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataVector4f, name);
-        pimpl.initializeFrameworkData();
-        DataVector4f* dataObject = new DataVector4f(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataMatrix22f* SceneImpl::createDataMatrix22f(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataMatrix22f, name);
-        pimpl.initializeFrameworkData();
-        DataMatrix22f* dataObject = new DataMatrix22f(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataMatrix33f* SceneImpl::createDataMatrix33f(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataMatrix33f, name);
-        pimpl.initializeFrameworkData();
-        DataMatrix33f* dataObject = new DataMatrix33f(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataMatrix44f* SceneImpl::createDataMatrix44f(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataMatrix44f, name);
-        pimpl.initializeFrameworkData();
-        DataMatrix44f* dataObject = new DataMatrix44f(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataInt32* SceneImpl::createDataInt32(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataInt32, name);
-        pimpl.initializeFrameworkData();
-        DataInt32* dataObject = new DataInt32(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataVector2i* SceneImpl::createDataVector2i(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataVector2i, name);
-        pimpl.initializeFrameworkData();
-        DataVector2i* dataObject = new DataVector2i(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataVector3i* SceneImpl::createDataVector3i(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataVector3i, name);
-        pimpl.initializeFrameworkData();
-        DataVector3i* dataObject = new DataVector3i(pimpl);
-        registerCreatedObject(*dataObject);
-
-        return dataObject;
-    }
-
-    DataVector4i* SceneImpl::createDataVector4i(const char* name /* =0 */)
-    {
-        DataObjectImpl& pimpl = *new DataObjectImpl(*this, ERamsesObjectType_DataVector4i, name);
-        pimpl.initializeFrameworkData();
-        DataVector4i* dataObject = new DataVector4i(pimpl);
+        auto dataObject = new DataObject(pimpl);
         registerCreatedObject(*dataObject);
 
         return dataObject;

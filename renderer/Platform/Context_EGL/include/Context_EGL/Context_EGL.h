@@ -46,11 +46,7 @@ namespace ramses_internal
         //    format and we only treat it as an opque value.
         //    Try to remove this workaround in the future by e.g. refactoring Context usage or making Context templated.
         //    Additionally everone uses pointer types except rgl
-#ifdef __ghs__
-        using Generic_EGLNativeDisplayType = int;
-#else
         using Generic_EGLNativeDisplayType = void*;
-#endif
         using Generic_EGLNativeWindowType = void*;
 
         Context_EGL(Generic_EGLNativeDisplayType eglDisplay, Generic_EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext = nullptr);

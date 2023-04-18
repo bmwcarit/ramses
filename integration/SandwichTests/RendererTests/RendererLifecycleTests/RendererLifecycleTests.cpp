@@ -25,7 +25,7 @@
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-client-api/DataInt32.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/SceneReference.h"
 #include "RamsesObjectTypeUtils.h"
 
@@ -352,7 +352,7 @@ namespace ramses_internal
         const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));
 
         // create data to change
-        ramses::DataInt32* data = testScenesAndRenderer.getScenesRegistry().getScene(sceneId).createDataInt32();
+        auto data = testScenesAndRenderer.getScenesRegistry().getScene(sceneId).createDataObject(ramses::EDataType::Int32);
         testScenesAndRenderer.flush(sceneId);
 
         testScenesAndRenderer.publish(sceneId);

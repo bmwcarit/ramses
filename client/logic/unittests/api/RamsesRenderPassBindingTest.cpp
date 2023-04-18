@@ -31,10 +31,6 @@ namespace rlogic::internal
 {
     class ARamsesRenderPassBinding : public ALogicEngine
     {
-    public:
-        ARamsesRenderPassBinding() : ALogicEngine{ EFeatureLevel_02 }
-        {
-        }
     };
 
     TEST_F(ARamsesRenderPassBinding, HasANameAfterCreation)
@@ -139,7 +135,7 @@ namespace rlogic::internal
         {
             RamsesRenderPassBindingImpl binding(*m_renderPass, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesRenderPassBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesRenderPassBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -174,7 +170,7 @@ namespace rlogic::internal
         {
             RamsesRenderPassBindingImpl binding(*m_renderPass, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesRenderPassBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesRenderPassBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -394,14 +390,14 @@ namespace rlogic::internal
     {
         m_renderPass->setEnabled(false);
         m_renderPass->setRenderOrder(42);
-        m_renderPass->setClearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        m_renderPass->setClearColor({0.1f, 0.2f, 0.3f, 0.4f});
         m_renderPass->setRenderOnce(true);
 
         auto& renderPassBinding = *m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "renderPass");
         auto inputs = renderPassBinding.getInputs();
         EXPECT_FALSE(*inputs->getChild("enabled")->get<bool>());
         EXPECT_EQ(42, *inputs->getChild("renderOrder")->get<int32_t>());
-        EXPECT_THAT(*inputs->getChild("clearColor")->get<vec4f>(), ::testing::ElementsAre(0.1f, 0.2f, 0.3f, 0.4f));
+        EXPECT_EQ(*inputs->getChild("clearColor")->get<vec4f>(), vec4f(0.1f, 0.2f, 0.3f, 0.4f));
         EXPECT_TRUE(inputs->getChild("renderOnce")->set(true));
     }
 
@@ -419,9 +415,8 @@ namespace rlogic::internal
 
         EXPECT_FALSE(m_renderPass->isEnabled());
         EXPECT_EQ(42, m_renderPass->getRenderOrder());
-        vec4f clearColor;
-        m_renderPass->getClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
-        EXPECT_THAT(clearColor, ::testing::ElementsAre(0.1f, 0.2f, 0.3f, 0.4f));
+        vec4f clearColor = m_renderPass->getClearColor();
+        EXPECT_EQ(clearColor, vec4f(0.1f, 0.2f, 0.3f, 0.4f));
         EXPECT_TRUE(m_renderPass->isRenderOnce());
     }
 
@@ -528,7 +523,7 @@ namespace rlogic::internal
     TEST_F(ARamsesRenderPassBinding_WithRamses_AndFiles, ProducesError_WhenHavingLinkToRenderPass_ButNoSceneWasProvided)
     {
         {
-            LogicEngine tempEngineForSaving{ EFeatureLevel_02 };
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
             tempEngineForSaving.createRamsesRenderPassBinding(*m_renderPass, "AppBinding");
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "WithRamsesRenderPass.bin"));
         }

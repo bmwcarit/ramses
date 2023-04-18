@@ -54,7 +54,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     auto* camera = clientScene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -107,7 +107,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     auto* camera = clientScene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -213,9 +213,9 @@ int main()
         renderer.dispatchEvents(eventHandler);
 
         rotationZ += 1.f;
-        meshScene1->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::Euler_XYZ);
+        meshScene1->setRotation({0.f, 0.f, rotationZ}, ramses::ERotationType::Euler_XYZ);
         scene1->flush();
-        meshScene2->setRotation(0.f, 0.f, -rotationZ, ramses::ERotationConvention::Euler_XYZ);
+        meshScene2->setRotation({0.f, 0.f, -rotationZ}, ramses::ERotationType::Euler_XYZ);
         scene2->flush();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));

@@ -62,9 +62,11 @@ int main(int argc, char* argv[])
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic) bounds are checked
     const std::vector<const char*> args(argv, argv + argc);
 
+    constexpr ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_Latest;
+
     std::string basePath {"."};
-    std::string ramsesFilename = "testScene.ramses";
-    std::string logicFilename = "testLogic.rlogic";
+    std::string ramsesFilename = std::string("testScene_0") + std::to_string(featureLevel) + ".ramses";
+    std::string logicFilename = std::string("testLogic_0") + std::to_string(featureLevel) + ".rlogic";
 
     if (args.size() == 2u)
     {
@@ -93,7 +95,7 @@ int main(int argc, char* argv[])
 
     ramses::Scene* scene = ramsesClient->createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "");
     scene->flush();
-    rlogic::LogicEngine logicEngine{ rlogic::EFeatureLevel_05 };
+    rlogic::LogicEngine logicEngine{ featureLevel };
 
     rlogic::LuaScript* script1 = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
@@ -203,7 +205,7 @@ int main(int argc, char* argv[])
     renderGroup->addMeshNode(*meshNode);
     renderGroup->addRenderGroup(*nestedRenderGroup);
 
-    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*node, rlogic::ERotationType::Euler_XYZ, "nodebinding");
+    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*node, ramses::ERotationType::Euler_XYZ, "nodebinding");
     rlogic::RamsesCameraBinding* camBindingOrtho = logicEngine.createRamsesCameraBinding(*cameraOrtho, "camerabinding");
     rlogic::RamsesAppearanceBinding* appBinding = logicEngine.createRamsesAppearanceBinding(*appearance, "appearancebinding");
     logicEngine.createRamsesCameraBinding(*cameraPersp, "camerabindingPersp");

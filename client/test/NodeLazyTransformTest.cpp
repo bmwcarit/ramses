@@ -52,81 +52,73 @@ namespace ramses
 
     TYPED_TEST(NodeLazyTransformTest, callingSetterWithIdentityCreatesNoTransform)
     {
-        EXPECT_EQ(this->m_node->setTranslation(0.0f, 0.0f, 0.0f), StatusOK);
-        EXPECT_EQ(this->m_node->translate     (0.0f, 0.0f, 0.0f), StatusOK);
-        EXPECT_EQ(this->m_node->setRotation   (0.0f, 0.0f, 0.0f, ERotationConvention::Euler_ZYX), StatusOK);
-        EXPECT_EQ(this->m_node->setRotation   (0.0f, 0.0f, 0.0f, ERotationConvention::Euler_XYZ), StatusOK);
-        EXPECT_EQ(this->m_node->setRotation   (0.0f, 0.0f, 0.0f, ERotationConvention::Euler_ZYZ), StatusOK);
-        EXPECT_EQ(this->m_node->setScaling    (1.0f, 1.0f, 1.0f), StatusOK);
-        EXPECT_EQ(this->m_node->scale         (1.0f, 1.0f, 1.0f), StatusOK);
+        EXPECT_EQ(this->m_node->setTranslation({0.0f, 0.0f, 0.0f}), StatusOK);
+        EXPECT_EQ(this->m_node->translate({0.0f, 0.0f, 0.0f}), StatusOK);
+        EXPECT_EQ(this->m_node->setRotation({0.0f, 0.0f, 0.0f}, ERotationType::Euler_ZYX), StatusOK);
+        EXPECT_EQ(this->m_node->setRotation({0.0f, 0.0f, 0.0f}, ERotationType::Euler_XYZ), StatusOK);
+        EXPECT_EQ(this->m_node->setRotation({0.0f, 0.0f, 0.0f}, ERotationType::Euler_ZYZ), StatusOK);
+        EXPECT_EQ(this->m_node->setScaling({1.0f, 1.0f, 1.0f}), StatusOK);
+        EXPECT_EQ(this->m_node->scale({1.0f, 1.0f, 1.0f}), StatusOK);
 
         EXPECT_EQ(this->getActualTransformCount(), 0u);
     }
 
     TYPED_TEST(NodeLazyTransformTest, callingGettersWithoutTransformReturnIdentity)
     {
-        float x;
-        float y;
-        float z;
+        vec3f value;
 
-        EXPECT_EQ(this->m_node->getTranslation(x, y, z), StatusOK);
-        EXPECT_EQ(x, 0.0f);
-        EXPECT_EQ(y, 0.0f);
-        EXPECT_EQ(z, 0.0f);
+        EXPECT_EQ(this->m_node->getTranslation(value), StatusOK);
+        EXPECT_EQ(value, vec3f(0.f));
 
-        EXPECT_EQ(this->m_node->getRotation(x, y, z), StatusOK);
-        EXPECT_EQ(x, 0.0f);
-        EXPECT_EQ(y, 0.0f);
-        EXPECT_EQ(z, 0.0f);
+        EXPECT_EQ(this->m_node->getRotation(value), StatusOK);
+        EXPECT_EQ(value, vec3f(0.f));
 
-        glm::quat q;
+        quat q;
         EXPECT_EQ(this->m_node->getRotation(q), StatusOK);
-        EXPECT_EQ(q, glm::identity<glm::quat>());
+        EXPECT_EQ(q, glm::identity<quat>());
 
-        EXPECT_EQ(this->m_node->getScaling(x, y, z), StatusOK);
-        EXPECT_EQ(x, 1.0f);
-        EXPECT_EQ(y, 1.0f);
-        EXPECT_EQ(z, 1.0f);
+        EXPECT_EQ(this->m_node->getScaling(value), StatusOK);
+        EXPECT_EQ(value, vec3f(1.f));
     }
 
     TYPED_TEST(NodeLazyTransformTest, callingSetTranslationWithValueCreatesTransform)
     {
         EXPECT_EQ(this->getActualTransformCount(), 0u);
-        EXPECT_EQ(this->m_node->setTranslation(1.0f, 2.0f, 3.0f), StatusOK);
+        EXPECT_EQ(this->m_node->setTranslation({1.0f, 2.0f, 3.0f}), StatusOK);
         EXPECT_EQ(this->getActualTransformCount(), 1u);
     }
 
     TYPED_TEST(NodeLazyTransformTest, callingTranslateWithValueCreatesTransform)
     {
         EXPECT_EQ(this->getActualTransformCount(), 0u);
-        EXPECT_EQ(this->m_node->translate(1.0f, 2.0f, 3.0f), StatusOK);
+        EXPECT_EQ(this->m_node->translate({1.0f, 2.0f, 3.0f}), StatusOK);
         EXPECT_EQ(this->getActualTransformCount(), 1u);
     }
 
     TYPED_TEST(NodeLazyTransformTest, callingSetRotationWithValueCreatesTransform)
     {
         EXPECT_EQ(this->getActualTransformCount(), 0u);
-        EXPECT_EQ(this->m_node->setRotation(1.0f, 2.0f, 3.0f, ERotationConvention::Euler_YXZ), StatusOK);
+        EXPECT_EQ(this->m_node->setRotation({1.0f, 2.0f, 3.0f}, ERotationType::Euler_YXZ), StatusOK);
         EXPECT_EQ(this->getActualTransformCount(), 1u);
     }
 
     TYPED_TEST(NodeLazyTransformTest, callingSetScalingWithValueCreatesTransform)
     {
         EXPECT_EQ(this->getActualTransformCount(), 0u);
-        EXPECT_EQ(this->m_node->setScaling(1.0f, 2.0f, 3.0f), StatusOK);
+        EXPECT_EQ(this->m_node->setScaling({1.0f, 2.0f, 3.0f}), StatusOK);
         EXPECT_EQ(this->getActualTransformCount(), 1u);
     }
 
     TYPED_TEST(NodeLazyTransformTest, callingScaleWithValueCreatesTransform)
     {
         EXPECT_EQ(this->getActualTransformCount(), 0u);
-        EXPECT_EQ(this->m_node->scale(1.0f, 2.0f, 3.0f), StatusOK);
+        EXPECT_EQ(this->m_node->scale({1.0f, 2.0f, 3.0f}), StatusOK);
         EXPECT_EQ(this->getActualTransformCount(), 1u);
     }
 
     TYPED_TEST(NodeLazyTransformTest, destructionDestroysTransform)
     {
-        EXPECT_EQ(this->m_node->setTranslation(1.0f, 2.0f, 3.0f), StatusOK);
+        EXPECT_EQ(this->m_node->setTranslation({1.0f, 2.0f, 3.0f}), StatusOK);
 
         EXPECT_EQ(this->getActualTransformCount(), 1u);
         this->m_scene.destroy(*this->m_node);

@@ -20,7 +20,7 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a simple script which increments an integer and prints the result
     const std::string_view scriptSrc = R"(

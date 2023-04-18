@@ -28,7 +28,7 @@ namespace rlogic::internal
 
         void createLogicFile()
         {
-            LogicEngine engine{ EFeatureLevel_Latest };
+            LogicEngine engine{ ramses::EFeatureLevel_Latest };
             auto *interface = engine.createLuaInterface(R"(
                 function interface(IN,OUT)
                     IN.paramInt32 = Type:Int32()
@@ -104,7 +104,7 @@ namespace rlogic::internal
 
             ASSERT_TRUE(script != nullptr);
 
-            auto* nodeBinding = engine.createRamsesNodeBinding(*m_node, rlogic::ERotationType::Euler_XYZ, "foo");
+            auto* nodeBinding = engine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "foo");
 
             // make camera valid
             m_camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 10.f);

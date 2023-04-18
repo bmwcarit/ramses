@@ -58,13 +58,13 @@ namespace rlogic
 
     TEST_F(ALogicEngine_ErrorHandling, ClearsErrorsOnCreateNewRamsesNodeBinding)
     {
-        LogicEngine otherLogicEngine;
-        auto        ramsesNodeBinding = otherLogicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        LogicEngine otherLogicEngine{ m_logicEngine.getFeatureLevel() };
+        auto        ramsesNodeBinding = otherLogicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
         ASSERT_FALSE(m_logicEngine.destroy(*ramsesNodeBinding));
 
         EXPECT_FALSE(m_logicEngine.getErrors().empty());
-        auto anotherNodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        auto anotherNodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         EXPECT_NE(nullptr, anotherNodeBinding);
         EXPECT_TRUE(m_logicEngine.getErrors().empty());
     }

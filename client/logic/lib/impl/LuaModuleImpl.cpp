@@ -107,8 +107,7 @@ namespace rlogic::internal
         SolState& solState,
         const rlogic_serialization::LuaModule& module,
         ErrorReporting& errorReporting,
-        DeserializationMap& deserializationMap,
-        EFeatureLevel featureLevel)
+        DeserializationMap& deserializationMap)
     {
         std::string name;
         uint64_t id = 0u;
@@ -168,7 +167,7 @@ namespace rlogic::internal
             std::transform(module.luaByteCode()->cbegin(), module.luaByteCode()->cend(), std::back_inserter(byteCode), [](uint8_t b) { return std::byte(b); });
         }
 
-        auto compiledModule = LuaCompilationUtils::CompileModuleOrImportPrecompiled(solState, modulesUsed, stdModules, std::move(source), name, errorReporting, std::move(byteCode), featureLevel, false);
+        auto compiledModule = LuaCompilationUtils::CompileModuleOrImportPrecompiled(solState, modulesUsed, stdModules, std::move(source), name, errorReporting, std::move(byteCode), false);
 
         if (!compiledModule)
         {

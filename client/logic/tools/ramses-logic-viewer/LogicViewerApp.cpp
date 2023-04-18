@@ -62,7 +62,7 @@ namespace rlogic
             return static_cast<int>(ExitCode::ErrorLoadLogic);
         }
 
-        rlogic::EFeatureLevel engineFeatureLevel = rlogic::EFeatureLevel_01;
+        ramses::EFeatureLevel engineFeatureLevel = ramses::EFeatureLevel_01;
         if (!rlogic::LogicEngine::GetFeatureLevelFromFile(args.logicFile(), engineFeatureLevel))
         {
             std::cerr << "Could not parse feature level from logic file" << std::endl;

@@ -12,8 +12,7 @@
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/TextureEnums.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include "Texture2DImpl.h"
 #include "Utils/File.h"
 #include "Math3d/ProjectionParams.h"
@@ -466,26 +465,27 @@ namespace ramses
 
     TEST_F(ARamsesUtilsTest, canSetFrustumOnDataObjects)
     {
-        auto& do1 = this->createObject<DataVector4f>();
-        auto& do2 = this->createObject<DataVector2f>();
+        auto& do1 = *m_scene.createDataObject(EDataType::Vector4F);
+        auto& do2 = *m_scene.createDataObject(EDataType::Vector2F);
         EXPECT_TRUE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(33.f, 1.5f, 1.f, 2.f, do1, do2));
 
         const auto expectedParams = ramses_internal::ProjectionParams::Perspective(33.f, 1.5f, 1.f, 2.f);
-        std::array<float, 6> planes;
-        EXPECT_EQ(StatusOK, do1.getValue(planes[0], planes[1], planes[2], planes[3]));
-        EXPECT_EQ(StatusOK, do2.getValue(planes[4], planes[5]));
-        EXPECT_EQ(expectedParams.leftPlane, planes[0]);
-        EXPECT_EQ(expectedParams.rightPlane, planes[1]);
-        EXPECT_EQ(expectedParams.bottomPlane, planes[2]);
-        EXPECT_EQ(expectedParams.topPlane, planes[3]);
-        EXPECT_EQ(expectedParams.nearPlane, planes[4]);
-        EXPECT_EQ(expectedParams.farPlane, planes[5]);
+        vec4f planes1;
+        vec2f planes2;
+        EXPECT_EQ(StatusOK, do1.getValue(planes1));
+        EXPECT_EQ(StatusOK, do2.getValue(planes2));
+        EXPECT_EQ(expectedParams.leftPlane, planes1[0]);
+        EXPECT_EQ(expectedParams.rightPlane, planes1[1]);
+        EXPECT_EQ(expectedParams.bottomPlane, planes1[2]);
+        EXPECT_EQ(expectedParams.topPlane, planes1[3]);
+        EXPECT_EQ(expectedParams.nearPlane, planes2[0]);
+        EXPECT_EQ(expectedParams.farPlane, planes2[1]);
     }
 
     TEST_F(ARamsesUtilsTest, failsToSetInvalidFrustumOnDataObjects)
     {
-        auto& do1 = this->createObject<DataVector4f>();
-        auto& do2 = this->createObject<DataVector2f>();
+        auto& do1 = *m_scene.createDataObject(EDataType::Vector4F);
+        auto& do2 = *m_scene.createDataObject(EDataType::Vector2F);
         EXPECT_FALSE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(0.f, 1.5f, 1.f, 2.f, do1, do2));
         EXPECT_FALSE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(-33.f, 1.5f, 1.f, 2.f, do1, do2));
         EXPECT_FALSE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(33.f, 0.f, 1.f, 2.f, do1, do2));

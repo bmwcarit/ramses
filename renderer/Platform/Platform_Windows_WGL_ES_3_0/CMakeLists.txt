@@ -19,5 +19,4 @@ createModule(
     SRC_FILES               include/Platform_Windows_WGL_ES_3_0/*.h
                             src/*.cpp
     DEPENDENCIES            Platform_Windows_WGL
-                            Device_GL
 )

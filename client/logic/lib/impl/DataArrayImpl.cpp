@@ -12,6 +12,7 @@
 #include "internals/ErrorReporting.h"
 #include "LoggerImpl.h"
 #include <cassert>
+#include "glm/gtx/range.hpp"
 
 namespace rlogic::internal
 {
@@ -48,25 +49,31 @@ namespace rlogic::internal
             (void)data;
             return 1u;
         }
-        else
+        else if constexpr (std::is_same_v<T, std::vector<float>>)
         {
             assert(!data.empty());
             return data.front().size();
+        }
+        else
+        {
+            return T::length();
         }
     }
 
     template <typename T, typename fbT>
     std::vector<fbT> flattenArrayOfVec(const DataArrayImpl::DataArrayVariant& data)
     {
+        using std::begin;
+        using std::end;
         const auto& dataVec = std::get<std::vector<T>>(data);
         std::vector<fbT> dataFlattened;
         dataFlattened.reserve(dataVec.size() * getNumComponents(dataVec));
         for (const auto& v : dataVec)
-            dataFlattened.insert(dataFlattened.end(), v.cbegin(), v.cend());
+            dataFlattened.insert(dataFlattened.end(), begin(v), end(v));
         return dataFlattened;
     }
 
-    flatbuffers::Offset<rlogic_serialization::DataArray> DataArrayImpl::Serialize(const DataArrayImpl& data, flatbuffers::FlatBufferBuilder& builder, SerializationMap& /*serializationMap*/, EFeatureLevel /*featureLevel*/)
+    flatbuffers::Offset<rlogic_serialization::DataArray> DataArrayImpl::Serialize(const DataArrayImpl& data, flatbuffers::FlatBufferBuilder& builder, SerializationMap& /*serializationMap*/)
     {
         rlogic_serialization::ArrayUnion unionType = rlogic_serialization::ArrayUnion::NONE;
         rlogic_serialization::EDataArrayType arrayType = rlogic_serialization::EDataArrayType::Float;
@@ -160,6 +167,7 @@ namespace rlogic::internal
     template <typename T, typename fbT>
     std::vector<T> unflattenIntoArrayOfVec(const flatbuffers::Vector<fbT>& fbDataFlattened, uint32_t numComponents)
     {
+        using std::begin;
         std::vector<T> dataVec;
         assert(fbDataFlattened.size() % numComponents == 0u); //checked in validation above
         dataVec.resize(fbDataFlattened.size() / numComponents);
@@ -172,7 +180,7 @@ namespace rlogic::internal
             }
             else
             {
-                std::copy(it, it + numComponents, destIt->begin());
+                std::copy(it, it + numComponents, begin(*destIt));
             }
         }
         return dataVec;
@@ -198,7 +206,7 @@ namespace rlogic::internal
             }
             else
             {
-                return std::tuple_size_v<T>;
+                return T::length();
             }
         }
     }

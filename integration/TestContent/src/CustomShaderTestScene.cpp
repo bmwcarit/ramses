@@ -30,7 +30,7 @@ namespace ramses_internal
         meshNode->setAppearance(m_appearance);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -6.f);
+        transNode->setTranslation({0.f, 0.f, -6.f});
         meshNode->setParent(*transNode);
 
         m_appearance.setDrawMode(ramses::EDrawMode_TriangleStrip);

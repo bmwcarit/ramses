@@ -88,20 +88,17 @@ namespace ramses
         return impl.getRenderTarget();
     }
 
-    status_t RenderPass::setClearColor(float r, float g, float b, float a)
+    status_t RenderPass::setClearColor(const vec4f& color)
     {
-        const status_t status = impl.setClearColor(ramses_internal::Vector4(r, g, b, a));
-        LOG_HL_CLIENT_API4(status, r, g, b, a);
+        const status_t status = impl.setClearColor(ramses_internal::Vector4(color));
+        LOG_HL_CLIENT_API4(status, color.r, color.g, color.b, color.a);
         return status;
     }
 
-    void RenderPass::getClearColor(float &r, float &g, float &b, float &a) const
+    vec4f RenderPass::getClearColor() const
     {
         const ramses_internal::Vector4& color = impl.getClearColor();
-        r = color.r;
-        g = color.g;
-        b = color.b;
-        a = color.a;
+        return {color.r, color.g, color.b, color.a};
     }
 
     status_t RenderPass::setClearFlags(uint32_t clearFlags)

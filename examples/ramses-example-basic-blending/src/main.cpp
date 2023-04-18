@@ -30,7 +30,7 @@ int main()
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -71,9 +71,9 @@ int main()
 
     // offset triangles so that they are not fully overlapping
 
-    meshNodeRed->setTranslation(0.f, -0.2f, -12.f);
-    meshNodeGreen->setTranslation(-0.2f, 0.f, -11.f);
-    meshNodeBlue->setTranslation(0.2f, 0.2f, -10.f);
+    meshNodeRed->setTranslation({0.f, -0.2f, -12.f});
+    meshNodeGreen->setTranslation({-0.2f, 0.f, -11.f});
+    meshNodeBlue->setTranslation({0.2f, 0.2f, -10.f});
 
     // get handle to appearances' input and set color with alpha smaller than 1
     ramses::UniformInput colorInput;

@@ -43,17 +43,6 @@ namespace ramses
     class TextureSamplerExternal;
     class AttributeInput;
     class DataObject;
-    class DataFloat;
-    class DataVector2f;
-    class DataVector3f;
-    class DataVector4f;
-    class DataMatrix22f;
-    class DataMatrix33f;
-    class DataMatrix44f;
-    class DataInt32;
-    class DataVector2i;
-    class DataVector3i;
-    class DataVector4i;
     class Texture2D;
     class Texture3D;
     class TextureCube;
@@ -677,81 +666,13 @@ namespace ramses
         Texture2DBuffer* createTexture2DBuffer(ETextureFormat textureFormat, uint32_t width, uint32_t height, uint32_t mipLevelCount, const char* name = nullptr);
 
         /**
-        * @brief Creates a data object within the scene, which holds a data value of type float.
+        * @brief   Creates a #ramses::DataObject within the scene, which holds a data value of given type.
+        * @details For supported data types see #ramses::IsDataObjectDataType.
+        * @param[in] dataType data type that this #ramses::DataObject will hold.
         * @param[in] name optional name of the object.
-        * @return Pointer to the created DataFloat, null on failure.
+        * @return Pointer to the created #ramses::DataObject, null on failure.
         */
-        DataFloat* createDataFloat(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Vector2f.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created DataVector2f, null on failure.
-        */
-        DataVector2f* createDataVector2f(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Vector3f.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created DataVector3f, null on failure.
-        */
-        DataVector3f* createDataVector3f(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Vector4f.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created DataVector4f, null on failure.
-        */
-        DataVector4f* createDataVector4f(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Matrix22f.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created Matrix22f, null on failure.
-        */
-        DataMatrix22f* createDataMatrix22f(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Matrix33f.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created Matrix33f, null on failure.
-        */
-        DataMatrix33f* createDataMatrix33f(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Matrix44f.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created Matrix44f, null on failure.
-        */
-        DataMatrix44f* createDataMatrix44f(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type int32.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created DataInt32, null on failure.
-        */
-        DataInt32* createDataInt32(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Vector2i.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created DataVector2i, null on failure.
-        */
-        DataVector2i* createDataVector2i(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Vector3i.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created DataVector3i, null on failure.
-        */
-        DataVector3i* createDataVector3i(const char* name = nullptr);
-
-        /**
-        * @brief Creates a data object within the scene, which holds a data value of type Vector4i.
-        * @param[in] name optional name of the object.
-        * @return Pointer to the created DataVector4i, null on failure.
-        */
-        DataVector4i* createDataVector4i(const char* name = nullptr);
+        DataObject* createDataObject(EDataType dataType, const char* name = nullptr);
 
         /**
         * @brief Annotates a Node as a transformation data provider.

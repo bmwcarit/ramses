@@ -52,7 +52,7 @@
 
 namespace rlogic::internal
 {
-    class ALogicEngine_Serialization : public ALogicEngineBase, public ::testing::TestWithParam<EFeatureLevel>
+    class ALogicEngine_Serialization : public ALogicEngineBase, public ::testing::TestWithParam<ramses::EFeatureLevel>
     {
     public:
         ALogicEngine_Serialization() : ALogicEngineBase{ GetParam() }
@@ -100,7 +100,7 @@ namespace rlogic::internal
             LogicEngine logicEngine{ GetParam() };
             logicEngine.createLuaModule(m_moduleSourceCode, {}, "module");
             logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-            auto* nodeBinding = logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodeBinding");
+            auto* nodeBinding = logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodeBinding");
             auto* appearanceBinding = logicEngine.createRamsesAppearanceBinding(*m_appearance, "appearanceBinding");
             auto* cameraBinding = logicEngine.createRamsesCameraBinding(*m_camera, "cameraBinding");
             const auto* dataArray = logicEngine.createDataArray(std::vector<float>{1.f, 2.f, 3.f}, "dataArray");
@@ -113,17 +113,11 @@ namespace rlogic::internal
                 end
             )", "intf");
 
-            if (GetParam() >= EFeatureLevel_02)
-            {
-                logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpBinding");
-                logicEngine.createAnchorPoint(*nodeBinding, *cameraBinding, "anchor");
-            }
-            if (GetParam() >= EFeatureLevel_03)
-                createRenderGroupBinding(logicEngine);
-            if (GetParam() >= EFeatureLevel_04)
-                createSkinBinding(*nodeBinding, *appearanceBinding, logicEngine);
-            if (GetParam() >= EFeatureLevel_05)
-                logicEngine.createRamsesMeshNodeBinding(*m_meshNode, "mb");
+            logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpBinding");
+            logicEngine.createAnchorPoint(*nodeBinding, *cameraBinding, "anchor");
+            createRenderGroupBinding(logicEngine);
+            createSkinBinding(*nodeBinding, *appearanceBinding, logicEngine);
+            logicEngine.createRamsesMeshNodeBinding(*m_meshNode, "mb");
 
             EXPECT_TRUE(logicEngine.update());
             EXPECT_TRUE(SaveToFileWithoutValidation(logicEngine, "LogicEngine.bin"));
@@ -131,18 +125,8 @@ namespace rlogic::internal
             EXPECT_TRUE(m_logicEngine.loadFromFile("LogicEngine.bin", m_scene));
             EXPECT_TRUE(m_logicEngine.getErrors().empty());
 
-            std::vector<std::string> names{ "module", "script", "nodeBinding", "appearanceBinding", "cameraBinding", "dataArray", "animNode", "timerNode", "intf" };
-            if (GetParam() >= EFeatureLevel_02)
-            {
-                names.emplace_back("rpBinding");
-                names.emplace_back("anchor");
-            }
-            if (GetParam() >= EFeatureLevel_03)
-                names.emplace_back("renderGroupBinding");
-            if (GetParam() >= EFeatureLevel_04)
-                names.emplace_back("skin");
-            if (GetParam() >= EFeatureLevel_05)
-                names.emplace_back("mb");
+            const std::vector<std::string> names{ "module", "script", "nodeBinding", "appearanceBinding", "cameraBinding", "dataArray", "animNode",
+                "timerNode", "intf", "rpBinding", "anchor", "renderGroupBinding", "skin", "mb" };
 
             std::vector<LogicObject*> objects;
             for (const auto& name : names)
@@ -162,17 +146,6 @@ namespace rlogic::internal
         ALogicEngine_SerializationTests,
         ALogicEngine_Serialization,
         rlogic::internal::GetFeatureLevelTestValues());
-
-    TEST(ALogicEngine_Serialization_FeatureLevel1, RefusesToSaveLuaInBinaryModeOnly)
-    {
-        LogicEngine logicEngineFl1(EFeatureLevel::EFeatureLevel_01);
-        SaveFileConfig config;
-        config.setLuaSavingMode(ELuaSavingMode::ByteCodeOnly);
-        EXPECT_FALSE(logicEngineFl1.saveToFile("logic.bin", config));
-        const auto& errors = logicEngineFl1.getErrors();
-        ASSERT_EQ(1u, errors.size());
-        EXPECT_THAT(errors[0].message, ::testing::HasSubstr("Can't save logic content for feature level in binary mode, binary Lua support was introduced with FeatureLevel_02!"));
-    }
 
     TEST_P(ALogicEngine_Serialization, ProducesErrorIfDeserilizedFromInvalidFile)
     {
@@ -204,8 +177,7 @@ namespace rlogic::internal
                 GetParam()
             );
 
-            const char* fileIdentifier = (GetParam() == EFeatureLevel_01 ? rlogic_serialization::LogicEngineIdentifier() : "rl02");
-            builder.Finish(logicEngine, fileIdentifier);
+            builder.Finish(logicEngine, rlogic_serialization::LogicEngineIdentifier());
 
             ASSERT_TRUE(FileUtils::SaveBinary("no_api_objects.bin", builder.GetBufferPointer(), builder.GetSize()));
         }
@@ -487,7 +459,7 @@ namespace rlogic::internal
     {
         {
             LogicEngine logicEngine{ GetParam() };
-            logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "binding");
+            logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
 
             ASSERT_TRUE(SaveToFileWithoutValidation(logicEngine, "LogicEngine.bin"));
         }
@@ -533,7 +505,7 @@ namespace rlogic::internal
     TEST_P(ALogicEngine_Serialization, ProducesErrorIfSavedWithValidationWarning)
     {
         // Put logic engine to a dirty state (create new object and don't call update)
-        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "binding");
+        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
 
         std::vector<std::string> messages;
         std::vector<ELogMessageType> messageTypes;
@@ -571,8 +543,8 @@ namespace rlogic::internal
         ramses::Node* node1 = scene1->createNode("node1");
         ramses::Node* node2 = scene2->createNode("node2");
 
-        m_logicEngine.createRamsesNodeBinding(*node1, ERotationType::Euler_XYZ, "binding1");
-        rlogic::RamsesNodeBinding* binding2 = m_logicEngine.createRamsesNodeBinding(*node2, ERotationType::Euler_XYZ, "binding2");
+        m_logicEngine.createRamsesNodeBinding(*node1, ramses::ERotationType::Euler_XYZ, "binding1");
+        rlogic::RamsesNodeBinding* binding2 = m_logicEngine.createRamsesNodeBinding(*node2, ramses::ERotationType::Euler_XYZ, "binding2");
 
         EXPECT_FALSE(m_logicEngine.saveToFile("will_not_be_written.logic"));
         ASSERT_EQ(2u, m_logicEngine.getErrors().size());
@@ -604,9 +576,6 @@ namespace rlogic::internal
 
     TEST_P(ALogicEngine_Serialization, RefusesToSaveTwoRenderPassBindingsWhichPointToDifferentScenes)
     {
-        if (GetParam() < EFeatureLevel_02)
-            GTEST_SKIP();
-
         RamsesTestSetup testSetup;
         ramses::Scene* scene1 = testSetup.createScene(ramses::sceneId_t(1));
         ramses::Scene* scene2 = testSetup.createScene(ramses::sceneId_t(2));
@@ -627,9 +596,6 @@ namespace rlogic::internal
 
     TEST_P(ALogicEngine_Serialization, RefusesToSaveTwoRenderGroupBindingsWhichPointToDifferentScenes)
     {
-        if (GetParam() < EFeatureLevel_03)
-            GTEST_SKIP();
-
         RamsesTestSetup testSetup;
         ramses::Scene* scene1 = testSetup.createScene(ramses::sceneId_t(1));
         ramses::Scene* scene2 = testSetup.createScene(ramses::sceneId_t(2));
@@ -660,9 +626,6 @@ namespace rlogic::internal
 
     TEST_P(ALogicEngine_Serialization, RefusesToSaveTwoMeshNodeBindingsWhichPointToDifferentScenes)
     {
-        if (GetParam() < EFeatureLevel_05)
-            GTEST_SKIP();
-
         RamsesTestSetup testSetup;
         ramses::Scene* scene1 = testSetup.createScene(ramses::sceneId_t(1));
         ramses::Scene* scene2 = testSetup.createScene(ramses::sceneId_t(2));
@@ -685,7 +648,7 @@ namespace rlogic::internal
     {
         ramses::Scene* scene2 = m_ramses.createScene(ramses::sceneId_t(2));
 
-        m_logicEngine.createRamsesNodeBinding(*scene2->createNode(), ERotationType::Euler_XYZ, "node binding");
+        m_logicEngine.createRamsesNodeBinding(*scene2->createNode(), ramses::ERotationType::Euler_XYZ, "node binding");
         rlogic::RamsesAppearanceBinding* appBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "app binding");
 
         EXPECT_FALSE(m_logicEngine.saveToFile("will_not_be_written.logic"));
@@ -726,7 +689,7 @@ namespace rlogic::internal
                 ASSERT_EQ(rNodeBindingById, rNodeBindingByName);
                 const auto inputs = rNodeBindingByName->getInputs();
                 ASSERT_NE(nullptr, inputs);
-                EXPECT_EQ((GetParam() < EFeatureLevel_02 ? 4u : 5u), inputs->getChildCount());
+                EXPECT_EQ(5u, inputs->getChildCount());
                 EXPECT_FALSE(rNodeBindingByName->m_impl.isDirty());
             }
             {
@@ -772,7 +735,6 @@ namespace rlogic::internal
                 EXPECT_EQ(dataArrayByName, animNodeByName->getChannels().front().timeStamps);
                 EXPECT_EQ(dataArrayByName, animNodeByName->getChannels().front().keyframes);
             }
-            if (GetParam() >= EFeatureLevel_02)
             {
                 auto rpBindingByName = m_logicEngine.findByName<RamsesRenderPassBinding>("rpBinding");
                 auto rpBindingById = m_logicEngine.findLogicObjectById(10u);
@@ -791,7 +753,6 @@ namespace rlogic::internal
                 ASSERT_NE(nullptr, outputs);
                 EXPECT_EQ(2u, outputs->getChildCount());
             }
-            if (GetParam() >= EFeatureLevel_03)
             {
                 auto rgBindingByName = m_logicEngine.findByName<RamsesRenderGroupBinding>("renderGroupBinding");
                 auto rgBindingById = m_logicEngine.findLogicObjectById(12u);
@@ -803,14 +764,12 @@ namespace rlogic::internal
                 EXPECT_EQ(1u, inputs->getChild("renderOrders")->getChildCount());
                 EXPECT_FALSE(rgBindingByName->m_impl.isDirty());
             }
-            if (GetParam() >= EFeatureLevel_04)
             {
                 auto skinByName = m_logicEngine.findByName<SkinBinding>("skin");
                 auto skinById = m_logicEngine.findLogicObjectById(13u);
                 ASSERT_NE(nullptr, skinByName);
                 ASSERT_EQ(skinById, skinByName);
             }
-            if (GetParam() >= EFeatureLevel_05)
             {
                 auto meshBindingByName = m_logicEngine.findByName<RamsesMeshNodeBinding>("mb");
                 auto meshBindingById = m_logicEngine.findLogicObjectById(14u);
@@ -836,7 +795,7 @@ namespace rlogic::internal
                 end
             )", {}, "luascript");
 
-            logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "binding");
+            logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
             ASSERT_TRUE(SaveToFileWithoutValidation(logicEngine, "LogicEngine.bin"));
         }
         {
@@ -848,7 +807,7 @@ namespace rlogic::internal
                 end
             )", {}, "luascript2");
 
-            m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "binding2");
+            m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding2");
             EXPECT_TRUE(m_logicEngine.loadFromFile("LogicEngine.bin", m_scene));
             EXPECT_TRUE(m_logicEngine.getErrors().empty());
 
@@ -1074,7 +1033,7 @@ namespace rlogic::internal
             LogicEngine logicEngine{ GetParam() };
             auto* luaModule = logicEngine.createLuaModule(m_moduleSourceCode, {}, "module");
             auto* luaScript = logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-            auto* nodeBinding = logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodeBinding");
+            auto* nodeBinding = logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodeBinding");
             auto* appearanceBinding = logicEngine.createRamsesAppearanceBinding(*m_appearance, "appearanceBinding");
             auto* cameraBinding = logicEngine.createRamsesCameraBinding(*m_camera, "cameraBinding");
             auto* dataArray = logicEngine.createDataArray(std::vector<float>{1.f, 2.f, 3.f}, "dataArray");
@@ -1086,6 +1045,11 @@ namespace rlogic::internal
                 function interface(IN, OUT)
                 end
             )", "intf");
+            auto* rpBinding = logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpBinding");
+            auto* anchor = logicEngine.createAnchorPoint(*nodeBinding, *cameraBinding, "anchor");
+            auto* rgBinding = createRenderGroupBinding(logicEngine);
+            auto* skin = createSkinBinding(logicEngine);
+            auto* meshBinding = logicEngine.createRamsesMeshNodeBinding(*m_meshNode, "mb");
 
             EXPECT_TRUE(luaModule->setUserId(1u, 2u));
             EXPECT_TRUE(luaScript->setUserId(3u, 4u));
@@ -1096,29 +1060,11 @@ namespace rlogic::internal
             EXPECT_TRUE(animationNode->setUserId(13u, 14u));
             EXPECT_TRUE(timerNode->setUserId(15u, 16u));
             EXPECT_TRUE(luaInterface->setUserId(17u, 18u));
-
-            if (GetParam() >= EFeatureLevel_02)
-            {
-                auto* rpBinding = logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpBinding");
-                EXPECT_TRUE(rpBinding->setUserId(19u, 20u));
-                auto* anchor = logicEngine.createAnchorPoint(*nodeBinding, *cameraBinding, "anchor");
-                EXPECT_TRUE(anchor->setUserId(21u, 22u));
-            }
-            if (GetParam() >= EFeatureLevel_03)
-            {
-                auto* rgBinding = createRenderGroupBinding(logicEngine);
-                EXPECT_TRUE(rgBinding->setUserId(23u, 24u));
-            }
-            if (GetParam() >= EFeatureLevel_04)
-            {
-                auto* skin = createSkinBinding(logicEngine);
-                EXPECT_TRUE(skin->setUserId(25u, 26u));
-            }
-            if (GetParam() >= EFeatureLevel_05)
-            {
-                auto* meshBinding = logicEngine.createRamsesMeshNodeBinding(*m_meshNode, "mb");
-                EXPECT_TRUE(meshBinding->setUserId(27u, 28u));
-            }
+            EXPECT_TRUE(rpBinding->setUserId(19u, 20u));
+            EXPECT_TRUE(anchor->setUserId(21u, 22u));
+            EXPECT_TRUE(rgBinding->setUserId(23u, 24u));
+            EXPECT_TRUE(skin->setUserId(25u, 26u));
+            EXPECT_TRUE(meshBinding->setUserId(27u, 28u));
 
             ASSERT_TRUE(SaveToFileWithoutValidation(logicEngine, "LogicEngine.bin"));
         }
@@ -1171,42 +1117,30 @@ namespace rlogic::internal
         EXPECT_EQ(17u, obj->getUserId().first);
         EXPECT_EQ(18u, obj->getUserId().second);
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            obj = m_logicEngine.findByName<LogicObject>("rpBinding");
-            ASSERT_NE(nullptr, obj);
-            EXPECT_EQ(19u, obj->getUserId().first);
-            EXPECT_EQ(20u, obj->getUserId().second);
+        obj = m_logicEngine.findByName<LogicObject>("rpBinding");
+        ASSERT_NE(nullptr, obj);
+        EXPECT_EQ(19u, obj->getUserId().first);
+        EXPECT_EQ(20u, obj->getUserId().second);
 
-            obj = m_logicEngine.findByName<LogicObject>("anchor");
-            ASSERT_NE(nullptr, obj);
-            EXPECT_EQ(21u, obj->getUserId().first);
-            EXPECT_EQ(22u, obj->getUserId().second);
-        }
+        obj = m_logicEngine.findByName<LogicObject>("anchor");
+        ASSERT_NE(nullptr, obj);
+        EXPECT_EQ(21u, obj->getUserId().first);
+        EXPECT_EQ(22u, obj->getUserId().second);
 
-        if (GetParam() >= EFeatureLevel_03)
-        {
-            obj = m_logicEngine.findByName<LogicObject>("renderGroupBinding");
-            ASSERT_NE(nullptr, obj);
-            EXPECT_EQ(23u, obj->getUserId().first);
-            EXPECT_EQ(24u, obj->getUserId().second);
-        }
+        obj = m_logicEngine.findByName<LogicObject>("renderGroupBinding");
+        ASSERT_NE(nullptr, obj);
+        EXPECT_EQ(23u, obj->getUserId().first);
+        EXPECT_EQ(24u, obj->getUserId().second);
 
-        if (GetParam() >= EFeatureLevel_04)
-        {
-            obj = m_logicEngine.findByName<LogicObject>("skin");
-            ASSERT_NE(nullptr, obj);
-            EXPECT_EQ(25u, obj->getUserId().first);
-            EXPECT_EQ(26u, obj->getUserId().second);
-        }
+        obj = m_logicEngine.findByName<LogicObject>("skin");
+        ASSERT_NE(nullptr, obj);
+        EXPECT_EQ(25u, obj->getUserId().first);
+        EXPECT_EQ(26u, obj->getUserId().second);
 
-        if (GetParam() >= EFeatureLevel_05)
-        {
-            obj = m_logicEngine.findByName<LogicObject>("mb");
-            ASSERT_NE(nullptr, obj);
-            EXPECT_EQ(27u, obj->getUserId().first);
-            EXPECT_EQ(28u, obj->getUserId().second);
-        }
+        obj = m_logicEngine.findByName<LogicObject>("mb");
+        ASSERT_NE(nullptr, obj);
+        EXPECT_EQ(27u, obj->getUserId().first);
+        EXPECT_EQ(28u, obj->getUserId().second);
     }
 
     TEST_P(ALogicEngine_Serialization, persistsLogicObjectImplToHLObjectMapping)
@@ -1246,26 +1180,7 @@ namespace rlogic::internal
         }
 
         // just check that the iterating over all props works
-        if (GetParam() <= EFeatureLevel_01)
-        {
-            EXPECT_EQ(33, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_02)
-        {
-            EXPECT_EQ(42, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_03)
-        {
-            EXPECT_EQ(45, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_04)
-        {
-            EXPECT_EQ(45, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_05)
-        {
-            EXPECT_EQ(50, propsCount);
-        }
+        EXPECT_EQ(50, propsCount);
     }
 
     TEST_P(ALogicEngine_Serialization, persistsPropertyImplToHLObjectMapping)
@@ -1296,49 +1211,6 @@ namespace rlogic::internal
         }
 
         // just check that the iterating over all props works
-        if (GetParam() <= EFeatureLevel_01)
-        {
-            EXPECT_EQ(33, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_02)
-        {
-            EXPECT_EQ(42, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_03)
-        {
-            EXPECT_EQ(45, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_04)
-        {
-            EXPECT_EQ(45, propsCount);
-        }
-        else if (GetParam() <= EFeatureLevel_05)
-        {
-            EXPECT_EQ(50, propsCount);
-        }
-    }
-
-    TEST_P(ALogicEngine_Serialization, checksSerializedSize)
-    {
-        LogicEngine logicEngine{ GetParam() };
-        auto emptySize = logicEngine.getTotalSerializedSize();
-        EXPECT_EQ(emptySize, m_emptySerializedSizeTotal);
-        EXPECT_EQ(logicEngine.getSerializedSize<AnchorPoint>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<AnimationNode>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<LuaInterface>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<LuaModule>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<LuaScript>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<RamsesAppearanceBinding>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<RamsesCameraBinding>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<RamsesNodeBinding>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<RamsesRenderPassBinding>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<RamsesRenderGroupBinding>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<RamsesMeshNodeBinding>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<TimerNode>(), 0u);
-        EXPECT_EQ(logicEngine.getSerializedSize<SkinBinding>(), 0u);
-
-        logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        auto size = logicEngine.getTotalSerializedSize();
-        EXPECT_GT(size, 0u);
+        EXPECT_EQ(50, propsCount);
     }
 }

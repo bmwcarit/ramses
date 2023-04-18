@@ -48,7 +48,7 @@ namespace rlogic
             end
         )");
 
-        auto        ramsesNodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        auto        ramsesNodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
         auto scriptInput  = luaScript->getInputs()->getChild("param");
         auto scriptOutput = luaScript->getOutputs()->getChild("param");
@@ -182,7 +182,7 @@ namespace rlogic
         )";
 
         auto script            = m_logicEngine.createLuaScript(scriptSource);
-        auto nodeBinding       = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        auto nodeBinding       = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "AppearanceBinding");
         auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "CameraBinding");
 
@@ -203,9 +203,9 @@ namespace rlogic
         EXPECT_FLOAT_EQ(42.f, floatUniformValue);
         EXPECT_EQ(43, m_camera->getViewportX());
         {
-            std::array<float, 3> values = {0.0f, 0.0f, 0.0f};
-            m_node->getTranslation(values[0], values[1], values[2]);
-            EXPECT_THAT(values, ::testing::ElementsAre(1.f, 2.f, 3.f));
+            vec3f values = {0.0f, 0.0f, 0.0f};
+            m_node->getTranslation(values);
+            EXPECT_EQ(values, vec3f(1.f, 2.f, 3.f));
         }
 
         auto nodeBindingScaling = nodeBinding->getInputs()->getChild("scaling");
@@ -227,19 +227,19 @@ namespace rlogic
         EXPECT_FLOAT_EQ(42.f, floatUniformValue);
         EXPECT_EQ(43, m_camera->getViewportX());
         {
-            std::array<float, 3> values = {0.0f, 0.0f, 0.0f};
-            m_node->getTranslation(values[0], values[1], values[2]);
-            EXPECT_THAT(values, ::testing::ElementsAre(1.f, 2.f, 3.f));
+            vec3f values = {0.0f, 0.0f, 0.0f};
+            m_node->getTranslation(values);
+            EXPECT_EQ(values, vec3f(1.f, 2.f, 3.f));
         }
         {
-            std::array<float, 3> values = {0.0f, 0.0f, 0.0f};
-            m_node->getScaling(values[0], values[1], values[2]);
-            EXPECT_THAT(values, ::testing::ElementsAre(3.f, 2.f, 1.f));
+            vec3f values = {0.0f, 0.0f, 0.0f};
+            m_node->getScaling(values);
+            EXPECT_EQ(values, vec3f(3.f, 2.f, 1.f));
         }
         {
-            std::array<float, 3> values = { 0.0f, 0.0f, 0.0f };
-            m_node->getRotation(values[0], values[1], values[2]);
-            EXPECT_THAT(values, ::testing::ElementsAre(0.f, 0.f, 0.f));
+            vec3f values = {0.0f, 0.0f, 0.0f};
+            m_node->getRotation(values);
+            EXPECT_EQ(values, vec3f(0.f, 0.f, 0.f));
         }
 
         ramses::UniformInput floatUniform;

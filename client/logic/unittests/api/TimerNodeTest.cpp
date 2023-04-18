@@ -30,7 +30,7 @@ namespace rlogic::internal
     class ATimerNode : public ::testing::Test
     {
     protected:
-        LogicEngine m_logicEngine;
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
     };
 
     TEST_F(ATimerNode, IsCreated)
@@ -55,7 +55,7 @@ namespace rlogic::internal
     {
         auto timerNode = m_logicEngine.createTimerNode("timerNode");
 
-        LogicEngine otherEngine;
+        LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
         EXPECT_FALSE(otherEngine.destroy(*timerNode));
         ASSERT_FALSE(otherEngine.getErrors().empty());
         EXPECT_EQ("Can't find TimerNode in logic engine!", otherEngine.getErrors().front().message);
@@ -141,7 +141,7 @@ namespace rlogic::internal
     {
         WithTempDirectory tempDir;
         {
-            LogicEngine otherEngine;
+            LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
             otherEngine.createTimerNode("timerNode");
             SaveFileConfig configNoValidation;
             configNoValidation.setValidationEnabled(false);

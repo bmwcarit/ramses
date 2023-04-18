@@ -10,11 +10,9 @@
 
 #include "impl/RamsesBindingImpl.h"
 #include "ramses-logic/Property.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "ramses-logic/DataTypes.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-framework-api/DataTypes.h"
-#include "internals/Math.h"
 #include <memory>
 
 namespace rlogic_serialization
@@ -54,8 +52,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::SkinBinding> Serialize(
             const SkinBindingImpl& skinBinding,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<SkinBindingImpl> Deserialize(
             const rlogic_serialization::SkinBinding& skinBinding,
@@ -72,7 +69,7 @@ namespace rlogic::internal
 
     private:
         std::vector<const RamsesNodeBindingImpl*> m_joints;
-        std::vector<math::Matrix44f> m_inverseBindMatrices;
+        std::vector<matrix44f> m_inverseBindMatrices;
         RamsesAppearanceBindingImpl& m_appearanceBinding;
         ramses::UniformInput m_jointMatInput;
 

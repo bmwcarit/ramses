@@ -31,6 +31,7 @@
 #include "Math3d/Matrix22f.h"
 #include "SceneAPI/EDataType.h"
 #include "ObjectIteratorImpl.h"
+#include "DataTypeUtils.h"
 #include <algorithm>
 
 namespace ramses
@@ -95,7 +96,7 @@ namespace ramses
 
     ramses::status_t AppearanceImpl::getBlendingColor(vec4f& color) const
     {
-        color = vec4f{ getIScene().getRenderState(m_renderStateHandle).blendColor.getAsArray() };
+        color = getIScene().getRenderState(m_renderStateHandle).blendColor.getAsVec4();
         return StatusOK;
     }
 
@@ -656,18 +657,14 @@ namespace ramses
     status_t AppearanceImpl::bindInput(const EffectInputImpl& input, const DataObjectImpl& dataObject)
     {
         if (!isFromTheSameSceneAs(dataObject))
-        {
             return addErrorEntry("Appearance::bindInput failed, dataObject is not from the same scene as this appearance");
-        }
 
-        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, {dataObject.getDataType()}));
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, {DataTypeUtils::ConvertDataTypeToInternal(dataObject.getDataType())}));
 
         const uint32_t inputIndex = input.getInputIndex();
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
         if (bindableInput == nullptr)
-        {
             return addErrorEntry("Appearance::bindInput failed, given uniform input cannot be bound to a DataObject.");
-        }
 
         return bindInputInternal(input, dataObject);
     }

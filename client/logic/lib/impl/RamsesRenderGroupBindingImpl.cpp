@@ -48,8 +48,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::RamsesRenderGroupBinding> RamsesRenderGroupBindingImpl::Serialize(
         const RamsesRenderGroupBindingImpl& renderGroupBinding,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& serializationMap,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& serializationMap)
     {
         const auto logicObject = LogicObjectImpl::Serialize(renderGroupBinding, builder);
         const auto fbRamsesRef = RamsesBindingImpl::SerializeRamsesReference(renderGroupBinding.m_ramsesRenderGroup, builder);

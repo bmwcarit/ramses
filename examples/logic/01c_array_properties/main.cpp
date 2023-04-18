@@ -19,7 +19,7 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // A script which demonstrates how to access vector and array properties
     rlogic::LuaScript* script = logicEngine.createLuaScript(R"(

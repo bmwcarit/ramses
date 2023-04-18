@@ -20,7 +20,7 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a LuaConfig object which we use to configure how the module will be built.
     // In this example, we use the 'print' method, so we add the 'Base' standard Lua library

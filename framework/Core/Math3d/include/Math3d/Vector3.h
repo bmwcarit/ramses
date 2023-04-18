@@ -15,6 +15,7 @@
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
 #include <array>
+#include "glm/vec3.hpp"
 
 namespace ramses_internal
 {
@@ -38,6 +39,7 @@ namespace ramses_internal
         constexpr Vector3(const Float _x, const Float _y, const Float _z);
         explicit constexpr Vector3(const Float value);
         explicit Vector3(const Vector4& other);
+        explicit constexpr Vector3(const glm::vec3& other);
 
         constexpr Vector3(const Vector3& other) = default;
         constexpr Vector3& operator=(const Vector3& other) = default;
@@ -45,7 +47,7 @@ namespace ramses_internal
         constexpr void set(const Float _x, const Float _y, const Float _z);
         constexpr void set(const Float xyz);
 
-        [[nodiscard]] std::array<float, 3u> getAsArray() const;
+        [[nodiscard]] glm::vec3 getAsVec3() const;
 
         constexpr Vector3 operator+(const Vector3& other) const;
         constexpr Vector3 operator-(const Vector3& other) const;
@@ -89,13 +91,19 @@ namespace ramses_internal
     , y(value)
     , z(value)
     {
-
     }
 
     constexpr inline Vector3::Vector3(const Float _x, const Float _y, const Float _z)
         : x(_x)
         , y(_y)
         , z(_z)
+    {
+    }
+
+    constexpr inline Vector3::Vector3(const glm::vec3& other)
+        : x(other.x)
+        , y(other.y)
+        , z(other.z)
     {
     }
 
@@ -111,11 +119,9 @@ namespace ramses_internal
         x = y = z = xyz;
     }
 
-    inline std::array<float, 3u> Vector3::getAsArray() const
+    inline glm::vec3 Vector3::getAsVec3() const
     {
-        std::array<float, 3u> ret;
-        std::copy(std::begin(data), std::end(data), ret.begin());
-        return ret;
+        return glm::vec3{x, y, z};
     }
 
     inline Float Vector3::length() const

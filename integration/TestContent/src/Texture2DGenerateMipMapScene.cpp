@@ -89,8 +89,8 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
 
         ramses::Node* transform = m_scene.createNode();
-        transform->translate(translateXY, translateXY, 0.0f);
-        transform->scale(scale, scale, scale);
+        transform->translate({translateXY, translateXY, 0.0f});
+        transform->scale({scale, scale, scale});
         transform->addChild(*mesh);
     }
 

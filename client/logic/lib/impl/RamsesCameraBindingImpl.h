@@ -13,7 +13,6 @@
 #include "internals/DeserializationMap.h"
 
 #include "ramses-client-api/RamsesObjectTypes.h"
-#include "ramses-logic/EFeatureLevel.h"
 
 #include <memory>
 
@@ -79,8 +78,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::RamsesCameraBinding> Serialize(
             const RamsesCameraBindingImpl& cameraBinding,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<RamsesCameraBindingImpl> Deserialize(
             const rlogic_serialization::RamsesCameraBinding& cameraBinding,

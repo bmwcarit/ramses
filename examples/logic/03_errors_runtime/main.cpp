@@ -17,7 +17,7 @@
  */
 int main()
 {
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
      * This script contains a runtime error, i.e. from Lua point of view this is

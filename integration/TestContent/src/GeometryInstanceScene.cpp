@@ -68,7 +68,7 @@ namespace ramses_internal
             notInstancedMeshNode->setAppearance(*appearance);
 
             ramses::Node* translateNode = m_scene.createNode();
-            translateNode->setTranslation(0.f, -1.5f, 0.f);
+            translateNode->setTranslation({0.f, -1.5f, 0.f});
             notInstancedMeshNode->setParent(*translateNode);
 
             ramses::GeometryBinding* notInstancedGeometry = createGeometry(*effect);

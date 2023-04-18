@@ -89,7 +89,7 @@ namespace ramses_internal
         [[nodiscard]] ramses::OrthographicCamera& createOrthoCamera(ramses::Scene& scene) const
         {
             ramses::Node* cameraTranslation = scene.createNode();
-            cameraTranslation->setTranslation(0.0f, 0.0f, 0.5f);
+            cameraTranslation->setTranslation({0.0f, 0.0f, 0.5f});
 
             ramses::OrthographicCamera& camera = *scene.createOrthographicCamera();
             camera.setFrustum(0.0f, static_cast<float>(m_widthOfScreen), 0.0f, static_cast<float>(m_heightOfScreen), 0.1f, 100.f);

@@ -1068,9 +1068,9 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    ERotationConvention SceneT<MEMORYPOOL>::getRotationConvention(TransformHandle handle) const
+    ERotationType SceneT<MEMORYPOOL>::getRotationType(TransformHandle handle) const
     {
-        return m_transforms.getMemory(handle)->rotationConvention;
+        return m_transforms.getMemory(handle)->rotationType;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1086,11 +1086,11 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector4& rotation, ERotationConvention convention)
+    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector4& rotation, ERotationType rotationType)
     {
         auto transformMemory = m_transforms.getMemory(handle);
         transformMemory->rotation = rotation;
-        transformMemory->rotationConvention = convention;
+        transformMemory->rotationType = rotationType;
     }
 
     template <template<typename, typename> class MEMORYPOOL>

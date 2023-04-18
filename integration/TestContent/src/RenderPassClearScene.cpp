@@ -49,7 +49,7 @@ namespace ramses_internal
             addTriangleMesh(m_blueTriangle, blueRenderGroup, -0.5f, -0.1f, -2.3f);
 
             blueRenderPass.setRenderOrder(0);
-            blueRenderPass.setClearColor(1.f, 0.f, 1.f, 1.f);
+            blueRenderPass.setClearColor({1.f, 0.f, 1.f, 1.f});
             blueRenderPass.setClearFlags(ramses::EClearFlags_All);
             blueRenderPass.addRenderGroup(blueRenderGroup);
             blueRenderPass.setCamera(camera);
@@ -67,7 +67,7 @@ namespace ramses_internal
             addTriangleMesh(m_redTriangle, redRenderGroup, 0.5f, 0.1f, -3.0f);
 
             redRenderPass.setRenderOrder(1);
-            redRenderPass.setClearColor(0.f, 0.f, 0.f, 1.f);
+            redRenderPass.setClearColor({0.f, 0.f, 0.f, 1.f});
             redRenderPass.setClearFlags(state); // state will contain all combinations of clear flags tested
             redRenderPass.addRenderGroup(redRenderGroup);
             redRenderPass.setCamera(camera);
@@ -125,7 +125,7 @@ namespace ramses_internal
 
         ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(meshNode);
-        translateNode->translate(x, y, z);
+        translateNode->translate({x, y, z});
 
         targetGroup.addMeshNode(meshNode);
     }
@@ -138,7 +138,7 @@ namespace ramses_internal
 
         ramses::Node& posNode = *m_scene.createNode();
         posNode.addChild(camera);
-        posNode.translate(0.f, 0.f, 5.0f);
+        posNode.translate({0.f, 0.f, 5.0f});
 
         camera.setParent(posNode);
 
@@ -193,7 +193,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -2.5f);
+        transNode->setTranslation({0.f, 0.f, -2.5f});
         meshNode->setParent(*transNode);
 
         return *meshNode;

@@ -93,10 +93,10 @@ namespace ramses_internal
         // Vertex positions in normalized screen space, i.e. fraction of the screen (0.0f == bottom/left, 1.0f == top/right)
         const std::array<ramses::vec3f, 4u> vertexPositionsData
         {
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u).getAsArray() },
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u).getAsArray() },
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u).getAsArray() },
-            ramses::vec3f{ m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u).getAsArray() }
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u).getAsVec3(),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u).getAsVec3()
         };
 
         std::array<ramses::vec2f, 4u> vertexTexcoordsData

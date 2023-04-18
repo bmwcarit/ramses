@@ -58,8 +58,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::TimerNode> TimerNodeImpl::Serialize(
         const TimerNodeImpl& timerNode,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& serializationMap,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& serializationMap)
     {
         // Timer nodes require special serialization logic. We don't want to store system time
         // in the files (this makes their content undeterministic). Instead, we write zeroes, and

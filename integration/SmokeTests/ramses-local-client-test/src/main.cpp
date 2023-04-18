@@ -237,7 +237,7 @@ int main(int argc, const char* argv[])
     {
         // Set background color to blue, to distinguish an possible rendered empty frame from the black background
         // of the integration test "test_run_no_initial_black_frame.py".
-        displayConfig.setClearColor(0.0, 0.0, 1.0, 1.0);
+        displayConfig.setClearColor({0.0, 0.0, 1.0, 1.0});
     }
     const auto displayId = renderer.createDisplay(displayConfig);
     renderer.flush();

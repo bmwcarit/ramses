@@ -15,6 +15,7 @@
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
 #include <array>
+#include "glm/vec4.hpp"
 
 namespace ramses_internal
 {
@@ -45,6 +46,7 @@ namespace ramses_internal
         explicit constexpr Vector4(const Vector3& other);
         constexpr Vector4(Float _x, Float _y, Float _z, Float _w);
         explicit constexpr Vector4(const std::array<float, 4u>& values);
+        explicit constexpr Vector4(const glm::vec4& other);
 
         constexpr Vector4(const Vector4& other) = default;
         constexpr Vector4& operator=(const Vector4& other) = default;
@@ -52,7 +54,7 @@ namespace ramses_internal
         constexpr void set(Float _x, Float _y, Float _z, Float _w);
         constexpr void set(Float xyzw);
 
-        [[nodiscard]] std::array<float, 4u> getAsArray() const;
+        [[nodiscard]] glm::vec4 getAsVec4() const;
 
         constexpr Vector4 operator+(const Vector4& other) const;
         constexpr void operator+=(const Vector4& other);
@@ -111,6 +113,12 @@ namespace ramses_internal
     {
     }
 
+    constexpr inline
+        Vector4::Vector4(const glm::vec4& other)
+        : Vector4(other.x, other.y, other.z, other.w)
+    {
+    }
+
     constexpr inline Vector4::Vector4(const Vector3& other)
         : x(other.x)
         , y(other.y)
@@ -132,11 +140,9 @@ namespace ramses_internal
         x = y = z = w = xyzw;
     }
 
-    inline std::array<float, 4u> Vector4::getAsArray() const
+    inline glm::vec4 Vector4::getAsVec4() const
     {
-        std::array<float, 4u> ret;
-        std::copy(std::begin(data), std::end(data), ret.begin());
-        return ret;
+        return glm::vec4{x, y, z, w};
     }
 
     inline Float Vector4::length() const

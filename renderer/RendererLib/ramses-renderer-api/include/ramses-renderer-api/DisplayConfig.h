@@ -12,6 +12,7 @@
 #include "ramses-renderer-api/Types.h"
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-framework-api/DataTypes.h"
 
 namespace ramses
 {
@@ -228,15 +229,12 @@ namespace ramses
 
         /**
         * @brief Sets the clear color of the displays framebuffer (Default=0.0, 0.0, 0.0, 1.0)
-        * @param[in] red clear value for red channel
-        * @param[in] green clear value for green channel
-        * @param[in] blue clear value for blue channel
-        * @param[in] alpha clear value for alpha channel
+        * @param[in] color clear color (rgba, channel values in range [0,1])
         *
         * @return  StatusOK on success, otherwise the returned status can be used to resolve
         *          to resolve error message using getStatusMessage()
         */
-        status_t setClearColor(float red, float green, float blue, float alpha);
+        status_t setClearColor(const vec4f& color);
 
         /**
         * @brief Sets whether depth/stencil buffer should be created for the framebuffer of the display.

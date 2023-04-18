@@ -10,6 +10,7 @@
 #define RAMSES_RENDERPASS_H
 
 #include "ramses-client-api/SceneObject.h"
+#include "ramses-framework-api/DataTypes.h"
 
 namespace ramses
 {
@@ -135,22 +136,22 @@ namespace ramses
         [[nodiscard]] int32_t getRenderOrder() const;
 
         /**
-        * @brief Set the clear color for the RenderPass (default: [0,0,0,0])
+        * @brief Set the clear color for the RenderPass (default: [0,0,0,1])
         * @details The clear color will be used to clear a render target assigned to this RenderPass
         *          if clear flag is enabled, see setClearFlag.
         *
-        * @param r,g,b,a color channels of clear color
+        * @param color color channels of clear color (RGBA in 0-1 range)
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setClearColor(float r, float g, float b, float a);
+        status_t setClearColor(const vec4f& color);
 
         /**
         * @brief Returns the clear color of the RenderPass
         *
-        * @param[out] r,g,b,a color channels of clear color
+        * @return color channels of clear color
         */
-        void getClearColor(float &r, float &g, float &b, float &a) const;
+        [[nodiscard]] vec4f getClearColor() const;
 
         /**
         * @brief Set the clear flags which enable/disable the clearing of the render target assigned to this RenderPass(default: #ramses::EClearFlags_All)

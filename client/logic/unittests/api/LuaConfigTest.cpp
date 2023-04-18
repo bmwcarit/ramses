@@ -21,7 +21,7 @@ namespace rlogic::internal
     class ALuaConfig : public ::testing::Test
     {
     protected:
-        LogicEngine m_logicEngine;
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
         LuaModule* m_module{ m_logicEngine.createLuaModule(R"(
             local mymath = {}
             function mymath.add(a,b)

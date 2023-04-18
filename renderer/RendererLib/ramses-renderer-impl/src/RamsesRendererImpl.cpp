@@ -258,7 +258,7 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RamsesRendererImpl::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a)
+    status_t RamsesRendererImpl::setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, const vec4f& color)
     {
         const auto it = m_displayFramebuffers.find(display);
         if (it == m_displayFramebuffers.cend())
@@ -270,7 +270,7 @@ namespace ramses
             bufferHandle = ramses_internal::OffscreenBufferHandle::Invalid();
 
         const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
-        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetClearColor{ displayHandle, bufferHandle, { r, g, b, a } });
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetClearColor{ displayHandle, bufferHandle, ramses_internal::Vector4{color} });
 
         return StatusOK;
     }

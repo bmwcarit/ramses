@@ -301,15 +301,15 @@ namespace rlogic
 
         auto  outputs = script->getOutputs();
 
-        EXPECT_THAT(*outputs->getChild("vec2f")->get<vec2f>(), ::testing::ElementsAre(0.1f, 0.2f));
-        EXPECT_THAT(*outputs->getChild("vec3f")->get<vec3f>(), ::testing::ElementsAre(1.1f, 1.2f, 1.3f));
-        EXPECT_THAT(*outputs->getChild("vec4f")->get<vec4f>(), ::testing::ElementsAre(2.1f, 2.2f, 2.3f, 2.4f));
+        EXPECT_EQ(*outputs->getChild("vec2f")->get<vec2f>(), vec2f(0.1f, 0.2f));
+        EXPECT_EQ(*outputs->getChild("vec3f")->get<vec3f>(), vec3f(1.1f, 1.2f, 1.3f));
+        EXPECT_EQ(*outputs->getChild("vec4f")->get<vec4f>(), vec4f(2.1f, 2.2f, 2.3f, 2.4f));
 
-        EXPECT_THAT(*outputs->getChild("vec2i")->get<vec2i>(), ::testing::ElementsAre(1, 2));
-        EXPECT_THAT(*outputs->getChild("vec3i")->get<vec3i>(), ::testing::ElementsAre(3, 4, 5));
-        EXPECT_THAT(*outputs->getChild("vec4i")->get<vec4i>(), ::testing::ElementsAre(6, 7, 8, 9));
+        EXPECT_EQ(*outputs->getChild("vec2i")->get<vec2i>(), vec2i(1, 2));
+        EXPECT_EQ(*outputs->getChild("vec3i")->get<vec3i>(), vec3i(3, 4, 5));
+        EXPECT_EQ(*outputs->getChild("vec4i")->get<vec4i>(), vec4i(6, 7, 8, 9));
 
-        EXPECT_THAT(*outputs->getChild("nested")->getChild("vec")->get<vec3i>(), ::testing::ElementsAre(11, 12, 13));
+        EXPECT_EQ(*outputs->getChild("nested")->getChild("vec")->get<vec3i>(), vec3i(11, 12, 13));
         EXPECT_FLOAT_EQ(*outputs->getChild("nested")->getChild("float")->get<float>(), 15.5f);
     }
 
@@ -374,9 +374,9 @@ namespace rlogic
 
         auto outputs = script->getOutputs();
 
-        EXPECT_THAT(*outputs->getChild("vec2f")->get<vec2f>(), ::testing::ElementsAre(0.1f, 0.2f));
+        EXPECT_EQ(*outputs->getChild("vec2f")->get<vec2f>(), vec2f(0.1f, 0.2f));
 
-        EXPECT_THAT(*outputs->getChild("vec3i")->get<vec3i>(), ::testing::ElementsAre(11, 12, 13));
+        EXPECT_EQ(*outputs->getChild("vec3i")->get<vec3i>(), vec3i(11, 12, 13));
     }
 
     TEST_F(ALuaScript_Runtime, UsesNestedInputsToProduceResult)
@@ -868,10 +868,10 @@ namespace rlogic
         EXPECT_EQ(4, *int64_array->getChild(1)->get<int64_t>());
         EXPECT_FLOAT_EQ(0.1f, *float_array->getChild(0)->get<float>());
         EXPECT_FLOAT_EQ(0.2f, *float_array->getChild(1)->get<float>());
-        EXPECT_THAT(*vec2i_array->getChild(0)->get<vec2i>(), ::testing::ElementsAre(11, 12));
-        EXPECT_THAT(*vec2i_array->getChild(1)->get<vec2i>(), ::testing::ElementsAre(21, 22));
-        EXPECT_THAT(*vec3f_array->getChild(0)->get<vec3f>(), ::testing::ElementsAre(0.11f, 0.12f, 0.13f));
-        EXPECT_THAT(*vec3f_array->getChild(1)->get<vec3f>(), ::testing::ElementsAre(0.21f, 0.22f, 0.23f));
+        EXPECT_EQ(*vec2i_array->getChild(0)->get<vec2i>(), vec2i(11, 12));
+        EXPECT_EQ(*vec2i_array->getChild(1)->get<vec2i>(), vec2i(21, 22));
+        EXPECT_EQ(*vec3f_array->getChild(0)->get<vec3f>(), vec3f(0.11f, 0.12f, 0.13f));
+        EXPECT_EQ(*vec3f_array->getChild(1)->get<vec3f>(), vec3f(0.21f, 0.22f, 0.23f));
     }
 
     TEST_F(ALuaScript_Runtime, AssignArrayValuesFromLuaTable_WithExplicitKeys)
@@ -1037,9 +1037,9 @@ namespace rlogic
         EXPECT_TRUE(script->getInputs()->getChild("array")->getChild(1)->set<vec2i>({ 3, 4 }));
         EXPECT_TRUE(script->getInputs()->getChild("array")->getChild(2)->set<vec2i>({ 5, 6 }));
         ASSERT_TRUE(m_logicEngine.update());
-        EXPECT_THAT(*script->getOutputs()->getChild("array")->getChild(0)->get<vec2i>(), ::testing::ElementsAre(1, 2));
-        EXPECT_THAT(*script->getOutputs()->getChild("array")->getChild(1)->get<vec2i>(), ::testing::ElementsAre(3, 4));
-        EXPECT_THAT(*script->getOutputs()->getChild("array")->getChild(2)->get<vec2i>(), ::testing::ElementsAre(5, 6));
+        EXPECT_EQ(*script->getOutputs()->getChild("array")->getChild(0)->get<vec2i>(), vec2i(1, 2));
+        EXPECT_EQ(*script->getOutputs()->getChild("array")->getChild(1)->get<vec2i>(), vec2i(3, 4));
+        EXPECT_EQ(*script->getOutputs()->getChild("array")->getChild(2)->get<vec2i>(), vec2i(5, 6));
     }
 
     TEST_F(ALuaScript_Runtime, AssignsValuesArraysInVariousLuaSyntaxStyles_InNestedStruct)
@@ -1069,9 +1069,9 @@ namespace rlogic
         EXPECT_TRUE(script->getInputs()->getChild("struct")->getChild("array2")->getChild(0)->set<vec3f>({ 1.1f, 1.2f, 1.3f }));
         EXPECT_TRUE(script->getInputs()->getChild("struct")->getChild("array2")->getChild(1)->set<vec3f>({ 2.1f, 2.2f, 2.3f }));
         ASSERT_TRUE(m_logicEngine.update());
-        EXPECT_THAT(*script->getOutputs()->getChild("struct")->getChild("array1")->getChild(0)->get<vec2f>(), ::testing::ElementsAre(0.1f, 0.2f));
-        EXPECT_THAT(*script->getOutputs()->getChild("struct")->getChild("array2")->getChild(0)->get<vec3f>(), ::testing::ElementsAre(1.1f, 1.2f, 1.3f));
-        EXPECT_THAT(*script->getOutputs()->getChild("struct")->getChild("array2")->getChild(1)->get<vec3f>(), ::testing::ElementsAre(2.1f, 2.2f, 2.3f));
+        EXPECT_EQ(*script->getOutputs()->getChild("struct")->getChild("array1")->getChild(0)->get<vec2f>(), vec2f(0.1f, 0.2f));
+        EXPECT_EQ(*script->getOutputs()->getChild("struct")->getChild("array2")->getChild(0)->get<vec3f>(), vec3f(1.1f, 1.2f, 1.3f));
+        EXPECT_EQ(*script->getOutputs()->getChild("struct")->getChild("array2")->getChild(1)->get<vec3f>(), vec3f(2.1f, 2.2f, 2.3f));
     }
 
     TEST_F(ALuaScript_Runtime, AllowsAssigningArraysFromTableWithNilAtTheEnd)
@@ -1632,14 +1632,14 @@ namespace rlogic
             EXPECT_EQ(true, *struct_lvl2->getChild("bool")->get<bool>());
             EXPECT_EQ("somestring", *struct_lvl2->getChild("string")->get<std::string>());
 
-            EXPECT_THAT(*struct_lvl2->getChild("vec2f")->get<vec2f>(), ::testing::ElementsAre(0.1f, 0.2f));
-            EXPECT_THAT(*struct_lvl2->getChild("vec3f")->get<vec3f>(), ::testing::ElementsAre(1.1f, 1.2f, 1.3f));
-            EXPECT_THAT(*struct_lvl2->getChild("vec4f")->get<vec4f>(), ::testing::ElementsAre(2.1f, 2.2f, 2.3f, 2.4f));
-            EXPECT_THAT(*struct_lvl2->getChild("vec2i")->get<vec2i>(), ::testing::ElementsAre(1, 2));
-            EXPECT_THAT(*struct_lvl2->getChild("vec3i")->get<vec3i>(), ::testing::ElementsAre(3, 4, 5));
-            EXPECT_THAT(*struct_lvl2->getChild("vec4i")->get<vec4i>(), ::testing::ElementsAre(6, 7, 8, 9));
-            EXPECT_THAT(*struct_lvl2->getChild("array")->getChild(0)->get<vec2i>(), ::testing::ElementsAre(11, 12));
-            EXPECT_THAT(*struct_lvl2->getChild("array")->getChild(1)->get<vec2i>(), ::testing::ElementsAre(13, 14));
+            EXPECT_EQ(*struct_lvl2->getChild("vec2f")->get<vec2f>(), vec2f(0.1f, 0.2f));
+            EXPECT_EQ(*struct_lvl2->getChild("vec3f")->get<vec3f>(), vec3f(1.1f, 1.2f, 1.3f));
+            EXPECT_EQ(*struct_lvl2->getChild("vec4f")->get<vec4f>(), vec4f(2.1f, 2.2f, 2.3f, 2.4f));
+            EXPECT_EQ(*struct_lvl2->getChild("vec2i")->get<vec2i>(), vec2i(1, 2));
+            EXPECT_EQ(*struct_lvl2->getChild("vec3i")->get<vec3i>(), vec3i(3, 4, 5));
+            EXPECT_EQ(*struct_lvl2->getChild("vec4i")->get<vec4i>(), vec4i(6, 7, 8, 9));
+            EXPECT_EQ(*struct_lvl2->getChild("array")->getChild(0)->get<vec2i>(), vec2i(11, 12));
+            EXPECT_EQ(*struct_lvl2->getChild("array")->getChild(1)->get<vec2i>(), vec2i(13, 14));
         }
     }
 
@@ -1860,16 +1860,16 @@ namespace rlogic
         auto ramsesAppearance = ramsesScene->createAppearance(*ramsesEffect);
         ramses::PerspectiveCamera* camera = ramsesScene->createPerspectiveCamera();
 
-        auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*ramsesAppearance, "AppearanceBinding");
         auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*camera, "CameraBinding");
 
         m_logicEngine.update();
 
         EXPECT_TRUE(*nodeBinding->getInputs()->getChild("visibility")->get<bool>());
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), ::testing::ElementsAre(0.f, 0.f, 0.f));
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("rotation")->get<vec3f>(), ::testing::ElementsAre(0.f, 0.f, 0.f));
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("scaling")->get<vec3f>(), ::testing::ElementsAre(1.f, 1.f, 1.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("scaling")->get<vec3f>(), vec3f(1.f, 1.f, 1.f));
         EXPECT_EQ(0.0f, appearanceBinding->getInputs()->getChild("floatUniform")->get<float>());
         EXPECT_EQ(camera->getViewportX(), 0);
         EXPECT_EQ(camera->getViewportY(), 0);
@@ -1888,9 +1888,9 @@ namespace rlogic
         m_logicEngine.update();
 
         EXPECT_TRUE(*nodeBinding->getInputs()->getChild("visibility")->get<bool>());
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), ::testing::ElementsAre(0.f, 0.f, 0.f));
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("rotation")->get<vec3f>(), ::testing::ElementsAre(0.f, 0.f, 0.f));
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("scaling")->get<vec3f>(), ::testing::ElementsAre(1.f, 1.f, 1.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("scaling")->get<vec3f>(), vec3f(1.f, 1.f, 1.f));
         EXPECT_EQ(0.0f, appearanceBinding->getInputs()->getChild("floatUniform")->get<float>());
         EXPECT_EQ(camera->getViewportX(), 0);
         EXPECT_EQ(camera->getViewportY(), 0);
@@ -1907,7 +1907,7 @@ namespace rlogic
 
         m_logicEngine.update();
 
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), ::testing::ElementsAre(1.f, 2.f, 3.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), vec3f(1.f, 2.f, 3.f));
 
         m_logicEngine.link(*script3FloatOutput, *appearanceBinding->getInputs()->getChild("floatUniform"));
         m_logicEngine.link(*script3FloatOutput, *cameraBinding->getInputs()->getChild("frustum")->getChild("farPlane"));
@@ -1926,7 +1926,7 @@ namespace rlogic
 
         m_logicEngine.update();
 
-        EXPECT_THAT(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), ::testing::ElementsAre(1.f, 2.f, 3.f));
+        EXPECT_EQ(*nodeBinding->getInputs()->getChild("translation")->get<vec3f>(), vec3f(1.f, 2.f, 3.f));
         EXPECT_FLOAT_EQ(23.f, *appearanceBinding->getInputs()->getChild("floatUniform")->get<float>());
         EXPECT_EQ(23.f, *cameraBinding->getInputs()->getChild("frustum")->getChild("farPlane")->get<float>());
     }

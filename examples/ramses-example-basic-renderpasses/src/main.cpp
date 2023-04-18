@@ -45,7 +45,7 @@ int main()
     // every render pass needs a camera to define rendering parameters
     // create camera with perspective projection
     ramses::Node* cameraTranslate = scene->createNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
+    cameraTranslate->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::PerspectiveCamera* cameraA = scene->createPerspectiveCamera("perspective camera of renderpass A");
     cameraA->setParent(*cameraTranslate);
     cameraA->setFrustum(45.f, 640.f / 480.f, 0.1f, 100.f);

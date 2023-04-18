@@ -20,7 +20,7 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create an interface which could represent a scene with a node that should be translated
     const std::string_view interfaceSrc = R"(

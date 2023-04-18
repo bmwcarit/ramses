@@ -30,17 +30,7 @@ namespace ramses
     class RenderPass;
     class RenderBuffer;
     class RenderTarget;
-    class DataFloat;
-    class DataVector2f;
-    class DataVector3f;
-    class DataVector4f;
-    class DataMatrix22f;
-    class DataMatrix33f;
-    class DataMatrix44f;
-    class DataInt32;
-    class DataVector2i;
-    class DataVector3i;
-    class DataVector4i;
+    class DataObject;
     class BlitPass;
     class TextureSampler;
     class TextureSamplerMS;
@@ -82,17 +72,7 @@ namespace ramses
         TextureSamplerMS,
         RenderBuffer,
         RenderTarget,
-        DataFloat,
-        DataVector2f,
-        DataVector3f,
-        DataVector4f,
-        DataMatrix22f,
-        DataMatrix33f,
-        DataMatrix44f,
-        DataInt32,
-        DataVector2i,
-        DataVector3i,
-        DataVector4i,
+        DataObject,
         ArrayBuffer,
         Texture2DBuffer,
         PickableObject,
@@ -106,8 +86,8 @@ namespace ramses
     // Objects owned by client
     using ClientObjectTypes = ::testing::Types<Scene>;
 
-    // All Ramses objects - set #1
-    using RamsesObjectTypes1 = ::testing::Types<
+    // All Ramses objects
+    using RamsesObjectTypes = ::testing::Types<
         RamsesClient,
         Scene,
         Node,
@@ -118,10 +98,7 @@ namespace ramses
         Appearance,
         Texture2D,
         Texture3D,
-        TextureCube>;
-
-    // All Ramses objects - set #2
-    using RamsesObjectTypes2 = ::testing::Types<
+        TextureCube,
         ArrayResource,
         RenderGroup,
         RenderPass,
@@ -133,17 +110,7 @@ namespace ramses
         ArrayBuffer,
         Texture2DBuffer,
         GeometryBinding,
-        DataFloat,
-        DataVector2f,
-        DataVector3f,
-        DataVector4f,
-        DataMatrix22f,
-        DataMatrix33f,
-        DataMatrix44f,
-        DataInt32,
-        DataVector2i,
-        DataVector3i,
-        DataVector4i,
+        DataObject,
         PickableObject,
         SceneReference>;
 }

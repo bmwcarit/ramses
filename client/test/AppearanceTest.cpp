@@ -11,8 +11,7 @@
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Texture2D.h"
-#include "ramses-client-api/DataFloat.h"
-#include "ramses-client-api/DataMatrix44f.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/TextureSamplerExternal.h"
@@ -178,7 +177,7 @@ namespace ramses
         //default values
         status_t stat = appearance->getBlendingColor(color);
         EXPECT_EQ(StatusOK, stat);
-        EXPECT_THAT(color, ::testing::ElementsAre(0.f, 0.f, 0.f, 0.f));
+        EXPECT_EQ(color, vec4f(0.f, 0.f, 0.f, 0.f));
 
         const vec4f colorToSet{ 0.1f, 0.2f, 0.3f, 0.4f };
         stat = appearance->setBlendingColor(colorToSet);
@@ -999,7 +998,7 @@ namespace ramses
         UniformInput inputObject;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
 
-        DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
+        auto dataObject = sharedTestState->getScene().createDataObject(EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_EQ(StatusOK, appearance->bindInput(inputObject, *dataObject));
@@ -1017,7 +1016,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
         EXPECT_EQ(StatusOK, appearance->setInputValue(inputObject, 666.f));
 
-        DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
+        auto dataObject = sharedTestState->getScene().createDataObject(EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
         dataObject->setValue(333.f);
 
@@ -1043,7 +1042,7 @@ namespace ramses
         UniformInput inputObject;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInputArray", inputObject));
 
-        DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
+        auto dataObject = sharedTestState->getScene().createDataObject(EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
@@ -1055,7 +1054,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
 
         ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(sceneId_t(1u));
-        DataFloat* dataObject = anotherScene.createDataFloat();
+        auto dataObject = anotherScene.createDataObject(EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
@@ -1068,10 +1067,11 @@ namespace ramses
         UniformInput inputObject;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec4fInput", inputObject));
 
-        DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
+        auto dataObject = sharedTestState->getScene().createDataObject(EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
+        EXPECT_FALSE(appearance->isInputBound(inputObject));
     }
 
     TEST_F(AAppearanceTestWithSemanticUniforms, failsToBindDataObjectIfInputHasSemantics)
@@ -1079,7 +1079,7 @@ namespace ramses
         UniformInput inputObject;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix44fInput", inputObject));
 
-        DataMatrix44f* dataObject = sharedTestState->getScene().createDataMatrix44f();
+        auto dataObject = sharedTestState->getScene().createDataObject(EDataType::Matrix44F);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_NE(StatusOK, appearance->bindInput(inputObject, *dataObject));
@@ -1091,7 +1091,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
         EXPECT_EQ(StatusOK, appearance->setInputValue(inputObject, 666.f));
 
-        DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
+        auto dataObject = sharedTestState->getScene().createDataObject(EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_EQ(StatusOK, appearance->bindInput(inputObject, *dataObject));
@@ -1216,7 +1216,7 @@ namespace ramses
         UniformInput inputObject;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", inputObject));
 
-        DataFloat* dataObject = sharedTestState->getScene().createDataFloat();
+        auto dataObject = sharedTestState->getScene().createDataObject(EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_EQ(StatusOK, newAppearance->bindInput(inputObject, *dataObject));

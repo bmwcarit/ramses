@@ -13,7 +13,7 @@
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/DataFloat.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/TextureSamplerExternal.h"
@@ -783,7 +783,7 @@ namespace ramses
     {
         Scene& anotherScene = *client.createScene(sceneId_t(12u));
 
-        DataFloat* dataObject = anotherScene.createDataFloat();
+        auto dataObject = anotherScene.createDataObject(EDataType::Float);
         ASSERT_TRUE(nullptr != dataObject);
 
         EXPECT_NE(StatusOK, m_scene.createDataProvider(*dataObject, dataProviderId_t{1u}));
@@ -795,7 +795,7 @@ namespace ramses
     {
         Scene& anotherScene = *client.createScene(sceneId_t(12u));
 
-        DataFloat* dataObject = anotherScene.createDataFloat();
+        auto dataObject = anotherScene.createDataObject(EDataType::Float);
         ASSERT_TRUE(nullptr != dataObject);
 
         EXPECT_NE(StatusOK, m_scene.createDataConsumer(*dataObject, dataConsumerId_t{1u}));
@@ -805,7 +805,7 @@ namespace ramses
 
     TEST_F(AScene, canCreateADataObjectDataSlot)
     {
-        DataFloat* dataObject = m_scene.createDataFloat();
+        auto dataObject = m_scene.createDataObject(EDataType::Float);
         EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
 
         EXPECT_EQ(StatusOK, m_scene.createDataConsumer(*dataObject, dataConsumerId_t(666u)));
@@ -820,7 +820,7 @@ namespace ramses
 
     TEST_F(AScene, removesDataSlotsOfDataObjectOnDestruction)
     {
-        DataFloat* dataObject = m_scene.createDataFloat();
+        auto dataObject = m_scene.createDataObject(EDataType::Float);
         m_scene.createDataProvider(*dataObject, dataProviderId_t(1412u));
 
         EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
@@ -834,7 +834,7 @@ namespace ramses
 
     TEST_F(AScene, canNotCreateMoreThanOneDataSlotForADataObject)
     {
-        DataFloat* dataObject = m_scene.createDataFloat();
+        auto dataObject = m_scene.createDataObject(EDataType::Float);
         EXPECT_EQ(StatusOK, m_scene.createDataProvider(*dataObject, dataProviderId_t(1u)));
         EXPECT_NE(StatusOK, m_scene.createDataProvider(*dataObject, dataProviderId_t(2u)));
         EXPECT_NE(StatusOK, m_scene.createDataConsumer(*dataObject, dataConsumerId_t(3u)));
@@ -842,8 +842,8 @@ namespace ramses
 
     TEST_F(AScene, canNotCreateMoreThanOneDataSlotWithTheSameId)
     {
-        DataFloat* dataObject1 = m_scene.createDataFloat();
-        DataFloat* dataObject2 = m_scene.createDataFloat();
+        auto dataObject1 = m_scene.createDataObject(EDataType::Float);
+        auto dataObject2 = m_scene.createDataObject(EDataType::Float);
         EXPECT_EQ(StatusOK, m_scene.createDataProvider(*dataObject1, dataProviderId_t(1u)));
         EXPECT_NE(StatusOK, m_scene.createDataProvider(*dataObject2, dataProviderId_t(1u)));
         EXPECT_NE(StatusOK, m_scene.createDataConsumer(*dataObject2, dataConsumerId_t(1u)));

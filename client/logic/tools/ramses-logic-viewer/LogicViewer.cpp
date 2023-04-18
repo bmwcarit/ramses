@@ -120,7 +120,7 @@ namespace rlogic
     const char* const LogicViewer::ltnViewName        = "name";
     const char* const LogicViewer::ltnViewDescription = "description";
 
-    LogicViewer::LogicViewer(EFeatureLevel engineFeatureLevel, ScreenshotFunc screenshotFunc)
+    LogicViewer::LogicViewer(ramses::EFeatureLevel engineFeatureLevel, ScreenshotFunc screenshotFunc)
         : m_logicEngine{ engineFeatureLevel }
         , m_screenshotFunc(std::move(screenshotFunc))
     {

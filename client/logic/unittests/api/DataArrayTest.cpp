@@ -8,7 +8,6 @@
 
 #include "gtest/gtest.h"
 #include "WithTempDirectory.h"
-#include "FeatureLevelTestValues.h"
 
 #include "ramses-logic/LogicEngine.h"
 #include "ramses-logic/DataArray.h"
@@ -24,34 +23,19 @@ namespace rlogic::internal
     class ADataArray : public ::testing::Test
     {
     protected:
-        LogicEngine m_logicEngine{ T::FeatureLevel };
-    };
-
-    template <typename T, EFeatureLevel F>
-    struct DataTypeFeatureLevelPair
-    {
-        using DataType = T;
-        static const EFeatureLevel FeatureLevel = F;
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
     };
 
     using DataTypes = ::testing::Types <
-        DataTypeFeatureLevelPair<float, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<float, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<vec2f, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<vec2f, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<vec3f, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<vec3f, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<vec4f, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<vec4f, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<int32_t, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<int32_t, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<vec2i, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<vec2i, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<vec3i, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<vec3i, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<vec4i, EFeatureLevel_01>,
-        DataTypeFeatureLevelPair<vec4i, EFeatureLevel_Latest>,
-        DataTypeFeatureLevelPair<std::vector<float>, EFeatureLevel_Latest>
+        float,
+        vec2f,
+        vec3f,
+        vec4f,
+        int32_t,
+        vec2i,
+        vec3i,
+        vec4i,
+        std::vector<float>
     >;
     TYPED_TEST_SUITE(ADataArray, DataTypes);
 
@@ -69,29 +53,29 @@ namespace rlogic::internal
 
     TYPED_TEST(ADataArray, IsCreated)
     {
-        const auto data = SomeDataVector<typename TypeParam::DataType>();
+        const auto data = SomeDataVector<TypeParam>();
         const auto dataArray = this->m_logicEngine.createDataArray(data, "dataarray");
         EXPECT_TRUE(this->m_logicEngine.getErrors().empty());
         ASSERT_NE(nullptr, dataArray);
         EXPECT_EQ(dataArray, this->m_logicEngine.template findByName<DataArray>("dataarray"));
 
         EXPECT_EQ("dataarray", dataArray->getName());
-        EXPECT_EQ(EPropertyType(PropertyTypeToEnum<typename TypeParam::DataType>::TYPE), dataArray->getDataType());
-        ASSERT_NE(nullptr, dataArray->template getData<typename TypeParam::DataType>());
-        EXPECT_EQ(data, *dataArray->template getData<typename TypeParam::DataType>());
+        EXPECT_EQ(EPropertyType(PropertyTypeToEnum<TypeParam>::TYPE), dataArray->getDataType());
+        ASSERT_NE(nullptr, dataArray->template getData<TypeParam>());
+        EXPECT_EQ(data, *dataArray->template getData<TypeParam>());
         EXPECT_EQ(data.size(), dataArray->getNumElements());
     }
 
     TYPED_TEST(ADataArray, FailsToCreateIfEmptyDataProvided)
     {
-        EXPECT_EQ(nullptr, this->m_logicEngine.createDataArray(std::vector<typename TypeParam::DataType>{}, "dataarray"));
+        EXPECT_EQ(nullptr, this->m_logicEngine.createDataArray(std::vector<TypeParam>{}, "dataarray"));
         ASSERT_FALSE(this->m_logicEngine.getErrors().empty());
         EXPECT_EQ("Cannot create DataArray 'dataarray' with empty data.", this->m_logicEngine.getErrors().front().message);
     }
 
     TYPED_TEST(ADataArray, IsDestroyed)
     {
-        const auto data = SomeDataVector<typename TypeParam::DataType>();
+        const auto data = SomeDataVector<TypeParam>();
         auto dataArray = this->m_logicEngine.createDataArray(data, "dataarray");
 
         EXPECT_TRUE(this->m_logicEngine.destroy(*dataArray));
@@ -101,8 +85,8 @@ namespace rlogic::internal
 
     TYPED_TEST(ADataArray, FailsToBeDestroyedIfFromOtherLogicInstance)
     {
-        LogicEngine otherEngine{ TypeParam::FeatureLevel };
-        auto dataArray = otherEngine.createDataArray(SomeDataVector<typename TypeParam::DataType>(), "dataarray");
+        LogicEngine otherEngine{ this->m_logicEngine.getFeatureLevel() };
+        auto dataArray = otherEngine.createDataArray(SomeDataVector<TypeParam>(), "dataarray");
 
         EXPECT_FALSE(this->m_logicEngine.destroy(*dataArray));
         ASSERT_FALSE(this->m_logicEngine.getErrors().empty());
@@ -111,7 +95,7 @@ namespace rlogic::internal
 
     TYPED_TEST(ADataArray, ChangesName)
     {
-        auto dataArray = this->m_logicEngine.createDataArray(SomeDataVector<typename TypeParam::DataType>(), "dataarray");
+        auto dataArray = this->m_logicEngine.createDataArray(SomeDataVector<TypeParam>(), "dataarray");
 
         dataArray->setName("da");
         EXPECT_EQ("da", dataArray->getName());
@@ -121,7 +105,7 @@ namespace rlogic::internal
 
     TYPED_TEST(ADataArray, ReturnsNullIfWrongDataTypeQueried)
     {
-        const auto data = SomeDataVector<typename TypeParam::DataType>();
+        const auto data = SomeDataVector<TypeParam>();
         auto dataArray = this->m_logicEngine.createDataArray(data, "dataarray");
         if (dataArray->getDataType() != EPropertyType::Vec3f)
         {
@@ -133,21 +117,20 @@ namespace rlogic::internal
     {
         WithTempDirectory tempDir;
 
-        const auto data1 = SomeDataVector<typename TypeParam::DataType>();
+        const auto data1 = SomeDataVector<TypeParam>();
         const auto data2 = SomeDataVector<float>();
         const auto data3 = SomeDataVector<vec2f>();
         const auto data4 = SomeDataVector<vec3i>();
         const auto data5 = SomeDataVector<std::vector<float>>();
 
         {
-            LogicEngine otherEngine{ TypeParam::FeatureLevel };
+            LogicEngine otherEngine{ this->m_logicEngine.getFeatureLevel() };
 
             otherEngine.createDataArray(data1, "dataarray1");
             otherEngine.createDataArray(data2, "dataarray2");
             otherEngine.createDataArray(data3, "dataarray3");
             otherEngine.createDataArray(data4, "dataarray4");
-            if (TypeParam::FeatureLevel >= EFeatureLevel_04)
-                otherEngine.createDataArray(data5, "dataarray5");
+            otherEngine.createDataArray(data5, "dataarray5");
 
             ASSERT_TRUE(otherEngine.saveToFile("LogicEngine.bin"));
         }
@@ -155,54 +138,32 @@ namespace rlogic::internal
         ASSERT_TRUE(this->m_logicEngine.loadFromFile("LogicEngine.bin"));
         EXPECT_TRUE(this->m_logicEngine.getErrors().empty());
 
-        EXPECT_EQ((TypeParam::FeatureLevel >= EFeatureLevel_04 ? 5u : 4u), this->m_logicEngine.template getCollection<DataArray>().size());
+        EXPECT_EQ(5u, this->m_logicEngine.template getCollection<DataArray>().size());
         const auto dataArray1 = this->m_logicEngine.template findByName<DataArray>("dataarray1");
         const auto dataArray2 = this->m_logicEngine.template findByName<DataArray>("dataarray2");
         const auto dataArray3 = this->m_logicEngine.template findByName<DataArray>("dataarray3");
         const auto dataArray4 = this->m_logicEngine.template findByName<DataArray>("dataarray4");
-        ASSERT_TRUE(dataArray1 && dataArray2 && dataArray3 && dataArray4);
+        const auto dataArray5 = this->m_logicEngine.template findByName<DataArray>("dataarray5");
+        ASSERT_TRUE(dataArray1 && dataArray2 && dataArray3 && dataArray4 && dataArray5);
 
         EXPECT_EQ(data1.size(), dataArray1->getNumElements());
         EXPECT_EQ(data2.size(), dataArray2->getNumElements());
         EXPECT_EQ(data3.size(), dataArray3->getNumElements());
         EXPECT_EQ(data4.size(), dataArray4->getNumElements());
+        EXPECT_EQ(data5.size(), dataArray5->getNumElements());
 
-        const auto loadedData1 = dataArray1->template getData<typename TypeParam::DataType>();
+        const auto loadedData1 = dataArray1->template getData<TypeParam>();
         const auto loadedData2 = dataArray2->template getData<float>();
         const auto loadedData3 = dataArray3->template getData<vec2f>();
         const auto loadedData4 = dataArray4->template getData<vec3i>();
-        ASSERT_TRUE(loadedData1 && loadedData2 && loadedData3 && loadedData4);
+        const auto loadedData5 = dataArray5->template getData<std::vector<float>>();
+        ASSERT_TRUE(loadedData1 && loadedData2 && loadedData3 && loadedData4 && loadedData5);
 
         EXPECT_EQ(data1, *loadedData1);
         EXPECT_EQ(data2, *loadedData2);
         EXPECT_EQ(data3, *loadedData3);
         EXPECT_EQ(data4, *loadedData4);
-
-        if (TypeParam::FeatureLevel >= EFeatureLevel_04)
-        {
-            const auto dataArray5 = this->m_logicEngine.template findByName<DataArray>("dataarray5");
-            ASSERT_TRUE(dataArray5);
-            EXPECT_EQ(data5.size(), dataArray5->getNumElements());
-            const auto loadedData5 = dataArray5->template getData<std::vector<float>>();
-            ASSERT_TRUE(loadedData5);
-            EXPECT_EQ(data5, *loadedData5);
-        }
-    }
-
-    TEST(ADataArrayOfFloatArrays, FailsToBeCreatedWithFeatureLevelBelow04)
-    {
-        const auto dataVector = SomeDataVector<std::vector<float>>();
-
-        for (EFeatureLevel featureLevel : AllFeatureLevels)
-        {
-            if (featureLevel < EFeatureLevel_04)
-            {
-                LogicEngine logicEngine{ featureLevel };
-                EXPECT_EQ(nullptr, logicEngine.createDataArray(dataVector, "dataarray"));
-                ASSERT_EQ(1u, logicEngine.getErrors().size());
-                EXPECT_EQ(logicEngine.getErrors()[0].message, fmt::format("Cannot create DataArray of float arrays, feature level 04 or higher is required, feature level in this runtime set to 0{}.", featureLevel));
-            }
-        }
+        EXPECT_EQ(data5, *loadedData5);
     }
 
     TEST(ADataArrayOfFloatArrays, FailsToBeCreatedIfArraysSizesNotEqual)
@@ -214,16 +175,16 @@ namespace rlogic::internal
             { 1.f, 2.f, 3.f }
         };
 
-        LogicEngine logicEngine{ EFeatureLevel_Latest };
+        LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
         EXPECT_EQ(nullptr, logicEngine.createDataArray(dataVector, "dataarray"));
         ASSERT_EQ(1u, logicEngine.getErrors().size());
         EXPECT_EQ(logicEngine.getErrors()[0].message, "Failed to create DataArray of float arrays: all arrays must be of same size.");
     }
 
-    class ADataArray_SerializationLifecycle : public ::testing::TestWithParam<EFeatureLevel>
+    class ADataArray_SerializationLifecycle : public ::testing::Test
     {
     protected:
-        LogicEngine m_logicEngine{ GetParam() };
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
 
         enum class ESerializationIssue
         {
@@ -340,18 +301,13 @@ namespace rlogic::internal
         ErrorReporting m_errorReporting;
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ADataArray_SerializationLifecycle_TestInstances,
-        ADataArray_SerializationLifecycle,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ADataArray_SerializationLifecycle, ReportsNoDeserializationErrorsWhenAllDataCorrect)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsNoDeserializationErrorsWhenAllDataCorrect)
     {
         EXPECT_TRUE(deserializeSerializedDataWithIssue(ADataArray_SerializationLifecycle::ESerializationIssue::AllValid));
         EXPECT_TRUE(this->m_errorReporting.getErrors().empty());
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithoutName)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithoutName)
     {
         EXPECT_FALSE(deserializeSerializedDataWithIssue(ADataArray_SerializationLifecycle::ESerializationIssue::NameMissing));
         ASSERT_EQ(2u, this->m_errorReporting.getErrors().size());
@@ -359,7 +315,7 @@ namespace rlogic::internal
         EXPECT_EQ("Fatal error during loading of DataArray from serialized data: missing name and/or ID!", this->m_errorReporting.getErrors()[1].message);
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithoutId)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithoutId)
     {
         EXPECT_FALSE(deserializeSerializedDataWithIssue(ADataArray_SerializationLifecycle::ESerializationIssue::IdMissing));
         ASSERT_EQ(2u, this->m_errorReporting.getErrors().size());
@@ -367,21 +323,21 @@ namespace rlogic::internal
         EXPECT_EQ("Fatal error during loading of DataArray from serialized data: missing name and/or ID!", this->m_errorReporting.getErrors()[1].message);
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithoutData)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithoutData)
     {
         EXPECT_FALSE(deserializeSerializedDataWithIssue(ADataArray_SerializationLifecycle::ESerializationIssue::NoData));
         EXPECT_FALSE(this->m_errorReporting.getErrors().empty());
         EXPECT_EQ("Fatal error during loading of DataArray from serialized data: unexpected data type!", this->m_errorReporting.getErrors().front().message);
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithWrongDataType)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithWrongDataType)
     {
         EXPECT_FALSE(deserializeSerializedDataWithIssue(ADataArray_SerializationLifecycle::ESerializationIssue::WrongDataType));
         EXPECT_FALSE(this->m_errorReporting.getErrors().empty());
         EXPECT_EQ("Fatal error during loading of DataArray from serialized data: unexpected data type!", this->m_errorReporting.getErrors().front().message);
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithCorruptedDataUnion)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithCorruptedDataUnion)
     {
         std::vector<std::pair<rlogic_serialization::ArrayUnion, rlogic_serialization::EDataArrayType>> invalidDataUnionPairs = {
             {rlogic_serialization::ArrayUnion::intArr, rlogic_serialization::EDataArrayType::Float},
@@ -391,10 +347,9 @@ namespace rlogic::internal
             {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Int32},
             {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec2i},
             {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec3i},
-            {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec4i}
+            {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec4i},
+            {rlogic_serialization::ArrayUnion::intArr, rlogic_serialization::EDataArrayType::FloatArray}
         };
-        if (GetParam() >= EFeatureLevel_04)
-            invalidDataUnionPairs.emplace_back(rlogic_serialization::ArrayUnion::intArr, rlogic_serialization::EDataArrayType::FloatArray);
 
         for(const auto& [unionType, dataArrayType] : invalidDataUnionPairs)
         {
@@ -405,7 +360,7 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithCorruptedElementSizes)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithCorruptedElementSizes)
     {
         std::vector<std::pair<rlogic_serialization::ArrayUnion, rlogic_serialization::EDataArrayType>> dataUnionPairs = {
             {rlogic_serialization::ArrayUnion::intArr, rlogic_serialization::EDataArrayType::Vec2i},
@@ -413,10 +368,9 @@ namespace rlogic::internal
             {rlogic_serialization::ArrayUnion::intArr, rlogic_serialization::EDataArrayType::Vec4i},
             {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec2f},
             {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec3f},
-            {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec4f}
+            {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::Vec4f},
+            {rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::FloatArray}
         };
-        if (GetParam() >= EFeatureLevel_04)
-            dataUnionPairs.emplace_back(rlogic_serialization::ArrayUnion::floatArr, rlogic_serialization::EDataArrayType::FloatArray);
 
         for (const auto& [unionType, dataArrayType] : dataUnionPairs)
         {
@@ -427,14 +381,14 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithCorruptDataType)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithCorruptDataType)
     {
         EXPECT_FALSE(deserializeSerializedDataWithIssue(ADataArray_SerializationLifecycle::ESerializationIssue::CorruptArrayDataType));
         EXPECT_FALSE(this->m_errorReporting.getErrors().empty());
         EXPECT_EQ("Fatal error during loading of DataArray from serialized data: unsupported or corrupt data type '128'!", this->m_errorReporting.getErrors().front().message);
     }
 
-    TEST_P(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithWrongDataSize)
+    TEST_F(ADataArray_SerializationLifecycle, ReportsErrorWhenDeserializedWithWrongDataSize)
     {
         EXPECT_FALSE(deserializeSerializedDataWithIssue(ADataArray_SerializationLifecycle::ESerializationIssue::WrongDataSize));
         EXPECT_FALSE(this->m_errorReporting.getErrors().empty());
@@ -443,7 +397,7 @@ namespace rlogic::internal
 
     TEST(AnimationChannel, EqualityOperatorsTests)
     {
-        LogicEngine engine;
+        LogicEngine engine{ ramses::EFeatureLevel_Latest };
 
         const auto dataVector1 = SomeDataVector<vec2f>();
         const auto dataVector2 = SomeDataVector<std::vector<float>>();

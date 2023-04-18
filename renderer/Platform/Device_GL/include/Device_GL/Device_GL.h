@@ -26,12 +26,10 @@ namespace ramses_internal
     class Device_GL : public Device_Base
     {
     public:
-        explicit Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded, IDeviceExtension* deviceExtension);
+        explicit Device_GL(IContext& context, IDeviceExtension* deviceExtension);
         ~Device_GL() override;
 
         Bool init();
-
-        EDeviceTypeId getDeviceTypeId() const override;
 
         void drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
         void drawTriangles         (Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
@@ -150,9 +148,6 @@ namespace ramses_internal
         uint32_t                    m_activeIndexArrayElementSizeBytes = 0u;
         uint32_t                    m_activeIndexArraySizeBytes = 0u;
 
-        const UInt8                 m_majorApiVersion;
-        const UInt8                 m_minorApiVersion;
-        const bool                  m_isEmbedded;
         DebugOutput                 m_debugOutput;
         HashSet<String>             m_apiExtensions;
         std::vector<GLint>          m_supportedBinaryProgramFormats;

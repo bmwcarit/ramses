@@ -24,11 +24,11 @@ namespace ramses_internal
         scene.createTransformationDataProvider(*centerProviderNode, transformProviderDataId);
 
         ramses::Node* leftProviderNode = m_scene.createNode();
-        leftProviderNode->setTranslation(-2.0f, 0.0f, 0.0f);
+        leftProviderNode->setTranslation({-2.0f, 0.0f, 0.0f});
         scene.createTransformationDataProvider(*leftProviderNode, transformProviderDataId_Left);
 
         ramses::Node* rightProviderNode = m_scene.createNode();
-        rightProviderNode->setTranslation(2.0f, 0.0f, 0.0f);
+        rightProviderNode->setTranslation({2.0f, 0.0f, 0.0f});
         scene.createTransformationDataProvider(*rightProviderNode, transformProviderDataId_Right);
 
         ramses::TriangleAppearance::EColor color = ramses::TriangleAppearance::EColor_Red;
@@ -39,7 +39,7 @@ namespace ramses_internal
         case TRANSFORMATION_CONSUMER_OVERRIDEN:
         {
             ramses::Node* rotateNode = m_scene.createNode();
-            rotateNode->setRotation(0.0f, 0.0f, -30.0f, ramses::ERotationConvention::Euler_XYZ);
+            rotateNode->setRotation({0.0f, 0.0f, -30.0f}, ramses::ERotationType::Euler_XYZ);
             ramses::Node* consumerGroupNode = m_scene.createNode("transform consumer");
             rotateNode->setParent(*consumerGroupNode);
             scene.createTransformationDataConsumer(*consumerGroupNode, transformConsumerDataId);
@@ -48,7 +48,7 @@ namespace ramses_internal
             {
                 color = ramses::TriangleAppearance::EColor_Blue;
                 ramses::Node* parentTransformWhichWillBeOverridden = m_scene.createNode();
-                parentTransformWhichWillBeOverridden->setTranslation(1.2f, 1.2f, 0.0f);
+                parentTransformWhichWillBeOverridden->setTranslation({1.2f, 1.2f, 0.0f});
                 consumerGroupNode->setParent(*parentTransformWhichWillBeOverridden);
             }
             mesh = createTriangleMesh(color);
@@ -65,11 +65,11 @@ namespace ramses_internal
             scene.createTransformationDataConsumer(*consumerGroupNode, transformConsumerDataId);
 
             ramses::Node* translate = m_scene.createNode();
-            translate->setTranslation(1.0f, 0.0f, 0.0f);
+            translate->setTranslation({1.0f, 0.0f, 0.0f});
             translate->setParent(*consumerGroupNode);
 
             ramses::Node* rotateNode = m_scene.createNode();
-            rotateNode->setRotation(0.0f, 0.0f, -15.0f, ramses::ERotationConvention::Euler_XYZ);
+            rotateNode->setRotation({0.0f, 0.0f, -15.0f}, ramses::ERotationType::Euler_XYZ);
             rotateNode->setParent(*translate);
 
             mesh = createTriangleMesh(color);
@@ -82,7 +82,7 @@ namespace ramses_internal
         {
             color = ramses::TriangleAppearance::EColor_Green;
             ramses::Node* rotateNode = m_scene.createNode();
-            rotateNode->setRotation(0.0f, 0.0f, -60.0f, ramses::ERotationConvention::Euler_XYZ);
+            rotateNode->setRotation({0.0f, 0.0f, -60.0f}, ramses::ERotationType::Euler_XYZ);
 
             mesh = createTriangleMesh(color);
             mesh->setParent(*rotateNode);

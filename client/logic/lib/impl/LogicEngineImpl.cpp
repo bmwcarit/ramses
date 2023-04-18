@@ -36,7 +36,6 @@
 #include "internals/FileUtils.h"
 #include "internals/TypeUtils.h"
 #include "internals/RamsesObjectResolver.h"
-#include "internals/ApiObjects.h"
 
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/UniformInput.h"
@@ -53,22 +52,16 @@
 #include <fstream>
 #include <streambuf>
 
-namespace
-{
-    const char* const fileIdFeatureLevel01         = "rl01";
-    const char* const fileIdFeatureLevel02orHigher = "rl02";
-} // namespace
-
 namespace rlogic::internal
 {
-    LogicEngineImpl::LogicEngineImpl(EFeatureLevel featureLevel)
+    LogicEngineImpl::LogicEngineImpl(ramses::EFeatureLevel featureLevel)
         : m_apiObjects{ std::make_unique<ApiObjects>(featureLevel) }
         , m_featureLevel{ featureLevel }
     {
-        if (std::find(AllFeatureLevels.cbegin(), AllFeatureLevels.cend(), m_featureLevel) == AllFeatureLevels.cend())
+        if (std::find(ramses::AllFeatureLevels.cbegin(), ramses::AllFeatureLevels.cend(), m_featureLevel) == ramses::AllFeatureLevels.cend())
         {
             LOG_ERROR("Unrecognized feature level '0{}' provided, falling back to feature level 01", m_featureLevel);
-            m_featureLevel = EFeatureLevel_01;
+            m_featureLevel = ramses::EFeatureLevel_01;
         }
     }
 
@@ -105,7 +98,7 @@ namespace rlogic::internal
         return true;
     }
 
-    RamsesNodeBinding* LogicEngineImpl::createRamsesNodeBinding(ramses::Node& ramsesNode, ERotationType rotationType, std::string_view name)
+    RamsesNodeBinding* LogicEngineImpl::createRamsesNodeBinding(ramses::Node& ramsesNode, ramses::ERotationType rotationType, std::string_view name)
     {
         m_errors.clear();
         return m_apiObjects->createRamsesNodeBinding(ramsesNode, rotationType,  name);
@@ -126,35 +119,18 @@ namespace rlogic::internal
     RamsesCameraBinding* LogicEngineImpl::createRamsesCameraBindingWithFrustumPlanes(ramses::Camera& ramsesCamera, std::string_view name)
     {
         m_errors.clear();
-        if (m_featureLevel < EFeatureLevel_02)
-        {
-            m_errors.add(fmt::format("Cannot create RamsesCameraBinding with frustum planes properties, feature level 02 or higher is required, feature level in this runtime set to 0{}.", m_featureLevel), nullptr, EErrorType::Other);
-            return nullptr;
-        }
-
         return m_apiObjects->createRamsesCameraBinding(ramsesCamera, true, name);
     }
 
     RamsesRenderPassBinding* LogicEngineImpl::createRamsesRenderPassBinding(ramses::RenderPass& ramsesRenderPass, std::string_view name)
     {
         m_errors.clear();
-        if (m_featureLevel < EFeatureLevel_02)
-        {
-            m_errors.add(fmt::format("Cannot create RamsesRenderPassBinding, feature level 02 or higher is required, feature level in this runtime set to 0{}.", m_featureLevel), nullptr, EErrorType::Other);
-            return nullptr;
-        }
-
         return m_apiObjects->createRamsesRenderPassBinding(ramsesRenderPass, name);
     }
 
     RamsesRenderGroupBinding* LogicEngineImpl::createRamsesRenderGroupBinding(ramses::RenderGroup& ramsesRenderGroup, const RamsesRenderGroupBindingElements& elements, std::string_view name)
     {
         m_errors.clear();
-        if (m_featureLevel < EFeatureLevel_03)
-        {
-            m_errors.add(fmt::format("Cannot create RamsesRenderGroupBinding, feature level 03 or higher is required, feature level in this runtime set to 0{}.", m_featureLevel), nullptr, EErrorType::Other);
-            return nullptr;
-        }
 
         if (elements.m_impl->getElements().empty())
         {
@@ -187,12 +163,6 @@ namespace rlogic::internal
     RamsesMeshNodeBinding* LogicEngineImpl::createRamsesMeshNodeBinding(ramses::MeshNode& ramsesMeshNode, std::string_view name)
     {
         m_errors.clear();
-        if (m_featureLevel < EFeatureLevel_05)
-        {
-            m_errors.add(fmt::format("Cannot create RamsesMeshNodeBinding, feature level 05 or higher is required, feature level in this runtime set to 0{}.", m_featureLevel), nullptr, EErrorType::Other);
-            return nullptr;
-        }
-
         return m_apiObjects->createRamsesMeshNodeBinding(ramsesMeshNode, name);
     }
 
@@ -204,11 +174,6 @@ namespace rlogic::internal
         std::string_view name)
     {
         m_errors.clear();
-        if (m_featureLevel < EFeatureLevel_04)
-        {
-            m_errors.add(fmt::format("Cannot create SkinBinding, feature level 04 or higher is required, feature level in this runtime set to 0{}.", m_featureLevel), nullptr, EErrorType::Other);
-            return nullptr;
-        }
 
         if (joints.empty() || std::find(joints.cbegin(), joints.cend(), nullptr) != joints.cend())
         {
@@ -277,12 +242,6 @@ namespace rlogic::internal
 
         if constexpr (std::is_same_v<T, std::vector<float>>)
         {
-            if (m_featureLevel < EFeatureLevel_04)
-            {
-                m_errors.add(fmt::format("Cannot create DataArray of float arrays, feature level 04 or higher is required, feature level in this runtime set to 0{}.", m_featureLevel), nullptr, EErrorType::Other);
-                return nullptr;
-            }
-
             for (const auto& vec : data)
             {
                 if (vec.size() != data.front().size())
@@ -343,11 +302,6 @@ namespace rlogic::internal
     AnchorPoint* LogicEngineImpl::createAnchorPoint(RamsesNodeBinding& nodeBinding, RamsesCameraBinding& cameraBinding, std::string_view name)
     {
         m_errors.clear();
-        if (m_featureLevel < EFeatureLevel_02)
-        {
-            m_errors.add(fmt::format("Cannot create AnchorPoint, feature level 02 or higher is required, feature level in this runtime set to 0{}.", m_featureLevel), nullptr, EErrorType::Other);
-            return nullptr;
-        }
 
         const auto& nodeBindings = m_apiObjects->getApiObjectContainer<RamsesNodeBinding>();
         const auto& cameraBindings = m_apiObjects->getApiObjectContainer<RamsesCameraBinding>();
@@ -372,7 +326,7 @@ namespace rlogic::internal
         return m_apiObjects->getLogicNodeDependencies().isLinked(logicNode.m_impl);
     }
 
-    EFeatureLevel LogicEngineImpl::getFeatureLevel() const
+    ramses::EFeatureLevel LogicEngineImpl::getFeatureLevel() const
     {
         return m_featureLevel;
     }
@@ -572,7 +526,7 @@ namespace rlogic::internal
 
     bool LogicEngineImpl::checkFileIdentifierBytes(const std::string& dataSourceDescription, const std::string& fileIdBytes)
     {
-        const std::string expected = getFileIdentifierMatchingFeatureLevel();
+        const std::string expected = rlogic_serialization::LogicEngineIdentifier();
         if (expected.substr(0, 2) != fileIdBytes.substr(0, 2))
         {
             m_errors.add(fmt::format("{}: Tried loading a binary data which doesn't store Ramses Logic content! Expected file bytes 4-5 to be '{}', but found '{}' instead",
@@ -580,23 +534,6 @@ namespace rlogic::internal
                 expected.substr(0, 2),
                 fileIdBytes.substr(0, 2)
             ), nullptr, EErrorType::BinaryDataAccessError);
-            return false;
-        }
-
-        // print dedicated error messages for feature level 1 mismatch
-        // feature level 02 introduced a file id change (but future feature levels will not)
-
-        if ((fileIdBytes == fileIdFeatureLevel01) && (m_featureLevel != EFeatureLevel_01))
-        {
-            m_errors.add(fmt::format("{}: Feature level mismatch! Loaded file with feature level {} but LogicEngine was instantiated with feature level {}",
-                dataSourceDescription, EFeatureLevel_01, m_featureLevel), nullptr, EErrorType::BinaryVersionMismatch);
-            return false;
-        }
-
-        if ((fileIdBytes == fileIdFeatureLevel02orHigher) && (m_featureLevel == EFeatureLevel_01))
-        {
-            m_errors.add(fmt::format("{}: Feature level mismatch! Loaded file with feature level >={} but LogicEngine was instantiated with feature level {}",
-                dataSourceDescription, EFeatureLevel_02, m_featureLevel), nullptr, EErrorType::BinaryVersionMismatch);
             return false;
         }
 
@@ -611,19 +548,6 @@ namespace rlogic::internal
         }
 
         return true;
-    }
-
-    const char* LogicEngineImpl::getFileIdentifierMatchingFeatureLevel() const
-    {
-        // Solution (workaround) to make sure that previously released rlogic 1.x.x library will fail to load exported binary
-        // with any other than the base 01 feature level. Feature level 02 or higher has its own file identifier which can be read
-        // only by rlogic version that supports it.
-        // TODO remove this with new major release, feature levels are stored in schema and checked when loading,
-        // no need to use file identifier for it.
-
-        assert(std::string(rlogic_serialization::LogicEngineIdentifier()) == fileIdFeatureLevel01);
-        assert(std::find(AllFeatureLevels.cbegin(), AllFeatureLevels.cend(), m_featureLevel) != AllFeatureLevels.cend());
-        return m_featureLevel == EFeatureLevel_01 ? rlogic_serialization::LogicEngineIdentifier() : fileIdFeatureLevel02orHigher;
     }
 
     bool LogicEngineImpl::loadFromByteData(const void* byteData, size_t byteSize, ramses::Scene* scene, bool enableMemoryVerification, const std::string& dataSourceDescription)
@@ -648,7 +572,7 @@ namespace rlogic::internal
         if (enableMemoryVerification)
         {
             flatbuffers::Verifier bufferVerifier(uint8Data, byteSize);
-            const bool bufferOK = bufferVerifier.VerifyBuffer<rlogic_serialization::LogicEngine>(getFileIdentifierMatchingFeatureLevel());
+            const bool bufferOK = bufferVerifier.VerifyBuffer<rlogic_serialization::LogicEngine>(rlogic_serialization::LogicEngineIdentifier());
 
             if (!bufferOK)
             {
@@ -678,7 +602,7 @@ namespace rlogic::internal
             return false;
         }
 
-        const auto featureLevel = static_cast<EFeatureLevel>(logicEngine->featureLevel());
+        const auto featureLevel = static_cast<ramses::EFeatureLevel>(logicEngine->featureLevel());
         if (featureLevel != m_featureLevel)
         {
             m_errors.add(fmt::format("Feature level mismatch while loading {}! Loaded file with feature level {} but LogicEngine was instantiated with feature level {}",
@@ -714,7 +638,7 @@ namespace rlogic::internal
         return true;
     }
 
-    bool LogicEngineImpl::GetFeatureLevelFromFile(std::string_view filename, EFeatureLevel& detectedFeatureLevel)
+    bool LogicEngineImpl::GetFeatureLevelFromFile(std::string_view filename, ramses::EFeatureLevel& detectedFeatureLevel)
     {
         std::optional<std::vector<char>> maybeBytesFromFile = FileUtils::LoadBinary(std::string(filename));
         if (!maybeBytesFromFile)
@@ -726,7 +650,7 @@ namespace rlogic::internal
         return GetFeatureLevelFromBuffer(filename, maybeBytesFromFile->data(), maybeBytesFromFile->size(), detectedFeatureLevel);
     }
 
-    bool LogicEngineImpl::GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, EFeatureLevel& detectedFeatureLevel)
+    bool LogicEngineImpl::GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, ramses::EFeatureLevel& detectedFeatureLevel)
     {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) Safe here, not worth transforming whole vector
         flatbuffers::Verifier bufferVerifier(reinterpret_cast<const uint8_t*>(buffer), bufferSize);
@@ -744,13 +668,13 @@ namespace rlogic::internal
         }
 
         const uint32_t featureLevelInt = logicEngine->featureLevel();
-        if (std::find(AllFeatureLevels.cbegin(), AllFeatureLevels.cend(), featureLevelInt) == AllFeatureLevels.cend())
+        if (std::find(ramses::AllFeatureLevels.cbegin(), ramses::AllFeatureLevels.cend(), featureLevelInt) == ramses::AllFeatureLevels.cend())
         {
             LOG_ERROR("Could not recognize feature level in file '{}'", logname);
             return false;
         }
 
-        detectedFeatureLevel = static_cast<EFeatureLevel>(featureLevelInt);
+        detectedFeatureLevel = static_cast<ramses::EFeatureLevel>(featureLevelInt);
         return true;
     }
 
@@ -761,12 +685,6 @@ namespace rlogic::internal
         if (!m_apiObjects->checkBindingsReferToSameRamsesScene(m_errors))
         {
             m_errors.add("Can't save a logic engine to file while it has references to more than one Ramses scene!", nullptr, EErrorType::ContentStateError);
-            return false;
-        }
-
-        if (config.getLuaSavingMode() == ELuaSavingMode::ByteCodeOnly && m_featureLevel == EFeatureLevel_01)
-        {
-            m_errors.add("Can't save logic content for feature level in binary mode, binary Lua support was introduced with FeatureLevel_02!", nullptr, EErrorType::IllegalArgument);
             return false;
         }
 
@@ -842,7 +760,7 @@ namespace rlogic::internal
             assetMetadataOffset,
             m_featureLevel);
 
-        builder.Finish(logicEngine, getFileIdentifierMatchingFeatureLevel());
+        builder.Finish(logicEngine, rlogic_serialization::LogicEngineIdentifier());
 
         if (!FileUtils::SaveBinary(std::string(filename), builder.GetBufferPointer(), builder.GetSize()))
         {
@@ -922,9 +840,9 @@ namespace rlogic::internal
         m_statistics.setLogLevel(logLevel);
     }
 
-    size_t LogicEngineImpl::getTotalSerializedSize() const
+    size_t LogicEngineImpl::getTotalSerializedSize(ELuaSavingMode luaSavingMode) const
     {
-        return m_apiObjects->getTotalSerializedSize();
+        return ApiObjectsSerializedSize::GetTotalSerializedSize(*m_apiObjects, luaSavingMode);
     }
 
     template DataArray* LogicEngineImpl::createDataArray<float>(const std::vector<float>&, std::string_view name);

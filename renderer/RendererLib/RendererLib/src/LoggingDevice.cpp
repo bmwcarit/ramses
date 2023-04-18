@@ -20,11 +20,6 @@ namespace ramses_internal
     {
     }
 
-    EDeviceTypeId LoggingDevice::getDeviceTypeId() const
-    {
-        return EDeviceTypeId_INVALID;
-    }
-
     void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Matrix22f* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);

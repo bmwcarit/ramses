@@ -28,7 +28,6 @@ namespace rlogic::internal
     {
     public:
         ARamsesMeshNodeBinding()
-            : ALogicEngine{ EFeatureLevel_05 }
         {
             // in order for the tests to be closer to reality, use ramses MeshNode with actual geometry and appearance,
             // the geometry affects some of the values exposed in the binding (namely instanceCount)

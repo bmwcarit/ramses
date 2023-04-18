@@ -59,7 +59,7 @@ int main()
     // every render pass needs a camera to define rendering parameters
     // usage of a custom perspective camera for the render pass assigned to the render target
     ramses::Node* cameraTranslate = scene->createNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
+    cameraTranslate->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::PerspectiveCamera* cameraA = scene->createPerspectiveCamera("camera of renderpass A");
     cameraA->setParent(*cameraTranslate);
     cameraA->setFrustum(-0.1f, 0.1f, -0.1f, 0.1f, 1.f, 10.f);
@@ -76,7 +76,7 @@ int main()
     ramses::RenderPass* renderPassA = scene->createRenderPass("renderpass A");
     ramses::RenderPass* renderPassB = scene->createRenderPass("renderpass B");
     renderPassB->setClearFlags(ramses::EClearFlags_None);
-    renderPassA->setClearColor(1.f, 1.f, 1.f, 1.f);
+    renderPassA->setClearColor({1.f, 1.f, 1.f, 1.f});
 
     // set valid cameras for the passes
     renderPassA->setCamera(*cameraA);

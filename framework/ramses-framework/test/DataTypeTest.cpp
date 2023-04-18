@@ -38,28 +38,6 @@ namespace ramses
         UNUSED(m4);
     }
 
-    TEST(Datatype, CanBeConstructedFromStdArray)
-    {
-        vec2f v2f{ std::array<float, 2>{{ 1.f, 2.f }} };
-        vec3f v3f{ std::array<float, 3>{{ 1.f, 2.f, 3.f }} };
-        vec4f v4f{ std::array<float, 4>{{ 1.f, 2.f, 3.f, 4.f }} };
-        vec2i v2i{ std::array<int32_t, 2>{{ 1, 2 }} };
-        vec3i v3i{ std::array<int32_t, 3>{{ 1, 2, 3 }} };
-        vec4i v4i{ std::array<int32_t, 4>{{ 1, 2, 3, 4 }} };
-        matrix22f m2{ std::array<float, 4>{{ 1.f, 2.f, 3.f, 4.f }} };
-        matrix33f m3{ std::array<float, 9>{{ 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f }} };
-        matrix44f m4{ std::array<float, 16>{{ 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f, 13.f, 14.f, 15.f, 16.f }} };
-        UNUSED(v2f);
-        UNUSED(v3f);
-        UNUSED(v4f);
-        UNUSED(v2i);
-        UNUSED(v3i);
-        UNUSED(v4i);
-        UNUSED(m2);
-        UNUSED(m3);
-        UNUSED(m4);
-    }
-
     TEST(Datatype, CanBeCopyConstructed)
     {
         vec2f v2f{ vec2f{ 1.f, 2.f } };
@@ -80,28 +58,6 @@ namespace ramses
         UNUSED(m2);
         UNUSED(m3);
         UNUSED(m4);
-    }
-
-    TEST(Datatype, CanBeCastToStdArray)
-    {
-        std::array<float, 2>   arrv2f = vec2f{ 1.f, 2.f };
-        std::array<float, 3>   arrv3f = vec3f{ 1.f, 2.f, 3.f };
-        std::array<float, 4>   arrv4f = vec4f{ 1.f, 2.f, 3.f, 4.f };
-        std::array<int32_t, 2> arrv2i = vec2i{ 1, 2 };
-        std::array<int32_t, 3> arrv3i = vec3i{ 1, 2, 3 };
-        std::array<int32_t, 4> arrv4i = vec4i{ 1, 2, 3, 4 };
-        std::array<float, 4>   arrm2 = matrix22f{ 1.f, 2.f, 3.f, 4.f };
-        std::array<float, 9>   arrm3 = matrix33f{ 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f };
-        std::array<float, 16>  arrm4 = matrix44f{ 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f, 13.f, 14.f, 15.f, 16.f };
-        UNUSED(arrv2f);
-        UNUSED(arrv3f);
-        UNUSED(arrv4f);
-        UNUSED(arrv2i);
-        UNUSED(arrv3i);
-        UNUSED(arrv4i);
-        UNUSED(arrm2);
-        UNUSED(arrm3);
-        UNUSED(arrm4);
     }
 
     TEST(EDatatype, CanReturnNumberOfComponentsAtCompiletime)

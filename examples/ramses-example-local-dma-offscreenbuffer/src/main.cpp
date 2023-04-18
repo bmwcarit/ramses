@@ -272,7 +272,7 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "main scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("main scene camera");
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     camera->setFrustum(-2.f, 2.f, -2.f, 2.f, 0.1f, 100.f);
     camera->setViewport(0, 0u, DisplayWidth, DisplayHeight);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("main scene render pass");
@@ -294,7 +294,7 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
                                                                                 "mainSceneStreamTexSampler");
 
     auto& meshCompositedTexture = createQuadWithTexture(*clientScene, effect, streamtextureSampler);
-    meshCompositedTexture.setTranslation(-1.f, 0.f, 0.f);
+    meshCompositedTexture.setTranslation({-1.f, 0.f, 0.f});
     renderGroup->addMeshNode(meshCompositedTexture);
 
     ramses::TextureSampler& outputTextureSampler = *clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat,
@@ -306,7 +306,7 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
                                                                                 processingOutputSamplerName.c_str());
 
     auto& meshOutputTexture = createQuadWithTexture(*clientScene, effect, outputTextureSampler);
-    meshOutputTexture.setTranslation(1.f, 0.f, 0.f);
+    meshOutputTexture.setTranslation({1.f, 0.f, 0.f});
     renderGroup->addMeshNode(meshOutputTexture);
 
     return *clientScene;
@@ -318,7 +318,7 @@ ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "source scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("source scene camera");
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
     camera->setViewport(0, 0u, OffscreenBufferWidth, OffscreenBufferHeight);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("source scene pass");

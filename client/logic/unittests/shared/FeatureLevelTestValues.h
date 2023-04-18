@@ -9,14 +9,14 @@
 #pragma once
 
 #include "gtest/gtest.h"
-#include "ramses-logic/EFeatureLevel.h"
+#include "ramses-framework-api/EFeatureLevel.h"
 
 namespace rlogic::internal
 {
     static
-        ::testing::internal::ValueArray<rlogic::EFeatureLevel, rlogic::EFeatureLevel, rlogic::EFeatureLevel, rlogic::EFeatureLevel, rlogic::EFeatureLevel>
+        ::testing::internal::ValueArray<ramses::EFeatureLevel>
         GetFeatureLevelTestValues()
     {
-        return ::testing::Values(rlogic::EFeatureLevel_01, rlogic::EFeatureLevel_02, rlogic::EFeatureLevel_03, rlogic::EFeatureLevel_04, rlogic::EFeatureLevel_05);
+        return ::testing::Values(ramses::EFeatureLevel_01);
     }
 }

@@ -68,7 +68,7 @@ namespace ramses_internal
 
         // Transformation
         void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationConvention convention) override;
+        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationType rotationType) override;
         void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
 
 

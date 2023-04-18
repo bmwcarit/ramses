@@ -11,6 +11,7 @@
 
 #include "ramses-renderer-api/Types.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
+#include "ramses-framework-api/DataTypes.h"
 #include "StatusObjectImpl.h"
 #include "CommandDispatchingThread.h"
 #include "RendererLib/RendererCommandBuffer.h"
@@ -69,7 +70,7 @@ namespace ramses
         displayBufferId_t createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, ramses_internal::DmaBufferFourccFormat dmaBufferFourccFormat, ramses_internal::DmaBufferUsageFlags dmaBufferUsageFlags, ramses_internal::DmaBufferModifiers dmaBufferModifiers);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
         status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
-        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
+        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, const vec4f& color);
         status_t getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
 
         streamBufferId_t allocateStreamBuffer();

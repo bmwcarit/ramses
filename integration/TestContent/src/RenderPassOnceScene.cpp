@@ -47,11 +47,11 @@ namespace ramses_internal
         switch (state)
         {
         case INITIAL_RENDER_ONCE:
-            m_renderPass.setClearColor(1.f, 0.f, 1.f, 1.f);
+            m_renderPass.setClearColor({1.f, 0.f, 1.f, 1.f});
             m_renderPass.setRenderOnce(true);
             break;
         case CHANGE_CLEAR_COLOR:
-            m_renderPass.setClearColor(1.f, 1.f, 0.f, 1.f);
+            m_renderPass.setClearColor({1.f, 1.f, 0.f, 1.f});
             break;
         case RETRIGGER_PASS:
             m_renderPass.retriggerRenderOnce();
@@ -70,7 +70,7 @@ namespace ramses_internal
 
         ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(*meshNode);
-        translateNode->translate(0.0f, -0.5f, -5.0f);
+        translateNode->translate({0.0f, -0.5f, -5.0f});
 
         ramses::RenderGroup* renderGroup = m_scene.createRenderGroup();
         m_renderPass.addRenderGroup(*renderGroup);
@@ -130,7 +130,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -4.f);
+        transNode->setTranslation({0.f, 0.f, -4.f});
         meshNode->setParent(*transNode);
 
         ramses::Camera& camera = createCameraWithDefaultParameters();

@@ -16,6 +16,7 @@
 #include "internals/DeserializationMap.h"
 #include "generated/SkinBindingGen.h"
 #include "fmt/format.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace rlogic::internal
 {
@@ -28,6 +29,7 @@ namespace rlogic::internal
         uint64_t id)
         : RamsesBindingImpl{ name, id }
         , m_joints{ std::move(joints) }
+        , m_inverseBindMatrices(inverseBindMatrices)
         , m_appearanceBinding{ appearanceBinding }
     {
         assert(!m_joints.empty());
@@ -42,10 +44,6 @@ namespace rlogic::internal
         assert(!m_appearanceBinding.getRamsesAppearance().isInputBound(m_jointMatInput));
         assert(*m_jointMatInput.getDataType() == ramses::EDataType::Matrix44F);
         assert(m_jointMatInput.getElementCount() == m_joints.size());
-
-        m_inverseBindMatrices.reserve(inverseBindMatrices.size());
-        for (const auto& mat : inverseBindMatrices)
-            m_inverseBindMatrices.emplace_back(mat);
     }
 
     void SkinBindingImpl::createRootProperties()
@@ -57,8 +55,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::SkinBinding> SkinBindingImpl::Serialize(
         const SkinBindingImpl& skinBinding,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& /*serializationMap*/,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& /*serializationMap*/)
     {
         const auto fbLogicObject = LogicObjectImpl::Serialize(skinBinding, builder);
 
@@ -72,8 +69,8 @@ namespace rlogic::internal
         inverseBindMatData.reserve(skinBinding.m_inverseBindMatrices.size() * 16u);
         for (const auto& mat : skinBinding.m_inverseBindMatrices)
         {
-            const auto matData = mat.toStdArray();
-            inverseBindMatData.insert(inverseBindMatData.begin(), matData.cbegin(), matData.cend());
+            const auto matData = glm::value_ptr(mat);
+            inverseBindMatData.insert(inverseBindMatData.begin(), matData, matData + 16);
         }
         const auto fbInverseBindMatData = builder.CreateVector(inverseBindMatData);
 
@@ -129,7 +126,7 @@ namespace rlogic::internal
         for (auto& mat : inverseMats)
         {
             const auto fbDataEnd = fbDataBegin + 16u;
-            std::copy(fbDataBegin, fbDataEnd, mat.begin());
+            std::copy(fbDataBegin, fbDataEnd, glm::value_ptr(mat));
             fbDataBegin = fbDataEnd;
         }
 
@@ -158,19 +155,16 @@ namespace rlogic::internal
 
     std::optional<LogicNodeRuntimeError> SkinBindingImpl::update()
     {
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays) Ramses uses C array in matrix getters
-        float tempData[16];
-
         m_jointMatricesArray.clear();
         for (size_t i = 0u; i < m_joints.size(); ++i)
         {
-            if (m_joints[i]->getRamsesNode().getModelMatrix(tempData) != ramses::StatusOK)
+            matrix44f jointNodeWorld;
+            if (m_joints[i]->getRamsesNode().getModelMatrix(jointNodeWorld) != ramses::StatusOK)
                 return LogicNodeRuntimeError{ "Failed to retrieve model matrix from Ramses node!" };
-            const math::Matrix44f jointNodeWorld{ tempData };
-            const math::Matrix44f& inverseBindMatForJoint = m_inverseBindMatrices[i];
-            const math::Matrix44f jointMat = jointNodeWorld * inverseBindMatForJoint;
+            const auto& inverseBindMatForJoint = m_inverseBindMatrices[i];
+            const auto jointMat = jointNodeWorld * inverseBindMatForJoint;
 
-            m_jointMatricesArray.emplace_back(jointMat.toStdArray());
+            m_jointMatricesArray.emplace_back(jointMat);
         }
 
         if (m_appearanceBinding.getRamsesAppearance().setInputValue(m_jointMatInput, uint32_t(m_jointMatricesArray.size()), m_jointMatricesArray.data()) != ramses::StatusOK)

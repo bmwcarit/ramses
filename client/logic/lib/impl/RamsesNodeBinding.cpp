@@ -26,7 +26,7 @@ namespace rlogic
         return m_nodeBinding.getRamsesNode();
     }
 
-    ERotationType RamsesNodeBinding::getRotationType() const
+    ramses::ERotationType RamsesNodeBinding::getRotationType() const
     {
         return m_nodeBinding.getRotationType();
     }

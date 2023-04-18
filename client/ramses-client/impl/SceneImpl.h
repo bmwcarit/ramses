@@ -66,17 +66,7 @@ namespace ramses
     class RenderPass;
     class RenderBuffer;
     class RenderTarget;
-    class DataFloat;
-    class DataVector2f;
-    class DataVector3f;
-    class DataVector4f;
-    class DataMatrix22f;
-    class DataMatrix33f;
-    class DataMatrix44f;
-    class DataInt32;
-    class DataVector2i;
-    class DataVector3i;
-    class DataVector4i;
+    class DataObject;
     class SceneConfigImpl;
     class RenderTargetDescriptionImpl;
     class BlitPass;
@@ -192,17 +182,7 @@ namespace ramses
                 ETextureSamplingMethod magSamplingMethod,
                 const char* name);
 
-        DataFloat*     createDataFloat(const char* name);
-        DataVector2f*  createDataVector2f(const char* name);
-        DataVector3f*  createDataVector3f(const char* name);
-        DataVector4f*  createDataVector4f(const char* name);
-        DataMatrix22f* createDataMatrix22f(const char* name);
-        DataMatrix33f* createDataMatrix33f(const char* name);
-        DataMatrix44f* createDataMatrix44f(const char* name);
-        DataInt32*     createDataInt32(const char* name);
-        DataVector2i*  createDataVector2i(const char* name);
-        DataVector3i*  createDataVector3i(const char* name);
-        DataVector4i*  createDataVector4i(const char* name);
+        DataObject*     createDataObject(EDataType dataType, const char* name);
 
         status_t createTransformationDataProvider(const Node& node, dataProviderId_t id);
         status_t createTransformationDataConsumer(const Node& node, dataConsumerId_t id);

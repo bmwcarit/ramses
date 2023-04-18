@@ -18,6 +18,7 @@
 #include "ArrayBufferImpl.h"
 #include "RamsesObjectTypeUtils.h"
 #include "DataTypeUtils.h"
+#include "glm/gtx/range.hpp"
 
 using namespace testing;
 using namespace ramses_internal;

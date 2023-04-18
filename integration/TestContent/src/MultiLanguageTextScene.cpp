@@ -85,11 +85,11 @@ namespace ramses_internal
         ramses::Node* translateHebrew = m_scene.createNode();
         ramses::Node* translateCyrillic = m_scene.createNode();
 
-        translateJapanese->setTranslation(2, 160, -1);
-        translateCyrillic->setTranslation(2, 150, -1);
-        translateHebrew->setTranslation(2, 100, -1);
-        translateChinese->setTranslation(2, 75, -1);
-        translateArabic->setTranslation(2, 40, -1);
+        translateJapanese->setTranslation({2, 160, -1});
+        translateCyrillic->setTranslation({2, 150, -1});
+        translateHebrew->setTranslation({2, 100, -1});
+        translateChinese->setTranslation({2, 75, -1});
+        translateArabic->setTranslation({2, 40, -1});
 
         translateJapanese->addChild(*textJapanese);
         translateCyrillic->addChild(*textCyrillic);

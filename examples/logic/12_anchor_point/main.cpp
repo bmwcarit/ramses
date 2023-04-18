@@ -68,10 +68,7 @@ int main()
      */
     auto [scene, node3dToTrack, camera3d, cameraSimulating2d] = CreateSceneWithTriangles(*renderer.getClient(), SimpleRenderer::GetDisplaySize());
 
-    /**
-    * Anchor points require feature level 02 or higher
-    */
-    rlogic::LogicEngine logicEngine{ rlogic::EFeatureLevel_02 };
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * First we need to create a Ramses Logic representation of the node we will track using Ramses binding.
@@ -146,7 +143,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(displaySize[0])/float(displaySize[1]), 0.1f, 100.0f);
     camera->setViewport(0, 0, displaySize[0], displaySize[1]);
-    camera->setTranslation(0.0f, 0.0f, 10.0f);
+    camera->setTranslation({0.0f, 0.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
     renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -215,8 +212,8 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
     meshNode2->setAppearance(*appearanceWhite);
     meshNode2->setIndexCount(3);
     meshNode2->setGeometryBinding(*geometry);
-    meshNode2->setTranslation(0.f, -5.f, -1.f);
-    meshNode2->setScaling(10.f, 10.f, 1.f);
+    meshNode2->setTranslation({0.f, -5.f, -1.f});
+    meshNode2->setScaling({10.f, 10.f, 1.f});
 
     ramses::RenderPass* renderPassOrtho = scene->createRenderPass();
     renderPassOrtho->setClearFlags(ramses::EClearFlags_None);

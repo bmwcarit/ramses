@@ -43,7 +43,7 @@ int main()
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -92,7 +92,7 @@ int main()
             ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
             meshNode->setAppearance(*appearance);
             meshNode->setGeometryBinding(*geometry);
-            meshNode->setTranslation(column * 0.2f, row * 0.2f, 0.0f);
+            meshNode->setTranslation({column * 0.2f, row * 0.2f, 0.0f});
             meshNode->setParent(*group);
             // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
             renderGroup->addMeshNode(*meshNode);

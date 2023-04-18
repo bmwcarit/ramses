@@ -13,7 +13,6 @@
 #include "SerializationTestUtils.h"
 #include "WithTempDirectory.h"
 #include "LogTestUtils.h"
-#include "FeatureLevelTestValues.h"
 
 #include "ramses-logic/RamsesNodeBinding.h"
 #include "ramses-logic/Property.h"
@@ -27,23 +26,13 @@
 #include "ramses-client-api/MeshNode.h"
 
 #include "generated/RamsesNodeBindingGen.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace rlogic::internal
 {
-    class ARamsesNodeBinding : public ALogicEngineBase, public ::testing::TestWithParam<EFeatureLevel>
+    class ARamsesNodeBinding : public ALogicEngine
     {
-    public:
-        ARamsesNodeBinding()
-            : ALogicEngineBase{ GetParam() }
-        {
-        }
-
     protected:
-        [[nodiscard]] static size_t GetInputsCount()
-        {
-            return (GetParam() == EFeatureLevel_01 ? 4u : 5u);
-        }
-
         static void ExpectDefaultValues(ramses::Node& node, ENodePropertyStaticIndex prop)
         {
             switch (prop)
@@ -76,18 +65,18 @@ namespace rlogic::internal
 
         static void ExpectValues(ramses::Node& node, ENodePropertyStaticIndex prop, vec3f expectedValues)
         {
-            std::array<float, 3> values = { 0.0f, 0.0f, 0.0f };
+            vec3f values = {0.0f, 0.0f, 0.0f};
             if (prop == ENodePropertyStaticIndex::Rotation)
             {
-                node.getRotation(values[0], values[1], values[2]);
+                node.getRotation(values);
             }
             if (prop == ENodePropertyStaticIndex::Translation)
             {
-                node.getTranslation(values[0], values[1], values[2]);
+                node.getTranslation(values);
             }
             if (prop == ENodePropertyStaticIndex::Scaling)
             {
-                node.getScaling(values[0], values[1], values[2]);
+                node.getScaling(values);
             }
             EXPECT_FLOAT_EQ(values[0], expectedValues[0]);
             EXPECT_FLOAT_EQ(values[1], expectedValues[1]);
@@ -96,7 +85,7 @@ namespace rlogic::internal
 
         static void ExpectQuat(ramses::Node& node, const vec4f& expectedValues)
         {
-            glm::quat quat;
+            quat quat;
             node.getRotation(quat);
             EXPECT_FLOAT_EQ(quat.x, expectedValues[0]);
             EXPECT_FLOAT_EQ(quat.y, expectedValues[1]);
@@ -105,36 +94,31 @@ namespace rlogic::internal
         }
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        RamsesNodeBindingTests,
-        ARamsesNodeBinding,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ARamsesNodeBinding, KeepsNameProvidedDuringConstruction)
+    TEST_F(ARamsesNodeBinding, KeepsNameProvidedDuringConstruction)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         EXPECT_EQ("NodeBinding", nodeBinding.getName());
     }
 
-    TEST_P(ARamsesNodeBinding, KeepsIdProvidedDuringConstruction)
+    TEST_F(ARamsesNodeBinding, KeepsIdProvidedDuringConstruction)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         EXPECT_EQ(nodeBinding.getId(), 1u);
     }
 
-    TEST_P(ARamsesNodeBinding, ReturnsNullptrForOutputs)
+    TEST_F(ARamsesNodeBinding, ReturnsNullptrForOutputs)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         EXPECT_EQ(nullptr, nodeBinding.getOutputs());
     }
 
-    TEST_P(ARamsesNodeBinding, ProvidesAccessToAllNodePropertiesInItsInputs)
+    TEST_F(ARamsesNodeBinding, ProvidesAccessToAllNodePropertiesInItsInputs)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
 
         auto inputs = nodeBinding.getInputs();
         ASSERT_NE(nullptr, inputs);
-        EXPECT_EQ(GetInputsCount(), inputs->getChildCount());
+        EXPECT_EQ(5u, inputs->getChildCount());
 
         auto rotation = inputs->getChild("rotation");
         auto scaling = inputs->getChild("scaling");
@@ -163,51 +147,45 @@ namespace rlogic::internal
         EXPECT_EQ(EPropertyType::Bool, visibility->getType());
         EXPECT_EQ(0u, visibility->getChildCount());
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            auto enabled = inputs->getChild("enabled");
-            ASSERT_NE(nullptr, enabled);
-            EXPECT_EQ(enabled, inputs->m_impl->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Enabled)));
-            EXPECT_EQ(EPropertyType::Bool, enabled->getType());
-            EXPECT_EQ(0u, enabled->getChildCount());
-        }
+        auto enabled = inputs->getChild("enabled");
+        ASSERT_NE(nullptr, enabled);
+        EXPECT_EQ(enabled, inputs->m_impl->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Enabled)));
+        EXPECT_EQ(EPropertyType::Bool, enabled->getType());
+        EXPECT_EQ(0u, enabled->getChildCount());
     }
 
-    TEST_P(ARamsesNodeBinding, InitializesInputPropertiesToMatchRamsesDefaultValues)
+    TEST_F(ARamsesNodeBinding, InitializesInputPropertiesToMatchRamsesDefaultValues)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
 
         auto inputs = nodeBinding.getInputs();
         ASSERT_NE(nullptr, inputs);
-        EXPECT_EQ(GetInputsCount(), inputs->getChildCount());
+        EXPECT_EQ(5u, inputs->getChildCount());
 
         vec3f zeroes;
         vec3f ones;
 
         //Check that the default values we assume are indeed the ones in ramses
-        m_node->getRotation(zeroes[0], zeroes[1], zeroes[2]);
-        EXPECT_THAT(zeroes, ::testing::ElementsAre(0.f, 0.f, 0.f));
+        m_node->getRotation(zeroes);
+        EXPECT_EQ(zeroes, vec3f(0.f, 0.f, 0.f));
 
-        EXPECT_EQ(ramses::ERotationConvention::Euler_XYZ, m_node->getRotationConvention());
-        m_node->getTranslation(zeroes[0], zeroes[1], zeroes[2]);
-        EXPECT_THAT(zeroes, ::testing::ElementsAre(0.f, 0.f, 0.f));
-        m_node->getScaling(ones[0], ones[1], ones[2]);
-        EXPECT_THAT(ones, ::testing::ElementsAre(1.f, 1.f, 1.f));
+        EXPECT_EQ(ramses::ERotationType::Euler_XYZ, m_node->getRotationType());
+        m_node->getTranslation(zeroes);
+        EXPECT_EQ(zeroes, vec3f(0.f, 0.f, 0.f));
+        m_node->getScaling(ones);
+        EXPECT_EQ(ones, vec3f(1.f, 1.f, 1.f));
         EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Visible);
 
-        EXPECT_EQ(zeroes, *inputs->getChild("rotation")->get<vec3f>());
-        EXPECT_EQ(zeroes, *inputs->getChild("translation")->get<vec3f>());
-        EXPECT_EQ(ones, *inputs->getChild("scaling")->get<vec3f>());
+        EXPECT_EQ(zeroes, inputs->getChild("rotation")->get<vec3f>());
+        EXPECT_EQ(zeroes, inputs->getChild("translation")->get<vec3f>());
+        EXPECT_EQ(ones, inputs->getChild("scaling")->get<vec3f>());
         EXPECT_EQ(true, *inputs->getChild("visibility")->get<bool>());
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            EXPECT_EQ(true, *inputs->getChild("enabled")->get<bool>());
-        }
+        EXPECT_EQ(true, *inputs->getChild("enabled")->get<bool>());
     }
 
-    TEST_P(ARamsesNodeBinding, MarksInputsAsBindingInputs)
+    TEST_F(ARamsesNodeBinding, MarksInputsAsBindingInputs)
     {
-        auto*      nodeBinding     = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        auto*      nodeBinding     = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         auto       inputs     = nodeBinding->getInputs();
         const auto inputCount = inputs->getChildCount();
         for (size_t i = 0; i < inputCount; ++i)
@@ -216,12 +194,12 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ARamsesNodeBinding, ReturnsNodePropertiesForInputsConst)
+    TEST_F(ARamsesNodeBinding, ReturnsNodePropertiesForInputsConst)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         const auto inputs = nodeBinding.getInputs();
         ASSERT_NE(nullptr, inputs);
-        EXPECT_EQ(GetInputsCount(), inputs->getChildCount());
+        EXPECT_EQ(5u, inputs->getChildCount());
 
         auto rotation = inputs->getChild("rotation");
         auto scaling = inputs->getChild("scaling");
@@ -244,40 +222,36 @@ namespace rlogic::internal
         EXPECT_EQ(EPropertyType::Bool, visibility->getType());
         EXPECT_EQ(0u, visibility->getChildCount());
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            auto enabled = inputs->getChild("enabled");
-            ASSERT_NE(nullptr, enabled);
-            EXPECT_EQ(EPropertyType::Bool, enabled->getType());
-            EXPECT_EQ(0u, enabled->getChildCount());
-        }
+        auto enabled = inputs->getChild("enabled");
+        ASSERT_NE(nullptr, enabled);
+        EXPECT_EQ(EPropertyType::Bool, enabled->getType());
+        EXPECT_EQ(0u, enabled->getChildCount());
     }
 
-    TEST_P(ARamsesNodeBinding, ReturnsBoundRamsesNode)
+    TEST_F(ARamsesNodeBinding, ReturnsBoundRamsesNode)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
         EXPECT_EQ(m_node, &nodeBinding.getRamsesNode());
     }
 
-    TEST_P(ARamsesNodeBinding, DoesNotModifyRamsesWithoutUpdateBeingCalled)
+    TEST_F(ARamsesNodeBinding, DoesNotModifyRamsesWithoutUpdateBeingCalled)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
 
         auto inputs = nodeBinding.getInputs();
         inputs->getChild("rotation")->set<vec3f>(vec3f{ 0.1f, 0.2f, 0.3f });
         inputs->getChild("scaling")->set<vec3f>(vec3f{ 1.1f, 1.2f, 1.3f });
         inputs->getChild("translation")->set<vec3f>(vec3f{ 2.1f, 2.2f, 2.3f });
         inputs->getChild("visibility")->set<bool>(false);
-        if (GetParam() >= EFeatureLevel_02)
-            inputs->getChild("enabled")->set<bool>(false);
+        inputs->getChild("enabled")->set<bool>(false);
 
         ExpectDefaultValues(*m_node);
     }
 
     // This test is a bit too big, but splitting it creates a lot of test code duplication... Better keep it like this, it documents behavior quite well
-    TEST_P(ARamsesNodeBinding, ModifiesRamsesOnUpdate_OnlyAfterExplicitlyAssignedToInputs)
+    TEST_F(ARamsesNodeBinding, ModifiesRamsesOnUpdate_OnlyAfterExplicitlyAssignedToInputs)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
 
         nodeBinding.m_nodeBinding.update();
 
@@ -302,27 +276,25 @@ namespace rlogic::internal
         inputs->getChild("scaling")->set<vec3f>(vec3f{ 1.1f, 1.2f, 1.3f });
         inputs->getChild("translation")->set<vec3f>(vec3f{ 2.1f, 2.2f, 2.3f });
         inputs->getChild("visibility")->set<bool>(true);
-        if (GetParam() >= EFeatureLevel_02)
-            inputs->getChild("enabled")->set<bool>(false);
+        inputs->getChild("enabled")->set<bool>(false);
         nodeBinding.m_nodeBinding.update();
 
         ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 42.1f, 42.2f, 42.3f });
         ExpectValues(*m_node, ENodePropertyStaticIndex::Scaling, vec3f{ 1.1f, 1.2f, 1.3f });
         ExpectValues(*m_node, ENodePropertyStaticIndex::Translation, vec3f{ 2.1f, 2.2f, 2.3f });
-        EXPECT_EQ(m_node->getVisibility(), (GetParam() >= EFeatureLevel_02 ? ramses::EVisibilityMode::Off : ramses::EVisibilityMode::Visible));
+        EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Off);
     }
 
-    TEST_P(ARamsesNodeBinding, PropagatesItsInputsToRamsesNodeOnUpdate)
+    TEST_F(ARamsesNodeBinding, PropagatesItsInputsToRamsesNodeOnUpdate)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
         auto inputs = nodeBinding.getInputs();
         inputs->getChild("rotation")->set<vec3f>(vec3f{0.1f, 0.2f, 0.3f});
         inputs->getChild("scaling")->set<vec3f>(vec3f{1.1f, 1.2f, 1.3f});
         inputs->getChild("translation")->set<vec3f>(vec3f{2.1f, 2.2f, 2.3f});
         inputs->getChild("visibility")->set<bool>(false);
-        if (GetParam() >= EFeatureLevel_02)
-            inputs->getChild("enabled")->set<bool>(true);
+        inputs->getChild("enabled")->set<bool>(true);
 
         nodeBinding.m_nodeBinding.update();
 
@@ -332,7 +304,7 @@ namespace rlogic::internal
         EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Invisible);
     }
 
-    TEST_P(ARamsesNodeBinding, PropagatesItsInputsToRamsesNodeOnUpdate_WithLinksInsteadOfSetCall)
+    TEST_F(ARamsesNodeBinding, PropagatesItsInputsToRamsesNodeOnUpdate_WithLinksInsteadOfSetCall)
     {
         const std::string_view scriptSrc = R"(
             function interface(IN,OUT)
@@ -347,7 +319,7 @@ namespace rlogic::internal
 
         LuaScript* script = m_logicEngine.createLuaScript(scriptSrc);
 
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
         ASSERT_TRUE(m_logicEngine.link(*script->getOutputs()->getChild("rotation"), *nodeBinding.getInputs()->getChild("rotation")));
         ASSERT_TRUE(m_logicEngine.link(*script->getOutputs()->getChild("visibility"), *nodeBinding.getInputs()->getChild("visibility")));
@@ -364,190 +336,183 @@ namespace rlogic::internal
         EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Invisible);
     }
 
-    TEST_P(ARamsesNodeBinding, DoesNotOverrideExistingValuesAfterRamsesNodeIsAssignedToBinding)
+    TEST_F(ARamsesNodeBinding, DoesNotOverrideExistingValuesAfterRamsesNodeIsAssignedToBinding)
     {
         m_node->setVisibility(ramses::EVisibilityMode::Off);
-        m_node->setRotation(0.1f, 0.2f, 0.3f, ramses::ERotationConvention::Euler_ZYX);
-        m_node->setScaling(1.1f, 1.2f, 1.3f);
-        m_node->setTranslation(2.1f, 2.2f, 2.3f);
+        m_node->setRotation({0.1f, 0.2f, 0.3f}, ramses::ERotationType::Euler_ZYX);
+        m_node->setScaling({1.1f, 1.2f, 1.3f});
+        m_node->setTranslation({2.1f, 2.2f, 2.3f});
 
-        m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
         ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 0.1f, 0.2f, 0.3f });
         ExpectValues(*m_node, ENodePropertyStaticIndex::Scaling, vec3f{ 1.1f, 1.2f, 1.3f });
         ExpectValues(*m_node, ENodePropertyStaticIndex::Translation, vec3f{ 2.1f, 2.2f, 2.3f });
     }
 
-    TEST_P(ARamsesNodeBinding, DoesNotOverrideExistingQuaternionAfterRamsesNodeIsAssignedToBinding)
+    TEST_F(ARamsesNodeBinding, DoesNotOverrideExistingQuaternionAfterRamsesNodeIsAssignedToBinding)
     {
-        glm::quat quaternion{0.5f, 0.5f, -0.5f, 0.5f};
+        quat quaternion{0.5f, 0.5f, -0.5f, 0.5f};
         m_node->setRotation(quaternion);
 
-        m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion, "NodeBinding");
+        m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
 
-        glm::quat qOut;
+        quat qOut;
         m_node->getRotation(qOut);
         EXPECT_EQ(quaternion, qOut);
     }
 
-    TEST_P(ARamsesNodeBinding, InitializesVisibilityPropertiesFromRamsesNode)
+    TEST_F(ARamsesNodeBinding, InitializesVisibilityPropertiesFromRamsesNode)
     {
         // visible
         m_node->setVisibility(ramses::EVisibilityMode::Visible);
-        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         EXPECT_TRUE(*nodeBinding->getInputs()->getChild("visibility")->get<bool>());
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            EXPECT_TRUE(*nodeBinding->getInputs()->getChild("enabled")->get<bool>());
-        }
+        EXPECT_TRUE(*nodeBinding->getInputs()->getChild("enabled")->get<bool>());
         m_logicEngine.destroy(*nodeBinding);
 
         // invisible
         m_node->setVisibility(ramses::EVisibilityMode::Invisible);
-        nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         EXPECT_FALSE(*nodeBinding->getInputs()->getChild("visibility")->get<bool>());
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            EXPECT_TRUE(*nodeBinding->getInputs()->getChild("enabled")->get<bool>());
-        }
+        EXPECT_TRUE(*nodeBinding->getInputs()->getChild("enabled")->get<bool>());
         m_logicEngine.destroy(*nodeBinding);
 
         // off
         m_node->setVisibility(ramses::EVisibilityMode::Off);
-        nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         EXPECT_FALSE(*nodeBinding->getInputs()->getChild("visibility")->get<bool>());
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            EXPECT_FALSE(*nodeBinding->getInputs()->getChild("enabled")->get<bool>());
-        }
+        EXPECT_FALSE(*nodeBinding->getInputs()->getChild("enabled")->get<bool>());
         m_logicEngine.destroy(*nodeBinding);
     }
 
-    TEST_P(ARamsesNodeBinding, ResolvesVisibilityModeFromProperties)
+    TEST_F(ARamsesNodeBinding, ResolvesVisibilityModeFromProperties)
     {
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         auto inputs = nodeBinding.getInputs();
 
         // visible
         inputs->getChild("visibility")->set<bool>(true);
-        if (GetParam() >= EFeatureLevel_02)
-            inputs->getChild("enabled")->set<bool>(true);
+        inputs->getChild("enabled")->set<bool>(true);
         nodeBinding.m_nodeBinding.update();
         EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Visible);
 
         // invisible
         inputs->getChild("visibility")->set<bool>(false);
-        if (GetParam() >= EFeatureLevel_02)
-            inputs->getChild("enabled")->set<bool>(true);
+        inputs->getChild("enabled")->set<bool>(true);
         nodeBinding.m_nodeBinding.update();
         EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Invisible);
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            // off with visible (off overrides visibility)
-            inputs->getChild("visibility")->set<bool>(true);
-            inputs->getChild("enabled")->set<bool>(false);
-            nodeBinding.m_nodeBinding.update();
-            EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Off);
+        // off with visible (off overrides visibility)
+        inputs->getChild("visibility")->set<bool>(true);
+        inputs->getChild("enabled")->set<bool>(false);
+        nodeBinding.m_nodeBinding.update();
+        EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Off);
 
-            // off with invisible (off overrides visibility)
-            inputs->getChild("visibility")->set<bool>(false);
-            inputs->getChild("enabled")->set<bool>(false);
-            nodeBinding.m_nodeBinding.update();
-            EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Off);
-        }
+        // off with invisible (off overrides visibility)
+        inputs->getChild("visibility")->set<bool>(false);
+        inputs->getChild("enabled")->set<bool>(false);
+        nodeBinding.m_nodeBinding.update();
+        EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Off);
     }
 
     class ARamsesNodeBinding_RotationTypes : public ARamsesNodeBinding
     {
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ARamsesNodeBinding_RotationTypesTests,
-        ARamsesNodeBinding_RotationTypes,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ARamsesNodeBinding_RotationTypes, HasRightHandedEulerXYZRotationConventionByDefault)
+    TEST_F(ARamsesNodeBinding_RotationTypes, HasRightHandedEulerXYZRotationConventionByDefault)
     {
         RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node);
 
-        EXPECT_EQ(ERotationType::Euler_XYZ, nodeBinding.getRotationType());
+        EXPECT_EQ(ramses::ERotationType::Euler_XYZ, nodeBinding.getRotationType());
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, ConvertsRotationTypeToRamsesRotationConventionCorrectly)
+    TEST_F(ARamsesNodeBinding_RotationTypes, AppliesAllEulerConventions)
     {
-        std::vector<std::pair<ERotationType, ramses::ERotationConvention>> enumPairs =
+        std::vector<ramses::ERotationType> enumValues =
         {
-            {ERotationType::Euler_ZYX, ramses::ERotationConvention::Euler_ZYX},
-            {ERotationType::Euler_YZX, ramses::ERotationConvention::Euler_YZX},
-            {ERotationType::Euler_ZXY, ramses::ERotationConvention::Euler_ZXY},
-            {ERotationType::Euler_XZY, ramses::ERotationConvention::Euler_XZY},
-            {ERotationType::Euler_YXZ, ramses::ERotationConvention::Euler_YXZ},
-            {ERotationType::Euler_XYZ, ramses::ERotationConvention::Euler_XYZ},
+            ramses::ERotationType::Euler_XYZ,
+            ramses::ERotationType::Euler_XZY,
+            ramses::ERotationType::Euler_YXZ,
+            ramses::ERotationType::Euler_YZX,
+            ramses::ERotationType::Euler_ZXY,
+            ramses::ERotationType::Euler_ZYX,
+            ramses::ERotationType::Euler_XYX,
+            ramses::ERotationType::Euler_XZX,
+            ramses::ERotationType::Euler_YXY,
+            ramses::ERotationType::Euler_YZY,
+            ramses::ERotationType::Euler_ZXZ,
+            ramses::ERotationType::Euler_ZYZ,
         };
 
-        for (const auto& [logicEnum, ramsesEnum] : enumPairs)
+        for (const auto& rotationType : enumValues)
         {
-            m_node->setRotation(0.f, 0.f, 0.f, ramsesEnum);
+            m_node->setRotation({0.f, 0.f, 0.f}, rotationType);
 
-            RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, logicEnum);
+            RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, rotationType);
             nodeBinding.getInputs()->getChild("rotation")->set<vec3f>({ 30, 45, 60 });
 
             m_logicEngine.update();
 
             vec3f rotValues;
-            m_node->getRotation(rotValues[0], rotValues[1], rotValues[2]);
+            m_node->getRotation(rotValues);
 
-            EXPECT_EQ(ramsesEnum, m_node->getRotationConvention());
-            EXPECT_THAT(rotValues, ::testing::ElementsAre(30.f, 45.f, 60.f));
+            EXPECT_EQ(rotationType, m_node->getRotationType());
+            EXPECT_EQ(rotValues, vec3f(30.f, 45.f, 60.f));
         }
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, TakesOverRotationConventionFromRamsesNode_WhenEnumMatches)
+    TEST_F(ARamsesNodeBinding_RotationTypes, TakesOverRotationConventionFromRamsesNode_WhenEnumMatches)
     {
-        const std::vector<std::pair<ERotationType, ramses::ERotationConvention>> enumPairs =
+        const std::vector<ramses::ERotationType> enumValues =
         {
-            {ERotationType::Euler_ZYX, ramses::ERotationConvention::Euler_ZYX},
-            {ERotationType::Euler_YZX, ramses::ERotationConvention::Euler_YZX},
-            {ERotationType::Euler_ZXY, ramses::ERotationConvention::Euler_ZXY},
-            {ERotationType::Euler_XZY, ramses::ERotationConvention::Euler_XZY},
-            {ERotationType::Euler_YXZ, ramses::ERotationConvention::Euler_YXZ},
-            {ERotationType::Euler_XYZ, ramses::ERotationConvention::Euler_XYZ},
+            ramses::ERotationType::Euler_XYZ,
+            ramses::ERotationType::Euler_XZY,
+            ramses::ERotationType::Euler_YXZ,
+            ramses::ERotationType::Euler_YZX,
+            ramses::ERotationType::Euler_ZXY,
+            ramses::ERotationType::Euler_ZYX,
+            ramses::ERotationType::Euler_XYX,
+            ramses::ERotationType::Euler_XZX,
+            ramses::ERotationType::Euler_YXY,
+            ramses::ERotationType::Euler_YZY,
+            ramses::ERotationType::Euler_ZXZ,
+            ramses::ERotationType::Euler_ZYZ,
         };
 
-        for (const auto& [logicEnum, ramsesEnum] : enumPairs)
+        for (const auto& rotationType : enumValues)
         {
-            m_node->setRotation(1, 2, 3, ramsesEnum);
-            rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, logicEnum, "NodeBinding");
+            m_node->setRotation({1, 2, 3}, rotationType);
+            rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, rotationType, "NodeBinding");
 
-            EXPECT_THAT(*binding->getInputs()->getChild("rotation")->get<vec3f>(), ::testing::ElementsAre(1.f, 2.f, 3.f));
-            EXPECT_EQ(binding->getRotationType(), logicEnum);
+            EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(1.f, 2.f, 3.f));
+            EXPECT_EQ(binding->getRotationType(), rotationType);
 
             ASSERT_TRUE(m_logicEngine.destroy(*binding));
         }
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, TakesOverQuaternionFromRamsesNode_WhenEnumMatches)
+    TEST_F(ARamsesNodeBinding_RotationTypes, TakesOverQuaternionFromRamsesNode_WhenEnumMatches)
     {
-        m_node->setRotation(glm::quat(1.f, 2.f, 3.f, 4.f));
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion, "NodeBinding");
+        m_node->setRotation(quat(1.f, 2.f, 3.f, 4.f));
+        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
 
-        EXPECT_THAT(*binding->getInputs()->getChild("rotation")->get<vec4f>(), ::testing::ElementsAre(2.f, 3.f, 4.f, 1.f));
-        EXPECT_EQ(binding->getRotationType(), ERotationType::Quaternion);
+        EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(2.f, 3.f, 4.f, 1.f));
+        EXPECT_EQ(binding->getRotationType(), ramses::ERotationType::Quaternion);
 
         ASSERT_TRUE(m_logicEngine.destroy(*binding));
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, InitializesRotationWithZeroAndPrintsWarning_WhenConventionEnumsDontMatch)
+    TEST_F(ARamsesNodeBinding_RotationTypes, InitializesRotationWithZeroAndPrintsWarning_WhenConventionEnumsDontMatch)
     {
-        const std::vector<std::pair<ERotationType, ramses::ERotationConvention>> mismatchedEnumPairs =
+        const std::vector<std::pair<ramses::ERotationType, ramses::ERotationType>> mismatchedEnumPairs =
         {
-            {ERotationType::Euler_ZYX, ramses::ERotationConvention::Euler_XYZ},
-            {ERotationType::Euler_YZX, ramses::ERotationConvention::Euler_ZYX},
-            {ERotationType::Euler_ZXY, ramses::ERotationConvention::Euler_YZX},
-            {ERotationType::Euler_XZY, ramses::ERotationConvention::Euler_ZXY},
-            {ERotationType::Euler_YXZ, ramses::ERotationConvention::Euler_XZY},
-            {ERotationType::Euler_XYZ, ramses::ERotationConvention::Euler_YXZ},
+            {ramses::ERotationType::Euler_ZYX, ramses::ERotationType::Euler_XYZ},
+            {ramses::ERotationType::Euler_YZX, ramses::ERotationType::Euler_ZYX},
+            {ramses::ERotationType::Euler_ZXY, ramses::ERotationType::Euler_YZX},
+            {ramses::ERotationType::Euler_XZY, ramses::ERotationType::Euler_ZXY},
+            {ramses::ERotationType::Euler_YXZ, ramses::ERotationType::Euler_XZY},
+            {ramses::ERotationType::Euler_XYZ, ramses::ERotationType::Euler_YXZ},
         };
 
         std::string warningMessage;
@@ -559,13 +524,13 @@ namespace rlogic::internal
 
         for (const auto& [logicEnum, ramsesEnum] : mismatchedEnumPairs)
         {
-            m_node->setRotation(1, 2, 3, ramsesEnum);
+            m_node->setRotation({1, 2, 3}, ramsesEnum);
             rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, logicEnum, "NodeBinding");
 
             EXPECT_EQ(messageType, ELogMessageType::Warn);
             EXPECT_EQ(warningMessage, fmt::format("Initial rotation values for RamsesNodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.", binding->m_impl.getIdentificationString()));
 
-            EXPECT_THAT(*binding->getInputs()->getChild("rotation")->get<vec3f>(), ::testing::ElementsAre(0.f, 0.f, 0.f));
+            EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
             EXPECT_EQ(binding->getRotationType(), logicEnum);
 
             ASSERT_TRUE(m_logicEngine.destroy(*binding));
@@ -575,7 +540,7 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, InitializesQuaternionWithIdentityAndPrintsWarning_WhenConventionEnumsDontMatch)
+    TEST_F(ARamsesNodeBinding_RotationTypes, InitializesQuaternionWithIdentityAndPrintsWarning_WhenConventionEnumsDontMatch)
     {
         std::string warningMessage;
         ELogMessageType messageType;
@@ -584,14 +549,14 @@ namespace rlogic::internal
             messageType = msgType;
             });
 
-        m_node->setRotation(1, 2, 3);
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion, "NodeBinding");
+        m_node->setRotation({1, 2, 3});
+        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
 
         EXPECT_EQ(messageType, ELogMessageType::Warn);
         EXPECT_EQ(warningMessage, fmt::format("Initial rotation values for RamsesNodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.", binding->m_impl.getIdentificationString()));
 
-        EXPECT_THAT(*binding->getInputs()->getChild("rotation")->get<vec4f>(), ::testing::ElementsAre(0.f, 0.f, 0.f, 1.f));
-        EXPECT_EQ(binding->getRotationType(), ERotationType::Quaternion);
+        EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));
+        EXPECT_EQ(binding->getRotationType(), ramses::ERotationType::Quaternion);
 
         ASSERT_TRUE(m_logicEngine.destroy(*binding));
 
@@ -599,69 +564,66 @@ namespace rlogic::internal
         warningMessage = "";
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, PrintsNoWarning_WhenConventionEnumsDontMatch_InSpecialCaseWhereRamsesRotationValuesAreZero)
+    TEST_F(ARamsesNodeBinding_RotationTypes, PrintsNoWarning_WhenConventionEnumsDontMatch_InSpecialCaseWhereRamsesRotationValuesAreZero)
     {
         ScopedLogContextLevel scopedLogs(ELogMessageType::Warn, [](ELogMessageType /*unused*/, std::string_view /*unused*/) {
             FAIL() << "Should not cause any warnings!";
             });
 
-        m_node->setRotation(0.f, 0.f, 0.f, ramses::ERotationConvention::Euler_XYX);
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        m_node->setRotation({0.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYX);
+        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
-        EXPECT_THAT(*binding->getInputs()->getChild("rotation")->get<vec3f>(), ::testing::ElementsAre(0.f, 0.f, 0.f));
-        EXPECT_EQ(binding->getRotationType(), ERotationType::Euler_XYZ);
+        EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
+        EXPECT_EQ(binding->getRotationType(), ramses::ERotationType::Euler_XYZ);
 
         ASSERT_TRUE(m_logicEngine.destroy(*binding));
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, PrintsNoWarning_WhenNoQuaternion_InSpecialCaseWhereRamsesRotationValuesAreZero)
+    TEST_F(ARamsesNodeBinding_RotationTypes, PrintsNoWarning_WhenNoQuaternion_InSpecialCaseWhereRamsesRotationValuesAreZero)
     {
         ScopedLogContextLevel scopedLogs(ELogMessageType::Warn, [](ELogMessageType /*unused*/, std::string_view /*unused*/) {
             FAIL() << "Should not cause any warnings!";
             });
 
-        m_node->setRotation(0.f, 0.f, 0.f, ramses::ERotationConvention::Euler_XYX);
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion, "NodeBinding");
+        m_node->setRotation({0.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYX);
+        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
 
-        EXPECT_THAT(*binding->getInputs()->getChild("rotation")->get<vec4f>(), ::testing::ElementsAre(0.f, 0.f, 0.f, 1.f));
-        EXPECT_EQ(binding->getRotationType(), ERotationType::Quaternion);
+        EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));
+        EXPECT_EQ(binding->getRotationType(), ramses::ERotationType::Quaternion);
 
         ASSERT_TRUE(m_logicEngine.destroy(*binding));
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, InitializesQuaternionAsVec4f)
+    TEST_F(ARamsesNodeBinding_RotationTypes, InitializesQuaternionAsVec4f)
     {
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion);
+        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
 
-        EXPECT_EQ(GetInputsCount(), binding->getInputs()->getChildCount());
+        EXPECT_EQ(5u, binding->getInputs()->getChildCount());
         EXPECT_EQ(EPropertyType::Vec4f, binding->getInputs()->getChild("rotation")->getType());
 
         // Test other inputs to check they are not affected
         EXPECT_EQ(EPropertyType::Vec3f, binding->getInputs()->getChild("translation")->getType());
         EXPECT_EQ(EPropertyType::Vec3f, binding->getInputs()->getChild("scaling")->getType());
         EXPECT_EQ(EPropertyType::Bool, binding->getInputs()->getChild("visibility")->getType());
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            EXPECT_EQ(EPropertyType::Bool, binding->getInputs()->getChild("enabled")->getType());
-        }
+        EXPECT_EQ(EPropertyType::Bool, binding->getInputs()->getChild("enabled")->getType());
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, InitializesQuaternionValues_WhichResultsToNoRotationInEuler)
+    TEST_F(ARamsesNodeBinding_RotationTypes, InitializesQuaternionValues_WhichResultsToNoRotationInEuler)
     {
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion);
+        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
         rlogic::Property* quatInput = binding->getInputs()->getChild("rotation");
 
         ASSERT_EQ(quatInput->getType(), EPropertyType::Vec4f);
-        EXPECT_THAT(*quatInput->get<vec4f>(), ::testing::ElementsAre(0.f, 0.f, 0.f, 1.f));
+        EXPECT_EQ(*quatInput->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));
 
         EXPECT_TRUE(m_logicEngine.update());
 
         ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 0.0f, 0.0f, 0.0f });
     }
 
-    TEST_P(ARamsesNodeBinding_RotationTypes, QuaternionValuesAreReturned)
+    TEST_F(ARamsesNodeBinding_RotationTypes, QuaternionValuesAreReturned)
     {
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Quaternion);
+        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
         rlogic::Property* quatInput = binding->getInputs()->getChild("rotation");
 
         quatInput->set<vec4f>({0.5f, 0, 0, 0.8660254f});
@@ -677,9 +639,9 @@ namespace rlogic::internal
         ExpectQuat(*m_node, vec4f{0, 0, 0.7071068f, 0.7071068f});
     }
 
-    // This is a confidence test that checks that no matter which rotation convention is used, the final result (matrix)
+    // This is a confidence test that checks that no matter which rotation type is used, the final result (matrix)
     // is always the same as if each rotation/axis was put in its own node with the order given by the node hierarchy
-    TEST_P(ARamsesNodeBinding_RotationTypes, Confidence_ComplexEulerRotations_ProduceTheSameRotationResult_AsWithSeparateRamsesNodesWithSingleAxisRotations)
+    TEST_F(ARamsesNodeBinding_RotationTypes, Confidence_ComplexEulerRotations_ProduceTheSameRotationResult_AsWithSeparateRamsesNodesWithSingleAxisRotations)
     {
         std::array<ramses::Node*, 3> threeNodes = {
             m_scene->createNode(),
@@ -690,51 +652,54 @@ namespace rlogic::internal
         threeNodes[2]->setParent(*threeNodes[1]);
         threeNodes[1]->setParent(*threeNodes[0]);
 
-        const std::vector<std::tuple<ramses::ERotationConvention, ERotationType, vec3i>> combinationsToTest =
+        const std::vector<std::tuple<ramses::ERotationType, vec3i>> combinationsToTest =
         {
-            {ramses::ERotationConvention::Euler_ZYX, ERotationType::Euler_ZYX, {2, 1, 0}},
-            {ramses::ERotationConvention::Euler_YZX, ERotationType::Euler_YZX, {1, 2, 0}},
-            {ramses::ERotationConvention::Euler_ZXY, ERotationType::Euler_ZXY, {2, 0, 1}},
-            {ramses::ERotationConvention::Euler_XZY, ERotationType::Euler_XZY, {0, 2, 1}},
-            {ramses::ERotationConvention::Euler_YXZ, ERotationType::Euler_YXZ, {1, 0, 2}},
-            {ramses::ERotationConvention::Euler_XYZ, ERotationType::Euler_XYZ, {0, 1, 2}},
+            {ramses::ERotationType::Euler_ZYX, {2, 1, 0}},
+            {ramses::ERotationType::Euler_YZX, {1, 2, 0}},
+            {ramses::ERotationType::Euler_ZXY, {2, 0, 1}},
+            {ramses::ERotationType::Euler_XZY, {0, 2, 1}},
+            {ramses::ERotationType::Euler_YXZ, {1, 0, 2}},
+            {ramses::ERotationType::Euler_XYZ, {0, 1, 2}},
         };
 
-        for (const auto& [ramsesEnum, logicEnum, axesOrdering] : combinationsToTest)
+        for (const auto& [rotationType, axesOrdering] : combinationsToTest)
         {
-            // Set the rotations for all 3 nodes according to the convention, use the same rotation values always
-            for (size_t i = 0; i < 3; ++i)
+            // Set the rotations for all 3 nodes according to the rotationType, use the same rotation values always
+            for (glm::length_t i = 0; i < 3; ++i)
             {
-                const size_t axis = axesOrdering[i];
-                const size_t nodeIndex = 2-i;
+                const auto axis = axesOrdering[i];
+                const auto nodeIndex = 2-i;
                 if (axis == 0)
                 {
-                    threeNodes[nodeIndex]->setRotation(10, 0, 0, ramses::ERotationConvention::Euler_XYZ);
+                    threeNodes[nodeIndex]->setRotation({10, 0, 0}, ramses::ERotationType::Euler_XYZ);
                 }
                 else if (axis == 1)
                 {
-                    threeNodes[nodeIndex]->setRotation(0, 20, 0, ramses::ERotationConvention::Euler_XYZ);
+                    threeNodes[nodeIndex]->setRotation({0, 20, 0}, ramses::ERotationType::Euler_XYZ);
                 }
                 else
                 {
-                    threeNodes[nodeIndex]->setRotation(0, 0, 30, ramses::ERotationConvention::Euler_XYZ);
+                    threeNodes[nodeIndex]->setRotation({0, 0, 30}, ramses::ERotationType::Euler_XYZ);
                 }
             }
 
-            m_node->setRotation(0, 0, 0, ramsesEnum);
-            RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, logicEnum);
+            m_node->setRotation({0, 0, 0}, rotationType);
+            RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, rotationType);
             binding->getInputs()->getChild("rotation")->set<vec3f>({10, 20, 30});
             EXPECT_TRUE(m_logicEngine.update());
 
-            float matFromLogic[16]; // NOLINT(modernize-avoid-c-arrays) Required by Ramses API
-            float matFromRamses[16]; // NOLINT(modernize-avoid-c-arrays) Required by Ramses API
+            matrix44f matFromLogic;
+            matrix44f matFromRamses;
 
             m_node->getModelMatrix(matFromLogic);
             threeNodes[2]->getModelMatrix(matFromRamses);
 
-            for (size_t i = 0u; i < 16; i++)
+            for (glm::length_t i = 0u; i < 4; i++)
             {
-                EXPECT_NEAR(matFromLogic[i], matFromRamses[i], 1.0e-6f);
+                for (glm::length_t k = 0u; k < 4; k++)
+                {
+                    EXPECT_NEAR(matFromLogic[i][k], matFromRamses[i][k], 1.0e-6f);
+                }
             }
 
             m_logicEngine.destroy(*binding);
@@ -753,19 +718,14 @@ namespace rlogic::internal
         DeserializationMap m_deserializationMap;
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ARamsesNodeBinding_SerializationLifecycleTests,
-        ARamsesNodeBinding_SerializationLifecycle,
-        GetFeatureLevelTestValues());
-
     // More unit tests with inputs/outputs declared in LogicNode (base class) serialization tests
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, RemembersBaseClassData)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, RemembersBaseClassData)
     {
         // Serialize
         {
-            RamsesNodeBindingImpl binding(*m_node, ERotationType::Euler_XYZ, "name", 1u, GetParam());
+            RamsesNodeBindingImpl binding(*m_node, ramses::ERotationType::Euler_XYZ, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesNodeBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesNodeBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -780,12 +740,12 @@ namespace rlogic::internal
         ASSERT_TRUE(serializedBinding.base()->rootInput());
         EXPECT_EQ(serializedBinding.base()->rootInput()->rootType(), rlogic_serialization::EPropertyRootType::Struct);
         ASSERT_TRUE(serializedBinding.base()->rootInput()->children());
-        EXPECT_EQ(serializedBinding.base()->rootInput()->children()->size(), GetInputsCount());
+        EXPECT_EQ(serializedBinding.base()->rootInput()->children()->size(), 5u);
 
         // Deserialize
         {
             EXPECT_CALL(m_resolverMock, findRamsesNodeInScene(::testing::Eq("name"), m_node->getSceneObjectId())).WillOnce(::testing::Return(m_node));
-            std::unique_ptr<RamsesNodeBindingImpl> deserializedBinding = RamsesNodeBindingImpl::Deserialize(serializedBinding, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+            std::unique_ptr<RamsesNodeBindingImpl> deserializedBinding = RamsesNodeBindingImpl::Deserialize(serializedBinding, m_resolverMock, m_errorReporting, m_deserializationMap);
 
             ASSERT_TRUE(deserializedBinding);
             EXPECT_EQ(deserializedBinding->getName(), "name");
@@ -793,17 +753,17 @@ namespace rlogic::internal
             EXPECT_EQ(deserializedBinding->getInputs()->getType(), EPropertyType::Struct);
             EXPECT_EQ(deserializedBinding->getInputs()->m_impl->getPropertySemantics(), EPropertySemantics::BindingInput);
             EXPECT_EQ(deserializedBinding->getInputs()->getName(), "");
-            EXPECT_EQ(deserializedBinding->getInputs()->getChildCount(), GetInputsCount());
+            EXPECT_EQ(deserializedBinding->getInputs()->getChildCount(), 5u);
         }
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, RemembersRamsesNodeId)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, RemembersRamsesNodeId)
     {
         // Serialize
         {
-            RamsesNodeBindingImpl binding(*m_node, ERotationType::Euler_XYZ, "node", 1u, EFeatureLevel_01);
+            RamsesNodeBindingImpl binding(*m_node, ramses::ERotationType::Euler_XYZ, "node", 1u);
             binding.createRootProperties();
-            (void)RamsesNodeBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesNodeBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -815,24 +775,24 @@ namespace rlogic::internal
         // Deserialize
         {
             EXPECT_CALL(m_resolverMock, findRamsesNodeInScene(::testing::Eq("node"), m_node->getSceneObjectId())).WillOnce(::testing::Return(m_node));
-            std::unique_ptr<RamsesNodeBindingImpl> deserializedBinding = RamsesNodeBindingImpl::Deserialize(serializedBinding, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+            std::unique_ptr<RamsesNodeBindingImpl> deserializedBinding = RamsesNodeBindingImpl::Deserialize(serializedBinding, m_resolverMock, m_errorReporting, m_deserializationMap);
 
             ASSERT_TRUE(deserializedBinding);
             EXPECT_EQ(&deserializedBinding->getRamsesNode(), m_node);
         }
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, DoesNotOverwriteRamsesValuesAfterLoad)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, DoesNotOverwriteRamsesValuesAfterLoad)
     {
         // Serialize
         {
-            RamsesNodeBindingImpl binding(*m_node, ERotationType::Euler_XYZ, "node", 1u, EFeatureLevel_01);
+            RamsesNodeBindingImpl binding(*m_node, ramses::ERotationType::Euler_XYZ, "node", 1u);
             binding.createRootProperties();
             // Set non-standard values. These will not be used after deserialization, instead the binding
             // will re-load the values from ramses
             binding.getInputs()->getChild("rotation")->set<vec3f>({100, 200, 300});
             binding.update();
-            (void)RamsesNodeBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesNodeBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         const auto& serializedBinding = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
@@ -841,23 +801,23 @@ namespace rlogic::internal
         {
             // Set values different than the ones during serialization so that we can check after
             // deserialization they were not touched
-            m_node->setRotation(11, 12, 13);
+            m_node->setRotation({11, 12, 13});
 
             EXPECT_CALL(m_resolverMock, findRamsesNodeInScene(::testing::Eq("node"), m_node->getSceneObjectId())).WillOnce(::testing::Return(m_node));
-            std::unique_ptr<RamsesNodeBindingImpl> deserializedBinding = RamsesNodeBindingImpl::Deserialize(serializedBinding, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+            std::unique_ptr<RamsesNodeBindingImpl> deserializedBinding = RamsesNodeBindingImpl::Deserialize(serializedBinding, m_resolverMock, m_errorReporting, m_deserializationMap);
 
             EXPECT_EQ(&deserializedBinding->getRamsesNode(), m_node);
 
             deserializedBinding->update();
             vec3f rotation;
-            m_node->getRotation(rotation[0], rotation[1], rotation[2]);
+            m_node->getRotation(rotation);
             EXPECT_FLOAT_EQ(rotation[0], 11);
             EXPECT_FLOAT_EQ(rotation[1], 12);
             EXPECT_FLOAT_EQ(rotation[2], 13);
         }
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoBindingBaseData)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoBindingBaseData)
     {
         {
             auto binding = rlogic_serialization::CreateRamsesNodeBinding(
@@ -868,14 +828,14 @@ namespace rlogic::internal
         }
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
         EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Fatal error during loading of RamsesNodeBinding from serialized data: missing base class info!");
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoBindingName)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoBindingName)
     {
         {
             auto base = rlogic_serialization::CreateRamsesBinding(
@@ -892,7 +852,7 @@ namespace rlogic::internal
         }
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(2u, this->m_errorReporting.getErrors().size());
@@ -900,7 +860,7 @@ namespace rlogic::internal
         EXPECT_EQ("Fatal error during loading of RamsesNodeBinding from serialized data: missing name and/or ID!", this->m_errorReporting.getErrors()[1].message);
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoBindingId)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoBindingId)
     {
         {
             auto base    = rlogic_serialization::CreateRamsesBinding(
@@ -913,7 +873,7 @@ namespace rlogic::internal
         }
 
         const auto&                            serialized   = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(2u, this->m_errorReporting.getErrors().size());
@@ -921,7 +881,7 @@ namespace rlogic::internal
         EXPECT_EQ("Fatal error during loading of RamsesNodeBinding from serialized data: missing name and/or ID!", this->m_errorReporting.getErrors()[1].message);
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoRootInput)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenNoRootInput)
     {
         {
             auto base = rlogic_serialization::CreateRamsesBinding(
@@ -939,14 +899,14 @@ namespace rlogic::internal
         }
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
         EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Fatal error during loading of RamsesNodeBinding from serialized data: missing root input!");
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenRootInputHasErrors)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenRootInputHasErrors)
     {
         {
             auto base = rlogic_serialization::CreateRamsesBinding(
@@ -965,14 +925,14 @@ namespace rlogic::internal
         }
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
         EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Fatal error during loading of Property from serialized data: missing name!");
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenBoundNodeCannotBeResolved)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenBoundNodeCannotBeResolved)
     {
         const ramses::sceneObjectId_t mockObjectId{ 12 };
         {
@@ -998,12 +958,12 @@ namespace rlogic::internal
         EXPECT_CALL(m_resolverMock, findRamsesNodeInScene(::testing::Eq("name"), mockObjectId)).WillOnce(::testing::Return(nullptr));
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenSavedNodeTypeDoesNotMatchResolvedNodeType)
+    TEST_F(ARamsesNodeBinding_SerializationLifecycle, ErrorWhenSavedNodeTypeDoesNotMatchResolvedNodeType)
     {
         RamsesTestSetup ramses;
         ramses::Scene* scene = ramses.createScene();
@@ -1035,7 +995,7 @@ namespace rlogic::internal
         EXPECT_CALL(m_resolverMock, findRamsesNodeInScene(::testing::Eq("name"), mockObjectId)).WillOnce(::testing::Return(meshNode));
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::RamsesNodeBinding>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap, EFeatureLevel_01);
+        std::unique_ptr<RamsesNodeBindingImpl> deserialized = RamsesNodeBindingImpl::Deserialize(serialized, m_resolverMock, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
@@ -1045,7 +1005,7 @@ namespace rlogic::internal
     // TODO Violin needs more tests here:
     // - deserialized with wrong object type which is not compatible to node
     // - deserialized with properties but without node, or the other way around
-    // - rotation convention different than the one in ramses node
+    // - rotation type different than the one in ramses node
 
     class ARamsesNodeBinding_SerializationWithFile : public ARamsesNodeBinding
     {
@@ -1053,22 +1013,16 @@ namespace rlogic::internal
         WithTempDirectory tempFolder;
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ARamsesNodeBinding_SerializationWithFileTests,
-        ARamsesNodeBinding_SerializationWithFile,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ARamsesNodeBinding_SerializationWithFile, ContainsItsDataAfterDeserialization)
+    TEST_F(ARamsesNodeBinding_SerializationWithFile, ContainsItsDataAfterDeserialization)
     {
         {
-            LogicEngine tempEngineForSaving{ GetParam() };
-            RamsesNodeBinding& nodeBinding = *tempEngineForSaving.createRamsesNodeBinding(*m_node, ERotationType::Euler_YXZ, "NodeBinding");
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
+            RamsesNodeBinding& nodeBinding = *tempEngineForSaving.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_YXZ, "NodeBinding");
             nodeBinding.getInputs()->getChild("rotation")->set<vec3f>(vec3f{ 0.1f, 0.2f, 0.3f });
             nodeBinding.getInputs()->getChild("translation")->set<vec3f>(vec3f{ 1.1f, 1.2f, 1.3f });
             nodeBinding.getInputs()->getChild("scaling")->set<vec3f>(vec3f{ 2.1f, 2.2f, 2.3f });
             nodeBinding.getInputs()->getChild("visibility")->set(true);
-            if (GetParam() >= EFeatureLevel_02)
-                nodeBinding.getInputs()->getChild("enabled")->set(true);
+            nodeBinding.getInputs()->getChild("enabled")->set(true);
             tempEngineForSaving.update();
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "OneBinding.bin"));
         }
@@ -1079,28 +1033,28 @@ namespace rlogic::internal
             EXPECT_EQ(nodeBinding.getId(), 1u);
 
             const auto& inputs = nodeBinding.getInputs();
-            ASSERT_EQ(inputs->getChildCount(), GetInputsCount());
+            ASSERT_EQ(inputs->getChildCount(), 5u);
 
             auto rotation       = inputs->getChild("rotation");
             auto translation    = inputs->getChild("translation");
             auto scaling        = inputs->getChild("scaling");
             auto visibility     = inputs->getChild("visibility");
-            EXPECT_EQ(ERotationType::Euler_YXZ, nodeBinding.getRotationType());
+            EXPECT_EQ(ramses::ERotationType::Euler_YXZ, nodeBinding.getRotationType());
             ASSERT_NE(nullptr, rotation);
             EXPECT_EQ("rotation", rotation->getName());
             EXPECT_EQ(EPropertyType::Vec3f, rotation->getType());
             EXPECT_EQ(EPropertySemantics::BindingInput, rotation->m_impl->getPropertySemantics());
-            EXPECT_THAT(*rotation->get<vec3f>(), ::testing::ElementsAre(0.1f, 0.2f, 0.3f));
+            EXPECT_EQ(*rotation->get<vec3f>(), vec3f(0.1f, 0.2f, 0.3f));
             ASSERT_NE(nullptr, translation);
             EXPECT_EQ("translation", translation->getName());
             EXPECT_EQ(EPropertyType::Vec3f, translation->getType());
             EXPECT_EQ(EPropertySemantics::BindingInput, translation->m_impl->getPropertySemantics());
-            EXPECT_THAT(*translation->get<vec3f>(), ::testing::ElementsAre(1.1f, 1.2f, 1.3f));
+            EXPECT_EQ(*translation->get<vec3f>(), vec3f(1.1f, 1.2f, 1.3f));
             ASSERT_NE(nullptr, scaling);
             EXPECT_EQ("scaling", scaling->getName());
             EXPECT_EQ(EPropertyType::Vec3f, scaling->getType());
             EXPECT_EQ(EPropertySemantics::BindingInput, scaling->m_impl->getPropertySemantics());
-            EXPECT_THAT(*scaling->get<vec3f>(), ::testing::ElementsAre(2.1f, 2.2f, 2.3f));
+            EXPECT_EQ(*scaling->get<vec3f>(), vec3f(2.1f, 2.2f, 2.3f));
             ASSERT_NE(nullptr, visibility);
             EXPECT_EQ("visibility", visibility->getName());
             EXPECT_EQ(EPropertyType::Bool, visibility->getType());
@@ -1113,23 +1067,20 @@ namespace rlogic::internal
             EXPECT_EQ(translation, inputs->m_impl->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Translation)));
             EXPECT_EQ(visibility, inputs->m_impl->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Visibility)));
 
-            if (GetParam() >= EFeatureLevel_02)
-            {
-                auto enabled = inputs->getChild("enabled");
-                EXPECT_EQ("enabled", enabled->getName());
-                EXPECT_EQ(EPropertyType::Bool, enabled->getType());
-                EXPECT_EQ(EPropertySemantics::BindingInput, enabled->m_impl->getPropertySemantics());
-                EXPECT_TRUE(*enabled->get<bool>());
-                EXPECT_EQ(enabled, inputs->m_impl->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Enabled)));
-            }
+            auto enabled = inputs->getChild("enabled");
+            EXPECT_EQ("enabled", enabled->getName());
+            EXPECT_EQ(EPropertyType::Bool, enabled->getType());
+            EXPECT_EQ(EPropertySemantics::BindingInput, enabled->m_impl->getPropertySemantics());
+            EXPECT_TRUE(*enabled->get<bool>());
+            EXPECT_EQ(enabled, inputs->m_impl->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Enabled)));
         }
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationWithFile, RestoresLinkToRamsesNodeAfterLoadingFromFile)
+    TEST_F(ARamsesNodeBinding_SerializationWithFile, RestoresLinkToRamsesNodeAfterLoadingFromFile)
     {
         {
-            LogicEngine tempEngineForSaving{ GetParam() };
-            tempEngineForSaving.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
+            tempEngineForSaving.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "OneBinding.bin"));
         }
         {
@@ -1139,11 +1090,11 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationWithFile, ProducesErrorWhenDeserializingFromFile_WhenHavingLinkToRamsesNode_ButNoSceneWasProvided)
+    TEST_F(ARamsesNodeBinding_SerializationWithFile, ProducesErrorWhenDeserializingFromFile_WhenHavingLinkToRamsesNode_ButNoSceneWasProvided)
     {
         {
-            LogicEngine tempEngineForSaving{ GetParam() };
-            tempEngineForSaving.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
+            tempEngineForSaving.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "WithRamsesNode.bin"));
         }
         {
@@ -1154,11 +1105,11 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationWithFile, ProducesErrorWhenDeserializingFromFile_WhenHavingLinkToRamsesNode_WhichWasDeleted)
+    TEST_F(ARamsesNodeBinding_SerializationWithFile, ProducesErrorWhenDeserializingFromFile_WhenHavingLinkToRamsesNode_WhichWasDeleted)
     {
         {
-            LogicEngine tempEngineForSaving{ GetParam() };
-            tempEngineForSaving.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
+            tempEngineForSaving.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "RamsesNodeDeleted.bin"));
         }
 
@@ -1172,11 +1123,11 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ARamsesNodeBinding_SerializationWithFile, DoesNotModifyRamsesNodePropertiesAfterLoadingFromFile_WhenNoValuesWereExplicitlySetBeforeSaving)
+    TEST_F(ARamsesNodeBinding_SerializationWithFile, DoesNotModifyRamsesNodePropertiesAfterLoadingFromFile_WhenNoValuesWereExplicitlySetBeforeSaving)
     {
         {
-            LogicEngine tempEngineForSaving{ GetParam() };
-            tempEngineForSaving.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
+            tempEngineForSaving.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "NoValuesSet.bin"));
         }
         {
@@ -1189,26 +1140,25 @@ namespace rlogic::internal
 
     // Tests that the node properties don't overwrite ramses' values after loading from file, until
     // set() is called again explicitly after loadFromFile()
-    TEST_P(ARamsesNodeBinding_SerializationWithFile, DoesNotReapplyPropertiesToRamsesAfterLoading_UntilExplicitlySetAgain)
+    TEST_F(ARamsesNodeBinding_SerializationWithFile, DoesNotReapplyPropertiesToRamsesAfterLoading_UntilExplicitlySetAgain)
     {
         {
-            LogicEngine tempEngineForSaving{ GetParam() };
-            RamsesNodeBinding& nodeBinding = *tempEngineForSaving.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
+            RamsesNodeBinding& nodeBinding = *tempEngineForSaving.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
             // Set some values to the binding's inputs
             nodeBinding.getInputs()->getChild("translation")->set<vec3f>(vec3f{ 1.1f, 1.2f, 1.3f });
             nodeBinding.getInputs()->getChild("rotation")->set<vec3f>(vec3f{ 2.1f, 2.2f, 2.3f });
             nodeBinding.getInputs()->getChild("scaling")->set<vec3f>(vec3f{ 3.1f, 3.2f, 3.3f });
             nodeBinding.getInputs()->getChild("visibility")->set<bool>(true);
-            if (GetParam() >= EFeatureLevel_02)
-                nodeBinding.getInputs()->getChild("enabled")->set<bool>(false);
+            nodeBinding.getInputs()->getChild("enabled")->set<bool>(false);
             tempEngineForSaving.update();
             EXPECT_TRUE(SaveToFileWithoutValidation(tempEngineForSaving, "AllValuesSet.bin"));
         }
 
         // Set properties to other values to check if they are overwritten after load
-        m_node->setTranslation(100.f, 100.f, 100.f);
-        m_node->setRotation(100.f, 100.f, 100.f, ramses::ERotationConvention::Euler_ZYX);
-        m_node->setScaling(100.f, 100.f, 100.f);
+        m_node->setTranslation({100.f, 100.f, 100.f});
+        m_node->setRotation({100.f, 100.f, 100.f}, ramses::ERotationType::Euler_ZYX);
+        m_node->setScaling({100.f, 100.f, 100.f});
         m_node->setVisibility(ramses::EVisibilityMode::Invisible);
 
         {
@@ -1239,14 +1189,14 @@ namespace rlogic::internal
     // - saving and loading files
     // The general expectation is that after loading + update(), the logic scene would overwrite only ramses
     // properties wrapped by a LogicBinding which is linked to a script
-    TEST_P(ARamsesNodeBinding_SerializationWithFile, SetsOnlyRamsesNodePropertiesForWhichTheBindingInputIsLinked_AfterLoadingFromFile_AndCallingUpdate)
+    TEST_F(ARamsesNodeBinding_SerializationWithFile, SetsOnlyRamsesNodePropertiesForWhichTheBindingInputIsLinked_AfterLoadingFromFile_AndCallingUpdate)
     {
         // These values should not be overwritten by logic on update()
-        m_node->setScaling(22, 33, 44);
-        m_node->setTranslation(100, 200, 300);
+        m_node->setScaling({22, 33, 44});
+        m_node->setTranslation({100, 200, 300});
 
         {
-            LogicEngine tempEngineForSaving{ GetParam() };
+            LogicEngine tempEngineForSaving{ m_logicEngine.getFeatureLevel() };
 
             const std::string_view scriptSrc = R"(
                 function interface(IN,OUT)
@@ -1261,7 +1211,7 @@ namespace rlogic::internal
 
             LuaScript* script = tempEngineForSaving.createLuaScript(scriptSrc);
 
-            RamsesNodeBinding& nodeBinding = *tempEngineForSaving.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+            RamsesNodeBinding& nodeBinding = *tempEngineForSaving.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
             ASSERT_TRUE(tempEngineForSaving.link(*script->getOutputs()->getChild("rotation"), *nodeBinding.getInputs()->getChild("rotation")));
             ASSERT_TRUE(tempEngineForSaving.link(*script->getOutputs()->getChild("visibility"), *nodeBinding.getInputs()->getChild("visibility")));
@@ -1271,7 +1221,7 @@ namespace rlogic::internal
         }
 
         // Modify 'linked' properties before loading to check if logic will overwrite them after load + update
-        m_node->setRotation(100, 100, 100, ramses::ERotationConvention::Euler_ZYX);
+        m_node->setRotation({100, 100, 100}, ramses::ERotationType::Euler_ZYX);
         m_node->setVisibility(ramses::EVisibilityMode::Visible);
 
         {
@@ -1288,7 +1238,7 @@ namespace rlogic::internal
 
             // Manually setting values on ramses followed by a logic update has no effect
             // Logic is not "dirty" and it doesn't know it needs to update ramses
-            m_node->setRotation(1, 2, 3, ramses::ERotationConvention::Euler_ZYX);
+            m_node->setRotation({1, 2, 3}, ramses::ERotationType::Euler_ZYX);
             EXPECT_TRUE(m_logicEngine.update());
             ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 1.f, 2.f, 3.f });
         }
@@ -1302,20 +1252,15 @@ namespace rlogic::internal
     {
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ARamsesNodeBinding_DataFlowTests,
-        ARamsesNodeBinding_DataFlow,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ARamsesNodeBinding_DataFlow, WithExplicitSet)
+    TEST_F(ARamsesNodeBinding_DataFlow, WithExplicitSet)
     {
         // Create node and preset values
-        m_node->setRotation(1.f, 1.f, 1.f, ramses::ERotationConvention::Euler_ZYX);
-        m_node->setScaling(2.f, 2.f, 2.f);
-        m_node->setTranslation(3.f, 3.f, 3.f);
+        m_node->setRotation({1.f, 1.f, 1.f}, ramses::ERotationType::Euler_ZYX);
+        m_node->setScaling({2.f, 2.f, 2.f});
+        m_node->setTranslation({3.f, 3.f, 3.f});
         m_node->setVisibility(ramses::EVisibilityMode::Invisible);
 
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
 
         m_logicEngine.update();
 
@@ -1340,7 +1285,7 @@ namespace rlogic::internal
         EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Invisible);
 
         // Calling update again does not "rewrite" the data to ramses. Check this by setting a value manually and call update() again
-        m_node->setRotation(1.f, 1.f, 1.f, ramses::ERotationConvention::Euler_ZYX);
+        m_node->setRotation({1.f, 1.f, 1.f}, ramses::ERotationType::Euler_ZYX);
         m_logicEngine.update();
         ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 1.f, 1.f, 1.f });
 
@@ -1349,8 +1294,7 @@ namespace rlogic::internal
         inputs->getChild("scaling")->set<vec3f>(vec3f{ 200.f, 200.f, 200.f });
         inputs->getChild("translation")->set<vec3f>(vec3f{ 300.f, 300.f, 300.f });
         inputs->getChild("visibility")->set<bool>(true);
-        if (GetParam() >= EFeatureLevel_02)
-            inputs->getChild("enabled")->set<bool>(true);
+        inputs->getChild("enabled")->set<bool>(true);
         m_logicEngine.update();
 
         // All of the property values were passed to ramses
@@ -1360,12 +1304,12 @@ namespace rlogic::internal
         EXPECT_EQ(m_node->getVisibility(), ramses::EVisibilityMode::Visible);
     }
 
-    TEST_P(ARamsesNodeBinding_DataFlow, WithLinks)
+    TEST_F(ARamsesNodeBinding_DataFlow, WithLinks)
     {
         // Create node and preset values
-        m_node->setRotation(1.f, 1.f, 1.f, ramses::ERotationConvention::Euler_ZYX);
-        m_node->setScaling(2.f, 2.f, 2.f);
-        m_node->setTranslation(3.f, 3.f, 3.f);
+        m_node->setRotation({1.f, 1.f, 1.f}, ramses::ERotationType::Euler_ZYX);
+        m_node->setScaling({2.f, 2.f, 2.f});
+        m_node->setTranslation({3.f, 3.f, 3.f});
         m_node->setVisibility(ramses::EVisibilityMode::Off);
 
         const std::string_view scriptSrc = R"(
@@ -1380,7 +1324,7 @@ namespace rlogic::internal
 
         LuaScript* script = m_logicEngine.createLuaScript(scriptSrc);
         script->getInputs()->getChild("rotation")->set<vec3f>({ 1.f, 2.f, 3.f });
-        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
+        RamsesNodeBinding& nodeBinding = *m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
         // Adding and removing link does not set anything in ramses
         ASSERT_TRUE(m_logicEngine.link(*script->getOutputs()->getChild("rotation"), *nodeBinding.getInputs()->getChild("rotation")));
@@ -1394,7 +1338,7 @@ namespace rlogic::internal
         ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 1.f, 2.f, 3.f });
 
         // Link does not overwrite manually set value ...
-        m_node->setRotation(100.f, 100.f, 100.f, ramses::ERotationConvention::Euler_ZYX);
+        m_node->setRotation({100.f, 100.f, 100.f}, ramses::ERotationType::Euler_ZYX);
         m_logicEngine.update();
         ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 100.f, 100.f, 100.f });
 
@@ -1405,7 +1349,7 @@ namespace rlogic::internal
 
         // Remove link -> value is not overwritten any more
         ASSERT_TRUE(m_logicEngine.unlink(*script->getOutputs()->getChild("rotation"), *nodeBinding.getInputs()->getChild("rotation")));
-        m_node->setRotation(100.f, 100.f, 100.f, ramses::ERotationConvention::Euler_ZYX);
+        m_node->setRotation({100.f, 100.f, 100.f}, ramses::ERotationType::Euler_ZYX);
         m_logicEngine.update();
         ExpectValues(*m_node, ENodePropertyStaticIndex::Rotation, vec3f{ 100.f, 100.f, 100.f });
     }

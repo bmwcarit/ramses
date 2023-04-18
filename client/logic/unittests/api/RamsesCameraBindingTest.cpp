@@ -203,7 +203,6 @@ namespace rlogic::internal
 
         RamsesTestSetup m_ramsesTestSetup;
         ramses::Scene& m_testScene;
-        LogicEngine m_logicEngine;
         ramses::OrthographicCamera& m_orthoCam = { *m_testScene.createOrthographicCamera() };
         ramses::PerspectiveCamera& m_perspectiveCam = { *m_testScene.createPerspectiveCamera() };
     };
@@ -252,27 +251,14 @@ namespace rlogic::internal
 
     TEST_F(ARamsesCameraBinding, HasInputsAfterInitializingFromOrthoCamera_createdWithFrustumPlanes)
     {
-        LogicEngine engineFeature02{ EFeatureLevel_02 };
-        RamsesCameraBinding& cameraBinding = *engineFeature02.createRamsesCameraBindingWithFrustumPlanes(m_orthoCam);
+        RamsesCameraBinding& cameraBinding = *m_logicEngine.createRamsesCameraBindingWithFrustumPlanes(m_orthoCam);
         ExpectInputPropertiesWithFrustumPlanes(cameraBinding.m_cameraBinding);
     }
 
     TEST_F(ARamsesCameraBinding, HasInputsAfterInitializingFromPerspectiveCamera_createdWithFrustumPlanes)
     {
-        LogicEngine engineFeature02{ EFeatureLevel_02 };
-        RamsesCameraBinding& cameraBinding = *engineFeature02.createRamsesCameraBindingWithFrustumPlanes(m_perspectiveCam);
+        RamsesCameraBinding& cameraBinding = *m_logicEngine.createRamsesCameraBindingWithFrustumPlanes(m_perspectiveCam);
         ExpectInputPropertiesWithFrustumPlanes(cameraBinding.m_cameraBinding);
-    }
-
-    TEST_F(ARamsesCameraBinding, FailsToBeCreatedWithFrustumPlanesOnFeatureLevel01)
-    {
-        EXPECT_EQ(nullptr, m_logicEngine.createRamsesCameraBindingWithFrustumPlanes(m_orthoCam));
-        ASSERT_EQ(m_logicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Cannot create RamsesCameraBinding with frustum planes properties, feature level 02 or higher is required, feature level in this runtime set to 01.");
-
-        EXPECT_EQ(nullptr, m_logicEngine.createRamsesCameraBindingWithFrustumPlanes(m_perspectiveCam));
-        ASSERT_EQ(m_logicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Cannot create RamsesCameraBinding with frustum planes properties, feature level 02 or higher is required, feature level in this runtime set to 01.");
     }
 
     TEST_F(ARamsesCameraBinding, DoesNotOverwriteDefaultValues_WhenCreatedFromOrthoCamera)
@@ -815,7 +801,7 @@ namespace rlogic::internal
         {
             RamsesCameraBindingImpl binding(*m_camera, true, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -853,7 +839,7 @@ namespace rlogic::internal
         {
             RamsesCameraBindingImpl binding(*m_camera, true, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_01);
+            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         // Inspect flatbuffers data
@@ -878,7 +864,7 @@ namespace rlogic::internal
         {
             RamsesCameraBindingImpl binding(*m_camera, true, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_02);
+            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         const auto& serializedBinding = *flatbuffers::GetRoot<rlogic_serialization::RamsesCameraBinding>(m_flatBufferBuilder.GetBufferPointer());
@@ -901,7 +887,7 @@ namespace rlogic::internal
         {
             RamsesCameraBindingImpl binding(*perspCamera, false, "name", 1u);
             binding.createRootProperties();
-            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap, EFeatureLevel_02);
+            (void)RamsesCameraBindingImpl::Serialize(binding, m_flatBufferBuilder, m_serializationMap);
         }
 
         const auto& serializedBinding = *flatbuffers::GetRoot<rlogic_serialization::RamsesCameraBinding>(m_flatBufferBuilder.GetBufferPointer());

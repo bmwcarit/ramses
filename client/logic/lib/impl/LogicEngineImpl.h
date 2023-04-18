@@ -8,19 +8,20 @@
 
 #pragma once
 
-#include "ramses-logic/EFeatureLevel.h"
-#include "ramses-logic/ERotationType.h"
 #include "ramses-logic/AnimationTypes.h"
 #include "ramses-logic/LogicEngineReport.h"
 #include "ramses-logic/DataTypes.h"
+#include "ramses-framework-api/EFeatureLevel.h"
 #include "internals/ApiObjects.h"
 #include "internals/LogicNodeDependencies.h"
 #include "internals/ErrorReporting.h"
 #include "internals/ValidationResults.h"
 #include "internals/UpdateReport.h"
 #include "internals/LogicNodeUpdateStatistics.h"
+#include "internals/ApiObjectsSerializedSize.h"
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-client-api/ERotationType.h"
 
 #include <memory>
 #include <vector>
@@ -83,7 +84,7 @@ namespace rlogic::internal
         // Move-able (noexcept); Not copy-able
 
         // can't be noexcept anymore because constructor of std::unordered_map can throw
-        explicit LogicEngineImpl(EFeatureLevel featureLevel);
+        explicit LogicEngineImpl(ramses::EFeatureLevel featureLevel);
         ~LogicEngineImpl() noexcept;
 
         LogicEngineImpl(LogicEngineImpl&& other) noexcept = default;
@@ -96,7 +97,7 @@ namespace rlogic::internal
         LuaInterface* createLuaInterface(std::string_view source, const LuaConfigImpl& config, std::string_view interfaceName, bool verifyModules);
         LuaModule* createLuaModule(std::string_view source, const LuaConfigImpl& config, std::string_view moduleName);
         bool extractLuaDependencies(std::string_view source, const std::function<void(const std::string&)>& callbackFunc);
-        RamsesNodeBinding* createRamsesNodeBinding(ramses::Node& ramsesNode, ERotationType rotationType, std::string_view name);
+        RamsesNodeBinding* createRamsesNodeBinding(ramses::Node& ramsesNode, ramses::ERotationType rotationType, std::string_view name);
         RamsesAppearanceBinding* createRamsesAppearanceBinding(ramses::Appearance& ramsesAppearance, std::string_view name);
         RamsesCameraBinding* createRamsesCameraBinding(ramses::Camera& ramsesCamera, std::string_view name);
         RamsesCameraBinding* createRamsesCameraBindingWithFrustumPlanes(ramses::Camera& ramsesCamera, std::string_view name);
@@ -126,8 +127,8 @@ namespace rlogic::internal
         bool loadFromFileDescriptor(int fd, size_t offset, size_t size, ramses::Scene* scene, bool enableMemoryVerification);
         bool loadFromBuffer(const void* rawBuffer, size_t bufferSize, ramses::Scene* scene, bool enableMemoryVerification);
         bool saveToFile(std::string_view filename, const SaveFileConfigImpl& config);
-        [[nodiscard]] static bool GetFeatureLevelFromFile(std::string_view filename, EFeatureLevel& detectedFeatureLevel);
-        [[nodiscard]] static bool GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, EFeatureLevel& detectedFeatureLevel);
+        [[nodiscard]] static bool GetFeatureLevelFromFile(std::string_view filename, ramses::EFeatureLevel& detectedFeatureLevel);
+        [[nodiscard]] static bool GetFeatureLevelFromBuffer(std::string_view logname, const void* buffer, size_t bufferSize, ramses::EFeatureLevel& detectedFeatureLevel);
 
         bool link(const Property& sourceProperty, const Property& targetProperty);
         bool linkWeak(const Property& sourceProperty, const Property& targetProperty);
@@ -135,7 +136,7 @@ namespace rlogic::internal
 
         [[nodiscard]] bool isLinked(const LogicNode& logicNode) const;
 
-        [[nodiscard]] EFeatureLevel getFeatureLevel() const;
+        [[nodiscard]] ramses::EFeatureLevel getFeatureLevel() const;
 
         [[nodiscard]] ApiObjects& getApiObjects();
 
@@ -148,10 +149,9 @@ namespace rlogic::internal
         void setStatisticsLoggingRate(size_t loggingRate);
         void setStatisticsLogLevel(ELogMessageType logLevel);
 
-        [[nodiscard]] size_t getTotalSerializedSize() const;
-
+        [[nodiscard]] size_t getTotalSerializedSize(ELuaSavingMode luaSavingMode) const;
         template<typename T>
-        [[nodiscard]] size_t getSerializedSize() const;
+        [[nodiscard]] size_t getSerializedSize(ELuaSavingMode luaSavingMode) const;
 
     private:
         size_t activateLinksRecursive(PropertyImpl& output);
@@ -165,7 +165,6 @@ namespace rlogic::internal
 
         [[nodiscard]] bool loadFromByteData(const void* byteData, size_t byteSize, ramses::Scene* scene, bool enableMemoryVerification, const std::string& dataSourceDescription);
         [[nodiscard]] bool checkFileIdentifierBytes(const std::string& dataSourceDescription, const std::string& fileIdBytes);
-        [[nodiscard]] const char* getFileIdentifierMatchingFeatureLevel() const;
 
         std::unique_ptr<ApiObjects> m_apiObjects;
         ErrorReporting m_errors;
@@ -177,12 +176,12 @@ namespace rlogic::internal
         UpdateReport m_updateReport;
         LogicNodeUpdateStatistics m_statistics;
 
-        EFeatureLevel m_featureLevel;
+        ramses::EFeatureLevel m_featureLevel;
     };
 
     template<typename T>
-    size_t LogicEngineImpl::getSerializedSize() const
+    size_t LogicEngineImpl::getSerializedSize(ELuaSavingMode luaSavingMode) const
     {
-        return m_apiObjects->getSerializedSize<T>();
+        return ApiObjectsSerializedSize::GetSerializedSize<T>(*m_apiObjects, luaSavingMode);
     }
 }

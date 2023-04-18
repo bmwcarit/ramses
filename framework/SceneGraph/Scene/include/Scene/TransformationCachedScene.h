@@ -42,7 +42,7 @@ namespace ramses_internal
         void                    releaseTransform(TransformHandle transform) override;
 
         void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
-        void                    setRotation(TransformHandle transform, const Vector4& rotation, ERotationConvention convention) override;
+        void                    setRotation(TransformHandle transform, const Vector4& rotation, ERotationType rotationType) override;
         void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
 
         Matrix44f                       updateMatrixCache(ETransformationMatrixType matrixType, NodeHandle node) const;

@@ -13,7 +13,6 @@
 #include "ramses-renderer-api/Types.h"
 #include "ramses-framework-api/RendererSceneState.h"
 #include "RendererAPI/Types.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "RendererTestUtils.h"
 #include <memory>
 

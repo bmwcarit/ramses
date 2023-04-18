@@ -33,7 +33,7 @@ int main()
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 35.0f);
+    camera->setTranslation({0.0f, 0.0f, 35.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);

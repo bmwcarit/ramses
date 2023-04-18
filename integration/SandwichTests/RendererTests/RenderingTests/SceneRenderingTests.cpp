@@ -147,7 +147,7 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
 
     testFramework.createTestCaseWithDefaultDisplay(EulerRotationConventions, *this, "EulerRotationConventions");
 
-    testFramework.createTestCaseWithDefaultDisplay(Display_SetClearColor, *this, "Display_SetClearColor").m_displayConfigs.front().setClearColor(0.5f, 0.25f, 0.75f, 1.f);
+    testFramework.createTestCaseWithDefaultDisplay(Display_SetClearColor, *this, "Display_SetClearColor").m_displayConfigs.front().setClearColor({0.5f, 0.25f, 0.75f, 1.f});
 
     RenderingTestCase& testCase = testFramework.createTestCaseWithDefaultDisplay(AntiAliasingTest_MSAA4, *this, "AntiAliasingTest_MSAA4");
     testCase.m_displayConfigs.front().setMultiSampling(4u);

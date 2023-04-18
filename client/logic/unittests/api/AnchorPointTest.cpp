@@ -32,11 +32,6 @@ namespace rlogic::internal
 {
     class AnAnchorPoint : public ALogicEngine
     {
-    public:
-        AnAnchorPoint() : ALogicEngine{ EFeatureLevel_02 }
-        {
-        }
-
     protected:
         RamsesNodeBinding& m_nodeBinding{ *m_logicEngine.createRamsesNodeBinding(*m_node) };
         RamsesCameraBinding& m_cameraBinding{ *m_logicEngine.createRamsesCameraBinding(*m_camera) };
@@ -140,7 +135,7 @@ namespace rlogic::internal
         {
             AnchorPointImpl anchor(m_nodeBinding.m_nodeBinding, m_cameraBinding.m_cameraBinding, "name", 1u);
             anchor.createRootProperties();
-            (void)AnchorPointImpl::Serialize(anchor, m_flatBufferBuilder, m_serializationMap, m_logicEngine.getFeatureLevel());
+            (void)AnchorPointImpl::Serialize(anchor, m_flatBufferBuilder, m_serializationMap);
         }
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::AnchorPoint>(m_flatBufferBuilder.GetBufferPointer());
 
@@ -218,30 +213,30 @@ namespace rlogic::internal
     protected:
         void SetUp() override
         {
-            m_node->setTranslation(1.f, 2.f, 3.f);
-            m_node->setRotation(-1.f, -2.f, -3.f);
-            m_node->setScaling(1.f, 2.f, 3.f);
+            m_node->setTranslation({1.f, 2.f, 3.f});
+            m_node->setRotation({-1.f, -2.f, -3.f});
+            m_node->setScaling({1.f, 2.f, 3.f});
 
             auto nodeTransNode = m_scene->createNode();
-            nodeTransNode->setTranslation(1.f, 2.f, -3.f);
+            nodeTransNode->setTranslation({1.f, 2.f, -3.f});
             nodeTransNode->addChild(*m_node);
 
-            m_perspCamera.setTranslation(1.f, 2.f, -3.f);
-            m_perspCamera.setRotation(-1.f, -2.f, 3.f);
-            m_perspCamera.setScaling(1.f, 2.f, -3.f);
+            m_perspCamera.setTranslation({1.f, 2.f, -3.f});
+            m_perspCamera.setRotation({-1.f, -2.f, 3.f});
+            m_perspCamera.setScaling({1.f, 2.f, -3.f});
             m_perspCamera.setFrustum(75.f, 0.8f, 0.01f, 100.f);
             m_perspCamera.setViewport(10, 20, 30u, 40u);
             ASSERT_EQ(ramses::StatusOK, m_perspCamera.validate());
 
-            m_orthoCamera.setTranslation(1.f, 2.f, -3.f);
-            m_orthoCamera.setRotation(-1.f, -2.f, 3.f);
-            m_orthoCamera.setScaling(1.f, 2.f, -3.f);
+            m_orthoCamera.setTranslation({1.f, 2.f, -3.f});
+            m_orthoCamera.setRotation({-1.f, -2.f, 3.f});
+            m_orthoCamera.setScaling({1.f, 2.f, -3.f});
             m_orthoCamera.setFrustum(-0.5f, 0.5f, -1.f, 2.f, 0.01f, 100.f);
             m_orthoCamera.setViewport(10, 20, 30u, 40u);
             ASSERT_EQ(ramses::StatusOK, m_orthoCamera.validate());
 
             auto camTransNode = m_scene->createNode();
-            camTransNode->setTranslation(1.f, 2.f, -3.f);
+            camTransNode->setTranslation({1.f, 2.f, -3.f});
             camTransNode->addChild(m_perspCamera);
             camTransNode->addChild(m_orthoCamera);
         }
@@ -304,7 +299,7 @@ namespace rlogic::internal
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
 
-        m_node->setTranslation(123.f, 231.f, 321.f);
+        m_node->setTranslation({123.f, 231.f, 321.f});
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
     }
@@ -315,7 +310,7 @@ namespace rlogic::internal
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
 
-        m_perspCamera.setTranslation(123.f, 231.f, 321.f);
+        m_perspCamera.setTranslation({123.f, 231.f, 321.f});
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
     }
@@ -340,7 +335,7 @@ namespace rlogic::internal
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
 
-        parentNode->setTranslation(123.f, 231.f, 321.f);
+        parentNode->setTranslation({123.f, 231.f, 321.f});
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
     }
@@ -354,7 +349,7 @@ namespace rlogic::internal
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
 
-        parentNode->setTranslation(123.f, 231.f, 321.f);
+        parentNode->setTranslation({123.f, 231.f, 321.f});
         EXPECT_TRUE(m_logicEngine.update());
         expectNodeExecuted(anchorPoint);
     }

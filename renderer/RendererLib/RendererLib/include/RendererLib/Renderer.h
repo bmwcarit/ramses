@@ -11,7 +11,6 @@
 
 #include "SceneAPI/SceneId.h"
 #include "RendererAPI/Types.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "RendererLib/RendererStatistics.h"
 #include "RendererLib/FrameProfilerStatistics.h"
 #include "RendererLib/RendererInterruptState.h"

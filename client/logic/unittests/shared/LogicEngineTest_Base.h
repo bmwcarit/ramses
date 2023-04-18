@@ -39,7 +39,7 @@ namespace rlogic
     class ALogicEngineBase
     {
     public:
-        explicit ALogicEngineBase(EFeatureLevel featureLevel = EFeatureLevel_01)
+        explicit ALogicEngineBase(ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_Latest)
             : m_logicEngine{ featureLevel }
         {
             // make ramses camera valid, needed for anchor points
@@ -148,7 +148,7 @@ namespace rlogic
 
         SkinBinding* createSkinBinding(LogicEngine& logicEngine)
         {
-            const auto nodeBinding = logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodeForSkin");
+            const auto nodeBinding = logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodeForSkin");
             auto appearanceBinding = logicEngine.createRamsesAppearanceBinding(*m_appearance, "appearanceForSkin");
             return createSkinBinding(*nodeBinding, *appearanceBinding, logicEngine);
         }
@@ -159,7 +159,7 @@ namespace rlogic
     class ALogicEngine : public ALogicEngineBase, public ::testing::Test
     {
     public:
-        explicit ALogicEngine(EFeatureLevel featureLevel = EFeatureLevel_01)
+        explicit ALogicEngine(ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_Latest)
             : ALogicEngineBase{ featureLevel }
         {
         }

@@ -186,7 +186,7 @@ namespace rlogic
             m_sceneSetup = std::make_unique<OffscreenSetup>(*m_imguiHelper, renderer, m_scene, display, m_width, m_height);
         }
 
-        renderer.setDisplayBufferClearColor(display, m_sceneSetup->getOffscreenBuffer(), m_defaultClearColor[0], m_defaultClearColor[1], m_defaultClearColor[2], m_defaultClearColor[3]);
+        renderer.setDisplayBufferClearColor(display, m_sceneSetup->getOffscreenBuffer(), {m_defaultClearColor[0], m_defaultClearColor[1], m_defaultClearColor[2], m_defaultClearColor[3]});
         renderer.flush();
 
         return display;

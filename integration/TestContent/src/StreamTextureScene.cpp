@@ -71,11 +71,11 @@ namespace ramses_internal
                 //Create two separate half cubes which are visible from the camera position
                 //Each half cube is formed from 3 surfaces that uses vertex arrays 2, 4 and 6
                 ramses::Node* translateLeftNode = m_scene.createNode("translate left node");
-                translateLeftNode->translate(-1.0f, 0.0f, 0.0f);
+                translateLeftNode->translate({-1.0f, 0.0f, 0.0f});
                 m_root->addChild(*translateLeftNode);
 
                 ramses::Node* translateRightNode = m_scene.createNode("translate right node");
-                translateRightNode->translate(1.0f, 0.0f, 0.0f);
+                translateRightNode->translate({1.0f, 0.0f, 0.0f});
                 m_root->addChild(*translateRightNode);
 
                 addPngQuad("res/ramses-test-client-embedded-compositing-2.png", verts2, TextureConsumers[0], translateLeftNode);
@@ -99,7 +99,7 @@ namespace ramses_internal
             }
         }
 
-        m_root->setRotation(-35.264385f, -45.000427f, 0.000427f, ramses::ERotationConvention::Euler_XYZ); // rotate the cube onto one corner
+        m_root->setRotation({-35.264385f, -45.000427f, 0.000427f}, ramses::ERotationType::Euler_XYZ); // rotate the cube onto one corner
     }
 
     void StreamTextureScene::addPngQuad(const char* pngFilePath, const std::array<ramses::vec3f, 4u>& vertexPositionsArray, ramses::dataConsumerId_t consumerId, ramses::Node* parentNode)

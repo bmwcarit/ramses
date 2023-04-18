@@ -15,8 +15,11 @@
 import subprocess
 import os
 
-# Have to invoke doxygen directly on Read the Docs' servers
+# Have to invoke doxygen directly on Read the Docs' servers because it has no CMake
 if 'READTHEDOCS' in os.environ:
+    # TODO this will not work in ReadTheDocs until we either fix the include paths
+    # or make this script parse all scattered include paths of ramses (which have optional
+    # components now such as text)
     api_includes_dir = '../../include'
     output_dir = 'doxygen_build'
 

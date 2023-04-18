@@ -9,8 +9,8 @@
 #pragma once
 
 #include "ramses-framework-api/APIExport.h"
+#include "ramses-client-api/ERotationType.h"
 #include "ramses-logic/RamsesBinding.h"
-#include "ramses-logic/ERotationType.h"
 
 #include <memory>
 
@@ -44,11 +44,10 @@ namespace rlogic
      *                                  the visibility mode is determined by the 'visibility' input above.
      *                                  When 'enabled' is false, the visibility mode is Off,
      *                                  regardless of the 'visibility' input.
-     *                                  This property is only available in #rlogic::EFeatureLevel_02 or higher!
      *
      * The default values of the input properties are taken from the bound ramses::Node provided during construction.
-     * This also applies for rotations, if the rlogic::ERotationType and ramses::ERotationConvention values of the
-     * ramses node match (both are Euler, and both correspond to the same axis ordering). Otherwise a warning is
+     * This also applies for rotations, if the ramses::ERotationType values of the
+     * ramses node match (both are either Quaternion or Euler with the same axis ordering). Otherwise a warning is
      * issued and the rotation values are set to 0.
      *
      * The RamsesNodeBinding class has no output properties (thus getOutputs() will return nullptr) because
@@ -82,7 +81,7 @@ namespace rlogic
         *
         * @return the currently used rotation type
         */
-        [[nodiscard]] RAMSES_API ERotationType getRotationType() const;
+        [[nodiscard]] RAMSES_API ramses::ERotationType getRotationType() const;
 
         /**
         * Constructor of RamsesNodeBinding. User is not supposed to call this - RamsesNodeBindings are created by other factory classes

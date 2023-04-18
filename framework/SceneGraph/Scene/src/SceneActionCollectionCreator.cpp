@@ -15,7 +15,7 @@
 #include "SceneAPI/Viewport.h"
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/RenderBuffer.h"
-#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/ERotationType.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector4.h"
@@ -51,12 +51,12 @@ namespace ramses_internal
         collection.write(newValue.data);
     }
 
-    void SceneActionCollectionCreator::setRotation(TransformHandle node, const Vector4& newValue, ERotationConvention rotationConvention)
+    void SceneActionCollectionCreator::setRotation(TransformHandle node, const Vector4& newValue, ERotationType rotationType)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetRotation);
         collection.write(node);
         collection.write(newValue.data);
-        collection.write(rotationConvention);
+        collection.write(rotationType);
     }
 
     void SceneActionCollectionCreator::setScaling(TransformHandle node, const Vector3& newValue)

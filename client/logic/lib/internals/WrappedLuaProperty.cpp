@@ -10,6 +10,7 @@
 #include "internals/SolHelper.h"
 #include "internals/LuaTypeConversions.h"
 #include "internals/TypeUtils.h"
+#include "glm/gtc/type_ptr.hpp"
 
 #include "impl/PropertyImpl.h"
 
@@ -52,17 +53,17 @@ namespace rlogic::internal
             sol_helper::throwSolException("Implementation error!");
             break;
         case EPropertyType::Vec2f:
-            return extractVectorComponent<float, 2>(solState, index);
+            return extractVectorComponent<vec2f>(solState, index);
         case EPropertyType::Vec3f:
-            return extractVectorComponent<float, 3>(solState, index);
+            return extractVectorComponent<vec3f>(solState, index);
         case EPropertyType::Vec4f:
-            return extractVectorComponent<float, 4>(solState, index);
+            return extractVectorComponent<vec4f>(solState, index);
         case EPropertyType::Vec2i:
-            return extractVectorComponent<int32_t, 2>(solState, index);
+            return extractVectorComponent<vec2i>(solState, index);
         case EPropertyType::Vec3i:
-            return extractVectorComponent<int32_t, 3>(solState, index);
+            return extractVectorComponent<vec3i>(solState, index);
         case EPropertyType::Vec4i:
-            return extractVectorComponent<int32_t, 4>(solState, index);
+            return extractVectorComponent<vec4i>(solState, index);
         case EPropertyType::Array:
         case EPropertyType::Struct:
             return resolveChild(solState, resolvePropertyIndex(index));
@@ -109,21 +110,22 @@ namespace rlogic::internal
         const EPropertyType vecType = m_wrappedProperty.get().getType();
         assert(TypeUtils::IsPrimitiveVectorType(vecType));
         assert(elementIndex > 0 && elementIndex <= TypeUtils::ComponentsSizeForPropertyType(vecType));
+        const auto index = static_cast<glm::length_t>(elementIndex) - 1;
 
         switch (vecType)
         {
         case EPropertyType::Vec2f:
-            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec2f>::TYPE>()[elementIndex - 1]);
+            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec2f>::TYPE>()[index]);
         case EPropertyType::Vec3f:
-            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec3f>::TYPE>()[elementIndex - 1]);
+            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec3f>::TYPE>()[index]);
         case EPropertyType::Vec4f:
-            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec4f>::TYPE>()[elementIndex - 1]);
+            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec4f>::TYPE>()[index]);
         case EPropertyType::Vec2i:
-            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec2i>::TYPE>()[elementIndex - 1]);
+            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec2i>::TYPE>()[index]);
         case EPropertyType::Vec3i:
-            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec3i>::TYPE>()[elementIndex - 1]);
+            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec3i>::TYPE>()[index]);
         case EPropertyType::Vec4i:
-            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec4i>::TYPE>()[elementIndex - 1]);
+            return sol::make_object(solState, m_wrappedProperty.get().getValueAs<PropertyEnumToType<EPropertyType::Vec4i>::TYPE>()[index]);
         default:
             assert(false && "unexpected");
             return sol::lua_nil;
@@ -173,22 +175,22 @@ namespace rlogic::internal
                 childProperty.setStruct(rhs);
                 break;
             case EPropertyType::Vec2f:
-                childProperty.setVectorComponents<float, 2>(rhs);
+                childProperty.setVectorComponents<vec2f>(rhs);
                 break;
             case EPropertyType::Vec3f:
-                childProperty.setVectorComponents<float, 3>(rhs);
+                childProperty.setVectorComponents<vec3f>(rhs);
                 break;
             case EPropertyType::Vec4f:
-                childProperty.setVectorComponents<float, 4>(rhs);
+                childProperty.setVectorComponents<vec4f>(rhs);
                 break;
             case EPropertyType::Vec2i:
-                childProperty.setVectorComponents<int32_t, 2>(rhs);
+                childProperty.setVectorComponents<vec2i>(rhs);
                 break;
             case EPropertyType::Vec3i:
-                childProperty.setVectorComponents<int32_t, 3>(rhs);
+                childProperty.setVectorComponents<vec3i>(rhs);
                 break;
             case EPropertyType::Vec4i:
-                childProperty.setVectorComponents<int32_t, 4>(rhs);
+                childProperty.setVectorComponents<vec4i>(rhs);
                 break;
             case EPropertyType::String:
                 childProperty.setString(rhs);
@@ -285,7 +287,7 @@ namespace rlogic::internal
         }
     }
 
-    template<typename T, int N>
+    template<typename T>
     sol::object WrappedLuaProperty::extractVectorComponent(sol::this_state solState, const sol::object& index) const
     {
         assert(TypeUtils::IsPrimitiveVectorType(m_wrappedProperty.get().getType()));
@@ -295,28 +297,45 @@ namespace rlogic::internal
         {
             sol_helper::throwSolException("Only non-negative integers supported as array index type! {}", potentiallyIndex.getError());
         }
-        const size_t indexAsInt = potentiallyIndex.getData();
-        if (indexAsInt == 0 || indexAsInt > N)
+        const auto indexAsInt = potentiallyIndex.getData();
+        static_assert(T::length() > 0);
+        if (indexAsInt == 0 || indexAsInt > static_cast<size_t>(T::length()))
         {
-            sol_helper::throwSolException("Bad index '{}', expected 1 <= i <= {}!", indexAsInt, N);
+            sol_helper::throwSolException("Bad index '{}', expected 1 <= i <= {}!", indexAsInt, T::length());
         }
 
-        return sol::make_object(solState, m_wrappedProperty.get().getValueAs<std::array<T, N>>()[indexAsInt - 1]);
+        return sol::make_object(solState, m_wrappedProperty.get().getValueAs<T>()[static_cast<glm::length_t>(indexAsInt) - 1]);
     }
 
-    template<typename T, int N>
+    template<typename T>
     void WrappedLuaProperty::setVectorComponents(const sol::object& rhs)
     {
-        const DataOrError potentialArrayData = LuaTypeConversions::ExtractArray<T, N>(rhs);
+        static_assert(std::is_same_v<T, vec2f> || std::is_same_v<T, vec3f> || std::is_same_v<T, vec4f> ||
+            std::is_same_v<T, vec2i> || std::is_same_v<T, vec3i> || std::is_same_v<T, vec4i>);
+
+        const DataOrError potentialArrayData = LuaTypeConversions::ExtractArray<typename T::value_type, T::length()>(rhs);
 
         if (potentialArrayData.hasError())
         {
             sol_helper::throwSolException("Error while assigning output Vec{} property '{}'. {}",
-                N, m_wrappedProperty.get().getName(),
+                T::length(), m_wrappedProperty.get().getName(),
                 potentialArrayData.getError());
         }
 
-        m_wrappedProperty.get().setValue(potentialArrayData.getData());
+        static_assert(T::length() >= 2 && T::length() <= 4);
+
+        if constexpr (T::length() == 2)
+        {
+            m_wrappedProperty.get().setValue(glm::make_vec2(potentialArrayData.getData().data()));
+        }
+        else if constexpr (T::length() == 3)
+        {
+            m_wrappedProperty.get().setValue(glm::make_vec3(potentialArrayData.getData().data()));
+        }
+        else if constexpr (T::length() == 4)
+        {
+            m_wrappedProperty.get().setValue(glm::make_vec4(potentialArrayData.getData().data()));
+        }
     }
 
     // Overrides the '#' operator in Lua (sol3 template substitution)

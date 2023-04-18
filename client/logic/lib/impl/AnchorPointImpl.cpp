@@ -17,10 +17,10 @@
 #include "impl/RamsesNodeBindingImpl.h"
 #include "impl/RamsesCameraBindingImpl.h"
 
-#include "internals/Math.h"
 #include "internals/ErrorReporting.h"
 
 #include "generated/AnchorPointGen.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace rlogic::internal
 {
@@ -45,8 +45,7 @@ namespace rlogic::internal
     flatbuffers::Offset<rlogic_serialization::AnchorPoint> AnchorPointImpl::Serialize(
         const AnchorPointImpl& anchorPoint,
         flatbuffers::FlatBufferBuilder& builder,
-        SerializationMap& serializationMap,
-        EFeatureLevel /*featureLevel*/)
+        SerializationMap& serializationMap)
     {
         const auto fbLogicObject = LogicObjectImpl::Serialize(anchorPoint, builder);
         const auto fbOutputs = PropertyImpl::Serialize(*anchorPoint.getOutputs()->m_impl, builder, serializationMap);
@@ -118,27 +117,25 @@ namespace rlogic::internal
 
     std::optional<LogicNodeRuntimeError> AnchorPointImpl::update()
     {
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays) Ramses uses C array in matrix getters
-        float tempData[16];
+        matrix44f projectionMatrix;
+        matrix44f cameraViewMatrix;
+        matrix44f modelMatrix;
 
         const auto& ramsesCam = m_cameraBinding.getRamsesCamera();
-        if (ramsesCam.getProjectionMatrix(tempData) != ramses::StatusOK)
+        if (ramsesCam.getProjectionMatrix(projectionMatrix) != ramses::StatusOK)
             return LogicNodeRuntimeError{"Failed to retrieve projection matrix from Ramses camera!"};
-        const math::Matrix44f projectionMatrix{ tempData };
 
-        if (ramsesCam.getInverseModelMatrix(tempData) != ramses::StatusOK)
+        if (ramsesCam.getInverseModelMatrix(cameraViewMatrix) != ramses::StatusOK)
             return LogicNodeRuntimeError{ "Failed to retrieve view matrix from Ramses camera!" };
-        const math::Matrix44f cameraViewMatrix{ tempData };
 
-        if (m_nodeBinding.getRamsesNode().getModelMatrix(tempData) != ramses::StatusOK)
+        if (m_nodeBinding.getRamsesNode().getModelMatrix(modelMatrix) != ramses::StatusOK)
             return LogicNodeRuntimeError{ "Failed to retrieve model matrix from Ramses node!" };
-        const math::Matrix44f modelMatrix{ tempData };
 
-        const math::Vector4 localOrigin{ 0, 0, 0, 1 };
-        const math::Vector4 pointInClipSpace = projectionMatrix * cameraViewMatrix * modelMatrix * localOrigin;
-        const math::Vector4 pointInNDS = pointInClipSpace / pointInClipSpace.w;
-        const math::Vector4 pointNormalized = (pointInNDS + 1.f) / 2.f;
-        const math::Vector4 pointViewport = pointNormalized * math::Vector4{ float(ramsesCam.getViewportWidth()), float(ramsesCam.getViewportHeight()), 1.f, 1.f };
+        const vec4f localOrigin{ 0, 0, 0, 1 };
+        const vec4f pointInClipSpace = projectionMatrix * cameraViewMatrix * modelMatrix * localOrigin;
+        const vec4f pointInNDS = pointInClipSpace / pointInClipSpace.w;
+        const vec4f pointNormalized = (pointInNDS + 1.f) / 2.f;
+        const vec4f pointViewport = pointNormalized * vec4f{ float(ramsesCam.getViewportWidth()), float(ramsesCam.getViewportHeight()), 1.f, 1.f };
 
         getOutputs()->getChild(0u)->m_impl->setValue(vec2f{ pointViewport.x, pointViewport.y });
         getOutputs()->getChild(1u)->m_impl->setValue(pointViewport.z);

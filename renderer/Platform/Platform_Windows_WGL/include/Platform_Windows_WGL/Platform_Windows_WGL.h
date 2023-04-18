@@ -19,9 +19,11 @@ namespace ramses_internal
     protected:
         explicit Platform_Windows_WGL(const RendererConfig& rendererConfig);
 
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
-        virtual bool createContext(const DisplayConfig& displayConfig) override;
-        virtual bool createContextUploading() override;
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
+        virtual bool createContext(const DisplayConfig& displayConfig) override final;
+        virtual bool createContextUploading() override final;
+        virtual bool createDevice() override final;
+        virtual bool createDeviceUploading() override final;
 
         WglExtensions m_wglExtensions;
 

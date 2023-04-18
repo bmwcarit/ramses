@@ -40,7 +40,7 @@ namespace ramses_internal
     void MultiTransformationLinkScene::createSceneProvider()
     {
         ramses::Node* rootNode = m_scene.createNode();
-        rootNode->setTranslation(-0.5f * m_scaleFactor * NumRows, -5.f, -32.f);
+        rootNode->setTranslation({-0.5f * m_scaleFactor * NumRows, -5.f, -32.f});
 
         UInt32 meshIndex = 0;
 
@@ -50,7 +50,7 @@ namespace ramses_internal
             ramses::Node* rowNode = m_scene.createNode();
             if (lastRowNode)
             {
-                rowNode->setTranslation(0.f, m_scaleFactor, 0.f);
+                rowNode->setTranslation({0.f, m_scaleFactor, 0.f});
                 rowNode->setParent(*lastRowNode);
             }
             else
@@ -73,7 +73,7 @@ namespace ramses_internal
                 ramses::Node* transNode = m_scene.createNode();
                 if (lastTransNode)
                 {
-                    transNode->setTranslation(m_scaleFactor, 0.f, 0.f);
+                    transNode->setTranslation({m_scaleFactor, 0.f, 0.f});
                     transNode->setParent(*lastTransNode);
                 }
                 else
@@ -83,7 +83,7 @@ namespace ramses_internal
                 lastTransNode = transNode;
 
                 ramses::Node* scaleNode = m_scene.createNode();
-                scaleNode->setScaling(m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor);
+                scaleNode->setScaling({m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor});
 
                 meshNode->setParent(*scaleNode);
                 scaleNode->setParent(*transNode);
@@ -101,7 +101,7 @@ namespace ramses_internal
             rowNode->setParent(*rowGroupNode);
 
             m_scene.createTransformationDataConsumer(*rowGroupNode, ramses::dataConsumerId_t{DataIdRowStart + row});
-            rowNode->setTranslation(m_scaleFactor * 0.2f, m_scaleFactor * 0.2f, m_scaleFactor * 0.2f);
+            rowNode->setTranslation({m_scaleFactor * 0.2f, m_scaleFactor * 0.2f, m_scaleFactor * 0.2f});
 
             ramses::Node* lastTransNode = nullptr;
             for (UInt32 column = 0; column < NumRows && meshIndex < NumMeshes; ++column, ++meshIndex)
@@ -116,7 +116,7 @@ namespace ramses_internal
                 ramses::Node* transNode = m_scene.createNode();
                 if (lastTransNode)
                 {
-                    transNode->setTranslation(m_scaleFactor, 0.f, 0.f);
+                    transNode->setTranslation({m_scaleFactor, 0.f, 0.f});
                     transNode->setParent(*lastTransNode);
                 }
                 else
@@ -126,7 +126,7 @@ namespace ramses_internal
                 lastTransNode = transNode;
 
                 ramses::Node* scaleNode = m_scene.createNode();
-                scaleNode->setScaling(m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor);
+                scaleNode->setScaling({m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor});
 
                 meshNode->setParent(*scaleNode);
                 scaleNode->setParent(*transNode);
@@ -144,7 +144,7 @@ namespace ramses_internal
             m_scene.createTransformationDataConsumer(*meshGroupNode, ramses::dataConsumerId_t{DataIdMeshStart + meshIndex});
 
             ramses::Node* transNode = m_scene.createNode();
-            transNode->setTranslation(m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor * 0.3f);
+            transNode->setTranslation({m_scaleFactor * 0.3f, m_scaleFactor * 0.3f, m_scaleFactor * 0.3f});
 
             ramses::MeshNode* meshNode = m_scene.createMeshNode();
             addMeshNodeToDefaultRenderGroup(*meshNode);

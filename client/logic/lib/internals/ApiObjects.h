@@ -9,17 +9,18 @@
 #pragma once
 
 #include "ramses-logic/AnimationTypes.h"
-#include "ramses-logic/ERotationType.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "ramses-logic/PropertyLink.h"
 #include "ramses-logic/DataTypes.h"
 #include "ramses-logic/ELuaSavingMode.h"
+#include "ramses-framework-api/EFeatureLevel.h"
 
 #include "impl/LuaConfigImpl.h"
 
 #include "internals/LuaCompilationUtils.h"
 #include "internals/SolState.h"
 #include "internals/LogicNodeDependencies.h"
+
+#include "ramses-client-api/ERotationType.h"
 
 #include <vector>
 #include <memory>
@@ -88,7 +89,7 @@ namespace rlogic::internal
     {
     public:
         // Not move-able and non-copyable
-        explicit ApiObjects(EFeatureLevel featureLevel);
+        explicit ApiObjects(ramses::EFeatureLevel featureLevel);
         ~ApiObjects() noexcept;
         // Not move-able because of the dependency between sol objects and their parent sol state
         // Moving those would require a custom move assignment operator which keeps both sol states alive
@@ -98,11 +99,6 @@ namespace rlogic::internal
         ApiObjects& operator=(ApiObjects&& other) = delete;
         ApiObjects(const ApiObjects& other) = delete;
         ApiObjects& operator=(const ApiObjects& other) = delete;
-
-        [[nodiscard]] size_t getTotalSerializedSize() const;
-
-        template<typename T>
-        [[nodiscard]] size_t getSerializedSize() const;
 
         // Serialization/Deserialization
         static flatbuffers::Offset<rlogic_serialization::ApiObjects> Serialize(
@@ -114,7 +110,7 @@ namespace rlogic::internal
             const IRamsesObjectResolver* ramsesResolver,
             const std::string& dataSourceDescription,
             ErrorReporting& errorReporting,
-            EFeatureLevel featureLevel);
+            ramses::EFeatureLevel featureLevel);
 
         // Create/destroy API objects
         LuaScript* createLuaScript(
@@ -133,7 +129,7 @@ namespace rlogic::internal
             const LuaConfigImpl& config,
             std::string_view moduleName,
             ErrorReporting& errorReporting);
-        RamsesNodeBinding* createRamsesNodeBinding(ramses::Node& ramsesNode, ERotationType rotationType, std::string_view name);
+        RamsesNodeBinding* createRamsesNodeBinding(ramses::Node& ramsesNode, ramses::ERotationType rotationType, std::string_view name);
         RamsesAppearanceBinding* createRamsesAppearanceBinding(ramses::Appearance& ramsesAppearance, std::string_view name);
         RamsesCameraBinding* createRamsesCameraBinding(ramses::Camera& ramsesCamera, bool withFrustumPlanes, std::string_view name);
         RamsesRenderPassBinding* createRamsesRenderPassBinding(ramses::RenderPass& renderPass, std::string_view name);
@@ -237,6 +233,6 @@ namespace rlogic::internal
         // persistent storage for links to be given out via public API getPropertyLinks()
         mutable std::vector<PropertyLink> m_collectedLinks;
 
-        EFeatureLevel m_featureLevel;
+        ramses::EFeatureLevel m_featureLevel;
     };
 }

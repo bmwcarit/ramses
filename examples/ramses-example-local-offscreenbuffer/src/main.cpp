@@ -191,7 +191,7 @@ void createClearPass(ramses::Scene* scene, ramses::RenderBuffer* renderBuffer)
 
     //Clear RenderBuffer to visible color
     clearPass->setRenderTarget(&renderTarget);
-    clearPass->setClearColor(1.f, 0.f, 0.f, 1.f);
+    clearPass->setClearColor({1.f, 0.f, 0.f, 1.f});
     clearPass->setClearFlags(ramses::EClearFlags_All);
 }
 
@@ -210,7 +210,7 @@ ramses::Scene* createConsumerScene(ramses::RamsesClient& client, ramses::sceneId
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("MyCamera");
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     camera->setFrustum(-2.f, 2.f, -2.f, 2.f, 0.1f, 100.f);
     camera->setViewport(0, 0u, DisplayWidth, DisplayHeight);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
@@ -234,7 +234,7 @@ ramses::Scene* createConsumerScene(ramses::RamsesClient& client, ramses::sceneId
     ramses::MeshNode* meshNode = createTexturedQuad(clientScene, effect, sharedIndices, sharedVertexPositions, sharedTextureCoords);
 
     ramses::Node* transNode = clientScene->createNode();
-    transNode->setTranslation(1.1f, 0.f, 0.f);
+    transNode->setTranslation({1.1f, 0.f, 0.f});
     meshNode->setParent(*transNode);
     renderGroup->addMeshNode(*meshNode);
 
@@ -250,7 +250,7 @@ ramses::Scene* createConsumerScene(ramses::RamsesClient& client, ramses::sceneId
     ramses::MeshNode* meshNodeMS = createTexturedQuad(clientScene, effectMS, sharedIndices, sharedVertexPositions, sharedTextureCoords);
 
     ramses::Node* transNodeMS = clientScene->createNode();
-    transNodeMS->setTranslation(-1.1f, 0.f, 0.f);
+    transNodeMS->setTranslation({-1.1f, 0.f, 0.f});
     meshNodeMS->setParent(*transNodeMS);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNodeMS);
@@ -272,7 +272,7 @@ ramses::Scene* createProviderScene(ramses::RamsesClient& client, ramses::sceneId
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera ();
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     camera->setFrustum ( -2.f, 2.f, -2.f, 2.f, 0.1f, 100.f );
     camera->setViewport ( 0, 0u, ObWidth, ObHeight );
 
@@ -429,9 +429,9 @@ int main()
     {
         renderer.dispatchEvents(eventHandler);
         //Rotate the quads of the provider scenes
-        rotationNode->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::Euler_XYZ);
+        rotationNode->setRotation({0.f, 0.f, rotationZ}, ramses::ERotationType::Euler_XYZ);
         providerScene->flush();
-        rotationNodeMS->setRotation(0.f, 0.f, rotationZ, ramses::ERotationConvention::Euler_XYZ);
+        rotationNodeMS->setRotation({0.f, 0.f, rotationZ}, ramses::ERotationType::Euler_XYZ);
         providerScene2->flush();
 
         if (timeStamp % 200 == 0)

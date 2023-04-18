@@ -89,9 +89,9 @@ int main()
     trackedTextLine->meshNode->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
 
     // add the text meshes to the render pass to show them
-    textLine->meshNode->setTranslation(20.0f, 100.0f, -0.5f);
+    textLine->meshNode->setTranslation({20.0f, 100.0f, -0.5f});
     renderGroup->addMeshNode(*textLine->meshNode);
-    trackedTextLine->meshNode->setTranslation(20.0f, 20.0f, -0.5f);
+    trackedTextLine->meshNode->setTranslation({20.0f, 20.0f, -0.5f});
     renderGroup->addMeshNode(*trackedTextLine->meshNode);
 
     // apply changes

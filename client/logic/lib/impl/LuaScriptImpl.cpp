@@ -120,8 +120,7 @@ namespace rlogic::internal
         SolState& solState,
         const rlogic_serialization::LuaScript& luaScript,
         ErrorReporting& errorReporting,
-        DeserializationMap& deserializationMap,
-        EFeatureLevel featureLevel)
+        DeserializationMap& deserializationMap)
     {
         std::string name;
         uint64_t id = 0u;
@@ -232,7 +231,6 @@ namespace rlogic::internal
             std::move(byteCode),
             std::move(inputs),
             std::move(outputs),
-            featureLevel,
             false);
 
         if (!compiledScript)

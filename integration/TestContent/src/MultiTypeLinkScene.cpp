@@ -9,7 +9,7 @@
 #include "TestScenes/MultiTypeLinkScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Effect.h"
@@ -29,7 +29,7 @@ namespace ramses_internal
         ramses::Triangle triangle1(scene, *effect, ramses::TriangleAppearance::EColor_Blue);
         ramses::Triangle triangle2(scene, *effectTex, ramses::TriangleAppearance::EColor_Green);
 
-        ramses::DataVector4f* colorData = scene.createDataVector4f();
+        ramses::DataObject* colorData = scene.createDataObject(ramses::EDataType::Vector4F);
 
         triangle1.bindColor(*colorData);
 
@@ -58,8 +58,8 @@ namespace ramses_internal
         translate1->setParent(*groupNode);
         translate2->setParent(*groupNode);
 
-        translate1->setTranslation(-1.5f, 0.f, -15.f);
-        translate2->setTranslation(1.5f, 0.f, -15.f);
+        translate1->setTranslation({-1.5f, 0.f, -15.f});
+        translate2->setTranslation({1.5f, 0.f, -15.f});
 
         const std::array<ramses::vec2f, 3u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f} };
         const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(3u, textureCoordsArray.data());
@@ -73,7 +73,7 @@ namespace ramses_internal
         case TRANSFORMATION_CONSUMER_DATA_AND_TEXTURE_PROVIDER:
         {
             scene.createDataProvider(*colorData, DataProviderId);
-            colorData->setValue(1.f, 1.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 1.f, 1.f, 0.f, 1.f });
 
             scene.createTransformationDataConsumer(*groupNode, TransformationConsumerId);
 
@@ -89,10 +89,10 @@ namespace ramses_internal
         case TRANSFORMATION_PROVIDER_DATA_AND_TEXTURE_CONSUMER:
         {
             scene.createDataConsumer(*colorData, DataConsumerId);
-            colorData->setValue(0.f, 1.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 0.f, 1.f, 0.f, 1.f });
 
             ramses::Node* providerNode = scene.createNode();
-            providerNode->setTranslation(1.5f, -2.f, 5.f);
+            providerNode->setTranslation({1.5f, -2.f, 5.f});
             scene.createTransformationDataProvider(*providerNode, TransformationProviderId);
 
             const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };

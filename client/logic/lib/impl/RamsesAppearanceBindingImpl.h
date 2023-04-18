@@ -13,7 +13,6 @@
 #include "internals/DeserializationMap.h"
 
 #include "ramses-logic/EPropertyType.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "ramses-client-api/UniformInput.h"
 
 #include <optional>
@@ -51,8 +50,7 @@ namespace rlogic::internal
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::RamsesAppearanceBinding> Serialize(
             const RamsesAppearanceBindingImpl& binding,
             flatbuffers::FlatBufferBuilder& builder,
-            SerializationMap& serializationMap,
-            EFeatureLevel featureLevel);
+            SerializationMap& serializationMap);
 
         [[nodiscard]] static std::unique_ptr<RamsesAppearanceBindingImpl> Deserialize(
             const rlogic_serialization::RamsesAppearanceBinding& appearanceBinding,

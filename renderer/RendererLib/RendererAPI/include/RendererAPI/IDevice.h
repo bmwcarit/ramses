@@ -10,7 +10,6 @@
 #define RAMSES_IDEVICE_H
 
 #include "RendererAPI/Types.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/EDataType.h"
@@ -39,8 +38,6 @@ namespace ramses_internal
     {
     public:
         virtual ~IDevice() {}
-
-        [[nodiscard]] virtual EDeviceTypeId                getDeviceTypeId() const = 0;
 
         // data
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Float*      value) = 0;

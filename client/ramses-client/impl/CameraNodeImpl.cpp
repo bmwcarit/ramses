@@ -6,14 +6,16 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client-api/DataVector2i.h"
-#include "ramses-client-api/DataVector2f.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include "CameraNodeImpl.h"
 #include "DataObjectImpl.h"
 #include "SerializationContext.h"
 #include "Scene/ClientScene.h"
 #include "Math3d/CameraMatrixHelper.h"
+#include "Math3d/Vector2i.h"
+#include "Math3d/Vector2.h"
+#include "Math3d/Vector4.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace ramses
 {
@@ -277,7 +279,7 @@ namespace ramses
         return m_cameraHandle;
     }
 
-    status_t CameraNodeImpl::getProjectionMatrix(float(&projectionMatrix)[16]) const
+    status_t CameraNodeImpl::getProjectionMatrix(matrix44f& projectionMatrix) const
     {
         if (!m_frustumInitialized)
         {
@@ -285,7 +287,7 @@ namespace ramses
         }
 
         const ramses_internal::Matrix44f projMatrix = ramses_internal::CameraMatrixHelper::ProjectionMatrix(getProjectionParams());
-        ramses_internal::PlatformMemory::Copy(projectionMatrix, projMatrix.data, sizeof(projectionMatrix));
+        projectionMatrix = glm::make_mat4(projMatrix.data);
 
         return StatusOK;
     }
@@ -313,34 +315,34 @@ namespace ramses
         getIScene().setDataSingleVector2f(m_frustumNearFarDataReference, ramses_internal::DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
     }
 
-    status_t CameraNodeImpl::bindViewportOffset(const DataVector2i& offsetData)
+    status_t CameraNodeImpl::bindViewportOffset(const DataObject& offsetData)
     {
+        if (offsetData.getDataType() != EDataType::Vector2I)
+            return addErrorEntry("Camera::bindViewportOffset failed, data object must be of type EDataType::Vector2I");
         if (!isFromTheSameSceneAs(offsetData.impl))
-        {
             return addErrorEntry("Camera::bindViewportOffset failed, viewport offset data object is not from the same scene as this camera");
-        }
 
         getIScene().setDataReference(m_dataInstance, ramses_internal::Camera::ViewportOffsetField, offsetData.impl.getDataReference());
         return StatusOK;
     }
 
-    status_t CameraNodeImpl::bindViewportSize(const DataVector2i& sizeData)
+    status_t CameraNodeImpl::bindViewportSize(const DataObject& sizeData)
     {
+        if (sizeData.getDataType() != EDataType::Vector2I)
+            return addErrorEntry("Camera::bindViewportSize failed, data object must be of type EDataType::Vector2I");
         if (!isFromTheSameSceneAs(sizeData.impl))
-        {
             return addErrorEntry("Camera::bindViewportSize failed, viewport size data object is not from the same scene as this camera");
-        }
 
         getIScene().setDataReference(m_dataInstance, ramses_internal::Camera::ViewportSizeField, sizeData.impl.getDataReference());
         return StatusOK;
     }
 
-    status_t CameraNodeImpl::bindFrustumPlanes(const DataVector4f& frustumPlanesData, const DataVector2f& nearFarData)
+    status_t CameraNodeImpl::bindFrustumPlanes(const DataObject& frustumPlanesData, const DataObject& nearFarData)
     {
+        if (frustumPlanesData.getDataType() != EDataType::Vector4F || nearFarData.getDataType() != EDataType::Vector2F)
+            return addErrorEntry("Camera::bindFrustumPlanes failed, data objects must be of type EDataType::Vector4F and EDataType::Vector2F");
         if (!isFromTheSameSceneAs(frustumPlanesData.impl) || !isFromTheSameSceneAs(nearFarData.impl))
-        {
             return addErrorEntry("Camera::bindFrustumPlanes failed, one of the frustum planes data object is not from the same scene as this camera");
-        }
 
         getIScene().setDataReference(m_dataInstance, ramses_internal::Camera::FrustumPlanesField, frustumPlanesData.impl.getDataReference());
         getIScene().setDataReference(m_dataInstance, ramses_internal::Camera::FrustumNearFarPlanesField, nearFarData.impl.getDataReference());

@@ -16,6 +16,8 @@
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "glm/mat4x4.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace ramses_internal
 {
@@ -52,7 +54,7 @@ namespace ramses_internal
         static const Matrix44f Empty;
 
         static constexpr Matrix44f Translation(const Vector3& translation);
-        static Matrix44f Rotation(const Vector4& rotation, ERotationConvention rotationConvention);
+        static Matrix44f Rotation(const Vector4& rotation, ERotationType rotationType);
         static constexpr Matrix44f Scaling(const Vector3& scaling);
         static constexpr Matrix44f Scaling(const Float uniScale);
 
@@ -66,6 +68,7 @@ namespace ramses_internal
         constexpr Matrix44f(const Matrix44f& other) = default;
         constexpr Matrix44f(Matrix44f&& other) noexcept = default;
         explicit constexpr Matrix44f(const Matrix33f& otherMat33);
+        explicit Matrix44f(const glm::mat4& other);
 
         constexpr Matrix44f& operator=(const Matrix44f& other);
         constexpr Matrix44f& operator=(Matrix44f&& other) noexcept = default;
@@ -153,6 +156,16 @@ namespace ramses_internal
         , m34(v3.w)
         , m44(v4.w)
     {
+    }
+
+    inline
+    Matrix44f::Matrix44f(const glm::mat4& other)
+    {
+        auto buf = glm::value_ptr(other);
+        for (size_t i = 0u; i < 16u; ++i)
+        {
+            data[i] = buf[i];
+        }
     }
 
     constexpr inline
@@ -365,9 +378,9 @@ namespace ramses_internal
     }
 
     inline
-    Matrix44f Matrix44f::Rotation(const Vector4& rotation, ERotationConvention rotationConvention)
+    Matrix44f Matrix44f::Rotation(const Vector4& rotation, ERotationType rotationType)
     {
-        return Matrix44f(Matrix33f::Rotation(rotation, rotationConvention));
+        return Matrix44f(Matrix33f::Rotation(rotation, rotationType));
     }
 
     constexpr inline

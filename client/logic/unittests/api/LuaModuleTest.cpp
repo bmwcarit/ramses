@@ -9,7 +9,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "WithTempDirectory.h"
-#include "FeatureLevelTestValues.h"
 
 #include "ramses-logic/LogicEngine.h"
 #include "ramses-logic/LuaScript.h"
@@ -27,15 +26,9 @@
 
 namespace rlogic::internal
 {
-    class ALuaModuleFixture
+    class ALuaModule : public ::testing::Test
     {
     protected:
-        explicit ALuaModuleFixture(EFeatureLevel featureLevel)
-            : m_logicEngine(featureLevel)
-            , m_featureLevel(featureLevel)
-        {
-        }
-
         const std::string_view m_moduleSourceCode = R"(
             local mymath = {}
             function mymath.add(a,b)
@@ -56,17 +49,7 @@ namespace rlogic::internal
             return config;
         }
 
-        LogicEngine m_logicEngine;
-        EFeatureLevel m_featureLevel;
-    };
-
-    class ALuaModule : public ALuaModuleFixture, public ::testing::Test
-    {
-    protected:
-        ALuaModule()
-            : ALuaModuleFixture(EFeatureLevel_01)
-        {
-        }
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
     };
 
     TEST_F(ALuaModule, IsCreated)
@@ -133,31 +116,21 @@ namespace rlogic::internal
         EXPECT_THAT(m_logicEngine.getErrors()[0].message, ::testing::HasSubstr("'}' expected (to close '{'"));
     }
 
-    class ALuaModule_SerializationLifecycle : public ALuaModuleFixture, public ::testing::TestWithParam<EFeatureLevel>
+    class ALuaModule_SerializationLifecycle : public ALuaModule
     {
     protected:
-        ALuaModule_SerializationLifecycle()
-            : ALuaModuleFixture(GetParam())
-        {
-        }
-
         SolState                                        m_solState;
         ErrorReporting                                  m_errorReporting;
         flatbuffers::FlatBufferBuilder                  m_flatBufferBuilder;
         DeserializationMap                              m_deserializationMap;
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALuaModule_SerializationLifecycleTests,
-        ALuaModule_SerializationLifecycle,
-        GetFeatureLevelTestValues());
-
-    TEST_P(ALuaModule_SerializationLifecycle, CanBeSerialized)
+    TEST_F(ALuaModule_SerializationLifecycle, CanBeSerialized)
     {
         WithTempDirectory tempDir;
 
         {
-            LogicEngine logic{ m_featureLevel };
+            LogicEngine logic{ m_logicEngine.getFeatureLevel() };
             logic.createLuaModule(m_moduleSourceCode, {}, "mymodule");
             EXPECT_TRUE(logic.saveToFile("module.tmp"));
         }
@@ -169,13 +142,10 @@ namespace rlogic::internal
         EXPECT_EQ(module->getId(), 1u);
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, StoresDuplicateByteCodeOnce)
+    TEST_F(ALuaModule_SerializationLifecycle, StoresDuplicateByteCodeOnce)
     {
-        if (GetParam() < EFeatureLevel_02)
-            GTEST_SKIP();
-
         SerializationMap serializationMap;
-        LogicEngine logic{ m_featureLevel };
+        LogicEngine logic{ m_logicEngine.getFeatureLevel() };
 
         auto module1 = logic.createLuaModule(m_moduleSourceCode, {}, "mymodule1");
         auto module2 = logic.createLuaModule(m_moduleSourceCode, {}, "mymodule2");
@@ -191,7 +161,7 @@ namespace rlogic::internal
         EXPECT_EQ(serialized1.luaByteCode(), serialized2.luaByteCode());
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, ProducesErrorWhenNameMissing)
+    TEST_F(ALuaModule_SerializationLifecycle, ProducesErrorWhenNameMissing)
     {
         {
             auto module = rlogic_serialization::CreateLuaModule(
@@ -204,7 +174,7 @@ namespace rlogic::internal
         }
 
         const auto&                    serialized   = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(2u, this->m_errorReporting.getErrors().size());
@@ -212,7 +182,7 @@ namespace rlogic::internal
         EXPECT_EQ("Fatal error during loading of LuaModule from serialized data: missing name and/or ID!", this->m_errorReporting.getErrors()[1].message);
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, ProducesErrorWhenIdMissing)
+    TEST_F(ALuaModule_SerializationLifecycle, ProducesErrorWhenIdMissing)
     {
         {
             auto module = rlogic_serialization::CreateLuaModule(
@@ -225,7 +195,7 @@ namespace rlogic::internal
         }
 
         const auto&                    serialized   = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(this->m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(this->m_solState, serialized, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(2u, this->m_errorReporting.getErrors().size());
@@ -233,7 +203,7 @@ namespace rlogic::internal
         EXPECT_EQ("Fatal error during loading of LuaModule from serialized data: missing name and/or ID!", this->m_errorReporting.getErrors()[1].message);
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, ProducesErrorWhenBothsourceAndBytecodeMissing)
+    TEST_F(ALuaModule_SerializationLifecycle, ProducesErrorWhenBothsourceAndBytecodeMissing)
     {
         {
             auto module = rlogic_serialization::CreateLuaModule(
@@ -250,14 +220,14 @@ namespace rlogic::internal
         }
 
         const auto&                    serialized   = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
         EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Fatal error during loading of LuaModule from serialized data: has neither Lua source code nor bytecode!");
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, ProducesErrorWhensourceAndBytecodeEmpty)
+    TEST_F(ALuaModule_SerializationLifecycle, ProducesErrorWhensourceAndBytecodeEmpty)
     {
         {
             auto module = rlogic_serialization::CreateLuaModule(
@@ -274,14 +244,14 @@ namespace rlogic::internal
         }
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
         EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Fatal error during loading of LuaModule from serialized data: has neither Lua source code nor bytecode!");
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, ProducesErrorWhenDependenciesMissing)
+    TEST_F(ALuaModule_SerializationLifecycle, ProducesErrorWhenDependenciesMissing)
     {
         {
             auto module = rlogic_serialization::CreateLuaModule(
@@ -292,24 +262,21 @@ namespace rlogic::internal
                 m_flatBufferBuilder.CreateString(m_moduleSourceCode),
                 0, // missing dependencies
                 m_flatBufferBuilder.CreateVector(std::vector<uint8_t>()),
-                m_featureLevel == EFeatureLevel_01 ? 0 : m_flatBufferBuilder.CreateVector(std::vector<uint8_t>{1, 0})
+                m_flatBufferBuilder.CreateVector(std::vector<uint8_t>{1, 0})
             );
             m_flatBufferBuilder.Finish(module);
         }
 
         const auto&                    serialized   = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
         EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Fatal error during loading of LuaModule from serialized data: missing dependencies!");
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, ProducesErrorWhenByteCodeInvalidAndNoSourceAvailable)
+    TEST_F(ALuaModule_SerializationLifecycle, ProducesErrorWhenByteCodeInvalidAndNoSourceAvailable)
     {
-        if (m_featureLevel < EFeatureLevel_02)
-            GTEST_SKIP();
-
         {
             const std::vector<uint8_t> invalidByteCode(10, 0);
 
@@ -327,7 +294,7 @@ namespace rlogic::internal
         }
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
 
         EXPECT_FALSE(deserialized);
         ASSERT_EQ(m_errorReporting.getErrors().size(), 2u);
@@ -335,11 +302,8 @@ namespace rlogic::internal
         EXPECT_THAT(m_errorReporting.getErrors()[1].message, ::testing::HasSubstr("Fatal error during loading of LuaModule 'name' from serialized data"));
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, WillTryToRecompileModuleFromSourceWhenByteCodeInvalid)
+    TEST_F(ALuaModule_SerializationLifecycle, WillTryToRecompileModuleFromSourceWhenByteCodeInvalid)
     {
-        if (m_featureLevel < EFeatureLevel_02)
-            GTEST_SKIP();
-
         const std::vector<uint8_t> invalidByteCode(10, 0);
         {
             auto module = rlogic_serialization::CreateLuaModule(
@@ -356,7 +320,7 @@ namespace rlogic::internal
         }
 
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+        std::unique_ptr<LuaModuleImpl> deserialized = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
         // check that script was recompiled successfully
         EXPECT_TRUE(deserialized);
 
@@ -377,7 +341,7 @@ namespace rlogic::internal
         }
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, SerializesSourceCodeOnly_InSourceOnlyMode)
+    TEST_F(ALuaModule_SerializationLifecycle, SerializesSourceCodeOnly_InSourceOnlyMode)
     {
         auto module = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "mymodule");
 
@@ -391,39 +355,7 @@ namespace rlogic::internal
         EXPECT_EQ(m_moduleSourceCode, serialized.source()->string_view());
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, SerializesSourceCodeOnly_InBytecodeOnlyMode_IfNoBytecodeAvailable)
-    {
-        // only way to simulate no bytecode available is by serializing in feature level 01 mode
-        auto module = std::make_unique<LuaModuleImpl>(*LuaCompilationUtils::CompileModuleOrImportPrecompiled(
-            m_solState, {}, {}, std::string{ m_moduleSourceCode }, "module", m_errorReporting, {}, EFeatureLevel_01, false), "module", 1u);
-
-        SerializationMap serializationMap;
-        const auto fbModule = LuaModuleImpl::Serialize(*module, m_flatBufferBuilder, serializationMap, ELuaSavingMode::ByteCodeOnly);
-        m_flatBufferBuilder.Finish(fbModule);
-        const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-
-        EXPECT_FALSE(serialized.luaByteCode());
-        ASSERT_TRUE(serialized.source());
-        EXPECT_EQ(m_moduleSourceCode, serialized.source()->string_view());
-    }
-
-    TEST_P(ALuaModule_SerializationLifecycle, SerializesSourceCodeOnly_InBothSourcAndBytecodeMode_IfNoBytecodeAvailable)
-    {
-        // only way to simulate no bytecode available is by serializing in feature level 01 mode
-        auto module = std::make_unique<LuaModuleImpl>(*LuaCompilationUtils::CompileModuleOrImportPrecompiled(
-            m_solState, {}, {}, std::string{ m_moduleSourceCode }, "module", m_errorReporting, {}, EFeatureLevel_01, false), "module", 1u);
-
-        SerializationMap serializationMap;
-        const auto fbModule = LuaModuleImpl::Serialize(*module, m_flatBufferBuilder, serializationMap, ELuaSavingMode::SourceAndByteCode);
-        m_flatBufferBuilder.Finish(fbModule);
-        const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-
-        EXPECT_FALSE(serialized.luaByteCode());
-        ASSERT_TRUE(serialized.source());
-        EXPECT_EQ(m_moduleSourceCode, serialized.source()->string_view());
-    }
-
-    TEST_P(ALuaModule_SerializationLifecycle, SerializesBytecodeOnly_InBytecodeOnlyMode)
+    TEST_F(ALuaModule_SerializationLifecycle, SerializesBytecodeOnly_InBytecodeOnlyMode)
     {
         auto module = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "mymodule");
 
@@ -432,22 +364,12 @@ namespace rlogic::internal
         m_flatBufferBuilder.Finish(fbModule);
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            ASSERT_TRUE(serialized.luaByteCode());
-            EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
-            EXPECT_FALSE(serialized.source());
-        }
-        else
-        {
-            // feature level 01 does not support byte code -> same as above test with bytecode not available
-            EXPECT_FALSE(serialized.luaByteCode());
-            ASSERT_TRUE(serialized.source());
-            EXPECT_EQ(m_moduleSourceCode, serialized.source()->string_view());
-        }
+        ASSERT_TRUE(serialized.luaByteCode());
+        EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
+        EXPECT_FALSE(serialized.source());
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, SerializesBytecodeOnly_InSourceCodeOnlyMode_IfNoSourceAvailable)
+    TEST_F(ALuaModule_SerializationLifecycle, SerializesBytecodeOnly_InSourceCodeOnlyMode_IfNoSourceAvailable)
     {
         // simulate module with no source code by serializing it with bytecode only and deserializing again
         std::unique_ptr<LuaModuleImpl> moduleWithNoSourceCode;
@@ -458,7 +380,7 @@ namespace rlogic::internal
             const auto fbModule = LuaModuleImpl::Serialize(module->m_impl, m_flatBufferBuilder, serializationMap, ELuaSavingMode::ByteCodeOnly);
             m_flatBufferBuilder.Finish(fbModule);
             const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-            moduleWithNoSourceCode = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+            moduleWithNoSourceCode = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
             ASSERT_TRUE(moduleWithNoSourceCode);
             m_flatBufferBuilder.Clear();
         }
@@ -468,22 +390,12 @@ namespace rlogic::internal
         m_flatBufferBuilder.Finish(fbModule);
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            ASSERT_TRUE(serialized.luaByteCode());
-            EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
-            EXPECT_FALSE(serialized.source());
-        }
-        else
-        {
-            // feature level 01 does not support byte code -> same as above test with bytecode not available
-            EXPECT_FALSE(serialized.luaByteCode());
-            ASSERT_TRUE(serialized.source());
-            EXPECT_EQ(m_moduleSourceCode, serialized.source()->string_view());
-        }
+        ASSERT_TRUE(serialized.luaByteCode());
+        EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
+        EXPECT_FALSE(serialized.source());
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, SerializesBytecodeOnly_InBothSourceAndBytecodeMode_IfNoSourceAvailable)
+    TEST_F(ALuaModule_SerializationLifecycle, SerializesBytecodeOnly_InBothSourceAndBytecodeMode_IfNoSourceAvailable)
     {
         // simulate module with no source code by serializing it with bytecode only and deserializing again
         std::unique_ptr<LuaModuleImpl> moduleWithNoSourceCode;
@@ -494,7 +406,7 @@ namespace rlogic::internal
             const auto fbModule = LuaModuleImpl::Serialize(module->m_impl, m_flatBufferBuilder, serializationMap, ELuaSavingMode::ByteCodeOnly);
             m_flatBufferBuilder.Finish(fbModule);
             const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
-            moduleWithNoSourceCode = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap, m_featureLevel);
+            moduleWithNoSourceCode = LuaModuleImpl::Deserialize(m_solState, serialized, m_errorReporting, m_deserializationMap);
             ASSERT_TRUE(moduleWithNoSourceCode);
             m_flatBufferBuilder.Clear();
         }
@@ -504,22 +416,12 @@ namespace rlogic::internal
         m_flatBufferBuilder.Finish(fbModule);
         const auto& serialized = *flatbuffers::GetRoot<rlogic_serialization::LuaModule>(m_flatBufferBuilder.GetBufferPointer());
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            ASSERT_TRUE(serialized.luaByteCode());
-            EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
-            EXPECT_FALSE(serialized.source());
-        }
-        else
-        {
-            // feature level 01 does not support byte code -> same as above test with bytecode not available
-            EXPECT_FALSE(serialized.luaByteCode());
-            ASSERT_TRUE(serialized.source());
-            EXPECT_EQ(m_moduleSourceCode, serialized.source()->string_view());
-        }
+        ASSERT_TRUE(serialized.luaByteCode());
+        EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
+        EXPECT_FALSE(serialized.source());
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, SerializesBothSourceAndBytecode)
+    TEST_F(ALuaModule_SerializationLifecycle, SerializesBothSourceAndBytecode)
     {
         auto module = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "mymodule");
 
@@ -531,24 +433,16 @@ namespace rlogic::internal
         ASSERT_TRUE(serialized.source());
         EXPECT_EQ(m_moduleSourceCode, serialized.source()->string_view());
 
-        if (GetParam() >= EFeatureLevel_02)
-        {
-            ASSERT_TRUE(serialized.luaByteCode());
-            EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
-        }
-        else
-        {
-            // feature level 01 does not support byte code -> same as above test with bytecode not available
-            EXPECT_FALSE(serialized.luaByteCode());
-        }
+        ASSERT_TRUE(serialized.luaByteCode());
+        EXPECT_TRUE(serialized.luaByteCode()->size() > 0);
     }
 
-    TEST_P(ALuaModule_SerializationLifecycle, DoesNotContainDebugLogFunctionsAfterDeserialization)
+    TEST_F(ALuaModule_SerializationLifecycle, DoesNotContainDebugLogFunctionsAfterDeserialization)
     {
         WithTempDirectory tempDir;
 
         {
-            LogicEngine logic{ m_featureLevel };
+            LogicEngine logic{ m_logicEngine.getFeatureLevel() };
             logic.createLuaModule(m_moduleSourceCode, {}, "mymodule");
             EXPECT_TRUE(logic.saveToFile("module.tmp"));
         }
@@ -707,7 +601,7 @@ namespace rlogic::internal
     {
         WithTempDirectory tmpDir;
         {
-            LogicEngine logic;
+            LogicEngine logic{ m_logicEngine.getFeatureLevel() };
             LuaConfig config;
             config.addDependency("mymath", *logic.createLuaModule(m_mathSrc, {}, "mathMod"));
             logic.createLuaModule(m_quadsSrc, config, "quadsMod");

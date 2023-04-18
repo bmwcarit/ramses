@@ -16,7 +16,6 @@
 
 #include "ramses-logic/Property.h"
 #include "ramses-logic/LuaScript.h"
-#include "ramses-logic/EFeatureLevel.h"
 #include "ramses-logic/ELuaSavingMode.h"
 
 #include <memory>
@@ -64,8 +63,7 @@ namespace rlogic::internal
             SolState& solState,
             const rlogic_serialization::LuaScript& luaScript,
             ErrorReporting& errorReporting,
-            DeserializationMap& deserializationMap,
-            EFeatureLevel featureLevel);
+            DeserializationMap& deserializationMap);
 
         std::optional<LogicNodeRuntimeError> update() override;
 

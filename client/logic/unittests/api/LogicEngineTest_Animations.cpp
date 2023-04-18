@@ -52,15 +52,15 @@ namespace rlogic::internal
             static constexpr float maxError = 1e-5f;
 
             vec3f vals;
-            m_node->getTranslation(vals[0], vals[1], vals[2]);
+            m_node->getTranslation(vals);
             EXPECT_NEAR(expectedTranslate, vals[0], maxError);
             EXPECT_NEAR(expectedTranslate, vals[1], maxError);
             EXPECT_NEAR(expectedTranslate, vals[2], maxError);
-            m_node->getRotation(vals[0], vals[1], vals[2]);
+            m_node->getRotation(vals);
             EXPECT_NEAR(expectedRotate, vals[0], maxError);
             EXPECT_NEAR(expectedRotate, vals[1], maxError);
             EXPECT_NEAR(expectedRotate, vals[2], maxError);
-            EXPECT_EQ(ramses::ERotationConvention::Euler_XYZ, m_node->getRotationConvention());
+            EXPECT_EQ(ramses::ERotationType::Euler_XYZ, m_node->getRotationType());
         }
 
         ramses::RamsesFramework m_ramsesFramework;
@@ -68,7 +68,7 @@ namespace rlogic::internal
         ramses::Scene* m_scene{ m_ramsesClient->createScene(ramses::sceneId_t{123u}) };
         ramses::Node* m_node{ m_scene->createNode() };
 
-        LogicEngine m_logicEngine;
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
         AnimationNode* m_animation1 = nullptr;
         AnimationNode* m_animation2 = nullptr;
         TimerNode* m_timer = nullptr;
@@ -228,17 +228,17 @@ namespace rlogic::internal
             m_logicEngine.update();
 
             vec3f vals;
-            m_node->getTranslation(vals[0], vals[1], vals[2]);
+            m_node->getTranslation(vals);
             if (vals[0] >= 0.1f)
                 break;
         }
 
         vec3f vals;
-        m_node->getTranslation(vals[0], vals[1], vals[2]);
+        m_node->getTranslation(vals);
         EXPECT_GE(vals[0], 0.1f);
         EXPECT_GE(vals[1], 0.1f);
         EXPECT_GE(vals[2], 0.1f);
-        m_node->getRotation(vals[0], vals[1], vals[2]);
+        m_node->getRotation(vals);
         EXPECT_GE(vals[0], 0.1f);
         EXPECT_GE(vals[1], 0.1f);
         EXPECT_GE(vals[2], 0.1f);

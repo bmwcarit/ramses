@@ -14,7 +14,7 @@
 #include "SceneAPI/Viewport.h"
 #include "SceneAPI/Camera.h"
 #include "SceneAPI/RenderBuffer.h"
-#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/ERotationType.h"
 #include "Math3d/Vector4.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector2.h"
@@ -91,11 +91,11 @@ namespace ramses_internal
         {
             TransformHandle transform;
             Vector4 vec;
-            ERotationConvention rotationConvention;
+            ERotationType rotationType;
             action.read(transform);
             action.read(vec.data);
-            action.read(rotationConvention);
-            scene.setRotation(transform, vec, rotationConvention);
+            action.read(rotationType);
+            scene.setRotation(transform, vec, rotationType);
             break;
         }
         case ESceneActionId::SetScaling:

@@ -113,7 +113,7 @@ namespace rlogic::internal
             EXPECT_FLOAT_EQ(expectedValue2[1], val2[1]);
         }
 
-        LogicEngine m_logicEngine{ EFeatureLevel_Latest };
+        LogicEngine m_logicEngine{ ramses::EFeatureLevel_Latest };
         DataArray* m_dataFloat = nullptr;
         DataArray* m_dataVec2 = nullptr;
         DataArray* m_dataVec4 = nullptr;
@@ -154,7 +154,7 @@ namespace rlogic::internal
     {
         auto animNode = createAnimationNode({ { "channel", m_dataFloat, m_dataVec2 } }, "animNode");
 
-        LogicEngine otherEngine;
+        LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
         EXPECT_FALSE(otherEngine.destroy(*animNode));
         ASSERT_FALSE(otherEngine.getErrors().empty());
         EXPECT_EQ("Can't find AnimationNode in logic engine!", otherEngine.getErrors().front().message);
@@ -271,7 +271,7 @@ namespace rlogic::internal
 
     TEST_P(AnAnimationNode, FailsToBeCreatedIfDataArrayFromOtherLogicInstance)
     {
-        LogicEngine otherInstance;
+        LogicEngine otherInstance{ m_logicEngine.getFeatureLevel() };
         auto otherInstanceData = otherInstance.createDataArray(std::vector<float>{ 1.f, 2.f, 3.f });
 
         EXPECT_EQ(nullptr, createAnimationNode({ { "channel", otherInstanceData, m_dataFloat } }, "animNode"));
@@ -289,7 +289,7 @@ namespace rlogic::internal
         WithTempDirectory tempDir;
 
         {
-            LogicEngine otherEngine{ EFeatureLevel_Latest };
+            LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
 
             const auto timeStamps1 = otherEngine.createDataArray(std::vector<float>{ 1.f, 2.f }, "ts1");
             const auto timeStamps2 = otherEngine.createDataArray(std::vector<float>{ 3.f, 4.f, 5.f }, "ts2");
@@ -424,7 +424,7 @@ namespace rlogic::internal
         WithTempDirectory tempDir;
 
         {
-            LogicEngine otherEngine{ EFeatureLevel_Latest };
+            LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
 
             const auto timeStamps = otherEngine.createDataArray(std::vector<float>{ 1.f, 2.f }, "ts");
             const auto data = otherEngine.createDataArray(std::vector<int32_t>{ 10, 20 }, "data");
@@ -787,7 +787,7 @@ namespace rlogic::internal
                     outputs.children.push_back(MakeType("channel", EPropertyType::Float));
                 auto outputsImpl = std::make_unique<PropertyImpl>(std::move(outputs), EPropertySemantics::AnimationOutput);
 
-                const auto dataFb = DataArrayImpl::Serialize(data->m_impl, flatBufferBuilder, serializationMap, m_logicEngine.getFeatureLevel());
+                const auto dataFb = DataArrayImpl::Serialize(data->m_impl, flatBufferBuilder, serializationMap);
                 flatBufferBuilder.Finish(dataFb);
                 const auto dataFbSerialized = flatbuffers::GetRoot<rlogic_serialization::DataArray>(flatBufferBuilder.GetBufferPointer());
                 deserializationMap.storeDataArray(*dataFbSerialized, *data);

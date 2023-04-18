@@ -200,7 +200,7 @@ namespace ramses_internal
 
     void TestRenderer::setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor)
     {
-        m_renderer->setDisplayBufferClearColor(displayId, buffer, clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+        m_renderer->setDisplayBufferClearColor(displayId, buffer, {clearColor.r, clearColor.g, clearColor.b, clearColor.a});
         m_renderer->flush();
     }
 

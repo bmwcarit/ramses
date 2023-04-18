@@ -22,7 +22,7 @@ int main()
      * Create an instance of the LogicEngine class. This holds all data
      * and offers methods to load and execute scripts among other things.
      */
-    rlogic::LogicEngine logicEngine;
+    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
      * Create a script by providing the source code of the script with a string.

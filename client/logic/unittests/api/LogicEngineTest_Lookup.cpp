@@ -29,7 +29,7 @@ namespace rlogic
     class ALogicEngine_Lookup : public ALogicEngine
     {
     public:
-        ALogicEngine_Lookup() : ALogicEngine{ EFeatureLevel_Latest } // test with latest feature level so all possible API objects are available
+        ALogicEngine_Lookup() : ALogicEngine{ ramses::EFeatureLevel_Latest } // test with latest feature level so all possible API objects are available
         {
         }
 
@@ -46,7 +46,7 @@ namespace rlogic
     {
         const auto luaModule = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         const auto script = m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         const auto renderPassBinding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -110,7 +110,7 @@ namespace rlogic
     {
         const auto luaModule = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         const auto script = m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         const auto renderPassBinding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -159,7 +159,7 @@ namespace rlogic
     {
         m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -222,7 +222,7 @@ namespace rlogic
     {
         m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -286,7 +286,7 @@ namespace rlogic
     {
         const auto luaModule         = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         const auto script            = m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding       = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding       = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding     = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         const auto renderPassBinding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -319,7 +319,7 @@ namespace rlogic
     {
         const auto luaModule         = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         const auto script            = m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding       = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding       = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding     = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         const auto renderPassBinding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -359,7 +359,7 @@ namespace rlogic
     {
         LuaModule* luaModule = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         LuaScript* script = m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         RamsesAppearanceBinding* appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         RamsesCameraBinding* cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         RamsesRenderPassBinding* renderPassBinding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -425,7 +425,7 @@ namespace rlogic
     {
         m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -457,7 +457,7 @@ namespace rlogic
 
     TEST_F(ALogicEngine_Lookup, FindsObjectByNameOnlyStringMatchesExactly)
     {
-        m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
 
         EXPECT_EQ(nullptr, m_logicEngine.findByName<RamsesNodeBinding>("Nodebinding"));
         EXPECT_EQ(nullptr, m_logicEngine.findByName<RamsesNodeBinding>("node"));
@@ -470,7 +470,7 @@ namespace rlogic
     {
         const auto module = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         const auto script = m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         const auto rpBinding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");
@@ -503,7 +503,7 @@ namespace rlogic
     {
         const auto module = m_logicEngine.createLuaModule(m_moduleSourceCode, {}, "luaModule");
         const auto script = m_logicEngine.createLuaScript(m_valid_empty_script, {}, "script");
-        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodebinding");
+        const auto nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "nodebinding");
         const auto appearanceBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "appbinding");
         const auto cameraBinding = m_logicEngine.createRamsesCameraBinding(*m_camera, "camerabinding");
         const auto rpBinding = m_logicEngine.createRamsesRenderPassBinding(*m_renderPass, "rpbinding");

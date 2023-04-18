@@ -93,10 +93,10 @@ namespace ramses_internal
         // Transformation
         [[nodiscard]] const Vector3&              getTranslation                  (TransformHandle handle) const override;
         [[nodiscard]] const Vector4&              getRotation                     (TransformHandle handle) const override;
-        [[nodiscard]] ERotationConvention         getRotationConvention           (TransformHandle handle) const override;
+        [[nodiscard]] ERotationType         getRotationType           (TransformHandle handle) const override;
         [[nodiscard]] const Vector3&              getScaling                      (TransformHandle handle) const override;
         void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationConvention convention) override;
+        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationType rotationType) override;
         void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
 
         DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
