@@ -17,6 +17,7 @@
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
 #include "Utils/MemoryPool.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -48,7 +49,7 @@ namespace ramses_internal
         void                 unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) override;
 
         void                 provideResourceData(const ManagedResource& mr) override;
-        [[nodiscard]] Bool                 hasResourcesToBeUploaded() const override;
+        [[nodiscard]] bool                 hasResourcesToBeUploaded() const override;
         void                 uploadAndUnloadPendingResources() override;
 
         [[nodiscard]] DeviceResourceHandle getResourceDeviceHandle(const ResourceContentHash& hash) const override;
@@ -66,7 +67,7 @@ namespace ramses_internal
         void                 uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) override;
         void                 unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) override;
 
-        void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
+        void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
         void                 uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
         void                 unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) override;
 
@@ -121,11 +122,11 @@ namespace ramses_internal
         struct OffscreenBufferDescriptor
         {
             // Second render target and color buffer are only used for double-buffered offscreen buffers, otherwise just the first
-            DeviceResourceHandle m_renderTargetHandle[2];
-            DeviceResourceHandle m_colorBufferHandle[2];
+            std::array<DeviceResourceHandle, 2> m_renderTargetHandle;
+            std::array<DeviceResourceHandle, 2> m_colorBufferHandle;
             DeviceResourceHandle m_depthBufferHandle;
             UInt32 m_estimatedVRAMUsage;
-            Bool isDmaBuffer = false;
+            bool isDmaBuffer = false;
         };
         using OffscreenBufferMap = MemoryPool<OffscreenBufferDescriptor, OffscreenBufferHandle>;
         using StreamBufferMap = MemoryPool<WaylandIviSurfaceId, StreamBufferHandle>;

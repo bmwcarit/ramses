@@ -105,7 +105,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture(): no content on stream source id :" << sourceId.getValue());
     }
 
-    Bool EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds)
+    bool EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager();
@@ -252,7 +252,7 @@ namespace ramses_internal
         return sendCreateSurfaceToTestApplication(width, height, 0, false, testAppIdx);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL, uint32_t testAppIdx)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, bool useEGL, uint32_t testAppIdx)
     {
         const auto surfaceId = m_nextSurfaceId;
 
@@ -442,7 +442,7 @@ namespace ramses_internal
         return numberOfAllocatedSHMBuffer;
     }
 
-    Bool EmbeddedCompositingTestsFramework::getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx)
+    bool EmbeddedCompositingTestsFramework::getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetIsBufferFree << buffer;
@@ -453,7 +453,7 @@ namespace ramses_internal
         return isBufferFree;
     }
 
-    Bool EmbeddedCompositingTestsFramework::getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx)
+    bool EmbeddedCompositingTestsFramework::getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetWaylandOutputParams;

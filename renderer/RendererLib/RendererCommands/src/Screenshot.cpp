@@ -19,7 +19,7 @@ namespace ramses_internal
         registerKeyword("screenshot");
     }
 
-    Bool Screenshot::executeInput(const std::vector<std::string>& input)
+    bool Screenshot::executeInput(const std::vector<std::string>& input)
     {
         enum EOption
         {
@@ -32,7 +32,7 @@ namespace ramses_internal
 
         std::string         filename = "unnamed.png";
         DisplayHandle       display = DisplayHandle(0);
-        Bool                sendViaDLT = false;
+        bool                sendViaDLT = false;
 
         for (const auto& arg : input)
         {

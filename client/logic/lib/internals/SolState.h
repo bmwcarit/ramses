@@ -14,14 +14,14 @@
 #include <string_view>
 #include <utility>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
-    constexpr std::array<rlogic::EStandardModule, 5> StdModules = {
-        rlogic::EStandardModule::Base,
-        rlogic::EStandardModule::String,
-        rlogic::EStandardModule::Table,
-        rlogic::EStandardModule::Math,
-        rlogic::EStandardModule::Debug
+    constexpr std::array<ramses::EStandardModule, 5> StdModules = {
+        ramses::EStandardModule::Base,
+        ramses::EStandardModule::String,
+        ramses::EStandardModule::Table,
+        ramses::EStandardModule::Math,
+        ramses::EStandardModule::Debug
     };
     constexpr std::array<sol::lib, 5> SolLibs = {
         sol::lib::base,
@@ -65,6 +65,6 @@ namespace rlogic::internal
         std::vector<std::string> m_safeBaselibSymbols;
 
         void mapStandardModules(const StandardModules& stdModules, sol::environment& env);
-        [[nodiscard]] static std::optional<std::string_view> GetStdModuleName(rlogic::EStandardModule m);
+        [[nodiscard]] static std::optional<std::string_view> GetStdModuleName(ramses::EStandardModule m);
     };
 }

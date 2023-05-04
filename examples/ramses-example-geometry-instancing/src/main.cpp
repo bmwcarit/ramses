@@ -60,11 +60,11 @@ int main()
     // get input data of appearance and bind required data
     ramses::UniformInput uniformInstanceTranslationInput;
     uniformEffect->findUniformInput("translations", uniformInstanceTranslationInput);
-    ramses::vec3f translations[10];
+    std::array<ramses::vec3f, 10> translations;
 
     ramses::UniformInput uniformInstanceColorInput;
     uniformEffect->findUniformInput("colors", uniformInstanceColorInput);
-    ramses::vec4f colors[10];
+    std::array<ramses::vec4f, 10> colors;
 
     // set vertex positions directly in geometry
     ramses::GeometryBinding* uniformGeometry = scene->createGeometryBinding(*uniformEffect, "triangle geometry uniforms");
@@ -145,7 +145,7 @@ int main()
             translations[i][1] = -0.5f + static_cast<float>(std::sin(i+0.05f*t));
             translations[i][2] = -5.0f;
         }
-        uniformAppearance->setInputValue(uniformInstanceTranslationInput, 10, translations);
+        uniformAppearance->setInputValue(uniformInstanceTranslationInput, 10, translations.data());
 
         // update color of triangle instances
         for (uint32_t i = 0; i < 10; i++)
@@ -155,7 +155,7 @@ int main()
             colors[i][2] = 0.2f;
             colors[i][3] = 1.0f;
         }
-        uniformAppearance->setInputValue(uniformInstanceColorInput, 10, colors);
+        uniformAppearance->setInputValue(uniformInstanceColorInput, 10, colors.data());
 
         scene->flush();
         t++;

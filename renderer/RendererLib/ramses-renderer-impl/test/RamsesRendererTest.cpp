@@ -68,7 +68,7 @@ protected:
     explicit ARamsesRenderer(const ramses::RendererConfig& rendererConfig = ramses::RendererConfig())
         : framework()
         , renderer(*framework.createRenderer(rendererConfig))
-        , commandBuffer(renderer.impl.getPendingCommands())
+        , commandBuffer(renderer.m_impl.getPendingCommands())
     {
     }
 
@@ -318,7 +318,7 @@ TEST_F(ARamsesRendererWithDisplay, canGetDmaOffscreenBufferFDAndStride)
     event.offscreenBuffer = ramses_internal::OffscreenBufferHandle{ 10u };
     event.dmaBufferFD = 20;
     event.dmaBufferStride = 30u;
-    renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(event));
+    renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(event));
 
     ramses::RendererEventHandlerEmpty dummyHandler;
     renderer.dispatchEvents(dummyHandler);
@@ -473,7 +473,7 @@ TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCom
 
 TEST_F(ARamsesRendererWithSystemCompositorController, createsCommandForSystemCompositorControllerAddSurfaceToLayer)
 {
-    EXPECT_EQ(ramses::StatusOK, renderer.impl.systemCompositorAddIviSurfaceToIviLayer(1, 2));
+    EXPECT_EQ(ramses::StatusOK, renderer.m_impl.systemCompositorAddIviSurfaceToIviLayer(1, 2));
     EXPECT_CALL(cmdVisitor, systemCompositorAddIviSurfaceToIviLayer(ramses_internal::WaylandIviSurfaceId{ 1u }, ramses_internal::WaylandIviLayerId{ 2u }));
     cmdVisitor.visit(commandBuffer);
 }
@@ -801,21 +801,21 @@ TEST_F(ARamsesRendererWithDisplay, reportsErrorIfSettingClearFlagsForUnknownDisp
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearColor_FB)
 {
     EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearColor(displayId, renderer.getDisplayFramebuffer(displayId), {1, 2, 3, 4}));
-    EXPECT_CALL(cmdVisitor, handleSetClearColor(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, ramses_internal::Vector4{ 1, 2, 3, 4 }));
+    EXPECT_CALL(cmdVisitor, handleSetClearColor(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, glm::vec4{ 1, 2, 3, 4 }));
     cmdVisitor.visit(commandBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearColor_FBImplicitlyUsingInvalidDisplayBuffer)
 {
     EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearColor(displayId, ramses::displayBufferId_t::Invalid(), {1, 2, 3, 4}));
-    EXPECT_CALL(cmdVisitor, handleSetClearColor(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, ramses_internal::Vector4{ 1, 2, 3, 4 }));
+    EXPECT_CALL(cmdVisitor, handleSetClearColor(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, glm::vec4{ 1, 2, 3, 4 }));
     cmdVisitor.visit(commandBuffer);
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearColor_OB)
 {
     EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearColor(displayId, ramses::displayBufferId_t{666u}, {1, 2, 3, 4}));
-    EXPECT_CALL(cmdVisitor, handleSetClearColor(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{ 666u }, ramses_internal::Vector4{ 1, 2, 3, 4 }));
+    EXPECT_CALL(cmdVisitor, handleSetClearColor(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{ 666u }, glm::vec4{ 1, 2, 3, 4 }));
     cmdVisitor.visit(commandBuffer);
 }
 

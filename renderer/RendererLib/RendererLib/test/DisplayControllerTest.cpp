@@ -50,7 +50,7 @@ namespace ramses_internal
 
     TEST_F(ADisplayController, activatesBufferAndClearsOnClearBuffer_clearAll)
     {
-        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        const glm::vec4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
         IDisplayController& displayController = createDisplayController();
 
         InSequence seq;
@@ -69,7 +69,7 @@ namespace ramses_internal
 
     TEST_F(ADisplayController, activatesBufferAndClearsOnClearBuffer_clearColor)
     {
-        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        const glm::vec4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
         IDisplayController& displayController = createDisplayController();
 
         InSequence seq;
@@ -87,7 +87,7 @@ namespace ramses_internal
 
     TEST_F(ADisplayController, doesNotActivatesBufferNorClearsOnClearBuffer_clearNone)
     {
-        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        const glm::vec4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
         IDisplayController& displayController = createDisplayController();
 
         displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, EClearFlags_None, clearColor);

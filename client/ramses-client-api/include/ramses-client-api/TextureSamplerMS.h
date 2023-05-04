@@ -14,34 +14,30 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * @brief The #ramses::TextureSamplerMS is used to sample multisampled data when bound
      *      to a #ramses::Appearance uniform input (#ramses::Appearance::setInputTexture called with #ramses::TextureSamplerMS)
      */
-    class RAMSES_API TextureSamplerMS : public SceneObject
+    class TextureSamplerMS : public SceneObject
     {
     public:
         /**
         * Stores internal data for implementation specifics of TextureSamplerMS.
         */
-        class TextureSamplerImpl& impl;
+        class TextureSamplerImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating TextureSamplerMS instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for TextureSamplerMS.
         *
-        * @param[in] pimpl Internal data for implementation specifics of TextureSamplerMS (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of TextureSamplerMS (sink - instance becomes owner)
         */
-        explicit TextureSamplerMS(TextureSamplerImpl& pimpl);
-
-        /**
-        * @brief Destructor of the TextureSamplerMS
-        */
-        ~TextureSamplerMS() override;
+        explicit TextureSamplerMS(std::unique_ptr<TextureSamplerImpl> impl);
     };
 }
 

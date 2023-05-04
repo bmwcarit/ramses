@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SetClearColor(RendererCommandBuffer& rendererCommandBuffer);
-        Bool execute(UInt32& displayId, Float& red, Float& green, Float& blue, Float& alpha) const override;
+        bool execute(UInt32& displayId, Float& red, Float& green, Float& blue, Float& alpha) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

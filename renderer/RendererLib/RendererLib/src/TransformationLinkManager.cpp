@@ -32,7 +32,7 @@ namespace ramses_internal
         LinkManagerBase::removeSceneLinks(sceneId);
     }
 
-    Bool TransformationLinkManager::createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    bool TransformationLinkManager::createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
     {
         assert(EDataSlotType_TransformationProvider == DataLinkUtils::GetDataSlot(providerSceneId, providerSlotHandle, m_scenes).type);
         assert(EDataSlotType_TransformationConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type);
@@ -65,7 +65,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool TransformationLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
+    bool TransformationLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
     {
         assert(EDataSlotType_TransformationConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type);
 
@@ -90,13 +90,13 @@ namespace ramses_internal
         return false;
     }
 
-    Bool TransformationLinkManager::nodeHasDataLinkToProvider(SceneId consumerSceneId, NodeHandle consumerNodeHandle) const
+    bool TransformationLinkManager::nodeHasDataLinkToProvider(SceneId consumerSceneId, NodeHandle consumerNodeHandle) const
     {
         const DataSlotHandle consumerSlotHandle = getDataSlotForNode(consumerSceneId, consumerNodeHandle);
         return getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle);
     }
 
-    Matrix44f TransformationLinkManager::getLinkedTransformationFromDataProvider(ETransformationMatrixType matrixType,
+    glm::mat4 TransformationLinkManager::getLinkedTransformationFromDataProvider(ETransformationMatrixType matrixType,
                                                                                  SceneId    consumerSceneId,
                                                                                  NodeHandle consumerNodeHandle) const
     {

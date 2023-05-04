@@ -16,6 +16,8 @@
 
 #include "ClientTestUtils.h"
 #include "RamsesObjectTestTypes.h"
+#include "Math3d/Rotation.h"
+#include "glm/gtx/transform.hpp"
 
 using namespace testing;
 
@@ -193,9 +195,9 @@ namespace ramses
         EXPECT_EQ(nullptr, child1.getParent());
         EXPECT_EQ(nullptr, child2.getParent());
         EXPECT_EQ(nullptr, child3.getParent());
-        EXPECT_TRUE(child1.impl.isDirty());
-        EXPECT_TRUE(child2.impl.isDirty());
-        EXPECT_TRUE(child3.impl.isDirty());
+        EXPECT_TRUE(child1.m_impl.isDirty());
+        EXPECT_TRUE(child2.m_impl.isDirty());
+        EXPECT_TRUE(child3.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, reportsErrorWhenRemovinNonExistingParent)
@@ -324,14 +326,14 @@ namespace ramses
     TYPED_TEST(NodeTest, isNotDirtyInitially)
     {
         Node& node = this->createNode("node");
-        EXPECT_FALSE(node.impl.isDirty());
+        EXPECT_FALSE(node.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, canBeMarkedDirty)
     {
         Node& node = this->createNode("node");
-        node.impl.markDirty();
-        EXPECT_TRUE(node.impl.isDirty());
+        node.m_impl.markDirty();
+        EXPECT_TRUE(node.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, isMarkedDirtyWhenSettingParent)
@@ -339,7 +341,7 @@ namespace ramses
         Node& parent = this->createNode("parent");
         Node& child = this->createNode("child");
         EXPECT_EQ(StatusOK, child.setParent(parent));
-        EXPECT_TRUE(child.impl.isDirty());
+        EXPECT_TRUE(child.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, isMarkedDirtyWhenAddingToParent)
@@ -347,7 +349,7 @@ namespace ramses
         Node& parent = this->createNode("parent");
         Node& child = this->createNode("child");
         EXPECT_EQ(StatusOK, parent.addChild(child));
-        EXPECT_TRUE(child.impl.isDirty());
+        EXPECT_TRUE(child.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, isMarkedDirtyWhenRemovedFromParent)
@@ -358,7 +360,7 @@ namespace ramses
         this->m_scene.flush(); // to clear dirty state
 
         EXPECT_EQ(StatusOK, parent.removeChild(child));
-        EXPECT_TRUE(child.impl.isDirty());
+        EXPECT_TRUE(child.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, staysCleanWhenSettingChild)
@@ -366,7 +368,7 @@ namespace ramses
         Node& parent = this->createNode("parent");
         Node& child = this->createNode("child");
         EXPECT_EQ(StatusOK, parent.addChild(child));
-        EXPECT_FALSE(parent.impl.isDirty());
+        EXPECT_FALSE(parent.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, isMarkedDirtyWhenParentDestroyed)
@@ -377,21 +379,21 @@ namespace ramses
         this->m_scene.flush(); // to clear dirty state
 
         this->m_scene.destroy(parent);
-        EXPECT_TRUE(child.impl.isDirty());
+        EXPECT_TRUE(child.m_impl.isDirty());
     }
 
     TYPED_TEST(NodeTest, staysCleanWhenRemovingNonExistingParent)
     {
         Node& nodeWithNoParent = this->createNode("node");
         EXPECT_NE(StatusOK, nodeWithNoParent.removeParent());
-        EXPECT_FALSE(nodeWithNoParent.impl.isDirty());
+        EXPECT_FALSE(nodeWithNoParent.m_impl.isDirty());
     }
 
-    void expectMatricesEqual(const float mat1[16], const float mat2[16])
+    void expectMatricesEqual(const glm::mat4 mat1, const glm::mat4 mat2)
     {
         for (uint32_t i = 0u; i < 16u; ++i)
         {
-            EXPECT_FLOAT_EQ(mat1[i], mat2[i]);
+            EXPECT_FLOAT_EQ(mat1[i / 4][i % 4], mat2[i / 4][i % 4]);
         }
     }
 
@@ -401,7 +403,7 @@ namespace ramses
         matrix44f modelMat;
         EXPECT_EQ(StatusOK, node.getModelMatrix(modelMat));
 
-        expectMatricesEqual(ramses_internal::Matrix44f::Identity.data, ramses_internal::Matrix44f(modelMat).data);
+        expectMatricesEqual(glm::identity<glm::mat4>(), modelMat);
     }
 
     TYPED_TEST(NodeTest, setsRotationVectorAndConvention)
@@ -410,7 +412,7 @@ namespace ramses
 
         EXPECT_EQ(ramses::StatusOK, node.setRotation({1.f, 2.f, 3.f}, ERotationType::Euler_XZX));
 
-        const auto transformHandle = node.impl.getTransformHandle();
+        const auto transformHandle = node.m_impl.getTransformHandle();
 
         vec3f euler;
         EXPECT_EQ(ramses::StatusOK, node.getRotation(euler));
@@ -418,8 +420,8 @@ namespace ramses
         EXPECT_EQ(euler.y, 2.f);
         EXPECT_EQ(euler.z, 3.f);
         EXPECT_EQ(ERotationType::Euler_XZX, node.getRotationType());
-        EXPECT_EQ(ramses_internal::Vector3(1.f, 2.f, 3.f), ramses_internal::Vector3(this->m_scene.impl.getIScene().getRotation(transformHandle)));
-        EXPECT_EQ(ramses_internal::ERotationType::Euler_XZX, this->m_scene.impl.getIScene().getRotationType(transformHandle));
+        EXPECT_EQ(glm::vec3(1.f, 2.f, 3.f), glm::vec3(this->m_scene.m_impl.getIScene().getRotation(transformHandle)));
+        EXPECT_EQ(ramses_internal::ERotationType::Euler_XZX, this->m_scene.m_impl.getIScene().getRotationType(transformHandle));
 
         EXPECT_EQ(ramses::StatusOK, node.setRotation({11.f, 12.f, 13.f}, ERotationType::Euler_XYZ));
 
@@ -428,8 +430,8 @@ namespace ramses
         EXPECT_EQ(euler.y, 12.f);
         EXPECT_EQ(euler.z, 13.f);
         EXPECT_EQ(ERotationType::Euler_XYZ, node.getRotationType());
-        EXPECT_EQ(ramses_internal::Vector3(11.f, 12.f, 13.f), ramses_internal::Vector3(this->m_scene.impl.getIScene().getRotation(transformHandle)));
-        EXPECT_EQ(ramses_internal::ERotationType::Euler_XYZ, this->m_scene.impl.getIScene().getRotationType(transformHandle));
+        EXPECT_EQ(glm::vec3(11.f, 12.f, 13.f), glm::vec3(this->m_scene.m_impl.getIScene().getRotation(transformHandle)));
+        EXPECT_EQ(ramses_internal::ERotationType::Euler_XYZ, this->m_scene.m_impl.getIScene().getRotationType(transformHandle));
     }
 
     TYPED_TEST(NodeTest, returnsErrorWhenSettingQuaternionConvention)
@@ -449,7 +451,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, node.getRotation(euler));
         EXPECT_EQ(euler, vec3f{0.f});
 
-        const auto transformHandle = node.impl.getTransformHandle();
+        const auto transformHandle = node.m_impl.getTransformHandle();
         EXPECT_FALSE(transformHandle.isValid());
     }
 
@@ -460,7 +462,7 @@ namespace ramses
         const quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
         EXPECT_EQ(StatusOK, node.setRotation(q));
 
-        const auto transformHandle = node.impl.getTransformHandle();
+        const auto transformHandle = node.m_impl.getTransformHandle();
 
         quat qOut;
         EXPECT_EQ(ramses::StatusOK, node.getRotation(qOut));
@@ -468,8 +470,8 @@ namespace ramses
         EXPECT_EQ(qOut.y, q.y);
         EXPECT_EQ(qOut.z, q.z);
         EXPECT_EQ(qOut.w, q.w);
-        EXPECT_EQ(ramses_internal::Vector4(q.x, q.y, q.z, q.w), this->m_scene.impl.getIScene().getRotation(transformHandle));
-        EXPECT_EQ(ramses_internal::ERotationType::Quaternion, this->m_scene.impl.getIScene().getRotationType(transformHandle));
+        EXPECT_EQ(glm::vec4(q.x, q.y, q.z, q.w), this->m_scene.m_impl.getIScene().getRotation(transformHandle));
+        EXPECT_EQ(ramses_internal::ERotationType::Quaternion, this->m_scene.m_impl.getIScene().getRotationType(transformHandle));
     }
 
     TYPED_TEST(NodeTest, setsRotationQuaternionThenEuler)
@@ -481,7 +483,7 @@ namespace ramses
         quat qOut;
         EXPECT_EQ(ramses::StatusOK, node.getRotation(qOut));
 
-        const auto transformHandle = node.impl.getTransformHandle();
+        const auto transformHandle = node.m_impl.getTransformHandle();
         EXPECT_EQ(ramses::StatusOK, node.setRotation({11.f, 12.f, 13.f}, ERotationType::Euler_XYZ));
 
         vec3f euler;
@@ -490,8 +492,8 @@ namespace ramses
         EXPECT_EQ(euler.x, 11.f);
         EXPECT_EQ(euler.y, 12.f);
         EXPECT_EQ(euler.z, 13.f);
-        EXPECT_EQ(ramses_internal::Vector3(11.f, 12.f, 13.f), ramses_internal::Vector3(this->m_scene.impl.getIScene().getRotation(transformHandle)));
-        EXPECT_EQ(ramses_internal::ERotationType::Euler_XYZ, this->m_scene.impl.getIScene().getRotationType(transformHandle));
+        EXPECT_EQ(glm::vec3(11.f, 12.f, 13.f), glm::vec3(this->m_scene.m_impl.getIScene().getRotation(transformHandle)));
+        EXPECT_EQ(ramses_internal::ERotationType::Euler_XYZ, this->m_scene.m_impl.getIScene().getRotationType(transformHandle));
         EXPECT_NE(ramses::StatusOK, node.getRotation(qOut));
     }
 
@@ -508,7 +510,7 @@ namespace ramses
         const quat q{0.830048f, -0.2907008f, 0.4666782f, -0.093407f};
         EXPECT_EQ(StatusOK, node.setRotation(q));
 
-        const auto transformHandle = node.impl.getTransformHandle();
+        const auto transformHandle = node.m_impl.getTransformHandle();
 
         quat qOut;
         EXPECT_EQ(ramses::StatusOK, node.getRotation(qOut));
@@ -516,8 +518,8 @@ namespace ramses
         EXPECT_EQ(qOut.y, q.y);
         EXPECT_EQ(qOut.z, q.z);
         EXPECT_EQ(qOut.w, q.w);
-        EXPECT_EQ(ramses_internal::Vector4(q.x, q.y, q.z, q.w), this->m_scene.impl.getIScene().getRotation(transformHandle));
-        EXPECT_EQ(ramses_internal::ERotationType::Quaternion, this->m_scene.impl.getIScene().getRotationType(transformHandle));
+        EXPECT_EQ(glm::vec4(q.x, q.y, q.z, q.w), this->m_scene.m_impl.getIScene().getRotation(transformHandle));
+        EXPECT_EQ(ramses_internal::ERotationType::Quaternion, this->m_scene.m_impl.getIScene().getRotationType(transformHandle));
 
         EXPECT_NE(ramses::StatusOK, node.getRotation(euler));
         EXPECT_EQ(ERotationType::Quaternion, node.getRotationType());
@@ -601,7 +603,7 @@ namespace ramses
         matrix44f modelMat;
         EXPECT_EQ(StatusOK, node.getInverseModelMatrix(modelMat));
 
-        expectMatricesEqual(ramses_internal::Matrix44f::Identity.data, ramses_internal::Matrix44f(modelMat).data);
+        expectMatricesEqual(glm::identity<glm::mat4>(), modelMat);
     }
 
     TYPED_TEST(NodeTest, getsModelMatrixComputedFromTransformationChain_SingleNode)
@@ -612,15 +614,15 @@ namespace ramses
         node.setScaling({4.f, 5.f, 6.f});
         node.setRotation({7.f, 8.f, 9.f}, ERotationType::Euler_ZYX);
 
-        const ramses_internal::Matrix44f transMat = ramses_internal::Matrix44f::Translation({ 1.f, 2.f, 3.f });
-        const ramses_internal::Matrix44f scaleMat = ramses_internal::Matrix44f::Scaling({ 4.f, 5.f, 6.f });
-        const ramses_internal::Matrix44f rotMat = ramses_internal::Matrix44f::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
-        const ramses_internal::Matrix44f expectedModelMat = transMat * rotMat * scaleMat;
+        const auto transMat = glm::translate(glm::vec3{ 1.f, 2.f, 3.f });
+        const auto scaleMat = glm::scale(glm::vec3{ 4.f, 5.f, 6.f });
+        const auto rotMat = ramses_internal::Math3d::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedModelMat = transMat * rotMat * scaleMat;
 
         matrix44f modelMat;
         EXPECT_EQ(StatusOK, node.getModelMatrix(modelMat));
 
-        expectMatricesEqual(expectedModelMat.data, ramses_internal::Matrix44f(modelMat).data);
+        expectMatricesEqual(expectedModelMat, modelMat);
     }
 
     TYPED_TEST(NodeTest, getsModelMatrixComputedFromTransformationChain_MultipleNodes)
@@ -639,15 +641,15 @@ namespace ramses
         Node& node = this->createNode("node");
         scaleNode.addChild(node);
 
-        const ramses_internal::Matrix44f transMat = ramses_internal::Matrix44f::Translation({ 1.f, 2.f, 3.f });
-        const ramses_internal::Matrix44f scaleMat = ramses_internal::Matrix44f::Scaling({ 4.f, 5.f, 6.f });
-        const ramses_internal::Matrix44f rotMat = ramses_internal::Matrix44f::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
-        const ramses_internal::Matrix44f expectedModelMat = transMat * rotMat * scaleMat;
+        const auto transMat = glm::translate(glm::vec3{ 1.f, 2.f, 3.f });
+        const auto scaleMat = glm::scale(glm::vec3{ 4.f, 5.f, 6.f });
+        const auto rotMat = ramses_internal::Math3d::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedModelMat = transMat * rotMat * scaleMat;
 
         matrix44f modelMat;
         EXPECT_EQ(StatusOK, node.getModelMatrix(modelMat));
 
-        expectMatricesEqual(expectedModelMat.data, ramses_internal::Matrix44f(modelMat).data);
+        expectMatricesEqual(expectedModelMat, modelMat);
     }
 
     TYPED_TEST(NodeTest, getsInverseModelMatrixComputedFromTransformationChain_SingleNode)
@@ -658,15 +660,15 @@ namespace ramses
         node.setScaling({4.f, 5.f, 6.f});
         node.setRotation({7.f, 8.f, 9.f}, ERotationType::Euler_YZX);
 
-        const ramses_internal::Matrix44f transMat = ramses_internal::Matrix44f::Translation({ -1.f, -2.f, -3.f });
-        const ramses_internal::Matrix44f scaleMat = ramses_internal::Matrix44f::Scaling({ 4.f, 5.f, 6.f }).inverse();
-        const ramses_internal::Matrix44f rotMat = ramses_internal::Matrix44f::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_YZX).transpose();
-        const ramses_internal::Matrix44f expectedInverseModelMat = scaleMat * rotMat * transMat;
+        const auto transMat = glm::translate(glm::vec3{ -1.f, -2.f, -3.f });
+        const auto scaleMat = glm::inverse(glm::scale(glm::vec3{ 4.f, 5.f, 6.f }));
+        const auto rotMat = glm::transpose(ramses_internal::Math3d::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_YZX));
+        const auto expectedInverseModelMat = scaleMat * rotMat * transMat;
 
         matrix44f inverseModelMat;
         EXPECT_EQ(StatusOK, node.getInverseModelMatrix(inverseModelMat));
 
-        expectMatricesEqual(expectedInverseModelMat.data, ramses_internal::Matrix44f(inverseModelMat).data);
+        expectMatricesEqual(expectedInverseModelMat, inverseModelMat);
     }
 
     TYPED_TEST(NodeTest, getsInverseModelMatrixComputedFromTransformationChain_MultipleNodes)
@@ -685,15 +687,15 @@ namespace ramses
         Node& node = this->createNode("node");
         scaleNode.addChild(node);
 
-        const ramses_internal::Matrix44f transMat = ramses_internal::Matrix44f::Translation({ -1.f, -2.f, -3.f });
-        const ramses_internal::Matrix44f scaleMat = ramses_internal::Matrix44f::Scaling({ 4.f, 5.f, 6.f }).inverse();
-        const ramses_internal::Matrix44f rotMat = ramses_internal::Matrix44f::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_YXY).transpose();
-        const ramses_internal::Matrix44f expectedInverseModelMat = scaleMat * rotMat * transMat;
+        const auto transMat = glm::translate(glm::vec3{ -1.f, -2.f, -3.f });
+        const auto scaleMat = glm::inverse(glm::scale(glm::vec3{ 4.f, 5.f, 6.f }));
+        const auto rotMat = glm::transpose(ramses_internal::Math3d::Rotation({ 7.f, 8.f, 9.f, 1.f }, ramses_internal::ERotationType::Euler_YXY));
+        const auto expectedInverseModelMat = scaleMat * rotMat * transMat;
 
         matrix44f inverseModelMat;
         EXPECT_EQ(StatusOK, node.getInverseModelMatrix(inverseModelMat));
 
-        expectMatricesEqual(expectedInverseModelMat.data, ramses_internal::Matrix44f(inverseModelMat).data);
+        expectMatricesEqual(expectedInverseModelMat, inverseModelMat);
     }
 
     TYPED_TEST(NodeTest, instantiationDoesNotCreateMultipleLLNodes)
@@ -705,14 +707,14 @@ namespace ramses
         // E.g. PickableObject depends on Camera which is a node as well and would be wrongly counted here.
         const size_t additionalAllocatedNodeCount = this->m_creationHelper.getAdditionalAllocatedNodeCount();
 
-        EXPECT_EQ(1u, node.impl.getIScene().getNodeCount() - additionalAllocatedNodeCount);
-        EXPECT_TRUE(this->m_internalScene.isNodeAllocated(node.impl.getNodeHandle()));
+        EXPECT_EQ(1u, node.m_impl.getIScene().getNodeCount() - additionalAllocatedNodeCount);
+        EXPECT_TRUE(this->m_internalScene.isNodeAllocated(node.m_impl.getNodeHandle()));
     }
 
     TYPED_TEST(NodeTest, destructionDestroysLLNode)
     {
         Node& node = this->createNode("node");
-        const auto handle = node.impl.getNodeHandle();
+        const auto handle = node.m_impl.getNodeHandle();
         this->m_scene.destroy(node);
         EXPECT_FALSE(this->m_internalScene.isNodeAllocated(handle));
     }

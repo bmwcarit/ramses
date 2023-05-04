@@ -18,11 +18,10 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
-#include "Math3d/Vector3.h"
 
 namespace ramses_internal
 {
-    CommonRenderBufferTestScene::CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    CommonRenderBufferTestScene::CommonRenderBufferTestScene(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
     }

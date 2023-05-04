@@ -63,7 +63,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererLogger::LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter)
+    void RendererLogger::LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, bool verbose, NodeHandle nodeHandleFilter)
     {
         RendererLogContext context(verbose ? ERendererLogLevelFlag_Details : ERendererLogLevelFlag_Info);
         context.setNodeHandleFilter(nodeHandleFilter);
@@ -254,7 +254,7 @@ namespace ramses_internal
         for (const auto& sceneInfo : dispBufferInfo.scenes)
         {
             const String& sceneName = updater.m_rendererScenes.getScene(sceneInfo.sceneId).getName();
-            const Bool shown = ( updater.m_sceneStateExecutor.getSceneState(sceneInfo.sceneId) == ESceneState::Rendered );
+            const bool shown = ( updater.m_sceneStateExecutor.getSceneState(sceneInfo.sceneId) == ESceneState::Rendered );
             context << "[ SceneId: " << sceneInfo.sceneId << "; order: " << sceneInfo.globalSceneOrder << "; shown: " << shown << "; name: \"" << sceneName << "\" ]" << RendererLogContext::NewLine;
         }
         context.unindent();
@@ -683,7 +683,7 @@ namespace ramses_internal
                     displayController.getDisplayWidth(), displayController.getDisplayHeight(),
                     SceneRenderExecutionIterator{},
                     EClearFlags_All,
-                    Vector4{ 0.f },
+                    glm::vec4{ 0.f },
                     false
                 };
                 RenderExecutorLogger executor(logDevice, renderContext, context);
@@ -816,7 +816,7 @@ namespace ramses_internal
         const EDataSlotType slotType = scene.getDataSlot(slotHandle).type;
 
         const SceneLinks& sceneLinks = GetSceneLinks(scenes.getSceneLinksManager(), slotType);
-        const Bool isLinked = sceneLinks.hasLinkedConsumers(providerSceneId, slotHandle);
+        const bool isLinked = sceneLinks.hasLinkedConsumers(providerSceneId, slotHandle);
         const DataSlotId providerId = scene.getDataSlot(slotHandle).id;
 
         context << "[";
@@ -854,7 +854,7 @@ namespace ramses_internal
         const SceneLinks& sceneLinks = GetSceneLinks(scenes.getSceneLinksManager(), slotType);
         const OffscreenBufferHandle linkedOB = GetOffscreenBufferLinkedToConsumer(scenes, consumerSceneId, slotHandle);
         const StreamBufferHandle linkedSB = GetStreamBufferLinkedToConsumer(scenes, consumerSceneId, slotHandle);
-        const Bool isLinked = sceneLinks.hasLinkedProvider(consumerSceneId, slotHandle) || linkedOB.isValid();
+        const bool isLinked = sceneLinks.hasLinkedProvider(consumerSceneId, slotHandle) || linkedOB.isValid();
         const DataSlotId consumerId = scene.getDataSlot(slotHandle).id;
 
         context << "[";

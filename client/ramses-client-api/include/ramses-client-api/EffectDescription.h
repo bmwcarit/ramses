@@ -14,16 +14,23 @@
 
 namespace ramses
 {
+    class EffectDescriptionImpl;
+
     /**
+    * @ingroup CoreAPI
     * @brief An effect description holds all necessary information for an effect to be created.
     */
-    class RAMSES_API EffectDescription : public StatusObject
+    class EffectDescription : public StatusObject
     {
     public:
         /**
         * @brief Constructor of EffectDescription
         */
-        EffectDescription();
+        RAMSES_API EffectDescription();
+        /**
+        * @brief Destructor of EffectDescription
+        */
+        RAMSES_API ~EffectDescription() override;
 
         /**
         * @brief Sets vertex shader source from string.
@@ -31,42 +38,42 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setVertexShader(const char* shaderSource);
+        RAMSES_API status_t setVertexShader(const char* shaderSource);
         /**
         * @brief Sets fragment shader source from string.
         * @param[in] shaderSource Fragment shader source code.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setFragmentShader(const char* shaderSource);
+        RAMSES_API status_t setFragmentShader(const char* shaderSource);
         /**
         * @brief Sets geometry shader source from string.
         * @param[in] shaderSource Geometry shader source code.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setGeometryShader(const char* shaderSource);
+        RAMSES_API status_t setGeometryShader(const char* shaderSource);
         /**
         * @brief Reads and sets vertex shader source from file.
         * @param[in] shaderSourceFileName File with vertex shader source code.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setVertexShaderFromFile(const char* shaderSourceFileName);
+        RAMSES_API status_t setVertexShaderFromFile(const char* shaderSourceFileName);
         /**
         * @brief Reads and sets fragment shader source from file.
         * @param[in] shaderSourceFileName File with fragment shader source code.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setFragmentShaderFromFile(const char* shaderSourceFileName);
+        RAMSES_API status_t setFragmentShaderFromFile(const char* shaderSourceFileName);
         /**
         * @brief Reads and sets geometry shader source from file.
         * @param[in] shaderSourceFileName File with geometry shader source code.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setGeometryShaderFromFile(const char* shaderSourceFileName);
+        RAMSES_API status_t setGeometryShaderFromFile(const char* shaderSourceFileName);
         /**
         * @brief Adds a compiler define.
         *        The define string will be injected as defined into the final shader code.
@@ -74,7 +81,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t addCompilerDefine(const char* define);
+        RAMSES_API status_t addCompilerDefine(const char* define);
 
         /**
         * @brief Sets an uniform semantic.
@@ -87,7 +94,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setUniformSemantic(const char* inputName, EEffectUniformSemantic semanticType);
+        RAMSES_API status_t setUniformSemantic(const char* inputName, EEffectUniformSemantic semanticType);
 
         /**
         * @brief Sets an attribute semantic.
@@ -98,46 +105,66 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setAttributeSemantic(const char* inputName, EEffectAttributeSemantic semanticType);
+        RAMSES_API status_t setAttributeSemantic(const char* inputName, EEffectAttributeSemantic semanticType);
 
         /**
         * @brief Gets vertex shader code.
         * @return Vertex shader source code. Empty string if not previously set.
         */
-        [[nodiscard]] const char*        getVertexShader() const;
+        [[nodiscard]] RAMSES_API const char* getVertexShader() const;
         /**
         * @brief Gets fragment shader code that is currently set.
         * @return Fragment shader source code. Empty string if not previously set.
         */
-        [[nodiscard]] const char*        getFragmentShader() const;
+        [[nodiscard]] RAMSES_API const char* getFragmentShader() const;
         /**
         * @brief Gets geometry shader code that is currently set.
         * @return Geometry shader source code. Empty string if not previously set.
         */
-        [[nodiscard]] const char*        getGeometryShader() const;
+        [[nodiscard]] RAMSES_API const char* getGeometryShader() const;
 
         /**
         * @brief Gets number of compiler defines.
         * @return Number of compiler defines that were previously added.
         */
-        [[nodiscard]] uint32_t             getNumberOfCompilerDefines() const;
+        [[nodiscard]] RAMSES_API uint32_t getNumberOfCompilerDefines() const;
         /**
         * @brief Gets compiler define.
         * @param[in] index Index of define to retrieve.
         * @return Compiler define for given index. nullptr if not previously set.
         */
-        [[nodiscard]] const char*        getCompilerDefine(uint32_t index) const;
+        [[nodiscard]] RAMSES_API const char* getCompilerDefine(uint32_t index) const;
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API EffectDescription(const EffectDescription& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API EffectDescription(EffectDescription&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API EffectDescription& operator=(const EffectDescription& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API EffectDescription& operator=(EffectDescription&& other) noexcept;
 
         /**
         * @brief Stores internal data for implementation specifics of EffectDescription.
         */
-        class EffectDescriptionImpl& impl;
-
-    protected:
-        /**
-        * @brief RamsesClientImpl needs access to internals of EffectDescription.
-        */
-        friend class RamsesClientImpl;
+        std::reference_wrapper<EffectDescriptionImpl> m_impl;
     };
 }
 

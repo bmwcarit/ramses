@@ -11,84 +11,31 @@
 
 //internal
 #include "DataObjectImpl.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 
 namespace ramses
 {
-    DataObject::DataObject(DataObjectImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
+    DataObject::DataObject(std::unique_ptr<DataObjectImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<DataObjectImpl&>(SceneObject::m_impl) }
     {
     }
 
-    DataObject::~DataObject() = default;
-
     EDataType DataObject::getDataType() const
     {
-        return impl.getDataType();
+        return m_impl.getDataType();
     }
 
     template <typename T>
     status_t DataObject::setValueInternal(T&& value)
     {
-        using RawType = std::remove_cv_t<std::remove_reference_t<T>>;
+        return m_impl.setValue(value);
 
-        if constexpr (std::is_same_v<RawType, int32_t> || std::is_same_v<RawType, float>)
-            return impl.setValue(value);
-
-        if constexpr (std::is_same_v<RawType, vec2i>)
-            return impl.setValue(ramses_internal::Vector2i{ value[0], value[1] });
-        if constexpr (std::is_same_v<RawType, vec3i>)
-            return impl.setValue(ramses_internal::Vector3i{ value[0], value[1], value[2] });
-        if constexpr (std::is_same_v<RawType, vec4i>)
-            return impl.setValue(ramses_internal::Vector4i{ value[0], value[1], value[2], value[3] });
-        if constexpr (std::is_same_v<RawType, vec2f>)
-            return impl.setValue(ramses_internal::Vector2{ value[0], value[1] });
-        if constexpr (std::is_same_v<RawType, vec3f>)
-            return impl.setValue(ramses_internal::Vector3{ value[0], value[1], value[2] });
-        if constexpr (std::is_same_v<RawType, vec4f>)
-            return impl.setValue(ramses_internal::Vector4{ value[0], value[1], value[2], value[3] });
-        if constexpr (std::is_same_v<RawType, matrix22f>)
-            return impl.setValue(ramses_internal::Matrix22f{value});
-        if constexpr (std::is_same_v<RawType, matrix33f>)
-            return impl.setValue(ramses_internal::Matrix33f{value});
-        if constexpr (std::is_same_v<RawType, matrix44f>)
-            return impl.setValue(ramses_internal::Matrix44f{value});
     }
 
     template <typename T>
     status_t DataObject::getValueInternal(T& value) const
     {
-        if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, float>)
-            return impl.getValue(value);
-
-        // TODO vaclav unify public and internal math types to avoid these casts
-        if constexpr (std::is_same_v<T, vec2i>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Vector2i&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, vec3i>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Vector3i&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, vec4i>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Vector4i&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, vec2f>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Vector2&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, vec3f>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Vector3&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, vec4f>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Vector4&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, matrix22f>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Matrix22f&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, matrix33f>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Matrix33f&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        if constexpr (std::is_same_v<T, matrix44f>)
-            return impl.getValue(reinterpret_cast<ramses_internal::Matrix44f&>(value)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        return m_impl.getValue(value);
     }
 
     // const l-value instances

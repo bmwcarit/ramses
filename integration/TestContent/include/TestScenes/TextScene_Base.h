@@ -27,7 +27,7 @@ namespace ramses_internal
     class TextScene_Base : public IntegrationScene
     {
     public:
-        TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        TextScene_Base(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
     protected:
         ramses::FontRegistry        m_fontRegistry;

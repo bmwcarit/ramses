@@ -35,7 +35,7 @@ namespace rlogic_serialization
     struct LuaInterface;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SolState;
 

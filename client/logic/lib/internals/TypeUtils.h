@@ -14,7 +14,7 @@
 #include <cassert>
 #include <vector>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class TypeUtils
     {

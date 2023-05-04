@@ -9,7 +9,6 @@
 #ifndef RAMSES_RENDEREXECUTORINTERNALSTATE_H
 #define RAMSES_RENDEREXECUTORINTERNALSTATE_H
 
-#include "Math3d/Vector3.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/Viewport.h"
@@ -28,9 +27,9 @@ namespace ramses_internal
         return STATETYPE();
     }
 
-    template <> inline Vector4 DefaultStateValue<Vector4>()
+    template <> inline glm::vec4 DefaultStateValue<glm::vec4>()
     {
-        return Vector4(std::numeric_limits<float>::max());
+        return glm::vec4(std::numeric_limits<float>::max());
     }
 
     template <> inline ColorWriteMask DefaultStateValue<ColorWriteMask>()
@@ -78,7 +77,7 @@ namespace ramses_internal
             return m_state;
         }
 
-        [[nodiscard]] Bool hasChanged() const
+        [[nodiscard]] bool hasChanged() const
         {
             return m_changed;
         }
@@ -91,7 +90,7 @@ namespace ramses_internal
 
     private:
         STATETYPE m_state;
-        Bool      m_changed;
+        bool      m_changed;
     };
 
     // RenderExecutor is _stateless_, this only keeps an internal state during execution
@@ -107,19 +106,19 @@ namespace ramses_internal
         [[nodiscard]] const RendererCachedScene& getScene() const;
         RenderingContext&          getRenderingContext();
 
-        [[nodiscard]] const Matrix44f&           getProjectionMatrix() const;
-        [[nodiscard]] const Vector3&             getCameraWorldPosition() const;
-        [[nodiscard]] const Matrix44f&           getViewMatrix() const;
-        [[nodiscard]] const Matrix44f&           getModelMatrix() const;
-        [[nodiscard]] const Matrix44f&           getModelViewMatrix() const;
-        [[nodiscard]] const Matrix44f&           getModelViewProjectionMatrix() const;
+        [[nodiscard]] const glm::mat4&           getProjectionMatrix() const;
+        [[nodiscard]] const glm::vec3&           getCameraWorldPosition() const;
+        [[nodiscard]] const glm::mat4&           getViewMatrix() const;
+        [[nodiscard]] const glm::mat4&           getModelMatrix() const;
+        [[nodiscard]] const glm::mat4&           getModelViewMatrix() const;
+        [[nodiscard]] const glm::mat4&           getModelViewProjectionMatrix() const;
 
         void                       setCamera(CameraHandle camera);
 
         void                       setRenderable(RenderableHandle renderable);
         [[nodiscard]] RenderableHandle           getRenderable() const;
 
-        [[nodiscard]] Bool hasExceededTimeBudgetForRendering() const;
+        [[nodiscard]] bool hasExceededTimeBudgetForRendering() const;
 
         CachedState < DeviceResourceHandle >    shaderDeviceHandle;
         DeviceResourceHandle                    vertexArrayDeviceHandle;
@@ -130,7 +129,7 @@ namespace ramses_internal
         CachedState < StencilState >            stencilState;
         CachedState < BlendOperationsState >    blendOperationsState;
         CachedState < BlendFactorsState >       blendFactorsState;
-        CachedState < Vector4 >                 blendColorState;
+        CachedState < glm::vec4 >               blendColorState;
         CachedState < ColorWriteMask >          colorWriteMaskState;
         CachedState < ECullMode >               cullModeState;
         CachedState < RenderTargetHandle >      renderTargetState;
@@ -147,12 +146,12 @@ namespace ramses_internal
 
         RenderableHandle            m_renderable;
 
-        Matrix44f                   m_projectionMatrix;
-        Matrix44f                   m_viewMatrix;
-        Matrix44f                   m_modelMatrix;
-        Matrix44f                   m_modelViewMatrix;
-        Matrix44f                   m_modelViewProjectionMatrix;
-        Vector3                     m_cameraWorldPosition;
+        glm::mat4                   m_projectionMatrix;
+        glm::mat4                   m_viewMatrix;
+        glm::mat4                   m_modelMatrix;
+        glm::mat4                   m_modelViewMatrix;
+        glm::mat4                   m_modelViewProjectionMatrix;
+        glm::vec3                   m_cameraWorldPosition;
 
         CachedState < CameraHandle >       m_camera;
 
@@ -185,32 +184,32 @@ namespace ramses_internal
         return m_renderContext;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getProjectionMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getProjectionMatrix() const
     {
         return m_projectionMatrix;
     }
 
-    inline const Vector3& RenderExecutorInternalState::getCameraWorldPosition() const
+    inline const glm::vec3& RenderExecutorInternalState::getCameraWorldPosition() const
     {
         return m_cameraWorldPosition;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getViewMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getViewMatrix() const
     {
         return m_viewMatrix;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getModelMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getModelMatrix() const
     {
         return m_modelMatrix;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getModelViewMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getModelViewMatrix() const
     {
         return m_modelViewMatrix;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getModelViewProjectionMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getModelViewProjectionMatrix() const
     {
         return m_modelViewProjectionMatrix;
     }

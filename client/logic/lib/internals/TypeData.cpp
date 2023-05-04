@@ -8,7 +8,7 @@
 
 #include "internals/TypeData.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     TypeData::TypeData(std::string _name, EPropertyType _type)
         : name(std::move(_name))

@@ -21,7 +21,7 @@ namespace ramses_internal
         getArgument<1>().setDescription("wayland IVI screen id");
     }
 
-    Bool SystemCompositorControllerScreenshot::execute(String& fileName, int32_t& screenIviId) const
+    bool SystemCompositorControllerScreenshot::execute(String& fileName, int32_t& screenIviId) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCScreenshot{ screenIviId, fileName });
         return true;

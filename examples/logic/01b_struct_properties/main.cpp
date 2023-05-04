@@ -20,10 +20,10 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a script with inputs and outputs of the same type (consists of nested structs)
-    rlogic::LuaScript* script = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             IN.struct = {
                 nested = {

@@ -19,11 +19,11 @@ namespace ramses_internal
     class String;
     class RendererCommandBuffer;
 
-    class LogRendererInfo : public RamshCommandArgs<String, Bool, MemoryHandle>
+    class LogRendererInfo : public RamshCommandArgs<String, bool, MemoryHandle>
     {
     public:
         explicit LogRendererInfo(RendererCommandBuffer& rendererCommandBuffer);
-        Bool execute(String& topic, Bool& verbose, MemoryHandle& nodeHandleFilter) const override;
+        bool execute(String& topic, bool& verbose, MemoryHandle& nodeHandleFilter) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

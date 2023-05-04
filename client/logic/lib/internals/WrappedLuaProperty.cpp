@@ -14,7 +14,7 @@
 
 #include "impl/PropertyImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class BadStructAccess : public sol::error
     {
@@ -476,7 +476,7 @@ namespace rlogic::internal
             }
 
             // Sanity check, not possible have two properties resolve to the same field index
-            assert (childValuesOrderedByIndex[childIndex] == sol::nil);
+            assert (childValuesOrderedByIndex[childIndex] == sol::lua_nil);
             childValuesOrderedByIndex[childIndex] = tableEntry.second;
             ++actualTableEntries;
 
@@ -490,7 +490,7 @@ namespace rlogic::internal
 
         for (size_t i = 0; i < childValuesOrderedByIndex.size(); ++i)
         {
-            if (childValuesOrderedByIndex[i] == sol::nil)
+            if (childValuesOrderedByIndex[i] == sol::lua_nil)
             {
                 sol_helper::throwSolException("Error while assigning struct '{}', expected a value for property '{}' but found none!",
                     m_wrappedProperty.get().getName(),
@@ -517,7 +517,7 @@ namespace rlogic::internal
         {
             const sol::object& field = table[i];
 
-            if (field == sol::nil)
+            if (field == sol::lua_nil)
             {
                 sol_helper::throwSolException("Error during assignment of array property '{}'! Expected a value at index {}",
                     m_wrappedProperty.get().getName(), i);
@@ -529,7 +529,7 @@ namespace rlogic::internal
 
         // According to Lua semantics, table size is N iff table[N+1] is nil -> this check mimics that semantics
         const sol::object potentiallySuperfluousField = table[m_wrappedChildProperties.size()+1];
-        if (potentiallySuperfluousField != sol::nil)
+        if (potentiallySuperfluousField != sol::lua_nil)
         {
             sol_helper::throwSolException("Element size mismatch when assigning array property '{}'! Expected array size: {}",
                 m_wrappedProperty.get().getName(),

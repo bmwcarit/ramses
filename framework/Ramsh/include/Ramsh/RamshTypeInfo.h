@@ -86,7 +86,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Double>
+    struct TypeName<double>
     {
         inline explicit operator std::string() const
         {

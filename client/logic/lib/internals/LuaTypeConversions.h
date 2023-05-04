@@ -14,7 +14,7 @@
 #include <variant>
 #include <array>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // Simple implementation of std::expected for the purpose of type conversion
     template<typename T>
@@ -66,7 +66,7 @@ namespace rlogic::internal
         template <typename T>
         [[nodiscard]] static DataOrError<T> ExtractSpecificType(const sol::object& solObject);
 
-        [[nodiscard]] static size_t         GetMaxIndexForVectorType(rlogic::EPropertyType type);
+        [[nodiscard]] static size_t         GetMaxIndexForVectorType(ramses::EPropertyType type);
 
         template <typename T, size_t size>
         [[nodiscard]] static DataOrError<std::array<T, size>> ExtractArray(const sol::object& solObject);

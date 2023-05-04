@@ -84,7 +84,7 @@ struct fmt::formatter<ramses_internal::ResourceContentHash> : public ramses_inte
     constexpr auto format(const ramses_internal::ResourceContentHash& res, FormatContext& ctx)
     {
         const char* typeShortString = nullptr;
-        const uint32_t type = (res.highPart >> 60LU) & 0xF;
+        const auto type = static_cast<uint32_t>((res.highPart >> 60LU) & 0xFu);
         switch (type)
         {
         case static_cast<uint32_t>(ramses_internal::EResourceType_VertexArray):

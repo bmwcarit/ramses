@@ -20,7 +20,7 @@ namespace ramses_internal
         Invalid, // must be last
     };
 
-    static const char* ConectionProtocolNames[] =
+    const std::array ConectionProtocolNames =
     {
         "TCP",
         "Off",

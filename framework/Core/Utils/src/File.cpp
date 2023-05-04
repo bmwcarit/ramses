@@ -357,6 +357,7 @@ namespace ramses_internal
 
     bool File::createDirectory()
     {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (mkdir(m_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO ) != 0) // mode 0777
             return false;
         return true;

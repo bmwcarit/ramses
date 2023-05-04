@@ -38,7 +38,7 @@ namespace ramses_internal
         NUM_ELEMENTS
     };
 
-    static constexpr const char* const EMessageIdNames[] = {
+    const std::array EMessageIdNames = {
         "INVALID_0",  // needed because EMessageId starts at 1
 
         "PublishScene",

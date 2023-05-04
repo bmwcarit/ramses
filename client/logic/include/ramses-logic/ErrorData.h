@@ -10,12 +10,12 @@
 
 #include <string>
 
-namespace rlogic
+namespace ramses
 {
     class LogicObject;
 
     /**
-     * #EErrorType helps distinguish between different types of errors in #rlogic::ErrorData
+     * #EErrorType helps distinguish between different types of errors in #ramses::ErrorData
      */
     enum class EErrorType : int
     {
@@ -29,7 +29,7 @@ namespace rlogic
     };
 
     /**
-     * Holds information about an error which occured during #rlogic::LogicEngine API calls
+     * Holds information about an error which occured during #ramses::LogicEngine API calls
      */
     struct ErrorData
     {
@@ -45,7 +45,7 @@ namespace rlogic
         EErrorType type;
 
         /**
-         * The #rlogic::LogicObject which caused the issue. Can be nullptr if the issue was not originating from a specific object.
+         * The #ramses::LogicObject which caused the issue. Can be nullptr if the issue was not originating from a specific object.
          */
         const LogicObject* object;
     };

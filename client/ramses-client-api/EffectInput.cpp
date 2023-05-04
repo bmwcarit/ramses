@@ -11,28 +11,24 @@
 
 namespace ramses
 {
-    EffectInput::EffectInput(EffectInputImpl& effectInputImpl)
-        : StatusObject(effectInputImpl)
-        , impl(effectInputImpl)
-    {
-    }
-
-    EffectInput::~EffectInput()
+    EffectInput::EffectInput(std::unique_ptr<EffectInputImpl> effectInputImpl)
+        : StatusObject{ std::move(effectInputImpl) }
+        , m_impl{ static_cast<EffectInputImpl&>(*StatusObject::m_impl) }
     {
     }
 
     const char* EffectInput::getName() const
     {
-        return impl.getName().c_str();
+        return m_impl.get().getName().c_str();
     }
 
     bool EffectInput::isValid() const
     {
-        return impl.isValid();
+        return m_impl.get().isValid();
     }
 
     std::optional<EDataType> EffectInput::getDataType() const
     {
-        return impl.getDataType();
+        return m_impl.get().getDataType();
     }
 }

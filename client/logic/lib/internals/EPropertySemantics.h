@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     enum class EPropertySemantics : uint8_t
     {

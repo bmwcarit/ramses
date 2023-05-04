@@ -18,38 +18,17 @@ namespace ramses
 {
     using namespace testing;
 
-    using DummyObjectImpl = NodeImpl;
-    class DummyObject : public Node
-    {
-    public:
-        explicit DummyObject(SceneImpl& scene)
-            : Node(*new DummyObjectImpl(scene, ERamsesObjectType_Node, ""))
-        {
-        }
-    };
-
     class ARamsesObjectRegistry : public testing::Test
     {
     public:
-        ARamsesObjectRegistry()
-            : m_dummyObject(*createDummyObject())
+        Node* createAndRegisterDummyObject()
         {
-        }
-
-        ~ARamsesObjectRegistry() override
-        {
-            delete &m_dummyObject;
-        }
-
-        DummyObject* createDummyObject()
-        {
-            return new DummyObject(m_dummyScene.getScene().impl);
+            return &m_registry.createAndRegisterObject<Node>(std::make_unique<NodeImpl>(m_dummyScene.getScene().m_impl, ERamsesObjectType_Node, ""));
         }
 
     protected:
         LocalTestClientWithScene m_dummyScene;
         RamsesObjectRegistry m_registry;
-        DummyObject& m_dummyObject;
     };
 
     TEST_F(ARamsesObjectRegistry, isEmptyUponCreation)
@@ -62,26 +41,26 @@ namespace ramses
 
     TEST_F(ARamsesObjectRegistry, canAddObject)
     {
-        m_dummyObject.setName("name");
-        m_registry.addObject(m_dummyObject);
-        EXPECT_EQ(&m_dummyObject, m_registry.findObjectByName("name"));
-        EXPECT_EQ(&m_dummyObject, m_registry.findObjectById(sceneObjectId_t{1u}));
-        EXPECT_EQ(&m_dummyObject, &m_dummyObject.impl.getRamsesObject());
+        auto dummyObject = createAndRegisterDummyObject();
+        dummyObject->setName("name");
+        EXPECT_EQ(dummyObject, m_registry.findObjectByName("name"));
+        EXPECT_EQ(dummyObject, m_registry.findObjectById(sceneObjectId_t{1u}));
+        EXPECT_EQ(dummyObject, &dummyObject->m_impl.getRamsesObject());
         EXPECT_EQ(1u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_RenderBuffer));
         RamsesObjectVector objects;
         m_registry.getObjectsOfType(objects, ERamsesObjectType_RamsesObject);
         ASSERT_EQ(1u, objects.size());
-        EXPECT_EQ(&m_dummyObject, objects[0]);
+        EXPECT_EQ(dummyObject, objects[0]);
     }
 
     TEST_F(ARamsesObjectRegistry, sceneObjectsGetUniqueIds)
     {
-        const std::unique_ptr<DummyObject> dummy1(createDummyObject());
-        const std::unique_ptr<DummyObject> dummy2(createDummyObject());
-        const std::unique_ptr<DummyObject> dummy3(createDummyObject());
-        const std::unique_ptr<DummyObject> dummy4(createDummyObject());
-        const std::unique_ptr<DummyObject> dummy5(createDummyObject());
+        const auto dummy1(createAndRegisterDummyObject());
+        const auto dummy2(createAndRegisterDummyObject());
+        const auto dummy3(createAndRegisterDummyObject());
+        const auto dummy4(createAndRegisterDummyObject());
+        const auto dummy5(createAndRegisterDummyObject());
 
         const std::unordered_set<sceneObjectId_t> sceneObjectIds
         {
@@ -97,9 +76,9 @@ namespace ramses
 
     TEST_F(ARamsesObjectRegistry, canRemoveObject)
     {
-        m_dummyObject.setName("name");
-        m_registry.addObject(m_dummyObject);
-        m_registry.removeObject(m_dummyObject);
+        auto dummyObject = createAndRegisterDummyObject();
+        dummyObject->setName("name");
+        m_registry.destroyAndUnregisterObject(*dummyObject);
         EXPECT_TRUE(nullptr == m_registry.findObjectByName("name"));
         EXPECT_TRUE(nullptr == m_registry.findObjectById(sceneObjectId_t{1u}));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
@@ -112,40 +91,36 @@ namespace ramses
 
     TEST_F(ARamsesObjectRegistry, canAddAndRetrieveObjectInfo)
     {
-        m_dummyObject.setName("name");
-        m_registry.addObject(m_dummyObject);
-        EXPECT_EQ(&m_dummyObject, m_registry.findObjectByName("name"));
-        EXPECT_EQ(&m_dummyObject, m_registry.findObjectById(sceneObjectId_t{1u}));
+        auto dummyObject = createAndRegisterDummyObject();
+        dummyObject->setName("name");
+        EXPECT_EQ(dummyObject, m_registry.findObjectByName("name"));
+        EXPECT_EQ(dummyObject, m_registry.findObjectById(sceneObjectId_t{1u}));
+    }
+
+    TEST_F(ARamsesObjectRegistry, canRenameObjectAndFindUnderNewName)
+    {
+        auto dummyObject = createAndRegisterDummyObject();
+        dummyObject->setName("name");
+        EXPECT_EQ(dummyObject, m_registry.findObjectByName("name"));
+        EXPECT_EQ(dummyObject, m_registry.findObjectById(sceneObjectId_t{ 1u }));
+        dummyObject->setName("newName");
+        EXPECT_EQ(dummyObject, m_registry.findObjectByName("newName"));
+        EXPECT_EQ(dummyObject, m_registry.findObjectById(sceneObjectId_t{ 1u }));
     }
 
     TEST_F(ARamsesObjectRegistry, cannotRetrieveObjectInfoAfterObjectDeleted)
     {
-        m_dummyObject.setName("name");
-        m_registry.addObject(m_dummyObject);
-        m_registry.removeObject(m_dummyObject);
+        auto dummyObject = createAndRegisterDummyObject();
+        dummyObject->setName("name");
+        m_registry.destroyAndUnregisterObject(*dummyObject);
         EXPECT_TRUE(nullptr == m_registry.findObjectByName("name"));
         EXPECT_TRUE(nullptr == m_registry.findObjectById(sceneObjectId_t{1u}));
     }
 
-    TEST_F(ARamsesObjectRegistry, cannotFindObjectByOldNameWhenNameUpdatedAfterAdding)
-    {
-        m_dummyObject.setName("name_old");
-        m_registry.addObject(m_dummyObject);
-        m_dummyObject.setName("name_new");
-        EXPECT_TRUE(nullptr == m_registry.findObjectByName("name_old"));
-    }
-
-    TEST_F(ARamsesObjectRegistry, canAddAndRetrieveObjectInfoWhenUpdatedAfterAdding)
-    {
-        m_registry.addObject(m_dummyObject);
-        m_dummyObject.setName("name");
-        EXPECT_EQ(&m_dummyObject, m_registry.findObjectByName("name"));
-    }
-
     TEST_F(ARamsesObjectRegistry, canRetrieveObjectFromImpl)
     {
-        m_registry.addObject(m_dummyObject);
-        EXPECT_EQ(&m_dummyObject, &m_dummyObject.impl.getRamsesObject());
+        auto dummyObject = createAndRegisterDummyObject();
+        EXPECT_EQ(dummyObject, &dummyObject->m_impl.getRamsesObject());
     }
 
     TEST_F(ARamsesObjectRegistry, hasNoDirtyNodesAfterInitialization)
@@ -155,54 +130,52 @@ namespace ramses
 
     TEST_F(ARamsesObjectRegistry, marksNodeDirty)
     {
-        m_registry.addObject(m_dummyObject);
-        m_registry.setNodeDirty(m_dummyObject.impl, true);
+        auto dummyObject = createAndRegisterDummyObject();
+        m_registry.setNodeDirty(dummyObject->m_impl, true);
         EXPECT_EQ(1u, m_registry.getDirtyNodes().size());
-        EXPECT_TRUE(m_registry.getDirtyNodes().contains(&m_dummyObject.impl));
-        EXPECT_TRUE(m_registry.isNodeDirty(m_dummyObject.impl));
+        EXPECT_TRUE(m_registry.getDirtyNodes().contains(&dummyObject->m_impl));
+        EXPECT_TRUE(m_registry.isNodeDirty(dummyObject->m_impl));
     }
 
     TEST_F(ARamsesObjectRegistry, marksNodeClean)
     {
-        std::unique_ptr<DummyObject> object1(createDummyObject());
-        m_registry.addObject(*object1);
-        m_registry.setNodeDirty(object1->impl, true);
+        auto object1(createAndRegisterDummyObject());
+        m_registry.setNodeDirty(object1->m_impl, true);
 
-        std::unique_ptr<DummyObject> object2(createDummyObject());
-        m_registry.addObject(*object2);
-        m_registry.setNodeDirty(object2->impl, true);
+        auto object2(createAndRegisterDummyObject());
+        m_registry.setNodeDirty(object2->m_impl, true);
 
         EXPECT_EQ(2u, m_registry.getDirtyNodes().size());
 
-        m_registry.setNodeDirty(object1->impl, false);
+        m_registry.setNodeDirty(object1->m_impl, false);
         EXPECT_EQ(1u, m_registry.getDirtyNodes().size());
-        EXPECT_FALSE(m_registry.getDirtyNodes().contains(&object1->impl));
-        EXPECT_FALSE(m_registry.isNodeDirty(object1->impl));
+        EXPECT_FALSE(m_registry.getDirtyNodes().contains(&object1->m_impl));
+        EXPECT_FALSE(m_registry.isNodeDirty(object1->m_impl));
     }
 
     TEST_F(ARamsesObjectRegistry, clearsDirtyNodes)
     {
-        m_registry.addObject(m_dummyObject);
-        m_registry.setNodeDirty(m_dummyObject.impl, true);
+        auto dummyObject = createAndRegisterDummyObject();
+        m_registry.setNodeDirty(dummyObject->m_impl, true);
         m_registry.clearDirtyNodes();
         EXPECT_EQ(0u, m_registry.getDirtyNodes().size());
-        EXPECT_FALSE(m_registry.isNodeDirty(m_dummyObject.impl));
+        EXPECT_FALSE(m_registry.isNodeDirty(dummyObject->m_impl));
     }
 
     TEST_F(ARamsesObjectRegistry, marksNodeCleanWhenDeleted)
     {
-        m_registry.addObject(m_dummyObject);
-        m_registry.setNodeDirty(m_dummyObject.impl, true);
-        m_registry.removeObject(m_dummyObject);
+        auto dummyObject = createAndRegisterDummyObject();
+        m_registry.setNodeDirty(dummyObject->m_impl, true);
+        m_registry.destroyAndUnregisterObject(*dummyObject);
         EXPECT_EQ(0u, m_registry.getDirtyNodes().size());
     }
 
     TEST_F(ARamsesObjectRegistry, nodeAppearsInDirtyListAfterMarkedDirty)
     {
-        m_registry.addObject(m_dummyObject);
-        m_registry.setNodeDirty(m_dummyObject.impl, true);
+        auto dummyObject = createAndRegisterDummyObject();
+        m_registry.setNodeDirty(dummyObject->m_impl, true);
         EXPECT_EQ(1u, m_registry.getDirtyNodes().size());
-        EXPECT_TRUE(m_registry.getDirtyNodes().contains(&m_dummyObject.impl));
-        EXPECT_TRUE(m_registry.isNodeDirty(m_dummyObject.impl));
+        EXPECT_TRUE(m_registry.getDirtyNodes().contains(&dummyObject->m_impl));
+        EXPECT_TRUE(m_registry.isNodeDirty(dummyObject->m_impl));
     }
 }

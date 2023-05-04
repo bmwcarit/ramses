@@ -25,7 +25,7 @@ class ARendererMate : public Test
 public:
     ARendererMate()
         : renderer(*ramsesFramework.createRenderer(ramses::RendererConfig()))
-        , rendererMate(renderer.impl, ramsesFramework.impl)
+        , rendererMate(renderer.m_impl, ramsesFramework.m_impl)
         , rendererMateRendererEventHandler(rendererMate)
         , rendererMateEventHandler(rendererMate)
     {
@@ -33,7 +33,7 @@ public:
         rendererMate.setSceneMapping(sceneId, displayId);
         StrictMock<RendererCommandVisitorMock> visitor;
         EXPECT_CALL(visitor, createDisplayContext(_, _, _));
-        visitor.visit(renderer.impl.getPendingCommands());
+        visitor.visit(renderer.m_impl.getPendingCommands());
         clearCommands();
     }
 
@@ -42,13 +42,13 @@ protected:
     {
         StrictMock<RendererCommandVisitorMock> visitor;
         EXPECT_CALL(visitor, handleConfirmationEcho(DisplayHandle{ displayId.getValue() }, _));
-        visitor.visit(renderer.impl.getPendingCommands());
+        visitor.visit(renderer.m_impl.getPendingCommands());
         clearCommands();
     }
 
     void clearCommands()
     {
-        const_cast<ramses_internal::RendererCommands&>(renderer.impl.getPendingCommands()).clear();
+        const_cast<ramses_internal::RendererCommands&>(renderer.m_impl.getPendingCommands()).clear();
     }
 
     void publishAndExpectToGetToState(ramses::RendererSceneState state, bool expectConfirmation = false)

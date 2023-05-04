@@ -16,77 +16,57 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief Texture represents a texture resource
     */
-    class RAMSES_API Texture3D : public Resource
+    class Texture3D : public Resource
     {
     public:
-        /**
-        * Stores internal data for implementation specifics of Texture.
-        */
-        class Texture3DImpl& impl;
-
         /**
         * @brief Gets texture width
         *
         * @return Texture width
         */
-        [[nodiscard]] uint32_t getWidth() const;
+        [[nodiscard]] RAMSES_API uint32_t getWidth() const;
 
         /**
         * @brief Gets texture height
         *
         * @return Texture height
         */
-        [[nodiscard]] uint32_t getHeight() const;
+        [[nodiscard]] RAMSES_API uint32_t getHeight() const;
 
         /**
         * @brief Gets texture depth
         *
         * @return Texture depth
         */
-        [[nodiscard]] uint32_t getDepth() const;
+        [[nodiscard]] RAMSES_API uint32_t getDepth() const;
 
         /**
         * @brief Gets texture format
         *
         * @return Texture format
         */
-        [[nodiscard]] ETextureFormat getTextureFormat() const;
+        [[nodiscard]] RAMSES_API ETextureFormat getTextureFormat() const;
+
+        /**
+        * Stores internal data for implementation specifics of Texture.
+        */
+        class Texture3DImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating Texture instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor of Texture
         *
-        * @param[in] pimpl Internal data for implementation specifics of Texture (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of Texture (sink - instance becomes owner)
         */
-        explicit Texture3D(Texture3DImpl& pimpl);
-
-        /**
-        * @brief Destructor of the Texture
-        */
-        ~Texture3D() override;
-
-    private:
-        /**
-        * @brief Copy constructor of Texture
-        *
-        * @param[in] other Other instance of Texture
-        */
-        Texture3D(const Texture3D& other);
-
-        /**
-        * @brief Assignment operator of Texture.
-        *
-        * @param[in] other Other instance of Texture class
-        * @return This instance after assignment
-        */
-        Texture3D& operator=(const Texture3D& other);
+        explicit Texture3D(std::unique_ptr<Texture3DImpl> impl);
     };
 }
 

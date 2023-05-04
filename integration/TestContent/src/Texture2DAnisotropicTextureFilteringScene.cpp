@@ -34,7 +34,7 @@
 
 namespace ramses_internal
 {
-    Texture2DAnisotropicTextureFilteringScene::Texture2DAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    Texture2DAnisotropicTextureFilteringScene::Texture2DAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();

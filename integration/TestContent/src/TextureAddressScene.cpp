@@ -19,14 +19,14 @@
 
 namespace ramses_internal
 {
-    TextureAddressScene::TextureAddressScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    TextureAddressScene::TextureAddressScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_groupNode()
         , m_indices(nullptr)
         , m_effect(getTestEffect("ramses-test-client-textured"))
     {
-        const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        m_indices = m_scene.createArrayResource(6u, indicesArray);
+        const std::array<uint16_t, 6> indicesArray = { 0, 1, 2, 2, 1, 3 };
+        m_indices = m_scene.createArrayResource(6u, indicesArray.data());
 
         m_groupNode = m_scene.createNode();
 

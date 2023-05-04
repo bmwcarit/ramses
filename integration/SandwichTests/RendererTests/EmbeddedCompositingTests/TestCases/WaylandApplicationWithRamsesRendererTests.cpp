@@ -24,7 +24,7 @@ namespace ramses_internal
 
     bool WaylandApplicationWithRamsesRendererTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
-        Bool testResultValue = true;
+        bool testResultValue = true;
 
         switch(testCase.m_id)
         {

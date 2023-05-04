@@ -13,7 +13,7 @@
 #include "impl/LogicNodeImpl.h"
 #include "impl/PropertyImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicNodeDummy : public LogicNode
     {
@@ -86,8 +86,8 @@ namespace rlogic::internal
         auto inputType = nestedTypeData;
         auto outputType = nestedTypeData;
         // These usually come from subclasses deserialization code
-        auto inputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(inputType, EPropertySemantics::ScriptInput));
-        auto outputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(outputType, EPropertySemantics::ScriptOutput));
+        auto inputs = std::make_unique<PropertyImpl>(inputType, EPropertySemantics::ScriptInput);
+        auto outputs = std::make_unique<PropertyImpl>(outputType, EPropertySemantics::ScriptOutput);
 
         LogicNodeDummy logicNode{ std::make_unique<LogicNodeImplMock>("name") };
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast) known test type

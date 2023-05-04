@@ -20,25 +20,25 @@ namespace ramses
     class AttributeInput;
 
     /**
+     * @ingroup CoreAPI
      * @brief An effect describes how an object will be rendered to the screen.
     */
-    class RAMSES_API Effect : public Resource
+    class Effect : public Resource
     {
     public:
-
         /**
         * @brief Gets number of uniform inputs.
         *
         * @return Number of uniform inputs
         */
-        [[nodiscard]] uint32_t getUniformInputCount() const;
+        [[nodiscard]] RAMSES_API uint32_t getUniformInputCount() const;
 
         /**
         * @brief Gets number of attribute inputs.
         *
         * @return Number of attribute inputs
         */
-        [[nodiscard]] uint32_t getAttributeInputCount() const;
+        [[nodiscard]] RAMSES_API uint32_t getAttributeInputCount() const;
 
         /**
         * @brief Gets uniform input at given index.
@@ -48,7 +48,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getUniformInput(uint32_t index, UniformInput& uniformInput) const;
+        RAMSES_API status_t getUniformInput(uint32_t index, UniformInput& uniformInput) const;
 
         /**
         * @brief Gets attribute input at given index.
@@ -58,7 +58,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getAttributeInput(uint32_t index, AttributeInput& attributeInput) const;
+        RAMSES_API status_t getAttributeInput(uint32_t index, AttributeInput& attributeInput) const;
 
         /**
         * @brief Finds uniform input by input name.
@@ -68,7 +68,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t findUniformInput(const char* inputName, UniformInput& uniformInput) const;
+        RAMSES_API status_t findUniformInput(const char* inputName, UniformInput& uniformInput) const;
 
         /**
         * @brief Finds attribute input by input name.
@@ -78,7 +78,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t findAttributeInput(const char* inputName, AttributeInput& attributeInput) const;
+        RAMSES_API status_t findAttributeInput(const char* inputName, AttributeInput& attributeInput) const;
 
         /**
         * @brief Finds uniform input that represents a semantic input (if existing).
@@ -88,7 +88,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t findUniformInput(EEffectUniformSemantic uniformSemantic, UniformInput& uniformInput) const;
+        RAMSES_API status_t findUniformInput(EEffectUniformSemantic uniformSemantic, UniformInput& uniformInput) const;
 
         /**
         * @brief Finds attribute input that represents a semantic input (if existing).
@@ -98,14 +98,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t findAttributeInput(EEffectAttributeSemantic attributeSemantic, AttributeInput& attributeInput) const;
+        RAMSES_API status_t findAttributeInput(EEffectAttributeSemantic attributeSemantic, AttributeInput& attributeInput) const;
 
         /**
         * @brief Checks if the \p effect has a geometry shader attached to it.
         *
         * @return true if the effect has a geometry shader attached to it, false otherwise
         */
-        [[nodiscard]] bool hasGeometryShader() const;
+        [[nodiscard]] RAMSES_API bool hasGeometryShader() const;
 
         /**
         * @brief If the \p effect has a geometry shader attached to it (see #hasGeometryShader) this method
@@ -118,45 +118,25 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getGeometryShaderInputType(EDrawMode& expectedGeometryInputType) const;
+        RAMSES_API status_t getGeometryShaderInputType(EDrawMode& expectedGeometryInputType) const;
 
         /**
         * @brief Stores internal data for implementation specifics of Effect.
         */
-        class EffectImpl& impl;
+        class EffectImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the convenience library for application developers
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor of Effect
         *
-        * @param[in] pimpl Internal data for implementation specifics of Effect (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of Effect (sink - instance becomes owner)
         */
-        explicit Effect(EffectImpl& pimpl);
-
-        /**
-        * @brief Copy constructor of Effect
-        *
-        * @param[in] other Other instance of Effect class
-        */
-        Effect(const Effect& other);
-
-        /**
-        * @brief Assignment operator of Effect.
-        *
-        * @param[in] other Other instance of Effect class
-        * @return This instance after assignment
-        */
-        Effect& operator=(const Effect& other);
-
-        /**
-        * @brief Destructor of the Effect
-        */
-        ~Effect() override;
+        explicit Effect(std::unique_ptr<EffectImpl> impl);
     };
 }
 

@@ -20,7 +20,6 @@
 
 #include "X11/Xlib.h"
 #include "X11/Xutil.h"
-#undef Bool // Xlib.h defines Bool as int - this collides with ramses_internal::Bool
 #undef Status
 #undef None
 
@@ -66,16 +65,16 @@ namespace ramses_internal
         // public as it is used by tests
         static EKeyCode convertKeySymbolIntoRamsesKeyCode(UInt32 virtualKeyCode);
     private:
-        Bool setFullscreen(Bool fullscreen) override;
+        bool setFullscreen(bool fullscreen) override;
         void setTitle(const String& title) override;
 
         X11WindowData m_X11WindowData;
 
         UInt32 m_keyModifiers;
 
-        Bool m_bLButtonDown;
-        Bool m_bRButtonDown;
-        Bool m_bMButtonDown;
+        bool m_bLButtonDown;
+        bool m_bRButtonDown;
+        bool m_bMButtonDown;
         X11WindowHandle m_userProvidedWindowHandle;
     };
 }

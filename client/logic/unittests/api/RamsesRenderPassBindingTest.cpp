@@ -27,7 +27,7 @@
 
 #include "ramses-utils.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ARamsesRenderPassBinding : public ALogicEngine
     {

@@ -17,6 +17,8 @@
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/RenderGroupUtils.h"
 #include <array>
+#include "glm/gtx/transform.hpp"
+#include "glm/gtx/matrix_transform_2d.hpp"
 
 namespace ramses_internal
 {
@@ -43,11 +45,11 @@ namespace ramses_internal
             scene.allocateTransform(childChild3, t3);
 
             scene.setTranslation(t1, t1Translation);
-            scene.setRotation   (t1, Vector4(t1Rotation)   , ERotationType::Euler_ZYZ);
+            scene.setRotation   (t1, glm::vec4(t1Rotation, 1.f)   , ERotationType::Euler_ZYZ);
             scene.setScaling    (t1, t1Scaling    );
 
             scene.setTranslation(t2, t2Translation);
-            scene.setRotation   (t2, Vector4(t2Rotation)   , ERotationType::Euler_XYX);
+            scene.setRotation   (t2, glm::vec4(t2Rotation, 1.f)   , ERotationType::Euler_XYX);
             scene.setScaling    (t2, t2Scaling    );
 
             scene.setTranslation(t3, t3Translation);
@@ -107,10 +109,10 @@ namespace ramses_internal
 
             scene.allocateDataInstance(uniformLayout, uniformData);
             scene.setDataSingleFloat(uniformData, DataFieldHandle(0u), 0.5f);
-            const Vector4 dataVec4fArray[2] = { Vector4(0.0f, 1.0f, 2.0f, 3.0f), Vector4(4.0f, 5.0f, 6.0f, 7.0f) };
-            scene.setDataVector4fArray(uniformData, DataFieldHandle(1), 2, dataVec4fArray);
-            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationType::Euler_XYZ));
-            scene.setDataSingleMatrix44f(uniformData, DataFieldHandle(3), Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }));
+            const std::array dataVec4fArray = { glm::vec4(0.0f, 1.0f, 2.0f, 3.0f), glm::vec4(4.0f, 5.0f, 6.0f, 7.0f) };
+            scene.setDataVector4fArray(uniformData, DataFieldHandle(1), 2, dataVec4fArray.data());
+            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), glm::rotate(glm::mat3(1.f), glm::radians(5.0f)));
+            scene.setDataSingleMatrix44f(uniformData, DataFieldHandle(3), glm::translate(glm::vec3{ 5.0f, 4.0f, 3.0f }));
             scene.setDataTextureSamplerHandle(uniformData, DataFieldHandle(4), samplerWithTextureResource);
             scene.setDataReference(uniformData, DataFieldHandle(5), dataRef);
             scene.setDataTextureSamplerHandle(uniformData, DataFieldHandle(6), samplerWithExternalTexture);
@@ -144,7 +146,7 @@ namespace ramses_internal
 
             scene.allocateRenderPass(0u, renderPass);
             scene.setRenderPassClearFlag(renderPass, ramses_internal::EClearFlags::EClearFlags_None);
-            scene.setRenderPassClearColor(renderPass, Vector4(0.5f, 0.0f, 1.f, 0.25f));
+            scene.setRenderPassClearColor(renderPass, glm::vec4(0.5f, 0.0f, 1.f, 0.25f));
             scene.setRenderPassCamera(renderPass, camera);
             scene.setRenderPassRenderTarget(renderPass, renderTarget);
             scene.setRenderPassRenderOrder(renderPass, 1);
@@ -253,7 +255,7 @@ namespace ramses_internal
 
             EXPECT_EQ(t2Translation, otherScene.getTranslation (t2));
             EXPECT_EQ(t2Scaling    , otherScene.getScaling     (t2));
-            EXPECT_EQ(Vector4(t2Rotation), otherScene.getRotation    (t2));
+            EXPECT_EQ(glm::vec4(t2Rotation, 1.f), otherScene.getRotation    (t2));
             EXPECT_EQ(ERotationType::Euler_XYX, otherScene.getRotationType(t2));
 
             EXPECT_EQ(t3Translation, otherScene.getTranslation (t3));
@@ -387,12 +389,12 @@ namespace ramses_internal
             EXPECT_EQ(0.5f, otherScene.getDataSingleFloat(uniformData, DataFieldHandle(0u)));
 
             // array check
-            const Vector4* dataVec4fArray = otherScene.getDataVector4fArray(uniformData, DataFieldHandle(1u));
-            EXPECT_EQ(Vector4(0.0f, 1.0f, 2.0f, 3.0f), dataVec4fArray[0]);
-            EXPECT_EQ(Vector4(4.0f, 5.0f, 6.0f, 7.0f), dataVec4fArray[1]);
+            const glm::vec4* dataVec4fArray = otherScene.getDataVector4fArray(uniformData, DataFieldHandle(1u));
+            EXPECT_EQ(glm::vec4(0.0f, 1.0f, 2.0f, 3.0f), dataVec4fArray[0]);
+            EXPECT_EQ(glm::vec4(4.0f, 5.0f, 6.0f, 7.0f), dataVec4fArray[1]);
 
-            EXPECT_EQ(Matrix33f::Rotation({ 5.0f, 4.0f, 3.0f, 1.f }, ERotationType::Euler_XYZ), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
-            EXPECT_EQ(Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }), otherScene.getDataSingleMatrix44f(uniformData, DataFieldHandle(3u)));
+            EXPECT_EQ(glm::rotate(glm::mat3(1.f), glm::radians(5.0f)), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
+            EXPECT_EQ(glm::translate(glm::vec3{ 5.0f, 4.0f, 3.0f }), otherScene.getDataSingleMatrix44f(uniformData, DataFieldHandle(3u)));
             EXPECT_EQ(samplerWithTextureResource, otherScene.getDataTextureSamplerHandle(uniformData, DataFieldHandle(4u)));
             EXPECT_EQ(dataRef, otherScene.getDataReference(uniformData, DataFieldHandle(5u)));
             EXPECT_EQ(samplerWithExternalTexture, otherScene.getDataTextureSamplerHandle(uniformData, DataFieldHandle(6u)));
@@ -467,7 +469,7 @@ namespace ramses_internal
             EXPECT_EQ(camera, rp.camera);
             EXPECT_EQ(renderTarget, rp.renderTarget);
             EXPECT_EQ(1, rp.renderOrder);
-            EXPECT_EQ(Vector4(0.5f, 0.0f, 1.f, 0.25f), rp.clearColor);
+            EXPECT_EQ(glm::vec4(0.5f, 0.0f, 1.f, 0.25f), rp.clearColor);
             EXPECT_EQ(static_cast<UInt32>(EClearFlags::EClearFlags_None), rp.clearFlags);
             EXPECT_FALSE(rp.isEnabled);
             EXPECT_TRUE(rp.isRenderOnce);
@@ -618,21 +620,20 @@ namespace ramses_internal
         const UInt32                startIndex                      = 12u;
         const UInt32                indexCount                      = 13u;
         const UInt32                startVertex                     = 14u;
-        const Vector3               t1Translation                   {1, 2, 3};
-        const Vector3               t1Rotation                      {4, 5, 6};
-        const Vector3               t1Scaling                       {7,8, 9};
-        const Vector3               t2Translation                   {0.5f, 1.5f, 2.0f};
-        const Vector3               t2Rotation                      {1.3f, 1.6f, 2.1f};
-        const Vector3               t2Scaling                       {2.3f, 3.6f, 4.1f};
-        const Vector3               t3Translation                   {3.5f, 4.5f, 5.0f};
-        const Vector4               t3Rotation                      {0.5f, -0.5f, 0.5f, 0.5f};
-        const Vector3               t3Scaling                       {5.0f, 4.0f, 3.0f};
+        const glm::vec3               t1Translation                   {1, 2, 3};
+        const glm::vec3               t1Rotation                      {4, 5, 6};
+        const glm::vec3               t1Scaling                       {7,8, 9};
+        const glm::vec3               t2Translation                   {0.5f, 1.5f, 2.0f};
+        const glm::vec3               t2Rotation                      {1.3f, 1.6f, 2.1f};
+        const glm::vec3               t2Scaling                       {2.3f, 3.6f, 4.1f};
+        const glm::vec3               t3Translation                   {3.5f, 4.5f, 5.0f};
+        const glm::vec4               t3Rotation                      {0.5f, -0.5f, 0.5f, 0.5f};
+        const glm::vec3               t3Scaling                       {5.0f, 4.0f, 3.0f};
         const DataSlotId            dataSlotId                      {15};
         const DataInstanceHandle    dataRef                         {124u};
         // Bounding geometry data
-        const Vector3               obbPosition                     {5.1f, 5.2f, 5.3f};
-        const Matrix33f             obbOrientation                  { {6.11f, 6.12f, 6.13f}, {6.21f, 6.22f, 6.23f}, {6.31f, 6.32f, 6.33f} };
-        const Vector3               obbExtent                       {7.1f, 7.2f, 7.3f};
+        const glm::vec3               obbPosition                     {5.1f, 5.2f, 5.3f};
+        const glm::vec3               obbExtent                       {7.1f, 7.2f, 7.3f};
 
         const CameraHandle           camera                         {20u};
         const CameraHandle           orthographicCamera             {24u};

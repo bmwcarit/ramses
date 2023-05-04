@@ -20,12 +20,11 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/EffectDescription.h"
-#include "Math3d/Vector3.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    MsaaRenderBufferScene::MsaaRenderBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    MsaaRenderBufferScene::MsaaRenderBufferScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : CommonRenderBufferTestScene(scene, cameraPosition)
         , m_colorBufferMsaa2(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_WriteOnly, 2u))
         , m_colorBufferMsaa4(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_WriteOnly, 4u))

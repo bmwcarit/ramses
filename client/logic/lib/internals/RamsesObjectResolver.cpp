@@ -16,7 +16,7 @@
 
 #include "fmt/format.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     RamsesObjectResolver::RamsesObjectResolver(ErrorReporting& errorReporting, ramses::Scene& scene)
         : m_errors(errorReporting)

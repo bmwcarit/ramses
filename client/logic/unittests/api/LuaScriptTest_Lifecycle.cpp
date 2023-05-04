@@ -16,7 +16,7 @@
 #include "fmt/format.h"
 #include <fstream>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALuaScript_Lifecycle : public ALuaScript
     {

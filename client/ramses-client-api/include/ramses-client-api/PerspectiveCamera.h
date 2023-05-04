@@ -14,12 +14,13 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief   The #PerspectiveCamera is a local camera which defines a perspective view into the scene.
     * @details A valid camera for rendering must have viewport and frustum set.
     *          Frustum planes can be set using #ramses::Camera::setFrustum or #ramses::PerspectiveCamera::setFrustum,
     *          depending if input is concrete frustum planes or field of view and aspect ratio.
     */
-    class RAMSES_API PerspectiveCamera : public Camera
+    class PerspectiveCamera : public Camera
     {
     public:
         /**
@@ -49,7 +50,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setFrustum(float fov, float aspectRatio, float nearPlane, float farPlane);
+        RAMSES_API status_t setFrustum(float fov, float aspectRatio, float nearPlane, float farPlane);
 
         /**
         * @brief Gets the vertical field of view opening angle in degrees.
@@ -58,7 +59,7 @@ namespace ramses
         *
         * @return Vertical field of view of this camera.
         */
-        [[nodiscard]] float getVerticalFieldOfView() const;
+        [[nodiscard]] RAMSES_API float getVerticalFieldOfView() const;
 
         /**
         * @brief Gets the aspect ratio between camera frustum width and height (set via #setFrustum, not viewport).
@@ -67,23 +68,20 @@ namespace ramses
         *
         * @return Aspect ratio of this camera.
         */
-        [[nodiscard]] float getAspectRatio() const;
+        [[nodiscard]] RAMSES_API float getAspectRatio() const;
 
     protected:
         /**
         * @brief Scene is the factory for creating PerspectiveCamera instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for PerspectiveCamera.
         *
-        * @param[in] pimpl Internal data for implementation specifics of PerspectiveCamera (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of PerspectiveCamera (sink - instance becomes owner)
         */
-        explicit PerspectiveCamera(CameraNodeImpl& pimpl);
-
-        /** Protected trivial destructor to avoid deleting by user*/
-        ~PerspectiveCamera() override;
+        explicit PerspectiveCamera(std::unique_ptr<CameraNodeImpl> impl);
     };
 }
 

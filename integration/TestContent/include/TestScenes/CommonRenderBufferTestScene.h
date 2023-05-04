@@ -26,7 +26,7 @@ namespace ramses_internal
     class CommonRenderBufferTestScene : public IntegrationScene
     {
     public:
-        CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        CommonRenderBufferTestScene(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
     protected:
         const ramses::Effect&       getEffectRenderOneBuffer();

@@ -14,17 +14,24 @@
 namespace ramses
 {
     class RenderBuffer;
+    class RenderTargetDescriptionImpl;
 
     /**
+    * @ingroup CoreAPI
     * @brief RenderTargetDescription holds all necessary information for a RenderTarget to be created.
     */
-    class RAMSES_API RenderTargetDescription : public StatusObject
+    class RenderTargetDescription : public StatusObject
     {
     public:
         /**
         * @brief Constructor of RenderTargetDescription
         */
-        RenderTargetDescription();
+        RAMSES_API RenderTargetDescription();
+
+        /**
+        * @brief Destructor of RenderTargetDescription
+        */
+        RAMSES_API ~RenderTargetDescription() override;
 
         /**
         * @brief Adds a RenderBuffer to the RenderTargetDescription.
@@ -38,12 +45,38 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t addRenderBuffer(const RenderBuffer& renderBuffer);
+        RAMSES_API status_t addRenderBuffer(const RenderBuffer& renderBuffer);
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API RenderTargetDescription(const RenderTargetDescription& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API RenderTargetDescription(RenderTargetDescription&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API RenderTargetDescription& operator=(const RenderTargetDescription& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API RenderTargetDescription& operator=(RenderTargetDescription&& other) noexcept;
 
         /**
         * @brief Stores internal data for implementation specifics of RenderTargetDescription.
         */
-        class RenderTargetDescriptionImpl& impl;
+        std::reference_wrapper<RenderTargetDescriptionImpl> m_impl;
     };
 }
 

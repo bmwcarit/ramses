@@ -18,7 +18,7 @@ namespace ramses
         : m_traversalStyle(traversalStyle)
         , m_objectFilterType(objectFilterType)
     {
-        m_nodesToExpand.push_back(&startNode.impl);
+        m_nodesToExpand.push_back(&startNode.m_impl);
     }
 
     Node* SceneGraphIteratorImpl::getNext()

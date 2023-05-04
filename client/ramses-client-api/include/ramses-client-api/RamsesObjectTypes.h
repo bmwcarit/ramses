@@ -13,7 +13,10 @@
 
 namespace ramses
 {
-    /// RamsesObject type ID
+    /**
+    * @ingroup CoreAPI
+    * @brief RamsesObject type ID
+    */
     enum ERamsesObjectType
     {
         ERamsesObjectType_Invalid = 0,
@@ -24,7 +27,7 @@ namespace ramses
         ERamsesObjectType_Scene,
         ERamsesObjectType_Node, // base type
         ERamsesObjectType_MeshNode,
-        ERamsesObjectType_Camera,
+        ERamsesObjectType_Camera, // base type
         ERamsesObjectType_PerspectiveCamera,
         ERamsesObjectType_OrthographicCamera,
         ERamsesObjectType_Effect,

@@ -18,24 +18,24 @@ namespace ramses
     class Appearance;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesAppearanceBindingImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
-     * The RamsesAppearanceBinding is a type of #rlogic::RamsesBinding which allows the #rlogic::LogicEngine to control instances
-     * of ramses::Appearance. RamsesAppearanceBinding's can be created with #rlogic::LogicEngine::createRamsesAppearanceBinding.
+     * The RamsesAppearanceBinding is a type of #ramses::RamsesBinding which allows the #ramses::LogicEngine to control instances
+     * of ramses::Appearance. RamsesAppearanceBinding's can be created with #ramses::LogicEngine::createRamsesAppearanceBinding.
      *
-     * The #RamsesAppearanceBinding has a static link to a ramses::Appearance. After creation, #rlogic::LogicNode::getInputs will
+     * The #RamsesAppearanceBinding has a static link to a ramses::Appearance. After creation, #ramses::LogicNode::getInputs will
      * return a struct property with children equivalent to the uniform inputs of the provided ramses Appearance.
      *
-     * Since the RamsesAppearanceBinding derives from #rlogic::RamsesBinding, it also provides the #rlogic::LogicNode::getInputs
-     * and #rlogic::LogicNode::getOutputs method. For this particular implementation, the methods behave as follows:
-     *  - #rlogic::LogicNode::getInputs: returns the inputs corresponding to the available shader uniforms of the bound ramses::Appearance
-     *  - #rlogic::LogicNode::getOutputs: returns always nullptr, because a #RamsesAppearanceBinding does not have outputs,
+     * Since the RamsesAppearanceBinding derives from #ramses::RamsesBinding, it also provides the #ramses::LogicNode::getInputs
+     * and #ramses::LogicNode::getOutputs method. For this particular implementation, the methods behave as follows:
+     *  - #ramses::LogicNode::getInputs: returns the inputs corresponding to the available shader uniforms of the bound ramses::Appearance
+     *  - #ramses::LogicNode::getOutputs: returns always nullptr, because a #RamsesAppearanceBinding does not have outputs,
      *    it implicitly controls the ramses Appearance
      *  - The values of this binding's inputs are initialized to default values (0, 0.0f, etc) and *not* loaded from the values in Ramses
      *
@@ -44,7 +44,7 @@ namespace rlogic
      * - matrix types (e.g. mat4, mat23 etc.)
      * - any uniform with attached semantics (e.g. display resolution) - see ramses::EEffectUniformSemantic docs
      *
-     * Uniform types which are not supported are not available when queried over #rlogic::LogicNode::getInputs.
+     * Uniform types which are not supported are not available when queried over #ramses::LogicNode::getInputs.
      *
      */
     class RamsesAppearanceBinding : public RamsesBinding
@@ -57,48 +57,18 @@ namespace rlogic
         [[nodiscard]] RAMSES_API ramses::Appearance& getRamsesAppearance() const;
 
         /**
+         * Implementation detail of RamsesAppearanceBinding
+         */
+        internal::RamsesAppearanceBindingImpl& m_appearanceBinding;
+
+    protected:
+        /**
          * Constructor of RamsesAppearanceBinding. User is not supposed to call this - RamsesAppearanceBinding are created by other factory classes
          *
          * @param impl implementation details of the RamsesAppearanceBinding
          */
         explicit RamsesAppearanceBinding(std::unique_ptr<internal::RamsesAppearanceBindingImpl> impl) noexcept;
 
-        /**
-         * Destructor of RamsesAppearanceBinding.
-         */
-        ~RamsesAppearanceBinding() noexcept override;
-
-        /**
-         * Copy Constructor of RamsesAppearanceBinding is deleted because RamsesAppearanceBinding are not supposed to be copied
-         *
-         * @param other RamsesNodeBindings to copy from
-         */
-        RamsesAppearanceBinding(const RamsesAppearanceBinding& other) = delete;
-
-        /**
-         * Move Constructor of RamsesAppearanceBinding is deleted because RamsesAppearanceBinding are not supposed to be moved
-         *
-         * @param other RamsesAppearanceBinding to move from
-         */
-        RamsesAppearanceBinding(RamsesAppearanceBinding&& other) = delete;
-
-        /**
-         * Assignment operator of RamsesAppearanceBinding is deleted because RamsesAppearanceBinding are not supposed to be copied
-         *
-         * @param other RamsesAppearanceBinding to assign from
-         */
-        RamsesAppearanceBinding& operator=(const RamsesAppearanceBinding& other) = delete;
-
-        /**
-         * Move assignment operator of RamsesAppearanceBinding is deleted because RamsesAppearanceBinding are not supposed to be moved
-         *
-         * @param other RamsesAppearanceBinding to assign from
-         */
-        RamsesAppearanceBinding& operator=(RamsesAppearanceBinding&& other) = delete;
-
-        /**
-         * Implementation detail of RamsesAppearanceBinding
-         */
-        internal::RamsesAppearanceBindingImpl& m_appearanceBinding;
+        friend class internal::ApiObjects;
     };
 }

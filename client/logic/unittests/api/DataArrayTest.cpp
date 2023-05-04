@@ -17,7 +17,7 @@
 
 #include <fmt/format.h>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     template <typename T>
     class ADataArray : public ::testing::Test
@@ -90,7 +90,7 @@ namespace rlogic::internal
 
         EXPECT_FALSE(this->m_logicEngine.destroy(*dataArray));
         ASSERT_FALSE(this->m_logicEngine.getErrors().empty());
-        EXPECT_EQ("Can't find data array in logic engine!", this->m_logicEngine.getErrors().front().message);
+        EXPECT_EQ("Failed to destroy object 'dataarray [Id=1]', cannot find it in this LogicEngine instance.", this->m_logicEngine.getErrors().front().message);
     }
 
     TYPED_TEST(ADataArray, ChangesName)

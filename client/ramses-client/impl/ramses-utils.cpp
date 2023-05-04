@@ -34,6 +34,7 @@
 #include "PlatformAbstraction/PlatformMath.h"
 #include "lodepng.h"
 #include <iostream>
+#include <array>
 
 namespace ramses
 {
@@ -175,21 +176,21 @@ namespace ramses
 
     bool IsPowerOfTwo(uint32_t val)
     {
-        while (((val & 1) == 0) && val > 1)
+        while (((val & 1u) == 0u) && val > 1u)
         {
-            val >>= 1;
+            val >>= 1u;
         }
 
-        return (val == 1);
+        return (val == 1u);
     }
 
     uint32_t Log2(uint32_t val)
     {
         uint32_t pow = 0;
-        while (((val & 1) == 0) && val > 1)
+        while (((val & 1u) == 0u) && val > 1u)
         {
             pow++;
-            val >>= 1;
+            val >>= 1u;
         }
 
         return pow;
@@ -285,7 +286,7 @@ namespace ramses
     {
         const uint32_t faceSize = faceWidth * faceHeight * bytesPerPixel;
         mipMapCount = 0u;
-        MipLevelData* faceMips[6];
+        std::array<MipLevelData*,6> faceMips;
         faceMips[0] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 0], mipMapCount);
         faceMips[1] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 1], mipMapCount);
         faceMips[2] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 2], mipMapCount);
@@ -341,7 +342,7 @@ namespace ramses
 
     nodeId_t RamsesUtils::GetNodeId(const Node& node)
     {
-        return nodeId_t(node.impl.getNodeHandle().asMemoryHandle());
+        return nodeId_t(node.m_impl.getNodeHandle().asMemoryHandle());
     }
 
     bool RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataObject& frustumPlanesData, DataObject& nearFarPlanesData)
@@ -363,7 +364,7 @@ namespace ramses
     void RamsesUtils::DumpUnrequiredSceneObjects(const Scene& scene)
     {
         LOG_INFO_F(ramses_internal::CONTEXT_CLIENT, [&](ramses_internal::StringOutputStream& output) {
-            SceneDumper sceneDumper{ scene.impl };
+            SceneDumper sceneDumper{ scene.m_impl };
             sceneDumper.dumpUnrequiredObjects(output);
             });
     }
@@ -371,7 +372,7 @@ namespace ramses
     void RamsesUtils::DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out)
     {
         ramses_internal::StringOutputStream output;
-        SceneDumper sceneDumper{ scene.impl };
+        SceneDumper sceneDumper{ scene.m_impl };
         sceneDumper.dumpUnrequiredObjects(output);
         out << output.release();
     }

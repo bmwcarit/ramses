@@ -14,15 +14,15 @@
 #include <string>
 #include <memory>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SaveFileConfigImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
-     * Holds configuration settings for saving #rlogic::LogicEngine instances into a file.
+     * Holds configuration settings for saving #ramses::LogicEngine instances into a file.
      * This config file is designed to work with the Ramses Composer editor, but you can use the metadata to store
      * version and export information from any exporter (or script). Use the config to trace the origin and
      * export environment of assets during runtime.
@@ -33,7 +33,7 @@ namespace rlogic
         RAMSES_API SaveFileConfig() noexcept;
 
         /**
-         * Adds custom string metadata to the binary file saved by #rlogic::LogicEngine. Can be any string. It is not
+         * Adds custom string metadata to the binary file saved by #ramses::LogicEngine. Can be any string. It is not
          * used by anything other than logging info, particularly when loading a file and when errors occur.
          *
          * @param metadata the string to be written together with the saved binary data
@@ -53,7 +53,7 @@ namespace rlogic
         RAMSES_API void setExporterVersion(uint32_t major, uint32_t minor, uint32_t patch, uint32_t fileFormatVersion);
 
         /**
-        * By default, saving to file validates the content and issues warnings (see #rlogic::LogicEngine::validate).
+        * By default, saving to file validates the content and issues warnings (see #ramses::LogicEngine::validate).
         * This behavior can be disabled here. Calling this with validationEnabled=false will itself cause a INFO log,
         * but will silence further warnings in the content.
         *
@@ -62,8 +62,8 @@ namespace rlogic
         RAMSES_API void setValidationEnabled(bool validationEnabled);
 
         /**
-        * Sets saving mode for all #rlogic::LuaScript and/or #rlogic::LuaModule instances.
-        * See #rlogic::ELuaSavingMode for the available options and their implications.
+        * Sets saving mode for all #ramses::LuaScript and/or #ramses::LuaModule instances.
+        * See #ramses::ELuaSavingMode for the available options and their implications.
         * Note that this is just a hint and the export logic will decide what to actually export,
         * depending on availabilty of Lua source code or bytecode:
         *  - if only source code is available
@@ -72,7 +72,7 @@ namespace rlogic
         *  - if both source and bytecode are available then the selected saving \c mode is applied
         * There will be no error produced if selected saving mode cannot be respected.
         *
-        * @param mode selected saving mode, default is #rlogic::ELuaSavingMode::SourceAndByteCode
+        * @param mode selected saving mode, default is #ramses::ELuaSavingMode::SourceAndByteCode
         */
         RAMSES_API void setLuaSavingMode(ELuaSavingMode mode);
 

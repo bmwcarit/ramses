@@ -33,7 +33,7 @@ namespace ramses_internal
         m_indent = m_indent.substr(0u, m_indent.size() - 2u);
     }
 
-    Bool RendererLogContext::isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const
+    bool RendererLogContext::isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const
     {
         return (m_activeLogLevelFlags & logLevelFlag) != 0u;
     }
@@ -43,7 +43,7 @@ namespace ramses_internal
         m_nodeHandleFilter = nodeHandleFilter;
     }
 
-    Bool RendererLogContext::isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const
+    bool RendererLogContext::isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const
     {
         if (!m_nodeHandleFilter.isValid())
         {

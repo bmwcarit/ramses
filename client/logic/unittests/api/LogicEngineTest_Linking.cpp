@@ -38,7 +38,7 @@
 #include "fmt/format.h"
 #include <array>
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_Linking : public ALogicEngine
     {
@@ -1358,11 +1358,11 @@ namespace rlogic
             end
             )");
 
-        rlogic::Property* nodeTranslation = nodeBinding.getInputs()->getChild("translation");
-        rlogic::Property* nodeVisibility = nodeBinding.getInputs()->getChild("visibility");
+        ramses::Property* nodeTranslation = nodeBinding.getInputs()->getChild("translation");
+        ramses::Property* nodeVisibility = nodeBinding.getInputs()->getChild("visibility");
 
-        const rlogic::Property* scriptTranslation = outScript->getOutputs()->getChild("translation");
-        const rlogic::Property* scriptVisiblity = outScript->getOutputs()->getChild("visibility");
+        const ramses::Property* scriptTranslation = outScript->getOutputs()->getChild("translation");
+        const ramses::Property* scriptVisiblity = outScript->getOutputs()->getChild("visibility");
 
         EXPECT_TRUE(m_logicEngine.link(*scriptVisiblity, *nodeVisibility));
         EXPECT_TRUE(m_logicEngine.link(*scriptTranslation, *nodeTranslation));
@@ -1728,7 +1728,7 @@ namespace rlogic
     class ALogicEngine_Linking_WithBindings : public ALogicEngine_Linking_WithFiles
     {
     protected:
-        using ENodePropertyStaticIndex = rlogic::internal::ENodePropertyStaticIndex;
+        using ENodePropertyStaticIndex = ramses::internal::ENodePropertyStaticIndex;
 
         static void ExpectValues(ramses::Node& node, ENodePropertyStaticIndex prop, vec3f expectedValues)
         {

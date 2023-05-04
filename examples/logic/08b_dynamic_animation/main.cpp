@@ -60,35 +60,35 @@ int main()
      */
     auto [scene, tri] = CreateSceneWithTriangle(*renderer.getClient());
 
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Create a binding object which serves as a bridge between logic nodes and animations on one end
     * and a Ramses scene on the other end.
     */
-    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*tri);
+    ramses::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*tri);
 
     /**
      * Create data arrays which contain the time stamp data and the keyframe data points.
      * Unlike with static animations the actual keyframe values will be set and dynamically changed from control script.
      */
-    rlogic::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 1.f });
-    rlogic::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, {1.f, 0.f, 0.f} });
+    ramses::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 1.f });
+    ramses::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, {1.f, 0.f, 0.f} });
 
     /**
      * Create a channel for animation.
      */
-    const rlogic::AnimationChannel animChannel { "translation", animTimestamps, animKeyframes, rlogic::EInterpolationType::Linear };
+    const ramses::AnimationChannel animChannel { "translation", animTimestamps, animKeyframes, ramses::EInterpolationType::Linear };
 
     /**
      * Create a 'dynamic' animation node by passing in the channel data via config
      */
-    rlogic::AnimationNodeConfig animConfig;
+    ramses::AnimationNodeConfig animConfig;
     animConfig.addChannel(animChannel);
     /// In order to implement 'animateTo' logic with dynamic changes of keyframes we need to create AnimationNode that allows
     /// modifications of animation data
     animConfig.setExposingOfChannelDataAsProperties(true);
-    rlogic::AnimationNode* animNode = logicEngine.createAnimationNode(animConfig);
+    ramses::AnimationNode* animNode = logicEngine.createAnimationNode(animConfig);
 
     /**
     * Connect the animation channel 'translation' output with the translation property of the RamsesNodeBinding object.
@@ -101,9 +101,9 @@ int main()
     /**
     * Create an 'animate to' control script which will control not only the animation progress but also modify animation data when needed
     */
-    rlogic::LuaConfig scriptConfig;
-    scriptConfig.addStandardModuleDependency(rlogic::EStandardModule::Math);
-    rlogic::LuaScript* controlScript = logicEngine.createLuaScript(R"(
+    ramses::LuaConfig scriptConfig;
+    scriptConfig.addStandardModuleDependency(ramses::EStandardModule::Math);
+    ramses::LuaScript* controlScript = logicEngine.createLuaScript(R"(
         function init()
             GLOBAL.startTick = nil
             GLOBAL.currentDirection = 0
@@ -160,7 +160,7 @@ int main()
     * or we can create a TimerNode which generates system time for us. Note that its 'ticker_us' output is in microseconds, control script needs
     * to convert it to whatever units are used in the animation timestamps (in this example seconds).
     */
-    rlogic::TimerNode* timer = logicEngine.createTimerNode();
+    ramses::TimerNode* timer = logicEngine.createTimerNode();
     logicEngine.link(
         *timer->getOutputs()->getChild("ticker_us"),
         *controlScript->getInputs()->getChild("ticker"));
@@ -170,7 +170,7 @@ int main()
     * one of them (keyframeFrom) depends on the current (or rather last produced) value of animation output.
     * Note that the default data flow in this example logic network is control script -> animation node -> binding/meshnode. In order to get
     * the last animation output we need to create a link which goes against this data flow and creates a loop in logic network dependency graph, this is not allowed
-    * unless we use a 'weak' link, which this example is a perfect use case for. See rlogic::LogicEngine::linkWeak for more details and limitations.
+    * unless we use a 'weak' link, which this example is a perfect use case for. See ramses::LogicEngine::linkWeak for more details and limitations.
     */
     logicEngine.linkWeak(
         *animNode->getOutputs()->getChild("translation"),

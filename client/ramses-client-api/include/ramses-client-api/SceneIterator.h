@@ -18,11 +18,12 @@ namespace ramses
     class Scene;
 
     /**
+    * @ingroup CoreAPI
     * @brief The SceneIterator traverses scenes in a RamsesClient.
     *
     * It provides a way to traverse all scenes created with a given client.
     */
-    class RAMSES_API SceneIterator
+    class SceneIterator
     {
     public:
         /**
@@ -30,12 +31,12 @@ namespace ramses
         *
         * @param[in] client RamsesClient whose scenes to iterate through
         **/
-        explicit SceneIterator(const RamsesClient& client);
+        RAMSES_API explicit SceneIterator(const RamsesClient& client);
 
         /**
         * Destructor
         **/
-        ~SceneIterator();
+        RAMSES_API ~SceneIterator();
 
         /**
         * @brief Returns the next scene while iterating.
@@ -43,12 +44,10 @@ namespace ramses
         * @return The next scene, null when no more scenes are available.
         * The iterator is invalid and may not be used after any scenes are added or removed.
         **/
-        Scene* getNext();
+        RAMSES_API Scene* getNext();
 
     private:
-        SceneIterator(const SceneIterator& iterator);
-        SceneIterator& operator=(const SceneIterator& iterator);
-        SceneIteratorImpl* impl;
+        std::unique_ptr<SceneIteratorImpl> m_impl;
     };
 }
 

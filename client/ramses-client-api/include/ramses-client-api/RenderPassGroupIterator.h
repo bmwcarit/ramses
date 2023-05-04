@@ -10,6 +10,7 @@
 #define RAMSES_RENDERPASSGROUPITERATOR_H
 
 #include "ramses-framework-api/APIExport.h"
+#include <memory>
 
 namespace ramses
 {
@@ -20,9 +21,10 @@ namespace ramses
     class IteratorImpl;
 
     /**
+    * @ingroup CoreAPI
     * @brief The RenderPassGroupIterator traverses RenderGroups in a RenderPass.
     */
-    class RAMSES_API RenderPassGroupIterator
+    class RenderPassGroupIterator
     {
     public:
         /**
@@ -30,12 +32,12 @@ namespace ramses
         *
         * @param[in] renderPass RenderPass whose RenderGroups to iterate through
         **/
-        explicit RenderPassGroupIterator(const RenderPass& renderPass);
+        RAMSES_API explicit RenderPassGroupIterator(const RenderPass& renderPass);
 
         /**
         * @brief Destructor
         **/
-        ~RenderPassGroupIterator();
+        RAMSES_API ~RenderPassGroupIterator();
 
         /**
         * @brief Iterate through all RenderGroups.
@@ -45,12 +47,10 @@ namespace ramses
         *
         * Iterator is invalid and may no longer be used if any objects are added or removed.
         **/
-        const RenderGroup* getNext();
+        RAMSES_API const RenderGroup* getNext();
 
     private:
-        RenderPassGroupIterator(const RenderPassGroupIterator& iterator);
-        RenderPassGroupIterator& operator=(const RenderPassGroupIterator& iterator);
-        IteratorImpl<const RenderGroupImpl*>* impl;
+        std::unique_ptr<IteratorImpl<const RenderGroupImpl*>> m_impl;
     };
 }
 

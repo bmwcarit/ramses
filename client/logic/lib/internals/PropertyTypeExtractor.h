@@ -12,7 +12,7 @@
 #include "ramses-logic/EPropertyType.h"
 #include "internals/TypeData.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     struct InterfaceTypeInfo;
 

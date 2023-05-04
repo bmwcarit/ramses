@@ -10,7 +10,6 @@
 #define RAMSES_DISPLAYCONTROLLER_H
 
 #include "RendererAPI/IDisplayController.h"
-#include "Math3d/Vector3.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "EmbeddedCompositingManager.h"
 #include <memory>
@@ -32,11 +31,11 @@ namespace ramses_internal
         explicit DisplayController(IRenderBackend& renderer, UInt32 samples = 1);
 
         void                    handleWindowEvents() override;
-        [[nodiscard]] Bool                    canRenderNewFrame() const override;
+        [[nodiscard]] bool                    canRenderNewFrame() const override;
         void                    enableContext() override;
         void                    swapBuffers() override;
         SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) override;
-        void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) override;
+        void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const glm::vec4& clearColor) override;
 
         [[nodiscard]] DeviceResourceHandle    getDisplayBuffer() const final override;
         [[nodiscard]] IRenderBackend&         getRenderBackend() const override;

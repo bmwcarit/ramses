@@ -8,7 +8,7 @@
 
 #include "ImguiClientHelper.h"
 
-namespace rlogic
+namespace ramses
 {
     namespace
     {
@@ -231,18 +231,18 @@ namespace rlogic
             std::vector <ramses::vec4f> color;
             for (auto& v : cmd_list->VtxBuffer)
             {
-                positions.push_back(ramses::vec2f{ v.pos.x, v.pos.y });
-                uv.push_back(ramses::vec2f{ v.uv.x, v.uv.y });
+                positions.emplace_back(v.pos.x, v.pos.y);
+                uv.emplace_back(v.uv.x, v.uv.y);
 
                 const auto alpha = (v.col >> 24U) & 0xFFU;
                 const auto blue  = (v.col >> 16U) & 0xFFU;
                 const auto green = (v.col >> 8U) & 0xFFU;
                 const auto red   = v.col & 0xFFU;
-                color.push_back(ramses::vec4f{
+                color.emplace_back(
                     static_cast<float>(red) / 255.0f,
                     static_cast<float>(green) / 255.0f,
                     static_cast<float>(blue) / 255.0f,
-                    static_cast<float>(alpha) / 255.0f });
+                    static_cast<float>(alpha) / 255.0f);
             }
             auto ramsespositions = m_imguiscene->createArrayResource(cmd_list->VtxBuffer.Size, positions.data());
             auto ramsesuv = m_imguiscene->createArrayResource(cmd_list->VtxBuffer.Size, uv.data());

@@ -9,8 +9,8 @@
 #ifndef RAMSES_QUAD_H
 #define RAMSES_QUAD_H
 
-#include "Vector4i.h"
 #include <algorithm>
+#include "PlatformAbstraction/PlatformTypes.h"
 
 namespace ramses_internal
 {

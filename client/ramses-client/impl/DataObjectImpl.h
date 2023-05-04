@@ -12,7 +12,7 @@
 //internal
 #include "SceneObjectImpl.h"
 #include "ramses-framework-api/EDataType.h"
-#include "ramses-framework-api/DataTypes.h"
+#include "DataTypesImpl.h"
 #include "SceneAPI/Handles.h"
 
 namespace ramses_internal

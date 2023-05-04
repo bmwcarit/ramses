@@ -15,7 +15,6 @@
 
 namespace ramses
 {
-    class SceneImpl;
     class UniformInput;
     class DataObject;
     class TextureSampler;
@@ -28,10 +27,9 @@ namespace ramses
      * and GPU states such as blending, buffer configurations, masks etc. The API to set uniform values
      * is aligned to the glUniformX API of OpenGL. Beware that boolean values are reported and handled
      * as int (0 is false, anything else is true) - similar to OpenGL conventions.
-     *
-     * It provides mechanisms for creating effects
+     * @ingroup CoreAPI
     */
-    class RAMSES_API Appearance : public SceneObject
+    class Appearance : public SceneObject
     {
     public:
         /**
@@ -45,7 +43,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setBlendingFactors(EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha);
+        RAMSES_API status_t setBlendingFactors(EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha);
 
         /**
         * @brief Gets blending factors for source/destination color/alpha.
@@ -57,7 +55,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getBlendingFactors(EBlendFactor& srcColor, EBlendFactor& destColor, EBlendFactor& srcAlpha, EBlendFactor& destAlpha) const;
+        RAMSES_API status_t getBlendingFactors(EBlendFactor& srcColor, EBlendFactor& destColor, EBlendFactor& srcAlpha, EBlendFactor& destAlpha) const;
 
         /**
         * @brief Sets blending operation for color and alpha.
@@ -68,7 +66,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setBlendingOperations(EBlendOperation operationColor, EBlendOperation operationAlpha);
+        RAMSES_API status_t setBlendingOperations(EBlendOperation operationColor, EBlendOperation operationAlpha);
 
         /**
         * @brief Gets blending operation for color and alpha.
@@ -78,7 +76,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getBlendingOperations(EBlendOperation& operationColor, EBlendOperation& operationAlpha) const;
+        RAMSES_API status_t getBlendingOperations(EBlendOperation& operationColor, EBlendOperation& operationAlpha) const;
 
         /**
         * @brief Sets blending color that can be used as blending color constant for some blending factors.
@@ -88,7 +86,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setBlendingColor(const vec4f& color);
+        RAMSES_API status_t setBlendingColor(const vec4f& color);
 
         /**
         * @brief Gets blending color set via #setBlendingColor
@@ -97,7 +95,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getBlendingColor(vec4f& color) const;
+        RAMSES_API status_t getBlendingColor(vec4f& color) const;
 
         /**
         * @brief Enables or disables writing to depth buffer.
@@ -106,7 +104,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setDepthWrite(EDepthWrite mode);
+        RAMSES_API status_t setDepthWrite(EDepthWrite mode);
 
         /**
         * @brief Gets the current state of writing to depth buffer.
@@ -114,7 +112,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getDepthWriteMode(EDepthWrite& mode) const;
+        RAMSES_API status_t getDepthWriteMode(EDepthWrite& mode) const;
 
         /**
         * @brief Sets depth comparison function.
@@ -125,7 +123,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setDepthFunction(EDepthFunc func);
+        RAMSES_API status_t setDepthFunction(EDepthFunc func);
 
         /**
         * @brief Gets depth comparison function.
@@ -134,7 +132,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getDepthFunction(EDepthFunc& func) const;
+        RAMSES_API status_t getDepthFunction(EDepthFunc& func) const;
 
         /**
         * @brief Enables or disables scissor test and sets region for scissor test
@@ -147,7 +145,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setScissorTest(EScissorTest state, int16_t x, int16_t y, uint16_t width, uint16_t height);
+        RAMSES_API status_t setScissorTest(EScissorTest state, int16_t x, int16_t y, uint16_t width, uint16_t height);
 
         /**
         * @brief Gets the current state of scissor test.
@@ -155,7 +153,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getScissorTestState(EScissorTest& state) const;
+        RAMSES_API status_t getScissorTestState(EScissorTest& state) const;
 
         /**
         * @brief Gets region for scissor test
@@ -167,7 +165,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getScissorRegion(int16_t& x, int16_t& y, uint16_t& width, uint16_t& height) const;
+        RAMSES_API status_t getScissorRegion(int16_t& x, int16_t& y, uint16_t& width, uint16_t& height) const;
 
         /**
         * @brief Sets stencil function, reference and mask value for stencil testing.
@@ -179,7 +177,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setStencilFunction(EStencilFunc func, uint8_t ref, uint8_t mask);
+        RAMSES_API status_t setStencilFunction(EStencilFunc func, uint8_t ref, uint8_t mask);
 
         /**
         * @brief Gets stencil function, reference and mask value
@@ -190,7 +188,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getStencilFunction(EStencilFunc& func, uint8_t& ref, uint8_t& mask) const;
+        RAMSES_API status_t getStencilFunction(EStencilFunc& func, uint8_t& ref, uint8_t& mask) const;
 
         /**
         * @brief Sets stencil operations for stencil testing.
@@ -202,7 +200,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setStencilOperation(EStencilOperation sfail, EStencilOperation dpfail, EStencilOperation dppass);
+        RAMSES_API status_t setStencilOperation(EStencilOperation sfail, EStencilOperation dpfail, EStencilOperation dppass);
 
         /**
         * @brief Gets stencil operations
@@ -213,7 +211,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getStencilOperation(EStencilOperation& sfail, EStencilOperation& dpfail, EStencilOperation& dppass) const;
+        RAMSES_API status_t getStencilOperation(EStencilOperation& sfail, EStencilOperation& dpfail, EStencilOperation& dppass) const;
 
         /**
         * @brief Sets the culling mode indicating which side of mesh will be removed before rasterization.
@@ -223,7 +221,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setCullingMode(ECullMode mode);
+        RAMSES_API status_t setCullingMode(ECullMode mode);
 
         /**
         * @brief Sets the draw mode indicating by which primitive the mesh will be rendered
@@ -235,7 +233,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setDrawMode(EDrawMode mode);
+        RAMSES_API status_t setDrawMode(EDrawMode mode);
 
         /**
         * @brief Gets the culling mode indicating which side of mesh will be removed before rasterization.
@@ -244,7 +242,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getCullingMode(ECullMode& mode) const;
+        RAMSES_API status_t getCullingMode(ECullMode& mode) const;
 
         /**
         * @brief Gets the draw mode indicating by which primitive the mesh will be rendered
@@ -253,7 +251,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getDrawMode(EDrawMode& mode) const;
+        RAMSES_API status_t getDrawMode(EDrawMode& mode) const;
 
         /**
         * @brief Sets color write mask.
@@ -267,7 +265,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setColorWriteMask(bool writeRed, bool writeGreen, bool writeBlue, bool writeAlpha);
+        RAMSES_API status_t setColorWriteMask(bool writeRed, bool writeGreen, bool writeBlue, bool writeAlpha);
 
         /**
         * @brief Gets color write mask.
@@ -279,12 +277,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getColorWriteMask(bool& writeRed, bool& writeGreen, bool& writeBlue, bool& writeAlpha) const;
-
-        /**
-        * Stores internal data for implementation specifics of Appearance.
-        */
-        class AppearanceImpl& impl;
+        RAMSES_API status_t getColorWriteMask(bool& writeRed, bool& writeGreen, bool& writeBlue, bool& writeAlpha) const;
 
         /**
         * @brief Sets value to uniform input.
@@ -354,7 +347,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputTexture(const UniformInput& input, const TextureSampler& textureSampler);
+        RAMSES_API status_t setInputTexture(const UniformInput& input, const TextureSampler& textureSampler);
 
         /**
         * @brief Sets multisampled texture sampler to the input
@@ -364,7 +357,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputTexture(const UniformInput& input, const TextureSamplerMS& textureSampler);
+        RAMSES_API status_t setInputTexture(const UniformInput& input, const TextureSamplerMS& textureSampler);
 
         /**
         * @brief Sets external texture sampler to the input
@@ -374,7 +367,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputTexture(const UniformInput& input, const TextureSamplerExternal& textureSampler);
+        RAMSES_API status_t setInputTexture(const UniformInput& input, const TextureSamplerExternal& textureSampler);
 
         /**
         * @brief Gets texture sampler currently set to the input
@@ -385,7 +378,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler) const;
+        RAMSES_API status_t getInputTexture(const UniformInput& input, const TextureSampler*& textureSampler) const;
 
         /**
         * @brief Gets texture sampler currently set to the input
@@ -396,7 +389,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getInputTextureMS(const UniformInput& input, const TextureSamplerMS*& textureSampler) const;
+        RAMSES_API status_t getInputTextureMS(const UniformInput& input, const TextureSamplerMS*& textureSampler) const;
 
         /**
         * @brief Gets texture sampler currently set to the input
@@ -407,7 +400,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getInputTextureExternal(const UniformInput& input, const TextureSamplerExternal*& textureSampler) const;
+        RAMSES_API status_t getInputTextureExternal(const UniformInput& input, const TextureSamplerExternal*& textureSampler) const;
 
         /**
         * @brief Bind a DataObject to the Appearance's uniform input.
@@ -424,7 +417,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t bindInput(const UniformInput& input, const DataObject& dataObject);
+        RAMSES_API status_t bindInput(const UniformInput& input, const DataObject& dataObject);
 
         /**
         * @brief Unbind a previously bound DataObject from the Appearance's uniform input.
@@ -436,7 +429,7 @@ namespace ramses
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t unbindInput(const UniformInput& input);
+        RAMSES_API status_t unbindInput(const UniformInput& input);
 
         /**
         * @brief Check whether a uniform input has any DataObject bound to it.
@@ -444,7 +437,7 @@ namespace ramses
         * @param[in] input The effect uniform input to check
         * @return \c true if there is any DataObject bound to the input, false otherwise
         */
-        [[nodiscard]] bool isInputBound(const UniformInput& input) const;
+        [[nodiscard]] RAMSES_API bool isInputBound(const UniformInput& input) const;
 
         /**
         * @brief Gets the data object bound to a uniform input.
@@ -452,47 +445,32 @@ namespace ramses
         * @param[in] input The effect uniform input to get the bound data object for
         * @return \c The data object bound the uniform input if existing, otherwise returns nullptr
         */
-        [[nodiscard]] const DataObject* getDataObjectBoundToInput(const UniformInput& input) const;
+        [[nodiscard]] RAMSES_API const DataObject* getDataObjectBoundToInput(const UniformInput& input) const;
 
         /**
         * @brief Gets the effect used to create this appearance
         *
         * @return The effect used to create the appearance.
         */
-        [[nodiscard]] const Effect& getEffect() const;
+        [[nodiscard]] RAMSES_API const Effect& getEffect() const;
+
+        /**
+        * Stores internal data for implementation specifics of Appearance.
+        */
+        class AppearanceImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating Appearance instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor of Appearance
         *
-        * @param[in] pimpl Internal data for implementation specifics of Appearance (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of Appearance (sink - instance becomes owner)
         */
-        explicit Appearance(AppearanceImpl& pimpl);
-
-        /**
-        * @brief Copy constructor of Appearance
-        *
-        * @param[in] other Other instance of appearance class
-        */
-        Appearance(const Appearance& other);
-
-        /**
-        * @brief Assignment operator of Appearance.
-        *
-        * @param[in] other Other instance of appearance class
-        * @return This instance after assignment
-        */
-        Appearance& operator=(const Appearance& other);
-
-        /**
-        * @brief Destructor of the Appearance
-        */
-        ~Appearance() override;
+        explicit Appearance(std::unique_ptr<AppearanceImpl> impl);
 
     private:
         /// Internal implementation of #setInputValue

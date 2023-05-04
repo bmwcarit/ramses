@@ -68,7 +68,7 @@
 #include "ValidationResults.h"
 #include <deque>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     ApiObjects::ApiObjects(ramses::EFeatureLevel featureLevel)
         : m_featureLevel{ featureLevel }
@@ -116,13 +116,10 @@ namespace rlogic::internal
         if (!compiledScript)
             return nullptr;
 
-        std::unique_ptr<LuaScript> up = std::make_unique<LuaScript>(std::make_unique<LuaScriptImpl>(std::move(*compiledScript), scriptName, getNextLogicObjectId()));
-        LuaScript* script = up.get();
-        m_scripts.push_back(script);
-        registerLogicObject(std::move(up));
-        script->m_impl.createRootProperties();
+        auto impl = std::make_unique<LuaScriptImpl>(std::move(*compiledScript), scriptName, getNextLogicObjectId());
+        impl->createRootProperties();
 
-        return script;
+        return &createAndRegisterObject<LuaScript, LuaScriptImpl>(std::move(impl));
     }
 
     LuaInterface* ApiObjects::createLuaInterface(
@@ -154,11 +151,10 @@ namespace rlogic::internal
         if (!compiledInterface)
             return nullptr;
 
-        std::unique_ptr<LuaInterface> up = std::make_unique<LuaInterface>(std::make_unique<LuaInterfaceImpl>(std::move(*compiledInterface), interfaceName, getNextLogicObjectId()));
-        LuaInterface* intf = up.get();
-        m_interfaces.push_back(intf);
-        registerLogicObject(std::move(up));
-        return intf;
+        auto impl = std::make_unique<LuaInterfaceImpl>(std::move(*compiledInterface), interfaceName, getNextLogicObjectId());
+        impl->createRootProperties();
+
+        return &createAndRegisterObject<LuaInterface, LuaInterfaceImpl>(std::move(impl));
     }
 
     LuaModule* ApiObjects::createLuaModule(
@@ -184,78 +180,50 @@ namespace rlogic::internal
         if (!compiledModule)
             return nullptr;
 
-        std::unique_ptr<LuaModule> up = std::make_unique<LuaModule>(std::make_unique<LuaModuleImpl>(std::move(*compiledModule), moduleName, getNextLogicObjectId()));
-        LuaModule* luaModule = up.get();
-        m_luaModules.push_back(luaModule);
-        registerLogicObject(std::move(up));
-
-        return luaModule;
+        auto impl = std::make_unique<LuaModuleImpl>(std::move(*compiledModule), moduleName, getNextLogicObjectId());
+        return &createAndRegisterObject<LuaModule, LuaModuleImpl>(std::move(impl));
     }
 
     RamsesNodeBinding* ApiObjects::createRamsesNodeBinding(ramses::Node& ramsesNode, ramses::ERotationType rotationType, std::string_view name)
     {
-        std::unique_ptr<RamsesNodeBinding> up = std::make_unique<RamsesNodeBinding>(std::make_unique<RamsesNodeBindingImpl>(ramsesNode, rotationType, name, getNextLogicObjectId()));
-        RamsesNodeBinding* binding = up.get();
-        m_ramsesNodeBindings.push_back(binding);
-        registerLogicObject(std::move(up));
-        binding->m_impl.createRootProperties();
-
-        return binding;
+        auto impl = std::make_unique<RamsesNodeBindingImpl>(ramsesNode, rotationType, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<RamsesNodeBinding, RamsesNodeBindingImpl>(std::move(impl));
     }
 
     RamsesAppearanceBinding* ApiObjects::createRamsesAppearanceBinding(ramses::Appearance& ramsesAppearance, std::string_view name)
     {
-        std::unique_ptr<RamsesAppearanceBinding> up = std::make_unique<RamsesAppearanceBinding>(std::make_unique<RamsesAppearanceBindingImpl>(ramsesAppearance, name, getNextLogicObjectId()));
-        RamsesAppearanceBinding* binding = up.get();
-        m_ramsesAppearanceBindings.push_back(binding);
-        registerLogicObject(std::move(up));
-        binding->m_impl.createRootProperties();
-
-        return binding;
+        auto impl = std::make_unique<RamsesAppearanceBindingImpl>(ramsesAppearance, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<RamsesAppearanceBinding, RamsesAppearanceBindingImpl>(std::move(impl));
     }
 
     RamsesCameraBinding* ApiObjects::createRamsesCameraBinding(ramses::Camera& ramsesCamera, bool withFrustumPlanes, std::string_view name)
     {
-        std::unique_ptr<RamsesCameraBinding> up = std::make_unique<RamsesCameraBinding>(std::make_unique<RamsesCameraBindingImpl>(ramsesCamera, withFrustumPlanes, name, getNextLogicObjectId()));
-        RamsesCameraBinding* binding = up.get();
-        m_ramsesCameraBindings.push_back(binding);
-        registerLogicObject(std::move(up));
-        binding->m_impl.createRootProperties();
-
-        return binding;
+        auto impl = std::make_unique<RamsesCameraBindingImpl>(ramsesCamera, withFrustumPlanes, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<RamsesCameraBinding, RamsesCameraBindingImpl>(std::move(impl));
     }
 
     RamsesRenderPassBinding* ApiObjects::createRamsesRenderPassBinding(ramses::RenderPass& ramsesRenderPass, std::string_view name)
     {
-        std::unique_ptr<RamsesRenderPassBinding> up = std::make_unique<RamsesRenderPassBinding>(std::make_unique<RamsesRenderPassBindingImpl>(ramsesRenderPass, name, getNextLogicObjectId()));
-        RamsesRenderPassBinding* binding = up.get();
-        m_ramsesRenderPassBindings.push_back(binding);
-        registerLogicObject(std::move(up));
-        binding->m_impl.createRootProperties();
-
-        return binding;
+        auto impl = std::make_unique<RamsesRenderPassBindingImpl>(ramsesRenderPass, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<RamsesRenderPassBinding, RamsesRenderPassBindingImpl>(std::move(impl));
     }
 
     RamsesRenderGroupBinding* ApiObjects::createRamsesRenderGroupBinding(ramses::RenderGroup& ramsesRenderGroup, const RamsesRenderGroupBindingElements& elements, std::string_view name)
     {
-        std::unique_ptr<RamsesRenderGroupBinding> up = std::make_unique<RamsesRenderGroupBinding>(std::make_unique<RamsesRenderGroupBindingImpl>(ramsesRenderGroup, *elements.m_impl, name, getNextLogicObjectId()));
-        RamsesRenderGroupBinding* binding = up.get();
-        m_ramsesRenderGroupBindings.push_back(binding);
-        registerLogicObject(std::move(up));
-        binding->m_impl.createRootProperties();
-
-        return binding;
+        auto impl = std::make_unique<RamsesRenderGroupBindingImpl>(ramsesRenderGroup, *elements.m_impl, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<RamsesRenderGroupBinding, RamsesRenderGroupBindingImpl>(std::move(impl));
     }
 
     RamsesMeshNodeBinding* ApiObjects::createRamsesMeshNodeBinding(ramses::MeshNode& ramsesMeshNode, std::string_view name)
     {
-        auto up = std::make_unique<RamsesMeshNodeBinding>(std::make_unique<RamsesMeshNodeBindingImpl>(ramsesMeshNode, name, getNextLogicObjectId()));
-        RamsesMeshNodeBinding* binding = up.get();
-        m_ramsesMeshNodeBindings.push_back(binding);
-        registerLogicObject(std::move(up));
-        binding->m_impl.createRootProperties();
-
-        return binding;
+        auto impl = std::make_unique<RamsesMeshNodeBindingImpl>(ramsesMeshNode, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<RamsesMeshNodeBinding, RamsesMeshNodeBindingImpl>(std::move(impl));
     }
 
     SkinBinding* ApiObjects::createSkinBinding(
@@ -265,13 +233,9 @@ namespace rlogic::internal
         const ramses::UniformInput& jointMatInput,
         std::string_view name)
     {
-        std::unique_ptr<SkinBinding> up = std::make_unique<SkinBinding>(std::make_unique<SkinBindingImpl>(std::move(joints), inverseBindMatrices, appearanceBinding, jointMatInput, name, getNextLogicObjectId()));
-        SkinBinding* binding = up.get();
-        m_skinBindings.push_back(binding);
-        registerLogicObject(std::move(up));
-        binding->m_impl.createRootProperties();
-
-        return binding;
+        auto impl = std::make_unique<SkinBindingImpl>(std::move(joints), inverseBindMatrices, appearanceBinding, jointMatInput, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<SkinBinding, SkinBindingImpl>(std::move(impl));
     }
 
     template <typename T>
@@ -281,75 +245,44 @@ namespace rlogic::internal
         // make copy of users data and move into data array
         std::vector<T> dataCopy = data;
         auto impl = std::make_unique<DataArrayImpl>(std::move(dataCopy), name, getNextLogicObjectId());
-        std::unique_ptr<DataArray> up = std::make_unique<DataArray>(std::move(impl));
-        DataArray* dataArray = up.get();
-        m_dataArrays.push_back(dataArray);
-        registerLogicObject(std::move(up));
-        return dataArray;
+        return &createAndRegisterObject<DataArray, DataArrayImpl>(std::move(impl));
     }
 
     AnimationNode* ApiObjects::createAnimationNode(const AnimationNodeConfigImpl& config, std::string_view name)
     {
-        std::unique_ptr<AnimationNode> up = std::make_unique<AnimationNode>(
-            std::make_unique<AnimationNodeImpl>(config.getChannels(), config.getExposingOfChannelDataAsProperties(), name, getNextLogicObjectId()));
-        AnimationNode* animation = up.get();
-        m_animationNodes.push_back(animation);
-        registerLogicObject(std::move(up));
-        animation->m_impl.createRootProperties();
-
-        return animation;
+        auto impl = std::make_unique<AnimationNodeImpl>(config.getChannels(), config.getExposingOfChannelDataAsProperties(), name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<AnimationNode, AnimationNodeImpl>(std::move(impl));
     }
 
     TimerNode* ApiObjects::createTimerNode(std::string_view name)
     {
-        std::unique_ptr<TimerNode> up = std::make_unique<TimerNode>(std::make_unique<TimerNodeImpl>(name, getNextLogicObjectId()));
-        TimerNode* timer = up.get();
-        m_timerNodes.push_back(timer);
-        registerLogicObject(std::move(up));
-        timer->m_impl.createRootProperties();
-
-        return timer;
+        auto impl = std::make_unique<TimerNodeImpl>(name, getNextLogicObjectId());
+        impl->createRootProperties();
+        return &createAndRegisterObject<TimerNode, TimerNodeImpl>(std::move(impl));
     }
 
     AnchorPoint* ApiObjects::createAnchorPoint(RamsesNodeBindingImpl& nodeBinding, RamsesCameraBindingImpl& cameraBinding, std::string_view name)
     {
-        std::unique_ptr<AnchorPoint> up = std::make_unique<AnchorPoint>(std::make_unique<AnchorPointImpl>(nodeBinding, cameraBinding, name, getNextLogicObjectId()));
-        AnchorPoint* anchor = up.get();
-        m_anchorPoints.push_back(anchor);
-        registerLogicObject(std::move(up));
-        anchor->m_impl.createRootProperties();
+        auto impl = std::make_unique<AnchorPointImpl>(nodeBinding, cameraBinding, name, getNextLogicObjectId());
+        impl->createRootProperties();
+        auto& anchor = createAndRegisterObject<AnchorPoint, AnchorPointImpl>(std::move(impl));
 
-        m_logicNodeDependencies.addBindingDependency(nodeBinding, anchor->m_impl);
-        m_logicNodeDependencies.addBindingDependency(cameraBinding, anchor->m_impl);
+        m_logicNodeDependencies.addBindingDependency(nodeBinding, anchor.m_impl);
+        m_logicNodeDependencies.addBindingDependency(cameraBinding, anchor.m_impl);
 
-        return anchor;
-    }
-
-    void ApiObjects::registerLogicNode(LogicNode& logicNode)
-    {
-        m_reverseImplMapping.emplace(std::make_pair(&logicNode.m_impl, &logicNode));
-        m_logicNodeDependencies.addNode(logicNode.m_impl);
-    }
-
-    void ApiObjects::unregisterLogicNode(LogicNode& logicNode)
-    {
-        LogicNodeImpl& logicNodeImpl = logicNode.m_impl;
-        auto implIter = m_reverseImplMapping.find(&logicNodeImpl);
-        assert(implIter != m_reverseImplMapping.end());
-        m_reverseImplMapping.erase(implIter);
-
-        m_logicNodeDependencies.removeNode(logicNodeImpl);
+        return &anchor;
     }
 
     bool ApiObjects::destroy(LogicObject& object, ErrorReporting& errorReporting)
     {
         auto luaScript = dynamic_cast<LuaScript*>(&object);
         if (luaScript)
-            return destroyInternal(*luaScript, errorReporting);
+            return destroyAndUnregisterObject(*luaScript, errorReporting);
 
         auto luaInterface = dynamic_cast<LuaInterface*>(&object);
         if (luaInterface)
-            return destroyInternal(*luaInterface, errorReporting);
+            return destroyAndUnregisterObject(*luaInterface, errorReporting);
 
         auto luaModule = dynamic_cast<LuaModule*>(&object);
         if (luaModule)
@@ -369,23 +302,23 @@ namespace rlogic::internal
 
         auto ramsesRenderPassBinding = dynamic_cast<RamsesRenderPassBinding*>(&object);
         if (ramsesRenderPassBinding)
-            return destroyInternal(*ramsesRenderPassBinding, errorReporting);
+            return destroyAndUnregisterObject(*ramsesRenderPassBinding, errorReporting);
 
         auto ramsesRenderGroupBinding = dynamic_cast<RamsesRenderGroupBinding*>(&object);
         if (ramsesRenderGroupBinding)
-            return destroyInternal(*ramsesRenderGroupBinding, errorReporting);
+            return destroyAndUnregisterObject(*ramsesRenderGroupBinding, errorReporting);
 
         auto ramsesMeshNodeBinding = dynamic_cast<RamsesMeshNodeBinding*>(&object);
         if (ramsesMeshNodeBinding)
-            return destroyInternal(*ramsesMeshNodeBinding, errorReporting);
+            return destroyAndUnregisterObject(*ramsesMeshNodeBinding, errorReporting);
 
         auto skinBinding = dynamic_cast<SkinBinding*>(&object);
         if (skinBinding)
-            return destroyInternal(*skinBinding, errorReporting);
+            return destroyAndUnregisterObject(*skinBinding, errorReporting);
 
         auto animNode = dynamic_cast<AnimationNode*>(&object);
         if (animNode)
-            return destroyInternal(*animNode, errorReporting);
+            return destroyAndUnregisterObject(*animNode, errorReporting);
 
         auto dataArray = dynamic_cast<DataArray*>(&object);
         if (dataArray)
@@ -393,7 +326,7 @@ namespace rlogic::internal
 
         auto timer = dynamic_cast<TimerNode*>(&object);
         if (timer)
-            return destroyInternal(*timer, errorReporting);
+            return destroyAndUnregisterObject(*timer, errorReporting);
 
         auto anchor = dynamic_cast<AnchorPoint*>(&object);
         if (anchor)
@@ -406,12 +339,6 @@ namespace rlogic::internal
 
     bool ApiObjects::destroyInternal(DataArray& dataArray, ErrorReporting& errorReporting)
     {
-        const auto it = std::find(m_dataArrays.cbegin(), m_dataArrays.cend(), &dataArray);
-        if (it == m_dataArrays.cend())
-        {
-            errorReporting.add("Can't find data array in logic engine!", &dataArray, EErrorType::IllegalArgument);
-            return false;
-        }
         for (const auto& animNode : m_animationNodes)
         {
             for (const auto& channel : animNode->getChannels())
@@ -426,47 +353,12 @@ namespace rlogic::internal
                 }
             }
         }
-        unregisterLogicObject(dataArray);
-        m_dataArrays.erase(it);
-        return true;
-    }
 
-    bool ApiObjects::destroyInternal(LuaScript& luaScript, ErrorReporting& errorReporting)
-    {
-        auto scriptIter = std::find(m_scripts.begin(), m_scripts.end(), &luaScript);
-        if (scriptIter == m_scripts.end())
-        {
-            errorReporting.add("Can't find script in logic engine!", &luaScript, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(luaScript);
-        m_scripts.erase(scriptIter);
-        return true;
-    }
-
-    bool ApiObjects::destroyInternal(LuaInterface& luaInterface, ErrorReporting& errorReporting)
-    {
-        auto interfaceIter = std::find(m_interfaces.begin(), m_interfaces.end(), &luaInterface);
-        if (interfaceIter == m_interfaces.end())
-        {
-            errorReporting.add("Can't find interface in logic engine!", &luaInterface, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(luaInterface);
-        m_interfaces.erase(interfaceIter);
-        return true;
+        return destroyAndUnregisterObject(dataArray, errorReporting);
     }
 
     bool ApiObjects::destroyInternal(LuaModule& luaModule, ErrorReporting& errorReporting)
     {
-        const auto it = std::find(m_luaModules.cbegin(), m_luaModules.cend(), &luaModule);
-        if (it == m_luaModules.cend())
-        {
-            errorReporting.add("Can't find Lua module in logic engine!", &luaModule, EErrorType::IllegalArgument);
-            return false;
-        }
         for (const auto& script : m_scripts)
         {
             for (const auto& moduleInUse : script->m_script.getModules())
@@ -479,20 +371,11 @@ namespace rlogic::internal
             }
         }
 
-        unregisterLogicObject(luaModule);
-        m_luaModules.erase(it);
-        return true;
+        return destroyAndUnregisterObject(luaModule, errorReporting);
     }
 
     bool ApiObjects::destroyInternal(RamsesNodeBinding& ramsesNodeBinding, ErrorReporting& errorReporting)
     {
-        auto nodeIter = std::find(m_ramsesNodeBindings.begin(), m_ramsesNodeBindings.end(), &ramsesNodeBinding);
-        if (nodeIter == m_ramsesNodeBindings.end())
-        {
-            errorReporting.add("Can't find RamsesNodeBinding in logic engine!", &ramsesNodeBinding, EErrorType::IllegalArgument);
-            return false;
-        }
-
         for (const auto& anchor : m_anchorPoints)
         {
             if (anchor->m_anchorPointImpl.getRamsesNodeBinding().getId() == ramsesNodeBinding.getId())
@@ -514,21 +397,11 @@ namespace rlogic::internal
             }
         }
 
-        unregisterLogicObject(ramsesNodeBinding);
-        m_ramsesNodeBindings.erase(nodeIter);
-
-        return true;
+        return destroyAndUnregisterObject(ramsesNodeBinding, errorReporting);
     }
 
     bool ApiObjects::destroyInternal(RamsesAppearanceBinding& ramsesAppearanceBinding, ErrorReporting& errorReporting)
     {
-        auto appearanceIter = std::find(m_ramsesAppearanceBindings.begin(), m_ramsesAppearanceBindings.end(), &ramsesAppearanceBinding);
-        if (appearanceIter == m_ramsesAppearanceBindings.end())
-        {
-            errorReporting.add("Can't find RamsesAppearanceBinding in logic engine!", &ramsesAppearanceBinding, EErrorType::IllegalArgument);
-            return false;
-        }
-
         for (const auto& skin : m_skinBindings)
         {
             if (skin->m_skinBinding.getAppearanceBinding().getId() == ramsesAppearanceBinding.getId())
@@ -538,21 +411,11 @@ namespace rlogic::internal
             }
         }
 
-        unregisterLogicObject(ramsesAppearanceBinding);
-        m_ramsesAppearanceBindings.erase(appearanceIter);
-
-        return true;
+        return destroyAndUnregisterObject(ramsesAppearanceBinding, errorReporting);
     }
 
     bool ApiObjects::destroyInternal(RamsesCameraBinding& ramsesCameraBinding, ErrorReporting& errorReporting)
     {
-        auto cameraIter = std::find(m_ramsesCameraBindings.begin(), m_ramsesCameraBindings.end(), &ramsesCameraBinding);
-        if (cameraIter == m_ramsesCameraBindings.end())
-        {
-            errorReporting.add("Can't find RamsesCameraBinding in logic engine!", &ramsesCameraBinding, EErrorType::IllegalArgument);
-            return false;
-        }
-
         for (const auto& anchor : m_anchorPoints)
         {
             if (anchor->m_anchorPointImpl.getRamsesCameraBinding().getId() == ramsesCameraBinding.getId())
@@ -562,148 +425,211 @@ namespace rlogic::internal
             }
         }
 
-        unregisterLogicObject(ramsesCameraBinding);
-        m_ramsesCameraBindings.erase(cameraIter);
-
-        return true;
-    }
-
-    bool ApiObjects::destroyInternal(RamsesRenderPassBinding& ramsesRenderPassBinding, ErrorReporting& errorReporting)
-    {
-        auto bindingIter = std::find(m_ramsesRenderPassBindings.begin(), m_ramsesRenderPassBindings.end(), &ramsesRenderPassBinding);
-        if (bindingIter == m_ramsesRenderPassBindings.end())
-        {
-            errorReporting.add("Can't find RamsesRenderPassBinding in logic engine!", &ramsesRenderPassBinding, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(ramsesRenderPassBinding);
-        m_ramsesRenderPassBindings.erase(bindingIter);
-
-        return true;
-    }
-
-    bool ApiObjects::destroyInternal(RamsesRenderGroupBinding& ramsesRenderGroupBinding, ErrorReporting& errorReporting)
-    {
-        auto bindingIter = std::find(m_ramsesRenderGroupBindings.begin(), m_ramsesRenderGroupBindings.end(), &ramsesRenderGroupBinding);
-        if (bindingIter == m_ramsesRenderGroupBindings.end())
-        {
-            errorReporting.add("Can't find RamsesRenderGroupBinding in logic engine!", &ramsesRenderGroupBinding, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(ramsesRenderGroupBinding);
-        m_ramsesRenderGroupBindings.erase(bindingIter);
-
-        return true;
-    }
-
-    bool ApiObjects::destroyInternal(RamsesMeshNodeBinding& ramsesMeshNodeBinding, ErrorReporting& errorReporting)
-    {
-        auto bindingIter = std::find(m_ramsesMeshNodeBindings.begin(), m_ramsesMeshNodeBindings.end(), &ramsesMeshNodeBinding);
-        if (bindingIter == m_ramsesMeshNodeBindings.end())
-        {
-            errorReporting.add("Can't find RamsesMeshNodeBinding in logic engine!", &ramsesMeshNodeBinding, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(ramsesMeshNodeBinding);
-        m_ramsesMeshNodeBindings.erase(bindingIter);
-
-        return true;
-    }
-
-    bool ApiObjects::destroyInternal(SkinBinding& skinBinding, ErrorReporting& errorReporting)
-    {
-        auto bindingIter = std::find(m_skinBindings.begin(), m_skinBindings.end(), &skinBinding);
-        if (bindingIter == m_skinBindings.end())
-        {
-            errorReporting.add("Can't find SkinBinding in logic engine!", &skinBinding, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(skinBinding);
-        m_skinBindings.erase(bindingIter);
-
-        return true;
-    }
-
-    bool ApiObjects::destroyInternal(AnimationNode& node, ErrorReporting& errorReporting)
-    {
-        auto nodeIt = std::find(m_animationNodes.begin(), m_animationNodes.end(), &node);
-        if (nodeIt == m_animationNodes.end())
-        {
-            errorReporting.add("Can't find AnimationNode in logic engine!", &node, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(node);
-        m_animationNodes.erase(nodeIt);
-
-        return true;
-    }
-
-    bool ApiObjects::destroyInternal(TimerNode& node, ErrorReporting& errorReporting)
-    {
-        auto nodeIt = std::find(m_timerNodes.begin(), m_timerNodes.end(), &node);
-        if (nodeIt == m_timerNodes.end())
-        {
-            errorReporting.add("Can't find TimerNode in logic engine!", &node, EErrorType::IllegalArgument);
-            return false;
-        }
-
-        unregisterLogicObject(node);
-        m_timerNodes.erase(nodeIt);
-
-        return true;
+        return destroyAndUnregisterObject(ramsesCameraBinding, errorReporting);
     }
 
     bool ApiObjects::destroyInternal(AnchorPoint& node, ErrorReporting& errorReporting)
     {
-        auto nodeIt = std::find(m_anchorPoints.begin(), m_anchorPoints.end(), &node);
-        if (nodeIt == m_anchorPoints.end())
+        if (std::find(m_anchorPoints.cbegin(), m_anchorPoints.cend(), &node) != m_anchorPoints.end())
         {
-            errorReporting.add("Can't find AnchorPoint in logic engine!", &node, EErrorType::IllegalArgument);
+            m_logicNodeDependencies.removeBindingDependency(node.m_anchorPointImpl.getRamsesNodeBinding(), node.m_impl);
+            m_logicNodeDependencies.removeBindingDependency(node.m_anchorPointImpl.getRamsesCameraBinding(), node.m_impl);
+        }
+
+        return destroyAndUnregisterObject(node, errorReporting);
+    }
+
+    template <typename T, typename ImplT>
+    T& ApiObjects::createAndRegisterObject(std::unique_ptr<ImplT> impl)
+    {
+        static_assert(std::is_base_of_v<LogicObject, T>, "Meant for LogicObject instances only");
+        std::unique_ptr<T, std::function<void(LogicObject*)>> object{ new T{ std::move(impl) }, [](LogicObject* obj_) { delete obj_; } };
+
+        T& objRaw = *object;
+
+        // move to owning pool
+        assert(std::find_if(m_objectsOwningContainer.cbegin(), m_objectsOwningContainer.cend(), [&](const auto& obj) { return obj.get() == &objRaw; }) == m_objectsOwningContainer.cend());
+        m_objectsOwningContainer.push_back(std::move(object));
+
+        // set reference to HL object so impl can access its HL instance
+        objRaw.LogicObject::m_impl->setLogicObject(objRaw);
+
+        // store in general pool of logic objects
+        assert(std::find(m_logicObjects.cbegin(), m_logicObjects.cend(), &objRaw) == m_logicObjects.cend());
+        m_logicObjects.push_back(&objRaw);
+        // store in map to retrieve object by ID
+        assert(m_logicObjectIdMapping.count(objRaw.getId()) == 0u);
+        m_logicObjectIdMapping.emplace(objRaw.getId(), &objRaw);
+
+        // put into own scope as clang-tidy is confused with constexpr branches and reports indentation warning
+        {
+            // store in its typed pool
+            if constexpr (std::is_same_v<LuaScript, T>)
+            {
+                this->m_scripts.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<LuaInterface, T>)
+            {
+                this->m_interfaces.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<LuaModule, T>)
+            {
+                this->m_luaModules.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<RamsesNodeBinding, T>)
+            {
+                this->m_ramsesNodeBindings.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<RamsesAppearanceBinding, T>)
+            {
+                this->m_ramsesAppearanceBindings.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<RamsesCameraBinding, T>)
+            {
+                this->m_ramsesCameraBindings.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<RamsesRenderPassBinding, T>)
+            {
+                this->m_ramsesRenderPassBindings.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<RamsesRenderGroupBinding, T>)
+            {
+                this->m_ramsesRenderGroupBindings.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<RamsesMeshNodeBinding, T>)
+            {
+                this->m_ramsesMeshNodeBindings.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<SkinBinding, T>)
+            {
+                this->m_skinBindings.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<DataArray, T>)
+            {
+                this->m_dataArrays.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<AnimationNode, T>)
+            {
+                this->m_animationNodes.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<TimerNode, T>)
+            {
+                this->m_timerNodes.push_back(&objRaw);
+            }
+            else if constexpr (std::is_same_v<AnchorPoint, T>)
+            {
+                this->m_anchorPoints.push_back(&objRaw);
+            }
+            else
+            {
+                assert(!"unhandled type");
+            }
+
+            // types derived from LogicNode are added to node dependency graph
+            if constexpr (std::is_base_of_v<LogicNode, T>)
+                m_logicNodeDependencies.addNode(objRaw.LogicNode::m_impl);
+        }
+
+        return objRaw;
+    }
+
+    template <typename T>
+    bool ApiObjects::destroyAndUnregisterObject(T& objToDelete, ErrorReporting& errorReporting)
+    {
+        static_assert(std::is_base_of_v<LogicObject, T>, "Meant for LogicObject instances only");
+
+        const auto findOwnedObj = std::find_if(m_objectsOwningContainer.cbegin(), m_objectsOwningContainer.cend(), [&](const auto& obj) { return obj.get() == &objToDelete; });
+        if (findOwnedObj == m_objectsOwningContainer.cend())
+        {
+            errorReporting.add(fmt::format("Failed to destroy object '{}', cannot find it in this LogicEngine instance.", objToDelete.LogicObject::m_impl->getIdentificationString()), &objToDelete, EErrorType::IllegalArgument);
             return false;
         }
 
-        m_logicNodeDependencies.removeBindingDependency(node.m_anchorPointImpl.getRamsesNodeBinding(), node.m_impl);
-        m_logicNodeDependencies.removeBindingDependency(node.m_anchorPointImpl.getRamsesCameraBinding(), node.m_impl);
+        auto eraseFromPool = [](auto& obj, auto& pool) { pool.erase(std::find(pool.begin(), pool.end(), &obj)); };
 
-        unregisterLogicObject(node);
-        m_anchorPoints.erase(nodeIt);
+        // put into own scope as clang-tidy is confused with constexpr branches and reports indentation warning
+        {
+            if constexpr (std::is_base_of_v<LogicNode, T>)
+            {
+                LogicNodeImpl& logicNodeImpl = objToDelete.LogicNode::m_impl;
+                m_logicNodeDependencies.removeNode(logicNodeImpl);
+            }
+        }
+
+        // put into own scope as clang-tidy is confused with constexpr branches and reports indentation warning
+        {
+            if constexpr (std::is_same_v<LuaScript, T>)
+            {
+                eraseFromPool(objToDelete, this->m_scripts);
+            }
+            else if constexpr (std::is_same_v<LuaInterface, T>)
+            {
+                eraseFromPool(objToDelete, this->m_interfaces);
+            }
+            else if constexpr (std::is_same_v<LuaModule, T>)
+            {
+                eraseFromPool(objToDelete, this->m_luaModules);
+            }
+            else if constexpr (std::is_same_v<RamsesNodeBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_ramsesNodeBindings);
+            }
+            else if constexpr (std::is_same_v<RamsesAppearanceBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_ramsesAppearanceBindings);
+            }
+            else if constexpr (std::is_same_v<RamsesCameraBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_ramsesCameraBindings);
+            }
+            else if constexpr (std::is_same_v<RamsesRenderPassBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_ramsesRenderPassBindings);
+            }
+            else if constexpr (std::is_same_v<RamsesRenderGroupBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_ramsesRenderGroupBindings);
+            }
+            else if constexpr (std::is_same_v<RamsesMeshNodeBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_ramsesMeshNodeBindings);
+            }
+            else if constexpr (std::is_same_v<SkinBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_skinBindings);
+            }
+            else if constexpr (std::is_same_v<DataArray, T>)
+            {
+                eraseFromPool(objToDelete, this->m_dataArrays);
+            }
+            else if constexpr (std::is_same_v<AnimationNode, T>)
+            {
+                eraseFromPool(objToDelete, this->m_animationNodes);
+            }
+            else if constexpr (std::is_same_v<TimerNode, T>)
+            {
+                eraseFromPool(objToDelete, this->m_timerNodes);
+            }
+            else if constexpr (std::is_same_v<AnchorPoint, T>)
+            {
+                eraseFromPool(objToDelete, this->m_anchorPoints);
+            }
+            else
+            {
+                assert(!"unhandled type");
+            }
+        }
+
+        assert(m_logicObjectIdMapping.count(objToDelete.getId()) != 0u);
+        m_logicObjectIdMapping.erase(objToDelete.getId());
+
+        const auto findLogicObj = std::find(m_logicObjects.cbegin(), m_logicObjects.cend(), &objToDelete);
+        assert(findLogicObj != m_logicObjects.cend() && "Can't find LogicObject in logic objects!");
+        m_logicObjects.erase(findLogicObj);
+
+        m_objectsOwningContainer.erase(findOwnedObj);
 
         return true;
-    }
-
-    void ApiObjects::registerLogicObject(std::unique_ptr<LogicObject> obj)
-    {
-        m_logicObjects.push_back(obj.get());
-        obj->m_impl->setLogicObject(*obj);
-
-        auto logicNode = dynamic_cast<LogicNode*>(obj.get());
-        if (logicNode)
-            registerLogicNode(*logicNode);
-
-        m_logicObjectIdMapping.emplace(obj->getId(), obj.get());
-        m_objectsOwningContainer.push_back(move(obj));
-    }
-
-    void ApiObjects::unregisterLogicObject(LogicObject& objToDelete)
-    {
-        const auto findOwnedObj = std::find_if(m_objectsOwningContainer.cbegin(), m_objectsOwningContainer.cend(), [&](const auto& obj) { return obj.get() == &objToDelete; });
-        assert(findOwnedObj != m_objectsOwningContainer.cend() && "Can't find LogicObject in owned objects!");
-
-        const auto findLogicNode = std::find(m_logicObjects.cbegin(), m_logicObjects.cend(), &objToDelete);
-        assert(findLogicNode != m_logicObjects.cend() && "Can't find LogicObject in logic objects!");
-
-        auto logicNode = dynamic_cast<LogicNode*>(&objToDelete);
-        if (logicNode)
-            unregisterLogicNode(*logicNode);
-
-        m_logicObjectIdMapping.erase(objToDelete.getId());
-        m_objectsOwningContainer.erase(findOwnedObj);
-        m_logicObjects.erase(findLogicNode);
     }
 
     bool ApiObjects::checkBindingsReferToSameRamsesScene(ErrorReporting& errorReporting) const
@@ -837,12 +763,12 @@ namespace rlogic::internal
         //nodes with no outputs linked
         for (const auto* logicObj : m_logicObjects)
         {
-            const auto* objAsNode = dynamic_cast<const rlogic::LogicNode*>(logicObj);
+            const auto* objAsNode = dynamic_cast<const ramses::LogicNode*>(logicObj);
             if (objAsNode != nullptr)
             {
-                if (dynamic_cast<const rlogic::LuaInterface*>(logicObj) ||  // interfaces have their own validation logic in ApiObjects::validateInterfaces
-                    dynamic_cast<const rlogic::RamsesBinding*>(logicObj) || // bindings have no outputs
-                    dynamic_cast<const rlogic::AnchorPoint*>(logicObj))     // anchor points are being used in special way which sometimes involves reading output value directly by application only
+                if (dynamic_cast<const ramses::LuaInterface*>(logicObj) ||  // interfaces have their own validation logic in ApiObjects::validateInterfaces
+                    dynamic_cast<const ramses::RamsesBinding*>(logicObj) || // bindings have no outputs
+                    dynamic_cast<const ramses::AnchorPoint*>(logicObj))     // anchor points are being used in special way which sometimes involves reading output value directly by application only
                     continue;
 
                 assert(objAsNode->getOutputs() != nullptr);
@@ -877,16 +803,16 @@ namespace rlogic::internal
         //nodes with no linked inputs
         for (const auto* logicObj : m_logicObjects)
         {
-            const auto* objAsNode = dynamic_cast<const rlogic::LogicNode*>(logicObj);
+            const auto* objAsNode = dynamic_cast<const ramses::LogicNode*>(logicObj);
             if (objAsNode != nullptr)
             {
-                if (dynamic_cast<const rlogic::LuaInterface*>(logicObj) ||  // interfaces have their own validation logic in ApiObjects::validateInterfaces
-                    dynamic_cast<const rlogic::TimerNode*>(logicObj) ||     // timer not having input is valid use case which enables internal clock ticker
-                    dynamic_cast<const rlogic::AnchorPoint*>(logicObj) ||   // anchor points have no inputs
-                    dynamic_cast<const rlogic::SkinBinding*>(logicObj))     // skinbinding has no inputs
+                if (dynamic_cast<const ramses::LuaInterface*>(logicObj) ||  // interfaces have their own validation logic in ApiObjects::validateInterfaces
+                    dynamic_cast<const ramses::TimerNode*>(logicObj) ||     // timer not having input is valid use case which enables internal clock ticker
+                    dynamic_cast<const ramses::AnchorPoint*>(logicObj) ||   // anchor points have no inputs
+                    dynamic_cast<const ramses::SkinBinding*>(logicObj))     // skinbinding has no inputs
                     continue;
 
-                if (bindingsInUse.count(dynamic_cast<const rlogic::RamsesBinding*>(logicObj)) != 0) // bindings in use by other rlogic objects can be without incoming links
+                if (bindingsInUse.count(dynamic_cast<const ramses::RamsesBinding*>(logicObj)) != 0) // bindings in use by other rlogic objects can be without incoming links
                     continue;
 
                 assert(objAsNode->getInputs() != nullptr);
@@ -991,13 +917,6 @@ namespace rlogic::internal
         return m_logicNodeDependencies;
     }
 
-    LogicNode* ApiObjects::getApiObject(LogicNodeImpl& impl) const
-    {
-        auto apiObjectIter = m_reverseImplMapping.find(&impl);
-        assert(apiObjectIter != m_reverseImplMapping.end());
-        return apiObjectIter->second;
-    }
-
     LogicObject* ApiObjects::getApiObjectById(uint64_t id) const
     {
         auto apiObjectIter = m_logicObjectIdMapping.find(id);
@@ -1007,11 +926,6 @@ namespace rlogic::internal
             return apiObjectIter->second;
         }
         return nullptr;
-    }
-
-    const std::unordered_map<LogicNodeImpl*, LogicNode*>& ApiObjects::getReverseImplMapping() const
-    {
-        return m_reverseImplMapping;
     }
 
     flatbuffers::Offset<rlogic_serialization::ApiObjects> ApiObjects::Serialize(const ApiObjects& apiObjects, flatbuffers::FlatBufferBuilder& builder, ELuaSavingMode luaSavingMode)
@@ -1294,37 +1208,25 @@ namespace rlogic::internal
         deserialized->m_luaModules.reserve(luaModules.size());
         for (const auto* module : luaModules)
         {
+            assert(module);
             std::unique_ptr<LuaModuleImpl> deserializedModule = LuaModuleImpl::Deserialize(*deserialized->m_solState, *module, errorReporting, deserializationMap);
             if (!deserializedModule)
                 return nullptr;
 
-            std::unique_ptr<LuaModule> up        = std::make_unique<LuaModule>(std::move(deserializedModule));
-            LuaModule*                 luaModule = up.get();
-            deserialized->m_luaModules.push_back(luaModule);
-            deserialized->registerLogicObject(std::move(up));
-            deserializationMap.storeLogicObject(luaModule->getId(), deserialized->m_luaModules.back()->m_impl);
+            auto& obj = deserialized->createAndRegisterObject<LuaModule, LuaModuleImpl>(std::move(deserializedModule));
+            deserializationMap.storeLogicObject(obj.getId(), obj.m_impl);
         }
 
         const auto& luascripts = *apiObjects.luaScripts();
         deserialized->m_scripts.reserve(luascripts.size());
         for (const auto* script : luascripts)
         {
-            // TODO Violin find ways to unit-test this case - also for other container types
-            // Ideas: see if verifier catches it; or: disable flatbuffer's internal asserts if possible
-            assert (script);
+            assert(script);
             std::unique_ptr<LuaScriptImpl> deserializedScript = LuaScriptImpl::Deserialize(*deserialized->m_solState, *script, errorReporting, deserializationMap);
-
-            if (deserializedScript)
-            {
-                std::unique_ptr<LuaScript> up             = std::make_unique<LuaScript>(std::move(deserializedScript));
-                LuaScript*                 luascript = up.get();
-                deserialized->m_scripts.push_back(luascript);
-                deserialized->registerLogicObject(std::move(up));
-            }
-            else
-            {
+            if (!deserializedScript)
                 return nullptr;
-            }
+
+            deserialized->createAndRegisterObject<LuaScript, LuaScriptImpl>(std::move(deserializedScript));
         }
 
         const auto& luaInterfaces = *apiObjects.luaInterfaces();
@@ -1333,18 +1235,10 @@ namespace rlogic::internal
         {
             assert(intf);
             std::unique_ptr<LuaInterfaceImpl> deserializedInterface = LuaInterfaceImpl::Deserialize(*intf, errorReporting, deserializationMap);
-
-            if (deserializedInterface)
-            {
-                std::unique_ptr<LuaInterface> up = std::make_unique<LuaInterface>(std::move(deserializedInterface));
-                LuaInterface* luaInterface = up.get();
-                deserialized->m_interfaces.push_back(luaInterface);
-                deserialized->registerLogicObject(std::move(up));
-            }
-            else
-            {
+            if (!deserializedInterface)
                 return nullptr;
-            }
+
+            deserialized->createAndRegisterObject<LuaInterface, LuaInterfaceImpl>(std::move(deserializedInterface));
         }
 
         if (apiObjects.nodeBindings()->size() != 0u ||
@@ -1368,19 +1262,11 @@ namespace rlogic::internal
             assert(binding);
             assert(ramsesResolver);
             std::unique_ptr<RamsesNodeBindingImpl> deserializedBinding = RamsesNodeBindingImpl::Deserialize(*binding, *ramsesResolver, errorReporting, deserializationMap);
-
-            if (deserializedBinding)
-            {
-                std::unique_ptr<RamsesNodeBinding> up = std::make_unique<RamsesNodeBinding>(std::move(deserializedBinding));
-                RamsesNodeBinding* nodeBinding = up.get();
-                deserialized->m_ramsesNodeBindings.push_back(nodeBinding);
-                deserialized->registerLogicObject(std::move(up));
-                deserializationMap.storeLogicObject(nodeBinding->getId(), nodeBinding->m_nodeBinding);
-            }
-            else
-            {
+            if (!deserializedBinding)
                 return nullptr;
-            }
+
+            auto& obj = deserialized->createAndRegisterObject<RamsesNodeBinding, RamsesNodeBindingImpl>(std::move(deserializedBinding));
+            deserializationMap.storeLogicObject(obj.getId(), obj.m_impl);
         }
 
         const auto& ramsesAppearanceBindings = *apiObjects.appearanceBindings();
@@ -1390,19 +1276,11 @@ namespace rlogic::internal
             assert(binding);
             assert(ramsesResolver);
             std::unique_ptr<RamsesAppearanceBindingImpl> deserializedBinding = RamsesAppearanceBindingImpl::Deserialize(*binding, *ramsesResolver, errorReporting, deserializationMap);
-
-            if (deserializedBinding)
-            {
-                std::unique_ptr<RamsesAppearanceBinding> up      = std::make_unique<RamsesAppearanceBinding>(std::move(deserializedBinding));
-                RamsesAppearanceBinding*                 appBinding = up.get();
-                deserialized->m_ramsesAppearanceBindings.push_back(appBinding);
-                deserialized->registerLogicObject(std::move(up));
-                deserializationMap.storeLogicObject(appBinding->getId(), appBinding->m_appearanceBinding);
-            }
-            else
-            {
+            if (!deserializedBinding)
                 return nullptr;
-            }
+
+            auto& obj = deserialized->createAndRegisterObject<RamsesAppearanceBinding, RamsesAppearanceBindingImpl>(std::move(deserializedBinding));
+            deserializationMap.storeLogicObject(obj.getId(), obj.m_impl);
         }
 
         const auto& ramsesCameraBindings = *apiObjects.cameraBindings();
@@ -1412,19 +1290,11 @@ namespace rlogic::internal
             assert(binding);
             assert(ramsesResolver);
             std::unique_ptr<RamsesCameraBindingImpl> deserializedBinding = RamsesCameraBindingImpl::Deserialize(*binding, *ramsesResolver, errorReporting, deserializationMap);
-
-            if (deserializedBinding)
-            {
-                std::unique_ptr<RamsesCameraBinding> up      = std::make_unique<RamsesCameraBinding>(std::move(deserializedBinding));
-                RamsesCameraBinding*                 camBinding = up.get();
-                deserialized->m_ramsesCameraBindings.push_back(camBinding);
-                deserialized->registerLogicObject(std::move(up));
-                deserializationMap.storeLogicObject(camBinding->getId(), camBinding->m_cameraBinding);
-            }
-            else
-            {
+            if (!deserializedBinding)
                 return nullptr;
-            }
+
+            auto& obj = deserialized->createAndRegisterObject<RamsesCameraBinding, RamsesCameraBindingImpl>(std::move(deserializedBinding));
+            deserializationMap.storeLogicObject(obj.getId(), obj.m_impl);
         }
 
         const auto& ramsesRenderPassBindings = *apiObjects.renderPassBindings();
@@ -1434,18 +1304,11 @@ namespace rlogic::internal
             assert(binding);
             assert(ramsesResolver);
             std::unique_ptr<RamsesRenderPassBindingImpl> deserializedBinding = RamsesRenderPassBindingImpl::Deserialize(*binding, *ramsesResolver, errorReporting, deserializationMap);
-
-            if (deserializedBinding)
-            {
-                std::unique_ptr<RamsesRenderPassBinding> up = std::make_unique<RamsesRenderPassBinding>(std::move(deserializedBinding));
-                RamsesRenderPassBinding* rpBinding = up.get();
-                deserialized->m_ramsesRenderPassBindings.push_back(rpBinding);
-                deserialized->registerLogicObject(std::move(up));
-            }
-            else
-            {
+            if (!deserializedBinding)
                 return nullptr;
-            }
+
+            auto& obj = deserialized->createAndRegisterObject<RamsesRenderPassBinding, RamsesRenderPassBindingImpl>(std::move(deserializedBinding));
+            deserializationMap.storeLogicObject(obj.getId(), obj.m_impl);
         }
 
         const auto& dataArrays = *apiObjects.dataArrays();
@@ -1457,11 +1320,8 @@ namespace rlogic::internal
             if (!deserializedDataArray)
                 return nullptr;
 
-            std::unique_ptr<DataArray> up        = std::make_unique<DataArray>(std::move(deserializedDataArray));
-            DataArray*                 dataArray = up.get();
-            deserialized->m_dataArrays.push_back(dataArray);
-            deserialized->registerLogicObject(std::move(up));
-            deserializationMap.storeDataArray(*fbData, *deserialized->m_dataArrays.back());
+            auto& obj = deserialized->createAndRegisterObject<DataArray, DataArrayImpl>(std::move(deserializedDataArray));
+            deserializationMap.storeDataArray(*fbData, obj);
         }
 
         // animation nodes must go after data arrays because they need to resolve references
@@ -1474,10 +1334,8 @@ namespace rlogic::internal
             if (!deserializedAnimNode)
                 return nullptr;
 
-            std::unique_ptr<AnimationNode> up        = std::make_unique<AnimationNode>(std::move(deserializedAnimNode));
-            AnimationNode*                 animation = up.get();
-            deserialized->m_animationNodes.push_back(animation);
-            deserialized->registerLogicObject(std::move(up));
+            auto& obj = deserialized->createAndRegisterObject<AnimationNode, AnimationNodeImpl>(std::move(deserializedAnimNode));
+            deserializationMap.storeLogicObject(obj.getId(), obj.m_impl);
         }
 
         const auto& timerNodes = *apiObjects.timerNodes();
@@ -1489,9 +1347,7 @@ namespace rlogic::internal
             if (!deserializedTimer)
                 return nullptr;
 
-            auto up = std::make_unique<TimerNode>(std::move(deserializedTimer));
-            deserialized->m_timerNodes.push_back(up.get());
-            deserialized->registerLogicObject(std::move(up));
+            deserialized->createAndRegisterObject<TimerNode, TimerNodeImpl>(std::move(deserializedTimer));
         }
 
         // anchor points must go after node and camera bindings because they need to resolve references
@@ -1502,18 +1358,10 @@ namespace rlogic::internal
             assert(fbAnchor);
             assert(ramsesResolver);
             std::unique_ptr<AnchorPointImpl> deserializedAnchor = AnchorPointImpl::Deserialize(*fbAnchor, errorReporting, deserializationMap);
-
-            if (deserializedAnchor)
-            {
-                auto up = std::make_unique<AnchorPoint>(std::move(deserializedAnchor));
-                AnchorPoint* anchor = up.get();
-                deserialized->m_anchorPoints.push_back(anchor);
-                deserialized->registerLogicObject(std::move(up));
-            }
-            else
-            {
+            if (!deserializedAnchor)
                 return nullptr;
-            }
+
+            deserialized->createAndRegisterObject<AnchorPoint, AnchorPointImpl>(std::move(deserializedAnchor));
         }
 
         const auto& ramsesRenderGroupBindings = *apiObjects.renderGroupBindings();
@@ -1523,18 +1371,10 @@ namespace rlogic::internal
             assert(binding);
             assert(ramsesResolver);
             std::unique_ptr<RamsesRenderGroupBindingImpl> deserializedBinding = RamsesRenderGroupBindingImpl::Deserialize(*binding, *ramsesResolver, errorReporting, deserializationMap);
-
-            if (deserializedBinding)
-            {
-                std::unique_ptr<RamsesRenderGroupBinding> up = std::make_unique<RamsesRenderGroupBinding>(std::move(deserializedBinding));
-                RamsesRenderGroupBinding* rgBinding = up.get();
-                deserialized->m_ramsesRenderGroupBindings.push_back(rgBinding);
-                deserialized->registerLogicObject(std::move(up));
-            }
-            else
-            {
+            if (!deserializedBinding)
                 return nullptr;
-            }
+
+            deserialized->createAndRegisterObject<RamsesRenderGroupBinding, RamsesRenderGroupBindingImpl>(std::move(deserializedBinding));
         }
 
         // skin bindings must go after node and appearance bindings because they need to resolve references
@@ -1544,18 +1384,10 @@ namespace rlogic::internal
         {
             assert(binding);
             std::unique_ptr<SkinBindingImpl> deserializedBinding = SkinBindingImpl::Deserialize(*binding, errorReporting, deserializationMap);
-
-            if (deserializedBinding)
-            {
-                std::unique_ptr<SkinBinding> up = std::make_unique<SkinBinding>(std::move(deserializedBinding));
-                SkinBinding* skinBinding = up.get();
-                deserialized->m_skinBindings.push_back(skinBinding);
-                deserialized->registerLogicObject(std::move(up));
-            }
-            else
-            {
+            if (!deserializedBinding)
                 return nullptr;
-            }
+
+            deserialized->createAndRegisterObject<SkinBinding, SkinBindingImpl>(std::move(deserializedBinding));
         }
 
         const auto& ramsesMeshNodeBindings = *apiObjects.meshNodeBindings();
@@ -1565,18 +1397,10 @@ namespace rlogic::internal
             assert(binding);
             assert(ramsesResolver);
             std::unique_ptr<RamsesMeshNodeBindingImpl> deserializedBinding = RamsesMeshNodeBindingImpl::Deserialize(*binding, *ramsesResolver, errorReporting, deserializationMap);
-
-            if (deserializedBinding)
-            {
-                auto up = std::make_unique<RamsesMeshNodeBinding>(std::move(deserializedBinding));
-                RamsesMeshNodeBinding* mnBinding = up.get();
-                deserialized->m_ramsesMeshNodeBindings.push_back(mnBinding);
-                deserialized->registerLogicObject(std::move(up));
-            }
-            else
-            {
+            if (!deserializedBinding)
                 return nullptr;
-            }
+
+            deserialized->createAndRegisterObject<RamsesMeshNodeBinding, RamsesMeshNodeBindingImpl>(std::move(deserializedBinding));
         }
 
         // links must go last due to dependency on deserialized properties
@@ -1606,9 +1430,6 @@ namespace rlogic::internal
                 deserializationMap.resolvePropertyImpl(*targetProp),
                 rLink->isWeak(),
                 errorReporting);
-            // TODO Violin handle (and unit test!) this error properly. Consider these error cases:
-            // - maliciously forged properties (not attached to any node anywhere)
-            // - cycles! (we check this on serialization, but Murphy's law says if something can break, it will break)
             if (!success)
             {
                 errorReporting.add(

@@ -19,7 +19,7 @@
 #include "internals/LuaTypeConversions.h"
 #include "internals/TypeUtils.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     void LuaCustomizations::RegisterTypes(sol::state& state)
     {
@@ -323,7 +323,7 @@ namespace rlogic::internal
             if (propertyType == EPropertyType::Array || // Array types can be iterated both in runtime and extraction
                 (TypeUtils::IsPrimitiveVectorType(propertyType) && wrappedProperty)) // VEC types can be iterated only in runtime, not during property extraction
             {
-                return std::make_tuple(sol::state_view(s)["rl_next"], std::move(iterableObject), sol::nil);
+                return std::make_tuple(sol::state_view(s)["rl_next"], std::move(iterableObject), sol::lua_nil);
             }
 
             // no other custom types can be iterated using rl_ipairs
@@ -333,28 +333,28 @@ namespace rlogic::internal
         std::optional<sol::lua_table> potentialModuleTable = LuaTypeConversions::ExtractLuaTable(iterableObject);
         if (potentialModuleTable)
         {
-            return std::make_tuple(sol::state_view(s)["next"], std::move(*potentialModuleTable), sol::nil);
+            return std::make_tuple(sol::state_view(s)["next"], std::move(*potentialModuleTable), sol::lua_nil);
         }
 
         sol_helper::throwSolException("rl_ipairs() called on an unsupported type '{}'. Use only with user types like IN/OUT, modules etc.!", sol_helper::GetSolTypeName(iterableObject.get_type()));
-        return std::make_tuple(sol::nil, sol::nil, sol::nil);
+        return std::make_tuple(sol::lua_nil, sol::lua_nil, sol::lua_nil);
     }
 
     std::tuple<sol::object, sol::object, sol::object> LuaCustomizations::rl_pairs(sol::this_state s, sol::object iterableObject)
     {
         if (iterableObject.get_type() == sol::type::userdata)
         {
-            return std::make_tuple(sol::state_view(s)["rl_next"], std::move(iterableObject), sol::nil);
+            return std::make_tuple(sol::state_view(s)["rl_next"], std::move(iterableObject), sol::lua_nil);
         }
 
         std::optional<sol::lua_table> potentialModuleTable = LuaTypeConversions::ExtractLuaTable(iterableObject);
         if (potentialModuleTable)
         {
-            return std::make_tuple(sol::state_view(s)["next"], std::move(*potentialModuleTable), sol::nil);
+            return std::make_tuple(sol::state_view(s)["next"], std::move(*potentialModuleTable), sol::lua_nil);
         }
 
         sol_helper::throwSolException("rl_pairs() called on an unsupported type '{}'. Use only with user types like IN/OUT, modules etc.!", sol_helper::GetSolTypeName(iterableObject.get_type()));
-        return std::make_tuple(sol::nil, sol::nil, sol::nil);
+        return std::make_tuple(sol::lua_nil, sol::lua_nil, sol::lua_nil);
     }
 
     std::tuple<sol::object, sol::object> LuaCustomizations::ResolveExtractorField(sol::this_state s, const PropertyTypeExtractor& typeExtractor, size_t fieldId)

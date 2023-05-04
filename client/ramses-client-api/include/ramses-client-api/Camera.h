@@ -16,11 +16,12 @@ namespace ramses
     class DataObject;
 
     /**
+    * @ingroup CoreAPI
     * @brief   The #Camera base class is part of a scene and defines a view into the scene
     *          defined by the client application. It is also a #Node with transformation.
     * @details A valid camera for rendering must have viewport and frustum set.
     */
-    class RAMSES_API Camera : public Node
+    class Camera : public Node
     {
     public:
         /**
@@ -48,7 +49,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setFrustum(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane);
+        RAMSES_API status_t setFrustum(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane);
 
         /**
         * @brief Sets the viewport to be used when rendering with this camera.
@@ -70,7 +71,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height);
+        RAMSES_API status_t setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
         /**
         * @brief   Returns the horizontal offset of the viewport in pixels relative to lower left corner of destination render buffer.
@@ -79,7 +80,7 @@ namespace ramses
         *
         * @return horizontal offset of the viewport in pixels
         */
-        [[nodiscard]] int32_t getViewportX() const;
+        [[nodiscard]] RAMSES_API int32_t getViewportX() const;
 
         /**
         * @brief   Returns the vertical offset of the viewport in pixels relative to lower left corner of destination render buffer.
@@ -88,7 +89,7 @@ namespace ramses
         *
         * @return vertical offset of the viewport in pixels
         */
-        [[nodiscard]] int32_t getViewportY() const;
+        [[nodiscard]] RAMSES_API int32_t getViewportY() const;
 
         /**
         * @brief   Returns the viewport width in pixels
@@ -97,7 +98,7 @@ namespace ramses
         *
         * @return viewport width in pixels
         */
-        [[nodiscard]] uint32_t getViewportWidth() const;
+        [[nodiscard]] RAMSES_API uint32_t getViewportWidth() const;
 
         /**
         * @brief   Returns the viewport height in pixels
@@ -106,7 +107,7 @@ namespace ramses
         *
         * @return viewport height in pixels
         */
-        [[nodiscard]] uint32_t getViewportHeight() const;
+        [[nodiscard]] RAMSES_API uint32_t getViewportHeight() const;
 
         /**
         * @brief   Returns the left plane of the camera frustum
@@ -115,7 +116,7 @@ namespace ramses
         *
         * @return the left plane of the Camera
         */
-        [[nodiscard]] float getLeftPlane() const;
+        [[nodiscard]] RAMSES_API float getLeftPlane() const;
 
         /**
         * @brief   Returns the right plane of the camera frustum
@@ -124,7 +125,7 @@ namespace ramses
         *
         * @return the right plane of the #Camera
         */
-        [[nodiscard]] float getRightPlane() const;
+        [[nodiscard]] RAMSES_API float getRightPlane() const;
 
         /**
         * @brief   Returns the bottom plane of the camera frustum
@@ -133,7 +134,7 @@ namespace ramses
         *
         * @return the bottom plane of the #Camera
         */
-        [[nodiscard]] float getBottomPlane() const;
+        [[nodiscard]] RAMSES_API float getBottomPlane() const;
 
         /**
         * @brief   Returns the top plane of the camera frustum
@@ -142,7 +143,7 @@ namespace ramses
         *
         * @return the top plane of the #Camera
         */
-        [[nodiscard]] float getTopPlane() const;
+        [[nodiscard]] RAMSES_API float getTopPlane() const;
 
         /**
         * @brief Returns the near plane of the camera frustum
@@ -151,7 +152,7 @@ namespace ramses
         *
         * @return the near plane of the #Camera
         */
-        [[nodiscard]] float getNearPlane() const;
+        [[nodiscard]] RAMSES_API float getNearPlane() const;
 
         /**
         * @brief Returns the far plane of the camera frustum
@@ -160,7 +161,7 @@ namespace ramses
         *
         * @return the far plane of the #Camera
         */
-        [[nodiscard]] float getFarPlane() const;
+        [[nodiscard]] RAMSES_API float getFarPlane() const;
 
         /**
         * @brief Gets projection matrix based on camera parameters.
@@ -171,7 +172,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getProjectionMatrix(matrix44f& projectionMatrix) const;
+        [[nodiscard]] RAMSES_API status_t getProjectionMatrix(matrix44f& projectionMatrix) const;
 
         /**
         * @brief Binds a #ramses::DataObject to be used as source for viewport offset values.
@@ -184,7 +185,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t bindViewportOffset(const DataObject& offsetData);
+        RAMSES_API status_t bindViewportOffset(const DataObject& offsetData);
 
         /**
         * @brief Binds a #ramses::DataObject to be used as source for viewport size values.
@@ -198,7 +199,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t bindViewportSize(const DataObject& sizeData);
+        RAMSES_API status_t bindViewportSize(const DataObject& sizeData);
 
         /**
         * @brief Binds #ramses::DataObject to be used as source for frustum planes values.
@@ -218,7 +219,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t bindFrustumPlanes(const DataObject& frustumPlanesData, const DataObject& nearFarPlanesData);
+        RAMSES_API status_t bindFrustumPlanes(const DataObject& frustumPlanesData, const DataObject& nearFarPlanesData);
 
         /**
         * @brief Unbinds any bound #ramses::DataObject from viewport offset (see #bindViewportOffset).
@@ -226,7 +227,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t unbindViewportOffset();
+        RAMSES_API status_t unbindViewportOffset();
 
         /**
         * @brief Unbinds any bound #ramses::DataObject from viewport size (see #bindViewportSize).
@@ -234,7 +235,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t unbindViewportSize();
+        RAMSES_API status_t unbindViewportSize();
 
         /**
         * @brief Unbinds any bound #ramses::DataObject from frustum planes (see #bindFrustumPlanes).
@@ -242,46 +243,43 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t unbindFrustumPlanes();
+        RAMSES_API status_t unbindFrustumPlanes();
 
         /**
         * @brief Checks if there is a #ramses::DataObject bound to viewport offset (see #bindViewportOffset).
         * @return True if there is any #ramses::DataObject bound, false otherwise.
         */
-        [[nodiscard]] bool isViewportOffsetBound() const;
+        [[nodiscard]] RAMSES_API bool isViewportOffsetBound() const;
 
         /**
         * @brief Checks if there is a #ramses::DataObject bound to viewport size (see #bindViewportSize).
         * @return True if there is any #ramses::DataObject bound, false otherwise.
         */
-        [[nodiscard]] bool isViewportSizeBound() const;
+        [[nodiscard]] RAMSES_API bool isViewportSizeBound() const;
 
         /**
         * @brief Checks if there is a #ramses::DataObject bound to viewport size (see #bindFrustumPlanes).
         * @return True if there is any #ramses::DataObject bound, false otherwise.
         */
-        [[nodiscard]] bool isFrustumPlanesBound() const;
+        [[nodiscard]] RAMSES_API bool isFrustumPlanesBound() const;
 
         /**
         * Stores internal data for implementation specifics of Camera.
         */
-        class CameraNodeImpl& impl;
+        class CameraNodeImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating #Camera instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for #Camera.
         *
-        * @param[in] pimpl Internal data for implementation specifics of #Camera (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of #Camera (sink - instance becomes owner)
         */
-        explicit Camera(CameraNodeImpl& pimpl);
-
-        /** Protected trivial destructor to avoid deleting by user*/
-        ~Camera() override;
+        explicit Camera(std::unique_ptr<CameraNodeImpl> impl);
     };
 }
 

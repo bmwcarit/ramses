@@ -36,23 +36,23 @@ namespace ramses_internal
         EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, IContext& context);
         ~EmbeddedCompositor_Wayland() override;
 
-        Bool init();
+        bool init();
         [[nodiscard]] wl_display* getEmbeddedCompositingDisplay() const;
 
         void handleRequestsFromClients() override;
-        [[nodiscard]] Bool hasUpdatedStreamTextureSources() const override;
+        [[nodiscard]] bool hasUpdatedStreamTextureSources() const override;
         WaylandIviSurfaceIdSet dispatchUpdatedStreamTextureSourceIds() override;
         WaylandIviSurfaceIdSet dispatchNewStreamTextureSourceIds() override;
         WaylandIviSurfaceIdSet dispatchObsoleteStreamTextureSourceIds() override;
-        void endFrame(Bool notifyClients) override;
+        void endFrame(bool notifyClients) override;
         UInt32 uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) override;
 
-        [[nodiscard]] Bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
+        [[nodiscard]] bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
 
         [[nodiscard]] UInt64 getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const override;
-        [[nodiscard]] Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
+        [[nodiscard]] bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         [[nodiscard]] UInt32 getNumberOfCompositorConnections() const override;
-        [[nodiscard]] Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
+        [[nodiscard]] bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
         [[nodiscard]] const IWaylandSurface& findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const;
         [[nodiscard]] String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         void logInfos(RendererLogContext& context) const override;
@@ -73,18 +73,18 @@ namespace ramses_internal
 
         IWaylandBuffer& getOrCreateBuffer(WaylandBufferResource& bufferResource) override;
 
-        [[nodiscard]] Bool isRealCompositor() const override; //TODO Mohamed: remove this when dummy EC is removed
+        [[nodiscard]] bool isRealCompositor() const override; //TODO Mohamed: remove this when dummy EC is removed
 
     private:
         [[nodiscard]] IWaylandSurface* findWaylandSurfaceByIviSurfaceId(WaylandIviSurfaceId iviSurfaceId) const;
 
         void uploadCompositingContentForWaylandSurface(IWaylandSurface* waylandSurface, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter);
 
-        Bool applyPermissionsGroupToEmbeddedCompositingSocket(const String& embeddedSocketName);
+        bool applyPermissionsGroupToEmbeddedCompositingSocket(const String& embeddedSocketName);
 
-        Bool addSocketToDisplay();
-        Bool addSocketToDisplayWithFD(int socketFD);
-        Bool addSocketToDisplayWithName(const String& embeddedSocketName);
+        bool addSocketToDisplay();
+        bool addSocketToDisplayWithFD(int socketFD);
+        bool addSocketToDisplayWithName(const String& embeddedSocketName);
         IWaylandBuffer* findWaylandBuffer(WaylandBufferResource& bufferResource);
 
         const String                m_waylandEmbeddedSocketName;

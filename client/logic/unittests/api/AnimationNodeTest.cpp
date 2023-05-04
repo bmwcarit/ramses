@@ -26,7 +26,7 @@
 #include "flatbuffers/flatbuffers.h"
 #include <numeric>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AnAnimationNode : public ::testing::TestWithParam<bool>
     {
@@ -157,7 +157,7 @@ namespace rlogic::internal
         LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
         EXPECT_FALSE(otherEngine.destroy(*animNode));
         ASSERT_FALSE(otherEngine.getErrors().empty());
-        EXPECT_EQ("Can't find AnimationNode in logic engine!", otherEngine.getErrors().front().message);
+        EXPECT_EQ("Failed to destroy object 'animNode [Id=5]', cannot find it in this LogicEngine instance.", otherEngine.getErrors().front().message);
     }
 
     TEST_P(AnAnimationNode, ChangesName)

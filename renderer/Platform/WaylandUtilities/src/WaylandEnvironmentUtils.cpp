@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     namespace
     {
-        const char* const EnvironmentVariableNames[] =
+        const std::array EnvironmentVariableNames =
         {
             "XDG_RUNTIME_DIR",
             "WAYLAND_SOCKET",
@@ -29,7 +29,7 @@ namespace ramses_internal
         bool CheckXDGRuntimeDir()
         {
             String xdgPathEnvironmentVar;
-            const Bool xdgPathFoundInEnvironmentVars = PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
+            const bool xdgPathFoundInEnvironmentVars = PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
 
             if (!xdgPathFoundInEnvironmentVars)
             {
@@ -100,8 +100,8 @@ namespace ramses_internal
             String waylandDisplayEnvironmentVar;
             String waylandSocketEnvironmentVar;
             PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
-            const Bool waylandDisplayFoundInEnvironmentVars = PlatformEnvironmentVariables::get("WAYLAND_DISPLAY", waylandDisplayEnvironmentVar);
-            const Bool waylandSocketFoundInEnvironmentVars  = PlatformEnvironmentVariables::get("WAYLAND_SOCKET",  waylandSocketEnvironmentVar);
+            const bool waylandDisplayFoundInEnvironmentVars = PlatformEnvironmentVariables::get("WAYLAND_DISPLAY", waylandDisplayEnvironmentVar);
+            const bool waylandSocketFoundInEnvironmentVars  = PlatformEnvironmentVariables::get("WAYLAND_SOCKET",  waylandSocketEnvironmentVar);
 
             LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Wayland display set on display config=" << waylandDisplayName
                       << ", XDG_RUNTIME_DIR=" << xdgPathEnvironmentVar

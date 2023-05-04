@@ -112,21 +112,14 @@ namespace ramses
 
         PerspectiveCamera*  createPerspectiveCamera(const char* name);
         OrthographicCamera* createOrthographicCamera(const char* name);
-
         Appearance*         createAppearance(const Effect& effect, const char* name);
-        AppearanceImpl*     createAppearanceImpl(const char* name);
-
         GeometryBinding*    createGeometryBinding(const Effect& effect, const char* name);
-
         Node*               createNode(const char* name);
         MeshNode*           createMeshNode(const char* name);
-
         ramses::RenderGroup*  createRenderGroup(const char* name);
         ramses::RenderPass*   createRenderPass(const char* name);
         ramses::BlitPass*     createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name);
-
         ramses::PickableObject* createPickableObject(const ArrayBuffer& geometryBuffer, const pickableObjectId_t id, const char* name);
-
         ramses::RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount, const char* name);
         ramses::RenderTarget* createRenderTarget(const RenderTargetDescriptionImpl& rtDesc, const char* name);
 
@@ -195,10 +188,7 @@ namespace ramses
         status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t id);
 
         ArrayBuffer*             createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name);
-        ArrayBufferImpl*         createArrayBufferImpl(EDataType dataType, uint32_t numElements, const char* name);
-
         Texture2DBuffer*         createTexture2DBuffer (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
-        Texture2DBufferImpl*     createTexture2DBufferImpl (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
 
         SceneReference* createSceneReference(sceneId_t referencedScene, const char* name);
         status_t linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId);
@@ -214,9 +204,13 @@ namespace ramses
         int32_t getUniformTimeMs() const;
 
         template <typename T>
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         ArrayResource* createArrayResource(uint32_t numElements, const T* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         TextureCube* createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name);
         std::string getLastEffectErrorMessages() const;
@@ -282,8 +276,9 @@ namespace ramses
         status_t createTextureConsumerImpl(const SAMPLER& sampler, dataConsumerId_t id, bool checkDuplicate = true);
 
         RenderPass* createRenderPassInternal(const char* name);
-        void registerCreatedObject(SceneObject& object);
-        void registerCreatedResourceObject(Resource& resource);
+
+        template <typename T, typename ImplT>
+        T& registerCreatedResourceObject(std::unique_ptr<ImplT> resourceImpl);
 
         void removeAllDataSlotsForNode(const Node& node);
 

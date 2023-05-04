@@ -23,7 +23,7 @@ namespace ramses_internal
         getArgument<2>().setDefaultValue("");
     }
 
-    Bool DumpSceneToFile::execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const
+    bool DumpSceneToFile::execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const
     {
         SceneCommandDumpSceneToFile command;
         command.fileName = fileName;

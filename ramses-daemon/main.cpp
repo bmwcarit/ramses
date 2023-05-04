@@ -39,7 +39,7 @@ int main(int argc, const char* argv[])
     }
     CLI11_PARSE(cli, argc, argv);
 
-    GetRamsesLogger().initialize(config.impl.loggerConfig, false, true); // no framework used
+    GetRamsesLogger().initialize(config.m_impl.get().loggerConfig, false, true); // no framework used
 
     auto commandExit = std::make_shared<RamshCommandExit>();
     RamshStandardSetup ramsh(ramses::ERamsesShellType_Console, "Daemon");
@@ -52,7 +52,7 @@ int main(int argc, const char* argv[])
 
     PlatformLock frameworkLock;
     StatisticCollectionFramework statisticCollection;
-    std::unique_ptr<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config.impl, frameworkLock, statisticCollection, &ramsh));
+    std::unique_ptr<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config.m_impl, frameworkLock, statisticCollection, &ramsh));
     discoveryDaemon->start();
     LOG_DEBUG(CONTEXT_SMOKETEST, "Ramsh commands registered");
 

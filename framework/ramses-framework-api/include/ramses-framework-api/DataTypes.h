@@ -146,33 +146,61 @@ namespace ramses
     template <typename T> constexpr EDataType GetEDataType()
     {
         if constexpr (std::is_same_v<T, uint16_t>)
+        {
             return EDataType::UInt16;
+        }
         else if constexpr (std::is_same_v<T, uint32_t>)
+        {
             return EDataType::UInt32;
+        }
         else if constexpr (std::is_same_v<T, float>)
+        {
             return EDataType::Float;
+        }
         else if constexpr (std::is_same_v<T, vec2f>)
+        {
             return EDataType::Vector2F;
+        }
         else if constexpr (std::is_same_v<T, vec3f>)
+        {
             return EDataType::Vector3F;
+        }
         else if constexpr (std::is_same_v<T, vec4f>)
+        {
             return EDataType::Vector4F;
+        }
         else if constexpr (std::is_same_v<T, Byte>)
+        {
             return EDataType::ByteBlob;
+        }
         else if constexpr (std::is_same_v<T, int32_t>)
+        {
             return EDataType::Int32;
+        }
         else if constexpr (std::is_same_v<T, vec2i>)
+        {
             return EDataType::Vector2I;
+        }
         else if constexpr (std::is_same_v<T, vec3i>)
+        {
             return EDataType::Vector3I;
+        }
         else if constexpr (std::is_same_v<T, vec4i>)
+        {
             return EDataType::Vector4I;
+        }
         else if constexpr (std::is_same_v<T, matrix22f>)
+        {
             return EDataType::Matrix22F;
+        }
         else if constexpr (std::is_same_v<T, matrix33f>)
+        {
             return EDataType::Matrix33F;
+        }
         else if constexpr (std::is_same_v<T, matrix44f>)
+        {
             return EDataType::Matrix44F;
+        }
 
         static_assert(IsArrayResourceDataType<T>() || IsUniformInputDataType<T>(), "This type has no corresponding EDataType");
         return EDataType::ByteBlob;

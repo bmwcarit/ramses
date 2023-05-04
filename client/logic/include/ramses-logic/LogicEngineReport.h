@@ -13,20 +13,20 @@
 #include <memory>
 #include <chrono>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicEngineReportImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LogicNode;
 
     /**
-    * A collection of results from #rlogic::LogicEngine::update which can be used
+    * A collection of results from #ramses::LogicEngine::update which can be used
     * for debugging or profiling logic node networks.
-    * Can be obtained using #rlogic::LogicEngine::getLastUpdateReport after an update with enabled reporting
-    * (#rlogic::LogicEngine::enableUpdateReport).
+    * Can be obtained using #ramses::LogicEngine::getLastUpdateReport after an update with enabled reporting
+    * (#ramses::LogicEngine::enableUpdateReport).
     */
     class LogicEngineReport
     {
@@ -65,7 +65,7 @@ namespace rlogic
 
         /**
         * Time it took to update the whole logic nodes network.
-        * This is essentially the same as measuring how long it took to call #rlogic::LogicEngine::update
+        * This is essentially the same as measuring how long it took to call #ramses::LogicEngine::update
         * from application side.
         *
         * @return time to update all logic nodes
@@ -85,7 +85,7 @@ namespace rlogic
         RAMSES_API LogicEngineReport() noexcept;
 
         /**
-        * Constructor of LogicEngineReport. Do not construct, use #rlogic::LogicEngine::getLastUpdateReport to obtain.
+        * Constructor of LogicEngineReport. Do not construct, use #ramses::LogicEngine::getLastUpdateReport to obtain.
         *
         * @param impl implementation details of the LogicEngineReport
         */

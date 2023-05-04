@@ -15,9 +15,9 @@
 #include "ramses-logic/Property.h"
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
-    LogicViewerLog::LogicViewerLog(rlogic::LogicEngine& engine, const LogicViewerSettings& settings)
+    LogicViewerLog::LogicViewerLog(ramses::LogicEngine& engine, const LogicViewerSettings& settings)
         : m_settings(settings)
         , m_logicEngine(engine)
     {
@@ -28,7 +28,7 @@ namespace rlogic
         m_text.append(text);
     }
 
-    void LogicViewerLog::logInputs(rlogic::LogicNode* obj, const PathVector& path)
+    void LogicViewerLog::logInputs(ramses::LogicNode* obj, const PathVector& path)
     {
         const auto joinedPath = fmt::format("{}", fmt::join(path.begin(), path.end(), "."));
         std::string prefix;
@@ -56,7 +56,7 @@ namespace rlogic
         }
     }
 
-    void LogicViewerLog::logProperty(rlogic::Property* prop, const std::string& prefix, PathVector& path)
+    void LogicViewerLog::logProperty(ramses::Property* prop, const std::string& prefix, PathVector& path)
     {
         if (prop->hasIncomingLink())
             return;
@@ -75,59 +75,59 @@ namespace rlogic
 
         switch (prop->getType())
         {
-        case rlogic::EPropertyType::Int32:
+        case ramses::EPropertyType::Int32:
             logText(fmt::format("{} = {}\n", strPath, prop->get<int32_t>().value()));
             break;
-        case rlogic::EPropertyType::Int64:
+        case ramses::EPropertyType::Int64:
             logText(fmt::format("{} = {}\n", strPath, prop->get<int64_t>().value()));
             break;
-        case rlogic::EPropertyType::Float:
+        case ramses::EPropertyType::Float:
             logText(fmt::format("{} = {}\n", strPath, prop->get<float>().value()));
             break;
-        case rlogic::EPropertyType::Vec2f: {
-            auto val = prop->get<rlogic::vec2f>().value();
+        case ramses::EPropertyType::Vec2f: {
+            auto val = prop->get<ramses::vec2f>().value();
             logText(fmt::format("{} = {{ {}, {} }}\n", strPath, val[0], val[1]));
             break;
         }
-        case rlogic::EPropertyType::Vec3f: {
-            auto val = prop->get<rlogic::vec3f>().value();
+        case ramses::EPropertyType::Vec3f: {
+            auto val = prop->get<ramses::vec3f>().value();
             logText(fmt::format("{} = {{ {}, {}, {} }}\n", strPath, val[0], val[1], val[2]));
             break;
         }
-        case rlogic::EPropertyType::Vec4f: {
-            auto val = prop->get<rlogic::vec4f>().value();
+        case ramses::EPropertyType::Vec4f: {
+            auto val = prop->get<ramses::vec4f>().value();
             logText(fmt::format("{} = {{ {}, {}, {}, {} }}\n", strPath, val[0], val[1], val[2], val[3]));
             break;
         }
-        case rlogic::EPropertyType::Vec2i: {
-            auto val = prop->get<rlogic::vec2i>().value();
+        case ramses::EPropertyType::Vec2i: {
+            auto val = prop->get<ramses::vec2i>().value();
             logText(fmt::format("{} = {{ {}, {} }}\n", strPath, val[0], val[1]));
             break;
         }
-        case rlogic::EPropertyType::Vec3i: {
-            auto val = prop->get<rlogic::vec3i>().value();
+        case ramses::EPropertyType::Vec3i: {
+            auto val = prop->get<ramses::vec3i>().value();
             logText(fmt::format("{} = {{ {}, {}, {} }}\n", strPath, val[0], val[1], val[2]));
             break;
         }
-        case rlogic::EPropertyType::Vec4i: {
-            auto val = prop->get<rlogic::vec4i>().value();
+        case ramses::EPropertyType::Vec4i: {
+            auto val = prop->get<ramses::vec4i>().value();
             logText(fmt::format("{} = {{ {}, {}, {}, {} }}\n", strPath, val[0], val[1], val[2], val[3]));
             break;
         }
-        case rlogic::EPropertyType::Struct:
+        case ramses::EPropertyType::Struct:
             for (size_t i = 0U; i < prop->getChildCount(); ++i)
             {
                 logProperty(prop->getChild(i), prefix, path);
             }
             break;
-        case rlogic::EPropertyType::Bool: {
+        case ramses::EPropertyType::Bool: {
             logText(fmt::format("{} = {}\n", strPath, prop->get<bool>().value()));
             break;
         }
-        case rlogic::EPropertyType::String:
+        case ramses::EPropertyType::String:
             logText(fmt::format("{} = '{}'\n", strPath, prop->get<std::string>().value()));
             break;
-        case rlogic::EPropertyType::Array:
+        case ramses::EPropertyType::Array:
             break;
         }
         path.pop_back();

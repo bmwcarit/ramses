@@ -19,6 +19,7 @@ namespace ramses
 
     /**
     * @brief   Control states of scenes
+    * @ingroup RendererAPI
     * @details Where #ramses::RamsesRenderer is used to configure general rendering (create displays, control looping and other
     *          global rendering states), RendererSceneControl is used to configure which content should be rendered and where.
     *          Scenes can be assigned to display buffers, shown, hidden, data linked, etc.
@@ -29,7 +30,7 @@ namespace ramses
     *          Some commands can fail immediately by returning a status with value other than StatusOK,
     *          in such case there will be no callback, because the command will not even be submitted.
     */
-    class RAMSES_API RendererSceneControl : public StatusObject
+    class RendererSceneControl : public StatusObject
     {
     public:
         /**
@@ -58,7 +59,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
         */
-        status_t setSceneState(sceneId_t sceneId, RendererSceneState state);
+        RAMSES_API status_t setSceneState(sceneId_t sceneId, RendererSceneState state);
 
         /**
         * @brief   Set scene display mapping
@@ -84,7 +85,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSceneMapping(sceneId_t sceneId, displayId_t displayId);
+        RAMSES_API status_t setSceneMapping(sceneId_t sceneId, displayId_t displayId);
 
         /**
         * @brief   Set scene display buffer assignment
@@ -113,7 +114,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0);
+        RAMSES_API status_t setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0);
 
         /**
         * @brief   Links display's offscreen buffer to a data consumer in scene.
@@ -135,7 +136,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
         */
-        status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
+        RAMSES_API status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
 
         /**
         * @brief   Links display's stream buffer to a data consumer in scene.
@@ -161,7 +162,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
         */
-        status_t linkStreamBuffer(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
+        RAMSES_API status_t linkStreamBuffer(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
 
         /**
         * @brief   Links external buffer to a data consumer in scene.
@@ -184,7 +185,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
         */
-        status_t linkExternalBuffer(externalBufferId_t externalBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
+        RAMSES_API status_t linkExternalBuffer(externalBufferId_t externalBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
 
         /**
         * @brief   Links a data provider from one scene to a data consumer in another scene.
@@ -207,7 +208,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
         */
-        status_t linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId);
+        RAMSES_API status_t linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId);
 
         /**
         * @brief   Removes an existing link between data provider and consumer (#linkData)
@@ -222,7 +223,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee success, the result argument in dispatched event has its own status.
         */
-        status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId);
+        RAMSES_API status_t unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId);
 
         /**
         * @brief Trigger renderer to test if given pick event with coordinates intersects with any instances
@@ -247,7 +248,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
+        RAMSES_API status_t handlePickEvent(sceneId_t sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
 
         /**
         * @brief Submits scene control commands (API calls on RendererSceneControl)
@@ -259,7 +260,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t flush();
+        RAMSES_API status_t flush();
 
         /**
         * @brief RendererSceneControl methods push commands to an internal queue which is submitted
@@ -276,32 +277,16 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t dispatchEvents(IRendererSceneControlEventHandler& eventHandler);
-
-        /// Deleted default constructor
-        RendererSceneControl() = delete;
-
-        /// Deleted copy constructor
-        RendererSceneControl(const RendererSceneControl&) = delete;
-
-        /**
-        * @brief Deleted copy assignment
-        * @param other unused
-        * @return unused
-        */
-        RendererSceneControl& operator=(const RendererSceneControl& other) = delete;
+        RAMSES_API status_t dispatchEvents(IRendererSceneControlEventHandler& eventHandler);
 
         /// Stores internal data for implementation specifics
-        class RendererSceneControlImpl& impl;
+        class RendererSceneControlImpl& m_impl;
 
     private:
         friend class RamsesRendererImpl;
 
         /// Constructor
-        explicit RendererSceneControl(RendererSceneControlImpl&);
-
-        /// Hidden destructor
-        ~RendererSceneControl() override;
+        explicit RendererSceneControl(std::unique_ptr<RendererSceneControlImpl>);
     };
 }
 

@@ -30,7 +30,7 @@
 
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_Update : public ALogicEngine
     {

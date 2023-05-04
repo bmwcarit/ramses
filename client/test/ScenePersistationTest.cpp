@@ -201,8 +201,8 @@ namespace ramses
         fillObjectTypeHistogramFromScene(loadedSceneNumbers, *m_sceneLoaded);
         EXPECT_PRED_FORMAT2(AssertHistogramEqual, origSceneNumbers, loadedSceneNumbers);
 
-        ramses_internal::SceneSizeInformation origSceneSizeInfo = m_scene.impl.getIScene().getSceneSizeInformation();
-        ramses_internal::SceneSizeInformation loadedSceneSizeInfo = m_sceneLoaded->impl.getIScene().getSceneSizeInformation();
+        ramses_internal::SceneSizeInformation origSceneSizeInfo = m_scene.m_impl.getIScene().getSceneSizeInformation();
+        ramses_internal::SceneSizeInformation loadedSceneSizeInfo = m_sceneLoaded->m_impl.getIScene().getSceneSizeInformation();
         EXPECT_EQ(origSceneSizeInfo, loadedSceneSizeInfo);
     }
 
@@ -215,7 +215,7 @@ namespace ramses
         doWriteReadCycle();
 
         PerspectiveCamera* loadedCamera = this->getObjectForTesting<PerspectiveCamera>("my cam");
-        EXPECT_EQ(camera->impl.getCameraHandle(), loadedCamera->impl.getCameraHandle());
+        EXPECT_EQ(camera->m_impl.getCameraHandle(), loadedCamera->m_impl.getCameraHandle());
         EXPECT_EQ(0.1f, loadedCamera->getLeftPlane());
         EXPECT_EQ(0.2f, loadedCamera->getRightPlane());
         EXPECT_EQ(0.3f, loadedCamera->getBottomPlane());
@@ -243,7 +243,7 @@ namespace ramses
 
         OrthographicCamera* loadedCamera = this->getObjectForTesting<OrthographicCamera>("my cam");
 
-        EXPECT_EQ(camera->impl.getCameraHandle(), loadedCamera->impl.getCameraHandle());
+        EXPECT_EQ(camera->m_impl.getCameraHandle(), loadedCamera->m_impl.getCameraHandle());
 
         EXPECT_FLOAT_EQ(0.1f, loadedCamera->getLeftPlane());
         EXPECT_FLOAT_EQ(0.2f, loadedCamera->getRightPlane());
@@ -325,10 +325,10 @@ namespace ramses
 
         Appearance* loadedAppearance = this->getObjectForTesting<Appearance>("appearance");
 
-        EXPECT_EQ(appearance->getEffect().impl.getLowlevelResourceHash(), loadedAppearance->getEffect().impl.getLowlevelResourceHash());
-        EXPECT_EQ(appearance->impl.getRenderStateHandle(), loadedAppearance->impl.getRenderStateHandle());
-        EXPECT_EQ(appearance->impl.getUniformDataInstance(), loadedAppearance->impl.getUniformDataInstance());
-        EXPECT_EQ(appearance->impl.getIScene().getSceneId(), loadedAppearance->impl.getIScene().getSceneId());
+        EXPECT_EQ(appearance->getEffect().m_impl.getLowlevelResourceHash(), loadedAppearance->getEffect().m_impl.getLowlevelResourceHash());
+        EXPECT_EQ(appearance->m_impl.getRenderStateHandle(), loadedAppearance->m_impl.getRenderStateHandle());
+        EXPECT_EQ(appearance->m_impl.getUniformDataInstance(), loadedAppearance->m_impl.getUniformDataInstance());
+        EXPECT_EQ(appearance->m_impl.getIScene().getSceneId(), loadedAppearance->m_impl.getIScene().getSceneId());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearanceWithGeometryShaderAndRestrictDrawMode)
@@ -461,8 +461,8 @@ namespace ramses
         const Appearance* appearance2 = m_scene.createAppearance(*effect, "appearance2");
 
         // check data layout ref count on LL
-        EXPECT_EQ(appearance1->impl.getUniformDataLayout(), appearance2->impl.getUniformDataLayout());
-        const uint32_t numReferences = m_scene.impl.getIScene().getNumDataLayoutReferences(appearance1->impl.getUniformDataLayout());
+        EXPECT_EQ(appearance1->m_impl.getUniformDataLayout(), appearance2->m_impl.getUniformDataLayout());
+        const uint32_t numReferences = m_scene.m_impl.getIScene().getNumDataLayoutReferences(appearance1->m_impl.getUniformDataLayout());
         EXPECT_EQ(2u, numReferences);
 
         doWriteReadCycle();
@@ -471,8 +471,8 @@ namespace ramses
         Appearance* loadedAppearance2 = this->getObjectForTesting<Appearance>("appearance2");
 
         // check data layout ref count on LL in loaded scene
-        EXPECT_EQ(loadedAppearance1->impl.getUniformDataLayout(), loadedAppearance2->impl.getUniformDataLayout());
-        const uint32_t numReferencesLoaded = m_scene.impl.getIScene().getNumDataLayoutReferences(loadedAppearance1->impl.getUniformDataLayout());
+        EXPECT_EQ(loadedAppearance1->m_impl.getUniformDataLayout(), loadedAppearance2->m_impl.getUniformDataLayout());
+        const uint32_t numReferencesLoaded = m_scene.m_impl.getIScene().getNumDataLayoutReferences(loadedAppearance1->m_impl.getUniformDataLayout());
         EXPECT_EQ(numReferences, numReferencesLoaded);
 
         m_sceneLoaded->destroy(*loadedAppearance2);
@@ -494,15 +494,15 @@ namespace ramses
 
         const GeometryBinding* loadedGeometry = this->getObjectForTesting<GeometryBinding>("geometry");
 
-        EXPECT_EQ(geometry->impl.getEffectHash(), loadedGeometry->impl.getEffectHash());
-        EXPECT_EQ(geometry->impl.getAttributeDataLayout(), loadedGeometry->impl.getAttributeDataLayout());
-        EXPECT_EQ(geometry->impl.getAttributeDataInstance(), loadedGeometry->impl.getAttributeDataInstance());
-        EXPECT_EQ(geometry->impl.getIndicesCount(), loadedGeometry->impl.getIndicesCount());
+        EXPECT_EQ(geometry->m_impl.getEffectHash(), loadedGeometry->m_impl.getEffectHash());
+        EXPECT_EQ(geometry->m_impl.getAttributeDataLayout(), loadedGeometry->m_impl.getAttributeDataLayout());
+        EXPECT_EQ(geometry->m_impl.getAttributeDataInstance(), loadedGeometry->m_impl.getAttributeDataInstance());
+        EXPECT_EQ(geometry->m_impl.getIndicesCount(), loadedGeometry->m_impl.getIndicesCount());
 
         const Effect& loadedEffect = loadedGeometry->getEffect();
         EXPECT_EQ(effect->getResourceId(), loadedEffect.getResourceId());
-        EXPECT_EQ(effect->impl.getLowlevelResourceHash(), loadedEffect.impl.getLowlevelResourceHash());
-        EXPECT_EQ(effect->impl.getObjectRegistryHandle(), loadedEffect.impl.getObjectRegistryHandle());
+        EXPECT_EQ(effect->m_impl.getLowlevelResourceHash(), loadedEffect.m_impl.getLowlevelResourceHash());
+        EXPECT_EQ(effect->m_impl.getObjectRegistryHandle(), loadedEffect.m_impl.getObjectRegistryHandle());
         EXPECT_EQ(4u, loadedEffect.getAttributeInputCount());
         AttributeInput attributeInputOut;
         EXPECT_EQ(StatusOK, loadedEffect.findAttributeInput("a_position", attributeInputOut));
@@ -520,7 +520,7 @@ namespace ramses
         EXPECT_EQ(meshNode->getGeometryBinding(),   loadedMeshNode->getGeometryBinding());
         EXPECT_EQ(meshNode->getStartIndex(), loadedMeshNode->getStartIndex());
         EXPECT_EQ(meshNode->getIndexCount(), loadedMeshNode->getIndexCount());
-        EXPECT_EQ(meshNode->impl.getFlattenedVisibility(), loadedMeshNode->impl.getFlattenedVisibility());
+        EXPECT_EQ(meshNode->m_impl.getFlattenedVisibility(), loadedMeshNode->m_impl.getFlattenedVisibility());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteAMeshNode_withVisibilityParent)
@@ -532,14 +532,14 @@ namespace ramses
         visibilityParent->addChild(*meshNode);
 
         // Apply visibility state only with flush, not before
-        EXPECT_EQ(meshNode->impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(meshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
         this->m_scene.flush();
-        EXPECT_EQ(meshNode->impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(meshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         doWriteReadCycle();
 
         MeshNode* loadedMeshNode = this->getObjectForTesting<MeshNode>("a meshnode");
-        EXPECT_EQ(loadedMeshNode->impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(loadedMeshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteAMeshNode_withVisibilityParentOff)
@@ -551,14 +551,14 @@ namespace ramses
         visibilityParent->addChild(*meshNode);
 
         // Apply visibility state only with flush, not before
-        EXPECT_EQ(meshNode->impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(meshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
         this->m_scene.flush();
-        EXPECT_EQ(meshNode->impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(meshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
 
         doWriteReadCycle();
 
         MeshNode* loadedMeshNode = this->getObjectForTesting<MeshNode>("a meshnode");
-        EXPECT_EQ(loadedMeshNode->impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(loadedMeshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteAMeshNode_withValues)
@@ -578,7 +578,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, meshNode->setGeometryBinding(*geometry));
         EXPECT_EQ(StatusOK, meshNode->setStartIndex(456));
         EXPECT_EQ(StatusOK, meshNode->setIndexCount(678u));
-        EXPECT_EQ(StatusOK, meshNode->impl.setFlattenedVisibility(EVisibilityMode::Off));
+        EXPECT_EQ(StatusOK, meshNode->m_impl.setFlattenedVisibility(EVisibilityMode::Off));
         doWriteReadCycle();
 
         MeshNode* loadedMeshNode = this->getObjectForTesting<MeshNode>("a meshnode");
@@ -590,7 +590,7 @@ namespace ramses
         EXPECT_EQ(meshNode->getSceneObjectId(), loadedMeshNode->getSceneObjectId());
         EXPECT_EQ(456u, loadedMeshNode->getStartIndex());
         EXPECT_EQ(678u, loadedMeshNode->getIndexCount());
-        EXPECT_EQ(loadedMeshNode->impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(loadedMeshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithVisibility)
@@ -625,15 +625,15 @@ namespace ramses
         EXPECT_STREQ(renderGroup->getName(), loadedRenderGroup->getName());
         EXPECT_EQ(renderGroup->getSceneObjectId(), loadedRenderGroup->getSceneObjectId());
 
-        EXPECT_EQ(2u, loadedRenderGroup->impl.getAllMeshes().size());
-        EXPECT_EQ(&loadedMeshA->impl, loadedRenderGroup->impl.getAllMeshes()[0]);
-        EXPECT_EQ(&loadedMeshB->impl, loadedRenderGroup->impl.getAllMeshes()[1]);
+        EXPECT_EQ(2u, loadedRenderGroup->m_impl.getAllMeshes().size());
+        EXPECT_EQ(&loadedMeshA->m_impl, loadedRenderGroup->m_impl.getAllMeshes()[0]);
+        EXPECT_EQ(&loadedMeshB->m_impl, loadedRenderGroup->m_impl.getAllMeshes()[1]);
 
-        const auto& internalRg = m_sceneLoaded->impl.getIScene().getRenderGroup(renderGroup->impl.getRenderGroupHandle());
-        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshA->impl.getRenderableHandle(), internalRg));
-        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshB->impl.getRenderableHandle(), internalRg));
-        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshA->impl.getRenderableHandle(), internalRg)->order);
-        EXPECT_EQ(2, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshB->impl.getRenderableHandle(), internalRg)->order);
+        const auto& internalRg = m_sceneLoaded->m_impl.getIScene().getRenderGroup(renderGroup->m_impl.getRenderGroupHandle());
+        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshA->m_impl.getRenderableHandle(), internalRg));
+        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshB->m_impl.getRenderableHandle(), internalRg));
+        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshA->m_impl.getRenderableHandle(), internalRg)->order);
+        EXPECT_EQ(2, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshB->m_impl.getRenderableHandle(), internalRg)->order);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteANestedRenderGroup)
@@ -658,25 +658,25 @@ namespace ramses
         EXPECT_STREQ(nestedRenderGroup->getName(), loadedNestedRenderGroup->getName());
         EXPECT_EQ(nestedRenderGroup->getSceneObjectId(), loadedNestedRenderGroup->getSceneObjectId());
 
-        EXPECT_EQ(1u, loadedRenderGroup->impl.getAllMeshes().size());
-        EXPECT_EQ(1u, loadedRenderGroup->impl.getAllRenderGroups().size());
-        EXPECT_EQ(1u, loadedNestedRenderGroup->impl.getAllMeshes().size());
+        EXPECT_EQ(1u, loadedRenderGroup->m_impl.getAllMeshes().size());
+        EXPECT_EQ(1u, loadedRenderGroup->m_impl.getAllRenderGroups().size());
+        EXPECT_EQ(1u, loadedNestedRenderGroup->m_impl.getAllMeshes().size());
 
-        EXPECT_EQ(&loadedMeshA->impl, loadedRenderGroup->impl.getAllMeshes()[0]);
-        EXPECT_EQ(&loadedMeshB->impl, loadedNestedRenderGroup->impl.getAllMeshes()[0]);
+        EXPECT_EQ(&loadedMeshA->m_impl, loadedRenderGroup->m_impl.getAllMeshes()[0]);
+        EXPECT_EQ(&loadedMeshB->m_impl, loadedNestedRenderGroup->m_impl.getAllMeshes()[0]);
 
-        EXPECT_EQ(&loadedNestedRenderGroup->impl, loadedRenderGroup->impl.getAllRenderGroups()[0]);
+        EXPECT_EQ(&loadedNestedRenderGroup->m_impl, loadedRenderGroup->m_impl.getAllRenderGroups()[0]);
 
-        const auto& internalRg = m_sceneLoaded->impl.getIScene().getRenderGroup(renderGroup->impl.getRenderGroupHandle());
-        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshA->impl.getRenderableHandle(), internalRg));
-        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshA->impl.getRenderableHandle(), internalRg)->order);
+        const auto& internalRg = m_sceneLoaded->m_impl.getIScene().getRenderGroup(renderGroup->m_impl.getRenderGroupHandle());
+        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshA->m_impl.getRenderableHandle(), internalRg));
+        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshA->m_impl.getRenderableHandle(), internalRg)->order);
 
-        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(nestedRenderGroup->impl.getRenderGroupHandle(), internalRg));
-        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(nestedRenderGroup->impl.getRenderGroupHandle(), internalRg)->order);
+        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(nestedRenderGroup->m_impl.getRenderGroupHandle(), internalRg));
+        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(nestedRenderGroup->m_impl.getRenderGroupHandle(), internalRg)->order);
 
-        const auto& internalRgNested = m_sceneLoaded->impl.getIScene().getRenderGroup(nestedRenderGroup->impl.getRenderGroupHandle());
-        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshB->impl.getRenderableHandle(), internalRgNested));
-        EXPECT_EQ(2, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshB->impl.getRenderableHandle(), internalRgNested)->order);
+        const auto& internalRgNested = m_sceneLoaded->m_impl.getIScene().getRenderGroup(nestedRenderGroup->m_impl.getRenderGroupHandle());
+        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(meshB->m_impl.getRenderableHandle(), internalRgNested));
+        EXPECT_EQ(2, ramses_internal::RenderGroupUtils::FindRenderableEntry(meshB->m_impl.getRenderableHandle(), internalRgNested)->order);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteABasicRenderPass)
@@ -735,17 +735,17 @@ namespace ramses
 
         EXPECT_STREQ(renderPass->getName(), loadedRenderPass->getName());
         EXPECT_EQ(renderPass->getSceneObjectId(), loadedRenderPass->getSceneObjectId());
-        EXPECT_EQ(2u, loadedRenderPass->impl.getAllRenderGroups().size());
-        EXPECT_EQ(&loadedMeshA->impl, loadedRenderPass->impl.getAllRenderGroups()[0]);
-        EXPECT_EQ(&loadedMeshB->impl, loadedRenderPass->impl.getAllRenderGroups()[1]);
+        EXPECT_EQ(2u, loadedRenderPass->m_impl.getAllRenderGroups().size());
+        EXPECT_EQ(&loadedMeshA->m_impl, loadedRenderPass->m_impl.getAllRenderGroups()[0]);
+        EXPECT_EQ(&loadedMeshB->m_impl, loadedRenderPass->m_impl.getAllRenderGroups()[1]);
 
-        const ramses_internal::RenderPass& internalRP = m_sceneLoaded->impl.getIScene().getRenderPass(renderPass->impl.getRenderPassHandle());
-        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(groupA->impl.getRenderGroupHandle(), internalRP));
-        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(groupB->impl.getRenderGroupHandle(), internalRP));
-        EXPECT_EQ(groupA->impl.getRenderGroupHandle(), ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupA->impl.getRenderGroupHandle(), internalRP)->renderGroup);
-        EXPECT_EQ(groupB->impl.getRenderGroupHandle(), ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupB->impl.getRenderGroupHandle(), internalRP)->renderGroup);
-        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupA->impl.getRenderGroupHandle(), internalRP)->order);
-        EXPECT_EQ(2, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupB->impl.getRenderGroupHandle(), internalRP)->order);
+        const ramses_internal::RenderPass& internalRP = m_sceneLoaded->m_impl.getIScene().getRenderPass(renderPass->m_impl.getRenderPassHandle());
+        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(groupA->m_impl.getRenderGroupHandle(), internalRP));
+        ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(groupB->m_impl.getRenderGroupHandle(), internalRP));
+        EXPECT_EQ(groupA->m_impl.getRenderGroupHandle(), ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupA->m_impl.getRenderGroupHandle(), internalRP)->renderGroup);
+        EXPECT_EQ(groupB->m_impl.getRenderGroupHandle(), ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupB->m_impl.getRenderGroupHandle(), internalRP)->renderGroup);
+        EXPECT_EQ(1, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupA->m_impl.getRenderGroupHandle(), internalRP)->order);
+        EXPECT_EQ(2, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(groupB->m_impl.getRenderGroupHandle(), internalRP)->order);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteBlitPass)
@@ -767,12 +767,12 @@ namespace ramses
         EXPECT_EQ(renderOrder, loadedBlitPass->getRenderOrder());
         EXPECT_FALSE(loadedBlitPass->isEnabled());
 
-        const ramses_internal::BlitPassHandle loadedBlitPassHandle = loadedBlitPass->impl.getBlitPassHandle();
-        const ramses_internal::BlitPass& blitPassInternal = m_sceneLoaded->impl.getIScene().getBlitPass(loadedBlitPassHandle);
+        const ramses_internal::BlitPassHandle loadedBlitPassHandle = loadedBlitPass->m_impl.getBlitPassHandle();
+        const ramses_internal::BlitPass& blitPassInternal = m_sceneLoaded->m_impl.getIScene().getBlitPass(loadedBlitPassHandle);
         EXPECT_EQ(renderOrder, blitPassInternal.renderOrder);
         EXPECT_FALSE(blitPassInternal.isEnabled);
-        EXPECT_EQ(srcRenderBuffer->impl.getRenderBufferHandle(), blitPassInternal.sourceRenderBuffer);
-        EXPECT_EQ(dstRenderBuffer->impl.getRenderBufferHandle(), blitPassInternal.destinationRenderBuffer);
+        EXPECT_EQ(srcRenderBuffer->m_impl.getRenderBufferHandle(), blitPassInternal.sourceRenderBuffer);
+        EXPECT_EQ(dstRenderBuffer->m_impl.getRenderBufferHandle(), blitPassInternal.destinationRenderBuffer);
         EXPECT_EQ(renderOrder, blitPassInternal.renderOrder);
 
         const ramses_internal::PixelRectangle& sourceRegion = blitPassInternal.sourceRegion;
@@ -804,11 +804,11 @@ namespace ramses
             EXPECT_EQ(dstRenderBuffer->getHeight(), heightOut);
         }
 
-        EXPECT_EQ(srcRenderBuffer->impl.getRenderBufferHandle(), loadedBlitPass->getSourceRenderBuffer().impl.getRenderBufferHandle());
-        EXPECT_EQ(srcRenderBuffer->impl.getObjectRegistryHandle(), loadedBlitPass->getSourceRenderBuffer().impl.getObjectRegistryHandle());
+        EXPECT_EQ(srcRenderBuffer->m_impl.getRenderBufferHandle(), loadedBlitPass->getSourceRenderBuffer().m_impl.getRenderBufferHandle());
+        EXPECT_EQ(srcRenderBuffer->m_impl.getObjectRegistryHandle(), loadedBlitPass->getSourceRenderBuffer().m_impl.getObjectRegistryHandle());
 
-        EXPECT_EQ(dstRenderBuffer->impl.getRenderBufferHandle(), loadedBlitPass->getDestinationRenderBuffer().impl.getRenderBufferHandle());
-        EXPECT_EQ(dstRenderBuffer->impl.getObjectRegistryHandle(), loadedBlitPass->getDestinationRenderBuffer().impl.getObjectRegistryHandle());
+        EXPECT_EQ(dstRenderBuffer->m_impl.getRenderBufferHandle(), loadedBlitPass->getDestinationRenderBuffer().m_impl.getRenderBufferHandle());
+        EXPECT_EQ(dstRenderBuffer->m_impl.getObjectRegistryHandle(), loadedBlitPass->getDestinationRenderBuffer().m_impl.getObjectRegistryHandle());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWritePickableObject)
@@ -840,18 +840,18 @@ namespace ramses
         EXPECT_EQ(this->getObjectForTesting<PerspectiveCamera>("pickableCamera"), loadedPickableObject->getCamera());
         EXPECT_EQ(this->getObjectForTesting<ArrayBuffer>("geometryBuffer"), &loadedPickableObject->getGeometryBuffer());
 
-        const ramses_internal::PickableObjectHandle loadedPickableObjectPassHandle = loadedPickableObject->impl.getPickableObjectHandle();
-        const ramses_internal::PickableObject& pickableObjectInternal = m_sceneLoaded->impl.getIScene().getPickableObject(loadedPickableObjectPassHandle);
+        const ramses_internal::PickableObjectHandle loadedPickableObjectPassHandle = loadedPickableObject->m_impl.getPickableObjectHandle();
+        const ramses_internal::PickableObject& pickableObjectInternal = m_sceneLoaded->m_impl.getIScene().getPickableObject(loadedPickableObjectPassHandle);
         EXPECT_EQ(id.getValue(), pickableObjectInternal.id.getValue());
         EXPECT_FALSE(pickableObjectInternal.isEnabled);
-        EXPECT_EQ(geometryBuffer->impl.getDataBufferHandle(), pickableObjectInternal.geometryHandle);
-        EXPECT_EQ(pickableCamera->impl.getCameraHandle(), pickableObjectInternal.cameraHandle);
+        EXPECT_EQ(geometryBuffer->m_impl.getDataBufferHandle(), pickableObjectInternal.geometryHandle);
+        EXPECT_EQ(pickableCamera->m_impl.getCameraHandle(), pickableObjectInternal.cameraHandle);
 
-        EXPECT_EQ(geometryBuffer->impl.getDataBufferHandle(), loadedPickableObject->getGeometryBuffer().impl.getDataBufferHandle());
-        EXPECT_EQ(geometryBuffer->impl.getObjectRegistryHandle(), loadedPickableObject->getGeometryBuffer().impl.getObjectRegistryHandle());
+        EXPECT_EQ(geometryBuffer->m_impl.getDataBufferHandle(), loadedPickableObject->getGeometryBuffer().m_impl.getDataBufferHandle());
+        EXPECT_EQ(geometryBuffer->m_impl.getObjectRegistryHandle(), loadedPickableObject->getGeometryBuffer().m_impl.getObjectRegistryHandle());
 
-        EXPECT_EQ(pickableCamera->impl.getCameraHandle(), loadedPickableObject->getCamera()->impl.getCameraHandle());
-        EXPECT_EQ(pickableCamera->impl.getObjectRegistryHandle(), loadedPickableObject->getCamera()->impl.getObjectRegistryHandle());
+        EXPECT_EQ(pickableCamera->m_impl.getCameraHandle(), loadedPickableObject->getCamera()->m_impl.getCameraHandle());
+        EXPECT_EQ(pickableCamera->m_impl.getObjectRegistryHandle(), loadedPickableObject->getCamera()->m_impl.getObjectRegistryHandle());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteRenderBuffer)
@@ -871,7 +871,7 @@ namespace ramses
         EXPECT_EQ(renderBuffer->getAccessMode(), loadedRenderBuffer->getAccessMode());
         EXPECT_EQ(renderBuffer->getSampleCount(), loadedRenderBuffer->getSampleCount());
 
-        EXPECT_EQ(renderBuffer->impl.getRenderBufferHandle(), loadedRenderBuffer->impl.getRenderBufferHandle());
+        EXPECT_EQ(renderBuffer->m_impl.getRenderBufferHandle(), loadedRenderBuffer->m_impl.getRenderBufferHandle());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteARenderPassWithARenderTargetAndCamera)
@@ -919,7 +919,7 @@ namespace ramses
         EXPECT_EQ(renderTarget->getWidth(), loadedRenderTarget->getWidth());
         EXPECT_EQ(renderTarget->getHeight(), loadedRenderTarget->getHeight());
 
-        EXPECT_EQ(renderTarget->impl.getRenderTargetHandle(), loadedRenderTarget->impl.getRenderTargetHandle());
+        EXPECT_EQ(renderTarget->m_impl.getRenderTargetHandle(), loadedRenderTarget->m_impl.getRenderTargetHandle());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteIndexDataBuffer)
@@ -932,11 +932,11 @@ namespace ramses
         const ArrayBuffer* loadedBuffer = this->getObjectForTesting<ArrayBuffer>("indexDB");
 
         EXPECT_STREQ(buffer.getName(), loadedBuffer->getName());
-        EXPECT_EQ(buffer.impl.getDataBufferHandle(), loadedBuffer->impl.getDataBufferHandle());
-        EXPECT_EQ(6 * sizeof(uint32_t), m_scene.impl.getIScene().getDataBuffer(loadedBuffer->impl.getDataBufferHandle()).data.size());
-        EXPECT_EQ(5 * sizeof(uint32_t), m_scene.impl.getIScene().getDataBuffer(loadedBuffer->impl.getDataBufferHandle()).usedSize);
+        EXPECT_EQ(buffer.m_impl.getDataBufferHandle(), loadedBuffer->m_impl.getDataBufferHandle());
+        EXPECT_EQ(6 * sizeof(uint32_t), m_scene.m_impl.getIScene().getDataBuffer(loadedBuffer->m_impl.getDataBufferHandle()).data.size());
+        EXPECT_EQ(5 * sizeof(uint32_t), m_scene.m_impl.getIScene().getDataBuffer(loadedBuffer->m_impl.getDataBufferHandle()).usedSize);
 
-        const ramses_internal::Byte* loadedDataBufferData = m_scene.impl.getIScene().getDataBuffer(loadedBuffer->impl.getDataBufferHandle()).data.data();
+        const ramses_internal::Byte* loadedDataBufferData = m_scene.m_impl.getIScene().getDataBuffer(loadedBuffer->m_impl.getDataBufferHandle()).data.data();
         EXPECT_EQ(6u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedDataBufferData, 3));
         EXPECT_EQ(7u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedDataBufferData, 4));
 
@@ -961,10 +961,10 @@ namespace ramses
 
         EXPECT_STREQ(buffer.getName(), loadedBuffer->getName());
         EXPECT_EQ(buffer.getSceneObjectId(), loadedBuffer->getSceneObjectId());
-        EXPECT_EQ(buffer.impl.getTextureBufferHandle(), loadedBuffer->impl.getTextureBufferHandle());
+        EXPECT_EQ(buffer.m_impl.getTextureBufferHandle(), loadedBuffer->m_impl.getTextureBufferHandle());
 
         //iscene
-        const ramses_internal::TextureBuffer& loadedInternalBuffer = m_scene.impl.getIScene().getTextureBuffer(loadedBuffer->impl.getTextureBufferHandle());
+        const ramses_internal::TextureBuffer& loadedInternalBuffer = m_scene.m_impl.getIScene().getTextureBuffer(loadedBuffer->m_impl.getTextureBufferHandle());
         ASSERT_EQ(2u, loadedInternalBuffer.mipMaps.size());
         EXPECT_EQ(3u, loadedInternalBuffer.mipMaps[0].width);
         EXPECT_EQ(4u, loadedInternalBuffer.mipMaps[0].height);
@@ -1153,8 +1153,8 @@ namespace ramses
         EXPECT_EQ(minSamplingMethod, loadedSampler->getMinSamplingMethod());
         EXPECT_EQ(magSamplingMethod, loadedSampler->getMagSamplingMethod());
         EXPECT_EQ(8u, loadedSampler->getAnisotropyLevel());
-        EXPECT_EQ(texture->impl.getLowlevelResourceHash(), this->m_sceneLoaded->impl.getIScene().getTextureSampler(loadedSampler->impl.getTextureSamplerHandle()).textureResource);
-        EXPECT_EQ(ERamsesObjectType_Texture2D, loadedSampler->impl.getTextureType());
+        EXPECT_EQ(texture->m_impl.getLowlevelResourceHash(), this->m_sceneLoaded->m_impl.getIScene().getTextureSampler(loadedSampler->m_impl.getTextureSamplerHandle()).textureResource);
+        EXPECT_EQ(ERamsesObjectType_Texture2D, loadedSampler->m_impl.getTextureType());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteATextureSamplerMS)
@@ -1169,7 +1169,7 @@ namespace ramses
         TextureSamplerMS* loadedSampler = getObjectForTesting<TextureSamplerMS>("sampler");
         ASSERT_TRUE(nullptr != loadedSampler);
 
-        EXPECT_EQ(ERamsesObjectType_RenderBuffer, loadedSampler->impl.getTextureType());
+        EXPECT_EQ(ERamsesObjectType_RenderBuffer, loadedSampler->m_impl.getTextureType());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteATextureSamplerExternal)
@@ -1182,7 +1182,7 @@ namespace ramses
         TextureSamplerExternal* loadedSampler = getObjectForTesting<TextureSamplerExternal>("sampler");
         ASSERT_TRUE(nullptr != loadedSampler);
 
-        EXPECT_EQ(ERamsesObjectType_TextureSamplerExternal, loadedSampler->impl.getTextureType());
+        EXPECT_EQ(ERamsesObjectType_TextureSamplerExternal, loadedSampler->m_impl.getTextureType());
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteSceneId)
@@ -1206,7 +1206,7 @@ namespace ramses
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram");
         ASSERT_TRUE(nullptr != m_sceneLoaded);
-        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, m_sceneLoaded->m_impl.getPublicationModeSetFromSceneConfig());
     }
 
     // TODO(tobias) add to store this option to file format as soon as changes are allowed
@@ -1219,7 +1219,7 @@ namespace ramses
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram");
         ASSERT_TRUE(nullptr != m_sceneLoaded);
-        EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
+        EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->m_impl.getPublicationModeSetFromSceneConfig());
     }
 
     TEST_F(ASceneLoadedFromFile, canOverwritePublicationModeForLoadedFiles)
@@ -1229,7 +1229,7 @@ namespace ramses
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", true);
         ASSERT_TRUE(nullptr != m_sceneLoaded);
-        EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
+        EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->m_impl.getPublicationModeSetFromSceneConfig());
     }
 
     TEST_F(ASceneLoadedFromFile, reportsErrorWhenSavingSceneToFileWithInvalidFileName)
@@ -1419,22 +1419,22 @@ namespace ramses
     {
         Node* node = this->m_scene.createNode("node");
 
-        EXPECT_EQ(StatusOK, this->m_scene.impl.createTransformationDataConsumer(*node, dataConsumerId_t(2u)));
-        ASSERT_EQ(1u, this->m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(StatusOK, this->m_scene.m_impl.createTransformationDataConsumer(*node, dataConsumerId_t(2u)));
+        ASSERT_EQ(1u, this->m_scene.m_impl.getIScene().getDataSlotCount());
 
         ramses_internal::DataSlotHandle slotHandle(0u);
-        EXPECT_TRUE(this->m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_TRUE(this->m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
 
         doWriteReadCycle();
 
         const Node* nodeLoaded = this->getObjectForTesting<Node>("node");
-        ramses_internal::NodeHandle nodeHandle = nodeLoaded->impl.getNodeHandle();
-        ASSERT_EQ(1u, this->m_sceneLoaded->impl.getIScene().getDataSlotCount());
+        ramses_internal::NodeHandle nodeHandle = nodeLoaded->m_impl.getNodeHandle();
+        ASSERT_EQ(1u, this->m_sceneLoaded->m_impl.getIScene().getDataSlotCount());
 
-        EXPECT_TRUE(this->m_sceneLoaded->impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(nodeHandle, this->m_sceneLoaded->impl.getIScene().getDataSlot(slotHandle).attachedNode);
-        EXPECT_EQ(ramses_internal::DataSlotId(2u), this->m_sceneLoaded->impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_TransformationConsumer, this->m_sceneLoaded->impl.getIScene().getDataSlot(slotHandle).type);
+        EXPECT_TRUE(this->m_sceneLoaded->m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(nodeHandle, this->m_sceneLoaded->m_impl.getIScene().getDataSlot(slotHandle).attachedNode);
+        EXPECT_EQ(ramses_internal::DataSlotId(2u), this->m_sceneLoaded->m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TransformationConsumer, this->m_sceneLoaded->m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(ASceneLoadedFromFile, canReadWriteDataObject)
@@ -1596,8 +1596,8 @@ namespace ramses
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
         ASSERT_TRUE(nullptr != m_sceneLoaded);
 
-        const ramses_internal::SceneFileHandle handle = m_sceneLoaded->impl.getSceneFileHandle();
-        EXPECT_TRUE(m_clientForLoading.impl.getClientApplication().hasResourceFile(handle));
+        const ramses_internal::SceneFileHandle handle = m_sceneLoaded->m_impl.getSceneFileHandle();
+        EXPECT_TRUE(m_clientForLoading.m_impl.getClientApplication().hasResourceFile(handle));
         m_clientForLoading.destroy(*m_sceneLoaded);
 
         // scene gets destroyed asynchronously, so we can't just test after the destroy
@@ -1607,7 +1607,7 @@ namespace ramses
         for (; ticks > 0; --ticks)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            if (!m_clientForLoading.impl.getClientApplication().hasResourceFile(handle))
+            if (!m_clientForLoading.m_impl.getClientApplication().hasResourceFile(handle))
                 break;
         }
         EXPECT_GT(ticks, 0u);

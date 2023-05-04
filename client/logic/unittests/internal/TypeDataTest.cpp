@@ -10,7 +10,7 @@
 
 #include "internals/TypeData.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ATypeData : public ::testing::Test
     {

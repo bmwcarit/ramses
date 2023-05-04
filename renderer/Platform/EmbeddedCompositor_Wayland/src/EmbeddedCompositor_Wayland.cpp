@@ -51,7 +51,7 @@ namespace ramses_internal
         m_linuxDmabufGlobal.destroy();
     }
 
-    Bool EmbeddedCompositor_Wayland::init()
+    bool EmbeddedCompositor_Wayland::init()
     {
         if (!m_serverDisplay.init(m_waylandEmbeddedSocketName, m_waylandEmbeddedSocketGroup, m_waylandEmbeddedSocketPermissions, m_waylandEmbeddedSocketFD))
         {
@@ -99,7 +99,7 @@ namespace ramses_internal
         m_serverDisplay.dispatchEventLoop();
     }
 
-    Bool EmbeddedCompositor_Wayland::hasUpdatedStreamTextureSources() const
+    bool EmbeddedCompositor_Wayland::hasUpdatedStreamTextureSources() const
     {
         return 0u != m_updatedStreamTextureSourceIds.size();
     }
@@ -180,7 +180,7 @@ namespace ramses_internal
         return nullptr;
     }
 
-    void EmbeddedCompositor_Wayland::endFrame(Bool notifyClients)
+    void EmbeddedCompositor_Wayland::endFrame(bool notifyClients)
     {
         if (notifyClients)
         {
@@ -257,7 +257,7 @@ namespace ramses_internal
         }
     }
 
-    Bool EmbeddedCompositor_Wayland::isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
+    bool EmbeddedCompositor_Wayland::isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
         if(waylandClientSurface)
@@ -281,7 +281,7 @@ namespace ramses_internal
         }
     }
 
-    Bool EmbeddedCompositor_Wayland::isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
+    bool EmbeddedCompositor_Wayland::isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(waylandSurfaceId);
         if (waylandClientSurface)
@@ -299,7 +299,7 @@ namespace ramses_internal
         return m_compositorConnections.size();
     }
 
-    Bool EmbeddedCompositor_Wayland::hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
+    bool EmbeddedCompositor_Wayland::hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         for (const auto surface: m_surfaces)
         {
@@ -354,7 +354,7 @@ namespace ramses_internal
         return *buffer;
     }
 
-    Bool EmbeddedCompositor_Wayland::isRealCompositor() const
+    bool EmbeddedCompositor_Wayland::isRealCompositor() const
     {
         return true;
     }

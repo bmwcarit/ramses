@@ -142,14 +142,14 @@ namespace ramses
         EXPECT_EQ(StatusOK, this->camera->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
 
         const auto projType = (this->camera->getType() == ERamsesObjectType_PerspectiveCamera ? ramses_internal::ECameraProjectionType::Perspective : ramses_internal::ECameraProjectionType::Orthographic);
-        const ramses_internal::Matrix44f expectedMatrix = ramses_internal::CameraMatrixHelper::ProjectionMatrix(ramses_internal::ProjectionParams::Frustum(projType, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
+        const auto expectedMatrix = ramses_internal::CameraMatrixHelper::ProjectionMatrix(ramses_internal::ProjectionParams::Frustum(projType, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
 
         matrix44f projMatData;
         EXPECT_EQ(StatusOK, this->camera->getProjectionMatrix(projMatData));
 
         for (uint32_t i = 0u; i < 16u; ++i)
         {
-            EXPECT_FLOAT_EQ(expectedMatrix.data[i], projMatData[i/4][i%4]);
+            EXPECT_FLOAT_EQ(expectedMatrix[i/4][i%4], projMatData[i/4][i%4]);
         }
     }
 
@@ -232,16 +232,16 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
-        EXPECT_EQ(do1->impl.getDataReference(), this->camera->impl.getViewportOffsetHandle());
-        EXPECT_EQ(do2->impl.getDataReference(), this->camera->impl.getViewportSizeHandle());
+        EXPECT_EQ(do1->m_impl.getDataReference(), this->camera->m_impl.getViewportOffsetHandle());
+        EXPECT_EQ(do2->m_impl.getDataReference(), this->camera->m_impl.getViewportSizeHandle());
 
         EXPECT_TRUE(this->camera->isViewportOffsetBound());
         EXPECT_TRUE(this->camera->isViewportSizeBound());
 
         EXPECT_EQ(StatusOK, this->camera->unbindViewportOffset());
         EXPECT_EQ(StatusOK, this->camera->unbindViewportSize());
-        EXPECT_NE(do1->impl.getDataReference(), this->camera->impl.getViewportOffsetHandle());
-        EXPECT_NE(do2->impl.getDataReference(), this->camera->impl.getViewportSizeHandle());
+        EXPECT_NE(do1->m_impl.getDataReference(), this->camera->m_impl.getViewportOffsetHandle());
+        EXPECT_NE(do2->m_impl.getDataReference(), this->camera->m_impl.getViewportSizeHandle());
 
         EXPECT_FALSE(this->camera->isViewportOffsetBound());
         EXPECT_FALSE(this->camera->isViewportSizeBound());
@@ -254,13 +254,13 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
-        EXPECT_EQ(do1->impl.getDataReference(), this->camera->impl.getFrustrumPlanesHandle());
-        EXPECT_EQ(do2->impl.getDataReference(), this->camera->impl.getFrustrumNearFarPlanesHandle());
+        EXPECT_EQ(do1->m_impl.getDataReference(), this->camera->m_impl.getFrustrumPlanesHandle());
+        EXPECT_EQ(do2->m_impl.getDataReference(), this->camera->m_impl.getFrustrumNearFarPlanesHandle());
 
         EXPECT_EQ(StatusOK, this->camera->unbindFrustumPlanes());
         EXPECT_FALSE(this->camera->isFrustumPlanesBound());
-        EXPECT_NE(do1->impl.getDataReference(), this->camera->impl.getFrustrumPlanesHandle());
-        EXPECT_NE(do2->impl.getDataReference(), this->camera->impl.getFrustrumNearFarPlanesHandle());
+        EXPECT_NE(do1->m_impl.getDataReference(), this->camera->m_impl.getFrustrumPlanesHandle());
+        EXPECT_NE(do2->m_impl.getDataReference(), this->camera->m_impl.getFrustrumNearFarPlanesHandle());
     }
 
     TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound)

@@ -14,7 +14,7 @@
 #include <numeric>
 #include <iterator>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     void DirectedAcyclicGraph::addNode(Node& node)
     {

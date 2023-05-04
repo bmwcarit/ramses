@@ -80,7 +80,7 @@ void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearFlags(Devi
 }
 
 template <template<typename> class MOCK_TYPE>
-void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
+void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearColor(DeviceResourceHandle bufferDeviceHandle, const glm::vec4& clearColor)
 {
     Renderer::setClearColor(bufferDeviceHandle, clearColor);  // NOLINT clang-tidy: We really mean to call into Renderer
     RendererMock::setClearColor(bufferDeviceHandle, clearColor);

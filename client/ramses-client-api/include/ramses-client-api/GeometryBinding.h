@@ -19,12 +19,12 @@ namespace ramses
     class Effect;
 
     /**
+     * @ingroup CoreAPI
      * @brief A geometry binding together with an appearance describe how an object will be rendered to the screen.
     */
-    class RAMSES_API GeometryBinding : public SceneObject
+    class GeometryBinding : public SceneObject
     {
     public:
-
         /**
         * @brief Assign a data array with data type UInt16 or UInt32 to be used when accessing vertex data.
         *
@@ -34,7 +34,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setIndices(const ArrayResource& indicesResource);
+        RAMSES_API status_t setIndices(const ArrayResource& indicesResource);
 
         /**
         * @brief Assign indices (using index data buffer) to be used when accessing vertex data.
@@ -45,7 +45,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setIndices(const ArrayBuffer& arrayBuffer);
+        RAMSES_API status_t setIndices(const ArrayBuffer& arrayBuffer);
 
         /**
         * @brief Assign a data array resource to a given effect attribute input.
@@ -56,7 +56,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint32_t instancingDivisor = 0);
+        RAMSES_API status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint32_t instancingDivisor = 0);
 
         /**
         * @brief   Assign a data array resource to a given effect attribute input with offset and stride.
@@ -69,7 +69,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint16_t offset, uint16_t stride);
+        RAMSES_API status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint16_t offset, uint16_t stride);
 
         /**
         * @brief Assign a vertex attribute buffer to a given effect attribute input.
@@ -80,7 +80,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint32_t instancingDivisor = 0);
+        RAMSES_API status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint32_t instancingDivisor = 0);
 
         /**
         * @brief   Assign vertex attribute buffer with offset and stride.
@@ -93,52 +93,32 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint16_t offset, uint16_t stride);
+        RAMSES_API status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint16_t offset, uint16_t stride);
 
         /**
         * @brief Gets the effect used to create this geometry binding
         *
         * @return The effect used to create the geometry binding.
         */
-        [[nodiscard]] const Effect& getEffect() const;
+        [[nodiscard]] RAMSES_API const Effect& getEffect() const;
 
         /**
         * @brief Stores internal data for implementation specifics of GeometryBinding.
         */
-        class GeometryBindingImpl& impl;
+        class GeometryBindingImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating GeometryBinding instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor of GeometryBinding
         *
-        * @param[in] pimpl Internal data for implementation specifics of GeometryBinding (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of GeometryBinding (sink - instance becomes owner)
         */
-        explicit GeometryBinding(GeometryBindingImpl& pimpl);
-
-        /**
-        * @brief Copy constructor of GeometryBinding
-        *
-        * @param[in] other Other instance of GeometryBinding class
-        */
-        GeometryBinding(const GeometryBinding& other);
-
-        /**
-        * @brief Assignment operator of GeometryBinding.
-        *
-        * @param[in] other Other instance of GeometryBinding class
-        * @return This instance after assignment
-        */
-        GeometryBinding& operator=(const GeometryBinding& other);
-
-        /**
-        * @brief Destructor of the GeometryBinding
-        */
-        ~GeometryBinding() override;
+        explicit GeometryBinding(std::unique_ptr<GeometryBindingImpl> impl);
     };
 }
 

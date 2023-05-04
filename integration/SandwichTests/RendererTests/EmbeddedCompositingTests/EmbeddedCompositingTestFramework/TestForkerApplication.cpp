@@ -111,7 +111,7 @@ namespace ramses_internal
         else if (m_testApplicationInfo[testAppIdx].testApplicationProcessId == 0)
         {
             TestWaylandApplication testApplication(m_testApplicationInfo[testAppIdx].testToWaylandClientPipeName, m_testApplicationInfo[testAppIdx].waylandClientToTestPipeName);
-            const Bool testApplicationExitStatus = testApplication.run();
+            const bool testApplicationExitStatus = testApplication.run();
 
             // TODO(tobias) this seems totally wrong as true is error condition as exit code
             exit(testApplicationExitStatus ? 1 : 0);

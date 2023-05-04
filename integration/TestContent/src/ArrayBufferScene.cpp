@@ -14,7 +14,6 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
-#include "Math3d/Vector4.h"
 #include "SceneAPI/EDataType.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/ArrayBuffer.h"
@@ -23,7 +22,7 @@
 namespace ramses_internal
 {
 
-    ArrayBufferScene::ArrayBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    ArrayBufferScene::ArrayBufferScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_effect(*createEffect(state))
     {

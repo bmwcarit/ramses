@@ -30,7 +30,7 @@ namespace ramses_internal
         ParseContextExtensionsHelper(extensionNativeString, m_contextExtensions);
     }
 
-    Bool Context_Base::isContextExtensionAvailable(const String& extensionName) const
+    bool Context_Base::isContextExtensionAvailable(const String& extensionName) const
     {
         // try out various prefixes; add more if required
         String nameEXT = "EGL_EXT_" + extensionName;

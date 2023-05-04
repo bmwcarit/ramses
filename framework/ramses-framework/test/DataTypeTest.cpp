@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
-#include "ramses-framework-api/DataTypes.h"
+#include "DataTypesImpl.h"
 #include "ramses-framework-api/EDataType.h"
 #include "SceneAPI/EDataType.h"
 #include "DataTypeUtils.h"

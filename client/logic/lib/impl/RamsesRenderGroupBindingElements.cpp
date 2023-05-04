@@ -11,14 +11,28 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/RenderGroup.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesRenderGroupBindingElements::RamsesRenderGroupBindingElements() noexcept
         : m_impl{ std::make_unique<internal::RamsesRenderGroupBindingElementsImpl>() }
     {
     }
-
     RamsesRenderGroupBindingElements::~RamsesRenderGroupBindingElements() noexcept = default;
+
+    RamsesRenderGroupBindingElements::RamsesRenderGroupBindingElements(const RamsesRenderGroupBindingElements& other)
+        : m_impl{ std::make_unique<internal::RamsesRenderGroupBindingElementsImpl>(*other.m_impl) }
+    {
+    }
+
+    RamsesRenderGroupBindingElements::RamsesRenderGroupBindingElements(RamsesRenderGroupBindingElements&& other) noexcept = default;
+
+    RamsesRenderGroupBindingElements& RamsesRenderGroupBindingElements::operator=(const RamsesRenderGroupBindingElements& other)
+    {
+        m_impl = std::make_unique<internal::RamsesRenderGroupBindingElementsImpl>(*other.m_impl);
+        return *this;
+    }
+
+    RamsesRenderGroupBindingElements& RamsesRenderGroupBindingElements::operator=(RamsesRenderGroupBindingElements&& other) noexcept = default;
 
     bool RamsesRenderGroupBindingElements::addElement(const ramses::MeshNode& meshNode, std::string_view elementName)
     {

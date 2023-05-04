@@ -21,7 +21,7 @@
 #include "generated/RamsesNodeBindingGen.h"
 #include "glm/gtc/type_ptr.hpp"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     RamsesNodeBindingImpl::RamsesNodeBindingImpl(ramses::Node& ramsesNode, ramses::ERotationType rotationType, std::string_view name, uint64_t id)
         : RamsesBindingImpl{ name, id }
@@ -40,7 +40,7 @@ namespace rlogic::internal
                 TypeData{"scaling", EPropertyType::Vec3f},
                 TypeData{"enabled", EPropertyType::Bool}
             });
-        auto inputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(inputsType, EPropertySemantics::BindingInput));
+        auto inputs = std::make_unique<PropertyImpl>(inputsType, EPropertySemantics::BindingInput);
 
         setRootInputs(std::move(inputs));
 
@@ -138,7 +138,7 @@ namespace rlogic::internal
 
         auto binding = std::make_unique<RamsesNodeBindingImpl>(*ramsesNode, rotationType, name, id);
         binding->setUserId(userIdHigh, userIdLow);
-        binding->setRootInputs(std::make_unique<Property>(std::move(deserializedRootInput)));
+        binding->setRootInputs(std::move(deserializedRootInput));
 
         ApplyRamsesValuesToInputProperties(*binding, *ramsesNode);
 
@@ -235,13 +235,12 @@ namespace rlogic::internal
         const bool enabled = (visibilityMode == ramses::EVisibilityMode::Visible || visibilityMode == ramses::EVisibilityMode::Invisible);
         binding.getInputs()->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Enabled))->m_impl->initializeBindingInputValue(PropertyValue{ enabled });
 
-        vec3f temp;
-        ramsesNode.getTranslation(temp);
-        vec3f translationValue{temp.x, temp.y, temp.z};
+        vec3f translationValue;
+        ramsesNode.getTranslation(translationValue);
         binding.getInputs()->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Translation))->m_impl->initializeBindingInputValue(PropertyValue{ translationValue });
 
-        ramsesNode.getScaling(temp);
-        vec3f scalingValue{temp.x, temp.y, temp.z};
+        vec3f scalingValue;
+        ramsesNode.getScaling(scalingValue);
         binding.getInputs()->getChild(static_cast<size_t>(ENodePropertyStaticIndex::Scaling))->m_impl->initializeBindingInputValue(PropertyValue{ scalingValue });
 
         const ramses::ERotationType rotationType = ramsesNode.getRotationType();
@@ -270,8 +269,8 @@ namespace rlogic::internal
         }
         else
         {
-            ramsesNode.getRotation(temp);
-            vec3f rotationValue{temp.x, temp.y, temp.z};
+            vec3f rotationValue;
+            ramsesNode.getRotation(rotationValue);
 
             if (binding.m_rotationType != rotationType)
             {

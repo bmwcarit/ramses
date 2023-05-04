@@ -24,7 +24,7 @@ namespace ramses_internal
     {
     public:
         explicit ValidateCommand(ramses::RamsesClientImpl& client);
-        Bool execute(uint64_t& sceneId, String& severity, String& objectName) const override;
+        bool execute(uint64_t& sceneId, String& severity, String& objectName) const override;
     private:
         ramses::RamsesClientImpl& m_client;
     };

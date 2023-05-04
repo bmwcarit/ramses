@@ -28,7 +28,6 @@ namespace ramses_internal
     class IEmbeddedCompositingManager;
     class IEmbeddedCompositor;
     class String;
-    class Vector4;
 
     class TestRenderer
     {
@@ -66,7 +65,7 @@ namespace ramses_internal
         void destroyOffscreenBuffer(ramses::displayId_t displayId, ramses::displayBufferId_t buffer);
         void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder);
         void setClearFlags(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, uint32_t clearFlags);
-        void setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor);
+        void setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const glm::vec4& clearColor);
         bool getDmaOffscreenBufferFDAndStride(ramses::displayId_t displayId, ramses::displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
 
         ramses::streamBufferId_t createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source);

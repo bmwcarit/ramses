@@ -67,7 +67,7 @@ namespace ramses_internal
         void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) override;
         void handleSceneUnpublished(SceneId sceneId) override;
         void handleSceneReceived(const SceneInfo& sceneInfo) override;
-        bool handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
+        bool handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
         bool handleDmaBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
         bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) override;
         bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
@@ -75,10 +75,10 @@ namespace ramses_internal
         bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) override;
         bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) override;
         void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
-        void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) override;
+        void handleSetClearColor(OffscreenBufferHandle buffer, const glm::vec4& clearColor) override;
         void handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
         void handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
-        void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) override;
+        void handlePickEvent(SceneId sceneId, glm::vec2 coordsNormalizedToBufferSize) override;
         void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
         void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
         void handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;

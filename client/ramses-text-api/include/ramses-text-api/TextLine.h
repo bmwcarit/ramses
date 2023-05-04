@@ -29,6 +29,7 @@ namespace ramses
 
     /**
     * @brief Groups the scene objects needed to render a text line
+    * @ingroup TextAPI
     */
     struct TextLine
     {

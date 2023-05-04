@@ -16,6 +16,7 @@ namespace ramses
 {
 
     /**
+    * @ingroup CoreAPI
     * @brief Struct containing information about one mip-map level of a texture.
     *
     * NOTE: the texel data is stored according to OpenGL convention (first byte is from the bottom texel row). See docs of glTexImage2D for more info.
@@ -25,11 +26,7 @@ namespace ramses
         /**
         * @brief Default constructor
         */
-        MipLevelData()
-        : m_size(0)
-        , m_data(nullptr)
-        {
-        }
+        MipLevelData() = default;
 
         /**
         * @brief Constructs a MipLevelData. The texel data must be stored according to OpenGL conventions.
@@ -46,13 +43,14 @@ namespace ramses
         }
 
         /// The size of mipmap data in bytes
-        uint32_t m_size;
+        uint32_t m_size{0};
         /// Pointer to raw bytes data of mipmap level
-        const uint8_t* m_data;
+        const uint8_t* m_data{nullptr};
     };
 
 
     /**
+    * @ingroup CoreAPI
     * @brief Struct containing information about one mip-map level of a cube texture. All faces of the cube
     * texture must have the same size!
     */
@@ -61,16 +59,7 @@ namespace ramses
         /**
         * @brief Default constructor
         */
-        CubeMipLevelData()
-        : m_faceDataSize(0)
-        , m_dataPX(nullptr)
-        , m_dataNX(nullptr)
-        , m_dataPY(nullptr)
-        , m_dataNY(nullptr)
-        , m_dataPZ(nullptr)
-        , m_dataNZ(nullptr)
-        {
-        }
+        CubeMipLevelData() = default;
 
         /**
         * @brief Constructs a MipLevelData. The texel data must be stored according to OpenGL conventions.
@@ -101,23 +90,21 @@ namespace ramses
 
         /// size of mip-level data of all faces in Bytes,
         /// all faces must have the same data size
-        uint32_t m_faceDataSize;
+        uint32_t m_faceDataSize{0};
 
         /// Data for face in positive X direction
-        const uint8_t* m_dataPX;
+        const uint8_t* m_dataPX{nullptr};
         /// Data for face in negative X direction
-        const uint8_t* m_dataNX;
+        const uint8_t* m_dataNX{nullptr};
         /// Data for face in positive Y direction
-        const uint8_t* m_dataPY;
+        const uint8_t* m_dataPY{nullptr};
         /// Data for face in negative Y direction
-        const uint8_t* m_dataNY;
+        const uint8_t* m_dataNY{nullptr};
         /// Data for face in positive Z direction
-        const uint8_t* m_dataPZ;
+        const uint8_t* m_dataPZ{nullptr};
         /// Data for face in negative Z direction
-        const uint8_t* m_dataNZ;
+        const uint8_t* m_dataNZ{nullptr};
     };
-
-
 }
 
 #endif

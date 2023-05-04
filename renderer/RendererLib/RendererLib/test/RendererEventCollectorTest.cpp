@@ -221,7 +221,7 @@ namespace ramses_internal
     {
         const DisplayHandle displayHandle(124u);
         MouseEvent mouseEvent;
-        mouseEvent.pos = Vector2i(50u, 60u);
+        mouseEvent.pos = glm::ivec2(50u, 60u);
         mouseEvent.type = EMouseEventType_LeftButtonDown;
 
         m_rendererEventCollector.addWindowEvent(ERendererEventType::WindowMouseEvent, displayHandle, mouseEvent);

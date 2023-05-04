@@ -8,7 +8,7 @@
 
 #include "impl/LoggerImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LoggerImpl::LoggerImpl() noexcept
         : m_logHandler(nullptr)
@@ -25,12 +25,12 @@ namespace rlogic::internal
         m_defaultLogging = loggingEnabled;
     }
 
-    void LoggerImpl::setLogVerbosityLimit(ELogMessageType verbosityLimit)
+    void LoggerImpl::setLogVerbosityLimit(ELogLevel verbosityLimit)
     {
         m_logVerbosityLimit = verbosityLimit;
     }
 
-    ELogMessageType LoggerImpl::getLogVerbosityLimit() const
+    ELogLevel LoggerImpl::getLogVerbosityLimit() const
     {
         return m_logVerbosityLimit;
     }

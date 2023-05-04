@@ -12,10 +12,11 @@
 
 namespace ramses
 {
-    RendererUniquePtr RendererFactory::createRenderer(RamsesFrameworkImpl* impl, const RendererConfig& config) const
+    RendererUniquePtr RendererFactory::createRenderer(RamsesFrameworkImpl& framework, const RendererConfig& config) const
     {
-        RendererUniquePtr renderer(new RamsesRenderer(*new RamsesRendererImpl(*impl, config)),
-            [](RamsesRenderer* renderer_) { delete renderer_; });
+        auto impl = std::make_unique<RamsesRendererImpl>(framework, config);
+        RendererUniquePtr renderer{ new RamsesRenderer{ std::move(impl) },
+            [](RamsesRenderer* renderer_) { delete renderer_; } };
         return renderer;
     }
 

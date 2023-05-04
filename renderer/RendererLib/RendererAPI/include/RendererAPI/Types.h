@@ -56,7 +56,7 @@ namespace ramses_internal
     using NativeHandle = void *;
 
     using RenderableSet = HashSet<RenderableHandle>;
-    using BoolVector = std::vector<Bool>;
+    using BoolVector = std::vector<bool>;
     using UInt8Vector = std::vector<UInt8>;
     using RenderTargetHandleVector = std::vector<RenderTargetHandle>;
 
@@ -87,8 +87,8 @@ namespace ramses_internal
         };
         Rectangle     rectangle;
         String        filename;
-        Bool          fullScreen;
-        Bool          sendViaDLT;
+        bool          fullScreen;
+        bool          sendViaDLT;
         UInt8Vector   pixelData;
     };
     using ScreenshotInfoVector = std::vector<ScreenshotInfo>;
@@ -128,7 +128,7 @@ namespace ramses_internal
         COUNT
     };
 
-    static const char* RendererLogTopicNames[] =
+    const std::array RendererLogTopicNames =
     {
         "Displays",
         "SceneStates",

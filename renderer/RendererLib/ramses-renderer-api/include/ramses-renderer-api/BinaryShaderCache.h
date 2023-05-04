@@ -14,6 +14,7 @@
 namespace ramses
 {
     /**
+     * @ingroup RendererAPI
      * @brief Provide default implementation for IBinaryShaderCache interface, to be used in RamsesRenderer by setting in RendererConfig.
      *        Also provides functions to serialize binary shaders to file and deserialize binary shaders from file.
      */

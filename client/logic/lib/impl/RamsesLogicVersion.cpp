@@ -9,7 +9,7 @@
 #include "ramses-logic/RamsesLogicVersion.h"
 #include "ramses-sdk-build-config.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesLogicVersion GetRamsesLogicVersion()
     {

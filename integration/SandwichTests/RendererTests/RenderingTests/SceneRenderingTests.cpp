@@ -310,63 +310,63 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         return runBasicTest<ArrayInputScene>(testFramework, ArrayInputScene::ARRAY_INPUT_INT32_DYNAMIC_INDEX, "ArrayInputScene_ArrayInputInt32DynamicIndex");
 
     case DataBuffer_IndexDataBufferUInt16:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::INDEX_DATA_BUFFER_UINT16, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::INDEX_DATA_BUFFER_UINT16, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_IndexDataBufferUInt32:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::INDEX_DATA_BUFFER_UINT32, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::INDEX_DATA_BUFFER_UINT32, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_VertexDataBufferFloat:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_FLOAT, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_FLOAT, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_VertexDataBufferVector2f:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR2F, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR2F, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_VertexDataBufferVector3f:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR3F, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR3F, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_VertexDataBufferVector4f:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR4F, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR4F, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_IndexDataBufferGetsUpdated:
     {
-        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::INDEX_DATA_BUFFER_UINT32, Vector3(2, -1, 18));
+        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::INDEX_DATA_BUFFER_UINT32, glm::vec3(2, -1, 18));
         testFramework.getScenesRegistry().setSceneState<ArrayBufferScene>(sceneId, ArrayBufferScene::UPDATE_INDEX_DATA_BUFFER);
         return testFramework.renderAndCompareScreenshot("DataBufferScene_RedTriangleInverted", 0u);
     }
     case DataBuffer_VertexDataBufferGetsUpdated:
     {
-        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR4F, Vector3(2, -1, 18));
+        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR4F, glm::vec3(2, -1, 18));
         testFramework.getScenesRegistry().setSceneState<ArrayBufferScene>(sceneId, ArrayBufferScene::UPDATE_VERTEX_DATA_BUFFER);
         return testFramework.renderAndCompareScreenshot("DataBufferScene_RedTriangleInverted", 0u);
     }
     case DataBuffer_SwitchFromClientArrayResourceToDataBuffer:
     {
-        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_ARRAY_RESOURCE_VECTOR4F, Vector3(2, -1, 18));
+        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_ARRAY_RESOURCE_VECTOR4F, glm::vec3(2, -1, 18));
         testFramework.getScenesRegistry().setSceneState<ArrayBufferScene>(sceneId, ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR4F);
         return testFramework.renderAndCompareScreenshot("DataBufferScene_RedTriangle", 0u);
     }
     case DataBuffer_SwitchFromDataBufferToClientArrayResource:
     {
-        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR4F, Vector3(2, -1, 18));
+        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_DATA_BUFFER_VECTOR4F, glm::vec3(2, -1, 18));
         testFramework.getScenesRegistry().setSceneState<ArrayBufferScene>(sceneId, ArrayBufferScene::VERTEX_ARRAY_RESOURCE_VECTOR4F);
         return testFramework.renderAndCompareScreenshot("DataBufferScene_EquilateralTriangle", 0u);
     }
     case DataBuffer_InterleavedVertexAttribute:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_InterleavedVertexAttribute_GetsUpdated:
     {
-        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED, Vector3(2, -1, 18));
+        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<ArrayBufferScene>(ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED, glm::vec3(2, -1, 18));
         testFramework.getScenesRegistry().setSceneState<ArrayBufferScene>(sceneId, ArrayBufferScene::UPDATE_INTERLEAVED_VERTEX_DATA_BUFFER);
         return testFramework.renderAndCompareScreenshot("DataBufferScene_RedTriangleInverted", 0u);
     }
     case DataBuffer_InterleavedVertexAttribute_TwoStrides:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_TWO_STRIDES, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_TWO_STRIDES, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case ArrayResource_InterleavedVertexAttribute:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case ArrayResource_InterleavedVertexAttribute_TwoStrides:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_TWO_STRIDES, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_TWO_STRIDES, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case ArrayResource_InterleavedVertexAttribute_SingleAttrib:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_SINGLE_ATTRIB, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_SINGLE_ATTRIB, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case ArrayResource_InterleavedVertexAttribute_StartVertexOffset:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_InterleavedVertexAttribute_SingleAttrib:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_SINGLE_ATTRIB, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_SINGLE_ATTRIB, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case DataBuffer_InterleavedVertexAttribute_StartVertexOffset:
-        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+        return runBasicTest<ArrayBufferScene>(testFramework, ArrayBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, glm::vec3(2, -1, 18));
     case Display_SetClearColor:
         return testFramework.renderAndCompareScreenshot("Display_SetClearColor", 0u, 0.4f);
     case GeometryShaderGlslV320_PointsInTriangleStripOut:
@@ -406,7 +406,7 @@ bool SceneRenderingTests::runBasicTest(
     UInt32 sceneState,
     const String& expectedImageName,
     float maxAveragePercentErrorPerPixel,
-    const Vector3& cameraTranslation,
+    const glm::vec3& cameraTranslation,
     bool saveDiffOnError)
 {
     testFramework.createAndShowScene<INTEGRATION_SCENE>(sceneState, cameraTranslation);

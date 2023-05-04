@@ -25,7 +25,7 @@
 namespace ramses_internal
 {
 
-    Texture2DGenerateMipMapScene::Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
+    Texture2DGenerateMipMapScene::Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();

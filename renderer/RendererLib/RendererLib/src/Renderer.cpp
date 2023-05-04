@@ -27,7 +27,7 @@
 
 namespace ramses_internal
 {
-    const Vector4 Renderer::DefaultClearColor = { 0.f, 0.f, 0.f, 1.f };
+    const glm::vec4 Renderer::DefaultClearColor = { 0.f, 0.f, 0.f, 1.f };
 
     Renderer::Renderer(
         DisplayHandle display,
@@ -52,7 +52,7 @@ namespace ramses_internal
         assert(!hasDisplayController());
     }
 
-    void Renderer::registerOffscreenBuffer(DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible)
+    void Renderer::registerOffscreenBuffer(DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, bool isInterruptible)
     {
         assert(hasDisplayController());
         assert(!hasAnyBufferWithInterruptedRendering());
@@ -137,7 +137,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorListIviSurfaces: system compositor is not available");
     }
 
-    void Renderer::systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) const
+    void Renderer::systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility) const
     {
         if (m_platform.getSystemCompositorController())
             m_platform.getSystemCompositorController()->setSurfaceVisibility(surfaceId, visibility);
@@ -161,7 +161,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorSetRectangle: system compositor is not available");
     }
 
-    void Renderer::systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const
+    void Renderer::systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, bool visibility) const
     {
         if (m_platform.getSystemCompositorController())
             m_platform.getSystemCompositorController()->setLayerVisibility(layerId, visibility);
@@ -177,7 +177,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorScreenshot: system compositor is not available");
     }
 
-    Bool Renderer::systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const
+    bool Renderer::systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const
     {
         if (m_platform.getSystemCompositorController())
             return m_platform.getSystemCompositorController()->addSurfaceToLayer(surfaceId, layerId);
@@ -457,7 +457,7 @@ namespace ramses_internal
         m_displayBuffersSetup.unassignScene(sceneId);
     }
 
-    void Renderer::setSceneShown(SceneId sceneId, Bool show)
+    void Renderer::setSceneShown(SceneId sceneId, bool show)
     {
         assert(m_rendererScenes.hasScene(sceneId));
         assert(getBufferSceneIsAssignedTo(sceneId).isValid());
@@ -476,7 +476,7 @@ namespace ramses_internal
         return m_displayBuffersSetup.findDisplayBufferSceneIsAssignedTo(sceneId);
     }
 
-    Bool Renderer::isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const
+    bool Renderer::isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const
     {
         const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId);
         assert(displayBuffer.isValid());
@@ -506,7 +506,7 @@ namespace ramses_internal
         return m_profilerStatistics;
     }
 
-    Bool Renderer::hasSystemCompositorController() const
+    bool Renderer::hasSystemCompositorController() const
     {
         return m_platform.getSystemCompositorController() != nullptr;
     }
@@ -544,7 +544,7 @@ namespace ramses_internal
         m_displayBuffersSetup.setClearFlags(bufferDeviceHandle, clearFlags);
     }
 
-    void Renderer::setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
+    void Renderer::setClearColor(DeviceResourceHandle bufferDeviceHandle, const glm::vec4& clearColor)
     {
         assert(hasDisplayController());
         m_displayBuffersSetup.setClearColor(bufferDeviceHandle, clearColor);
@@ -609,7 +609,7 @@ namespace ramses_internal
         return result;
     }
 
-    Bool Renderer::hasAnyBufferWithInterruptedRendering() const
+    bool Renderer::hasAnyBufferWithInterruptedRendering() const
     {
         return m_rendererInterruptState.isInterrupted();
     }

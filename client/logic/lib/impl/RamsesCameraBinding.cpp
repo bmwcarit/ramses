@@ -9,7 +9,7 @@
 #include "ramses-logic/RamsesCameraBinding.h"
 #include "impl/RamsesCameraBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesCameraBinding::RamsesCameraBinding(std::unique_ptr<internal::RamsesCameraBindingImpl> impl) noexcept
         : RamsesBinding(std::move(impl))
@@ -17,8 +17,6 @@ namespace rlogic
         , m_cameraBinding{ static_cast<internal::RamsesCameraBindingImpl&>(RamsesBinding::m_impl) }
     {
     }
-
-    RamsesCameraBinding::~RamsesCameraBinding() noexcept = default;
 
     ramses::Camera& RamsesCameraBinding::getRamsesCamera() const
     {

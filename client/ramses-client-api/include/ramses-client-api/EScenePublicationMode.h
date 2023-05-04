@@ -12,6 +12,7 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * Specifies the mode of scene publication.
      *
      * When using localOnly publication it is possible to render the scene locally without calling

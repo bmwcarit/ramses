@@ -33,7 +33,7 @@ namespace flatbuffers
     template<typename T> struct Offset;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class IRamsesObjectResolver;
     class ErrorReporting;

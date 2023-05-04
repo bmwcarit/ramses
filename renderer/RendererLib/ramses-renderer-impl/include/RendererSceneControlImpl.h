@@ -13,12 +13,11 @@
 #include "StatusObjectImpl.h"
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/RendererEvent.h"
-#include "Math3d/Vector4.h"
 #include <unordered_map>
 
 namespace ramses
 {
-    static const char* RendererSceneStateNames[] =
+    const std::array RendererSceneStateNames =
     {
         "Unavailable",
         "Available",

@@ -14,27 +14,25 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief   The OrthographicCamera is a local camera which defines an orthographic view into the scene.
     * @details A valid camera for rendering must have viewport and frustum set, see #ramses::Camera
     *          for ways to set these parameters.
     */
-    class RAMSES_API OrthographicCamera : public Camera
+    class OrthographicCamera : public Camera
     {
     protected:
         /**
         * @brief Scene is the factory for creating OrthographicCamera instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for OrthographicCamera.
         *
-        * @param[in] pimpl Internal data for implementation specifics of OrthographicCamera (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of OrthographicCamera (sink - instance becomes owner)
         */
-        explicit OrthographicCamera(CameraNodeImpl& pimpl);
-
-        /** Protected trivial destructor to avoid deleting by user*/
-        ~OrthographicCamera() override;
+        explicit OrthographicCamera(std::unique_ptr<CameraNodeImpl> impl);
     };
 }
 

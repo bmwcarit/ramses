@@ -11,8 +11,8 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/Macros.h"
-#include "Math3d/Vector4i.h"
 #include "Utils/AssertMovable.h"
+#include "DataTypesImpl.h"
 #include <vector>
 #include <array>
 #include <cassert>
@@ -41,7 +41,7 @@ namespace ramses_internal
         [[nodiscard]] UInt32 getWidth() const;
         [[nodiscard]] UInt32 getHeight() const;
         [[nodiscard]] UInt32 getNumberOfPixels() const;
-        [[nodiscard]] Vector4i getSumOfPixelValues() const;
+        [[nodiscard]] glm::ivec4 getSumOfPixelValues() const;
         [[nodiscard]] UInt32 getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel = 1) const;
 
         [[nodiscard]] Image createDiffTo(const Image& other) const;

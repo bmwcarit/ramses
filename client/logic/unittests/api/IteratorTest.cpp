@@ -11,7 +11,7 @@
 
 #include "ramses-logic/Iterator.h"
 
-namespace rlogic
+namespace ramses
 {
     class TestIteratorItem
     {

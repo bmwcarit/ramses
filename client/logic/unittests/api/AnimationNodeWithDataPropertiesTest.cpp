@@ -15,7 +15,7 @@
 #include "WithTempDirectory.h"
 #include <numeric>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // all operations and behavior not specific to node 'with data properties' is tested in AnimationNodeTest.cpp
     class AnAnimationNodeWithDataProperties : public ::testing::Test

@@ -70,9 +70,9 @@ namespace ramses
 
     const ArrayResource& MultiTriangleGeometry::createIndices(Scene& scene, EVerticesOrder vertOrder)
     {
-        static const uint16_t indiceData_ccw[] = {0, 1, 2, 3};
-        static const uint16_t indiceData_cw[]  = {0, 2, 1, 3};
-        const uint16_t* indiceData = (vertOrder == EVerticesOrder_CCW ? indiceData_ccw : indiceData_cw);
+        const std::array<uint16_t, 4> indiceData_ccw = {0, 1, 2, 3};
+        const std::array<uint16_t, 4> indiceData_cw  = {0, 2, 1, 3};
+        const uint16_t* indiceData = (vertOrder == EVerticesOrder_CCW ? indiceData_ccw.data() : indiceData_cw.data());
         return *scene.createArrayResource(4, indiceData);
     }
 

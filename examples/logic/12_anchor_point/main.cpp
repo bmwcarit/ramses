@@ -51,7 +51,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
 /**
 * Helper to create a simple animation for given node, see animation example for more details on how to create an animation.
 */
-void CreateAnimationForNode(rlogic::LogicEngine& logicEngine, const rlogic::RamsesNodeBinding* nodeBinding);
+void CreateAnimationForNode(ramses::LogicEngine& logicEngine, const ramses::RamsesNodeBinding* nodeBinding);
 
 int main()
 {
@@ -68,12 +68,12 @@ int main()
      */
     auto [scene, node3dToTrack, camera3d, cameraSimulating2d] = CreateSceneWithTriangles(*renderer.getClient(), SimpleRenderer::GetDisplaySize());
 
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * First we need to create a Ramses Logic representation of the node we will track using Ramses binding.
     */
-    rlogic::RamsesNodeBinding* nodeToTrackBinding = logicEngine.createRamsesNodeBinding(*node3dToTrack);
+    ramses::RamsesNodeBinding* nodeToTrackBinding = logicEngine.createRamsesNodeBinding(*node3dToTrack);
 
     /**
     * Create a simple animation for the 3D mesh we are about to track, see animation example for more details on how to create an animation.
@@ -88,13 +88,13 @@ int main()
     /**
     * Create camera binding for the camera that is used for rendering the 3D mesh we want to track
     */
-    rlogic::RamsesCameraBinding* camera3dBinding = logicEngine.createRamsesCameraBinding(*camera3d);
+    ramses::RamsesCameraBinding* camera3dBinding = logicEngine.createRamsesCameraBinding(*camera3d);
 
     /**
     * Finally create anchor point, we must provide not only the node we want to track but also the camera that is used to render the 3D mesh
     * associated with that node.
     */
-    const rlogic::AnchorPoint* anchorPoint = logicEngine.createAnchorPoint(*nodeToTrackBinding, *camera3dBinding);
+    const ramses::AnchorPoint* anchorPoint = logicEngine.createAnchorPoint(*nodeToTrackBinding, *camera3dBinding);
 
     /**
      * Simulate an application loop.
@@ -112,8 +112,8 @@ int main()
         * Alternatively the coordinates can be linked to an another logic node (e.g. LuaScript) to be processed further, perhaps
         * end up transforming another mesh (e.g. text or 2D element).
         */
-        const rlogic::vec2f coords = *anchorPoint->getOutputs()->getChild("viewportCoords")->get<rlogic::vec2f>();
-        const rlogic::vec2i coords2d{ static_cast<int32_t>(std::lround(coords[0])), static_cast<int32_t>(std::lround(coords[1])) };
+        const ramses::vec2f coords = *anchorPoint->getOutputs()->getChild("viewportCoords")->get<ramses::vec2f>();
+        const ramses::vec2i coords2d{ static_cast<int32_t>(std::lround(coords[0])), static_cast<int32_t>(std::lround(coords[1])) };
         cameraSimulating2d->setViewport(coords2d[0], coords2d[1], cameraSimulating2d->getViewportWidth(), cameraSimulating2d->getViewportHeight());
 
         /**
@@ -230,23 +230,23 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
     return SceneAndNodes{ scene, meshNode1, camera, orthoCamera };
 }
 
-void CreateAnimationForNode(rlogic::LogicEngine& logicEngine, const rlogic::RamsesNodeBinding* nodeBinding)
+void CreateAnimationForNode(ramses::LogicEngine& logicEngine, const ramses::RamsesNodeBinding* nodeBinding)
 {
-    rlogic::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 5.f, 10.f, 15.f, 20.f }); // will be interpreted as seconds
-    rlogic::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {-3.f, -1.f, -1.f}, { 3.f, -1.f, -1.f }, { 3.f, 0.5f, -1.f }, { -3.f, 0.5f, -1.f }, { -3.f, -1.f, -1.f } });
-    const rlogic::AnimationChannel animChannel{ "translation", animTimestamps, animKeyframes, rlogic::EInterpolationType::Linear };
+    ramses::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 5.f, 10.f, 15.f, 20.f }); // will be interpreted as seconds
+    ramses::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {-3.f, -1.f, -1.f}, { 3.f, -1.f, -1.f }, { 3.f, 0.5f, -1.f }, { -3.f, 0.5f, -1.f }, { -3.f, -1.f, -1.f } });
+    const ramses::AnimationChannel animChannel{ "translation", animTimestamps, animKeyframes, ramses::EInterpolationType::Linear };
 
-    rlogic::AnimationNodeConfig animConfig;
+    ramses::AnimationNodeConfig animConfig;
     animConfig.addChannel(animChannel);
-    rlogic::AnimationNode* animNode = logicEngine.createAnimationNode(animConfig);
+    ramses::AnimationNode* animNode = logicEngine.createAnimationNode(animConfig);
 
     logicEngine.link(
         *animNode->getOutputs()->getChild("translation"),
         *nodeBinding->getInputs()->getChild("translation"));
 
-    rlogic::LuaConfig scriptConfig;
-    scriptConfig.addStandardModuleDependency(rlogic::EStandardModule::Math);
-    rlogic::LuaScript* controlScript = logicEngine.createLuaScript(R"(
+    ramses::LuaConfig scriptConfig;
+    scriptConfig.addStandardModuleDependency(ramses::EStandardModule::Math);
+    ramses::LuaScript* controlScript = logicEngine.createLuaScript(R"(
         function init()
             GLOBAL.startTick = 0
         end
@@ -271,7 +271,7 @@ void CreateAnimationForNode(rlogic::LogicEngine& logicEngine, const rlogic::Rams
         end
     )", scriptConfig);
 
-    rlogic::TimerNode* timer = logicEngine.createTimerNode();
+    ramses::TimerNode* timer = logicEngine.createTimerNode();
     logicEngine.link(
         *timer->getOutputs()->getChild("ticker_us"),
         *controlScript->getInputs()->getChild("ticker"));

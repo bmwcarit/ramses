@@ -12,7 +12,7 @@
 
 #include "internals/RamsesObjectResolver.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesObjectResolverMock : public IRamsesObjectResolver
     {

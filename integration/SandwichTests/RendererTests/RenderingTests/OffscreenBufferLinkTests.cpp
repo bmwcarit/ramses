@@ -72,7 +72,7 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
     }
     case OffscreenBufferLinkTest_ConsumerLinkedToMSAABuffer:
     {
-        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::TRIANGLES_REORDERED, Vector3(0.2f, 0.5f, -5.f), 16u, 16u);
+        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::TRIANGLES_REORDERED, glm::vec3(0.2f, 0.5f, -5.f), 16u, 16u);
         m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER_MS, { 0.2f, 0.f, -3.f });
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, 16u, 16u, m_interruptibleBuffers, 4u);
@@ -84,7 +84,7 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
     }
     case OffscreenBufferLinkTest_ConsumerUnlinkedMSAABuffer:
     {
-        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::TRIANGLES_REORDERED, Vector3(0.2f, 0.5f, -5.f), 16u, 16u);
+        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::TRIANGLES_REORDERED, glm::vec3(0.2f, 0.5f, -5.f), 16u, 16u);
         m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER_MS, { 0.2f, 0.f, -3.f });
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, 16u, 16u, m_interruptibleBuffers, 4u);
@@ -249,8 +249,8 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
     }
     case OffscreenBufferLinkTest_ProviderSceneUsesDepthTest:
     {
-        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::DEPTH_FUNC, Vector3(0.2f, 0.5f, -5.f), OBWidth, OBHeight);
-        m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, Vector3(0.f, 0.f, -3.f));
+        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::DEPTH_FUNC, glm::vec3(0.2f, 0.5f, -5.f), OBWidth, OBHeight);
+        m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, glm::vec3(0.f, 0.f, -3.f));
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, m_interruptibleBuffers, 0u, ramses::EDepthBufferType_Depth);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
@@ -261,8 +261,8 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
     }
     case OffscreenBufferLinkTest_ProviderSceneUsesStencilTest:
     {
-        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::STENCIL_TEST_1, Vector3(0.f, 0.5f, -5.f), OBWidth, OBHeight);
-        m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, Vector3(0.f, 0.f, -4.f));
+        m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::STENCIL_TEST_1, glm::vec3(0.f, 0.5f, -5.f), OBWidth, OBHeight);
+        m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, glm::vec3(0.f, 0.f, -4.f));
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, m_interruptibleBuffers, 0u, ramses::EDepthBufferType_DepthStencil);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
@@ -297,7 +297,7 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
 }
 
 template <typename INTEGRATION_SCENE>
-ramses::sceneId_t OffscreenBufferLinkTests::createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const Vector3& camPos, uint32_t vpWidth, uint32_t vpHeight)
+ramses::sceneId_t OffscreenBufferLinkTests::createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const glm::vec3& camPos, uint32_t vpWidth, uint32_t vpHeight)
 {
     const auto sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, camPos, vpWidth, vpHeight);
     testFramework.publishAndFlushScene(sceneId);

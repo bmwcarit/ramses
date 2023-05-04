@@ -19,7 +19,7 @@
 
 namespace ramses_internal
 {
-    CustomShaderTestScene::CustomShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    CustomShaderTestScene::CustomShaderTestScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect(getEffectNameFromState(state)))
         , m_appearance(*scene.createAppearance(m_effect))
@@ -57,8 +57,8 @@ namespace ramses_internal
 
     void CustomShaderTestScene::createGeometry()
     {
-        const uint16_t indiceData_ccw[] = { 0, 1, 2, 3 };
-        const ramses::ArrayResource& indices = *m_scene.createArrayResource(4u, indiceData_ccw);
+        const std::array<uint16_t, 4> indiceData_ccw = { 0, 1, 2, 3 };
+        const ramses::ArrayResource& indices = *m_scene.createArrayResource(4u, indiceData_ccw.data());
         m_geometryBinding.setIndices(indices);
 
         const std::array<ramses::vec3f, 4u> vertexPositionsData

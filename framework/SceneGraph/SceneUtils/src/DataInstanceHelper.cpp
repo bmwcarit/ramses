@@ -33,34 +33,34 @@ namespace ramses_internal
             getAndStoreInstanceFieldData<Float>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector2F:
-            getAndStoreInstanceFieldData<Vector2>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::vec2>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector3F:
-            getAndStoreInstanceFieldData<Vector3>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::vec3>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector4F:
-            getAndStoreInstanceFieldData<Vector4>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::vec4>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Int32:
             getAndStoreInstanceFieldData<Int32>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector2I:
-            getAndStoreInstanceFieldData<Vector2i>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::ivec2>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector3I:
-            getAndStoreInstanceFieldData<Vector3i>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::ivec3>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector4I:
-            getAndStoreInstanceFieldData<Vector4i>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::ivec4>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Matrix22F:
-            getAndStoreInstanceFieldData<Matrix22f>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::mat2>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Matrix33F:
-            getAndStoreInstanceFieldData<Matrix33f>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::mat3>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Matrix44F:
-            getAndStoreInstanceFieldData<Matrix44f>(scene, dataInstance, dataField, value);
+            getAndStoreInstanceFieldData<glm::mat4>(scene, dataInstance, dataField, value);
             break;
         default:
             assert(false);
@@ -88,34 +88,34 @@ namespace ramses_internal
             setInstanceFieldData<Float>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector2F:
-            setInstanceFieldData<Vector2>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::vec2>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector3F:
-            setInstanceFieldData<Vector3>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::vec3>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector4F:
-            setInstanceFieldData<Vector4>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::vec4>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Int32:
             setInstanceFieldData<Int32>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector2I:
-            setInstanceFieldData<Vector2i>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::ivec2>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector3I:
-            setInstanceFieldData<Vector3i>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::ivec3>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Vector4I:
-            setInstanceFieldData<Vector4i>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::ivec4>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Matrix22F:
-            setInstanceFieldData<Matrix22f>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::mat2>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Matrix33F:
-            setInstanceFieldData<Matrix33f>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::mat3>(scene, dataInstance, dataField, value);
             break;
         case ramses_internal::EDataType::Matrix44F:
-            setInstanceFieldData<Matrix44f>(scene, dataInstance, dataField, value);
+            setInstanceFieldData<glm::mat4>(scene, dataInstance, dataField, value);
             break;
         default:
             assert(false);

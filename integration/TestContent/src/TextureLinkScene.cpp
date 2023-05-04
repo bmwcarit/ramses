@@ -26,7 +26,7 @@
 
 namespace ramses_internal
 {
-    TextureLinkScene::TextureLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    TextureLinkScene::TextureLinkScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         ramses::Effect* effect = (state == DATA_CONSUMER_MS) ? getTestEffect("ramses-test-client-render-one-buffer-ms") : getTestEffect("ramses-test-client-textured");

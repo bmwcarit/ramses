@@ -21,7 +21,7 @@
 #include "ramses-client-api/Node.h"
 #include <thread>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicEngine_Animations : public ::testing::Test
     {
@@ -29,7 +29,7 @@ namespace rlogic::internal
         void SetUp() override
         {
             const auto dataArray = m_logicEngine.createDataArray(std::vector<float>{ 0.f, 1.f }, "dataarray");
-            const AnimationChannel channel{ "channel", dataArray, dataArray, rlogic::EInterpolationType::Linear };
+            const AnimationChannel channel{ "channel", dataArray, dataArray, ramses::EInterpolationType::Linear };
             AnimationNodeConfig config;
             config.addChannel(channel);
 

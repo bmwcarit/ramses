@@ -112,18 +112,18 @@ Logic Nodes
 
 The module ``rlogic`` provides members to access all Logic Node types:
 
-* ``rlogic.interfaces`` (:cpp:class:`rlogic::LuaInterface`)
-* ``rlogic.scripts`` (:cpp:class:`rlogic::LuaScript`)
-* ``rlogic.animationNodes`` (:cpp:class:`rlogic::AnimationNode`)
-* ``rlogic.timerNodes`` (:cpp:class:`rlogic::TimerNode`)
-* ``rlogic.nodeBindings`` (:cpp:class:`rlogic::RamsesNodeBinding`)
-* ``rlogic.appearanceBindings`` (:cpp:class:`rlogic::RamsesAppearanceBinding`)
-* ``rlogic.cameraBindings`` (:cpp:class:`rlogic::RamsesCameraBinding`)
-* ``rlogic.renderPassBindings`` (:cpp:class:`rlogic::RamsesRenderPassBinding`)
-* ``rlogic.renderGroupBindings`` (:cpp:class:`rlogic::RamsesRenderGroupBinding`)
-* ``rlogic.meshNodeBindings`` (:cpp:class:`rlogic::RamsesMeshNodeBinding`)
-* ``rlogic.anchorPoints`` (:cpp:class:`rlogic::AnchorPoint`)
-* ``rlogic.skinBindings`` (:cpp:class:`rlogic::SkinBinding`)
+* ``rlogic.interfaces`` (:cpp:class:`ramses::LuaInterface`)
+* ``rlogic.scripts`` (:cpp:class:`ramses::LuaScript`)
+* ``rlogic.animationNodes`` (:cpp:class:`ramses::AnimationNode`)
+* ``rlogic.timerNodes`` (:cpp:class:`ramses::TimerNode`)
+* ``rlogic.nodeBindings`` (:cpp:class:`ramses::RamsesNodeBinding`)
+* ``rlogic.appearanceBindings`` (:cpp:class:`ramses::RamsesAppearanceBinding`)
+* ``rlogic.cameraBindings`` (:cpp:class:`ramses::RamsesCameraBinding`)
+* ``rlogic.renderPassBindings`` (:cpp:class:`ramses::RamsesRenderPassBinding`)
+* ``rlogic.renderGroupBindings`` (:cpp:class:`ramses::RamsesRenderGroupBinding`)
+* ``rlogic.meshNodeBindings`` (:cpp:class:`ramses::RamsesMeshNodeBinding`)
+* ``rlogic.anchorPoints`` (:cpp:class:`ramses::AnchorPoint`)
+* ``rlogic.skinBindings`` (:cpp:class:`ramses::SkinBinding`)
 
 The Logic Node instances can be either found by name or by object id.
 Alternatively the node list can be iterated.
@@ -257,7 +257,7 @@ The :program:`ramses-logic-viewer` will implicitly update the logic state before
 Logic Engine Update
 --------------------------------------------------
 
-The logic engine is automatically updated (:cpp:func:`rlogic::LogicEngine::update()`) before
+The logic engine is automatically updated (:cpp:func:`ramses::LogicEngine::update()`) before
 a new frame is drawn or before a screenshot is stored.
 In batch mode (:option:`ramses-logic-viewer --exec` :option:`ramses-logic-viewer --exec-lua`) it's sometimes useful to explicitly update
 the logic engine state by calling ``rlogic.update()``:

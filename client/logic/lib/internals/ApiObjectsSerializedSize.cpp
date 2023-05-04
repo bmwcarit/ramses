@@ -41,11 +41,11 @@
 #include "impl/SkinBindingImpl.h"
 #include "impl/TimerNodeImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // Helper functions for GetSerializedSize specializations
     template<typename T, typename I>
-    size_t calculateSerializedSize(const ApiObjectContainer<T>& container, ELuaSavingMode)
+    size_t calculateSerializedSize(const ApiObjectContainer<T>& container, ELuaSavingMode /*unused*/)
     {
         flatbuffers::FlatBufferBuilder builder{};
         SerializationMap serializationMap{};
@@ -58,7 +58,7 @@ namespace rlogic::internal
 
     // Since the channels (DataArrays) of an animation are not stored within the Serialize method we need this in this specialization
     template<>
-    size_t calculateSerializedSize<AnimationNode, AnimationNodeImpl>(const ApiObjectContainer<AnimationNode>& container, ELuaSavingMode)
+    size_t calculateSerializedSize<AnimationNode, AnimationNodeImpl>(const ApiObjectContainer<AnimationNode>& container, ELuaSavingMode /*unused*/)
     {
         auto insertIds = [](const DataArray* data, std::unordered_set<uint64_t>& ids)
         {

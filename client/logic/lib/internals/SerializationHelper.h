@@ -14,7 +14,7 @@
 
 #include <optional>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     static std::optional<EPropertyType> ConvertSerializationTypeToEPropertyType(rlogic_serialization::EPropertyRootType propertyRootType, rlogic_serialization::PropertyValue valueType)
     {

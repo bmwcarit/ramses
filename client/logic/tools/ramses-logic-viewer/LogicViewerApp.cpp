@@ -14,7 +14,7 @@
 #include "ramses-logic/Logger.h"
 #include "ImguiWrapper.h"
 
-namespace rlogic
+namespace ramses
 {
     LogicViewerApp::LogicViewerApp()
     {
@@ -32,7 +32,7 @@ namespace rlogic
         frameworkConfig.setPeriodicLogInterval(std::chrono::seconds(0));
 
         ramses::RamsesFramework::SetConsoleLogLevel(args.ramsesLogLevel());
-        rlogic::Logger::SetLogVerbosityLimit(args.ramsesLogicLogLevel());
+        ramses::Logger::SetLogVerbosityLimit(args.ramsesLogLevel());
         m_framework = std::make_unique<ramses::RamsesFramework>(frameworkConfig);
         m_client = m_framework->createClient("ramses-logic-viewer");
         if (!m_client)
@@ -50,7 +50,7 @@ namespace rlogic
         m_scene->publish();
         m_scene->flush();
 
-        m_settings = std::make_unique<rlogic::LogicViewerSettings>();
+        m_settings = std::make_unique<ramses::LogicViewerSettings>();
         return 0;
     }
 
@@ -63,13 +63,13 @@ namespace rlogic
         }
 
         ramses::EFeatureLevel engineFeatureLevel = ramses::EFeatureLevel_01;
-        if (!rlogic::LogicEngine::GetFeatureLevelFromFile(args.logicFile(), engineFeatureLevel))
+        if (!ramses::LogicEngine::GetFeatureLevelFromFile(args.logicFile(), engineFeatureLevel))
         {
             std::cerr << "Could not parse feature level from logic file" << std::endl;
             return static_cast<int>(ExitCode::ErrorLoadLogic);
         }
 
-        m_viewer = std::make_unique<rlogic::LogicViewer>(engineFeatureLevel, fScreenshot);
+        m_viewer = std::make_unique<ramses::LogicViewer>(engineFeatureLevel, fScreenshot);
 
         if (!m_viewer->loadRamsesLogic(args.logicFile(), m_scene))
         {

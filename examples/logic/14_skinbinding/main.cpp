@@ -51,7 +51,7 @@ SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client);
 * Helper method which sets up simple animation for a skeleton joint node.
 * Details on how to set up animations are covered in the animation example.
 */
-void SetupJointAnimation(const rlogic::RamsesNodeBinding& node, rlogic::LogicEngine& logicEngine);
+void SetupJointAnimation(const ramses::RamsesNodeBinding& node, ramses::LogicEngine& logicEngine);
 
 int main()
 {
@@ -67,7 +67,7 @@ int main()
      */
     auto [scene, appearance] = CreateSceneWithSkinnableMesh(*renderer.getClient());
 
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Show the scene on the renderer
@@ -92,29 +92,29 @@ int main()
 
     /**
     * Prepare inverse binding matrices, we will need an inverse matrix for each joint.
-    * These are needed for skinning calculations, refer to #rlogic::SkinBinding for details.
+    * These are needed for skinning calculations, refer to #ramses::SkinBinding for details.
     * Inverse binding matrices often come with asset data but here we utilize Ramses
     * to calculate them for us and then convert to a data container suited for later use.
     */
-    rlogic::matrix44f inverseBindMatrix1{};
-    rlogic::matrix44f inverseBindMatrix2{};
+    ramses::matrix44f inverseBindMatrix1{};
+    ramses::matrix44f inverseBindMatrix2{};
     skeletonJoint1->getInverseModelMatrix(inverseBindMatrix1);
     skeletonJoint2->getInverseModelMatrix(inverseBindMatrix2);
 
     /**
-    * Now prepare the inputs for #rlogic::SkinBinding creation, we will need:
+    * Now prepare the inputs for #ramses::SkinBinding creation, we will need:
     *  - list of joints in form of node bindings
     *  - list of inverse binding matrices
     *  - appearance binding of the appearance used to render the mesh
     *  - uniform input of the appearance where joint matrices are expected
     */
-    const std::vector<const rlogic::RamsesNodeBinding*> skinBindingJoints = {
+    const std::vector<const ramses::RamsesNodeBinding*> skinBindingJoints = {
         skeletonJointBinding1,
         skeletonJointBinding2 };
-    const std::vector<rlogic::matrix44f> skinBindingInverseBindMatrices = {
+    const std::vector<ramses::matrix44f> skinBindingInverseBindMatrices = {
         inverseBindMatrix1,
         inverseBindMatrix2 };
-    rlogic::RamsesAppearanceBinding* appearanceBinding = logicEngine.createRamsesAppearanceBinding(*appearance);
+    ramses::RamsesAppearanceBinding* appearanceBinding = logicEngine.createRamsesAppearanceBinding(*appearance);
 
     ramses::UniformInput jointMatUniform;
     appearance->getEffect().findUniformInput("u_jointMat", jointMatUniform);
@@ -292,23 +292,23 @@ SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client)
     return { scene, appearance };
 }
 
-void SetupJointAnimation(const rlogic::RamsesNodeBinding& node, rlogic::LogicEngine& logicEngine)
+void SetupJointAnimation(const ramses::RamsesNodeBinding& node, ramses::LogicEngine& logicEngine)
 {
-    rlogic::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 2.f, 4.f }); // will be interpreted as seconds
-    rlogic::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ { 0.f, 0.f, -90.f }, { 0.f, 0.f, 90.f }, { 0.f, 0.f, -90.f } });
-    const rlogic::AnimationChannel animChannel{ "rotation", animTimestamps, animKeyframes, rlogic::EInterpolationType::Linear };
+    ramses::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 2.f, 4.f }); // will be interpreted as seconds
+    ramses::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ { 0.f, 0.f, -90.f }, { 0.f, 0.f, 90.f }, { 0.f, 0.f, -90.f } });
+    const ramses::AnimationChannel animChannel{ "rotation", animTimestamps, animKeyframes, ramses::EInterpolationType::Linear };
 
-    rlogic::AnimationNodeConfig animConfig;
+    ramses::AnimationNodeConfig animConfig;
     animConfig.addChannel(animChannel);
-    rlogic::AnimationNode* animNode = logicEngine.createAnimationNode(animConfig);
+    ramses::AnimationNode* animNode = logicEngine.createAnimationNode(animConfig);
 
     logicEngine.link(
         *animNode->getOutputs()->getChild("rotation"),
         *node.getInputs()->getChild("rotation"));
 
-    rlogic::LuaConfig scriptConfig;
-    scriptConfig.addStandardModuleDependency(rlogic::EStandardModule::Math);
-    rlogic::LuaScript* controlScript = logicEngine.createLuaScript(R"(
+    ramses::LuaConfig scriptConfig;
+    scriptConfig.addStandardModuleDependency(ramses::EStandardModule::Math);
+    ramses::LuaScript* controlScript = logicEngine.createLuaScript(R"(
         function init()
             GLOBAL.startTick = 0
         end
@@ -333,7 +333,7 @@ void SetupJointAnimation(const rlogic::RamsesNodeBinding& node, rlogic::LogicEng
         end
     )", scriptConfig);
 
-    rlogic::TimerNode* timer = logicEngine.createTimerNode();
+    ramses::TimerNode* timer = logicEngine.createTimerNode();
     logicEngine.link(
         *timer->getOutputs()->getChild("ticker_us"),
         *controlScript->getInputs()->getChild("ticker"));

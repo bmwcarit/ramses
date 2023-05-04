@@ -20,15 +20,15 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a LuaConfig object which we use to configure how the module will be built.
     // In this example, we use the 'print' method, so we add the 'Base' standard Lua library
-    rlogic::LuaConfig moduleConfig;
-    moduleConfig.addStandardModuleDependency(rlogic::EStandardModule::Base);
+    ramses::LuaConfig moduleConfig;
+    moduleConfig.addStandardModuleDependency(ramses::EStandardModule::Base);
 
     // Create a module which wraps Lua's print method and prints the name of the caller
-    rlogic::LuaModule* myPrint = logicEngine.createLuaModule(R"(
+    ramses::LuaModule* myPrint = logicEngine.createLuaModule(R"(
         local myPrint = {}
 
         function myPrint.print(name)
@@ -40,12 +40,12 @@ int main()
 
     // Create a LuaConfig object which we use to configure how the module
     // shall be mapped to the script later (under the alias 'PrintModule')
-    rlogic::LuaConfig scriptConfig;
+    ramses::LuaConfig scriptConfig;
     scriptConfig.addDependency("PrintModule", *myPrint);
 
     // Create a script which uses the custom print module. Notice that the script
     // declares its dependency to a PrintModule via the modules() function
-    rlogic::LuaScript* script = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script = logicEngine.createLuaScript(R"(
         -- The script must declare the modules it depends on
         -- The name here must match the alias provided in the LuaConfig above!
         modules('PrintModule')

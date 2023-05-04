@@ -12,7 +12,7 @@
 #include "impl/LogicNodeImpl.h"
 #include "impl/LoggerImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     Property::Property(std::unique_ptr<internal::PropertyImpl> impl) noexcept
         : m_impl(std::move(impl))

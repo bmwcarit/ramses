@@ -34,7 +34,7 @@ namespace ramses
         static ObjectIDType GetObjectIDNull();
 
         // phase 1: deserialize
-        bool registerObjectImpl(RamsesObjectImpl* obj, ObjectIDType id);
+        void registerObjectImpl(RamsesObjectImpl* obj, ObjectIDType id);
         void addNodeHandleToNodeImplMapping(ramses_internal::NodeHandle nodeHandle, NodeImpl* node);
 
         template <typename PTR_TYPE>

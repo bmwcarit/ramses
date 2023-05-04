@@ -67,21 +67,21 @@ namespace ramses
 
     const ArrayResource& Line::createIndices(Scene& scene, EDrawMode desiredDrawMode)
     {
-        static const uint16_t indiceData_line[] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9};
-        static const uint16_t indiceData_lineStrip[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        const std::array<uint16_t, 18> indiceData_line = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9};
+        const std::array<uint16_t, 10> indiceData_lineStrip = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
         switch (desiredDrawMode)
         {
         case ramses::EDrawMode_Lines:
-            return *scene.createArrayResource(18u, indiceData_line);
+            return *scene.createArrayResource(18u, indiceData_line.data());
             break;
         case ramses::EDrawMode_Points:
         case ramses::EDrawMode_LineStrip:
-            return *scene.createArrayResource(10u, indiceData_lineStrip);
+            return *scene.createArrayResource(10u, indiceData_lineStrip.data());
             break;
         default:
             assert(false && "not supported");
-            return *scene.createArrayResource(10u, indiceData_lineStrip);
+            return *scene.createArrayResource(10u, indiceData_lineStrip.data());
         }
     }
 

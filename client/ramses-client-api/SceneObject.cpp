@@ -14,23 +14,19 @@
 
 namespace ramses
 {
-    SceneObject::SceneObject(SceneObjectImpl& pimpl)
-        : ClientObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    SceneObject::~SceneObject()
+    SceneObject::SceneObject(std::unique_ptr<SceneObjectImpl> impl)
+        : ClientObject{ std::move(impl) }
+        , m_impl{ static_cast<SceneObjectImpl&>(ClientObject::m_impl) }
     {
     }
 
     sceneObjectId_t SceneObject::getSceneObjectId() const
     {
-        return impl.getSceneObjectId();
+        return m_impl.getSceneObjectId();
     }
 
     sceneId_t SceneObject::getSceneId() const
     {
-        return impl.getSceneId();
+        return m_impl.getSceneId();
     }
 }

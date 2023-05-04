@@ -14,6 +14,7 @@
 #include "SceneAPI/Handles.h"
 #include "Utils/LoggingUtils.h"
 #include "Utils/Warnings.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -65,7 +66,7 @@ WARNING_DISABLE_GCC(-Wshadow)
 
 WARNINGS_POP
 
-    static const char* DataTypeNames[] =
+    const std::array DataTypeNames =
     {
         "DATATYPE_INVALID",
         "DATATYPE_INT32",
@@ -243,16 +244,6 @@ WARNINGS_POP
             || dataType == EDataType::TextureSamplerExternal;
     }
 
-    class Vector2i;
-    class Vector3i;
-    class Vector4i;
-    class Vector2;
-    class Vector3;
-    class Vector4;
-    class Matrix22f;
-    class Matrix33f;
-    class Matrix44f;
-
     template <typename T>
     struct TypeToEDataTypeTraits
     {
@@ -283,55 +274,55 @@ WARNINGS_POP
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector2i >
+    struct TypeToEDataTypeTraits < glm::ivec2 >
     {
         static const EDataType DataType = EDataType::Vector2I;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector3i >
+    struct TypeToEDataTypeTraits < glm::ivec3 >
     {
         static const EDataType DataType = EDataType::Vector3I;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector4i >
+    struct TypeToEDataTypeTraits < glm::ivec4 >
     {
         static const EDataType DataType = EDataType::Vector4I;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector2 >
+    struct TypeToEDataTypeTraits < glm::vec2 >
     {
         static const EDataType DataType = EDataType::Vector2F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector3 >
+    struct TypeToEDataTypeTraits < glm::vec3 >
     {
         static const EDataType DataType = EDataType::Vector3F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector4 >
+    struct TypeToEDataTypeTraits < glm::vec4 >
     {
         static const EDataType DataType = EDataType::Vector4F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Matrix22f >
+    struct TypeToEDataTypeTraits < glm::mat2 >
     {
         static const EDataType DataType = EDataType::Matrix22F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Matrix33f >
+    struct TypeToEDataTypeTraits < glm::mat3 >
     {
         static const EDataType DataType = EDataType::Matrix33F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Matrix44f >
+    struct TypeToEDataTypeTraits < glm::mat4 >
     {
         static const EDataType DataType = EDataType::Matrix44F;
     };

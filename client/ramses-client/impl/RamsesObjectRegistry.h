@@ -10,6 +10,7 @@
 #define RAMSES_RAMSESOBJECTREGISTRY_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-client-api/RamsesObject.h"
 
 #include "RamsesObjectHandle.h"
 #include "RamsesObjectVector.h"
@@ -18,6 +19,8 @@
 #include "Collections/HashMap.h"
 #include "Collections/String.h"
 #include "Utils/MemoryPool.h"
+
+#include <array>
 
 namespace ramses
 {
@@ -30,13 +33,15 @@ namespace ramses
     public:
         ~RamsesObjectRegistry() override;
 
-        void     addObject(RamsesObject& object);
-        void     removeObject(RamsesObject& object);
-        void     reserveAdditionalGeneralCapacity(uint32_t additionalCount);
-        void     reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount);
+        template <typename T, typename ImplT>
+        T& createAndRegisterObject(std::unique_ptr<ImplT> impl);
+        void destroyAndUnregisterObject(RamsesObject& object);
+
+        void reserveAdditionalGeneralCapacity(uint32_t additionalCount);
+        void reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount);
         [[nodiscard]] uint32_t getNumberOfObjects(ERamsesObjectType type) const;
 
-        void     getObjectsOfType(RamsesObjectVector& objects, ERamsesObjectType ofType) const;
+        void getObjectsOfType(RamsesObjectVector& objects, ERamsesObjectType ofType) const;
 
         // IRamsesObjectRegistry
         void updateName(RamsesObject& object, const ramses_internal::String& name) override;
@@ -52,9 +57,10 @@ namespace ramses
         [[nodiscard]] bool isNodeDirty(const NodeImpl& node) const;
 
         [[nodiscard]] const NodeImplSet& getDirtyNodes() const;
-        void               clearDirtyNodes();
+        void clearDirtyNodes();
 
     private:
+        void registerObjectInternal(RamsesObject& object);
         [[nodiscard]] bool containsObject(const RamsesObject& object) const;
         void trackSceneObjectById(RamsesObject& object);
 
@@ -65,12 +71,29 @@ namespace ramses
         ObjectIdMap m_objectsById;
 
         using RamsesObjectsPool = ramses_internal::MemoryPool<RamsesObject *, RamsesObjectHandle>;
-        RamsesObjectsPool m_objects[ERamsesObjectType_NUMBER_OF_TYPES];
+        std::array<RamsesObjectsPool, ERamsesObjectType_NUMBER_OF_TYPES> m_objects;
+
+        using RamsesObjectUniquePtr = std::unique_ptr<RamsesObject, std::function<void(RamsesObject*)>>;
+        std::vector<RamsesObjectUniquePtr> m_objectsOwningContainer;
 
         NodeImplSet m_dirtyNodes;
 
         friend class RamsesObjectRegistryIterator;
     };
+
+    template <typename T, typename ImplT>
+    T& RamsesObjectRegistry::createAndRegisterObject(std::unique_ptr<ImplT> impl)
+    {
+        static_assert(std::is_base_of_v<RamsesObject, T>, "Meant for RamsesObject instances only");
+
+        std::unique_ptr<T, std::function<void(RamsesObject*)>> object{ new T{ std::move(impl) }, [](RamsesObject* o) { delete o; } };
+        T* objectRawPtr = object.get();
+        this->m_objectsOwningContainer.push_back(std::move(object));
+
+        this->registerObjectInternal(*objectRawPtr);
+
+        return *objectRawPtr;
+    }
 }
 
 #endif

@@ -10,7 +10,7 @@
 
 #include "ramses-logic/Logger.h"
 #include "ramses-logic/Property.h"
-#include "ramses-logic/ELogMessageType.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-logic/AnimationNodeConfig.h"
 
 #include "impl/LoggerImpl.h"
@@ -19,7 +19,7 @@
 #include "WithTempDirectory.h"
 #include "RamsesTestUtils.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_Validation : public ALogicEngine
     {
@@ -27,9 +27,9 @@ namespace rlogic
 
     TEST_F(ALogicEngine_Validation, LogsNoWarningsWhenSavingFile_WhenContentValid)
     {
-        ScopedLogContextLevel logCollector{ ELogMessageType::Trace, [&](ELogMessageType type, std::string_view /*message*/)
+        ScopedLogContextLevel logCollector{ ELogLevel::Trace, [&](ELogLevel type, std::string_view /*message*/)
             {
-                if (type == ELogMessageType::Warn)
+                if (type == ELogLevel::Warn)
                 {
                     FAIL() << "Should have no warnings!";
                 }
@@ -44,9 +44,9 @@ namespace rlogic
     TEST_F(ALogicEngine_Validation, LogsWarningsWhenSavingFile_WhenContentHasValidationIssues)
     {
         std::vector<std::string> warnings;
-        ScopedLogContextLevel logCollector{ ELogMessageType::Trace, [&](ELogMessageType type, std::string_view message)
+        ScopedLogContextLevel logCollector{ ELogLevel::Trace, [&](ELogLevel type, std::string_view message)
             {
-                if (type == ELogMessageType::Warn)
+                if (type == ELogLevel::Warn)
                 {
                     warnings.emplace_back(message);
                 }
@@ -78,9 +78,9 @@ namespace rlogic
     TEST_F(ALogicEngine_Validation, LogsNoContentWarningsWhenSavingFile_WhenContentHasValidationIssues_ButValidationIsDisabled)
     {
         std::vector<std::string> infoLogs;
-        ScopedLogContextLevel logCollector{ ELogMessageType::Trace, [&](ELogMessageType type, std::string_view message)
+        ScopedLogContextLevel logCollector{ ELogLevel::Trace, [&](ELogLevel type, std::string_view message)
             {
-                if (type == ELogMessageType::Info)
+                if (type == ELogLevel::Info)
                 {
                     infoLogs.emplace_back(message);
                 }

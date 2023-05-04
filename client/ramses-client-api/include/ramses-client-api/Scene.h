@@ -60,11 +60,12 @@ namespace ramses
     class Resource;
 
     /**
+     * @ingroup CoreAPI
      * @brief The Scene holds a scene graph.
      * It is the essential class for distributing
      * content to the ramses system.
     */
-    class RAMSES_API Scene : public ClientObject
+    class Scene : public ClientObject
     {
     public:
         /**
@@ -82,7 +83,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t publish(EScenePublicationMode publicationMode = EScenePublicationMode_LocalAndRemote);
+        RAMSES_API status_t publish(EScenePublicationMode publicationMode = EScenePublicationMode_LocalAndRemote);
 
         /**
         * @brief Unpublish the scene from the ramses system
@@ -93,7 +94,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t unpublish();
+        RAMSES_API status_t unpublish();
 
         /**
         * @brief Returns whether scene is currently published to the ramses system
@@ -101,14 +102,14 @@ namespace ramses
         * @return true, if scene is currently published.
         * @return false, if scene is currently not published.
         */
-        [[nodiscard]] bool isPublished() const;
+        [[nodiscard]] RAMSES_API bool isPublished() const;
 
         /**
         * @brief Returns scene id defined at scene creation time
         *
         * @return Scene id.
         */
-        [[nodiscard]] sceneId_t getSceneId() const;
+        [[nodiscard]] RAMSES_API sceneId_t getSceneId() const;
 
         /**
         * @brief Saves all scene contents to a file.
@@ -119,7 +120,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t saveToFile(const char* fileName, bool compress) const;
+        RAMSES_API status_t saveToFile(const char* fileName, bool compress) const;
 
         /**
         * @brief Creates a Perspective Camera in this Scene
@@ -127,7 +128,7 @@ namespace ramses
         * @param[in] name The optional name of the Camera
         * @return Pointer to the created Camera, null on failure
         */
-        PerspectiveCamera* createPerspectiveCamera(const char* name = nullptr);
+        RAMSES_API PerspectiveCamera* createPerspectiveCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a Orthographic Camera in this Scene
@@ -135,7 +136,7 @@ namespace ramses
         * @param[in] name The optional name of the Camera
         * @return Pointer to the created Camera, null on failure
         */
-        OrthographicCamera* createOrthographicCamera(const char* name = nullptr);
+        RAMSES_API OrthographicCamera* createOrthographicCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a new Appearance.
@@ -144,7 +145,7 @@ namespace ramses
         * @param[in] name The optional name of the created Appearance.
         * @return A pointer to the created Appearance, null on failure
         */
-        Appearance* createAppearance(const Effect& effect, const char* name = nullptr);
+        RAMSES_API Appearance* createAppearance(const Effect& effect, const char* name = nullptr);
 
         /**
         * @brief Creates a new GeometryBinding.
@@ -153,7 +154,7 @@ namespace ramses
         * @param[in] name The optional name of the created GeometryBinding.
         * @return A pointer to the created GeometryBinding, null on failure
         */
-        GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = nullptr);
+        RAMSES_API GeometryBinding* createGeometryBinding(const Effect& effect, const char* name = nullptr);
 
         /**
         * @brief Creates a scene graph node.
@@ -168,7 +169,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created Node, nullptr on failure.
         **/
-        Node* createNode(const char* name = nullptr);
+        RAMSES_API Node* createNode(const char* name = nullptr);
 
         /**
          * @brief Creates a scene graph MeshNode.
@@ -178,7 +179,7 @@ namespace ramses
          * @param[in] name The optional name of the MeshNode.
          * @return Pointer to the created MeshNode, null on failure.
         */
-        MeshNode* createMeshNode(const char* name = nullptr);
+        RAMSES_API MeshNode* createMeshNode(const char* name = nullptr);
 
         /**
         * @brief Destroys a previously created object using this scene
@@ -190,7 +191,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t destroy(SceneObject& object);
+        RAMSES_API status_t destroy(SceneObject& object);
 
         /**
          * @brief   Expiration timestamp is a point in time till which the scene is considered to be up-to-date.
@@ -214,7 +215,7 @@ namespace ramses
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
+        RAMSES_API status_t setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
 
         /**
         * @brief Commits all changes done to the scene since the last flush or since scene creation. This makes a new
@@ -228,7 +229,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t flush(sceneVersionTag_t sceneVersionTag = InvalidSceneVersionTag);
+        RAMSES_API status_t flush(sceneVersionTag_t sceneVersionTag = InvalidSceneVersionTag);
 
         /**
          * @brief resets the semantic uniform #ramses::EEffectUniformSemantic::TimeMs
@@ -239,7 +240,7 @@ namespace ramses
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t resetUniformTimeMs();
+        RAMSES_API status_t resetUniformTimeMs();
 
         /**
         * @brief Gets the current value used for the semantic uniform #ramses::EEffectUniformSemantic::TimeMs
@@ -250,7 +251,7 @@ namespace ramses
         *
         * @return time in milliseconds, value range is 0 .. std::numeric_limits<int32_t>::max() (~24 days)
         */
-        [[nodiscard]] int32_t getUniformTimeMs() const;
+        [[nodiscard]] RAMSES_API int32_t getUniformTimeMs() const;
 
         /**
         * @brief Get an object from the scene by name
@@ -258,12 +259,12 @@ namespace ramses
         * @param[in] name The name of the object to get.
         * @return Pointer to the object if found, nullptr otherwise.
         */
-        const RamsesObject* findObjectByName(const char* name) const;
+        RAMSES_API const RamsesObject* findObjectByName(const char* name) const;
 
         /**
         * @copydoc findObjectByName(const char*) const
         **/
-        RamsesObject* findObjectByName(const char* name);
+        RAMSES_API RamsesObject* findObjectByName(const char* name);
 
         /**
         * @brief Get an object from the scene by id
@@ -271,17 +272,12 @@ namespace ramses
         * @param[in] id The id of the object to get.
         * @return Pointer to the object if found, nullptr otherwise.
         */
-        [[nodiscard]] const SceneObject* findObjectById(sceneObjectId_t id) const;
+        [[nodiscard]] RAMSES_API const SceneObject* findObjectById(sceneObjectId_t id) const;
 
         /**
         * @copydoc findObjectById(sceneObjectId_t id) const
         **/
-        SceneObject* findObjectById(sceneObjectId_t id);
-
-        /**
-        * Stores internal data for implementation specifics of Scene.
-        */
-        SceneImpl& impl;
+        RAMSES_API SceneObject* findObjectById(sceneObjectId_t id);
 
         /**
         * @brief Create a RenderGroup instance in the scene.
@@ -289,7 +285,7 @@ namespace ramses
         * @param[in] name The optional name of the created RenderGroup instance.
         * @return A pointer to the created RenderGroup, null on failure
         **/
-        RenderGroup* createRenderGroup(const char* name = nullptr);
+        RAMSES_API RenderGroup* createRenderGroup(const char* name = nullptr);
 
         /**
         * @brief Create a render pass in the scene.
@@ -297,7 +293,7 @@ namespace ramses
         * @param[in] name The optional name of the created render pass.
         * @return A render pass.
         **/
-        RenderPass* createRenderPass(const char* name = nullptr);
+        RAMSES_API RenderPass* createRenderPass(const char* name = nullptr);
 
         /**
         * @brief Create a blit pass in the scene.
@@ -309,7 +305,7 @@ namespace ramses
         * @param[in] name The optional name of the created blit pass.
         * @return A pointer to a BlitPass if successful or nullptr on failure.
         **/
-        BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = nullptr);
+        RAMSES_API BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = nullptr);
 
         /**
         * @brief   Create a RenderBuffer to be used with RenderTarget for rendering into and TextureSampler for sampling from.
@@ -327,7 +323,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderBuffer, null on failure.
         **/
-        RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount = 0u, const char* name = nullptr);
+        RAMSES_API RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount = 0u, const char* name = nullptr);
 
         /**
         * @brief Create a PickableObject.
@@ -346,7 +342,7 @@ namespace ramses
         * @param[in] name Name of the PickableObject.
         * @return Pointer to the created PickableObject, nullptr on failure.
         **/
-        PickableObject* createPickableObject(const ArrayBuffer& geometryBuffer, const pickableObjectId_t id, const char* name = nullptr);
+        RAMSES_API PickableObject* createPickableObject(const ArrayBuffer& geometryBuffer, const pickableObjectId_t id, const char* name = nullptr);
 
         /**
         * @brief Create a render target providing a set of RenderBuffers.
@@ -355,7 +351,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderTarget, null on failure.
         **/
-        RenderTarget* createRenderTarget(const RenderTargetDescription& rtDesc, const char* name = nullptr);
+        RAMSES_API RenderTarget* createRenderTarget(const RenderTargetDescription& rtDesc, const char* name = nullptr);
 
         /**
         * @brief Creates a texture sampler object.
@@ -370,7 +366,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created TextureSampler, null on failure.
         */
-        TextureSampler* createTextureSampler(
+        RAMSES_API TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
             ETextureSamplingMethod minSamplingMethod,
@@ -390,7 +386,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created TextureSampler, null on failure.
         */
-        TextureSampler* createTextureSampler(
+        RAMSES_API TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
             ETextureAddressMode wrapRMode,
@@ -412,7 +408,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created TextureSampler, null on failure.
         */
-        TextureSampler* createTextureSampler(
+        RAMSES_API TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
             ETextureSamplingMethod minSamplingMethod,
@@ -434,7 +430,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created TextureSampler, null on failure.
         */
-        TextureSampler* createTextureSampler(
+        RAMSES_API TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
             ETextureSamplingMethod minSamplingMethod,
@@ -456,7 +452,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created TextureSampler, null on failure.
         */
-        TextureSampler* createTextureSampler(
+        RAMSES_API TextureSampler* createTextureSampler(
             ETextureAddressMode wrapUMode,
             ETextureAddressMode wrapVMode,
             ETextureSamplingMethod minSamplingMethod,
@@ -471,7 +467,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created #ramses::TextureSamplerMS, null on failure.
         */
-        TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
+        RAMSES_API TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
 
         /**
         * @brief Creates a texture sampler object that can sample from external textures.
@@ -494,7 +490,7 @@ namespace ramses
         * @param[in] name Optional name of the object.
         * @return Pointer to the created TextureSampler, null on failure.
         */
-        TextureSamplerExternal* createTextureSamplerExternal(
+        RAMSES_API TextureSamplerExternal* createTextureSamplerExternal(
             ETextureSamplingMethod minSamplingMethod,
             ETextureSamplingMethod magSamplingMethod,
             const char* name = nullptr);
@@ -541,12 +537,12 @@ namespace ramses
         * @param[in] name The name of the Texture2D.
         * @return A pointer to the created Texture2D, null on failure. Will fail with data == nullptr and/or width/height == 0.
         */
-        Texture2D* createTexture2D(
+        RAMSES_API Texture2D* createTexture2D(
             ETextureFormat format,
             uint32_t width,
             uint32_t height,
             uint32_t mipMapCount,
-            const MipLevelData mipLevelData[],
+            const MipLevelData mipLevelData[], // NOLINT(modernize-avoid-c-arrays)
             bool generateMipChain = false,
             const TextureSwizzle& swizzle = {},
             resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
@@ -570,13 +566,13 @@ namespace ramses
         * @param[in] name The name of the Texture3D.
         * @return A pointer to the created Texture3D, null on failure. Will fail with data == nullptr and/or width/height/depth == 0.
         */
-        Texture3D* createTexture3D(
+        RAMSES_API Texture3D* createTexture3D(
             ETextureFormat format,
             uint32_t width,
             uint32_t height,
             uint32_t depth,
             uint32_t mipMapCount,
-            const MipLevelData mipLevelData[],
+            const MipLevelData mipLevelData[], // NOLINT(modernize-avoid-c-arrays)
             bool generateMipChain = false,
             resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
             const char* name = nullptr);
@@ -598,11 +594,11 @@ namespace ramses
         * @param[in] name The name of the Cube Texture.
         * @return A pointer to the created Cube Texture, null on failure. Will fail with any face-data == nullptr and/or size == 0.
         */
-        TextureCube* createTextureCube(
+        RAMSES_API TextureCube* createTextureCube(
             ETextureFormat format,
             uint32_t size,
             uint32_t mipMapCount,
-            const CubeMipLevelData mipLevelData[],
+            const CubeMipLevelData mipLevelData[], // NOLINT(modernize-avoid-c-arrays)
             bool generateMipChain = false,
             const TextureSwizzle& swizzle = {},
             resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
@@ -618,14 +614,14 @@ namespace ramses
         * @param[in] name The name of the created Effect.
         * @return A pointer to the created Effect, null on failure
         */
-        Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
+        RAMSES_API Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
 
         /**
          * @brief Get the GLSL error messages that were produced at the creation of the last Effect
          *
          * @return A string containing the GLSL error messages of the last effect
          */
-        [[nodiscard]] std::string getLastEffectErrorMessages() const;
+        [[nodiscard]] RAMSES_API std::string getLastEffectErrorMessages() const;
 
         /**
         * @brief Create a new #ramses::ArrayBuffer. The created object is a mutable buffer object that can be used as index or
@@ -645,7 +641,7 @@ namespace ramses
         * @param[in] name The optional name of the created array buffer.
         * @return A pointer to the created array buffer.
         */
-        ArrayBuffer* createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name = nullptr);
+        RAMSES_API ArrayBuffer* createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name = nullptr);
 
         /**
         * @brief Create a new Texture2DBuffer. The created object is a mutable buffer object that can be used
@@ -663,7 +659,7 @@ namespace ramses
         * @param[in] name The optional name of the created Texture2DBuffer.
         * @return A pointer to the created Texture2DBuffer.
         */
-        Texture2DBuffer* createTexture2DBuffer(ETextureFormat textureFormat, uint32_t width, uint32_t height, uint32_t mipLevelCount, const char* name = nullptr);
+        RAMSES_API Texture2DBuffer* createTexture2DBuffer(ETextureFormat textureFormat, uint32_t width, uint32_t height, uint32_t mipLevelCount, const char* name = nullptr);
 
         /**
         * @brief   Creates a #ramses::DataObject within the scene, which holds a data value of given type.
@@ -672,7 +668,7 @@ namespace ramses
         * @param[in] name optional name of the object.
         * @return Pointer to the created #ramses::DataObject, null on failure.
         */
-        DataObject* createDataObject(EDataType dataType, const char* name = nullptr);
+        RAMSES_API DataObject* createDataObject(EDataType dataType, const char* name = nullptr);
 
         /**
         * @brief Annotates a Node as a transformation data provider.
@@ -683,7 +679,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createTransformationDataProvider(const Node& node, dataProviderId_t dataId);
+        RAMSES_API status_t createTransformationDataProvider(const Node& node, dataProviderId_t dataId);
 
         /**
         * @brief Annotates a Node as a transformation data consumer.
@@ -694,7 +690,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createTransformationDataConsumer(const Node& node, dataConsumerId_t dataId);
+        RAMSES_API status_t createTransformationDataConsumer(const Node& node, dataConsumerId_t dataId);
 
         /**
         * @brief Annotates a DataObject as a data provider.
@@ -705,7 +701,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createDataProvider(const DataObject& dataObject, dataProviderId_t dataId);
+        RAMSES_API status_t createDataProvider(const DataObject& dataObject, dataProviderId_t dataId);
 
         /**
         * @brief Annotates a DataObject as a data consumer.
@@ -716,7 +712,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createDataConsumer(const DataObject& dataObject, dataConsumerId_t dataId);
+        RAMSES_API status_t createDataConsumer(const DataObject& dataObject, dataConsumerId_t dataId);
 
         /**
         * @brief Annotates a Texture2D as a content provider.
@@ -727,7 +723,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createTextureProvider(const Texture2D& texture, dataProviderId_t dataId);
+        RAMSES_API status_t createTextureProvider(const Texture2D& texture, dataProviderId_t dataId);
 
         /**
         * @brief Sets a new texture to an existing provider.
@@ -739,7 +735,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t updateTextureProvider(const Texture2D& texture, dataProviderId_t dataId);
+        RAMSES_API status_t updateTextureProvider(const Texture2D& texture, dataProviderId_t dataId);
 
         /**
         * @brief Annotates a #ramses::TextureSampler as a content consumer.
@@ -750,7 +746,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t dataId);
+        RAMSES_API status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t dataId);
 
         /**
         * @brief Annotates a #ramses::TextureSamplerMS as a content consumer.
@@ -761,7 +757,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t dataId);
+        RAMSES_API status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t dataId);
 
         /**
         * @brief Annotates a #ramses::TextureSamplerExternal as a content consumer.
@@ -776,7 +772,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t dataId);
+        RAMSES_API status_t createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t dataId);
 
         /**
         * @brief Creates a new SceneReference object.
@@ -796,7 +792,7 @@ namespace ramses
         * @param[in] name The optional name of the created SceneReference.
         * @return A pointer to the created SceneReference.
         */
-        SceneReference* createSceneReference(sceneId_t referencedScene, const char* name = nullptr);
+        RAMSES_API SceneReference* createSceneReference(sceneId_t referencedScene, const char* name = nullptr);
 
         /**
         * @brief Tell the RamsesRenderer to link a data provider to a data consumer across two scenes.
@@ -829,7 +825,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId);
+        RAMSES_API status_t linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId);
 
         /**
         * @brief   Removes an existing link between two scenes (see #ramses::Scene::linkData).
@@ -842,14 +838,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId);
+        RAMSES_API status_t unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId);
 
         /**
          * @brief Getter for #ramses::RamsesClient this Scene was created from
          *
          * @return the parent RamsesCLient
          */
-        RamsesClient& getRamsesClient();
+        RAMSES_API RamsesClient& getRamsesClient();
 
         /**
         * @brief Get a resource which is owned by the scene by id
@@ -857,12 +853,17 @@ namespace ramses
         * @param[in] id The resource id of the resource to get.
         * @return Pointer to the resource if found, nullptr otherwise.
         */
-        [[nodiscard]] const Resource* getResource(resourceId_t id) const;
+        [[nodiscard]] RAMSES_API const Resource* getResource(resourceId_t id) const;
 
         /**
         * @copydoc getResource(resourceId_t id) const
         **/
-        Resource* getResource(resourceId_t id);
+        RAMSES_API Resource* getResource(resourceId_t id);
+
+        /**
+        * Stores internal data for implementation specifics of Scene.
+        */
+        SceneImpl& m_impl;
 
     protected:
         /**
@@ -873,29 +874,9 @@ namespace ramses
         /**
         * @brief Constructor of the Scene
         *
-        * @param[in] pimpl Internal data for implementation specifics of Scene (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of Scene (sink - instance becomes owner)
         */
-        explicit Scene(SceneImpl& pimpl);
-
-        /**
-        * @brief Copy constructor of Scene
-        *
-        * @param[in] other Other instance of Scene class
-        */
-        Scene(const Scene& other);
-
-        /**
-        * @brief Assignment operator of Scene.
-        *
-        * @param[in] other Other instance of Scene class
-        * @return This instance after assignment
-        */
-        Scene& operator=(const Scene& other);
-
-        /**
-         * @brief Destructor of the Scene
-        */
-        ~Scene() override;
+        explicit Scene(std::unique_ptr<SceneImpl> impl);
 
     private:
         /// Internal implementation of #createArrayResource

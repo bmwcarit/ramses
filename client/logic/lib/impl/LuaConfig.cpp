@@ -10,7 +10,7 @@
 
 #include "impl/LuaConfigImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     LuaConfig::LuaConfig() noexcept
         : m_impl(std::make_unique<internal::LuaConfigImpl>())

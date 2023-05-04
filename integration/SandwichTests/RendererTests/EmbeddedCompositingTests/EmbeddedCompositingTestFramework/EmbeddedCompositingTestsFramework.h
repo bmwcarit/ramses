@@ -48,7 +48,7 @@ namespace ramses_internal
         void                            waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId sourceId);
         void                            waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId sourceId);
         bool                            waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId streamSource, bool available);
-        Bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
+        bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
         void                            waitForBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            waitUntilNumberOfCompositorConnections(UInt32 numberOfConnections, bool doResourceUpdate = false, uint32_t displayIdx = 0u);
@@ -77,8 +77,8 @@ namespace ramses_internal
 
         //get message from test app
         UInt32                          getNumberOfAllocatedSHMBufferFromTestApplication(uint32_t testAppIdx = 0u);
-        Bool                            getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx = 0u);
-        Bool                            getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx = 0u);
+        bool                            getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx = 0u);
+        bool                            getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx = 0u);
 
         //local renderer
         void                            renderOneFrame();
@@ -90,7 +90,7 @@ namespace ramses_internal
         const static String             TestAlternateEmbeddedCompositingDisplayName;
 
     protected:
-        TestApplicationSurfaceId sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL, uint32_t testAppIdx);
+        TestApplicationSurfaceId sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, bool useEGL, uint32_t testAppIdx);
         void sendStopToTestApplication(uint32_t testAppIdx);
 
         IEmbeddedCompositingManager& getEmbeddedCompositorManager(uint32_t displayIdx = 0u);

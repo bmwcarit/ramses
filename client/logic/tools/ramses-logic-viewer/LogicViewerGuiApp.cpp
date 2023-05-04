@@ -17,7 +17,7 @@
 #include "ramses-logic/Logger.h"
 #include "ramses-cli.h"
 
-namespace rlogic
+namespace ramses
 {
     namespace
     {
@@ -100,7 +100,7 @@ namespace rlogic
         int32_t winX = 0;
         int32_t winY = 0;
         displayConfig.getWindowRectangle(winX, winY, m_width, m_height);
-        m_imguiHelper = std::make_unique<rlogic::ImguiClientHelper>(*m_client, m_width, m_height, guiSceneId);
+        m_imguiHelper = std::make_unique<ramses::ImguiClientHelper>(*m_client, m_width, m_height, guiSceneId);
 
         ramses::RamsesRenderer* renderer = nullptr;
         ramses::displayId_t displayId;
@@ -153,7 +153,7 @@ namespace rlogic
             return exitCode;
         }
 
-        m_gui = std::make_unique<rlogic::LogicViewerGui>(*m_viewer, *m_settings, args.luaFile());
+        m_gui = std::make_unique<ramses::LogicViewerGui>(*m_viewer, *m_settings, args.luaFile());
         if (!m_headless)
         {
             m_gui->setSceneTexture(m_sceneSetup->getTextureSampler(), m_width, m_height);
@@ -205,7 +205,7 @@ namespace rlogic
             if (!m_loadLuaStatus.ok())
             {
                 m_gui->openErrorPopup(m_loadLuaStatus.getMessage());
-                m_loadLuaStatus = rlogic::Result();
+                m_loadLuaStatus = ramses::Result();
             }
             if (!updateStatus.ok())
                 m_gui->openErrorPopup(updateStatus.getMessage());

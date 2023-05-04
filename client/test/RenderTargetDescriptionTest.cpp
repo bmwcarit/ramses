@@ -26,7 +26,7 @@ namespace ramses
 
     TEST_F(RenderTargetDescriptionTest, initialState)
     {
-        EXPECT_TRUE(rtDesc.impl.getRenderBuffers().empty());
+        EXPECT_TRUE(rtDesc.m_impl.get().getRenderBuffers().empty());
     }
 
     TEST_F(RenderTargetDescriptionTest, validatesAsWarningIfEmpty)
@@ -39,8 +39,8 @@ namespace ramses
         const RenderBuffer& colorRb = *m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
 
-        ASSERT_EQ(1u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
+        ASSERT_EQ(1u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
 
         EXPECT_EQ(StatusOK, rtDesc.validate());
     }
@@ -52,9 +52,9 @@ namespace ramses
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb1));
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb2));
 
-        ASSERT_EQ(2u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb1.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
-        EXPECT_EQ(colorRb2.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[1]);
+        ASSERT_EQ(2u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb1.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
+        EXPECT_EQ(colorRb2.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[1]);
 
         EXPECT_EQ(StatusOK, rtDesc.validate());
     }
@@ -68,10 +68,10 @@ namespace ramses
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb2));
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(depthRb));
 
-        ASSERT_EQ(3u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb1.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
-        EXPECT_EQ(colorRb2.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[1]);
-        EXPECT_EQ(depthRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[2]);
+        ASSERT_EQ(3u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb1.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
+        EXPECT_EQ(colorRb2.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[1]);
+        EXPECT_EQ(depthRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[2]);
 
         EXPECT_EQ(StatusOK, rtDesc.validate());
     }
@@ -82,8 +82,8 @@ namespace ramses
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
         EXPECT_NE(StatusOK, rtDesc.addRenderBuffer(colorRb));
 
-        ASSERT_EQ(1u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
+        ASSERT_EQ(1u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
     }
 
     TEST_F(RenderTargetDescriptionTest, failsToAddRenderBufferFromAnotherScene)
@@ -95,8 +95,8 @@ namespace ramses
         const RenderBuffer& otherRb = *otherScene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         EXPECT_NE(StatusOK, rtDesc.addRenderBuffer(otherRb));
 
-        ASSERT_EQ(1u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
+        ASSERT_EQ(1u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
     }
 
     TEST_F(RenderTargetDescriptionTest, failsToAddRenderBufferWithDifferentResolution)
@@ -107,8 +107,8 @@ namespace ramses
         const RenderBuffer& otherRb = *m_scene.createRenderBuffer(1u, 2u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
         EXPECT_NE(StatusOK, rtDesc.addRenderBuffer(otherRb));
 
-        ASSERT_EQ(1u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
+        ASSERT_EQ(1u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
     }
 
     TEST_F(RenderTargetDescriptionTest, failsToAddMoreThanOneDepthBuffer)
@@ -120,9 +120,9 @@ namespace ramses
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(depthRb1));
         EXPECT_NE(StatusOK, rtDesc.addRenderBuffer(depthRb2));
 
-        ASSERT_EQ(2u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
-        EXPECT_EQ(depthRb1.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[1]);
+        ASSERT_EQ(2u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
+        EXPECT_EQ(depthRb1.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[1]);
     }
 
     TEST_F(RenderTargetDescriptionTest, failsToValidateAfterAddedRenderBufferDestroyed)
@@ -142,9 +142,9 @@ namespace ramses
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(depthRb));
 
-        ASSERT_EQ(2u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
-        EXPECT_EQ(depthRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[1]);
+        ASSERT_EQ(2u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
+        EXPECT_EQ(depthRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[1]);
     }
 
     TEST_F(RenderTargetDescriptionTest, canNotAddRenderBuffersWithDifferentMsaaSampleCount)
@@ -154,7 +154,53 @@ namespace ramses
         EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
         EXPECT_NE(StatusOK, rtDesc.addRenderBuffer(depthRb));
 
-        ASSERT_EQ(1u, rtDesc.impl.getRenderBuffers().size());
-        EXPECT_EQ(colorRb.impl.getRenderBufferHandle(), rtDesc.impl.getRenderBuffers()[0]);
+        ASSERT_EQ(1u, rtDesc.m_impl.get().getRenderBuffers().size());
+        EXPECT_EQ(colorRb.m_impl.getRenderBufferHandle(), rtDesc.m_impl.get().getRenderBuffers()[0]);
+    }
+
+    TEST_F(RenderTargetDescriptionTest, CanBeCopyAndMoveConstructed)
+    {
+        const RenderBuffer& colorRb = *m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
+        EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
+
+        RenderTargetDescription rtDescCopy{ rtDesc };
+        EXPECT_THAT(rtDescCopy.m_impl.get().getRenderBuffers(), ElementsAre(colorRb.m_impl.getRenderBufferHandle()));
+
+        RenderTargetDescription rtDescMove{ std::move(rtDesc) };
+        EXPECT_THAT(rtDescMove.m_impl.get().getRenderBuffers(), ElementsAre(colorRb.m_impl.getRenderBufferHandle()));
+    }
+
+    TEST_F(RenderTargetDescriptionTest, CanBeCopyAndMoveAssigned)
+    {
+        const RenderBuffer& colorRb = *m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
+        EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
+
+        RenderTargetDescription rtDescCopy;
+        rtDescCopy = rtDesc;
+        EXPECT_THAT(rtDescCopy.m_impl.get().getRenderBuffers(), ElementsAre(colorRb.m_impl.getRenderBufferHandle()));
+
+        RenderTargetDescription rtDescMove;
+        rtDescMove = std::move(rtDesc);
+        EXPECT_THAT(rtDescMove.m_impl.get().getRenderBuffers(), ElementsAre(colorRb.m_impl.getRenderBufferHandle()));
+    }
+
+    TEST_F(RenderTargetDescriptionTest, CanBeSelfAssigned)
+    {
+        const RenderBuffer& colorRb = *m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
+        EXPECT_EQ(StatusOK, rtDesc.addRenderBuffer(colorRb));
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+        rtDesc = rtDesc;
+        EXPECT_THAT(rtDesc.m_impl.get().getRenderBuffers(), ElementsAre(colorRb.m_impl.getRenderBufferHandle()));
+        rtDesc = std::move(rtDesc);
+        // NOLINTNEXTLINE(bugprone-use-after-move)
+        EXPECT_THAT(rtDesc.m_impl.get().getRenderBuffers(), ElementsAre(colorRb.m_impl.getRenderBufferHandle()));
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
     }
 }

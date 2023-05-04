@@ -33,7 +33,7 @@ namespace ramses_internal
         RendererCachedScene&       createScene(const SceneInfo& sceneInfo);
         void                       destroyScene(SceneId sceneID);
 
-        [[nodiscard]] Bool                       hasScene(SceneId sceneID) const;
+        [[nodiscard]] bool                       hasScene(SceneId sceneID) const;
         [[nodiscard]] const RendererCachedScene& getScene(SceneId sceneID) const;
         RendererCachedScene&       getScene(SceneId sceneID);
 

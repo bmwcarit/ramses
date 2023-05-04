@@ -14,9 +14,9 @@
 #include "ramses-client-api/PickableObject.h"
 
 #include "ClientTestUtils.h"
-#include "Math3d/Vector3.h"
 #include "RamsesObjectTestTypes.h"
 #include "TestEqualHelper.h"
+#include "Math3d/Rotation.h"
 
 namespace ramses
 {
@@ -147,10 +147,10 @@ namespace ramses
         EXPECT_EQ(StatusOK, grandChild->setRotation({0.f, 0.f, 30.f}, ramses::ERotationType::Euler_XZY));
 
         //expected matrices for rotation after transformation chain is applied
-        const auto expectedNodeRotationMatrix           = ramses_internal::Matrix44f::Rotation({ 10.f , 0.f , 0.f, 1.f  }, ramses_internal::ERotationType::Euler_ZYX);
-        const auto expectedChild0RorationMatrix         = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 0.f, 1.f  }, ramses_internal::ERotationType::Euler_ZYX);
-        const auto expectedChild1RorationMatrix         = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
-        const auto expectedGrandChildRorationMatrix     = ramses_internal::Matrix44f::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedNodeRotationMatrix           = ramses_internal::Math3d::Rotation({ 10.f , 0.f , 0.f, 1.f  }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedChild0RorationMatrix         = ramses_internal::Math3d::Rotation({ 10.f , 20.f, 0.f, 1.f  }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedChild1RorationMatrix         = ramses_internal::Math3d::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
+        const auto expectedGrandChildRorationMatrix     = ramses_internal::Math3d::Rotation({ 10.f , 20.f, 30.f, 1.f }, ramses_internal::ERotationType::Euler_ZYX);
 
         matrix44f resultNodeMatrix;
         matrix44f resultChild0Matrix;
@@ -161,10 +161,10 @@ namespace ramses
         child1      ->getModelMatrix(resultChild1Matrix);
         grandChild  ->getModelMatrix(resultGrandChildMatrix);
 
-        expectMatrixFloatEqual(expectedNodeRotationMatrix       , ramses_internal::Matrix44f(resultNodeMatrix));
-        expectMatrixFloatEqual(expectedChild0RorationMatrix     , ramses_internal::Matrix44f(resultChild0Matrix));
-        expectMatrixFloatEqual(expectedChild1RorationMatrix     , ramses_internal::Matrix44f(resultChild1Matrix));
-        expectMatrixFloatEqual(expectedGrandChildRorationMatrix , ramses_internal::Matrix44f(resultGrandChildMatrix));
+        ramses_internal::expectMatrixFloatEqual(expectedNodeRotationMatrix       , resultNodeMatrix);
+        ramses_internal::expectMatrixFloatEqual(expectedChild0RorationMatrix     , resultChild0Matrix);
+        ramses_internal::expectMatrixFloatEqual(expectedChild1RorationMatrix     , resultChild1Matrix);
+        ramses_internal::expectMatrixFloatEqual(expectedGrandChildRorationMatrix , resultGrandChildMatrix);
     }
 
     template <typename T>
@@ -173,7 +173,7 @@ namespace ramses
     protected:
         void SetUp() override
         {
-            const ramses_internal::IScene& iscene = this->m_scene.impl.getIScene();
+            const ramses_internal::IScene& iscene = this->m_scene.m_impl.getIScene();
             ramses_internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
             EXPECT_CALL(this->sceneActionsCollector, handleNewSceneAvailable(info, _));
             EXPECT_CALL(this->sceneActionsCollector, handleInitializeScene(info, _));
@@ -184,7 +184,7 @@ namespace ramses
 
         void TearDown() override
         {
-            EXPECT_CALL(this->sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _));
+            EXPECT_CALL(this->sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(this->m_scene.m_impl.getSceneId().getValue()), _));
             EXPECT_EQ(StatusOK, m_scene.unpublish());
         }
 
@@ -196,7 +196,7 @@ namespace ramses
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setTranslateWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         vec3f translationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.getSceneId().getValue()), _, _));
         EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
@@ -212,7 +212,7 @@ namespace ramses
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setRotationWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         vec3f rotationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.getSceneId().getValue()), _, _));
         EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector, ERotationType::Euler_YXZ));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
@@ -228,7 +228,7 @@ namespace ramses
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setScalingWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         vec3f scalingVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.getSceneId().getValue()), _, _));
         EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());

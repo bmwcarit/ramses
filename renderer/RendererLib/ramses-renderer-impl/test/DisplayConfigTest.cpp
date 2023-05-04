@@ -19,7 +19,7 @@ protected:
 TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
 {
     const ramses_internal::DisplayConfig defaultDisplayConfig;
-    const ramses_internal::DisplayConfig& displayConfig = config.impl.getInternalDisplayConfig();
+    const ramses_internal::DisplayConfig& displayConfig = config.m_impl.get().getInternalDisplayConfig();
 
     EXPECT_EQ(defaultDisplayConfig.getWindowPositionX(), displayConfig.getWindowPositionX());
     EXPECT_EQ(defaultDisplayConfig.getWindowPositionY(), displayConfig.getWindowPositionY());
@@ -53,21 +53,21 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
 TEST_F(ADisplayConfig, setsFullscreenState)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowFullscreen(true));
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().getFullscreenState());
+    EXPECT_TRUE(config.m_impl.get().getInternalDisplayConfig().getFullscreenState());
     EXPECT_TRUE(config.isWindowFullscreen());
 
     EXPECT_EQ(ramses::StatusOK, config.setWindowFullscreen(false));
-    EXPECT_FALSE(config.impl.getInternalDisplayConfig().getFullscreenState());
+    EXPECT_FALSE(config.m_impl.get().getInternalDisplayConfig().getFullscreenState());
     EXPECT_FALSE(config.isWindowFullscreen());
 }
 
 TEST_F(ADisplayConfig, setsBorderlessState)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowBorderless(true));
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().getBorderlessState());
+    EXPECT_TRUE(config.m_impl.get().getInternalDisplayConfig().getBorderlessState());
 
     EXPECT_EQ(ramses::StatusOK, config.setWindowBorderless(false));
-    EXPECT_FALSE(config.impl.getInternalDisplayConfig().getBorderlessState());
+    EXPECT_FALSE(config.m_impl.get().getInternalDisplayConfig().getBorderlessState());
 }
 
 TEST_F(ADisplayConfig, setsWindowRect)
@@ -92,10 +92,10 @@ TEST_F(ADisplayConfig, failsToSetInvalidWindowRect)
     EXPECT_NE(ramses::StatusOK, config.setWindowRectangle(15, 16, 1u, 0u));
     EXPECT_NE(ramses::StatusOK, config.setWindowRectangle(15, 16, 0u, 0u));
 
-    EXPECT_EQ(15, config.impl.getInternalDisplayConfig().getWindowPositionX());
-    EXPECT_EQ(16, config.impl.getInternalDisplayConfig().getWindowPositionY());
-    EXPECT_EQ(1u, config.impl.getInternalDisplayConfig().getDesiredWindowWidth());
-    EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getDesiredWindowHeight());
+    EXPECT_EQ(15, config.m_impl.get().getInternalDisplayConfig().getWindowPositionX());
+    EXPECT_EQ(16, config.m_impl.get().getInternalDisplayConfig().getWindowPositionY());
+    EXPECT_EQ(1u, config.m_impl.get().getInternalDisplayConfig().getDesiredWindowWidth());
+    EXPECT_EQ(2u, config.m_impl.get().getInternalDisplayConfig().getDesiredWindowHeight());
 }
 
 TEST_F(ADisplayConfig, failsToSetUnsupportedMultisampling)
@@ -107,14 +107,14 @@ TEST_F(ADisplayConfig, failsToSetUnsupportedMultisampling)
     EXPECT_NE(ramses::StatusOK, config.setMultiSampling(7u));
     EXPECT_NE(ramses::StatusOK, config.setMultiSampling(9u));
 
-    EXPECT_EQ(1u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
+    EXPECT_EQ(1u, config.m_impl.get().getInternalDisplayConfig().getAntialiasingSampleCount());
 }
 
 TEST_F(ADisplayConfig, setsAndGetsMultisampling)
 {
     EXPECT_EQ(ramses::StatusOK, config.setMultiSampling(2u));
 
-    EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
+    EXPECT_EQ(2u, config.m_impl.get().getInternalDisplayConfig().getAntialiasingSampleCount());
 
     uint32_t sampleCount = 0;
     config.getMultiSamplingSamples(sampleCount);
@@ -124,41 +124,41 @@ TEST_F(ADisplayConfig, setsAndGetsMultisampling)
 TEST_F(ADisplayConfig, disablesKeepingOfEffectsInVRAM)
 {
     EXPECT_EQ(ramses::StatusOK, config.keepEffectsUploaded(false));
-    EXPECT_FALSE(config.impl.getInternalDisplayConfig().getKeepEffectsUploaded());
+    EXPECT_FALSE(config.m_impl.get().getInternalDisplayConfig().getKeepEffectsUploaded());
 }
 
 TEST_F(ADisplayConfig, setsWindowIVIVisible)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWindowIviVisible());
-    EXPECT_TRUE(config.impl.getInternalDisplayConfig().getStartVisibleIvi());
+    EXPECT_TRUE(config.m_impl.get().getInternalDisplayConfig().getStartVisibleIvi());
 }
 
 TEST_F(ADisplayConfig, setsAndGetsWaylandDisplay)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWaylandDisplay("xxx"));
     EXPECT_EQ("xxx", config.getWaylandDisplay());
-    EXPECT_EQ("xxx", config.impl.getInternalDisplayConfig().getWaylandDisplay());
+    EXPECT_EQ("xxx", config.m_impl.get().getInternalDisplayConfig().getWaylandDisplay());
 }
 
 TEST_F(ADisplayConfig, setsAndGetsWaylandIviSurfaceId)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(25)));
     EXPECT_EQ(ramses::waylandIviSurfaceId_t(25), config.getWaylandIviSurfaceID());
-    EXPECT_EQ(ramses_internal::WaylandIviSurfaceId(25), config.impl.getInternalDisplayConfig().getWaylandIviSurfaceID());
+    EXPECT_EQ(ramses_internal::WaylandIviSurfaceId(25), config.m_impl.get().getInternalDisplayConfig().getWaylandIviSurfaceID());
 }
 
 TEST_F(ADisplayConfig, setsAndGetsWaylandIviLayerId)
 {
     EXPECT_EQ(ramses::StatusOK, config.setWaylandIviLayerID(ramses::waylandIviLayerId_t(36)));
     EXPECT_EQ(ramses::waylandIviLayerId_t(36), config.getWaylandIviLayerID());
-    EXPECT_EQ(ramses_internal::WaylandIviLayerId(36), config.impl.getInternalDisplayConfig().getWaylandIviLayerID());
+    EXPECT_EQ(ramses_internal::WaylandIviLayerId(36), config.m_impl.get().getInternalDisplayConfig().getWaylandIviLayerID());
 }
 
 TEST_F(ADisplayConfig, setsAndGetsX11WindowHandle)
 {
     EXPECT_EQ(ramses::StatusOK, config.setX11WindowHandle(42u));
     EXPECT_EQ(42u, config.getX11WindowHandle());
-    EXPECT_EQ(ramses_internal::X11WindowHandle(42), config.impl.getInternalDisplayConfig().getX11WindowHandle());
+    EXPECT_EQ(ramses_internal::X11WindowHandle(42), config.m_impl.get().getInternalDisplayConfig().getX11WindowHandle());
 }
 
 TEST_F(ADisplayConfig, IsValidUponConstruction)
@@ -166,11 +166,47 @@ TEST_F(ADisplayConfig, IsValidUponConstruction)
     EXPECT_EQ(ramses::StatusOK, config.validate());
 }
 
-TEST_F(ADisplayConfig, canBeCopyConstructed)
+TEST_F(ADisplayConfig, CanBeCopyAndMoveConstructed)
 {
-    config.setResizable(true);
-    const ramses::DisplayConfig otherConfig(config);
-    EXPECT_TRUE(otherConfig.impl.getInternalDisplayConfig().isResizable());
+    config.setWindowFullscreen(true);
+
+    ramses::DisplayConfig configCopy{ config };
+    EXPECT_TRUE(configCopy.isWindowFullscreen());
+
+    ramses::DisplayConfig configMove{ std::move(config) };
+    EXPECT_TRUE(configMove.isWindowFullscreen());
+}
+
+TEST_F(ADisplayConfig, CanBeCopyAndMoveAssigned)
+{
+    config.setWindowFullscreen(true);
+
+    ramses::DisplayConfig configCopy;
+    configCopy = config;
+    EXPECT_TRUE(configCopy.isWindowFullscreen());
+
+    ramses::DisplayConfig configMove;
+    configMove = std::move(config);
+    EXPECT_TRUE(configMove.isWindowFullscreen());
+}
+
+TEST_F(ADisplayConfig, CanBeSelfAssigned)
+{
+    config.setWindowFullscreen(true);
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+    config = config;
+    EXPECT_TRUE(config.isWindowFullscreen());
+    config = std::move(config);
+    // NOLINTNEXTLINE(bugprone-use-after-move)
+    EXPECT_TRUE(config.isWindowFullscreen());
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 TEST_F(ADisplayConfig, setClearColor)
@@ -181,7 +217,7 @@ TEST_F(ADisplayConfig, setClearColor)
     const float alpha = 0.4f;
     EXPECT_EQ(ramses::StatusOK, config.setClearColor({red, green, blue, alpha}));
 
-    const ramses_internal::Vector4& clearColor = config.impl.getInternalDisplayConfig().getClearColor();
+    const glm::vec4& clearColor = config.m_impl.get().getInternalDisplayConfig().getClearColor();
     EXPECT_EQ(clearColor.r, red);
     EXPECT_EQ(clearColor.g, green);
     EXPECT_EQ(clearColor.b, blue);
@@ -191,25 +227,25 @@ TEST_F(ADisplayConfig, setClearColor)
 TEST_F(ADisplayConfig, setDepthStencilBufferType)
 {
     EXPECT_EQ(ramses::StatusOK, config.setDepthStencilBufferType(ramses::EDepthBufferType_Depth));
-    EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, config.impl.getInternalDisplayConfig().getDepthStencilBufferType());
+    EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, config.m_impl.get().getInternalDisplayConfig().getDepthStencilBufferType());
 }
 
 TEST_F(ADisplayConfig, setAsyncEffectUploadEnabled)
 {
     EXPECT_EQ(ramses::StatusOK, config.setAsyncEffectUploadEnabled(false));
-    EXPECT_FALSE(config.impl.getInternalDisplayConfig().isAsyncEffectUploadEnabled());
+    EXPECT_FALSE(config.m_impl.get().getInternalDisplayConfig().isAsyncEffectUploadEnabled());
 }
 
 TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketGroup)
 {
     config.setWaylandEmbeddedCompositingSocketGroup("permissionGroup");
-    EXPECT_EQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
+    EXPECT_EQ("permissionGroup", config.m_impl.get().getWaylandSocketEmbeddedGroup());
 }
 
 TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketPermissions)
 {
     config.setWaylandEmbeddedCompositingSocketPermissions(0660);
-    EXPECT_EQ(0660u, config.impl.getWaylandSocketEmbeddedPermissions());
+    EXPECT_EQ(0660u, config.m_impl.get().getWaylandSocketEmbeddedPermissions());
 }
 
 TEST_F(ADisplayConfig, cannotSetInvalidEmbeddedCompositingSocketPermissions)
@@ -226,35 +262,35 @@ TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketname)
 TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketFD)
 {
     config.setWaylandEmbeddedCompositingSocketFD(23);
-    EXPECT_EQ(23, config.impl.getWaylandSocketEmbeddedFD());
+    EXPECT_EQ(23, config.m_impl.get().getWaylandSocketEmbeddedFD());
 }
 
 TEST_F(ADisplayConfig, canSetPlatformRenderNode)
 {
     config.setPlatformRenderNode("abcd");
-    EXPECT_EQ("abcd", config.impl.getPlatformRenderNode());
+    EXPECT_EQ("abcd", config.m_impl.get().getPlatformRenderNode());
 }
 
 TEST_F(ADisplayConfig, canSetSwapInterval)
 {
-    EXPECT_EQ(-1, config.impl.getSwapInterval());
+    EXPECT_EQ(-1, config.m_impl.get().getSwapInterval());
     EXPECT_EQ(ramses::StatusOK, config.setSwapInterval(0));
-    EXPECT_EQ(0, config.impl.getSwapInterval());
+    EXPECT_EQ(0, config.m_impl.get().getSwapInterval());
 }
 
 TEST_F(ADisplayConfig, canSetScenePriority)
 {
-    EXPECT_EQ(0, config.impl.getScenePriority(ramses::sceneId_t(551)));
+    EXPECT_EQ(0, config.m_impl.get().getScenePriority(ramses::sceneId_t(551)));
     EXPECT_EQ(ramses::StatusOK, config.setScenePriority(ramses::sceneId_t(551), 4));
-    EXPECT_EQ(4, config.impl.getScenePriority(ramses::sceneId_t(551)));
+    EXPECT_EQ(4, config.m_impl.get().getScenePriority(ramses::sceneId_t(551)));
 }
 
 TEST_F(ADisplayConfig, canSetResourceUploadBatchSize)
 {
-    EXPECT_EQ(10u, config.impl.getResourceUploadBatchSize());
+    EXPECT_EQ(10u, config.m_impl.get().getResourceUploadBatchSize());
     EXPECT_EQ(ramses::StatusOK, config.setResourceUploadBatchSize(1));
-    EXPECT_EQ(1u, config.impl.getResourceUploadBatchSize());
+    EXPECT_EQ(1u, config.m_impl.get().getResourceUploadBatchSize());
     EXPECT_NE(ramses::StatusOK, config.setResourceUploadBatchSize(0));
-    EXPECT_EQ(1u, config.impl.getResourceUploadBatchSize());
+    EXPECT_EQ(1u, config.m_impl.get().getResourceUploadBatchSize());
 }
 

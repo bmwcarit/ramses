@@ -20,12 +20,12 @@ namespace ramses_internal
     class ShaderUploader_GL
     {
     public:
-        static Bool UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
-        static Bool UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
+        static bool UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
+        static bool UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
 
     private:
         static GLHandle CompileShaderStage(const char* stageSource, GLenum shaderType, String& errorLogOut);
-        static Bool CheckShaderProgramLinkStatus(GLHandle shaderProgram, String& errorLogOut);
+        static bool CheckShaderProgramLinkStatus(GLHandle shaderProgram, String& errorLogOut);
         static void PrintShaderSourceWithLineNumbers(const String& source);
     };
 }

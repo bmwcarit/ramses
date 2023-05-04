@@ -22,6 +22,26 @@ namespace ramses
 {
     class AnEffectInput : public ::testing::Test
     {
+    protected:
+        void initializeInput(EffectInput& input)
+        {
+            constexpr ramses_internal::ResourceContentHash effectHash{ 1u, 0u };
+            constexpr ramses_internal::EFixedSemantics semantics = ramses_internal::EFixedSemantics::ModelMatrix;
+            input.m_impl.get().initialize(effectHash, "test", ramses_internal::EDataType::Matrix44F, semantics, 1u, 66u);
+        }
+
+        void checkInput(const EffectInput& input)
+        {
+            AttributeInput compInput;
+            initializeInput(compInput);
+
+            EXPECT_STREQ(compInput.getName(), input.getName());
+            EXPECT_EQ(compInput.getDataType(), input.getDataType());
+            EXPECT_EQ(compInput.m_impl.get().getSemantics(), input.m_impl.get().getSemantics());
+            EXPECT_EQ(compInput.m_impl.get().getElementCount(), input.m_impl.get().getElementCount());
+            EXPECT_EQ(compInput.m_impl.get().getInputIndex(), input.m_impl.get().getInputIndex());
+            EXPECT_EQ(compInput.m_impl.get().getEffectHash(), input.m_impl.get().getEffectHash());
+        }
     };
 
     TEST_F(AnEffectInput, UniformInputIsInitializedToDefaultUponCreation)
@@ -29,11 +49,11 @@ namespace ramses
         UniformInput input;
         EXPECT_STREQ("", input.getName());
         EXPECT_EQ(0u, input.getElementCount());
-        EXPECT_EQ(ramses_internal::ResourceContentHash::Invalid(), input.impl.getEffectHash());
+        EXPECT_EQ(ramses_internal::ResourceContentHash::Invalid(), input.m_impl.get().getEffectHash());
         EXPECT_FALSE(input.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.m_impl.get().getSemantics());
         EXPECT_EQ(EEffectUniformSemantic::Invalid, input.getSemantics());
-        EXPECT_EQ(static_cast<uint32_t>(-1), input.impl.getInputIndex());
+        EXPECT_EQ(static_cast<uint32_t>(-1), input.m_impl.get().getInputIndex());
         EXPECT_FALSE(input.isValid());
     }
 
@@ -41,10 +61,10 @@ namespace ramses
     {
         AttributeInput input;
         EXPECT_STREQ("", input.getName());
-        EXPECT_EQ(ramses_internal::ResourceContentHash::Invalid(), input.impl.getEffectHash());
+        EXPECT_EQ(ramses_internal::ResourceContentHash::Invalid(), input.m_impl.get().getEffectHash());
         EXPECT_FALSE(input.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
-        EXPECT_EQ(static_cast<uint32_t>(-1), input.impl.getInputIndex());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.m_impl.get().getSemantics());
+        EXPECT_EQ(static_cast<uint32_t>(-1), input.m_impl.get().getInputIndex());
         EXPECT_FALSE(input.isValid());
     }
 
@@ -58,16 +78,16 @@ namespace ramses
         const uint32_t index = 66u;
 
         UniformInput input;
-        input.impl.initialize(effectHash, inputName, dataType, semantics, elementCount, index);
+        input.m_impl.get().initialize(effectHash, inputName, dataType, semantics, elementCount, index);
 
         EXPECT_STREQ(inputName.c_str(), input.getName());
         EXPECT_EQ(elementCount, input.getElementCount());
         EXPECT_EQ(EDataType::Int32, *input.getDataType());
-        EXPECT_EQ(effectHash, input.impl.getEffectHash());
-        EXPECT_EQ(dataType, input.impl.getInternalDataType());
-        EXPECT_EQ(semantics, input.impl.getSemantics());
+        EXPECT_EQ(effectHash, input.m_impl.get().getEffectHash());
+        EXPECT_EQ(dataType, input.m_impl.get().getInternalDataType());
+        EXPECT_EQ(semantics, input.m_impl.get().getSemantics());
         EXPECT_EQ(EEffectUniformSemantic::ModelMatrix, input.getSemantics());
-        EXPECT_EQ(index, input.impl.getInputIndex());
+        EXPECT_EQ(index, input.m_impl.get().getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
 
@@ -80,14 +100,14 @@ namespace ramses
         const uint32_t index = 66u;
 
         AttributeInput input;
-        input.impl.initialize(effectHash, inputName, dataType, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, dataType, semantics, 1u, index);
 
         EXPECT_STREQ(inputName.c_str(), input.getName());
         EXPECT_EQ(EDataType::Vector2F, *input.getDataType());
-        EXPECT_EQ(effectHash, input.impl.getEffectHash());
-        EXPECT_EQ(dataType, input.impl.getInternalDataType());
-        EXPECT_EQ(semantics, input.impl.getSemantics());
-        EXPECT_EQ(index, input.impl.getInputIndex());
+        EXPECT_EQ(effectHash, input.m_impl.get().getEffectHash());
+        EXPECT_EQ(dataType, input.m_impl.get().getInternalDataType());
+        EXPECT_EQ(semantics, input.m_impl.get().getSemantics());
+        EXPECT_EQ(index, input.m_impl.get().getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
 
@@ -200,58 +220,150 @@ namespace ramses
         const uint32_t index = 66u;
         UniformInput input;
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::UInt16, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::UInt16, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::UInt16);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::UInt32, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::UInt32, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::UInt32);
 
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Int32, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Int32, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Int32);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Vector2I, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Vector2I, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Vector2I);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Vector3I, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Vector3I, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Vector3I);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Vector4I, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Vector4I, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Vector4I);
 
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Float, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Float, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Float);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Vector2F, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Vector2F, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Vector2F);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Vector3F, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Vector3F, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Vector3F);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Vector4F, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Vector4F, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Vector4F);
 
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Matrix22F, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Matrix22F, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Matrix22F);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Matrix33F, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Matrix33F, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Matrix33F);
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::Matrix44F, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::Matrix44F, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::Matrix44F);
 
 
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::TextureSampler2D, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::TextureSampler2D, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::TextureSampler2D);
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::TextureSampler2DMS, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::TextureSampler2DMS, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::TextureSampler2DMS);
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::TextureSampler3D, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::TextureSampler3D, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::TextureSampler3D);
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::TextureSamplerCube, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::TextureSamplerCube, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::TextureSamplerCube);
-        input.impl.initialize(effectHash, inputName, ramses_internal::EDataType::TextureSamplerExternal, semantics, 1u, index);
+        input.m_impl.get().initialize(effectHash, inputName, ramses_internal::EDataType::TextureSamplerExternal, semantics, 1u, index);
         EXPECT_EQ(*input.getDataType(), EDataType::TextureSamplerExternal);
+    }
+
+    TEST_F(AnEffectInput, CanBeCopyAndMoveConstructed_Uniform)
+    {
+        UniformInput input;
+        initializeInput(input);
+
+        UniformInput inputCopy{ input };
+        checkInput(inputCopy);
+
+        UniformInput inputMove{ std::move(input) };
+        checkInput(inputMove);
+    }
+
+    TEST_F(AnEffectInput, CanBeCopyAndMoveAssigned_Uniform)
+    {
+        UniformInput input;
+        initializeInput(input);
+
+        UniformInput inputCopy;
+        inputCopy = input;
+        checkInput(inputCopy);
+
+        UniformInput inputMove;
+        inputMove = std::move(input);
+        checkInput(inputMove);
+    }
+
+    TEST_F(AnEffectInput, CanBeSelfAssigned_Uniform)
+    {
+        UniformInput input;
+        initializeInput(input);
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+        input = input;
+        checkInput(input);
+        input = std::move(input);
+        // NOLINTNEXTLINE(bugprone-use-after-move)
+        checkInput(input);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+    }
+
+    TEST_F(AnEffectInput, CanBeCopyAndMoveConstructed_Attribute)
+    {
+        AttributeInput input;
+        initializeInput(input);
+
+        AttributeInput inputCopy{ input };
+        checkInput(inputCopy);
+
+        AttributeInput inputMove{ std::move(input) };
+        checkInput(inputMove);
+    }
+
+    TEST_F(AnEffectInput, CanBeCopyAndMoveAssigned_Attribute)
+    {
+        AttributeInput input;
+        initializeInput(input);
+
+        AttributeInput inputCopy;
+        inputCopy = input;
+        checkInput(inputCopy);
+
+        AttributeInput inputMove;
+        inputMove = std::move(input);
+        checkInput(inputMove);
+    }
+
+    TEST_F(AnEffectInput, CanBeSelfAssigned_Attribute)
+    {
+        AttributeInput input;
+        initializeInput(input);
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+        input = input;
+        checkInput(input);
+        input = std::move(input);
+        // NOLINTNEXTLINE(bugprone-use-after-move)
+        checkInput(input);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
     }
 }

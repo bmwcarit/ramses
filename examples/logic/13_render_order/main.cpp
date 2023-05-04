@@ -55,16 +55,16 @@ int main()
      */
     auto [scene, renderGroup, triMesh1, triMesh2] = CreateSceneWithTriangles(*renderer.getClient());
 
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * In order to create a render group binding we need to first specify what elements we want to expose for render order control,
     * in our case it is the two triangles.
     */
-    rlogic::RamsesRenderGroupBindingElements renderGroupElements;
+    ramses::RamsesRenderGroupBindingElements renderGroupElements;
     renderGroupElements.addElement(*triMesh1, "tri1");
     renderGroupElements.addElement(*triMesh2, "tri2");
-    rlogic::RamsesRenderGroupBinding* renderGroupBinding = logicEngine.createRamsesRenderGroupBinding(*renderGroup, renderGroupElements);
+    ramses::RamsesRenderGroupBinding* renderGroupBinding = logicEngine.createRamsesRenderGroupBinding(*renderGroup, renderGroupElements);
 
     /**
     * Show the scene on the renderer

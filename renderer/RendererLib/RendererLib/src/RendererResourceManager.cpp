@@ -22,7 +22,6 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
 #include "Utils/LogMacros.h"
-#include "Math3d/Vector4.h"
 #include <memory>
 
 namespace ramses_internal
@@ -179,7 +178,7 @@ namespace ramses_internal
             m_resourceRegistry.setResourceData(resHash, mr);
     }
 
-    Bool RendererResourceManager::hasResourcesToBeUploaded() const
+    bool RendererResourceManager::hasResourcesToBeUploaded() const
     {
         return m_resourceUploadingManager.hasAnythingToUpload();
     }
@@ -398,7 +397,7 @@ namespace ramses_internal
         clearRenderTarget(offscreenBufferDesc.m_renderTargetHandle[0]);
     }
 
-    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
+    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
         assert(!m_offscreenBuffers.isAllocated(bufferHandle));
         IDevice& device = m_renderBackend.getDevice();

@@ -13,7 +13,7 @@
 
 #include "generated/RamsesReferenceGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     RamsesBindingImpl::RamsesBindingImpl(std::string_view name, uint64_t id) noexcept
         : LogicNodeImpl(name, id)
@@ -37,7 +37,7 @@ namespace rlogic::internal
         return ramsesRef;
     }
 
-    void RamsesBindingImpl::setRootInputs(std::unique_ptr<Property> rootInputs)
+    void RamsesBindingImpl::setRootInputs(std::unique_ptr<PropertyImpl> rootInputs)
     {
         setRootProperties(std::move(rootInputs), {});
     }

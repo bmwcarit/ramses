@@ -9,7 +9,6 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/BinaryFileOutputStream.h"
-#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {

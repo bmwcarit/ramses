@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    Bool ShaderUploader_GL::UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
+    bool ShaderUploader_GL::UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
     {
         LOG_TRACE(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromBinary:  uploading binary data");
 
@@ -41,7 +41,7 @@ namespace ramses_internal
     }
 
 
-    Bool ShaderUploader_GL::UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
+    bool ShaderUploader_GL::UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
     {
         LOG_DEBUG(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  compiling shaders for effect " << effect.getName());
 
@@ -122,7 +122,7 @@ namespace ramses_internal
         }
     }
 
-    Bool ShaderUploader_GL::CheckShaderProgramLinkStatus(GLHandle shaderProgram, String& errorLogOut)
+    bool ShaderUploader_GL::CheckShaderProgramLinkStatus(GLHandle shaderProgram, String& errorLogOut)
     {
         GLint linkStatus;
         glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);

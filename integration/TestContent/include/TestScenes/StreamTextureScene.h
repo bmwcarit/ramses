@@ -11,7 +11,7 @@
 
 #include "IntegrationScene.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "ramses-framework-api/DataTypes.h"
+#include "DataTypesImpl.h"
 #include <array>
 
 namespace ramses
@@ -25,7 +25,7 @@ namespace ramses_internal
     class StreamTextureScene : public IntegrationScene
     {
     public:
-        StreamTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        StreamTextureScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {

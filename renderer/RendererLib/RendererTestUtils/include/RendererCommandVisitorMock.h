@@ -15,8 +15,6 @@
 #include "RendererLib/DisplayConfig.h"
 #include "SceneAPI/SceneId.h"
 #include "RendererAPI/Types.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector4.h"
 
 namespace ramses_internal
 {
@@ -245,9 +243,9 @@ namespace ramses_internal
         MOCK_METHOD(void, handleSceneDataLinkRequest, (SceneId, DataSlotId, SceneId, DataSlotId));
         MOCK_METHOD(void, handleDataUnlinkRequest, (SceneId, DataSlotId));
         MOCK_METHOD(void, handleSetClearFlags, (DisplayHandle, OffscreenBufferHandle, uint32_t));
-        MOCK_METHOD(void, handleSetClearColor, (DisplayHandle, OffscreenBufferHandle, const Vector4&));
+        MOCK_METHOD(void, handleSetClearColor, (DisplayHandle, OffscreenBufferHandle, const glm::vec4&));
         MOCK_METHOD(void, handleSetExternallyOwnedWindowSize, (DisplayHandle, uint32_t, uint32_t));
-        MOCK_METHOD(void, handlePick, (SceneId, const Vector2&));
+        MOCK_METHOD(void, handlePick, (SceneId, const glm::vec2&));
         MOCK_METHOD(void, handleBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, uint32_t, bool, ERenderBufferType));
         MOCK_METHOD(void, handleDmaBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, DmaBufferFourccFormat, DmaBufferUsageFlags, DmaBufferModifiers));
         MOCK_METHOD(void, handleBufferDestroyRequest, (OffscreenBufferHandle, DisplayHandle));

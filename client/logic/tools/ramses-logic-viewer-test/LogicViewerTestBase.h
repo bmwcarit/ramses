@@ -29,7 +29,7 @@
 #include <fmt/format.h>
 
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicViewerBase : public ::testing::Test
     {
@@ -95,7 +95,7 @@ namespace rlogic::internal
             return node;
         }
 
-        static rlogic::Property* GetInput(rlogic::LogicNode* node, std::string_view propertyName)
+        static ramses::Property* GetInput(ramses::LogicNode* node, std::string_view propertyName)
         {
             auto* property = node->getInputs()->getChild(propertyName);
             if (property == nullptr)
@@ -106,12 +106,12 @@ namespace rlogic::internal
         }
 
         template<class T>
-        rlogic::Property* getInput(std::string_view nodeName, std::string_view propertyName)
+        ramses::Property* getInput(std::string_view nodeName, std::string_view propertyName)
         {
             return GetInput(getNode<T>(nodeName), propertyName);
         }
 
-        static const rlogic::Property* GetOutput(const rlogic::LogicNode* node, std::string_view propertyName)
+        static const ramses::Property* GetOutput(const ramses::LogicNode* node, std::string_view propertyName)
         {
             const auto* property = node->getOutputs()->getChild(propertyName);
             if (property == nullptr)
@@ -122,7 +122,7 @@ namespace rlogic::internal
         }
 
         template<class T>
-        const rlogic::Property* getOutput(std::string_view nodeName, std::string_view propertyName)
+        const ramses::Property* getOutput(std::string_view nodeName, std::string_view propertyName)
         {
             return GetOutput(getNode<T>(nodeName), propertyName);
         }

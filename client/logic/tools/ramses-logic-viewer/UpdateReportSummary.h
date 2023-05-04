@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace rlogic
+namespace ramses
 {
     class UpdateReportSummary
     {
@@ -87,7 +87,7 @@ namespace rlogic
             return m_nodesSkipped;
         }
 
-        void add(rlogic::LogicEngineReport&& report)
+        void add(ramses::LogicEngineReport&& report)
         {
             m_sortTime.add(report.getTopologySortExecutionTime());
             m_linkActivations.add(report.getTotalLinkActivations());
@@ -136,7 +136,7 @@ namespace rlogic
             m_measureCount = 0;
         }
 
-        rlogic::LogicEngineReport                 m_report;
+        ramses::LogicEngineReport                 m_report;
         StatisticEntry<std::chrono::microseconds> m_totalTime;
         StatisticEntry<std::chrono::microseconds> m_sortTime;
         StatisticEntry<size_t>                    m_linkActivations;

@@ -7,10 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #pragma once
-#include "ramses-logic/ELogMessageType.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "impl/LoggerImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     using Clock     = std::chrono::steady_clock;
     using TimePoint = std::chrono::time_point<Clock>;
@@ -24,7 +24,7 @@ namespace rlogic::internal
             void nodeExecuted();
             void collect(const UpdateReport& report, size_t totalNodesCount);
             void calculateAndLog();
-            void setLogLevel(ELogMessageType logLevel);
+            void setLogLevel(ELogLevel logLevel);
             void setLoggingRate(size_t loggingRate);
             [[nodiscard]] bool checkUpdateFrameFinished() const;
 
@@ -69,7 +69,7 @@ namespace rlogic::internal
             size_t m_totalNodesCount            =  0u;
             std::optional<TimePoint> m_lastTimeLogged = std::nullopt;
             std::optional<TimePoint> m_lastTimeUpdateDataAdded = std::nullopt;
-            ELogMessageType m_logLevel = ELogMessageType::Debug;
+            ELogLevel m_logLevel = ELogLevel::Debug;
 
             StatisticProperty m_timeSinceLastUpdate;
             StatisticProperty m_updateExecutionTime;

@@ -88,15 +88,15 @@ namespace ramses_internal
 
     void DynamicQuad_SceneResources::recreate()
     {
-        static const uint16_t indicesData[] = { 0, 1, 3, 2 };
+        const std::array<uint16_t, 4> indicesData = { 0, 1, 3, 2 };
 
         // Vertex positions in normalized screen space, i.e. fraction of the screen (0.0f == bottom/left, 1.0f == top/right)
         const std::array<ramses::vec3f, 4u> vertexPositionsData
         {
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u).getAsVec3(),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u).getAsVec3(),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u).getAsVec3(),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u).getAsVec3()
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u)
         };
 
         std::array<ramses::vec2f, 4u> vertexTexcoordsData
@@ -113,11 +113,12 @@ namespace ramses_internal
             tc[1] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }
 
-        m_indices->updateData(0u, 4, indicesData);
+        m_indices->updateData(0u, 4, indicesData.data());
         m_vertexPos->updateData(0u, 4, vertexPositionsData.data());
         m_texCoords->updateData(0u, 4, vertexTexcoordsData.data());
 
-        std::unique_ptr<uint8_t[]> rawData(new uint8_t[DynamicTextureWidth * DynamicTextureHeight * 3]);
+        std::vector<uint8_t> rawData;
+        rawData.resize(DynamicTextureWidth * DynamicTextureHeight * 3);
 
         for (uint32_t x = 0; x < DynamicTextureWidth; ++x)
         {
@@ -129,6 +130,6 @@ namespace ramses_internal
             }
         }
 
-        m_textureBuffer->updateData(0, 0, 0, DynamicTextureWidth, DynamicTextureHeight, rawData.get());
+        m_textureBuffer->updateData(0, 0, 0, DynamicTextureWidth, DynamicTextureHeight, rawData.data());
     }
 }

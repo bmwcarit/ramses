@@ -11,6 +11,7 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
      * Specifies the rotation convention used in calculation of transforms in a right-handed coordinate system. The
      * order of the letters in each enum value represents the order in extrinsic notation. Extrinsic convention means
      * a rotation around any ordered set of axes ABC is done in the specified order around the original world axes which

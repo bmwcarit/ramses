@@ -227,7 +227,7 @@ void RendererTestsFramework::setClearFlags(uint32_t testDisplayIdx, ramses::disp
     m_forceDisplaysReinitForNextTestCase = true;
 }
 
-void RendererTestsFramework::setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor)
+void RendererTestsFramework::setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const glm::vec4& clearColor)
 {
     assert(testDisplayIdx < m_displays.size());
     m_testRenderer.setClearColor(m_displays[testDisplayIdx].displayId, ob, clearColor);
@@ -260,8 +260,8 @@ bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::S
         maxAveragePercentErrorPerPixel,
         0u,
         0u,
-        displayConfig.impl.getInternalDisplayConfig().getDesiredWindowWidth(),
-        displayConfig.impl.getInternalDisplayConfig().getDesiredWindowHeight(),
+        displayConfig.m_impl.get().getInternalDisplayConfig().getDesiredWindowWidth(),
+        displayConfig.m_impl.get().getInternalDisplayConfig().getDesiredWindowHeight(),
         readPixelsTwice,
         saveDiffOnError);
 }
@@ -381,8 +381,8 @@ bool areEqual(const DisplayConfigVector& a, const DisplayConfigVector& b)
 
     for (size_t i = 0; i < a.size(); ++i)
     {
-        const ramses_internal::DisplayConfig& displayConfigA = a[i].impl.getInternalDisplayConfig();
-        const ramses_internal::DisplayConfig& displayConfigB = b[i].impl.getInternalDisplayConfig();
+        const ramses_internal::DisplayConfig& displayConfigA = a[i].m_impl.get().getInternalDisplayConfig();
+        const ramses_internal::DisplayConfig& displayConfigB = b[i].m_impl.get().getInternalDisplayConfig();
 
         if (displayConfigA != displayConfigB)
         {
@@ -441,8 +441,8 @@ bool RendererTestsFramework::currentDisplaySetupMatchesTestCase(const RenderingT
     {
         assert(i < m_displays.size());
 
-        ramses_internal::DisplayConfig currentDisplayConfig = m_displays[i].config.impl.getInternalDisplayConfig();
-        ramses_internal::DisplayConfig requestedDisplayConfig = testCase.m_displayConfigs[i].impl.getInternalDisplayConfig();
+        ramses_internal::DisplayConfig currentDisplayConfig = m_displays[i].config.m_impl.get().getInternalDisplayConfig();
+        ramses_internal::DisplayConfig requestedDisplayConfig = testCase.m_displayConfigs[i].m_impl.get().getInternalDisplayConfig();
 
         // ignore wayland ID in comparison as this is different for every test display config
         requestedDisplayConfig.setWaylandIviSurfaceID(currentDisplayConfig.getWaylandIviSurfaceID());

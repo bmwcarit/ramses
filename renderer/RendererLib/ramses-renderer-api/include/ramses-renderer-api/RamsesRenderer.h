@@ -14,6 +14,11 @@
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/DataTypes.h"
 
+/**
+ * @defgroup RendererAPI The Ramses Renderer API
+ * This group contains all of the Ramses Renderer API types.
+ */
+
 namespace ramses
 {
     class SystemCompositorController;
@@ -24,15 +29,16 @@ namespace ramses
     /**
     * @brief RamsesRenderer is the main renderer component which provides API to configure
     *        and control the way content will be rendered on display(s).
-    * @details All the commands in this class are put to a queue and submitted only when RamsesRenderer::flush is called,
+    * @ingroup RendererAPI
+    * @details All the commands in this class are put to a queue and submitted only when #ramses::RamsesRenderer::flush is called,
     *          they are then executed asynchronously in the renderer core, the order of execution is preserved.
     *          Most of the commands have a corresponding callback which reports the result back to the caller
-    *          via RamsesRenderer::dispatchEvents.
+    *          via #ramses::RamsesRenderer::dispatchEvents.
     *          Some commands can fail immediately by returning a status with value other than StatusOK,
     *          in such case there will be no callback, because the command will not even be submitted.
-    *          RamsesRenderer API is not thread-safe.
+    *          #ramses::RamsesRenderer API is not thread-safe.
     */
-    class RAMSES_API RamsesRenderer : public StatusObject
+    class RamsesRenderer : public StatusObject
     {
     public:
         /**
@@ -44,7 +50,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t doOneLoop();
+        RAMSES_API status_t doOneLoop();
 
         /**
         * @brief   Starts update and render loop in threaded mode.
@@ -55,7 +61,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t startThread();
+        RAMSES_API status_t startThread();
 
         /**
         * @brief   Stops thread(s) running the update and render of displays.
@@ -65,14 +71,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t stopThread();
+        RAMSES_API status_t stopThread();
 
         /**
         * @brief Get the current state of rendering thread(s) running
         *
         * @return Returns true if thread is running (started and not stopped), false otherwise.
         */
-        [[nodiscard]] bool isThreadRunning() const;
+        [[nodiscard]] RAMSES_API bool isThreadRunning() const;
 
         /**
         * @brief   Sets the maximum frame rate per second for the update/render loop when in threaded mode.
@@ -91,7 +97,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setFramerateLimit(displayId_t displayId, float fpsLimit);
+        RAMSES_API status_t setFramerateLimit(displayId_t displayId, float fpsLimit);
 
         /**
         * @brief   Get the maximum frame rate per second set for given display using #setFramerateLimit.
@@ -102,7 +108,7 @@ namespace ramses
         *
         * @return The FPS limit for given display set by user or default FPS limit.
         */
-        [[nodiscard]] float getFramerateLimit(displayId_t displayId) const;
+        [[nodiscard]] RAMSES_API float getFramerateLimit(displayId_t displayId) const;
 
         /**
         * @brief   Sets the mode of operation for render loop.
@@ -114,14 +120,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setLoopMode(ELoopMode loopMode);
+        RAMSES_API status_t setLoopMode(ELoopMode loopMode);
 
         /**
         * @brief Get the current value for loop mode set using #setLoopMode
         *
         * @return The loop mode
         */
-        [[nodiscard]] ELoopMode getLoopMode() const;
+        [[nodiscard]] RAMSES_API ELoopMode getLoopMode() const;
 
         /**
         * @brief Sets time limits for time-out of different sections of render and update loop.
@@ -150,7 +156,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee successful read back, the result event has its own status.
         */
-        status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
+        RAMSES_API status_t setFrameTimerLimits(uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
 
         /**
         * @brief Sets the number of pending flushes accepted before force-applying them to their scene, or forcefully insubscribing the scene.
@@ -173,7 +179,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
+        RAMSES_API status_t setPendingFlushLimits(uint32_t forceApplyFlushLimit, uint32_t forceUnsubscribeSceneLimit);
 
         /**
         * @brief     Enable or disable skipping of rendering of unmodified buffers.
@@ -188,7 +194,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee successful read back, the result event has its own status.
         */
-        status_t setSkippingOfUnmodifiedBuffers(bool enable = true);
+        RAMSES_API status_t setSkippingOfUnmodifiedBuffers(bool enable = true);
 
         /**
          * @brief Creates a display based on provided display config.
@@ -202,7 +208,7 @@ namespace ramses
          *         if a valid display id is returned, the result of the actual creation
          *         can be retrieved via dispatchEvents.
          */
-        displayId_t createDisplay(const DisplayConfig& config);
+        RAMSES_API displayId_t createDisplay(const DisplayConfig& config);
 
         /**
         * @brief Destroy a display.
@@ -215,17 +221,17 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t destroyDisplay(displayId_t displayId);
+        RAMSES_API status_t destroyDisplay(displayId_t displayId);
 
         /**
         * @brief Get display's framebuffer ID.
         *        Every display upon creation has one framebuffer which can be referenced by a display buffer ID
-        *        to be used in various API methods that work with either a framebuffer or an offscreen buffer (e.g. RamsesRenderer::setBufferClearColor).
+        *        to be used in various API methods that work with either a framebuffer or an offscreen buffer (e.g. #ramses::RamsesRenderer::setDisplayBufferClearColor).
         *
         * @param displayId The ID of display for which the framebuffer ID is being queried.
         * @return Display's framebuffer ID or invalid ID if display does not exist.
         */
-        [[nodiscard]] displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
+        [[nodiscard]] RAMSES_API displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
         /**
         * @brief   Will create an offscreen buffer that can be used to render scenes into (see #ramses::RendererSceneControl::setSceneDisplayBufferAssignment)
@@ -245,7 +251,7 @@ namespace ramses
         *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
+        RAMSES_API displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
 
         /**
         * @brief     Additional API to create an offscreen buffer as interruptible. (see #createOffscreenBuffer)
@@ -272,7 +278,7 @@ namespace ramses
         *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        displayBufferId_t createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
+        RAMSES_API displayBufferId_t createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
 
         /**
         * @brief     Additional API to create an offscreen buffer using DMA buffer for internal storage. (see #createOffscreenBuffer)
@@ -310,7 +316,7 @@ namespace ramses
         *         In case of unsupported resolution or renderer running in own thread \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        displayBufferId_t createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t usageFlags, uint64_t modifier);
+        RAMSES_API displayBufferId_t createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t usageFlags, uint64_t modifier);
 
         /**
         * @brief   Get the FD and stride for a DMA offscreen buffer previously created on the given display
@@ -337,7 +343,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
+        RAMSES_API status_t getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
 
         /**
         * @brief Will destroy a previously created offscreen buffer.
@@ -350,7 +356,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
+        RAMSES_API status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
 
         /**
         * @brief   Creates a buffer using OpenGL External textures for storage.
@@ -380,7 +386,7 @@ namespace ramses
         * @return Identifier of the created external buffer.
         *         In case renderer is running in own thread \c externalBufferId_t::Invalid() will be returned.
         */
-        externalBufferId_t createExternalBuffer(displayId_t display);
+        RAMSES_API externalBufferId_t createExternalBuffer(displayId_t display);
 
         /**
         * @brief Will destroy a previously created external buffer.
@@ -391,7 +397,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalBuffer);
+        RAMSES_API status_t destroyExternalBuffer(displayId_t display, externalBufferId_t externalBuffer);
 
         /**
         * @brief   Creates a buffer for viewing wayland surfaces from the embedded compositor.
@@ -401,7 +407,7 @@ namespace ramses
         * @param[in] surfaceId Id of the wayland surface that the buffer should render from.
         * @return Identifier of the created external buffer.
         */
-        streamBufferId_t createStreamBuffer(displayId_t display, ramses::waylandIviSurfaceId_t surfaceId);
+        RAMSES_API streamBufferId_t createStreamBuffer(displayId_t display, ramses::waylandIviSurfaceId_t surfaceId);
 
         /**
         * @brief Will destroy a previously created stream buffer.
@@ -412,7 +418,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t destroyStreamBuffer(displayId_t display, ramses::streamBufferId_t bufferId);
+        RAMSES_API status_t destroyStreamBuffer(displayId_t display, ramses::streamBufferId_t bufferId);
 
         /**
         * @brief   Sets clear flags for a display buffer (display's framebuffer or offscreen buffer).
@@ -429,7 +435,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
+        RAMSES_API status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
 
         /**
         * @brief   Sets clear color of a display buffer (display's framebuffer or offscreen buffer).
@@ -445,7 +451,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, const vec4f& color);
+        RAMSES_API status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, const vec4f& color);
 
         /**
         * @brief   Updates display window size after a resize event on windows not owned by renderer.
@@ -468,7 +474,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setExternallyOwnedWindowSize(displayId_t display, uint32_t width, uint32_t height);
+        RAMSES_API status_t setExternallyOwnedWindowSize(displayId_t display, uint32_t width, uint32_t height);
 
         /**
         * @brief Triggers an asynchronous read back of a display buffer memory from GPU to system memory.
@@ -481,7 +487,7 @@ namespace ramses
         *          yet executed only the last submitted read pixel command gets executed.
         *
         *          The pixel data can be obtained as a renderer event after the asynchronous read back is finished,
-        *          see RamsesRenderer::dispatchEvents for details.
+        *          see #ramses::RamsesRenderer::dispatchEvents for details.
         * @param[in] displayId id of display to read pixels from.
         * @param[in] displayBuffer Id of display buffer to read pixels from,
         *                          if #ramses::displayBufferId_t::Invalid() is passed then pixels are read from the display's framebuffer.
@@ -494,7 +500,7 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         *         StatusOK does not guarantee successful read back, the result event has its own status.
         */
-        status_t readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+        RAMSES_API status_t readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
         /**
         * @brief Get scene control API
@@ -503,20 +509,20 @@ namespace ramses
         *          of content to be rendered (show/hide scene, data link, assign to display buffer, etc.).
         *          The scene control part can be obtained using this method, calling this method
         *          multiple times is allowed and will always return the same pointer, i.e. there is only
-        *          a single instance per RamsesRenderer.
+        *          a single instance per #ramses::RamsesRenderer.
         *          This method will return nullptr in case an internal policy disallows controlling of scenes
         *          through this API - this could mean that there is another, incompatible scene control
         *          mechanism in use.
         *          Scene control API has its own independent flush and event dispatching,
         *          see #ramses::RendererSceneControl for details.
         *
-        *          #RamsesRenderer is owner of the #ramses::RendererSceneControl API and the pointer
-        *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
-        *          without destroying the #RamsesRenderer.
+        *          #ramses::RamsesRenderer is owner of the #ramses::RendererSceneControl API and the pointer
+        *          stays valid as long as this #ramses::RamsesRenderer instance is alive. It cannot be destroyed
+        *          without destroying the #ramses::RamsesRenderer.
         *
         * @return Pointer to scene control API, or nullptr on error
         */
-        RendererSceneControl* getSceneControlAPI();
+        RAMSES_API RendererSceneControl* getSceneControlAPI();
 
         /////////////////////////////////////////////////
         //      System Compositor API
@@ -529,7 +535,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         **/
-        status_t setSurfaceVisibility(uint32_t surfaceId, bool visibility);
+        RAMSES_API status_t setSurfaceVisibility(uint32_t surfaceId, bool visibility);
 
         /**
         * @brief Set opacity of given surface at the system compositor
@@ -538,7 +544,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         **/
-        status_t setSurfaceOpacity(uint32_t surfaceId, float opacity);
+        RAMSES_API status_t setSurfaceOpacity(uint32_t surfaceId, float opacity);
 
         /**
         * @brief Set output rectangle of given surface at the system compositor
@@ -550,7 +556,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height);
+        RAMSES_API status_t setSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height);
 
         /**
         * @brief Set visibility of given layer at the system compositor
@@ -559,7 +565,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         **/
-        status_t setLayerVisibility(uint32_t layerId, bool visibility);
+        RAMSES_API status_t setLayerVisibility(uint32_t layerId, bool visibility);
 
         /**
         * @brief Trigger the System Compositor to take a screenshot and store it in a file.
@@ -569,7 +575,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t takeSystemCompositorScreenshot(const char* fileName, int32_t screenIviId);
+        RAMSES_API status_t takeSystemCompositorScreenshot(const char* fileName, int32_t screenIviId);
 
         /////////////////////////////////////////////////
         //      End of System Compositor API
@@ -577,8 +583,8 @@ namespace ramses
 
         /**
         * @brief Most RamsesRenderer methods push commands to an internal queue which is submitted
-        *        when calling RamsesRenderer::flush. The commands are then executed during a render loop
-        *        (RamsesRenderer::doOneLoop or in a render thread if used RamsesRenderer::startThread).
+        *        when calling #ramses::RamsesRenderer::flush. The commands are then executed during a render loop
+        *        (#ramses::RamsesRenderer::doOneLoop or in a render thread if used #ramses::RamsesRenderer::startThread).
         *        Some of these calls result in an event (can be both informational and data).
         *        Such events and their result can be retrieved using the dispatchEvents call.
         *        *IMPORTANT* Renderer events must be regularly consumed by calling dispatchEvents()
@@ -590,7 +596,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t dispatchEvents(IRendererEventHandler& rendererEventHandler);
+        RAMSES_API status_t dispatchEvents(IRendererEventHandler& rendererEventHandler);
 
         /**
         * @brief Submits renderer commands (API calls on this instance of RamsesRenderer)
@@ -599,7 +605,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t flush();
+        RAMSES_API status_t flush();
 
         /**
         * @brief Prints detailed information about renderer state and contents to the log output.
@@ -607,46 +613,23 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t logRendererInfo();
+        RAMSES_API status_t logRendererInfo();
 
         /**
         * Stores internal data for implementation specifics of RamsesRenderer
         */
-        class RamsesRendererImpl& impl;
+        class RamsesRendererImpl& m_impl;
 
+    private:
         /**
          * @brief Constructor of RamsesRenderer
          */
-        explicit RamsesRenderer(RamsesRendererImpl&);
+        explicit RamsesRenderer(std::unique_ptr<RamsesRendererImpl>);
 
-        /**
-         * @brief Deleted default constructor
-         */
-        RamsesRenderer() = delete;
-
-        /**
-         * @brief Deleted copy constructor
-         * @param other unused
-         */
-        RamsesRenderer(const RamsesRenderer& other) = delete;
-
-        /**
-         * @brief Deleted copy assignment
-         * @param other unused
-         * @return unused
-         */
-        RamsesRenderer& operator=(const RamsesRenderer& other) = delete;
-
-    private:
         /**
         * @brief RendererFactory is the factory for RamsesRenderer
         */
         friend class RendererFactory;
-
-        /**
-        * @brief Destructor of RamsesRenderer
-        */
-        ~RamsesRenderer() override;
     };
 }
 

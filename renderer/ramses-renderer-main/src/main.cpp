@@ -107,7 +107,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
     ramses::RamsesFramework framework(config);
     auto commandExit = std::make_shared<ramses_internal::RamshCommandExit>();
-    framework.impl.getRamsh().add(commandExit);
+    framework.m_impl.getRamsh().add(commandExit);
 
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     renderer.setSkippingOfUnmodifiedBuffers(skub);
@@ -124,7 +124,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     renderer.flush();
     renderer.startThread();
 
-    ramses::RendererMate rendererMate(renderer.impl, framework.impl);
+    ramses::RendererMate rendererMate(renderer.m_impl, framework.m_impl);
     // allow camera free move
     rendererMate.enableKeysHandling();
     ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping);

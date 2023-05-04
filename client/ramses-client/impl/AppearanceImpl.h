@@ -79,10 +79,6 @@ namespace ramses
         status_t setInputValue(const EffectInputImpl& input, uint32_t elementCount, const T* valuesIn);
         template <typename T>
         status_t getInputValue(const EffectInputImpl& input, uint32_t elementCount, T* valuesOut) const;
-        template <typename ContainerT, typename ElementT>
-        status_t setInputValueWithElementTypeCast(const EffectInputImpl& input, uint32_t elementCount, const ElementT* valuesIn);
-        template <typename ContainerT, typename ElementT>
-        status_t getInputValueWithElementTypeCast(const EffectInputImpl& input, uint32_t elementCount, ElementT* valuesOut) const;
 
         status_t setInputTexture(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler);
         status_t getInputTexture(const EffectInputImpl& input, const TextureSampler*& textureSampler);

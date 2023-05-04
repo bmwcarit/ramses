@@ -23,7 +23,7 @@
 #include "ramses-logic/AnchorPoint.h"
 #include "impl/LogicObjectImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     LogicObject::LogicObject(std::unique_ptr<internal::LogicObjectImpl> impl) noexcept
         : m_impl{ std::move(impl) }

@@ -21,7 +21,7 @@
 #include "internals/PropertyTypeExtractor.h"
 #include <fmt/format.h>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LuaModuleImpl::LuaModuleImpl(LuaCompiledModule module, std::string_view name, uint64_t id)
         : LogicObjectImpl(name, id)
@@ -32,7 +32,7 @@ namespace rlogic::internal
         , m_stdModules{ std::move(module.source.stdModules) }
         , m_hasDebugLogFunctions{ module.source.hasDebugLogFunctions }
     {
-        assert(m_module != sol::nil);
+        assert(m_module != sol::lua_nil);
     }
 
     const sol::table& LuaModuleImpl::getModule() const

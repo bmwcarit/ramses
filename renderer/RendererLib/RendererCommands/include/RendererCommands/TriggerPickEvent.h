@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit TriggerPickEvent(RendererCommandBuffer& rendererCommandBuffer);
-        Bool execute(UInt64& sceneId, Float& pickCoordX, Float& pickCoordY) const override;
+        bool execute(UInt64& sceneId, Float& pickCoordX, Float& pickCoordY) const override;
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;
     };

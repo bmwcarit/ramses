@@ -19,7 +19,7 @@
 #include "ramses-logic/SaveFileConfig.h"
 #include "ramses-logic/WarningData.h"
 #include "ramses-logic/PropertyLink.h"
-#include "ramses-logic/DataTypes.h"
+#include "ramses-framework-api/DataTypes.h"
 #include "ramses-framework-api/EFeatureLevel.h"
 
 #include <vector>
@@ -37,12 +37,17 @@ namespace ramses
     class MeshNode;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicEngineImpl;
 }
 
-namespace rlogic
+/**
+ * @defgroup LogicAPI The Ramses Logic API
+ * This group contains all of the Ramses Logic API types.
+ */
+
+namespace ramses
 {
     class LogicNode;
     class LuaScript;
@@ -62,9 +67,10 @@ namespace rlogic
     class AnimationNodeConfig;
     class TimerNode;
     class AnchorPoint;
-    enum class ELogMessageType;
+    enum class ELogLevel;
 
     /**
+    * @ingroup LogicAPI
     * Central object which creates and manages the lifecycle and execution
     * of scripts, bindings, and all other objects supported by the Ramses Logic library.
     * All objects created by this class' methods must be destroyed with #destroy!
@@ -101,19 +107,19 @@ namespace rlogic
         [[nodiscard]] RAMSES_API ramses::EFeatureLevel getFeatureLevel() const;
 
         /**
-        * Returns an iterable #rlogic::Collection of all instances of \c T created by this #LogicEngine.
-        * \c T must be a concrete logic object type (e.g. #rlogic::LuaScript) or #rlogic::LogicObject which will retrieve
-        * all logic objects created with this #LogicEngine (see #rlogic::LogicObject::as<Type> to convert to concrete type).
+        * Returns an iterable #ramses::Collection of all instances of \c T created by this #LogicEngine.
+        * \c T must be a concrete logic object type (e.g. #ramses::LuaScript) or #ramses::LogicObject which will retrieve
+        * all logic objects created with this #LogicEngine (see #ramses::LogicObject::as<Type> to convert to concrete type).
         *
-        * @return an iterable #rlogic::Collection with all instances of \c T created by this #LogicEngine
+        * @return an iterable #ramses::Collection with all instances of \c T created by this #LogicEngine
         */
         template <typename T>
         [[nodiscard]] Collection<T> getCollection() const;
 
         /**
         * Returns a pointer to the first occurrence of an object with a given \p name of the type \c T.
-        * \c T must be a concrete logic object type (e.g. #rlogic::LuaScript) or #rlogic::LogicObject which will search
-        * any object with given name regardless of its type (see #rlogic::LogicObject::as<Type> to convert to concrete type).
+        * \c T must be a concrete logic object type (e.g. #ramses::LuaScript) or #ramses::LogicObject which will search
+        * any object with given name regardless of its type (see #ramses::LogicObject::as<Type> to convert to concrete type).
         *
         * @param name the name of the logic object to search for
         * @return a pointer to the logic object, or nullptr if none was found
@@ -127,7 +133,7 @@ namespace rlogic
 
         /**
         * Returns a pointer to the first occurrence of an object with a given \p id regardless of its type.
-        * To convert the object to a concrete type (e.g. LuaScript) use #rlogic::LogicObject::as<Type>() e.g.:
+        * To convert the object to a concrete type (e.g. LuaScript) use #ramses::LogicObject::as<Type>() e.g.:
         *   auto myLuaScript = logicEngine.findLogicObjectById(1u)->as<LuaScript>());
         * Be aware that this function behaves as \c dynamic_cast and will return nullptr (without error) if
         * given type doesn't match the objects type. This can later lead to crash if ignored.
@@ -140,7 +146,7 @@ namespace rlogic
         [[nodiscard]] RAMSES_API LogicObject* findLogicObjectById(uint64_t id);
 
         /**
-        * Creates a new Lua script from a source string. Refer to the #rlogic::LuaScript class
+        * Creates a new Lua script from a source string. Refer to the #ramses::LuaScript class
         * for requirements which Lua scripts must fulfill in order to be added to the #LogicEngine.
         * You can optionally provide Lua module dependencies via the \p config, they will be accessible
         * under their configured alias name for use by the script. The provided module dependencies
@@ -161,10 +167,10 @@ namespace rlogic
             std::string_view scriptName = "");
 
         /**
-        * Creates a new Lua interface from a source string. Refer to the #rlogic::LuaInterface class
+        * Creates a new Lua interface from a source string. Refer to the #ramses::LuaInterface class
         * for requirements which Lua interface must fulfill in order to be added to the #LogicEngine.
         * Note: interfaces must have a non-empty name.
-        * #rlogic::LuaInterface can be created with any non-empty name but if two or more instances
+        * #ramses::LuaInterface can be created with any non-empty name but if two or more instances
         * share same name there will be a warning during validation (#validate) as it is advised
         * for every Lua interface to have a unique name for clear identification from application logic.
         * You can optionally provide Lua module dependencies via the \p config, they will be accessible
@@ -189,7 +195,7 @@ namespace rlogic
         * Deprecated! Use #createLuaInterface(std::string_view, std::string_view, const LuaConfig&) instead.
         *
         * Same as #createLuaInterface(std::string_view, std::string_view, const LuaConfig&) but without
-        * support for using #rlogic::LuaModule in the interface, also will ignore any \c modules
+        * support for using #ramses::LuaModule in the interface, also will ignore any \c modules
         * declaration within the provided interface source.
         *
         * @deprecated
@@ -204,9 +210,9 @@ namespace rlogic
             std::string_view interfaceName);
 
         /**
-         * Creates a new #rlogic::LuaModule from Lua source code.
+         * Creates a new #ramses::LuaModule from Lua source code.
          * LuaModules can be used to share code and data constants across scripts or
-         * other modules. See also #createLuaScript and #rlogic::LuaConfig for details.
+         * other modules. See also #createLuaScript and #ramses::LuaConfig for details.
          * You can optionally provide Lua module dependencies via the \p config, they will be accessible
          * under their configured alias name for use by the module. The provided module dependencies
          * must exactly match the declared dependencies in source code (see #extractLuaDependencies).
@@ -227,10 +233,10 @@ namespace rlogic
 
         /**
          * Extracts dependencies from a Lua script, module or interface source code so that the corresponding
-         * modules can be provided when creating #rlogic::LuaScript, #rlogic::LuaModule or #rlogic::LuaInterface.
+         * modules can be provided when creating #ramses::LuaScript, #ramses::LuaModule or #ramses::LuaInterface.
          *
-         * Any #rlogic::LuaScript, #rlogic::LuaModule or #rlogic::LuaInterface which has a module dependency,
-         * i.e. it requires another #rlogic::LuaModule for it to work, must explicitly declare these
+         * Any #ramses::LuaScript, #ramses::LuaModule or #ramses::LuaInterface which has a module dependency,
+         * i.e. it requires another #ramses::LuaModule for it to work, must explicitly declare these
          * dependencies directly in their source code by calling function 'modules' in global space
          * and pass list of module names it depends on, for example:
          *   \code{.lua}
@@ -263,7 +269,7 @@ namespace rlogic
             const std::function<void(const std::string&)>& callbackFunc);
 
         /**
-         * Creates a new #rlogic::RamsesNodeBinding which can be used to set the properties of a Ramses Node object.
+         * Creates a new #ramses::RamsesNodeBinding which can be used to set the properties of a Ramses Node object.
          * The initial values of the binding's properties are loaded from the \p ramsesNode. Rotation values are
          * taken over from the \p ramsesNode only if the conventions are compatible (see \ref ramses::ERotationType).
          *
@@ -271,7 +277,7 @@ namespace rlogic
          *
          * @param ramsesNode the ramses::Node object to control with the binding.
          * @param rotationType the type of rotation to use (will affect the 'rotation' property semantics and type).
-         * @param name a name for the new #rlogic::RamsesNodeBinding.
+         * @param name a name for the new #ramses::RamsesNodeBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -279,12 +285,12 @@ namespace rlogic
         RAMSES_API RamsesNodeBinding* createRamsesNodeBinding(ramses::Node& ramsesNode, ramses::ERotationType rotationType = ramses::ERotationType::Euler_XYZ, std::string_view name = "");
 
         /**
-         * Creates a new #rlogic::RamsesAppearanceBinding which can be used to set the properties of a Ramses Appearance object.
+         * Creates a new #ramses::RamsesAppearanceBinding which can be used to set the properties of a Ramses Appearance object.
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
          * @param ramsesAppearance the ramses::Appearance object to control with the binding.
-         * @param name a name for the the new #rlogic::RamsesAppearanceBinding.
+         * @param name a name for the the new #ramses::RamsesAppearanceBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -292,12 +298,12 @@ namespace rlogic
         RAMSES_API RamsesAppearanceBinding* createRamsesAppearanceBinding(ramses::Appearance& ramsesAppearance, std::string_view name = "");
 
         /**
-         * Creates a new #rlogic::RamsesCameraBinding which can be used to set the properties of a Ramses Camera object.
+         * Creates a new #ramses::RamsesCameraBinding which can be used to set the properties of a Ramses Camera object.
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
          * @param ramsesCamera the ramses::Camera object to control with the binding.
-         * @param name a name for the the new #rlogic::RamsesCameraBinding.
+         * @param name a name for the the new #ramses::RamsesCameraBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -305,15 +311,15 @@ namespace rlogic
         RAMSES_API RamsesCameraBinding* createRamsesCameraBinding(ramses::Camera& ramsesCamera, std::string_view name ="");
 
         /**
-         * Same as #createRamsesCameraBinding but the created #rlogic::RamsesCameraBinding will have an input property
-         * for each frustum plane also for perspective camera. See #rlogic::RamsesCameraBinding for details.
+         * Same as #createRamsesCameraBinding but the created #ramses::RamsesCameraBinding will have an input property
+         * for each frustum plane also for perspective camera. See #ramses::RamsesCameraBinding for details.
          * Note that ramses::OrthographicCamera binding will always have frustum planes as properties whether #createRamsesCameraBinding
          * or #createRamsesCameraBindingWithFrustumPlanes is used to create it.
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
          * @param ramsesCamera the ramses::Camera object to control with the binding.
-         * @param name a name for the the new #rlogic::RamsesCameraBinding.
+         * @param name a name for the the new #ramses::RamsesCameraBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -321,12 +327,12 @@ namespace rlogic
         RAMSES_API RamsesCameraBinding* createRamsesCameraBindingWithFrustumPlanes(ramses::Camera& ramsesCamera, std::string_view name ="");
 
         /**
-         * Creates a new #rlogic::RamsesRenderPassBinding which can be used to set the properties of a ramses::RenderPass object.
+         * Creates a new #ramses::RamsesRenderPassBinding which can be used to set the properties of a ramses::RenderPass object.
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
          * @param ramsesRenderPass the ramses::RenderPass object to control with the binding.
-         * @param name a name for the the new #rlogic::RamsesRenderPassBinding.
+         * @param name a name for the the new #ramses::RamsesRenderPassBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -334,16 +340,16 @@ namespace rlogic
         RAMSES_API RamsesRenderPassBinding* createRamsesRenderPassBinding(ramses::RenderPass& ramsesRenderPass, std::string_view name ="");
 
         /**
-         * Creates a new #rlogic::RamsesRenderGroupBinding which can be used to control some properties of a ramses::RenderGroup object.
-         * #rlogic::RamsesRenderGroupBinding can be used to control render order of elements it contains on Ramses side - ramses::MeshNode or ramses::RenderGroup,
-         * the elements to control must be provided explicitly at creation time, see #rlogic::RamsesRenderGroupBindingElements and #rlogic::RamsesRenderGroupBinding
+         * Creates a new #ramses::RamsesRenderGroupBinding which can be used to control some properties of a ramses::RenderGroup object.
+         * #ramses::RamsesRenderGroupBinding can be used to control render order of elements it contains on Ramses side - ramses::MeshNode or ramses::RenderGroup,
+         * the elements to control must be provided explicitly at creation time, see #ramses::RamsesRenderGroupBindingElements and #ramses::RamsesRenderGroupBinding
          * to learn how these elements form the binding's input properties.
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
          * @param ramsesRenderGroup the ramses::RenderGroup object to control with the binding.
-         * @param elements collection of elements (MeshNode or RenderGroup) to control with this #rlogic::RamsesRenderGroupBinding.
-         * @param name a name for the the new #rlogic::RamsesRenderGroupBinding.
+         * @param elements collection of elements (MeshNode or RenderGroup) to control with this #ramses::RamsesRenderGroupBinding.
+         * @param name a name for the the new #ramses::RamsesRenderGroupBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -351,12 +357,12 @@ namespace rlogic
         RAMSES_API RamsesRenderGroupBinding* createRamsesRenderGroupBinding(ramses::RenderGroup& ramsesRenderGroup, const RamsesRenderGroupBindingElements& elements, std::string_view name ="");
 
         /**
-         * Creates a new #rlogic::RamsesMeshNodeBinding which can be used to control some properties of a ramses::MeshNode object.
+         * Creates a new #ramses::RamsesMeshNodeBinding which can be used to control some properties of a ramses::MeshNode object.
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
          * @param ramsesMeshNode the ramses::MeshNode object to control with the binding.
-         * @param name a name for the the new #rlogic::RamsesMeshNodeBinding.
+         * @param name a name for the the new #ramses::RamsesMeshNodeBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -364,8 +370,8 @@ namespace rlogic
         RAMSES_API RamsesMeshNodeBinding* createRamsesMeshNodeBinding(ramses::MeshNode& ramsesMeshNode, std::string_view name ="");
 
         /**
-         * Creates a new #rlogic::SkinBinding which can be used for vertex skinning (bone animations).
-         * Refer to #rlogic::SkinBinding and examples for all the information needed how to use this object.
+         * Creates a new #ramses::SkinBinding which can be used for vertex skinning (bone animations).
+         * Refer to #ramses::SkinBinding and examples for all the information needed how to use this object.
          *
          * These conditions must be met in order for the creation to succeed:
          *  - \c joints must contain at least 1 joint and no null pointers
@@ -380,7 +386,7 @@ namespace rlogic
          * @param inverseBindMatrices inverse transformation matrices (one for each joint node), values are expected ordered in column-major fashion.
          * @param appearanceBinding binding to Ramses appearance which specifies the effect/shader for vertex skinning.
          * @param jointMatInput Ramses appearance uniform input for the resulting joint matrices to be set.
-         * @param name a name for the the new #rlogic::SkinBinding.
+         * @param name a name for the the new #ramses::SkinBinding.
          * @return a pointer to the created object or nullptr if
          * something went wrong during creation. In that case, use #getErrors() to obtain errors.
          * The binding can be destroyed by calling the #destroy method
@@ -393,17 +399,17 @@ namespace rlogic
             std::string_view name = {});
 
         /**
-        * Creates a new #rlogic::DataArray to store data which can be used with animations.
+        * Creates a new #ramses::DataArray to store data which can be used with animations.
         * Provided data must not be empty otherwise creation will fail.
-        * See #rlogic::CanPropertyTypeBeStoredInDataArray and #rlogic::PropertyTypeToEnum
-        * to determine supported types that can be used to create a #rlogic::DataArray.
-        * When using std::vector<float> as element data type (corresponds to #rlogic::EPropertyType::Array),
+        * See #ramses::CanPropertyTypeBeStoredInDataArray and #ramses::PropertyTypeToEnum
+        * to determine supported types that can be used to create a #ramses::DataArray.
+        * When using std::vector<float> as element data type (corresponds to #ramses::EPropertyType::Array),
         * the sizes of all the elements (std::vector<float> instances) must be equal, otherwise creation will fail.
         *
         * Attention! This method clears all previous errors! See also docs of #getErrors()
         *
-        * @param data source data to move into #rlogic::DataArray, must not be empty.
-        * @param name a name for the the new #rlogic::DataArray.
+        * @param data source data to move into #ramses::DataArray, must not be empty.
+        * @param name a name for the the new #ramses::DataArray.
         * @return a pointer to the created object or nullptr if
         * something went wrong during creation. In that case, use #getErrors() to obtain errors.
         */
@@ -411,54 +417,54 @@ namespace rlogic
         DataArray* createDataArray(const std::vector<T>& data, std::string_view name ="");
 
         /**
-        * Creates a new #rlogic::AnimationNode for animating properties.
-        * Refer to #rlogic::AnimationNode for more information about its use.
-        * There must be at least one channel provided in the #rlogic::AnimationNodeConfig,
-        * please see #rlogic::AnimationChannel requirements for all the data.
+        * Creates a new #ramses::AnimationNode for animating properties.
+        * Refer to #ramses::AnimationNode for more information about its use.
+        * There must be at least one channel provided in the #ramses::AnimationNodeConfig,
+        * please see #ramses::AnimationChannel requirements for all the data.
         *
         * Attention! This method clears all previous errors! See also docs of #getErrors()
         *
         * @param config list of animation channels to be animated with this animation node and other configuration flags.
-        * @param name a name for the the new #rlogic::AnimationNode.
+        * @param name a name for the the new #ramses::AnimationNode.
         * @return a pointer to the created object or nullptr if
         * something went wrong during creation. In that case, use #getErrors() to obtain errors.
         */
         RAMSES_API AnimationNode* createAnimationNode(const AnimationNodeConfig& config, std::string_view name = "");
 
         /**
-        * Creates a new #rlogic::TimerNode for generate and/or propagate timing information.
-        * Refer to #rlogic::TimerNode for more information about its use.
+        * Creates a new #ramses::TimerNode for generate and/or propagate timing information.
+        * Refer to #ramses::TimerNode for more information about its use.
         *
         * Attention! This method clears all previous errors! See also docs of #getErrors()
         *
-        * @param name a name for the the new #rlogic::TimerNode.
+        * @param name a name for the the new #ramses::TimerNode.
         * @return a pointer to the created object or nullptr if
         * something went wrong during creation. In that case, use #getErrors() to obtain errors.
         */
         RAMSES_API TimerNode* createTimerNode(std::string_view name = "");
 
         /**
-        * Creates a new #rlogic::AnchorPoint that can be used to calculate projected coordinates of given ramses::Node when viewed using given ramses::Camera.
-        * See #rlogic::AnchorPoint for more details and usage of this special purpose logic node.
+        * Creates a new #ramses::AnchorPoint that can be used to calculate projected coordinates of given ramses::Node when viewed using given ramses::Camera.
+        * See #ramses::AnchorPoint for more details and usage of this special purpose logic node.
         *
         * Attention! This method clears all previous errors! See also docs of #getErrors()
         *
         * @param nodeBinding binding referencing ramses::Node to use for model transformation when calculating projected coordinates.
         * @param cameraBinding binding referencing ramses::Camera to use for view and projection transformation when calculating projected coordinates.
-        * @param name a name for the the new #rlogic::AnchorPoint.
+        * @param name a name for the the new #ramses::AnchorPoint.
         * @return a pointer to the created object or nullptr if
         * something went wrong during creation. In that case, use #getErrors() to obtain errors.
-        * The #rlogic::AnchorPoint can be destroyed by calling the #destroy method
+        * The #ramses::AnchorPoint can be destroyed by calling the #destroy method
         */
         RAMSES_API AnchorPoint* createAnchorPoint(RamsesNodeBinding& nodeBinding, RamsesCameraBinding& cameraBinding, std::string_view name ="");
 
         /**
-         * Updates all #rlogic::LogicNode's which were created by this #LogicEngine instance.
-         * The order in which #rlogic::LogicNode's are executed is determined by the links created
-         * between them (see #link and #unlink). #rlogic::LogicNode's which don't have any links
+         * Updates all #ramses::LogicNode's which were created by this #LogicEngine instance.
+         * The order in which #ramses::LogicNode's are executed is determined by the links created
+         * between them (see #link and #unlink). #ramses::LogicNode's which don't have any links
          * between then are executed in arbitrary order, but the order is always the same between two
          * invocations of #update without any calls to #link or #unlink between them.
-         * As an optimization #rlogic::LogicNode's are only updated, if at least one input of a #rlogic::LogicNode
+         * As an optimization #ramses::LogicNode's are only updated, if at least one input of a #ramses::LogicNode
          * has changed since the last call to #update. If the links between logic nodes create a loop,
          * this method will fail with an error and will not execute any of the logic nodes.
          *
@@ -483,12 +489,12 @@ namespace rlogic
         /**
         * Returns collection of statistics from last call to #update if reporting is enabled (#enableUpdateReport).
         * The report contains lists of logic nodes that were executed and not executed and other useful data collected
-        * during last #update. See #rlogic::LogicEngineReport for details.
+        * during last #update. See #ramses::LogicEngineReport for details.
         * The report data is generated only if previously enabled using #enableUpdateReport and is empty otherwise.
         * The data is only relevant for the last #update and is overwritten during next #update.
         * Note that if #update fails the report contents are undefined.
         *
-        * Attention! The #rlogic::LogicEngineReport is returned by value and owns all the reported data.
+        * Attention! The #ramses::LogicEngineReport is returned by value and owns all the reported data.
         *            Make sure to keep the object as long as its data is referenced.
         *
         * @return collected statistics from last #update.
@@ -516,20 +522,20 @@ namespace rlogic
         RAMSES_API void setStatisticsLoggingRate(size_t loggingRate);
 
         /**
-        * Update statistics default logLevel is #ELogMessageType::Debug. For the statistics to be logged the logLevel
-        * has to be <= then the result returned from #rlogic::Logger::GetLogVerbosityLimit.
-        * For example if #rlogic::Logger::GetLogVerbosityLimit returns #ELogMessageType::Info you have to
-        * set statistics logLevel to #ELogMessageType::Info or a smaller level (e.g. #ELogMessageType::Warn) to display statistics.
+        * Update statistics default logLevel is #ELogLevel::Debug. For the statistics to be logged the logLevel
+        * has to be <= then the result returned from #ramses::Logger::GetLogVerbosityLimit.
+        * For example if #ramses::Logger::GetLogVerbosityLimit returns #ELogLevel::Info you have to
+        * set statistics logLevel to #ELogLevel::Info or a smaller level (e.g. #ELogLevel::Warn) to display statistics.
         * Note that setting the statistics log level only influences the periodic statistic logs. All other logs are not influenced
         * by this method.
         * To control the rate after how many updates a log is produced refer to #setStatisticsLoggingRate.
         *
         * @param logLevel the logLevel of statistics messages
         */
-        RAMSES_API void setStatisticsLogLevel(ELogMessageType logLevel);
+        RAMSES_API void setStatisticsLogLevel(ELogLevel logLevel);
 
         /**
-         * Links a property of a #rlogic::LogicNode to another #rlogic::Property of another #rlogic::LogicNode.
+         * Links a property of a #ramses::LogicNode to another #ramses::Property of another #ramses::LogicNode.
          * After linking, calls to #update will propagate the value of \p sourceProperty to
          * the \p targetProperty. Creating links influences the order in which scripts
          * are executed - if node A provides data to node B, then node A will be executed
@@ -538,9 +544,9 @@ namespace rlogic
          * (links are directional and support a 1-to-N relationships).
          *
          * The #link() method will fail when:
-         * - \p sourceProperty and \p targetProperty belong to the same #rlogic::LogicNode
-         * - \p sourceProperty is not an output (see #rlogic::LogicNode::getOutputs())
-         * - \p targetProperty is not an input (see #rlogic::LogicNode::getInputs())
+         * - \p sourceProperty and \p targetProperty belong to the same #ramses::LogicNode
+         * - \p sourceProperty is not an output (see #ramses::LogicNode::getOutputs())
+         * - \p targetProperty is not an input (see #ramses::LogicNode::getInputs())
          * - either \p sourceProperty or \p targetProperty is not a primitive property (you have to link sub-properties
          *   of structs and arrays individually)
          *
@@ -595,7 +601,7 @@ namespace rlogic
          * Unlinks two properties which were linked with #link. After a link is destroyed,
          * calls to #update will no longer propagate the output value from the \p sourceProperty to
          * the input value of the \p targetProperty. The value of the \p targetProperty will remain as it was after the last call to #update -
-         * it will **not** be restored to a default value or to any value which was set manually with calls to #rlogic::Property::set().
+         * it will **not** be restored to a default value or to any value which was set manually with calls to #ramses::Property::set().
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
@@ -615,7 +621,7 @@ namespace rlogic
 
         /**
          * Collect and retrieve all existing links between properties of logic nodes.
-         * There will be a #rlogic::PropertyLink in the returned container for every existing link created
+         * There will be a #ramses::PropertyLink in the returned container for every existing link created
          * (using #link or #linkWeak).
          *
          * Note that the returned container will not be modified (even if new links are created or unlinked in #LogicEngine)
@@ -650,16 +656,16 @@ namespace rlogic
 
         /**
         * Destroys an instance of an object created with #LogicEngine.
-        * All objects created using #LogicEngine derive from a base class #rlogic::LogicObject
+        * All objects created using #LogicEngine derive from a base class #ramses::LogicObject
         * and can be destroyed using this method.
         *
-        * In case of a #rlogic::LogicNode and its derived classes, if any links are connected to this #rlogic::LogicNode,
-        * they will be destroyed too. Note that after this call, the execution order of #rlogic::LogicNode may change! See the
+        * In case of a #ramses::LogicNode and its derived classes, if any links are connected to this #ramses::LogicNode,
+        * they will be destroyed too. Note that after this call, the execution order of #ramses::LogicNode may change! See the
         * docs of #link and #unlink for more information.
         *
-        * In case of a #rlogic::DataArray, destroy will fail if it is used in any #rlogic::AnimationNode's #rlogic::AnimationChannel.
+        * In case of a #ramses::DataArray, destroy will fail if it is used in any #ramses::AnimationNode's #ramses::AnimationChannel.
         *
-        * In case of a #rlogic::LuaModule, destroy will fail if it is used in any #rlogic::LuaScript.
+        * In case of a #ramses::LuaModule, destroy will fail if it is used in any #ramses::LuaScript.
         *
         * Attention! This method clears all previous errors! See also docs of #getErrors()
         *
@@ -670,7 +676,7 @@ namespace rlogic
 
         /**
          * Writes the whole #LogicEngine and all of its objects to a binary file with the given filename. The RAMSES scene
-         * potentially referenced by #rlogic::RamsesBinding objects is not saved - that is left to the application.
+         * potentially referenced by #ramses::RamsesBinding objects is not saved - that is left to the application.
          * #LogicEngine saves the references to those object, and restores them after loading.
          * Thus, deleting Ramses objects which are being referenced from within the #LogicEngine
          * will result in errors if the Logic Engine is loaded from the file again. Note that it is not sufficient
@@ -678,19 +684,19 @@ namespace rlogic
          * For more in-depth information regarding saving and loading, refer to the online documentation at
          * https://ramses-logic.readthedocs.io/en/latest/api.html#saving-loading-from-file
          *
-         * Note: The method reports error and aborts if the #rlogic::RamsesBinding objects reference more than one
+         * Note: The method reports error and aborts if the #ramses::RamsesBinding objects reference more than one
          * Ramses scene (this is acceptable during runtime, but not for saving to file).
          *
          * Note: This method fails and reports error if validation failed and was not disabled by
-         * calling #rlogic::SaveFileConfig::setValidationEnabled with false
+         * calling #ramses::SaveFileConfig::setValidationEnabled with false
          *
          * Note: This method fails and reports error if there is any Lua script or module with debug log functions,
-         * (see #rlogic::LuaConfig::enableDebugLogFunctions), these must be destroyed before saving to file.
+         * (see #ramses::LuaConfig::enableDebugLogFunctions), these must be destroyed before saving to file.
          *
          * Attention! This method clears all previous errors! See also docs of #getErrors()
          *
          * @param filename path to file to save the data (relative or absolute). The file will be created or overwritten if it exists!
-         * @param config optional configuration object with exporter and asset metadata info, see #rlogic::SaveFileConfig for details
+         * @param config optional configuration object with exporter and asset metadata info, see #ramses::SaveFileConfig for details
          * @return true if saving was successful, false otherwise. To get more detailed
          * error information use #getErrors()
          */
@@ -701,9 +707,9 @@ namespace rlogic
          * After loading, the previous state of the #LogicEngine will be overwritten with the
          * contents loaded from the file, i.e. all previously created objects (scripts, bindings, etc.)
          * will be deleted and pointers to them will be invalid. The (optionally) provided ramsesScene
-         * will be used to resolve potential #rlogic::RamsesBinding objects which point to Ramses objects.
+         * will be used to resolve potential #ramses::RamsesBinding objects which point to Ramses objects.
          * You can provide a nullptr if you know for sure that the
-         * #LogicEngine loaded from the file has no #rlogic::RamsesBinding objects which point to a Ramses scene object.
+         * #LogicEngine loaded from the file has no #ramses::RamsesBinding objects which point to a Ramses scene object.
          * Otherwise, the call to #loadFromFile will fail with an error. In case of errors, the #LogicEngine
          * may be left in an inconsistent state.
          * For more in-depth information regarding saving and loading, refer to the online documentation at
@@ -758,19 +764,19 @@ namespace rlogic
         * Calculates the serialized size of all objects contained in this LogicEngine instance.
         * Note that the returned size will differ from actual size when saved to a file but the difference should be no more than several bytes
         * (file header, meta information, etc.).
-        * @param luaSavingMode calculate with Lua code saved as source string, binary or both, see #rlogic::SaveFileConfig::setLuaSavingMode),
-        *                      default is #rlogic::ELuaSavingMode::SourceAndByteCode.
+        * @param luaSavingMode calculate with Lua code saved as source string, binary or both, see #ramses::SaveFileConfig::setLuaSavingMode),
+        *                      default is #ramses::ELuaSavingMode::SourceAndByteCode.
         * @return size in bytes of the serialized LogicEngine.
         */
         [[nodiscard]] RAMSES_API size_t getTotalSerializedSize(ELuaSavingMode luaSavingMode = ELuaSavingMode::SourceAndByteCode) const;
 
         /**
         * Calculates the serialized size of all objects of a specific type in this LogicEngine instance.
-        * \c T must be a concrete logic object type (e.g. #rlogic::LuaScript). For the logic type LogicObject the size of all logic objects will be returned.
+        * \c T must be a concrete logic object type (e.g. #ramses::LuaScript). For the logic type LogicObject the size of all logic objects will be returned.
         *
         * @tparam T Logic object type to calculate size for
-        * @param luaSavingMode calculate with Lua code saved as source string, binary or both, see #rlogic::SaveFileConfig::setLuaSavingMode),
-        *                      default is #rlogic::ELuaSavingMode::SourceAndByteCode (relevant only for object types containing Lua code).
+        * @param luaSavingMode calculate with Lua code saved as source string, binary or both, see #ramses::SaveFileConfig::setLuaSavingMode),
+        *                      default is #ramses::ELuaSavingMode::SourceAndByteCode (relevant only for object types containing Lua code).
         * @return size in bytes of the serialized objects.
         */
         template<typename T>

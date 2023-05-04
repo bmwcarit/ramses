@@ -497,6 +497,6 @@ namespace ramses
     TEST_F(ARamsesUtilsTest, getNodeHandleReturnsMemoryHandle)
     {
         MeshNode& node = this->createValidMeshNode();
-        EXPECT_EQ(node.impl.getNodeHandle().asMemoryHandle(), RamsesUtils::GetNodeId(node).getValue());
+        EXPECT_EQ(node.m_impl.getNodeHandle().asMemoryHandle(), RamsesUtils::GetNodeId(node).getValue());
     }
 }

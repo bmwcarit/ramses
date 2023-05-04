@@ -18,6 +18,11 @@
 #include <vector>
 #include <string>
 
+/**
+ * @defgroup UtilsAPI The Ramses Utils API
+ * This group contains all of the Ramses Utility API types.
+ */
+
 namespace ramses
 {
     class RamsesObject;
@@ -31,6 +36,7 @@ namespace ramses
     struct CubeMipLevelData;
 
     /**
+     * @ingroup UtilsAPI
      * @brief Temporary functions for convenience. All of these can be implemented on top
      * of the RAMSES Client API, but are offered here as convenience.
      */
@@ -206,7 +212,7 @@ namespace ramses
          * @return The loaded ramses Scene or nullptr on error
          *
          */
-        static Scene* LoadSceneFromMemory(RamsesClient& client, std::unique_ptr<unsigned char[]> data, size_t size, bool localOnly);
+        static Scene* LoadSceneFromMemory(RamsesClient& client, std::unique_ptr<unsigned char[]> data, size_t size, bool localOnly); // NOLINT(modernize-avoid-c-arrays)
 
         /**
          * @brief Dumps all objects of a scene which do not contribute to the visual appearance of the scene on screen.
@@ -227,8 +233,10 @@ namespace ramses
         static void DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out);
     };
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     inline Scene* RamsesUtils::LoadSceneFromMemory(RamsesClient& client, std::unique_ptr<unsigned char[]> data, size_t size, bool localOnly)
     {
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> dataWithDeleter(data.release(), [](const unsigned char* ptr) { delete[] ptr; });
         return client.loadSceneFromMemory(std::move(dataWithDeleter), size, localOnly);
     }

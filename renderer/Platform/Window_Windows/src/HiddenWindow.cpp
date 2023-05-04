@@ -80,7 +80,7 @@ namespace ramses_internal
         UnregisterClassA(windowClass.lpszClassName, windowClass.hInstance);
     }
 
-    Bool HiddenWindow::InitSimplePixelFormat(HDC tempDisplayHandle)
+    bool HiddenWindow::InitSimplePixelFormat(HDC tempDisplayHandle)
     {
         static PIXELFORMATDESCRIPTOR pfd =
         {

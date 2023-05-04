@@ -10,7 +10,7 @@
 #include "ramses-logic/RamsesAppearanceBinding.h"
 #include "impl/RamsesAppearanceBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesAppearanceBinding::RamsesAppearanceBinding(std::unique_ptr<internal::RamsesAppearanceBindingImpl> impl) noexcept
         : RamsesBinding(std::move(impl))
@@ -18,8 +18,6 @@ namespace rlogic
         , m_appearanceBinding{ static_cast<internal::RamsesAppearanceBindingImpl&>(RamsesBinding::m_impl) }
     {
     }
-
-    RamsesAppearanceBinding::~RamsesAppearanceBinding() noexcept = default;
 
     ramses::Appearance& RamsesAppearanceBinding::getRamsesAppearance() const
     {

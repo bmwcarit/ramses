@@ -11,7 +11,7 @@
 #include "impl/RamsesNodeBindingImpl.h"
 #include "impl/RamsesCameraBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     AnchorPoint::AnchorPoint(std::unique_ptr<internal::AnchorPointImpl> impl) noexcept
         : LogicNode(std::move(impl))
@@ -19,8 +19,6 @@ namespace rlogic
         , m_anchorPointImpl{ static_cast<internal::AnchorPointImpl&>(LogicNode::m_impl) }
     {
     }
-
-    AnchorPoint::~AnchorPoint() noexcept = default;
 
     const ramses::Node& AnchorPoint::getRamsesNode() const
     {

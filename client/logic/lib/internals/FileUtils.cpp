@@ -10,7 +10,7 @@
 #include "StdFilesystemWrapper.h"
 #include <fstream>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     bool FileUtils::SaveBinary(const std::string& filename, const void* binaryBuffer, size_t bufferLength)
     {

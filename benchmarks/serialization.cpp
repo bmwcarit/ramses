@@ -16,11 +16,11 @@
 #include "fmt/format.h"
 #include <fstream>
 
-namespace rlogic
+namespace ramses
 {
     static std::vector<char> CreateLargeLogicEngineBuffer(std::string_view fileName, std::size_t scriptCount)
     {
-        Logger::SetLogVerbosityLimit(ELogMessageType::Off);
+        Logger::SetLogVerbosityLimit(ELogLevel::Off);
 
         LogicEngine logicEngine;
 
@@ -68,7 +68,7 @@ namespace rlogic
 
     static void BM_LoadFromBuffer_WithVerifier(benchmark::State& state)
     {
-        Logger::SetLogVerbosityLimit(ELogMessageType::Off);
+        Logger::SetLogVerbosityLimit(ELogLevel::Off);
 
         const std::size_t scriptCount = static_cast<std::size_t>(state.range(0));
 
@@ -86,7 +86,7 @@ namespace rlogic
 
     static void BM_LoadFromBuffer_WithoutVerifier(benchmark::State& state)
     {
-        Logger::SetLogVerbosityLimit(ELogMessageType::Off);
+        Logger::SetLogVerbosityLimit(ELogLevel::Off);
 
         const std::size_t scriptCount = static_cast<std::size_t>(state.range(0));
 

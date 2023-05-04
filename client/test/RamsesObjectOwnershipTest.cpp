@@ -72,7 +72,7 @@ namespace ramses
         void expectNoFrameworkObjectsAllocated()
         {
             m_creationHelper.destroyAdditionalAllocatedSceneObjects();
-            const ramses_internal::IScene& scene = this->m_scene.impl.getIScene();
+            const ramses_internal::IScene& scene = this->m_scene.m_impl.getIScene();
 
             for (ramses_internal::NodeHandle i(0); i < scene.getNodeCount(); ++i)
             {
@@ -144,9 +144,9 @@ namespace ramses
     {
         auto obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
-        EXPECT_EQ(&this->m_scene.impl, &obj->impl.getSceneImpl());
-        EXPECT_EQ(&this->m_scene.impl.getIScene(), &obj->impl.getIScene());
-        EXPECT_EQ(&this->client.impl, &obj->impl.getClientImpl());
+        EXPECT_EQ(&this->m_scene.m_impl, &obj->m_impl.getSceneImpl());
+        EXPECT_EQ(&this->m_scene.m_impl.getIScene(), &obj->m_impl.getIScene());
+        EXPECT_EQ(&this->client.m_impl, &obj->m_impl.getClientImpl());
     }
 
     TYPED_TEST(SceneOwnershipTest, sceneContainsCreatedObject)
@@ -176,26 +176,26 @@ namespace ramses
 
     TYPED_TEST(SceneOwnershipTest, creatingAndDestroyingObjectsUpdatesStatisticCounter)
     {
-        this->m_scene.impl.getStatisticCollection().nextTimeInterval(); //object number is updated by nextTimeInterval()
-        ramses_internal::UInt32 initialNumber = this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue();
-        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsCreated.getCounterValue());
-        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
+        this->m_scene.m_impl.getStatisticCollection().nextTimeInterval(); //object number is updated by nextTimeInterval()
+        ramses_internal::UInt32 initialNumber = this->m_scene.m_impl.getStatisticCollection().statObjectsCount.getCounterValue();
+        EXPECT_EQ(0u, this->m_scene.m_impl.getStatisticCollection().statObjectsCreated.getCounterValue());
+        EXPECT_EQ(0u, this->m_scene.m_impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
 
         auto obj = &this->template createObject<TypeParam>("objectName");
-        ramses_internal::UInt32 numberCreated = this->m_scene.impl.getStatisticCollection().statObjectsCreated.getCounterValue();
+        ramses_internal::UInt32 numberCreated = this->m_scene.m_impl.getStatisticCollection().statObjectsCreated.getCounterValue();
         EXPECT_LE(1u, numberCreated); //some types create multiple scene objects (e.g. RenderTarget)
-        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
+        EXPECT_EQ(0u, this->m_scene.m_impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
 
-        this->m_scene.impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_EQ(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue());
+        this->m_scene.m_impl.getStatisticCollection().nextTimeInterval();
+        EXPECT_EQ(initialNumber + numberCreated, this->m_scene.m_impl.getStatisticCollection().statObjectsCount.getCounterValue());
 
         this->m_scene.destroy(*obj);
 
-        EXPECT_LE(1u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
+        EXPECT_LE(1u, this->m_scene.m_impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
 
-        this->m_scene.impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_GT(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue());
-        EXPECT_LE(initialNumber, this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue());
+        this->m_scene.m_impl.getStatisticCollection().nextTimeInterval();
+        EXPECT_GT(initialNumber + numberCreated, this->m_scene.m_impl.getStatisticCollection().statObjectsCount.getCounterValue());
+        EXPECT_LE(initialNumber, this->m_scene.m_impl.getStatisticCollection().statObjectsCount.getCounterValue());
     }
 
     TYPED_TEST(ClientOwnershipTest, clientContainsCreatedObject)
@@ -237,7 +237,7 @@ namespace ramses
     {
         const ClientObject* obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
-        EXPECT_EQ(&this->client.impl, &obj->impl.getClientImpl());
+        EXPECT_EQ(&this->client.m_impl, &obj->m_impl.getClientImpl());
     }
 
     TYPED_TEST(ClientOwnershipTest, clientObjectNameChanged)

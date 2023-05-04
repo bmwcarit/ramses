@@ -17,7 +17,7 @@
 
 namespace ramses_internal
 {
-    ArrayResourceScene::ArrayResourceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    ArrayResourceScene::ArrayResourceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*createEffect(state))
     {

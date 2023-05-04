@@ -20,12 +20,12 @@ namespace ramses_internal
         HiddenWindow();
         ~HiddenWindow();
 
-        Bool successfullyCreated;
+        bool successfullyCreated;
         HWND windowHandle;
         HDC displayHandle;
         WNDCLASSA windowClass;
 
-        static Bool InitSimplePixelFormat(HDC tempDisplayHandle);
+        static bool InitSimplePixelFormat(HDC tempDisplayHandle);
         static LRESULT WINAPI DummyWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     };
 

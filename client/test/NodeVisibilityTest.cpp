@@ -39,7 +39,7 @@ namespace ramses
 
         void testFlattenedVisibility(EVisibilityMode mode)
         {
-            EXPECT_EQ(this->m_childMesh->impl.getFlattenedVisibility(), mode);
+            EXPECT_EQ(this->m_childMesh->m_impl.getFlattenedVisibility(), mode);
         }
 
         T* m_parentVisNode;
@@ -51,45 +51,45 @@ namespace ramses
 
     TYPED_TEST(ANodeVisibilityTest, isVisibleInitially)
     {
-        EXPECT_EQ(this->m_visibilityNode->impl.getVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(this->m_visibilityNode->m_impl.getVisibility(), EVisibilityMode::Visible);
     }
 
     TYPED_TEST(ANodeVisibilityTest, canChangeVisibility)
     {
         this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
-        EXPECT_EQ(this->m_visibilityNode->impl.getVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(this->m_visibilityNode->m_impl.getVisibility(), EVisibilityMode::Invisible);
         this->m_visibilityNode->setVisibility(EVisibilityMode::Off);
-        EXPECT_EQ(this->m_visibilityNode->impl.getVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(this->m_visibilityNode->m_impl.getVisibility(), EVisibilityMode::Off);
     }
 
     TYPED_TEST(ANodeVisibilityTest, isMarkedDirtyWhenChangingVisibility)
     {
         this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
     }
 
     TYPED_TEST(ANodeVisibilityTest, staysCleanWhenSettingTheSameVisibility)
     {
         this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
         this->m_scene.flush(); // to clear dirty state
 
         this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
-        EXPECT_FALSE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_FALSE(this->m_visibilityNode->m_impl.isDirty());
     }
 
     TYPED_TEST(ANodeVisibilityTest, confidenceTest_isMarkedDirtyWhenChangingVisibilityMultipleTimes)
     {
         this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
         this->m_scene.flush(); // to clear dirty state
 
         this->m_visibilityNode->setVisibility(EVisibilityMode::Visible);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
         this->m_scene.flush(); // to clear dirty state
 
         this->m_visibilityNode->setVisibility(EVisibilityMode::Off);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
     }
 
     TYPED_TEST(ANodeVisibilityTest, hasFlattenedVisibilitySetInitially)
@@ -102,7 +102,7 @@ namespace ramses
     TYPED_TEST(ANodeVisibilityTest, visibilityPropagatesFromParentToChildrenOnFlush)
     {
         this->m_visibilityNode->setVisibility(EVisibilityMode::Invisible);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
 
         this->m_scene.flush();
         this->testFlattenedVisibility(EVisibilityMode::Invisible);
@@ -111,7 +111,7 @@ namespace ramses
     TYPED_TEST(ANodeVisibilityTest, offVisibilityPropagatesFromParentToChildrenOnFlush)
     {
         this->m_visibilityNode->setVisibility(EVisibilityMode::Off);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
 
         this->m_scene.flush();
         this->testFlattenedVisibility(EVisibilityMode::Off);
@@ -120,7 +120,7 @@ namespace ramses
     TYPED_TEST(ANodeVisibilityTest, visibilityPropagatesFromGrandParentToChildrenOnFlush)
     {
         this->m_parentVisNode->setVisibility(EVisibilityMode::Invisible);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
 
         this->m_scene.flush();
         this->testFlattenedVisibility(EVisibilityMode::Invisible);
@@ -129,7 +129,7 @@ namespace ramses
     TYPED_TEST(ANodeVisibilityTest, offVisibilityPropagatesFromGrandParentToChildrenOnFlush)
     {
         this->m_parentVisNode->setVisibility(EVisibilityMode::Off);
-        EXPECT_TRUE(this->m_visibilityNode->impl.isDirty());
+        EXPECT_TRUE(this->m_visibilityNode->m_impl.isDirty());
 
         this->m_scene.flush();
         this->testFlattenedVisibility(EVisibilityMode::Off);
@@ -152,9 +152,9 @@ namespace ramses
     {
         this->m_childMesh->setVisibility(EVisibilityMode::Invisible);
         this->m_scene.flush();
-        EXPECT_EQ(this->m_childMesh->impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(this->m_childMesh->m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
         this->m_childMesh->setVisibility(EVisibilityMode::Off);
         this->m_scene.flush();
-        EXPECT_EQ(this->m_childMesh->impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(this->m_childMesh->m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 }

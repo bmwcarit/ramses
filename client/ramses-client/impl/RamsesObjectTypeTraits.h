@@ -10,6 +10,7 @@
 #define RAMSES_RAMSESOBJECTTYPETRAITS_H
 
 #include "ramses-client-api/RamsesObjectTypes.h"
+#include <array>
 
 namespace ramses
 {
@@ -110,11 +111,11 @@ namespace ramses
     };
 
 #define DEFINE_RAMSES_OBJECT_TRAITS_LIST_BEGIN() \
-    const RamsesObjectTraitsEntry RamsesObjectTraits[] = \
+    const std::array RamsesObjectTraits = \
         { \
-            { ERamsesObjectType_Invalid, ERamsesObjectType_Invalid, false },
+            RamsesObjectTraitsEntry{ ERamsesObjectType_Invalid, ERamsesObjectType_Invalid, false },
 #define DEFINE_RAMSES_OBJECT_TRAITS_LIST(_typeId) \
-            { _typeId, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::BaseTypeID, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::IsConcreteType },
+            RamsesObjectTraitsEntry{ _typeId, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::BaseTypeID, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::IsConcreteType },
 #define DEFINE_RAMSES_OBJECT_TRAITS_LIST_END() \
         };
 
@@ -155,6 +156,8 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneReference)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerExternal)
     DEFINE_RAMSES_OBJECT_TRAITS_LIST_END()
+
+    static_assert(ERamsesObjectType_NUMBER_OF_TYPES == RamsesObjectTraits.size(), "Every RamsesObject type must register its traits!");
 }
 
 #endif

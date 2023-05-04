@@ -18,7 +18,6 @@
 #include "TestScenes/StreamTextureScene.h"
 #include "RamsesFrameworkImpl.h"
 #include "TestStepCommand.h"
-#include "Math3d/Vector3.h"
 #include "RendererMate.h"
 #include "Ramsh/Ramsh.h"
 #include "ramses-cli.h"
@@ -105,7 +104,7 @@ namespace
     {
         renderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
         auto testStepCommand = std::make_shared<ramses_internal::TestStepCommand>();
-        framework.impl.getRamsh().add(testStepCommand);
+        framework.m_impl.getRamsh().add(testStepCommand);
 
         const ramses::sceneId_t sceneId(1u);
         ramses::Scene& clientScene = *client.createScene(sceneId);
@@ -247,7 +246,7 @@ int main(int argc, const char* argv[])
     uint32_t displayHeight = 0;
     displayConfig.getWindowRectangle(x, x, displayWidth, displayHeight);
 
-    ramses::RendererMate rendererMate(renderer.impl, framework.impl);
+    ramses::RendererMate rendererMate(renderer.m_impl, framework.m_impl);
     ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping);
 
     switch(testNr)

@@ -21,7 +21,7 @@
 
 namespace ramses_internal
 {
-    TextScene::TextScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    TextScene::TextScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : TextScene_Base(scene, cameraPosition, vpWidth, vpHeight)
     {
         const ramses::FontId font = m_fontRegistry.createFreetype2Font("res/ramses-test-client-Roboto-Bold.ttf");

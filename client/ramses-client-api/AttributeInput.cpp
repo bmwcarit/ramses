@@ -12,12 +12,38 @@
 namespace ramses
 {
     AttributeInput::AttributeInput()
-        : EffectInput(*(new EffectInputImpl()))
+        : EffectInput{ std::make_unique<EffectInputImpl>() }
     {
+    }
+
+    AttributeInput::~AttributeInput() = default;
+
+    AttributeInput::AttributeInput(const AttributeInput& other)
+        : EffectInput{ std::make_unique<EffectInputImpl>(other.m_impl) }
+    {
+    }
+
+    AttributeInput::AttributeInput(AttributeInput&& other) noexcept
+        : EffectInput{ std::unique_ptr<EffectInputImpl>(static_cast<EffectInputImpl*>(other.StatusObject::m_impl.release())) }
+    {
+    }
+
+    AttributeInput& AttributeInput::operator=(const AttributeInput& other)
+    {
+        StatusObject::m_impl = std::make_unique<EffectInputImpl>(other.m_impl);
+        m_impl = static_cast<EffectInputImpl&>(*StatusObject::m_impl);
+        return *this;
+    }
+
+    AttributeInput& AttributeInput::operator=(AttributeInput&& other) noexcept
+    {
+        StatusObject::m_impl = std::move(other.StatusObject::m_impl);
+        m_impl = static_cast<EffectInputImpl&>(*StatusObject::m_impl);
+        return *this;
     }
 
     EEffectAttributeSemantic AttributeInput::getSemantics() const
     {
-        return impl.getAttributeSemantics();
+        return m_impl.get().getAttributeSemantics();
     }
 }

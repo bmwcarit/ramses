@@ -24,14 +24,14 @@
 
 #include <iostream>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LuaScriptImpl::LuaScriptImpl(LuaCompiledScript compiledScript, std::string_view name, uint64_t id)
         : LogicNodeImpl(name, id)
         , m_source(std::move(compiledScript.source.sourceCode))
         , m_byteCode(std::move(compiledScript.source.byteCode))
-        , m_wrappedRootInput(*compiledScript.rootInput->m_impl)
-        , m_wrappedRootOutput(*compiledScript.rootOutput->m_impl)
+        , m_wrappedRootInput(*compiledScript.rootInput)
+        , m_wrappedRootOutput(*compiledScript.rootOutput)
         , m_runFunction(std::move(compiledScript.runFunction))
         , m_modules(std::move(compiledScript.source.userModules))
         , m_stdModules(std::move(compiledScript.source.stdModules))
@@ -210,9 +210,6 @@ namespace rlogic::internal
         for (const uint8_t stdModule : *luaScript.standardModules())
             stdModules.push_back(static_cast<EStandardModule>(stdModule));
 
-        auto inputs = std::make_unique<Property>(std::move(rootInput));
-        auto outputs = std::make_unique<Property>(std::move(rootOutput));
-
         std::string sourceCode = (hasSourceCode ? luaScript.luaSourceCode()->str() : "");
         sol::bytecode byteCode;
         if (hasBytecode)
@@ -229,8 +226,8 @@ namespace rlogic::internal
             name,
             errorReporting,
             std::move(byteCode),
-            std::move(inputs),
-            std::move(outputs),
+            std::move(rootInput),
+            std::move(rootOutput),
             false);
 
         if (!compiledScript)

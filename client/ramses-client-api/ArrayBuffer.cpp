@@ -14,49 +14,45 @@
 
 namespace ramses
 {
-    ArrayBuffer::ArrayBuffer(ArrayBufferImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    ArrayBuffer::~ArrayBuffer()
+    ArrayBuffer::ArrayBuffer(std::unique_ptr<ArrayBufferImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<ArrayBufferImpl&>(SceneObject::m_impl) }
     {
     }
 
     template <typename T> status_t ArrayBuffer::updateDataInternal(uint32_t firstElement, uint32_t numElements, const T* bufferData)
     {
-        if (GetEDataType<T>() != impl.getDataType())
-            return impl.addErrorEntry("ArrayBuffer::updateData: Wrong data type used to update buffer!");
+        if (GetEDataType<T>() != m_impl.getDataType())
+            return m_impl.addErrorEntry("ArrayBuffer::updateData: Wrong data type used to update buffer!");
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) we store all data types as bytes internally
-        const status_t status = impl.updateData(firstElement, numElements, reinterpret_cast<const ramses_internal::Byte*>(bufferData));
+        const status_t status = m_impl.updateData(firstElement, numElements, reinterpret_cast<const ramses_internal::Byte*>(bufferData));
         LOG_HL_CLIENT_API3(status, firstElement, numElements, LOG_API_GENERIC_PTR_STRING(bufferData));
         return status;
     }
 
     uint32_t ArrayBuffer::getMaximumNumberOfElements() const
     {
-        return impl.getMaximumNumberOfElements();
+        return m_impl.getMaximumNumberOfElements();
     }
 
     uint32_t ArrayBuffer::getUsedNumberOfElements() const
     {
-        return impl.getUsedNumberOfElements();
+        return m_impl.getUsedNumberOfElements();
     }
 
     EDataType ArrayBuffer::getDataType() const
     {
-        return impl.getDataType();
+        return m_impl.getDataType();
     }
 
     template <typename T> status_t ArrayBuffer::getDataInternal(T* buffer, uint32_t numElements) const
     {
-        if (GetEDataType<T>() != impl.getDataType())
-            return impl.addErrorEntry("ArrayBuffer::getData: Wrong data type used to get data!");
+        if (GetEDataType<T>() != m_impl.getDataType())
+            return m_impl.addErrorEntry("ArrayBuffer::getData: Wrong data type used to get data!");
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) we store all data types as bytes internally
-        return impl.getData(reinterpret_cast<ramses_internal::Byte*>(buffer), numElements);
+        return m_impl.getData(reinterpret_cast<ramses_internal::Byte*>(buffer), numElements);
     }
 
     template RAMSES_API status_t ArrayBuffer::updateDataInternal<uint16_t>(uint32_t, uint32_t, const uint16_t*);

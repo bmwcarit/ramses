@@ -24,7 +24,7 @@
 
 #include "generated/RamsesCameraBindingGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     RamsesCameraBindingImpl::RamsesCameraBindingImpl(ramses::Camera& ramsesCamera, bool withFrustumPlanes, std::string_view name, uint64_t id)
         : RamsesBindingImpl(name, id)
@@ -71,7 +71,7 @@ namespace rlogic::internal
             }
         );
 
-        setRootInputs(std::make_unique<Property>(std::make_unique<PropertyImpl>(cameraBindingInputs, EPropertySemantics::BindingInput)));
+        setRootInputs(std::make_unique<PropertyImpl>(cameraBindingInputs, EPropertySemantics::BindingInput));
 
         ApplyRamsesValuesToInputProperties(*this);
     }
@@ -164,7 +164,7 @@ namespace rlogic::internal
 
         auto binding = std::make_unique<RamsesCameraBindingImpl>(*resolvedCamera, hasFrustumPlanesProperties, name, id);
         binding->setUserId(userIdHigh, userIdLow);
-        binding->setRootInputs(std::make_unique<Property>(std::move(deserializedRootInput)));
+        binding->setRootInputs(std::move(deserializedRootInput));
 
         ApplyRamsesValuesToInputProperties(*binding);
 

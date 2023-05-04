@@ -10,7 +10,7 @@
 #include "ramses-logic/LuaScript.h"
 #include <type_traits>
 
-namespace rlogic
+namespace ramses
 {
     // Make sure collections have no hidden side effects
     // Excluded on purpose: default-construct, direct assignment

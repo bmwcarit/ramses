@@ -20,6 +20,7 @@
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/Macros.h"
 #include "Utils/AssertMovable.h"
+#include "glm/gtx/range.hpp"
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
@@ -64,11 +65,15 @@ namespace ramses_internal
         void write(TypedMemoryHandle<T> handle);
         template <typename T, T D, typename U>
         void write(StronglyTypedValue<T, D, U> value);
+        template <int L, typename T, glm::qualifier Q>
+        void write(const glm::vec<L, T, Q>& value);
+        template <int C, int R, typename T, glm::qualifier Q>
+        void write(const glm::mat<C, R, T, Q>& value);
         template <typename E, typename = typename std::enable_if<std::is_enum<E>::value>::type>
         void write(E enumValue);
         // fixed size array
         template<typename T, int N, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-        void write(const T(&data)[N]);
+        void write(const T(&data)[N]); // NOLINT(modernize-avoid-c-arrays)
         // generic
         template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
         void write(const T& value);
@@ -116,11 +121,15 @@ namespace ramses_internal
             void read(TypedMemoryHandle<T>& handle);
             template <typename T, T D, typename U>
             void read(StronglyTypedValue<T, D, U>& value);
+            template<int L, typename T, glm::qualifier Q>
+            void read(glm::vec<L, T, Q>&);
+            template<int C, int R, typename T, glm::qualifier Q>
+            void read(glm::mat<C, R, T, Q>&);
             template<typename E, typename std::enable_if<std::is_enum<E>::value, int>::type = 0>
             void read(E& value);
             // fixed size array
             template<typename T, int N, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-            void read(T(&data)[N]);
+            void read(T(&data)[N]); // NOLINT(modernize-avoid-c-arrays)
             // generic
             template<typename T, typename std::enable_if<std::is_arithmetic<T>::value && !std::is_enum<T>::value, int>::type = 0>
             void read(T& value);
@@ -335,6 +344,18 @@ namespace ramses_internal
         writeAsByteBlob(value.getValue());
     }
 
+    template <int L, typename T, glm::qualifier Q>
+    void SceneActionCollection::write(const glm::vec<L, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { write(val); });
+    }
+
+    template <int C, int R, typename T, glm::qualifier Q>
+    void SceneActionCollection::write(const glm::mat<C, R, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { write(val); });
+    }
+
     template <typename E, typename>
     void SceneActionCollection::write(E enumValue)
     {
@@ -343,7 +364,7 @@ namespace ramses_internal
     }
 
     template<typename T, int N, typename>
-    void SceneActionCollection::write(const T(&data)[N])
+    void SceneActionCollection::write(const T(&data)[N])  // NOLINT(modernize-avoid-c-arrays)
     {
         writeAsByteBlob(data, sizeof(data));
     }
@@ -536,8 +557,20 @@ namespace ramses_internal
         readFromByteBlob(value.getReference());
     }
 
+    template<int L, typename T, glm::qualifier Q>
+    void SceneActionCollection::SceneActionReader::read(glm::vec<L, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { read(val); });
+    }
+
+    template<int C, int R, typename T, glm::qualifier Q>
+    void SceneActionCollection::SceneActionReader::read(glm::mat<C, R, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { read(val); });
+    }
+
     template<typename T, int N, typename>
-    void SceneActionCollection::SceneActionReader::read(T(&data)[N])
+    void SceneActionCollection::SceneActionReader::read(T(&data)[N])  // NOLINT(modernize-avoid-c-arrays)
     {
         readFromByteBlob(data, sizeof(data));
     }

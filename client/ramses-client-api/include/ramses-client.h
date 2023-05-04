@@ -9,6 +9,11 @@
 #ifndef RAMSES_RAMSES_CLIENT_H
 #define RAMSES_RAMSES_CLIENT_H
 
+/**
+ * @defgroup CoreAPI The Ramses Core API
+ * This group contains all of the Ramses Core API types.
+ */
+
 #include "ramses-client-api/RamsesClient.h"
 
 // Scene

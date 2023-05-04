@@ -95,6 +95,7 @@ namespace ramses_internal
         private:
             HashMapEntry* next; // pointer to the next entry (chaining)
             HashMapEntry* previous; // pointer to the previous entry (chaining)
+            // NOLINTNEXTLINE(modernize-avoid-c-arrays)
             alignas(Pair) char keyValuePairMemory[sizeof(Pair)];  // properly aligned memory for key and value
             bool isChainElement; // true if the element is not the first element in a chain
 

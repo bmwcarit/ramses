@@ -55,7 +55,7 @@
 #include "RamsesObjectResolverMock.h"
 #include "FeatureLevelTestValues.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AnApiObjects : public ::testing::TestWithParam<ramses::EFeatureLevel>
     {
@@ -152,7 +152,7 @@ namespace rlogic::internal
         }
 
         // Silence logs, unless explicitly enabled, to reduce spam and speed up tests
-        ScopedLogContextLevel m_silenceLogs{ ELogMessageType::Off };
+        ScopedLogContextLevel m_silenceLogs{ ELogLevel::Off };
 
         size_t m_emptySerializedSizeTotal{164u};
     };
@@ -161,13 +161,12 @@ namespace rlogic::internal
     INSTANTIATE_TEST_SUITE_P(
         AnApiObjectsTests,
         AnApiObjects,
-        rlogic::internal::GetFeatureLevelTestValues());
+        ramses::internal::GetFeatureLevelTestValues());
 
     TEST_P(AnApiObjects, CreatesScriptFromValidLuaWithoutErrors)
     {
         const LuaScript* script = createScript();
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(script, m_apiObjects.getApiObject(script->m_impl));
         EXPECT_EQ(script, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(script, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -188,11 +187,10 @@ namespace rlogic::internal
         EXPECT_EQ(script, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*script, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find script in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'script [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, script);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(script, otherInstance.getApiObject(script->m_impl));
         EXPECT_EQ(script, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(script, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -201,7 +199,6 @@ namespace rlogic::internal
     {
         const LuaInterface* intf = createInterface();
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(intf, m_apiObjects.getApiObject(intf->m_impl));
         EXPECT_EQ(intf, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(intf, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -222,11 +219,10 @@ namespace rlogic::internal
         EXPECT_EQ(intf, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*intf, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find interface in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'intf [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, intf);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(intf, otherInstance.getApiObject(intf->m_impl));
         EXPECT_EQ(intf, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(intf, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -250,7 +246,6 @@ namespace rlogic::internal
         RamsesNodeBinding* ramsesNodeBinding = m_apiObjects.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         EXPECT_NE(nullptr, ramsesNodeBinding);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(ramsesNodeBinding, m_apiObjects.getApiObject(ramsesNodeBinding->m_impl));
         EXPECT_EQ(ramsesNodeBinding, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(ramsesNodeBinding, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -274,11 +269,10 @@ namespace rlogic::internal
         EXPECT_EQ(ramsesNodeBinding, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*ramsesNodeBinding, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find RamsesNodeBinding in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'NodeBinding [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, ramsesNodeBinding);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(ramsesNodeBinding, otherInstance.getApiObject(ramsesNodeBinding->m_impl));
         EXPECT_EQ(ramsesNodeBinding, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(ramsesNodeBinding, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -288,7 +282,6 @@ namespace rlogic::internal
         RamsesCameraBinding* ramsesCameraBinding = m_apiObjects.createRamsesCameraBinding(*m_camera, false, "CameraBinding");
         EXPECT_NE(nullptr, ramsesCameraBinding);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(ramsesCameraBinding, m_apiObjects.getApiObject(ramsesCameraBinding->m_impl));
         EXPECT_EQ(ramsesCameraBinding, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(ramsesCameraBinding, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -312,11 +305,10 @@ namespace rlogic::internal
         EXPECT_EQ(ramsesCameraBinding, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*ramsesCameraBinding, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find RamsesCameraBinding in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'CameraBinding [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, ramsesCameraBinding);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(ramsesCameraBinding, otherInstance.getApiObject(ramsesCameraBinding->m_impl));
         EXPECT_EQ(ramsesCameraBinding, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(ramsesCameraBinding, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -326,7 +318,6 @@ namespace rlogic::internal
         RamsesRenderPassBinding* binding = m_apiObjects.createRamsesRenderPassBinding(*m_renderPass, "RenderPassBinding");
         EXPECT_NE(nullptr, binding);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(binding, m_apiObjects.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -350,11 +341,10 @@ namespace rlogic::internal
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*binding, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find RamsesRenderPassBinding in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'RenderPassBinding [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, binding);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(binding, otherInstance.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -364,7 +354,6 @@ namespace rlogic::internal
         const auto binding = createRenderGroupBinding();
         EXPECT_NE(nullptr, binding);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(binding, m_apiObjects.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -390,11 +379,10 @@ namespace rlogic::internal
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*binding, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find RamsesRenderGroupBinding in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'RenderGroupBinding [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, binding);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(binding, otherInstance.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -404,7 +392,6 @@ namespace rlogic::internal
         const auto binding = m_apiObjects.createRamsesMeshNodeBinding(*m_meshNode, "mb");
         EXPECT_NE(nullptr, binding);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(binding, m_apiObjects.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -428,11 +415,10 @@ namespace rlogic::internal
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
         EXPECT_FALSE(m_apiObjects.destroy(*binding, m_errorReporting));
         ASSERT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find RamsesMeshNodeBinding in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'mb [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, binding);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(binding, otherInstance.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -442,7 +428,6 @@ namespace rlogic::internal
         RamsesAppearanceBinding* binding = m_apiObjects.createRamsesAppearanceBinding(*m_appearance, "AppearanceBinding");
         EXPECT_NE(nullptr, binding);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
-        EXPECT_EQ(binding, m_apiObjects.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, m_apiObjects.getApiObjectContainer<LogicObject>().back());
     }
@@ -465,11 +450,10 @@ namespace rlogic::internal
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*binding, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find RamsesAppearanceBinding in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'AppearanceBinding [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, binding);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(binding, otherInstance.getApiObject(binding->m_impl));
         EXPECT_EQ(binding, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(binding, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -553,7 +537,7 @@ namespace rlogic::internal
         EXPECT_EQ(dataArray, otherInstance.getApiObjectContainer<LogicObject>().back());
         EXPECT_FALSE(m_apiObjects.destroy(*dataArray, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find data array in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'data [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, dataArray);
 
         // Did not affect existence in otherInstance!
@@ -606,7 +590,7 @@ namespace rlogic::internal
         EXPECT_EQ(animNode, otherInstance.getApiObjectContainer<LogicObject>().back());
         EXPECT_FALSE(m_apiObjects.destroy(*animNode, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find AnimationNode in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'animNode [Id=2]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, animNode);
 
         // Did not affect existence in otherInstance!
@@ -641,7 +625,7 @@ namespace rlogic::internal
         auto timerNode = otherInstance.createTimerNode("timerNode");
         EXPECT_FALSE(m_apiObjects.destroy(*timerNode, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find TimerNode in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'timerNode [Id=1]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, timerNode);
 
         // Did not affect existence in otherInstance!
@@ -657,10 +641,8 @@ namespace rlogic::internal
         EXPECT_NE(nullptr, anchor);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
         EXPECT_EQ(anchor, m_apiObjects.getApiObjectContainer<AnchorPoint>().front());
-        EXPECT_EQ(anchor, m_apiObjects.getApiObject(anchor->m_impl));
         EXPECT_EQ(anchor, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(anchor, m_apiObjects.getApiObjectContainer<LogicObject>().back());
-        EXPECT_EQ(anchor, m_apiObjects.getApiObject(anchor->m_impl));
     }
 
     TEST_P(AnApiObjects, DestroysAnchorPointWithoutErrors)
@@ -685,11 +667,10 @@ namespace rlogic::internal
         EXPECT_EQ(anchor, otherInstance.getApiObjectContainer<LogicObject>().back());
         ASSERT_FALSE(m_apiObjects.destroy(*anchor, m_errorReporting));
         EXPECT_EQ(m_errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Can't find AnchorPoint in logic engine!");
+        EXPECT_EQ(m_errorReporting.getErrors()[0].message, "Failed to destroy object 'anchor [Id=3]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(m_errorReporting.getErrors()[0].object, anchor);
 
         // Did not affect existence in otherInstance!
-        EXPECT_EQ(anchor, otherInstance.getApiObject(anchor->m_impl));
         EXPECT_EQ(anchor, otherInstance.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(anchor, otherInstance.getApiObjectContainer<LogicObject>().back());
     }
@@ -726,10 +707,8 @@ namespace rlogic::internal
         ASSERT_NE(nullptr, skin);
         EXPECT_TRUE(m_errorReporting.getErrors().empty());
         EXPECT_EQ(skin, m_apiObjects.getApiObjectContainer<SkinBinding>().front());
-        EXPECT_EQ(skin, m_apiObjects.getApiObject(skin->m_impl));
         EXPECT_EQ(skin, m_apiObjects.getApiObjectOwningContainer().back().get());
         EXPECT_EQ(skin, m_apiObjects.getApiObjectContainer<LogicObject>().back());
-        EXPECT_EQ(skin, m_apiObjects.getApiObject(skin->m_impl));
     }
 
     TEST_P(AnApiObjects, DestroysSkinBindingWithoutErrors)
@@ -753,7 +732,7 @@ namespace rlogic::internal
         ErrorReporting  errorReporting;
         EXPECT_FALSE(otherInstance.destroy(*skin, errorReporting));
         ASSERT_EQ(errorReporting.getErrors().size(), 1u);
-        EXPECT_EQ(errorReporting.getErrors()[0].message, "Can't find SkinBinding in logic engine!");
+        EXPECT_EQ(errorReporting.getErrors()[0].message, "Failed to destroy object 'skin [Id=3]', cannot find it in this LogicEngine instance.");
         EXPECT_EQ(errorReporting.getErrors()[0].object, skin);
     }
 
@@ -808,7 +787,6 @@ namespace rlogic::internal
         EXPECT_TRUE(m_apiObjects.getApiObjectContainer<SkinBinding>().empty());
         EXPECT_TRUE(m_apiObjects.getApiObjectContainer<LogicObject>().empty());
         EXPECT_TRUE(m_apiObjects.getApiObjectOwningContainer().empty());
-        EXPECT_TRUE(m_apiObjects.getReverseImplMapping().empty());
 
         const ApiObjects& apiObjectsConst = m_apiObjects;
         EXPECT_TRUE(apiObjectsConst.getApiObjectContainer<LuaScript>().empty());
@@ -825,7 +803,6 @@ namespace rlogic::internal
         EXPECT_TRUE(apiObjectsConst.getApiObjectContainer<SkinBinding>().empty());
         EXPECT_TRUE(apiObjectsConst.getApiObjectContainer<LogicObject>().empty());
         EXPECT_TRUE(apiObjectsConst.getApiObjectOwningContainer().empty());
-        EXPECT_TRUE(apiObjectsConst.getReverseImplMapping().empty());
     }
 
     TEST_P(AnApiObjects, ProvidesNonEmptyScriptCollection_WhenScriptsWereCreated)
@@ -926,7 +903,7 @@ namespace rlogic::internal
             timerNode, renderPassBinding, anchor, renderGroupBinding, skin, meshBinding };
 
         std::vector<LogicObject*> ownedLogicObjectsRawPointers;
-        std::transform(ownedObjects.cbegin(), ownedObjects.cend(), std::back_inserter(ownedLogicObjectsRawPointers), [&](std::unique_ptr<LogicObject>const& obj) { return obj.get(); });
+        std::transform(ownedObjects.cbegin(), ownedObjects.cend(), std::back_inserter(ownedLogicObjectsRawPointers), [](auto& obj) { return obj.get(); });
         EXPECT_EQ(logicObjects, expectedObjects);
         EXPECT_EQ(ownedLogicObjectsRawPointers, expectedObjects);
 
@@ -1350,7 +1327,7 @@ namespace rlogic::internal
     INSTANTIATE_TEST_SUITE_P(
         AnApiObjects_SceneMismatchTests,
         AnApiObjects_SceneMismatch,
-        rlogic::internal::GetFeatureLevelTestValues());
+        ramses::internal::GetFeatureLevelTestValues());
 
     TEST_P(AnApiObjects_SceneMismatch, recognizesNodeBindingsCarryNodesFromDifferentScenes)
     {
@@ -1447,42 +1424,6 @@ namespace rlogic::internal
         EXPECT_EQ(otherSceneBinding, m_errorReporting.getErrors()[0].object);
     }
 
-    class AnApiObjects_ImplMapping : public AnApiObjects
-    {
-    };
-
-    INSTANTIATE_TEST_SUITE_P(
-        AnApiObjects_ImplMappingTests,
-        AnApiObjects_ImplMapping,
-        rlogic::internal::GetFeatureLevelTestValues());
-
-    TEST_P(AnApiObjects_ImplMapping, EmptyWhenCreated)
-    {
-        EXPECT_TRUE(m_apiObjects.getReverseImplMapping().empty());
-    }
-
-    TEST_P(AnApiObjects_ImplMapping, DestroyingScriptDoesNotAffectOtherScript)
-    {
-        auto script1 = createScript();
-        auto script2 = createScript();
-
-        ASSERT_TRUE(m_apiObjects.destroy(*script1, m_errorReporting));
-
-        ASSERT_EQ(1u, m_apiObjects.getReverseImplMapping().size());
-        EXPECT_EQ(script2, m_apiObjects.getApiObject(script2->m_impl));
-    }
-
-    TEST_P(AnApiObjects_ImplMapping, DestroyingBindingDoesNotAffectScript)
-    {
-        const LuaScript* script = createScript();
-        RamsesNodeBinding* binding = m_apiObjects.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "");
-
-        ASSERT_TRUE(m_apiObjects.destroy(*binding, m_errorReporting));
-
-        ASSERT_EQ(1u, m_apiObjects.getReverseImplMapping().size());
-        EXPECT_EQ(script, m_apiObjects.getApiObject(script->m_impl));
-    }
-
     class AnApiObjects_Serialization : public AnApiObjects
     {
     };
@@ -1490,7 +1431,7 @@ namespace rlogic::internal
     INSTANTIATE_TEST_SUITE_P(
         AnApiObjects_SerializationTests,
         AnApiObjects_Serialization,
-        rlogic::internal::GetFeatureLevelTestValues());
+        ramses::internal::GetFeatureLevelTestValues());
 
     TEST_P(AnApiObjects_Serialization, AlwaysCreatesEmptyFlatbuffersContainers_WhenNoObjectsPresent)
     {
@@ -1694,50 +1635,41 @@ namespace rlogic::internal
 
         ApiObjects& apiObjects = *apiObjectsOptional;
 
-        ASSERT_EQ(9u, apiObjects.getReverseImplMapping().size());
+        ASSERT_EQ(9u, apiObjects.getApiObjectOwningContainer().size());
 
         LuaScript* script = apiObjects.getApiObjectContainer<LuaScript>()[0];
-        EXPECT_EQ(script, apiObjects.getApiObject(script->m_impl));
         EXPECT_EQ(script->getName(), "script");
         EXPECT_EQ(script, &script->m_script.getLogicObject());
 
         LuaInterface* intf = apiObjects.getApiObjectContainer<LuaInterface>()[0];
-        EXPECT_EQ(intf, apiObjects.getApiObject(intf->m_impl));
         EXPECT_EQ(intf->getName(), "intf");
         EXPECT_EQ(intf, &intf->m_interface.getLogicObject());
 
         RamsesNodeBinding* nodeBinding = apiObjects.getApiObjectContainer<RamsesNodeBinding>()[0];
-        EXPECT_EQ(nodeBinding, apiObjects.getApiObject(nodeBinding->m_impl));
         EXPECT_EQ(nodeBinding->getName(), "node");
         EXPECT_EQ(nodeBinding, &nodeBinding->m_nodeBinding.getLogicObject());
 
         RamsesAppearanceBinding* appBinding = apiObjects.getApiObjectContainer<RamsesAppearanceBinding>()[0];
-        EXPECT_EQ(appBinding, apiObjects.getApiObject(appBinding->m_impl));
         EXPECT_EQ(appBinding->getName(), "appearance");
         EXPECT_EQ(appBinding, &appBinding->m_appearanceBinding.getLogicObject());
 
         RamsesCameraBinding* camBinding = apiObjects.getApiObjectContainer<RamsesCameraBinding>()[0];
-        EXPECT_EQ(camBinding, apiObjects.getApiObject(camBinding->m_impl));
         EXPECT_EQ(camBinding->getName(), "camera");
         EXPECT_EQ(camBinding, &camBinding->m_cameraBinding.getLogicObject());
 
         RamsesRenderPassBinding* rpBinding = apiObjects.getApiObjectContainer<RamsesRenderPassBinding>()[0];
-        EXPECT_EQ(rpBinding, apiObjects.getApiObject(rpBinding->m_impl));
         EXPECT_EQ(rpBinding->getName(), "rp");
         EXPECT_EQ(rpBinding, &rpBinding->m_renderPassBinding.getLogicObject());
 
         const auto rgBinding = apiObjects.getApiObjectContainer<RamsesRenderGroupBinding>()[0];
-        EXPECT_EQ(rgBinding, apiObjects.getApiObject(rgBinding->m_impl));
         EXPECT_EQ(rgBinding->getName(), "rg");
         EXPECT_EQ(rgBinding, &rgBinding->m_renderGroupBinding.getLogicObject());
 
         const auto skin = apiObjects.getApiObjectContainer<SkinBinding>()[0];
-        EXPECT_EQ(skin, apiObjects.getApiObject(skin->m_impl));
         EXPECT_EQ(skin->getName(), "skin");
         EXPECT_EQ(skin, &skin->m_skinBinding.getLogicObject());
 
         const auto meshBinding = apiObjects.getApiObjectContainer<RamsesMeshNodeBinding>()[0];
-        EXPECT_EQ(meshBinding, apiObjects.getApiObject(meshBinding->m_impl));
         EXPECT_EQ(meshBinding->getName(), "mb");
         EXPECT_EQ(meshBinding, &meshBinding->m_meshNodeBinding.getLogicObject());
     }

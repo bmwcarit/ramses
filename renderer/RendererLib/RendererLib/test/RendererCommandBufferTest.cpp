@@ -33,7 +33,7 @@ protected:
     const SceneId consumerSceneId;
     const DataSlotId providerId{ 1 };
     const DataSlotId consumerId{ 2 };
-    const Vector4 clearColor{ 1.f, 0.f, 0.5f, 0.2f };
+    const glm::vec4 clearColor{ 1.f, 0.f, 0.5f, 0.2f };
     const StreamBufferHandle streamBuffer{ 7u };
     const WaylandIviSurfaceId source{ 8u };
     const WaylandIviLayerId layer{ 9u };

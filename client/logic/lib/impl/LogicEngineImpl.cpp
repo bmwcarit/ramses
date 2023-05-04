@@ -52,7 +52,7 @@
 #include <fstream>
 #include <streambuf>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LogicEngineImpl::LogicEngineImpl(ramses::EFeatureLevel featureLevel)
         : m_apiObjects{ std::make_unique<ApiObjects>(featureLevel) }
@@ -256,7 +256,7 @@ namespace rlogic::internal
         return m_apiObjects->createDataArray(data, name);
     }
 
-    rlogic::AnimationNode* LogicEngineImpl::createAnimationNode(const AnimationNodeConfig& config, std::string_view name)
+    ramses::AnimationNode* LogicEngineImpl::createAnimationNode(const AnimationNodeConfig& config, std::string_view name)
     {
         m_errors.clear();
 
@@ -426,7 +426,7 @@ namespace rlogic::internal
             const std::optional<LogicNodeRuntimeError> potentialError = node.update();
             if (potentialError)
             {
-                m_errors.add(potentialError->message, m_apiObjects->getApiObject(node), EErrorType::RuntimeError);
+                m_errors.add(potentialError->message, &node.getLogicObject(), EErrorType::RuntimeError);
                 return false;
             }
 
@@ -826,7 +826,7 @@ namespace rlogic::internal
 
     LogicEngineReport LogicEngineImpl::getLastUpdateReport() const
     {
-        return LogicEngineReport{ std::make_unique<LogicEngineReportImpl>(m_updateReport, *m_apiObjects) };
+        return LogicEngineReport{ std::make_unique<LogicEngineReportImpl>(m_updateReport) };
     }
 
     void LogicEngineImpl::setStatisticsLoggingRate(size_t loggingRate)
@@ -835,7 +835,7 @@ namespace rlogic::internal
         m_statisticsEnabled = (loggingRate != 0u);
     }
 
-    void LogicEngineImpl::setStatisticsLogLevel(ELogMessageType logLevel)
+    void LogicEngineImpl::setStatisticsLogLevel(ELogLevel logLevel)
     {
         m_statistics.setLogLevel(logLevel);
     }

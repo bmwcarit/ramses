@@ -52,18 +52,18 @@ namespace ramses_internal
     {
         QuadResources resources;
 
-        static const uint16_t indiceData[] = { 0, 1, 3, 2 };
-        resources.indices = m_scene.createArrayResource(4, indiceData);
+        const std::array<uint16_t, 4> indiceData = { 0, 1, 3, 2 };
+        resources.indices = m_scene.createArrayResource(4, indiceData.data());
 
-        const ramses::vec3f vertexPositionsData[] =
+        const std::array vertexPositionsData =
         {
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u).getAsVec3(),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u).getAsVec3(),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u).getAsVec3(),
-            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u).getAsVec3()
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopRight, 10u),
+            m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u)
         };
 
-        ramses::vec2f vertexTexcoordsData[] = {
+        std::array vertexTexcoordsData = {
             ramses::vec2f{0.f, 0.f},
             ramses::vec2f{1.f, 0.f},
             ramses::vec2f{1.f, 1.f},
@@ -76,8 +76,8 @@ namespace ramses_internal
             tc[1] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }
 
-        resources.texCoords = m_scene.createArrayResource(4, vertexTexcoordsData);
-        resources.vertexPos = m_scene.createArrayResource(4, vertexPositionsData);
+        resources.texCoords = m_scene.createArrayResource(4, vertexTexcoordsData.data());
+        resources.vertexPos = m_scene.createArrayResource(4, vertexPositionsData.data());
 
         return resources;
     }

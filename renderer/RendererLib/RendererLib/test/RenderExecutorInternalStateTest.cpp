@@ -15,7 +15,6 @@
 #include "TestEqualHelper.h"
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererEventCollector.h"
-#include "Math3d/Matrix44f.h"
 #include "SceneAllocateHelper.h"
 #include <limits>
 
@@ -41,7 +40,7 @@ namespace ramses_internal
     {
     public:
         ARenderExecutorInternalState()
-            : m_renderContext{ DeviceResourceHandle(0u), FakeVpWidth, FakeVpHeight, SceneRenderExecutionIterator{}, EClearFlags_All, Vector4{1.f}, false }
+            : m_renderContext{ DeviceResourceHandle(0u), FakeVpWidth, FakeVpHeight, SceneRenderExecutionIterator{}, EClearFlags_All, glm::vec4{1.f}, false }
             , m_executorState(m_device, m_renderContext)
             , m_executorStateWithTimer(m_device, m_renderContext, &m_frameTimer)
             , m_rendererScenes(m_rendererEventCollector)
@@ -67,7 +66,7 @@ namespace ramses_internal
         RendererCachedScene&               m_scene;
         SceneAllocateHelper                m_sceneAllocator;
 
-        CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType::Perspective)
+        CameraHandle createTestCamera(const glm::vec3& translation = glm::vec3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType::Perspective)
         {
             const NodeHandle cameraNode = m_sceneAllocator.allocateNode();
             const auto dataLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
@@ -108,13 +107,13 @@ namespace ramses_internal
         EXPECT_EQ(FakeVpHeight, m_executorState.getRenderingContext().viewportHeight);
         EXPECT_EQ(SceneRenderExecutionIterator{}, m_executorState.getRenderingContext().renderFrom);
         EXPECT_EQ(EClearFlags_All, m_executorState.getRenderingContext().displayBufferClearPending);
-        EXPECT_EQ(Vector4{ 1.f }, m_executorState.getRenderingContext().displayBufferClearColor);
+        EXPECT_EQ(glm::vec4{ 1.f }, m_executorState.getRenderingContext().displayBufferClearColor);
     }
 
     TEST_F(ARenderExecutorInternalState, hasIdentityProjectionMatrixInDefaultState)
     {
         EXPECT_EQ(&m_device, &m_executorState.getDevice());
-        EXPECT_EQ(Matrix44f::Identity, m_executorState.getProjectionMatrix());
+        EXPECT_EQ(glm::identity<glm::mat4>(), m_executorState.getProjectionMatrix());
     }
 
     TEST_F(ARenderExecutorInternalState, setsSceneState)
@@ -128,22 +127,22 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, updatesCameraRelatedMatricesWhenSettingCamera)
     {
-        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
+        const CameraHandle camera = createTestCamera(glm::vec3(3, 5, 6), ECameraProjectionType::Perspective);
         m_executorState.setCamera(camera);
 
         const NodeHandle cameraNode = m_scene.getCamera(camera).node;
-        const Matrix44f camViewMat = m_scene.updateMatrixCache(ETransformationMatrixType_Object, cameraNode);
+        const auto camViewMat = m_scene.updateMatrixCache(ETransformationMatrixType_Object, cameraNode);
 
         expectMatrixFloatEqual(camViewMat, m_executorState.getViewMatrix());
     }
 
     TEST_F(ARenderExecutorInternalState, updatesProjectionMatrixWhenSettingPerspectiveCamera)
     {
-        const CameraHandle camera = createTestCamera(Vector3(0.0f), ECameraProjectionType::Perspective);
+        const CameraHandle camera = createTestCamera(glm::vec3(0.0f), ECameraProjectionType::Perspective);
 
         m_executorState.setCamera(camera);
 
-        const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(
+        const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(
             ProjectionParams::Perspective(FakeFoV, FakeAspectRatio, FakeNearPlane, FakeFarPlane));
 
         EXPECT_EQ(projMatrix, m_executorState.getProjectionMatrix());
@@ -151,9 +150,9 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, updatesProjectionMatrixWhenSettingOrthographicCamera)
     {
-        const CameraHandle camera = createTestCamera(Vector3(0.0f), ECameraProjectionType::Orthographic);
+        const CameraHandle camera = createTestCamera(glm::vec3(0.0f), ECameraProjectionType::Orthographic);
 
-        const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(
+        const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(
             ProjectionParams::Frustum(ECameraProjectionType::Orthographic,
                 FakeLeftPlane,
                 FakeRightPlane,
@@ -169,10 +168,10 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, setRenderableUpdatesAllModelDependentMatrices)
     {
-        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
+        const CameraHandle camera = createTestCamera(glm::vec3(3, 5, 6), ECameraProjectionType::Perspective);
         m_executorState.setCamera(camera);
         const NodeHandle cameraNode = m_scene.getCamera(camera).node;
-        const Matrix44f camViewMat = m_scene.updateMatrixCache(ETransformationMatrixType_Object, cameraNode);
+        const auto camViewMat = m_scene.updateMatrixCache(ETransformationMatrixType_Object, cameraNode);
 
         const NodeHandle renderableNode = m_sceneAllocator.allocateNode();
         const RenderableHandle renderable = m_sceneAllocator.allocateRenderable(renderableNode);
@@ -183,7 +182,7 @@ namespace ramses_internal
         const RenderGroupHandle renderGroup = m_sceneAllocator.allocateRenderGroup();
         m_scene.addRenderGroupToRenderPass(renderPass, renderGroup, 0);
         m_scene.addRenderableToRenderGroup(renderGroup, renderable, 0);
-        m_scene.setRotation(renderableTransform, Vector4(1, 2, 3, 1), ERotationType::Euler_XYZ);
+        m_scene.setRotation(renderableTransform, glm::vec4(1, 2, 3, 1), ERotationType::Euler_XYZ);
 
         NiceMock<ResourceDeviceHandleAccessorMock> resourceAccessor;
         m_scene.updateRenderablesAndResourceCache(resourceAccessor);
@@ -191,9 +190,9 @@ namespace ramses_internal
 
         m_executorState.setRenderable(renderable);
 
-        const Matrix44f modelMat = m_scene.updateMatrixCache(ETransformationMatrixType_World, renderableNode);
-        const Matrix44f expectedViewMat = camViewMat;
-        const Matrix44f expectedProjectionMat = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(FakeFoV, static_cast<Float>(FakeVpWidth) / FakeVpHeight, FakeNearPlane, FakeFarPlane));
+        const auto modelMat = m_scene.updateMatrixCache(ETransformationMatrixType_World, renderableNode);
+        const auto expectedViewMat = camViewMat;
+        const auto expectedProjectionMat = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(FakeFoV, static_cast<Float>(FakeVpWidth) / FakeVpHeight, FakeNearPlane, FakeFarPlane));
 
         expectMatrixFloatEqual(modelMat, m_executorState.getModelMatrix());
         expectMatrixFloatEqual(expectedViewMat, m_executorState.getViewMatrix());
@@ -373,7 +372,7 @@ namespace ramses_internal
         EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
         EXPECT_FALSE(blendOperationsState != m_executorState.blendOperationsState.getState());
 
-        const Vector4 blendColorState(0.f);
+        const glm::vec4 blendColorState(0.f);
         m_executorState.blendColorState.setState(blendColorState);
         EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
         EXPECT_FALSE(blendColorState != m_executorState.blendColorState.getState());
@@ -400,7 +399,7 @@ namespace ramses_internal
         m_executorState.blendOperationsState.setState(blendOperationsState);
         EXPECT_FALSE(m_executorState.blendOperationsState.hasChanged());
 
-        const Vector4 blendColorState(123.f);
+        const glm::vec4 blendColorState(123.f);
         m_executorState.blendColorState.setState(blendColorState);
         EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
         m_executorState.blendColorState.setState(blendColorState);
@@ -469,10 +468,10 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, blendColorMarkedAsChanged_IfBlendColorChanged)
     {
-        m_executorState.blendColorState.setState(Vector4{ .1f, .2f, .3f, .4f });
+        m_executorState.blendColorState.setState(glm::vec4{ .1f, .2f, .3f, .4f });
         EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
 
-        m_executorState.blendColorState.setState(Vector4{ .9f });
+        m_executorState.blendColorState.setState(glm::vec4{ .9f });
         EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
     }
 
@@ -612,7 +611,7 @@ namespace ramses_internal
     {
         m_executorState.blendOperationsState.setState(BlendOperationsState());
         m_executorState.blendFactorsState.setState(BlendFactorsState());
-        m_executorState.blendColorState.setState(Vector4(std::numeric_limits<float>::max()));
+        m_executorState.blendColorState.setState(glm::vec4(std::numeric_limits<float>::max()));
         m_executorState.colorWriteMaskState.setState(std::numeric_limits<ColorWriteMask>::max());
 
         m_executorState.depthFuncState.setState(EDepthFunc::NUMBER_OF_ELEMENTS);
@@ -651,7 +650,7 @@ namespace ramses_internal
 
         EXPECT_FALSE(m_executorState.blendOperationsState.getState() != BlendOperationsState());
         EXPECT_FALSE(m_executorState.blendFactorsState.getState()   != BlendFactorsState());
-        EXPECT_FALSE(m_executorState.blendColorState.getState()     != Vector4(std::numeric_limits<float>::max()));
+        EXPECT_FALSE(m_executorState.blendColorState.getState()     != glm::vec4(std::numeric_limits<float>::max()));
         EXPECT_FALSE(m_executorState.colorWriteMaskState.getState() != std::numeric_limits<ColorWriteMask>::max());
         EXPECT_FALSE(m_executorState.depthFuncState.getState()      != EDepthFunc::NUMBER_OF_ELEMENTS);
         EXPECT_FALSE(m_executorState.depthWriteState.getState()     != EDepthWrite::NUMBER_OF_ELEMENTS);

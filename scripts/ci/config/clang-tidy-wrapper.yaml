@@ -36,6 +36,18 @@ check-filter:
       - ^renderer/RendererLib/RendererLib/test/TestSceneHelper.h$
       - ^renderer/RendererLib/RendererLib/test/RendererSceneUpdaterTest.h$
       - ^renderer/RendererLib/RendererTestUtils/src/RendererResourceManagerMock.cpp$
+  - check: hicpp-signed-bitwise
+    exclude:
+      - ^examples/ramses-example-local-dma-offscreenbuffer/src/main.cpp$
+      - ^integration/SandwichTests/RendererTests/DmaOffscreenBufferRenderingTests/DmaOffscreenBufferTests.cpp$
+  - check: modernize-avoid-c-arrays
+    exclude:
+      - ^client/test/.*Test.cpp$
+      - ^framework/Core/Math3d/include/Math3d
+      - ^framework/.*/test/.*Test.cpp$
+      - ^renderer/RendererLib/RendererLib/test/.*Test.cpp$
+      - ^integration/SandwichTests/RendererTests/EmbeddedCompositingTests
+      - ^integration/TestContent
 
 remove-duplicate-sources: true
 remove-duplicate-reports: true

@@ -11,15 +11,15 @@
 #include "ramses-logic/LogicNode.h"
 #include <memory>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class TimerNodeImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
-    * Timer node can be used to provide timing information to animation nodes (#rlogic::AnimationNode) or any other logic nodes.
+    * Timer node can be used to provide timing information to animation nodes (#ramses::AnimationNode) or any other logic nodes.
     * - Property inputs:
     *     - ticker_us (int64)  - (optional) user provided ticker in microseconds (by default, see below to learn how to use arbitrary time units).
     *                          - if the input is 0 (default) then this TimerNode uses system clock to generate ticker by itself,
@@ -34,12 +34,18 @@ namespace rlogic
     * and other require well specified timing provided by application.
     * Due to the auto-generate mode both the input and output has defined time units, however timer node can also be used in a fully
     * time unit agnostic mode, see inputs/outputs description above for details.
-    * Note that unlike other logic nodes a TimerNode is always updated on every #rlogic::LogicEngine::update call regardless of if any of its
+    * Note that unlike other logic nodes a TimerNode is always updated on every #ramses::LogicEngine::update call regardless of if any of its
     * inputs were modified or not.
     */
     class TimerNode : public LogicNode
     {
     public:
+        /**
+        * Implementation of TimerNode
+        */
+        internal::TimerNodeImpl& m_timerNodeImpl;
+
+    protected:
         /**
         * Constructor of TimerNode. User is not supposed to call this - TimerNodes are created by other factory classes
         *
@@ -47,34 +53,6 @@ namespace rlogic
         */
         explicit TimerNode(std::unique_ptr<internal::TimerNodeImpl> impl) noexcept;
 
-        /**
-        * Destructor of TimerNode.
-        */
-        ~TimerNode() noexcept override;
-
-        /**
-        * Copy Constructor of TimerNode is deleted because TimerNodes are not supposed to be copied
-        */
-        TimerNode(const TimerNode&) = delete;
-
-        /**
-        * Move Constructor of TimerNode is deleted because TimerNodes are not supposed to be moved
-        */
-        TimerNode(TimerNode&&) = delete;
-
-        /**
-        * Assignment operator of TimerNode is deleted because TimerNodes are not supposed to be copied
-        */
-        TimerNode& operator=(const TimerNode&) = delete;
-
-        /**
-        * Move assignment operator of TimerNode is deleted because TimerNodes are not supposed to be moved
-        */
-        TimerNode& operator=(TimerNode&&) = delete;
-
-        /**
-        * Implementation of TimerNode
-        */
-        internal::TimerNodeImpl& m_timerNodeImpl;
+        friend class internal::ApiObjects;
     };
 }

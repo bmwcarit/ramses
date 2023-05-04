@@ -48,8 +48,8 @@ namespace ramses_internal
 
         void                                resetResourceCache();
 
-        Bool                                renderableResourcesDirty    (RenderableHandle handle) const;
-        Bool                                renderableResourcesDirty    (const RenderableVector& handles) const;
+        bool                                renderableResourcesDirty    (RenderableHandle handle) const;
+        bool                                renderableResourcesDirty    (const RenderableVector& handles) const;
 
         DeviceResourceHandle                getRenderableEffectDeviceHandle(RenderableHandle renderable) const;
         const VertexArrayCache&             getCachedHandlesForVertexArrays() const;
@@ -68,30 +68,30 @@ namespace ramses_internal
         void updateRenderableVertexArrays(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderableVector& renderablesWithUpdatedVertexArrays);
 
     protected:
-        Bool resolveTextureSamplerResourceDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler, DeviceResourceHandle& deviceHandleInOut);
+        bool resolveTextureSamplerResourceDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler, DeviceResourceHandle& deviceHandleInOut);
 
     private:
-        void setRenderableResourcesDirtyFlag(RenderableHandle handle, Bool dirty) const;
+        void setRenderableResourcesDirtyFlag(RenderableHandle handle, bool dirty) const;
         void setRenderableVertexArrayDirtyFlag(RenderableHandle handle, bool dirty) const;
-        void setDataInstanceDirtyFlag(DataInstanceHandle handle, Bool dirty) const;
-        void setTextureSamplerDirtyFlag(TextureSamplerHandle handle, Bool dirty) const;
+        void setDataInstanceDirtyFlag(DataInstanceHandle handle, bool dirty) const;
+        void setTextureSamplerDirtyFlag(TextureSamplerHandle handle, bool dirty) const;
         bool doesRenderableReferToDirtyUniforms(RenderableHandle handle) const;
         bool doesRenderableReferToDirtyGeometry(RenderableHandle handle) const;
-        Bool doesDataInstanceReferToDirtyTextureSampler(DataInstanceHandle handle) const;
-        Bool isDataInstanceDirty(DataInstanceHandle handle) const;
-        Bool isTextureSamplerDirty(TextureSamplerHandle handle) const;
-        Bool isGeometryDataLayout(const DataLayout& layout) const;
-        static Bool CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash);
+        bool doesDataInstanceReferToDirtyTextureSampler(DataInstanceHandle handle) const;
+        bool isDataInstanceDirty(DataInstanceHandle handle) const;
+        bool isTextureSamplerDirty(TextureSamplerHandle handle) const;
+        bool isGeometryDataLayout(const DataLayout& layout) const;
+        static bool CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash);
 
-        Bool checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
-        Bool checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
+        bool checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
+        bool checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         bool checkGeometryResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         void checkAndUpdateRenderTargetResources(const IResourceDeviceHandleAccessor& resourceAccessor);
         void checkAndUpdateBlitPassResources(const IResourceDeviceHandleAccessor& resourceAccessor);
 
-        Bool updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler);
-        Bool updateTextureSamplerResourceAsRenderBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
-        Bool updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
+        bool updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler);
+        bool updateTextureSamplerResourceAsRenderBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
+        bool updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
         bool updateTextureSamplerResourceAsStreamBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const StreamBufferHandle streamBuffer, const TextureSampler& fallbackSamplerData, DeviceResourceHandle& deviceHandleInOut);
 
         DeviceHandleVector         m_effectDeviceHandleCache;
@@ -100,15 +100,15 @@ namespace ramses_internal
         DeviceHandleVector         m_renderTargetCache;
         DeviceHandleVector         m_blitPassCache;
 
-        mutable Bool       m_renderableResourcesDirtinessNeedsUpdate = false;
-        mutable Bool       m_renderableVertexArraysDirty = false;
+        mutable bool       m_renderableResourcesDirtinessNeedsUpdate = false;
+        mutable bool       m_renderableVertexArraysDirty = false;
         mutable BoolVector m_renderableResourcesDirty;
         mutable BoolVector m_dataInstancesDirty;
         mutable BoolVector m_textureSamplersDirty;
         mutable BoolVector m_renderableVertexArrayDirty;
 
-        Bool m_renderTargetsDirty = false;
-        Bool m_blitPassesDirty = false;
+        bool m_renderTargetsDirty = false;
+        bool m_blitPassesDirty = false;
     };
 }
 

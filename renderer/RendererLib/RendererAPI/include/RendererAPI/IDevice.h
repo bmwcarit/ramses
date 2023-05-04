@@ -16,20 +16,11 @@
 #include "Resource/TextureMetaInfo.h"
 #include "Platform_Base/GpuResource.h"
 #include <memory>
+#include <array>
 
 namespace ramses_internal
 {
     class EffectResource;
-
-    class Vector2;
-    class Vector3;
-    class Vector4;
-    class Vector2i;
-    class Vector3i;
-    class Vector4i;
-    class Matrix22f;
-    class Matrix33f;
-    class Matrix44f;
 
     struct PixelRectangle;
     struct TextureSamplerStates;
@@ -41,16 +32,16 @@ namespace ramses_internal
 
         // data
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Float*      value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector2*    value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector3*    value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector4*    value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::vec2*    value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::vec3*    value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::vec4*    value) = 0;
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Int32*      value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector2i*   value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector3i*   value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector4i*   value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Matrix22f*  value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Matrix33f*  value) = 0;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Matrix44f*  value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::ivec2*   value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::ivec3*   value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::ivec4*   value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::mat2*  value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::mat3*  value) = 0;
+        virtual void setConstant(DataFieldHandle field, UInt32 count, const glm::mat4*  value) = 0;
 
         //draw calls
         virtual void clear               (UInt32 clearFlags) = 0;
@@ -59,13 +50,13 @@ namespace ramses_internal
         virtual void flush              () = 0;
 
         //states
-        virtual void colorMask           (Bool r, Bool g, Bool b, Bool a) = 0;
-        virtual void clearColor          (const Vector4& clearColor) = 0;
+        virtual void colorMask           (bool r, bool g, bool b, bool a) = 0;
+        virtual void clearColor          (const glm::vec4& clearColor) = 0;
         virtual void clearDepth          (Float d) = 0;
         virtual void clearStencil        (Int32 s) = 0;
         virtual void blendFactors        (EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) = 0;
         virtual void blendOperations     (EBlendOperation operationColor, EBlendOperation operationAlpha) = 0;
-        virtual void blendColor          (const Vector4& color) = 0;
+        virtual void blendColor          (const glm::vec4& color) = 0;
         virtual void cullMode            (ECullMode mode) = 0;
         virtual void depthFunc           (EDepthFunc func) = 0;
         virtual void depthWrite          (EDepthWrite flag) = 0;
@@ -91,7 +82,7 @@ namespace ramses_internal
         virtual std::unique_ptr<const GPUResource> uploadShader     (const EffectResource& effect) = 0;
         virtual DeviceResourceHandle    registerShader              (std::unique_ptr<const GPUResource> shaderResource) = 0;
         virtual DeviceResourceHandle    uploadBinaryShader          (const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) = 0;
-        virtual Bool                    getBinaryShader             (DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) = 0;
+        virtual bool                    getBinaryShader             (DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) = 0;
         virtual void                    deleteShader                (DeviceResourceHandle handle) = 0;
         virtual void                    activateShader              (DeviceResourceHandle handle) = 0;
 
@@ -126,12 +117,12 @@ namespace ramses_internal
         virtual void                    deleteRenderTarget          (DeviceResourceHandle handle) = 0;
         virtual void                    discardDepthStencil         () = 0;
 
-        virtual void                    pairRenderTargetsForDoubleBuffering (DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2]) = 0;
+        virtual void                    pairRenderTargetsForDoubleBuffering (const std::array<DeviceResourceHandle, 2>& renderTargets, const std::array<DeviceResourceHandle, 2>& colorBuffers) = 0;
         virtual void                    unpairRenderTargets               (DeviceResourceHandle renderTarget) = 0;
         virtual void                    swapDoubleBufferedRenderTarget    (DeviceResourceHandle renderTarget) = 0;
 
         // Blitting
-        virtual void                    blitRenderTargets           (DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, Bool colorOnly) = 0;
+        virtual void                    blitRenderTargets           (DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, bool colorOnly) = 0;
 
         // read back data, statistics, info
         virtual void readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;

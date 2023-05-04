@@ -15,7 +15,7 @@
 #include "WithTempDirectory.h"
 
 
-namespace rlogic
+namespace ramses
 {
     class ALuaScript_Init : public ALuaScript
     {

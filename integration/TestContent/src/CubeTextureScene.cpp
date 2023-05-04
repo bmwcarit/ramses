@@ -23,7 +23,7 @@
 
 namespace ramses_internal
 {
-    CubeTextureScene::CubeTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    CubeTextureScene::CubeTextureScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-cubeSphere"))
         , m_sphereMesh(nullptr)
@@ -32,12 +32,12 @@ namespace ramses_internal
         init(static_cast<EState>(state));
     }
 
-    void CubeTextureScene::divideUnitSphereTriangle(Vector3 p1, Vector3 p2, Vector3 p3, long depth)
+    void CubeTextureScene::divideUnitSphereTriangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, long depth)
     {
         // make sure points are on unit sphere surface
-        p1 = p1.normalize();
-        p2 = p2.normalize();
-        p3 = p3.normalize();
+        p1 = glm::normalize(p1);
+        p2 = glm::normalize(p2);
+        p3 = glm::normalize(p3);
 
         if (depth == 0)
         {
@@ -46,20 +46,20 @@ namespace ramses_internal
             m_sphereIndices.push_back(currentPositions);
             m_sphereIndices.push_back(currentPositions + 1);
             m_sphereIndices.push_back(currentPositions + 2);
-            m_spherePositions.push_back(p1.getAsVec3());
-            m_spherePositions.push_back(p2.getAsVec3());
-            m_spherePositions.push_back(p3.getAsVec3());
+            m_spherePositions.push_back(p1);
+            m_spherePositions.push_back(p2);
+            m_spherePositions.push_back(p3);
             // normals are same as point for unit sphere
-            m_sphereNormals.push_back(p1.getAsVec3());
-            m_sphereNormals.push_back(p2.getAsVec3());
-            m_sphereNormals.push_back(p3.getAsVec3());
+            m_sphereNormals.push_back(p1);
+            m_sphereNormals.push_back(p2);
+            m_sphereNormals.push_back(p3);
         }
         else
         {
             // calculate points halfway between the given points. can use simple addition because of normalization
-            Vector3 v12 = p1 + p2;
-            Vector3 v23 = p2 + p3;
-            Vector3 v31 = p3 + p1;
+            glm::vec3 v12 = p1 + p2;
+            glm::vec3 v23 = p2 + p3;
+            glm::vec3 v31 = p3 + p1;
 
             // subdivide given triangle into 4 smaller ones
             divideUnitSphereTriangle(p1, v12, v31, depth - 1);
@@ -73,7 +73,7 @@ namespace ramses_internal
     {
         // create sphere by recursively subdividing a tetrahedron (pyramid with triangle base) into smaller triangles and project
         // them on unit sphere
-        Vector3 tetrahedron[] = { Vector3(1.f, 1.f, 1.f), Vector3(1.f, -1.f, -1.f), Vector3(-1.f, 1.f, -1.f), Vector3(-1.f, -1.f, 1.f) };
+        glm::vec3 tetrahedron[] = { glm::vec3(1.f, 1.f, 1.f), glm::vec3(1.f, -1.f, -1.f), glm::vec3(-1.f, 1.f, -1.f), glm::vec3(-1.f, -1.f, 1.f) };
         divideUnitSphereTriangle(tetrahedron[1], tetrahedron[2], tetrahedron[0], 5);
         divideUnitSphereTriangle(tetrahedron[2], tetrahedron[3], tetrahedron[0], 5);
         divideUnitSphereTriangle(tetrahedron[3], tetrahedron[1], tetrahedron[0], 5);

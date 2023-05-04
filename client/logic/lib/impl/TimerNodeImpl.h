@@ -24,7 +24,7 @@ namespace flatbuffers
     class FlatBufferBuilder;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SerializationMap;
     class DeserializationMap;

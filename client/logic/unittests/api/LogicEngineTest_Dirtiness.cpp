@@ -19,7 +19,7 @@
 
 #include "RamsesTestUtils.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicEngine_DirtinessBase : public ALogicEngineBase
     {

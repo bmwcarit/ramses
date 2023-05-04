@@ -14,43 +14,39 @@
 
 namespace ramses
 {
-    RenderBuffer::RenderBuffer(RenderBufferImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    RenderBuffer::~RenderBuffer()
+    RenderBuffer::RenderBuffer(std::unique_ptr<RenderBufferImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<RenderBufferImpl&>(SceneObject::m_impl) }
     {
     }
 
     uint32_t RenderBuffer::getWidth() const
     {
-        return impl.getWidth();
+        return m_impl.getWidth();
     }
 
     uint32_t RenderBuffer::getHeight() const
     {
-        return impl.getHeight();
+        return m_impl.getHeight();
     }
 
     ERenderBufferType RenderBuffer::getBufferType() const
     {
-        return impl.getBufferType();
+        return m_impl.getBufferType();
     }
 
     ERenderBufferFormat RenderBuffer::getBufferFormat() const
     {
-        return impl.getBufferFormat();
+        return m_impl.getBufferFormat();
     }
 
     ERenderBufferAccessMode RenderBuffer::getAccessMode() const
     {
-        return impl.getAccessMode();
+        return m_impl.getAccessMode();
     }
 
     uint32_t RenderBuffer::getSampleCount() const
     {
-        return impl.getSampleCount();
+        return m_impl.getSampleCount();
     }
 }

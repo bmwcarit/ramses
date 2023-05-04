@@ -27,7 +27,7 @@ namespace ramses
             , m_clientForLoading(*m_frameworkForLoader.createClient("client"))
             , m_sceneLoaded(nullptr)
         {
-            m_frameworkForLoader.impl.getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
+            m_frameworkForLoader.m_impl.getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
         }
 
         using ObjectTypeHistogram = ramses_internal::HashMap< ERamsesObjectType, uint32_t >;
@@ -53,7 +53,7 @@ namespace ramses
         void fillObjectTypeHistogramFromScene( ObjectTypeHistogram& counter, const ramses::Scene& scene )
         {
             RamsesObjectVector objects;
-            scene.impl.getObjectRegistry().getObjectsOfType(objects, ERamsesObjectType_SceneObject);
+            scene.m_impl.getObjectRegistry().getObjectsOfType(objects, ERamsesObjectType_SceneObject);
             fillObjectTypeHistorgramFromObjectVector( counter, objects );
         }
 
@@ -128,8 +128,8 @@ namespace ramses
             // this can not be enabled for text serialization, because those are destroying/creating meshes
             if (expectSameSceneSizeInfo)
             {
-                ramses_internal::SceneSizeInformation origSceneSizeInfo = m_scene.impl.getIScene().getSceneSizeInformation();
-                ramses_internal::SceneSizeInformation loadedSceneSizeInfo = m_sceneLoaded->impl.getIScene().getSceneSizeInformation();
+                ramses_internal::SceneSizeInformation origSceneSizeInfo = m_scene.m_impl.getIScene().getSceneSizeInformation();
+                ramses_internal::SceneSizeInformation loadedSceneSizeInfo = m_sceneLoaded->m_impl.getIScene().getSceneSizeInformation();
 
                 EXPECT_EQ(origSceneSizeInfo, loadedSceneSizeInfo);
             }
@@ -138,7 +138,7 @@ namespace ramses
         void saveSceneWithFeatureLevelToFile(EFeatureLevel featureLevel, const char* fileName)
         {
             RamsesFrameworkConfig config;
-            config.impl.setFeatureLevelNoCheck(featureLevel);
+            config.m_impl.get().setFeatureLevelNoCheck(featureLevel);
             RamsesFramework someFramework{ config };
             RamsesClient* someClient = someFramework.createClient("someClient");
 

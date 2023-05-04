@@ -19,7 +19,7 @@
 
 namespace ramses_internal
 {
-    CameraDataLinkScene::CameraDataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    CameraDataLinkScene::CameraDataLinkScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         switch (state)

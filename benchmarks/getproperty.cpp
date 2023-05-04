@@ -15,7 +15,7 @@
 #include "internals/SolWrapper.h"
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
     static void Run(benchmark::State& state, const std::string& src)
     {

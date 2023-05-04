@@ -59,6 +59,7 @@ namespace ramses_internal
         }
 
     private:
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static void DltLogLevelChangedCallback(char context_id[DLT_ID_SIZE], uint8_t log_level, uint8_t trace_status);
 
         DltAdapterImpl();

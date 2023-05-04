@@ -53,7 +53,7 @@ namespace ramses_internal
         }
     }
 
-    Bool SystemCompositorController_Wayland_IVI::init()
+    bool SystemCompositorController_Wayland_IVI::init()
     {
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init");
 
@@ -99,6 +99,7 @@ namespace ramses_internal
             return;
         }
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (pfd.revents & POLLIN)
         {
             wl_display_dispatch(m_display);
@@ -133,7 +134,7 @@ namespace ramses_internal
         wl_display_roundtrip(m_display);
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility)
+    bool SystemCompositorController_Wayland_IVI::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::setSurfaceVisibility surfaceId: "
@@ -146,7 +147,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity)
+    bool SystemCompositorController_Wayland_IVI::setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::setOpacity surfaceId: " << surfaceId.getValue()
@@ -162,7 +163,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setSurfaceDestinationRectangle(
+    bool SystemCompositorController_Wayland_IVI::setSurfaceDestinationRectangle(
         WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height)
     {
         LOG_INFO(CONTEXT_RENDERER,
@@ -178,7 +179,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::doScreenshot(const String& fileName, int32_t screenIviId)
+    bool SystemCompositorController_Wayland_IVI::doScreenshot(const String& fileName, int32_t screenIviId)
     {
         // find screen with id
         IVIControllerScreen* screen = nullptr;
@@ -221,7 +222,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::addSurfaceToLayer(WaylandIviSurfaceId surfaceId,
+    bool SystemCompositorController_Wayland_IVI::addSurfaceToLayer(WaylandIviSurfaceId surfaceId,
                                                                    WaylandIviLayerId   layerId)
     {
         LOG_INFO(CONTEXT_RENDERER,
@@ -260,7 +261,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId,
+    bool SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId,
                                                                         WaylandIviLayerId   layerId)
     {
         LOG_INFO(CONTEXT_RENDERER,
@@ -306,7 +307,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::destroySurface(WaylandIviSurfaceId surfaceId)
+    bool SystemCompositorController_Wayland_IVI::destroySurface(WaylandIviSurfaceId surfaceId)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::destroySurface surfaceId: " << surfaceId.getValue());
@@ -327,7 +328,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setLayerVisibility(WaylandIviLayerId layerId, Bool visibility)
+    bool SystemCompositorController_Wayland_IVI::setLayerVisibility(WaylandIviLayerId layerId, bool visibility)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::setLayerVisibility layerId: "

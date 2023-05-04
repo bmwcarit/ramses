@@ -18,7 +18,7 @@
 
 namespace ramses_internal
 {
-    IndexArray32BitScene::IndexArray32BitScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    IndexArray32BitScene::IndexArray32BitScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
@@ -27,7 +27,7 @@ namespace ramses_internal
         effect->findUniformInput("color", colorInput);
         appearance->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 1.f, 1.f });
 
-        static const float translation[] =
+        const ramses::vec3f translation =
         {
             -2.0f,  1.0f, -18.0f
         };
@@ -36,7 +36,7 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*m_meshNode);
 
         ramses::Node* trafoNode = m_scene.createNode("transformation node");
-        trafoNode->setTranslation({translation[0], translation[1], translation[2]});
+        trafoNode->setTranslation({translation});
 
         m_meshNode->setParent(*trafoNode);
         m_meshNode->setAppearance(*appearance);
@@ -46,24 +46,24 @@ namespace ramses_internal
 
     void IndexArray32BitScene::create16BitIndexArray(ramses::GeometryBinding* geometry)
     {
-        static const UInt16 indicesData[] =
+        const std::array<UInt16, 7> indicesData =
         {
             10000, 10001, 10002, 10000, 10001, 10002, 10003
         };
 
-        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(7u, indicesData);
+        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(7u, indicesData.data());
 
         geometry->setIndices(*indicesTri);
     }
 
     void IndexArray32BitScene::create32BitIndexArray(ramses::GeometryBinding* geometry)
     {
-        static const UInt32 indicesData[] =
+        const std::array<UInt32, 7> indicesData =
         {
             65536, 65537, 65538, 65536, 65537, 65538, 65539
         };
 
-        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(7u, indicesData);
+        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(7u, indicesData.data());
 
         geometry->setIndices(*indicesTri);
     }

@@ -12,7 +12,7 @@
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/TextureEnums.h"
-#include "Math3d/Vector4.h"
+#include "DataTypesImpl.h"
 #include <unordered_map>
 
 namespace ramses_internal
@@ -22,11 +22,11 @@ namespace ramses_internal
     public:
         DisplayConfig() {}
 
-        [[nodiscard]] Bool getFullscreenState() const;
-        void setFullscreenState(Bool state);
+        [[nodiscard]] bool getFullscreenState() const;
+        void setFullscreenState(bool state);
 
-        [[nodiscard]] Bool getBorderlessState() const ;
-        void setBorderlessState(Bool state);
+        [[nodiscard]] bool getBorderlessState() const ;
+        void setBorderlessState(bool state);
 
         [[nodiscard]] UInt32 getAntialiasingSampleCount() const;
         void setAntialiasingSampleCount(UInt32 samples);
@@ -61,20 +61,20 @@ namespace ramses_internal
         [[nodiscard]] AndroidNativeWindowPtr getAndroidNativeWindow() const;
         void setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr);
 
-        [[nodiscard]] Bool getStartVisibleIvi() const;
+        [[nodiscard]] bool getStartVisibleIvi() const;
         void setStartVisibleIvi(bool startVisible);
 
-        [[nodiscard]] Bool getKeepEffectsUploaded() const;
-        void setKeepEffectsUploaded(Bool enable);
+        [[nodiscard]] bool getKeepEffectsUploaded() const;
+        void setKeepEffectsUploaded(bool enable);
 
-        [[nodiscard]] Bool isResizable() const;
-        void setResizable(Bool resizable);
+        [[nodiscard]] bool isResizable() const;
+        void setResizable(bool resizable);
 
         [[nodiscard]] UInt64 getGPUMemoryCacheSize() const;
         void setGPUMemoryCacheSize(UInt64 size);
 
-        void setClearColor(const Vector4& clearColor);
-        [[nodiscard]] const Vector4& getClearColor() const;
+        void setClearColor(const glm::vec4& clearColor);
+        [[nodiscard]] const glm::vec4& getClearColor() const;
 
         void setDepthStencilBufferType(ERenderBufferType depthStencilBufferType);
         [[nodiscard]] ERenderBufferType getDepthStencilBufferType() const;
@@ -107,13 +107,13 @@ namespace ramses_internal
         void setResourceUploadBatchSize(uint32_t batchSize);
         [[nodiscard]] uint32_t getResourceUploadBatchSize() const;
 
-        Bool operator==(const DisplayConfig& other) const;
-        Bool operator!=(const DisplayConfig& other) const;
+        bool operator==(const DisplayConfig& other) const;
+        bool operator!=(const DisplayConfig& other) const;
 
     private:
-        Bool m_fullscreen = false;
-        Bool m_borderless = false;
-        Bool m_resizable = false;
+        bool m_fullscreen = false;
+        bool m_borderless = false;
+        bool m_resizable = false;
 
         UInt32 m_desiredWindowWidth = 1280;
         UInt32 m_desiredWindowHeight = 480;
@@ -125,14 +125,14 @@ namespace ramses_internal
         WindowsWindowHandle m_windowsWindowHandle;
         X11WindowHandle m_x11WindowHandle;
         AndroidNativeWindowPtr m_androidNativeWindowPtr;
-        Bool m_startVisibleIvi = false;
+        bool m_startVisibleIvi = false;
         String m_waylandDisplay;
 
         UInt32 m_antiAliasingSamples = 1;
 
-        Bool m_keepEffectsUploaded = true;
+        bool m_keepEffectsUploaded = true;
         UInt64 m_gpuMemoryCacheSize = 0u;
-        Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
+        glm::vec4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
         ERenderBufferType m_depthStencilBufferType = ERenderBufferType_DepthStencilBuffer;
         bool m_asyncEffectUploadEnabled = true;
 

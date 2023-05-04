@@ -9,7 +9,7 @@
 #include "ramses-logic/AnimationNode.h"
 #include "impl/AnimationNodeImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     AnimationNode::AnimationNode(std::unique_ptr<internal::AnimationNodeImpl> impl) noexcept
         : LogicNode(std::move(impl))
@@ -17,8 +17,6 @@ namespace rlogic
         , m_animationNodeImpl{ static_cast<internal::AnimationNodeImpl&>(LogicNode::m_impl) }
     {
     }
-
-    AnimationNode::~AnimationNode() noexcept = default;
 
     const AnimationChannels& AnimationNode::getChannels() const
     {

@@ -10,12 +10,12 @@
 
 #include "ramses-logic/LogicNode.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesBindingImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
      * The RamsesBinding is a shared base class for bindings to Ramses objects.
@@ -23,45 +23,12 @@ namespace rlogic
      */
     class RamsesBinding : public LogicNode
     {
-    public:
+    protected:
         /**
          * Constructor of RamsesBinding. User is not supposed to call this - RamsesBinding are created by other factory classes
          *
          * @param impl implementation details of the RamsesBinding
          */
         explicit RamsesBinding(std::unique_ptr<internal::RamsesBindingImpl> impl) noexcept;
-
-        /**
-         * Destructor of RamsesBinding.
-         */
-        ~RamsesBinding() noexcept override = default;
-
-        /**
-         * Copy Constructor of RamsesBinding is deleted because RamsesBindings are not supposed to be copied
-         *
-         * @param other RamsesBindings to copy from
-         */
-        RamsesBinding(const RamsesBinding& other) = delete;
-
-        /**
-         * Move Constructor of RamsesBinding is deleted because RamsesBindings are not supposed to be moved
-         *
-         * @param other RamsesBindings to move from
-         */
-        RamsesBinding(RamsesBinding&& other) = delete;
-
-        /**
-         * Assignment operator of RamsesBinding is deleted because RamsesBindings are not supposed to be copied
-         *
-         * @param other RamsesBindings to assign from
-         */
-        RamsesBinding& operator=(const RamsesBinding& other) = delete;
-
-        /**
-         * Move assignment operator of RamsesBinding is deleted because RamsesBindings are not supposed to be moved
-         *
-         * @param other RamsesBindings to assign from
-         */
-        RamsesBinding& operator=(RamsesBinding&& other) = delete;
     };
 }

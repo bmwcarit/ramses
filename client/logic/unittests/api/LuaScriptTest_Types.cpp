@@ -11,7 +11,7 @@
 #include "ramses-logic/LuaScript.h"
 #include "ramses-logic/Property.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALuaScript_Types : public ALuaScript
     {

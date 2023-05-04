@@ -12,14 +12,14 @@
 
 #include "LogTestUtils.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_LogicObjectStatistics : public ALogicEngine
     {
     protected:
-        std::vector<ELogMessageType> m_logTypes;
+        std::vector<ELogLevel> m_logTypes;
         std::vector<std::string>     m_logMessages;
-        ScopedLogContextLevel        m_logCollector{ELogMessageType::Debug, [this](ELogMessageType type, std::string_view message)
+        ScopedLogContextLevel        m_logCollector{ELogLevel::Debug, [this](ELogLevel type, std::string_view message)
             {
                 m_logTypes.emplace_back(type);
                 m_logMessages.emplace_back(message);
@@ -87,7 +87,7 @@ namespace rlogic
     TEST_F(ALogicEngine_LogicObjectStatistics, OnlyLogWhenLogLevelSmallerOrEqualToLogVerbosityLimit)
     {
         m_logicEngine.setStatisticsLoggingRate(2u);
-        m_logicEngine.setStatisticsLogLevel(ELogMessageType::Trace);
+        m_logicEngine.setStatisticsLogLevel(ELogLevel::Trace);
 
         for (int32_t i = 0; i < 4; ++i)
         {
@@ -95,7 +95,7 @@ namespace rlogic
         }
         EXPECT_TRUE(m_logMessages.empty());
 
-        m_logicEngine.setStatisticsLogLevel(ELogMessageType::Info);
+        m_logicEngine.setStatisticsLogLevel(ELogLevel::Info);
         for (int32_t i = 0; i < 4; ++i)
         {
             EXPECT_TRUE(m_logicEngine.update());
@@ -105,7 +105,7 @@ namespace rlogic
         m_logMessages.clear();
         EXPECT_TRUE(m_logMessages.empty());
 
-        m_logicEngine.setStatisticsLogLevel(ELogMessageType::Warn);
+        m_logicEngine.setStatisticsLogLevel(ELogLevel::Warn);
         for (int32_t i = 0; i < 4; ++i)
         {
             EXPECT_TRUE(m_logicEngine.update());

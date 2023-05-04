@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    HierarchicalRedTrianglesScene::HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    HierarchicalRedTrianglesScene::HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_groupNode(nullptr)
         , m_subGroup1Node(nullptr)
@@ -29,7 +29,7 @@ namespace ramses_internal
         ramses::Triangle redTriangle(m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
 
         m_groupNode = m_scene.createNode();
-        ramses::Node* subGroups[3];
+        std::array<ramses::Node*, 3> subGroups;
         for (int row = 0; row < 3; ++row)
         {
             ramses::Node* subGroupNode = m_scene.createNode();

@@ -14,59 +14,55 @@
 
 namespace ramses
 {
-    BlitPass::BlitPass(BlitPassImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    BlitPass::~BlitPass()
+    BlitPass::BlitPass(std::unique_ptr<BlitPassImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<BlitPassImpl&>(SceneObject::m_impl) }
     {
     }
 
     status_t BlitPass::setBlittingRegion(uint32_t sourceX, uint32_t sourceY, uint32_t destinationX, uint32_t destinationY, uint32_t width, uint32_t height)
     {
-        const status_t status = impl.setBlittingRegion(sourceX, sourceY, destinationX, destinationY, width, height);
+        const status_t status = m_impl.setBlittingRegion(sourceX, sourceY, destinationX, destinationY, width, height);
         LOG_HL_CLIENT_API6(status, sourceX, sourceY, destinationX, destinationY, width, height);
         return status;
     }
 
     void BlitPass::getBlittingRegion(uint32_t& sourceX, uint32_t& sourceY, uint32_t& destinationX, uint32_t& destinationY, uint32_t& width, uint32_t& height) const
     {
-        impl.getBlittingRegion(sourceX, sourceY, destinationX, destinationY, width, height);
+        m_impl.getBlittingRegion(sourceX, sourceY, destinationX, destinationY, width, height);
     }
 
     const RenderBuffer& BlitPass::getSourceRenderBuffer() const
     {
-        return impl.getSourceRenderBuffer();
+        return m_impl.getSourceRenderBuffer();
     }
 
     const RenderBuffer& BlitPass::getDestinationRenderBuffer() const
     {
-        return impl.getDestinationRenderBuffer();
+        return m_impl.getDestinationRenderBuffer();
     }
 
     status_t BlitPass::setRenderOrder(int32_t renderOrder)
     {
-        const status_t status = impl.setRenderOrder(renderOrder);
+        const status_t status = m_impl.setRenderOrder(renderOrder);
         LOG_HL_CLIENT_API1(status, renderOrder);
         return status;
     }
 
     int32_t BlitPass::getRenderOrder() const
     {
-        return impl.getRenderOrder();
+        return m_impl.getRenderOrder();
     }
 
     status_t BlitPass::setEnabled(bool enable)
     {
-        const status_t status = impl.setEnabled(enable);
+        const status_t status = m_impl.setEnabled(enable);
         LOG_HL_CLIENT_API1(status, enable);
         return status;
     }
 
     bool BlitPass::isEnabled() const
     {
-        return impl.isEnabled();
+        return m_impl.isEnabled();
     }
 }

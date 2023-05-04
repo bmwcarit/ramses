@@ -17,7 +17,7 @@
 
 namespace ramses_internal
 {
-    DataLinkScene::DataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    DataLinkScene::DataLinkScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");

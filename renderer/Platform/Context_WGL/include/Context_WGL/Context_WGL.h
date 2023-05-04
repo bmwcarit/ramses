@@ -24,7 +24,7 @@ namespace ramses_internal
         Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions procs, const Int32* contextAttributes, UInt32 msaaSampleCount);
         ~Context_WGL() override;
 
-        Bool init();
+        bool init();
 
         void* getProcAddress(const Char* name) const override;
 
@@ -36,7 +36,7 @@ namespace ramses_internal
         virtual bool disable() override;
 
     private:
-        Bool initCustomPixelFormat();
+        bool initCustomPixelFormat();
 
         HDC m_displayHandle;
         WglExtensions m_ext;

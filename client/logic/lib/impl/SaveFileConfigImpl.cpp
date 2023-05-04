@@ -9,7 +9,7 @@
 #include "impl/SaveFileConfigImpl.h"
 #include "impl/LoggerImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     void SaveFileConfigImpl::setMetadataString(std::string_view metadata)
     {

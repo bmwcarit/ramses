@@ -13,18 +13,13 @@
 #include "SceneObjectImpl.h"
 #include "ramses-client-api/EVisibilityMode.h"
 #include "ramses-client-api/ERotationType.h"
-#include "ramses-framework-api/DataTypes.h"
+#include "DataTypesImpl.h"
 
 // ramses framework
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/ERotationType.h"
 #include "Collections/Vector.h"
-
-namespace ramses_internal
-{
-    class Vector4;
-}
 
 namespace ramses
 {
@@ -94,7 +89,7 @@ namespace ramses
         using NodeVector = std::vector<NodeImpl *>;
 
         void removeChildInternally(NodeVector::iterator childIt);
-        status_t setRotationInternal(ramses_internal::Vector4&& rotation, ramses_internal::ERotationType rotationType);
+        status_t setRotationInternal(glm::vec4&& rotation, ramses_internal::ERotationType rotationType);
 
         ramses_internal::NodeHandle m_nodeHandle;
 

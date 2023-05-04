@@ -16,7 +16,7 @@
 #include <string>
 #include <chrono>
 
-namespace rlogic
+namespace ramses
 {
     class LogicEngine;
     struct LogicViewerSettings;
@@ -127,7 +127,7 @@ namespace rlogic
 
         [[nodiscard]] const std::string& getLuaFilename() const;
 
-        [[nodiscard]] rlogic::LogicEngine& getEngine();
+        [[nodiscard]] ramses::LogicEngine& getEngine();
 
         [[nodiscard]] Result update();
 
@@ -157,7 +157,7 @@ namespace rlogic
 
         void load(sol::load_result&& loadResult);
 
-        rlogic::LogicEngine m_logicEngine;
+        ramses::LogicEngine m_logicEngine;
         ScreenshotFunc      m_screenshotFunc;
         std::string         m_logicFilename;
         std::string         m_luaFilename;

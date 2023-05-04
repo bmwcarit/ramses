@@ -25,7 +25,7 @@
 
 namespace ramses_internal
 {
-    GeometryShaderScene::GeometryShaderScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    GeometryShaderScene::GeometryShaderScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(createTestEffect(state))
     {

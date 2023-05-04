@@ -24,7 +24,7 @@ private:
         ramses_internal::UInt32 sceneState,
         const ramses_internal::String& expectedImageName,
         float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel,
-        const ramses_internal::Vector3& cameraTranslation = ramses_internal::Vector3(0.0f),
+        const glm::vec3& cameraTranslation = glm::vec3(0.0f),
         bool saveDiffOnError = true);
 
     enum

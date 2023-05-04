@@ -20,9 +20,9 @@ namespace ramses_internal
     // TODO Find a better solution to this. For now, needed to suppress cast warnings
     WARNINGS_PUSH
     WARNING_DISABLE_LINUX(-Wold-style-cast)
-    constexpr auto white{IM_COL32(255, 255, 255, 255)};
-    constexpr auto grey{IM_COL32(200, 200, 200, 255)};
-    constexpr auto green{IM_COL32(15, 200, 19, 255)};
+    constexpr auto white{IM_COL32(255u, 255u, 255u, 255u)};
+    constexpr auto grey{IM_COL32(200u, 200u, 200u, 255u)};
+    constexpr auto green{IM_COL32(15u, 200u, 19u, 255u)};
     WARNINGS_POP
 
     namespace imgui
@@ -213,8 +213,8 @@ namespace ramses_internal
             auto& obj = scene.getRenderState(hnd);
             if (ImGui::TreeNode("Blending"))
             {
-                float rgba[4] = {obj.blendColor.r, obj.blendColor.g, obj.blendColor.b, obj.blendColor.a};
-                if (ImGui::ColorEdit4("BlendingColor", rgba))
+                std::array rgba = {obj.blendColor.r, obj.blendColor.g, obj.blendColor.b, obj.blendColor.a};
+                if (ImGui::ColorEdit4("BlendingColor", rgba.data()))
                     scene.setRenderStateBlendColor(hnd, {rgba[0], rgba[1], rgba[2], rgba[3]});
 
                 int srcColor  = static_cast<int>(obj.blendFactorSrcColor);
@@ -228,13 +228,13 @@ namespace ramses_internal
                                                       static_cast<EBlendFactor>(srcAlpha),
                                                       static_cast<EBlendFactor>(destAlpha));
                 };
-                if (ImGui::Combo("srcColor", &srcColor, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("srcColor", &srcColor, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
                     setBlendFactors();
-                if (ImGui::Combo("destColor", &destColor, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("destColor", &destColor, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
                     setBlendFactors();
-                if (ImGui::Combo("srcAlpha", &srcAlpha, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("srcAlpha", &srcAlpha, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
                     setBlendFactors();
-                if (ImGui::Combo("destAlpha", &destAlpha, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("destAlpha", &destAlpha, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
                     setBlendFactors();
 
                 int blendingOperationColor = static_cast<int>(obj.blendOperationColor);
@@ -243,26 +243,26 @@ namespace ramses_internal
                     scene.setRenderStateBlendOperations(
                         hnd, static_cast<EBlendOperation>(blendingOperationColor), static_cast<EBlendOperation>(blendingOperationAlpha));
                 };
-                if (ImGui::Combo("colorOperation", &blendingOperationColor, ramses_internal::BlendOperationNames, static_cast<int>(EBlendOperation::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("colorOperation", &blendingOperationColor, BlendOperationNames.data(), static_cast<int>(BlendOperationNames.size())))
                     setBlendOperations();
-                if (ImGui::Combo("alphaOperation", &blendingOperationAlpha, ramses_internal::BlendOperationNames, static_cast<int>(EBlendOperation::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("alphaOperation", &blendingOperationAlpha, BlendOperationNames.data(), static_cast<int>(BlendOperationNames.size())))
                     setBlendOperations();
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("Depth"))
             {
                 int depthFunc = static_cast<int>(obj.depthFunc);
-                if (ImGui::Combo("depthFunc", &depthFunc, DepthFuncNames, static_cast<int>(EDepthFunc::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("depthFunc", &depthFunc, DepthFuncNames.data(), static_cast<int>(DepthFuncNames.size())))
                     scene.setRenderStateDepthFunc(hnd, static_cast<EDepthFunc>(depthFunc));
                 int depthWrite = static_cast<int>(obj.depthWrite);
-                if (ImGui::Combo("depthWrite", &depthWrite, DepthWriteNames, static_cast<int>(EDepthWrite::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("depthWrite", &depthWrite, DepthWriteNames.data(), static_cast<int>(DepthFuncNames.size())))
                     scene.setRenderStateDepthWrite(hnd, static_cast<EDepthWrite>(depthWrite));
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("Scissor"))
             {
                 int mode = static_cast<int>(obj.scissorTest);
-                int xywh[4] = {
+                std::array<int, 4> xywh = {
                     obj.scissorRegion.x,
                     obj.scissorRegion.y,
                     obj.scissorRegion.width,
@@ -272,25 +272,25 @@ namespace ramses_internal
                     scene.setRenderStateScissorTest(hnd, static_cast<EScissorTest>(mode),
                         {static_cast<int16_t>(xywh[0]), static_cast<int16_t>(xywh[1]), static_cast<uint16_t>(xywh[2]), static_cast<uint16_t>(xywh[3])});
                 };
-                if (ImGui::Combo("scissorTest", &mode, ScissorTestNames, static_cast<int>(EScissorTest::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("scissorTest", &mode, ScissorTestNames.data(), static_cast<int>(ScissorTestNames.size())))
                     setScissorTest();
-                if (ImGui::DragInt4("Region", xywh))
+                if (ImGui::DragInt4("Region", xywh.data()))
                     setScissorTest();
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("Stencil"))
             {
                 int func = static_cast<int>(obj.stencilFunc);
-                int refMask[2]  = {
+                std::array<int, 2> refMask = {
                     obj.stencilRefValue,
                     obj.stencilMask
                 };
                 auto setStencilFunc = [&]() {
                     scene.setRenderStateStencilFunc(hnd, static_cast<EStencilFunc>(func), static_cast<uint8_t>(refMask[0]), static_cast<uint8_t>(refMask[1]));
                 };
-                if (ImGui::Combo("stencilFunc", &func, StencilFuncNames, static_cast<int>(EStencilFunc::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("stencilFunc", &func, StencilFuncNames.data(), static_cast<int>(StencilFuncNames.size())))
                     setStencilFunc();
-                if (ImGui::DragInt2("RefValue, Mask", refMask))
+                if (ImGui::DragInt2("RefValue, Mask", refMask.data()))
                     setStencilFunc();
 
                 int sfail = static_cast<int>(obj.stencilOpFail);
@@ -299,21 +299,21 @@ namespace ramses_internal
                 auto setStencilOps = [&]() {
                     scene.setRenderStateStencilOps(hnd, static_cast<EStencilOp>(sfail), static_cast<EStencilOp>(dpfail), static_cast<EStencilOp>(dppass));
                 };
-                if (ImGui::Combo("fail operation", &sfail, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("fail operation", &sfail, StencilOperationNames.data(), static_cast<int>(StencilOperationNames.size())))
                     setStencilOps();
-                if (ImGui::Combo("depth fail operation", &dpfail, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("depth fail operation", &dpfail, StencilOperationNames.data(), static_cast<int>(StencilOperationNames.size())))
                     setStencilOps();
-                if (ImGui::Combo("depth pass operation", &dppass, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("depth pass operation", &dppass, StencilOperationNames.data(), static_cast<int>(StencilOperationNames.size())))
                     setStencilOps();
                 ImGui::TreePop();
             }
             if (ImGui::TreeNode("DrawMode"))
             {
                 int culling = static_cast<int>(obj.cullMode);
-                if (ImGui::Combo("Culling", &culling, CullModeNames, static_cast<int>(ECullMode::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("Culling", &culling, CullModeNames.data(), static_cast<int>(CullModeNames.size())))
                     scene.setRenderStateCullMode(hnd, static_cast<ECullMode>(culling));
                 int drawMode = static_cast<int>(obj.drawMode);
-                if (ImGui::Combo("DrawMode", &drawMode, DrawModeNames, static_cast<int>(EDrawMode::NUMBER_OF_ELEMENTS)))
+                if (ImGui::Combo("DrawMode", &drawMode, DrawModeNames.data(), static_cast<int>(DrawModeNames.size())))
                     scene.setRenderStateDrawMode(hnd, static_cast<EDrawMode>(drawMode));
                 uint32_t colorFlags = obj.colorWriteMask;
                 ImGui::Text("ColorWriteMask");

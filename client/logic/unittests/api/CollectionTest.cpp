@@ -11,7 +11,7 @@
 
 #include "ramses-logic/Collection.h"
 
-namespace rlogic
+namespace ramses
 {
     class TestCollectionItem
     {

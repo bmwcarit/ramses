@@ -13,7 +13,7 @@
 #include "internals/LuaCompilationUtils.h"
 #include "internals/ErrorReporting.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ASolState : public ::testing::Test
     {
@@ -193,7 +193,7 @@ namespace rlogic::internal
 
         // Func has no access to 'global' because it was defined _before_ applying the new environment
         sol::object result = func();
-        EXPECT_EQ(result, sol::nil);
+        EXPECT_EQ(result, sol::lua_nil);
     }
 
     // Similar to NewlyCreatedEnvironment_HasNoAccessToPreviouslyDeclaredGlobalSymbols

@@ -9,17 +9,18 @@
 #pragma once
 
 #include "ramses-framework-api/APIExport.h"
-#include "ramses-logic/ELogMessageType.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 #include <functional>
 #include <string_view>
 
 /**
+ * @ingroup LogicAPI
  * Interface to interact with the internal logger. If you want to handle log messages by yourself, you can
- * register your own log handler function with #rlogic::Logger::SetLogHandler, which is called each time
+ * register your own log handler function with #ramses::Logger::SetLogHandler, which is called each time
  * a log message is logged. In addition you can silence the standard output of the log messages
  */
-namespace rlogic::Logger
+namespace ramses::Logger
 {
     /**
     * The #LogHandlerFunc can be used to implement a custom log handler. The
@@ -28,31 +29,31 @@ namespace rlogic::Logger
     * copy it e.g. to a std::string.
     * E.g.
     * \code{.cpp}
-    *   rlogic::Logger::SetLogHandler([](ElogMessageType msgType, std::string_view message){
+    *   ramses::Logger::SetLogHandler([](ElogMessageType msgType, std::string_view message){
     *       std::cout << message std::endl;
     *   });
     * \endcode
     */
-    using LogHandlerFunc = std::function<void(ELogMessageType, std::string_view)>;
+    using LogHandlerFunc = std::function<void(ELogLevel, std::string_view)>;
 
     /**
     * Controls how verbose the logging is. \p verbosityLimit has the following semantics:
     * - if log message has message type with higher or equal priority as verbosityLimit, then it is logged
-    * - log priority is as documented by #rlogic::ELogMessageType (Errors are more important than Warnings, etc)
-    * - the default value is #rlogic::ELogMessageType::Info, meaning that log messages are processed if they
+    * - log priority is as documented by #ramses::ELogLevel (Errors are more important than Warnings, etc)
+    * - the default value is #ramses::ELogLevel::Info, meaning that log messages are processed if they
     * have INFO priority or higher.
     *
     * @param verbosityLimit least priority a log message must have in order to be processed
     */
-    RAMSES_API void SetLogVerbosityLimit(ELogMessageType verbosityLimit);
+    RAMSES_API void SetLogVerbosityLimit(ELogLevel verbosityLimit);
 
     /**
-    * Returns the current log verbosity limit of the logger. See #rlogic::Logger::SetLogVerbosityLimit for
+    * Returns the current log verbosity limit of the logger. See #ramses::Logger::SetLogVerbosityLimit for
     * more info on semantics.
     *
     * @return current log verbosity limit
     */
-    RAMSES_API ELogMessageType GetLogVerbosityLimit();
+    RAMSES_API ELogLevel GetLogVerbosityLimit();
 
     /**
     * Sets a custom log handler function, which is called each time a log message occurs.

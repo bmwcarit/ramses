@@ -21,7 +21,7 @@ namespace ramses
     protected:
         EEffectUniformSemantic getSemanticForUniform(const char* inputName)
         {
-            ramses_internal::EFixedSemantics* internalSemantic = effectDesc.impl.getSemanticsMap().get(inputName);
+            ramses_internal::EFixedSemantics* internalSemantic = effectDesc.m_impl.get().getSemanticsMap().get(inputName);
             if (internalSemantic == nullptr)
             {
                 return EEffectUniformSemantic::Invalid;
@@ -32,7 +32,7 @@ namespace ramses
 
         EEffectAttributeSemantic getSemanticForAttribute(const char* inputName)
         {
-            ramses_internal::EFixedSemantics* internalSemantic = effectDesc.impl.getSemanticsMap().get(inputName);
+            ramses_internal::EFixedSemantics* internalSemantic = effectDesc.m_impl.get().getSemanticsMap().get(inputName);
             if (internalSemantic == nullptr)
             {
                 return EEffectAttributeSemantic::Invalid;
@@ -50,7 +50,7 @@ namespace ramses
         EXPECT_STREQ("", effectDesc.getFragmentShader());
         EXPECT_STREQ("", effectDesc.getGeometryShader());
         EXPECT_EQ(0u, effectDesc.getNumberOfCompilerDefines());
-        EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().size());
+        EXPECT_EQ(0u, effectDesc.m_impl.get().getSemanticsMap().size());
     }
 
     TEST_F(EffectDescriptionTest, setShaderWithNULLRetrievesEmptyString)
@@ -121,7 +121,7 @@ namespace ramses
     TEST_F(EffectDescriptionTest, addSemanticNameAsNULLReportsError)
     {
         EXPECT_NE(StatusOK, effectDesc.setUniformSemantic(nullptr, EEffectUniformSemantic::ViewMatrix));
-        EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().size());
+        EXPECT_EQ(0u, effectDesc.m_impl.get().getSemanticsMap().size());
     }
 
     TEST_F(EffectDescriptionTest, canAddAndRetrieveSemanticInput)
@@ -135,18 +135,18 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, effectDesc.setUniformSemantic(semantic1, semanticType1));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
-        EXPECT_EQ(1u, effectDesc.impl.getSemanticsMap().size());
+        EXPECT_EQ(1u, effectDesc.m_impl.get().getSemanticsMap().size());
 
         EXPECT_EQ(StatusOK, effectDesc.setUniformSemantic(semantic2, semanticType2));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
         EXPECT_EQ(semanticType2, getSemanticForUniform(semantic2));
-        EXPECT_EQ(2u, effectDesc.impl.getSemanticsMap().size());
+        EXPECT_EQ(2u, effectDesc.m_impl.get().getSemanticsMap().size());
 
         EXPECT_EQ(StatusOK, effectDesc.setAttributeSemantic(semantic3, semanticType3));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
         EXPECT_EQ(semanticType2, getSemanticForUniform(semantic2));
         EXPECT_EQ(semanticType3, getSemanticForAttribute(semantic3));
-        EXPECT_EQ(3u, effectDesc.impl.getSemanticsMap().size());
+        EXPECT_EQ(3u, effectDesc.m_impl.get().getSemanticsMap().size());
     }
 
     TEST_F(EffectDescriptionTest, retrievesUnknownTypeForSemanticNotAdded)
@@ -182,5 +182,48 @@ namespace ramses
         EXPECT_NE(StatusOK, effectDesc.setVertexShaderFromFile(nullptr));
         EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(nullptr));
         EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(nullptr));
+    }
+
+    TEST_F(EffectDescriptionTest, CanBeCopyAndMoveConstructed)
+    {
+        ASSERT_EQ(StatusOK, effectDesc.setVertexShader("test"));
+
+        EffectDescription effectDescCopy{ effectDesc };
+        EXPECT_STREQ("test", effectDescCopy.getVertexShader());
+
+        EffectDescription effectDescMove{ std::move(effectDesc) };
+        EXPECT_STREQ("test", effectDescMove.getVertexShader());
+    }
+
+    TEST_F(EffectDescriptionTest, CanBeCopyAndMoveAssigned)
+    {
+        ASSERT_EQ(StatusOK, effectDesc.setVertexShader("test"));
+
+        EffectDescription effectDescCopy;
+        effectDescCopy = effectDesc;
+        EXPECT_STREQ("test", effectDescCopy.getVertexShader());
+
+        EffectDescription effectDescMove;
+        effectDescMove = std::move(effectDesc);
+        EXPECT_STREQ("test", effectDescMove.getVertexShader());
+    }
+
+    TEST_F(EffectDescriptionTest, CanBeSelfAssigned)
+    {
+        ASSERT_EQ(StatusOK, effectDesc.setVertexShader("test"));
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+        effectDesc = effectDesc;
+        EXPECT_STREQ("test", effectDesc.getVertexShader());
+        effectDesc = std::move(effectDesc);
+        // NOLINTNEXTLINE(bugprone-use-after-move)
+        EXPECT_STREQ("test", effectDesc.getVertexShader());
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
     }
 }

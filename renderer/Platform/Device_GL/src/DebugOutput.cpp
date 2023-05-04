@@ -61,7 +61,7 @@ namespace ramses_internal
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
         case GL_DEBUG_TYPE_ERROR:
             LOG_ERROR(CONTEXT_RENDERER, "OpenGL error: " << message);
-            *(const_cast<Bool*>(static_cast<const Bool*>(userParam))) = true;
+            *(const_cast<bool*>(static_cast<const bool*>(userParam))) = true;
             break;
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
         case GL_DEBUG_TYPE_PORTABILITY:
@@ -77,7 +77,7 @@ namespace ramses_internal
         }
     }
 
-    Bool DebugOutput::loadExtensionFunctionPointer(const IContext& context)
+    bool DebugOutput::loadExtensionFunctionPointer(const IContext& context)
     {
 #if defined(__linux__)
         glDebugMessageCallback =
@@ -94,7 +94,7 @@ namespace ramses_internal
         return isAvailable();
     }
 
-    Bool DebugOutput::enable(const IContext& context)
+    bool DebugOutput::enable(const IContext& context)
     {
         if (!loadExtensionFunctionPointer(context))
         {
@@ -118,12 +118,12 @@ namespace ramses_internal
         return true;
     }
 
-    Bool DebugOutput::isAvailable() const
+    bool DebugOutput::isAvailable() const
     {
         return (glDebugMessageCallback != nullptr && glDebugMessageControl != nullptr);
     }
 
-    Bool DebugOutput::checkAndResetError() const
+    bool DebugOutput::checkAndResetError() const
     {
         if (m_errorOccured)
         {

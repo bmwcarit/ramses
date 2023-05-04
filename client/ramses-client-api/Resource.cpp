@@ -14,18 +14,14 @@
 
 namespace ramses
 {
-    Resource::Resource(ResourceImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    Resource::~Resource()
+    Resource::Resource(std::unique_ptr<ResourceImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<ResourceImpl&>(SceneObject::m_impl) }
     {
     }
 
     resourceId_t Resource::getResourceId() const
     {
-        return impl.getResourceId();
+        return m_impl.getResourceId();
     }
 }

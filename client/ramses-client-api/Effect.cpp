@@ -16,63 +16,59 @@
 
 namespace ramses
 {
-    Effect::Effect(EffectImpl& pimpl)
-        : Resource(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    Effect::~Effect()
+    Effect::Effect(std::unique_ptr<EffectImpl> impl)
+        : Resource{ std::move(impl) }
+        , m_impl{ static_cast<EffectImpl&>(Resource::m_impl) }
     {
     }
 
     uint32_t Effect::getUniformInputCount() const
     {
-        return impl.getUniformInputCount();
+        return m_impl.getUniformInputCount();
     }
 
     uint32_t Effect::getAttributeInputCount() const
     {
-        return impl.getAttributeInputCount();
+        return m_impl.getAttributeInputCount();
     }
 
     status_t Effect::getUniformInput(uint32_t index, UniformInput& uniformInput) const
     {
-        return impl.getUniformInput(index, uniformInput.impl);
+        return m_impl.getUniformInput(index, uniformInput.m_impl);
     }
 
     status_t Effect::findUniformInput(EEffectUniformSemantic uniformSemantic, UniformInput& uniformInput) const
     {
-        return impl.findUniformInput(uniformSemantic, uniformInput.impl);
+        return m_impl.findUniformInput(uniformSemantic, uniformInput.m_impl);
     }
 
     status_t Effect::getAttributeInput(uint32_t index, AttributeInput& attributeInput) const
     {
-        return impl.getAttributeInput(index, attributeInput.impl);
+        return m_impl.getAttributeInput(index, attributeInput.m_impl);
     }
 
     status_t Effect::findAttributeInput(EEffectAttributeSemantic attributeSemantic, AttributeInput& attributeInput) const
     {
-        return impl.findAttributeInput(attributeSemantic, attributeInput.impl);
+        return m_impl.findAttributeInput(attributeSemantic, attributeInput.m_impl);
     }
 
     bool Effect::hasGeometryShader() const
     {
-        return impl.hasGeometryShader();
+        return m_impl.hasGeometryShader();
     }
 
     status_t Effect::getGeometryShaderInputType(EDrawMode& expectedGeometryInputType) const
     {
-        return impl.getGeometryShaderInputType(expectedGeometryInputType);
+        return m_impl.getGeometryShaderInputType(expectedGeometryInputType);
     }
 
     status_t Effect::findUniformInput(const char* inputName, UniformInput& uniformInput) const
     {
-        return impl.findUniformInput(inputName, uniformInput.impl);
+        return m_impl.findUniformInput(inputName, uniformInput.m_impl);
     }
 
     status_t Effect::findAttributeInput(const char* inputName, AttributeInput& attributeInput) const
     {
-        return impl.findAttributeInput(inputName, attributeInput.impl);
+        return m_impl.findAttributeInput(inputName, attributeInput.m_impl);
     }
 }

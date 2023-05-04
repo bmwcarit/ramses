@@ -157,8 +157,8 @@ namespace ramses_internal
                     // 1. pipe is empty (happens only iff pipe is non-blocking)
                     // 2. there is (a real) error
                     const int readErrorStatus = getSystemErrorStatus();
-                    const Bool isPipeEmpty = (readErrorStatus == EAGAIN || readErrorStatus == EWOULDBLOCK);
-                    const Bool isInTheMiddleOfReadingOperation = totalBytesToRead != bytesRemaining;
+                    const bool isPipeEmpty = (readErrorStatus == EAGAIN || readErrorStatus == EWOULDBLOCK);
+                    const bool isInTheMiddleOfReadingOperation = totalBytesToRead != bytesRemaining;
 
                     if(isPipeEmpty)
                     {
@@ -187,7 +187,7 @@ namespace ramses_internal
         }
 
         const String m_pipeName;
-        const Bool m_createPipe;
+        const bool m_createPipe;
         int m_pipeFileDescriptor;
     };
 

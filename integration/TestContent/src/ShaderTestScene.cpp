@@ -20,7 +20,7 @@
 
 namespace ramses_internal
 {
-    ShaderTestScene::ShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    ShaderTestScene::ShaderTestScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect(getEffectNameFromState(state)))
         , m_triangle(scene, m_effect, ramses::TriangleAppearance::EColor_Red)

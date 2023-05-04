@@ -32,7 +32,7 @@ namespace ramses_internal
 
     protected:
         void parseContextExtensions(const Char* extensionNativeString);
-        [[nodiscard]] Bool isContextExtensionAvailable(const String& extensionName) const;
+        [[nodiscard]] bool isContextExtensionAvailable(const String& extensionName) const;
 
     protected:
         DeviceResourceMapper m_resources;

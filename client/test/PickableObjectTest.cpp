@@ -28,7 +28,7 @@ namespace ramses
             : LocalTestClientWithScene()
             , geometryBuffer(*createGeometryBuffer())
             , pickableObject(*m_scene.createPickableObject(geometryBuffer, pickableObjectId_t(1u)))
-            , pickableObjectHandle(pickableObject.impl.getPickableObjectHandle())
+            , pickableObjectHandle(pickableObject.m_impl.getPickableObjectHandle())
         {
         }
 
@@ -64,7 +64,7 @@ namespace ramses
 
         const auto cam = pickableObject.getCamera();
         EXPECT_EQ(cam, pickableObject.getCamera());
-        EXPECT_EQ(cam->impl.getCameraHandle(), pickableCamera->impl.getCameraHandle());
+        EXPECT_EQ(cam->m_impl.getCameraHandle(), pickableCamera->m_impl.getCameraHandle());
     }
 
     TEST_F(APickableObject, CannotSetPickableCameraFromAnotherScene)
@@ -89,7 +89,7 @@ namespace ramses
     {
         const ArrayBuffer& geoBuffer = pickableObject.getGeometryBuffer();
         EXPECT_EQ(&geoBuffer, &geometryBuffer);
-        EXPECT_EQ(geoBuffer.impl.getDataBufferHandle(), geometryBuffer.impl.getDataBufferHandle());
+        EXPECT_EQ(geoBuffer.m_impl.getDataBufferHandle(), geometryBuffer.m_impl.getDataBufferHandle());
     }
 
     TEST_F(APickableObject, CanSetAndGetPickableObjectId)

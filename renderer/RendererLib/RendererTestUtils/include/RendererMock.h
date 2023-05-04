@@ -32,7 +32,7 @@ public:
 
     MOCK_METHOD(void, markBufferWithSceneForRerender, (SceneId), (override));
     MOCK_METHOD(void, setClearFlags, (DeviceResourceHandle, uint32_t), (override));
-    MOCK_METHOD(void, setClearColor, (DeviceResourceHandle, const Vector4&), (override));
+    MOCK_METHOD(void, setClearColor, (DeviceResourceHandle, const glm::vec4&), (override));
 
     static const FrameTimer FrameTimerInstance;
 };
@@ -49,7 +49,7 @@ public:
 
     void markBufferWithSceneForRerender(SceneId sceneId) override;
     void setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags) override;
-    void setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor) override;
+    void setClearColor(DeviceResourceHandle bufferDeviceHandle, const glm::vec4& clearColor) override;
 
     using ramses_internal::Renderer::getDisplaySetup;
 

@@ -33,6 +33,7 @@ namespace ramses
     using GlyphId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), GlyphIdTag>;
 
     /**
+    * @ingroup TextAPI
     * @brief GlyphKey identifies a glyph with a specific font instance.
     */
     struct GlyphKey

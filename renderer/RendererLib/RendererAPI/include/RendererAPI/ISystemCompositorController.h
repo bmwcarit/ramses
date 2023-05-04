@@ -36,7 +36,7 @@ namespace ramses_internal
          * @param visibility New value to set.
          * @return "true", if the visibility was successfully set, and "false" otherwise.
          */
-        virtual Bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) = 0;
+        virtual bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility) = 0;
 
         /**
          * Set the opacity of a surface.
@@ -44,7 +44,7 @@ namespace ramses_internal
          * @param opacity Opacity value in the range 0.0 (transparent) to 1.0 (fully opaque).
          * @return true on success, false otherwise.
          */
-        virtual Bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) = 0;
+        virtual bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) = 0;
 
         /**
          * Set the output rectangle of a surface.
@@ -55,7 +55,7 @@ namespace ramses_internal
          * @param height Output height of surface.
          * @return true on success, false otherwise
          */
-        virtual Bool setSurfaceDestinationRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) = 0;
+        virtual bool setSurfaceDestinationRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) = 0;
 
         /**
          * Trigger the System-Compositor (wayland, X11, android, ...) to take a screenshot and store it in a file.
@@ -63,7 +63,7 @@ namespace ramses_internal
          * @param sceenIviId IVI screen id used for screenshot
          * @return "true", if the screenshot was successfully made.
          */
-        virtual Bool doScreenshot(const String& fileName, int32_t screenIviId) = 0;
+        virtual bool doScreenshot(const String& fileName, int32_t screenIviId) = 0;
 
         /**
          * @brief Connect an IVI surface with a layer
@@ -73,7 +73,7 @@ namespace ramses_internal
          *
          * @return \c true on success, \c false otherwise
          */
-        virtual Bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) = 0;
+        virtual bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) = 0;
 
         /**
          * @brief Disconnects an IVI surface from a layer
@@ -83,7 +83,7 @@ namespace ramses_internal
          *
          * @return \c true on success, \c false otherwise
          */
-        virtual Bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) = 0;
+        virtual bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) = 0;
 
         /**
          * @brief Destroys an IVI surface
@@ -93,7 +93,7 @@ namespace ramses_internal
          *
          * @return \c true on success, \c false otherwise
          */
-        virtual Bool destroySurface(WaylandIviSurfaceId surfaceId) = 0;
+        virtual bool destroySurface(WaylandIviSurfaceId surfaceId) = 0;
 
         /**
          * @brief changes the visibility setting of a layer
@@ -103,7 +103,7 @@ namespace ramses_internal
          *
          * @return \c true on success \c false otherwise
          */
-        virtual Bool setLayerVisibility(WaylandIviLayerId layerId, Bool visibility) = 0;
+        virtual bool setLayerVisibility(WaylandIviLayerId layerId, bool visibility) = 0;
 
     };
 }

@@ -30,7 +30,7 @@ namespace ramses
 
         void publishScene()
         {
-            const ramses_internal::IScene& iscene = m_scene.impl.getIScene();
+            const ramses_internal::IScene& iscene = m_scene.m_impl.getIScene();
             ramses_internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
             EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(info, _));
             EXPECT_CALL(sceneActionsCollector, handleInitializeScene(info, _));
@@ -39,7 +39,7 @@ namespace ramses
 
         void unpublishScene()
         {
-            EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _));
+            EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(m_scene.m_impl.getSceneId().getValue()), _));
             EXPECT_EQ(StatusOK, m_scene.unpublish());
         }
 
@@ -62,12 +62,12 @@ namespace ramses
 
         void expectSceneOperationsSent()
         {
-            EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _, _));
+            EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(m_scene.m_impl.getSceneId().getValue()), _, _));
         }
 
         void expectSceneUnpublication()
         {
-            EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _));
+            EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(m_scene.m_impl.getSceneId().getValue()), _));
         }
 
     protected:
@@ -133,7 +133,7 @@ namespace ramses
         const ramses_internal::SceneId sceneId(33u);
         Scene* otherScene = client.createScene(ramses::sceneId_t(sceneId.getValue()));
         ASSERT_TRUE(otherScene != nullptr);
-        const ramses_internal::IScene& otherIScene = otherScene->impl.getIScene();
+        const ramses_internal::IScene& otherIScene = otherScene->m_impl.getIScene();
 
         ramses_internal::SceneInfo sceneInfo(sceneId, otherIScene.getName());
         EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(sceneInfo, _));

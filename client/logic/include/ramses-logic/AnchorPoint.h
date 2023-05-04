@@ -17,17 +17,17 @@ namespace ramses
     class Camera;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AnchorPointImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
-    * Anchor point is a #rlogic::LogicNode which calculates viewport coordinates (and depth) of a Ramses node's origin.
+    * Anchor point is a #ramses::LogicNode which calculates viewport coordinates (and depth) of a Ramses node's origin.
     * The projected coordinates are accessible via its output property and can be linked to another logic node.
-    * Anchor point requires a #rlogic::RamsesNodeBinding and a #rlogic::RamsesCameraBinding at creation time, see #rlogic::LogicEngine::createAnchorPoint.
+    * Anchor point requires a #ramses::RamsesNodeBinding and a #ramses::RamsesCameraBinding at creation time, see #ramses::LogicEngine::createAnchorPoint.
     *
     * The update logic retrieves a model matrix from the provided Ramses node (via its binding), a projection and view matrix from the provided
     * Ramses camera (via its binding) and projects a point (0, 0, 0) (which represents origin of the given node's local space) using those matrices:
@@ -40,7 +40,7 @@ namespace rlogic
     * graphical elements or text following a 3D object.
     *
     * - Property output:
-    *     - viewportCoords (#rlogic::EPropertyType::Vec2f)
+    *     - viewportCoords (#ramses::EPropertyType::Vec2f)
     *         - provides [viewportCoordX, viewportCoordY] representing the [X,Y] coordinates of the projected node transformation in viewport space
     *         - note that it is up to user if and how he decides to round the floating point values to snap to discrete pixels
     *         - note that the coordinates will not be clamped to the viewport, so viewport coordinates can be negative
@@ -57,12 +57,12 @@ namespace rlogic
     * As this dependency is outside of Ramses logic network (it is in Ramses transformation topology) and identifying it in runtime
     * (can change every frame) by querying Ramses is not feasible, the proper ordering of logic network update is NOT guaranteed in such case.
     * It means the #AnchorPoint calculation might be executed first before the animation is and thus giving incorrect (old) result.
-    * If you end up using such setup, please use a workaround: UPDATE the #rlogic::LogicEngine TWICE, right after each other in every frame/update iteration.
+    * If you end up using such setup, please use a workaround: UPDATE the #ramses::LogicEngine TWICE, right after each other in every frame/update iteration.
     *
     * Performance remark:
     * Unlike other logic nodes #AnchorPoint does not use dirtiness mechanism monitoring node's inputs which then updates
     * the outputs only if anything changed. Anchor point depends on Ramses objects and their states, which cannot be easily monitored
-    * and therefore it has to be updated every time #rlogic::LogicEngine::update is called. For this reason it is highly recommended
+    * and therefore it has to be updated every time #ramses::LogicEngine::update is called. For this reason it is highly recommended
     * to keep the number of anchor nodes to a necessary minimum.
     */
     class AnchorPoint : public LogicNode
@@ -83,40 +83,18 @@ namespace rlogic
         [[nodiscard]] RAMSES_API const ramses::Camera& getRamsesCamera() const;
 
         /**
+        * Implementation of AnchorPoint
+        */
+        internal::AnchorPointImpl& m_anchorPointImpl;
+
+    protected:
+        /**
         * Constructor of AnchorPoint. User is not supposed to call this - AnchorPoints are created by other factory classes
         *
         * @param impl implementation details of the AnchorPoint
         */
         explicit AnchorPoint(std::unique_ptr<internal::AnchorPointImpl> impl) noexcept;
 
-        /**
-        * Destructor of AnchorPoint.
-        */
-        ~AnchorPoint() noexcept override;
-
-        /**
-        * Copy Constructor of AnchorPoint is deleted because AnchorPoints are not supposed to be copied
-        */
-        AnchorPoint(const AnchorPoint&) = delete;
-
-        /**
-        * Move Constructor of AnchorPoint is deleted because AnchorPoints are not supposed to be moved
-        */
-        AnchorPoint(AnchorPoint&&) = delete;
-
-        /**
-        * Assignment operator of AnchorPoint is deleted because AnchorPoints are not supposed to be copied
-        */
-        AnchorPoint& operator=(const AnchorPoint&) = delete;
-
-        /**
-        * Move assignment operator of AnchorPoint is deleted because AnchorPoints are not supposed to be moved
-        */
-        AnchorPoint& operator=(AnchorPoint&&) = delete;
-
-        /**
-        * Implementation of AnchorPoint
-        */
-        internal::AnchorPointImpl& m_anchorPointImpl;
+        friend class internal::ApiObjects;
     };
 }

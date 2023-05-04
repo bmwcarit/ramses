@@ -19,7 +19,7 @@
 #include "SerializationTestUtils.h"
 #include "FeatureLevelTestValues.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // Serialization unit tests only. For higher-order tests, check ALuaScript_LifecycleWithFiles
     class ALuaScript_Serialization : public ::testing::TestWithParam<ramses::EFeatureLevel>

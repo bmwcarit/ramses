@@ -22,7 +22,7 @@ namespace ramses_internal
 
         for (const auto& sceneResourceAction : newActions)
         {
-            Bool wasCanceledOut = false;
+            bool wasCanceledOut = false;
             // Cancel out create and destroy action for the same resource.
             // This is needed because the create action cannot be executed if the scene resource
             // was removed from scene (scene actions are applied before applying scene resource actions)
@@ -139,7 +139,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool PendingSceneResourcesUtils::RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
+    bool PendingSceneResourcesUtils::RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
     {
         for (auto actionIter = actions.begin(); actionIter != actions.end(); ++actionIter)
         {
@@ -154,7 +154,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool PendingSceneResourcesUtils::ContainsSceneResourceAction(const SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
+    bool PendingSceneResourcesUtils::ContainsSceneResourceAction(const SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
     {
         for (const auto& a : actions)
         {

@@ -27,7 +27,7 @@ namespace ramses_internal
         getArgument<2>().setDefaultValue("");
     }
 
-    Bool ValidateCommand::execute(uint64_t& sceneId, String& severity, String& objectName) const
+    bool ValidateCommand::execute(uint64_t& sceneId, String& severity, String& objectName) const
     {
         SceneCommandValidationRequest command;
 

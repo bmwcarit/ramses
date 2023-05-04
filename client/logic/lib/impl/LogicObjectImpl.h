@@ -21,12 +21,12 @@ namespace rlogic_serialization
     struct LogicObject;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LogicObject;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ErrorReporting;
 

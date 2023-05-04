@@ -23,7 +23,7 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS
     };
 
-    static const char* DataBufferTypeNames[] =
+    const std::array DataBufferTypeNames =
     {
         "EDataBufferType::Invalid",
         "EDataBufferType::IndexBuffer",

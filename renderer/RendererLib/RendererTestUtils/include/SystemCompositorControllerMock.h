@@ -22,16 +22,16 @@ namespace ramses_internal
         SystemCompositorControllerMock();
         ~SystemCompositorControllerMock() override;
 
-        MOCK_METHOD(Bool, init, ());
+        MOCK_METHOD(bool, init, ());
         MOCK_METHOD(void, update, (), (override));
-        MOCK_METHOD(Bool, setSurfaceVisibility, (WaylandIviSurfaceId, Bool), (override));
-        MOCK_METHOD(Bool, setSurfaceOpacity, (WaylandIviSurfaceId, Float), (override));
-        MOCK_METHOD(Bool, setSurfaceDestinationRectangle, (WaylandIviSurfaceId, Int32, Int32, Int32, Int32), (override));
-        MOCK_METHOD(Bool, doScreenshot, (const String& fileName, int32_t screenIviId), (override));
-        MOCK_METHOD(Bool, addSurfaceToLayer, (WaylandIviSurfaceId, WaylandIviLayerId), (override));
-        MOCK_METHOD(Bool, removeSurfaceFromLayer, (WaylandIviSurfaceId, WaylandIviLayerId), (override));
-        MOCK_METHOD(Bool, destroySurface, (WaylandIviSurfaceId), (override));
-        MOCK_METHOD(Bool, setLayerVisibility, (WaylandIviLayerId, Bool), (override));
+        MOCK_METHOD(bool, setSurfaceVisibility, (WaylandIviSurfaceId, bool), (override));
+        MOCK_METHOD(bool, setSurfaceOpacity, (WaylandIviSurfaceId, Float), (override));
+        MOCK_METHOD(bool, setSurfaceDestinationRectangle, (WaylandIviSurfaceId, Int32, Int32, Int32, Int32), (override));
+        MOCK_METHOD(bool, doScreenshot, (const String& fileName, int32_t screenIviId), (override));
+        MOCK_METHOD(bool, addSurfaceToLayer, (WaylandIviSurfaceId, WaylandIviLayerId), (override));
+        MOCK_METHOD(bool, removeSurfaceFromLayer, (WaylandIviSurfaceId, WaylandIviLayerId), (override));
+        MOCK_METHOD(bool, destroySurface, (WaylandIviSurfaceId), (override));
+        MOCK_METHOD(bool, setLayerVisibility, (WaylandIviLayerId, bool), (override));
         MOCK_METHOD(void, listIVISurfaces, (), (const, override));
     };
 }

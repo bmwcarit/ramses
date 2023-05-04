@@ -9,7 +9,7 @@
 #ifndef RAMSES_PROJECTIONPARAMS_H
 #define RAMSES_PROJECTIONPARAMS_H
 
-#include "Matrix44f.h"
+#include "DataTypesImpl.h"
 #include "SceneAPI/ECameraProjectionType.h"
 
 namespace ramses_internal

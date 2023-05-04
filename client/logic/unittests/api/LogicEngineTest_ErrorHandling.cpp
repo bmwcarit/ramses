@@ -13,7 +13,7 @@
 
 #include "WithTempDirectory.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_ErrorHandling : public ALogicEngine
     {

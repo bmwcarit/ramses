@@ -15,6 +15,7 @@
 namespace ramses
 {
     /**
+    * @ingroup RendererAPI
     * @brief An interface used to exchange Binary Shader Cache with the RamsesRenderer. The RamsesRenderer will not
     *        delete this class, it is owned by the application.
     *

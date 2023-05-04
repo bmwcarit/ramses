@@ -8,10 +8,10 @@
 
 #pragma once
 
-namespace rlogic
+namespace ramses
 {
     /**
-     * Modes determining what data to store when serializing #rlogic::LuaScript or #rlogic::LuaModule.
+     * Modes determining what data to store when serializing #ramses::LuaScript or #ramses::LuaModule.
      * Each mode has different implications when it comes to exported file size, loading performance and compatibility.
      */
     enum class ELuaSavingMode

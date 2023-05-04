@@ -16,7 +16,6 @@
 #include "Resource/EffectResource.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/PixelRectangle.h"
-#include "Math3d/Vector4.h"
 #include "SceneAPI/TextureSamplerStates.h"
 
 namespace ramses_internal
@@ -29,32 +28,32 @@ namespace ramses_internal
         DeviceMock();
         ~DeviceMock() override;
 
-        MOCK_METHOD(Bool, init, ());
+        MOCK_METHOD(bool, init, ());
 
         MOCK_METHOD(void, clear, (UInt32), (override));
 
         MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Float*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector2*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector3*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector4*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::vec2*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::vec3*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::vec4*), (override));
         MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Int32*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector2i*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector3i*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Vector4i*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Matrix22f*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Matrix33f*), (override));
-        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const Matrix44f*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::ivec2*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::ivec3*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::ivec4*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::mat2*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::mat3*), (override));
+        MOCK_METHOD(void, setConstant, (DataFieldHandle, UInt32, const glm::mat4*), (override));
 
         MOCK_METHOD(void, drawIndexedTriangles, (Int32, Int32, UInt32), (override));
         MOCK_METHOD(void, drawTriangles, (Int32, Int32, UInt32), (override));
 
-        MOCK_METHOD(void, colorMask, (Bool, Bool, Bool, Bool), (override));
-        MOCK_METHOD(void, clearColor, (const Vector4&), (override));
+        MOCK_METHOD(void, colorMask, (bool, bool, bool, bool), (override));
+        MOCK_METHOD(void, clearColor, (const glm::vec4&), (override));
         MOCK_METHOD(void, clearDepth, (Float), (override));
         MOCK_METHOD(void, clearStencil, (Int32), (override));
         MOCK_METHOD(void, blendFactors, (EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
         MOCK_METHOD(void, blendOperations, (EBlendOperation, EBlendOperation), (override));
-        MOCK_METHOD(void, blendColor, (const Vector4&), (override));
+        MOCK_METHOD(void, blendColor, (const glm::vec4&), (override));
         MOCK_METHOD(void, cullMode, (ECullMode), (override));
         MOCK_METHOD(void, depthFunc, (EDepthFunc), (override));
         MOCK_METHOD(void, depthWrite, (EDepthWrite), (override));
@@ -77,7 +76,7 @@ namespace ramses_internal
         MOCK_METHOD(std::unique_ptr<const GPUResource>, uploadShader, (const EffectResource&), (override));
         MOCK_METHOD(DeviceResourceHandle, registerShader, (std::unique_ptr<const GPUResource>), (override));
         MOCK_METHOD(DeviceResourceHandle, uploadBinaryShader, (const EffectResource&, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat), (override));
-        MOCK_METHOD(Bool, getBinaryShader, (DeviceResourceHandle, UInt8Vector&, BinaryShaderFormatID&), (override));
+        MOCK_METHOD(bool, getBinaryShader, (DeviceResourceHandle, UInt8Vector&, BinaryShaderFormatID&), (override));
         MOCK_METHOD(void, deleteShader, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, activateShader, (DeviceResourceHandle), (override));
 
@@ -104,9 +103,9 @@ namespace ramses_internal
         MOCK_METHOD(void, activateRenderTarget, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, deleteRenderTarget, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, discardDepthStencil, (), (override));
-        MOCK_METHOD(void, blitRenderTargets, (DeviceResourceHandle, DeviceResourceHandle, const PixelRectangle&, const PixelRectangle&, Bool), (override));
+        MOCK_METHOD(void, blitRenderTargets, (DeviceResourceHandle, DeviceResourceHandle, const PixelRectangle&, const PixelRectangle&, bool), (override));
 
-        MOCK_METHOD(void, pairRenderTargetsForDoubleBuffering, (DeviceResourceHandle[2], DeviceResourceHandle[2]), (override));
+        MOCK_METHOD(void, pairRenderTargetsForDoubleBuffering, ((const std::array<DeviceResourceHandle, 2>&), (const std::array<DeviceResourceHandle, 2>&)), (override));
         MOCK_METHOD(void, unpairRenderTargets, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, swapDoubleBufferedRenderTarget, (DeviceResourceHandle), (override));
 
@@ -116,7 +115,7 @@ namespace ramses_internal
         MOCK_METHOD(UInt32, getAndResetDrawCallCount, (), (override));
 
         MOCK_METHOD(void, validateDeviceStatusHealthy, (), (const, override));
-        MOCK_METHOD(Bool, isDeviceStatusHealthy, (), (const, override));
+        MOCK_METHOD(bool, isDeviceStatusHealthy, (), (const, override));
         MOCK_METHOD(void, getSupportedBinaryProgramFormats, (std::vector<BinaryShaderFormatID>&), (const, override));
         MOCK_METHOD(bool, isExternalTextureExtensionSupported, (), (const, override));
 

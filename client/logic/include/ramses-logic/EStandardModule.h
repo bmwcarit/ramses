@@ -10,10 +10,10 @@
 
 #include <cstdint>
 
-namespace rlogic
+namespace ramses
 {
     /**
-    * Enum which represents the different Lua standard modules. Used in #rlogic::LuaConfig::addStandardModuleDependency
+    * Enum which represents the different Lua standard modules. Used in #ramses::LuaConfig::addStandardModuleDependency
     */
     enum class EStandardModule : int32_t
     {

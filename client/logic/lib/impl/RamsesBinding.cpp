@@ -10,7 +10,7 @@
 
 #include "impl/RamsesBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesBinding::RamsesBinding(std::unique_ptr<internal::RamsesBindingImpl> impl) noexcept
         : LogicNode(std::move(impl))

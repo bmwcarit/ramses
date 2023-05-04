@@ -9,7 +9,7 @@
 #include "ramses-logic/RamsesRenderPassBinding.h"
 #include "impl/RamsesRenderPassBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesRenderPassBinding::RamsesRenderPassBinding(std::unique_ptr<internal::RamsesRenderPassBindingImpl> impl) noexcept
         : RamsesBinding(std::move(impl))
@@ -17,8 +17,6 @@ namespace rlogic
         , m_renderPassBinding{ static_cast<internal::RamsesRenderPassBindingImpl&>(RamsesBinding::m_impl) }
     {
     }
-
-    RamsesRenderPassBinding::~RamsesRenderPassBinding() noexcept = default;
 
     const ramses::RenderPass& RamsesRenderPassBinding::getRamsesRenderPass() const
     {

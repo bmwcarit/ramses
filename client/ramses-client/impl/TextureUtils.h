@@ -671,12 +671,19 @@ namespace ramses
             }
         }
 
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static void FillMipDataSizes(ramses_internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const MipLevelData mipLevelData[]);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static void FillMipDataSizes(ramses_internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[]);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static void FillMipData(uint8_t* dest, uint32_t mipMapCount, const MipLevelData mipLevelData[]);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static void FillMipData(uint8_t* dest, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[]);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static bool MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const MipLevelData mipLevelData[], ETextureFormat format);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static bool MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static bool MipDataValid(uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format);
         static bool TextureParametersValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount);
     };

@@ -14,19 +14,18 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
-#include "Math3d/Vector4.h"
 
 namespace ramses_internal
 {
 
-    SingleAppearanceScene::SingleAppearanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    SingleAppearanceScene::SingleAppearanceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
 
         ramses::Triangle redTriangle(m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
 
-        const float translation[] = {
+        const std::array translation = {
             -1.0f,  0.0f, -12.0f,
             0.0f, -1.0f, -12.0f,
             1.0f,  0.0f, -12.0f };
@@ -49,13 +48,13 @@ namespace ramses_internal
         switch (state)
         {
         case RED_TRIANGLES:
-            setTriangleColor(redTriangle.GetAppearance(), *effect, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+            setTriangleColor(redTriangle.GetAppearance(), *effect, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
             break;
         case GREEN_TRIANGLES:
-            setTriangleColor(redTriangle.GetAppearance(), *effect, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+            setTriangleColor(redTriangle.GetAppearance(), *effect, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
             break;
         case BLUE_TRIANGLES:
-            setTriangleColor(redTriangle.GetAppearance(), *effect, Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+            setTriangleColor(redTriangle.GetAppearance(), *effect, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
             break;
         case CHANGE_APPEARANCE:
             ramses::Effect* effectExt = getTestEffect("ramses-test-client-basic-extended");
@@ -67,7 +66,7 @@ namespace ramses_internal
             appearance.setInputValue(redgreenOffset, ramses::vec2f{ 0.5f, 0.5f });
 
             setAppearanceAndGeometryToAllMeshNodes(blueTriangle.GetAppearance(), blueTriangle.GetGeometry());
-            setTriangleColor(blueTriangle.GetAppearance(), *effectExt, Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+            setTriangleColor(blueTriangle.GetAppearance(), *effectExt, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
             break;
         }
     }
@@ -82,10 +81,10 @@ namespace ramses_internal
         }
     }
 
-    void SingleAppearanceScene::setTriangleColor(ramses::Appearance& appearance, const ramses::Effect& effect, const Vector4& color)
+    void SingleAppearanceScene::setTriangleColor(ramses::Appearance& appearance, const ramses::Effect& effect, const glm::vec4& color)
     {
         ramses::UniformInput colorInput;
         effect.findUniformInput("color", colorInput);
-        appearance.setInputValue(colorInput, color.getAsVec4());
+        appearance.setInputValue(colorInput, color);
     }
 }

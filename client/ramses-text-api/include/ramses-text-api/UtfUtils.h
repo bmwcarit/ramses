@@ -16,6 +16,7 @@
 namespace ramses
 {
     /**
+    * @ingroup TextAPI
     * @brief Stores an extracted Unicode/UTF32 code-point and corresponding meta-data resulting from the conversion to Unicode (see also UtfUtils)
     */
     struct ExtractedUnicodePoint
@@ -29,6 +30,7 @@ namespace ramses
     };
 
     /**
+    * @ingroup TextAPI
     * @brief Converts UTF and Unicode according to the Unicode standard
     */
     namespace UtfUtils

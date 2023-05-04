@@ -15,6 +15,7 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief The Texture2DBuffer is a mutable texture buffer used to hold texture data with the possibility
     * to perform partial updates. This object _must_ be initialized with data, otherwise the contents of it
     * are not specified (garbage data or black, depending on driver behavior).
@@ -22,10 +23,9 @@ namespace ramses
     * according to OpenGL specification (each further mipMap level has half the size of the previous
     * mipMap level). Refer to documentation of glTexStorage2D for more details.
     */
-    class RAMSES_API Texture2DBuffer : public SceneObject
+    class Texture2DBuffer : public SceneObject
     {
     public:
-
         /**
         * @brief Update a subregion of the data of Texture2DBuffer. The caller is responsible to check that
         * the data has the correct size, i.e. the size of a texel times the number of texels specified in the
@@ -43,7 +43,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t updateData(uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const void* data);
+        RAMSES_API status_t updateData(uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const void* data);
 
         /**
         * @brief Returns the number of mipmap levels created for the Texture2DBuffer (same as provided in
@@ -51,7 +51,7 @@ namespace ramses
         *
         * @return number of mipmap levels
         */
-        [[nodiscard]] uint32_t getMipLevelCount() const;
+        [[nodiscard]] RAMSES_API uint32_t getMipLevelCount() const;
 
         /**
         * @brief Returns the size of a specific mipmap level in texels
@@ -62,7 +62,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getMipLevelSize(uint32_t mipLevel, uint32_t& widthOut, uint32_t& heightOut) const;
+        RAMSES_API status_t getMipLevelSize(uint32_t mipLevel, uint32_t& widthOut, uint32_t& heightOut) const;
 
         /**
         * @brief Returns the size of a specific mipmap level in bytes
@@ -70,14 +70,14 @@ namespace ramses
         * @param[in] mipLevel   The mipMap level of which the size will be returned
         * @return Size of data in bytes for given mip level, 0 if mipLevel invalid
         */
-        [[nodiscard]] uint32_t getMipLevelDataSizeInBytes(uint32_t mipLevel) const;
+        [[nodiscard]] RAMSES_API uint32_t getMipLevelDataSizeInBytes(uint32_t mipLevel) const;
 
         /**
         * @brief Returns the texel format provided at creation
         *
         * @return The texel format provided at creation
         */
-        [[nodiscard]] ETextureFormat getTexelFormat() const;
+        [[nodiscard]] RAMSES_API ETextureFormat getTexelFormat() const;
 
         /**
         * @brief Copies the data of a single mip-level into a user-provided buffer.
@@ -90,30 +90,25 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getMipLevelData(uint32_t mipLevel, void* buffer, uint32_t bufferSize) const;
+        RAMSES_API status_t getMipLevelData(uint32_t mipLevel, void* buffer, uint32_t bufferSize) const;
 
         /**
         * Stores internal data for implementation specifics of Texture2DBuffer.
         */
-        class Texture2DBufferImpl& impl;
+        class Texture2DBufferImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating Texture2DBuffer instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for Texture2DBuffer.
         *
-        * @param[in] pimpl Internal data for implementation specifics of Texture2DBuffer (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of Texture2DBuffer (sink - instance becomes owner)
         */
-        explicit Texture2DBuffer(Texture2DBufferImpl& pimpl);
-
-        /**
-        * @brief Destructor of the Texture2DBuffer
-        */
-        ~Texture2DBuffer() override;
+        explicit Texture2DBuffer(std::unique_ptr<Texture2DBufferImpl> impl);
     };
 }
 

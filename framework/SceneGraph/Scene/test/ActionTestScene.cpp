@@ -143,7 +143,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    void ActionTestScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const glm::vec4& color)
     {
         m_actionCollector.setRenderStateBlendColor(stateHandle, color);
         flushPendingSceneActions();
@@ -303,12 +303,12 @@ namespace ramses_internal
         return m_scene.getTransformNode(handle);
     }
 
-    const Vector3& ActionTestScene::getTranslation(TransformHandle handle) const
+    const glm::vec3& ActionTestScene::getTranslation(TransformHandle handle) const
     {
         return m_scene.getTranslation(handle);
     }
 
-    const Vector4& ActionTestScene::getRotation(TransformHandle handle) const
+    const glm::vec4& ActionTestScene::getRotation(TransformHandle handle) const
     {
         return m_scene.getRotation(handle);
     }
@@ -318,24 +318,24 @@ namespace ramses_internal
         return m_scene.getRotationType(handle);
     }
 
-    const Vector3& ActionTestScene::getScaling(TransformHandle handle) const
+    const glm::vec3& ActionTestScene::getScaling(TransformHandle handle) const
     {
         return m_scene.getScaling(handle);
     }
 
-    void ActionTestScene::setTranslation(TransformHandle handle, const Vector3& translation)
+    void ActionTestScene::setTranslation(TransformHandle handle, const glm::vec3& translation)
     {
         m_actionCollector.setTranslation(handle, translation);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotation(TransformHandle handle, const Vector4& rotation, ERotationType rotationType)
+    void ActionTestScene::setRotation(TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType)
     {
         m_actionCollector.setRotation(handle, rotation, rotationType);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setScaling(TransformHandle handle, const Vector3& scaling)
+    void ActionTestScene::setScaling(TransformHandle handle, const glm::vec3& scaling)
     {
         m_actionCollector.setScaling(handle, scaling);
         flushPendingSceneActions();
@@ -402,17 +402,17 @@ namespace ramses_internal
         return m_scene.getDataFloatArray(containerHandle, field);
     }
 
-    const Vector2* ActionTestScene::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec2* ActionTestScene::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector2fArray(containerHandle, field);
     }
 
-    const Vector3* ActionTestScene::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec3* ActionTestScene::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector3fArray(containerHandle, field);
     }
 
-    const Vector4* ActionTestScene::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec4* ActionTestScene::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector4fArray(containerHandle, field);
     }
@@ -422,32 +422,32 @@ namespace ramses_internal
         return m_scene.getDataIntegerArray(containerHandle, field);
     }
 
-    const Matrix22f* ActionTestScene::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat2* ActionTestScene::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataMatrix22fArray(containerHandle, field);
     }
 
-    const Matrix33f* ActionTestScene::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat3* ActionTestScene::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataMatrix33fArray(containerHandle, field);
     }
 
-    const Matrix44f* ActionTestScene::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat4* ActionTestScene::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataMatrix44fArray(containerHandle, field);
     }
 
-    const Vector2i* ActionTestScene::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec2* ActionTestScene::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector2iArray(containerHandle, field);
     }
 
-    const Vector3i* ActionTestScene::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec3* ActionTestScene::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector3iArray(containerHandle, field);
     }
 
-    const Vector4i* ActionTestScene::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec4* ActionTestScene::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector4iArray(containerHandle, field);
     }
@@ -472,17 +472,17 @@ namespace ramses_internal
         return m_scene.getDataSingleFloat(containerHandle, field);
     }
 
-    const Vector2& ActionTestScene::getDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec2& ActionTestScene::getDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector2f(containerHandle, field);
     }
 
-    const Vector3& ActionTestScene::getDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec3& ActionTestScene::getDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector3f(containerHandle, field);
     }
 
-    const Vector4& ActionTestScene::getDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec4& ActionTestScene::getDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector4f(containerHandle, field);
     }
@@ -492,32 +492,32 @@ namespace ramses_internal
         return m_scene.getDataSingleInteger(containerHandle, field);
     }
 
-    const Matrix22f& ActionTestScene::getDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat2& ActionTestScene::getDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleMatrix22f(containerHandle, field);
     }
 
-    const Matrix33f& ActionTestScene::getDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat3& ActionTestScene::getDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleMatrix33f(containerHandle, field);
     }
 
-    const Matrix44f& ActionTestScene::getDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat4& ActionTestScene::getDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleMatrix44f(containerHandle, field);
     }
 
-    const Vector2i& ActionTestScene::getDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec2& ActionTestScene::getDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector2i(containerHandle, field);
     }
 
-    const Vector3i& ActionTestScene::getDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec3& ActionTestScene::getDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector3i(containerHandle, field);
     }
 
-    const Vector4i& ActionTestScene::getDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec4& ActionTestScene::getDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector4i(containerHandle, field);
     }
@@ -528,37 +528,37 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data)
+    void ActionTestScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec2* data)
     {
         m_actionCollector.setDataVector2fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data)
+    void ActionTestScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec3* data)
     {
         m_actionCollector.setDataVector3fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data)
+    void ActionTestScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec4* data)
     {
         m_actionCollector.setDataVector4fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data)
+    void ActionTestScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat2* data)
     {
         m_actionCollector.setDataMatrix22fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data)
+    void ActionTestScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat3* data)
     {
         m_actionCollector.setDataMatrix33fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data)
+    void ActionTestScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat4* data)
     {
         m_actionCollector.setDataMatrix44fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
@@ -570,19 +570,19 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data)
+    void ActionTestScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec2* data)
     {
         m_actionCollector.setDataVector2iArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data)
+    void ActionTestScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec3* data)
     {
         m_actionCollector.setDataVector3iArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data)
+    void ActionTestScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec4* data)
     {
         m_actionCollector.setDataVector4iArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
@@ -612,19 +612,19 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2& data)
+    void ActionTestScene::setDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec2& data)
     {
         m_actionCollector.setDataSingleVector2f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3& data)
+    void ActionTestScene::setDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec3& data)
     {
         m_actionCollector.setDataSingleVector3f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4& data)
+    void ActionTestScene::setDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec4& data)
     {
         m_actionCollector.setDataSingleVector4f(containerHandle, field, data);
         flushPendingSceneActions();
@@ -636,37 +636,37 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2i& data)
+    void ActionTestScene::setDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec2& data)
     {
         m_actionCollector.setDataSingleVector2i(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3i& data)
+    void ActionTestScene::setDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec3& data)
     {
         m_actionCollector.setDataSingleVector3i(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4i& data)
+    void ActionTestScene::setDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec4& data)
     {
         m_actionCollector.setDataSingleVector4i(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix22f& data)
+    void ActionTestScene::setDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat2& data)
     {
         m_actionCollector.setDataSingleMatrix22f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix33f& data)
+    void ActionTestScene::setDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat3& data)
     {
         m_actionCollector.setDataSingleMatrix33f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix44f& data)
+    void ActionTestScene::setDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat4& data)
     {
         m_actionCollector.setDataSingleMatrix44f(containerHandle, field, data);
         flushPendingSceneActions();
@@ -997,7 +997,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderPassClearColor(RenderPassHandle handle, const Vector4& clearColor)
+    void ActionTestScene::setRenderPassClearColor(RenderPassHandle handle, const glm::vec4& clearColor)
     {
         m_actionCollector.setRenderPassClearColor(handle, clearColor);
         flushPendingSceneActions();

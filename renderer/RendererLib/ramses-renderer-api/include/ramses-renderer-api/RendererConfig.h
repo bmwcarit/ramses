@@ -17,29 +17,25 @@ namespace ramses
 {
     class IBinaryShaderCache;
     class IRendererResourceCache;
+    class RendererConfigImpl;
 
     /**
     * @brief The RendererConfig holds a set of parameters to be used
     * to initialize a renderer.
+    * @ingroup RendererAPI
     */
-    class RAMSES_API RendererConfig : public StatusObject
+    class RendererConfig : public StatusObject
     {
     public:
         /**
         * @brief Default constructor of RendererConfig
         */
-        RendererConfig();
-
-        /**
-        * @brief Copy constructor of RendererConfig
-        * @param[in] other Other instance of RendererConfig
-        */
-        RendererConfig(const RendererConfig& other);
+        RAMSES_API RendererConfig();
 
         /**
         * @brief Destructor of RendererConfig
         */
-        ~RendererConfig() override;
+        RAMSES_API ~RendererConfig() override;
 
         /**
         * @brief Set the Binary Shader Cache to be used in Renderer.
@@ -47,7 +43,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setBinaryShaderCache(IBinaryShaderCache& cache);
+        RAMSES_API status_t setBinaryShaderCache(IBinaryShaderCache& cache);
 
         /**
         * @brief Set the resource cache implementation to be used by the renderer.
@@ -55,7 +51,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRendererResourceCache(IRendererResourceCache& cache);
+        RAMSES_API status_t setRendererResourceCache(IRendererResourceCache& cache);
 
         /**
         * @brief Enable the renderer to communicate with the system compositor.
@@ -65,7 +61,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t enableSystemCompositorControl();
+        RAMSES_API status_t enableSystemCompositorControl();
 
         /**
          * @brief      Set the maximum time to wait for the system compositor frame callback
@@ -81,7 +77,7 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec);
+        RAMSES_API status_t setFrameCallbackMaxPollTime(uint64_t waitTimeInUsec);
 
         /**
         * @brief Set the Wayland display name to connect system compositor to.
@@ -91,14 +87,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
+        RAMSES_API status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
 
         /**
         * @brief Get the current setting of Wayland display name
         *
         * @return Wayland display name to use for connection, empty means default
         */
-        [[nodiscard]] std::string_view getSystemCompositorWaylandDisplay() const;
+        [[nodiscard]] RAMSES_API std::string_view getSystemCompositorWaylandDisplay() const;
 
         /**
         * @brief   Set the desired reporting period for first display loop timings.
@@ -111,26 +107,45 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period);
+        RAMSES_API status_t setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds period);
 
         /**
         * @brief Get the current reporting period for renderThread loop timings
         *
         * @return Reporting period for renderThread loop timings
         */
-        [[nodiscard]] std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
+        [[nodiscard]] RAMSES_API std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API RendererConfig(const RendererConfig& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API RendererConfig(RendererConfig&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API RendererConfig& operator=(const RendererConfig& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API RendererConfig& operator=(RendererConfig&& other) noexcept;
 
         /**
         * Stores internal data for implementation specifics of RendererConfig.
         */
-        class RendererConfigImpl& impl;
-
-        /**
-         * @brief Deleted copy assignment
-         * @param other unused
-         * @return unused
-         */
-        RendererConfig& operator=(const RendererConfig& other) = delete;
+        std::reference_wrapper<RendererConfigImpl> m_impl;
     };
 }
 

@@ -22,7 +22,7 @@ namespace ramses
     class RenderGroup;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ErrorReporting;
 

@@ -65,7 +65,7 @@ namespace ramses_internal
 
         UInt longestFrameID = 0u;
         UInt lastLongestFrameTime = 0u;
-        UInt totalRegionTime[NumberOfRegions] = { 0u };
+        std::array<UInt, NumberOfRegions> totalRegionTime = { 0u };
         for (UInt i = 0u; i < numFramesTracked; ++i)
         {
             UInt totalFrameTime = 0u;

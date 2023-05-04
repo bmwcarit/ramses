@@ -97,7 +97,7 @@ namespace ramses_internal
         [[nodiscard]] UInt32                      getRenderStateCount             () const final override;
         void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
         void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
-        void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const Vector4& color) override;
+        void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const glm::vec4& color) override;
         void                        setRenderStateCullMode          (RenderStateHandle stateHandle, ECullMode cullMode) override;
         void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) override;
         void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) override;
@@ -135,13 +135,13 @@ namespace ramses_internal
         [[nodiscard]] UInt32                      getTransformCount               () const final override;
         [[nodiscard]] bool                        isTransformAllocated            (TransformHandle transformHandle) const final override;
         [[nodiscard]] NodeHandle                  getTransformNode                (TransformHandle handle) const final override;
-        [[nodiscard]] const Vector3&              getTranslation                  (TransformHandle handle) const final override;
-        [[nodiscard]] const Vector4&              getRotation                     (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec3&              getTranslation                  (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec4&              getRotation                     (TransformHandle handle) const final override;
         [[nodiscard]] ERotationType         getRotationType           (TransformHandle handle) const final override;
-        [[nodiscard]] const Vector3&              getScaling                      (TransformHandle handle) const final override;
-        void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationType rotationType) override;
-        void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
+        [[nodiscard]] const glm::vec3&              getScaling                      (TransformHandle handle) const final override;
+        void                        setTranslation                  (TransformHandle handle, const glm::vec3& translation) override;
+        void                        setRotation                     (TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType) override;
+        void                        setScaling                      (TransformHandle handle, const glm::vec3& scaling) override;
         [[nodiscard]] const TransformMemoryPool&              getTransforms                   () const;
 
         DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
@@ -159,59 +159,59 @@ namespace ramses_internal
         [[nodiscard]] const DataInstanceMemoryPool&           getDataInstances                () const;
 
         [[nodiscard]] const Float*                getDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector2*              getDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector3*              getDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector4*              getDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec2*              getDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec3*              getDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec4*              getDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] const Int32*                getDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Matrix22f*            getDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Matrix33f*            getDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Matrix44f*            getDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector2i*             getDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector3i*             getDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector4i*             getDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat2*            getDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat3*            getDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat4*            getDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec2*             getDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec3*             getDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec4*             getDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] const ResourceField&        getDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] TextureSamplerHandle        getDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] DataInstanceHandle          getDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
 
         void                        setDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data) override;
-        void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data) override;
-        void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data) override;
-        void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data) override;
+        void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec2* data) override;
+        void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec3* data) override;
+        void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec4* data) override;
         void                        setDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data) override;
-        void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data) override;
-        void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data) override;
-        void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data) override;
-        void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data) override;
-        void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data) override;
-        void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data) override;
+        void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec2* data) override;
+        void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec3* data) override;
+        void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec4* data) override;
+        void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat2* data) override;
+        void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat3* data) override;
+        void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat4* data) override;
         void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
         void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
         void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
 
         // get/setData*Array wrappers for elementCount == 1
         [[nodiscard]] Float                       getDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector2&              getDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector3&              getDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector4&              getDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec2&              getDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec3&              getDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec4&              getDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] Int32                       getDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Matrix22f&            getDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Matrix33f&            getDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Matrix44f&            getDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector2i&             getDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector3i&             getDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
-        [[nodiscard]] const Vector4i&             getDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat2&            getDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat3&            getDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat4&            getDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec2&             getDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec3&             getDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec4&             getDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
 
         void                        setDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field, Float data) override;
-        void                        setDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2& data) override;
-        void                        setDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3& data) override;
-        void                        setDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4& data) override;
+        void                        setDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec2& data) override;
+        void                        setDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec3& data) override;
+        void                        setDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec4& data) override;
         void                        setDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field, Int32 data) override;
-        void                        setDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2i& data) override;
-        void                        setDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3i& data) override;
-        void                        setDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4i& data) override;
-        void                        setDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix22f& data) override;
-        void                        setDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix33f& data) override;
-        void                        setDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix44f& data) override;
+        void                        setDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec2& data) override;
+        void                        setDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec3& data) override;
+        void                        setDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec4& data) override;
+        void                        setDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat2& data) override;
+        void                        setDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat3& data) override;
+        void                        setDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat4& data) override;
 
         // Texture sampler
         TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
@@ -238,7 +238,7 @@ namespace ramses_internal
         void                    releaseRenderPass               (RenderPassHandle passHandle) override;
         [[nodiscard]] bool                    isRenderPassAllocated           (RenderPassHandle pass) const final override;
         [[nodiscard]] UInt32                  getRenderPassCount              () const final override;
-        void                    setRenderPassClearColor         (RenderPassHandle passHandle, const Vector4& clearColor) override;
+        void                    setRenderPassClearColor         (RenderPassHandle passHandle, const glm::vec4& clearColor) override;
         void                    setRenderPassClearFlag          (RenderPassHandle passHandle, UInt32 clearFlag) override;
         void                    setRenderPassCamera             (RenderPassHandle passHandle, CameraHandle cameraHandle) override;
         void                    setRenderPassRenderTarget       (RenderPassHandle passHandle, RenderTargetHandle targetHandle) override;
@@ -663,39 +663,39 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Matrix22f* SceneT<MEMORYPOOL>::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::mat2* SceneT<MEMORYPOOL>::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Matrix22f>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::mat2>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Matrix33f* SceneT<MEMORYPOOL>::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::mat3* SceneT<MEMORYPOOL>::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Matrix33f>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::mat3>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Matrix44f* SceneT<MEMORYPOOL>::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::mat4* SceneT<MEMORYPOOL>::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Matrix44f>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::mat4>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector2* SceneT<MEMORYPOOL>::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::vec2* SceneT<MEMORYPOOL>::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector2>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::vec2>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector3* SceneT<MEMORYPOOL>::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::vec3* SceneT<MEMORYPOOL>::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector3>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::vec3>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector4* SceneT<MEMORYPOOL>::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::vec4* SceneT<MEMORYPOOL>::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector4>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::vec4>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -705,21 +705,21 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector2i* SceneT<MEMORYPOOL>::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::ivec2* SceneT<MEMORYPOOL>::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector2i>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::ivec2>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector3i* SceneT<MEMORYPOOL>::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::ivec3* SceneT<MEMORYPOOL>::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector3i>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::ivec3>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector4i* SceneT<MEMORYPOOL>::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::ivec4* SceneT<MEMORYPOOL>::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector4i>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::ivec4>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>

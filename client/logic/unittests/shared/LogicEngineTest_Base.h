@@ -34,7 +34,7 @@
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-utils.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngineBase
     {

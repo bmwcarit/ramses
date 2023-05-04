@@ -17,6 +17,7 @@ namespace ramses
     /**
     * @brief An interface used to implement a caching mechanism for resources used on the RamsesRenderer.
     *        Important: Please note that the resource ids in this context do not match client resource ids.
+    * @ingroup RendererAPI
     */
     class RAMSES_API IRendererResourceCache
     {

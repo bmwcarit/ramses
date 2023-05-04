@@ -36,7 +36,7 @@ namespace ramses_internal
         if (virtualKeyCode >= 0x70 && virtualKeyCode <= 0x87)
             return static_cast<EKeyCode>(virtualKeyCode - 0x70 + EKeyCode_F1);
 
-        const Bool isExtendedKey = (lParam & (1 << 24)) != 0;
+        const bool isExtendedKey = (lParam & (1 << 24)) != 0;
         const UInt8 nScanCode = (lParam >> 16) & 0xFF;
 
         // rest of keys
@@ -135,7 +135,7 @@ namespace ramses_internal
         }
     }
 
-    static Bool TrackMouse(HWND hwnd)
+    static bool TrackMouse(HWND hwnd)
     {
         TRACKMOUSEEVENT tme;
         tme.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -169,7 +169,7 @@ namespace ramses_internal
         assert(m_classname.size() < 255);
     }
 
-    Bool Window_Windows::init()
+    bool Window_Windows::init()
     {
         generateUniqueClassname();
 
@@ -323,7 +323,7 @@ namespace ramses_internal
         return m_windowHandle;
     }
 
-    Bool Window_Windows::setFullscreen(Bool fullscreen)
+    bool Window_Windows::setFullscreen(bool fullscreen)
     {
         assert(0 != m_windowHandle);
 
@@ -338,7 +338,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool Window_Windows::setVisibility(Bool visible)
+    bool Window_Windows::setVisibility(bool visible)
     {
         assert(0 != m_windowHandle);
 
@@ -369,8 +369,8 @@ namespace ramses_internal
 
     void Window_Windows::handleKeyEvent(UInt32 windowsMsg, WPARAM wParam, LPARAM lParam)
     {
-        const Bool keyPressed = WM_KEYDOWN == windowsMsg || WM_SYSKEYDOWN == windowsMsg;
-        const Bool keyReleased = WM_KEYUP == windowsMsg || WM_SYSKEYUP == windowsMsg;
+        const bool keyPressed = WM_KEYDOWN == windowsMsg || WM_SYSKEYDOWN == windowsMsg;
+        const bool keyReleased = WM_KEYUP == windowsMsg || WM_SYSKEYUP == windowsMsg;
         if (!keyPressed && !keyReleased)
         {
             LOG_WARN(CONTEXT_RENDERER, "invalid handle key event: " << windowsMsg);

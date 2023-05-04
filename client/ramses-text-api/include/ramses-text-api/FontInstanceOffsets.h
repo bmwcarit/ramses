@@ -15,6 +15,7 @@
 namespace ramses
 {
     /**
+    * @ingroup TextAPI
     * @brief A list of tuples from font instances and offsets into a string.
     *
     * Used to tell the text API which font should be used for which substring

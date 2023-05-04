@@ -11,7 +11,7 @@
 #include "internals/SolWrapper.h"
 #include "ramses-logic/Collection.h"
 
-namespace rlogic
+namespace ramses
 {
     class Property;
     class LogicNode;
@@ -19,7 +19,7 @@ namespace rlogic
 
     struct ConstPropertyWrapper
     {
-        explicit ConstPropertyWrapper(const rlogic::Property& property);
+        explicit ConstPropertyWrapper(const ramses::Property& property);
 
         sol::object getValue(sol::this_state L);
 
@@ -32,7 +32,7 @@ namespace rlogic
 
     struct PropertyWrapper
     {
-        explicit PropertyWrapper(rlogic::Property& property);
+        explicit PropertyWrapper(ramses::Property& property);
 
         sol::object toString(sol::this_state L);
 

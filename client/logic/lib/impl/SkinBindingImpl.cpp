@@ -17,8 +17,9 @@
 #include "generated/SkinBindingGen.h"
 #include "fmt/format.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/range.hpp"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     SkinBindingImpl::SkinBindingImpl(
         std::vector<const RamsesNodeBindingImpl*> joints,
@@ -69,8 +70,7 @@ namespace rlogic::internal
         inverseBindMatData.reserve(skinBinding.m_inverseBindMatrices.size() * 16u);
         for (const auto& mat : skinBinding.m_inverseBindMatrices)
         {
-            const auto matData = glm::value_ptr(mat);
-            inverseBindMatData.insert(inverseBindMatData.begin(), matData, matData + 16);
+            inverseBindMatData.insert(inverseBindMatData.begin(), begin(mat), end(mat));
         }
         const auto fbInverseBindMatData = builder.CreateVector(inverseBindMatData);
 

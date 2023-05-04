@@ -22,7 +22,7 @@
 #include "generated/AnchorPointGen.h"
 #include "glm/gtc/type_ptr.hpp"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     AnchorPointImpl::AnchorPointImpl(RamsesNodeBindingImpl& nodeBinding, RamsesCameraBindingImpl& cameraBinding, std::string_view name, uint64_t id)
         : LogicNodeImpl{ name, id }
@@ -37,7 +37,7 @@ namespace rlogic::internal
                 TypeData{"viewportCoords", EPropertyType::Vec2f},
                 TypeData{"depth", EPropertyType::Float},
             });
-        auto outputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(std::move(outputsType), EPropertySemantics::ScriptOutput));
+        auto outputs = std::make_unique<PropertyImpl>(std::move(outputsType), EPropertySemantics::ScriptOutput);
 
         setRootProperties({}, std::move(outputs));
     }
@@ -110,7 +110,7 @@ namespace rlogic::internal
 
         auto binding = std::make_unique<AnchorPointImpl>(*nodeBinding, *cameraBinding, name, id);
         binding->setUserId(userIdHigh, userIdLow);
-        binding->setRootProperties({}, std::make_unique<Property>(std::move(deserializedRootOutput)));
+        binding->setRootProperties({}, std::move(deserializedRootOutput));
 
         return binding;
     }
@@ -133,12 +133,12 @@ namespace rlogic::internal
 
         const vec4f localOrigin{ 0, 0, 0, 1 };
         const vec4f pointInClipSpace = projectionMatrix * cameraViewMatrix * modelMatrix * localOrigin;
-        const vec4f pointInNDS = pointInClipSpace / pointInClipSpace.w;
+        const vec4f pointInNDS = pointInClipSpace / pointInClipSpace.w; // NOLINT(cppcoreguidelines-pro-type-union-access)
         const vec4f pointNormalized = (pointInNDS + 1.f) / 2.f;
         const vec4f pointViewport = pointNormalized * vec4f{ float(ramsesCam.getViewportWidth()), float(ramsesCam.getViewportHeight()), 1.f, 1.f };
 
-        getOutputs()->getChild(0u)->m_impl->setValue(vec2f{ pointViewport.x, pointViewport.y });
-        getOutputs()->getChild(1u)->m_impl->setValue(pointViewport.z);
+        getOutputs()->getChild(0u)->m_impl->setValue(vec2f{ pointViewport.x, pointViewport.y }); // NOLINT(cppcoreguidelines-pro-type-union-access)
+        getOutputs()->getChild(1u)->m_impl->setValue(pointViewport.z); // NOLINT(cppcoreguidelines-pro-type-union-access)
 
         return std::nullopt;
     }

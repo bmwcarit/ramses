@@ -33,10 +33,10 @@ namespace ramses_internal
         void                       addLink(BUFFERHANDLE providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
         void                       removeLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
 
-        [[nodiscard]] Bool                       hasAnyLinksToProvider(SceneId consumerSceneId) const;
-        [[nodiscard]] Bool                       hasAnyLinksToConsumer(BUFFERHANDLE providerBuffer) const;
+        [[nodiscard]] bool                       hasAnyLinksToProvider(SceneId consumerSceneId) const;
+        [[nodiscard]] bool                       hasAnyLinksToConsumer(BUFFERHANDLE providerBuffer) const;
 
-        [[nodiscard]] Bool                       hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const;
+        [[nodiscard]] bool                       hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const;
         void                       getLinkedProviders(SceneId consumerSceneId, BufferLinkVector<BUFFERHANDLE>& links) const;
         [[nodiscard]] const BufferLink<BUFFERHANDLE>& getLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const;
 

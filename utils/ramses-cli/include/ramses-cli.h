@@ -144,7 +144,7 @@ namespace ramses
     {
         auto* grp = cli.add_option_group("Renderer Options");
         grp->add_flag_function(
-            "--ivi-control", [&](auto) { config.enableSystemCompositorControl(); }, "enable system compositor IVI controller");
+            "--ivi-control", [&](auto /*unused*/) { config.enableSystemCompositorControl(); }, "enable system compositor IVI controller");
     }
 
     /**
@@ -200,18 +200,18 @@ namespace ramses
                 config.setWindowRectangle(x, y, w, h);
             }, "set window height");
         grp->add_flag_function(
-            "-f,--fullscreen", [&](auto) { config.setWindowFullscreen(true); }, "enable fullscreen mode");
+            "-f,--fullscreen", [&](auto /*unused*/) { config.setWindowFullscreen(true); }, "enable fullscreen mode");
         grp->add_flag_function(
-            "--borderless", [&](auto) { config.setWindowBorderless(true); }, "disable window borders");
+            "--borderless", [&](auto /*unused*/) { config.setWindowBorderless(true); }, "disable window borders");
         grp->add_flag_function(
-            "--resizable", [&](auto) { config.setResizable(true); }, "enables resizable renderer window");
+            "--resizable", [&](auto /*unused*/) { config.setResizable(true); }, "enables resizable renderer window");
         grp->add_option_function<uint32_t>(
             "--msaa", [&](auto value) { config.setMultiSampling(value); }, "set msaa (antialiasing) sample count")
             ->check(CLI::IsMember({1, 2, 4, 8}));
         grp->add_flag_function(
-            "--delete-effects", [&](auto) { config.keepEffectsUploaded(false); }, "do not keep effects uploaded");
+            "--delete-effects", [&](auto /*unused*/) { config.keepEffectsUploaded(false); }, "do not keep effects uploaded");
         grp->add_flag_function(
-            "--ivi-visible,!--no-ivi-visible", [&](auto) { config.setWindowIviVisible(); }, "set IVI surface visible when created");
+            "--ivi-visible,!--no-ivi-visible", [&](auto /*unused*/) { config.setWindowIviVisible(); }, "set IVI surface visible when created");
         grp->add_option_function<uint32_t>(
             "--ivi-layer", [&](auto value) { config.setWaylandIviLayerID(waylandIviLayerId_t(value)); }, "set id of IVI layer the display surface will be added to")
             ->type_name("LAYER");

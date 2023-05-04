@@ -74,7 +74,7 @@ public:
         renderer.destroyDisplayContext();
     }
 
-    void expectOffscreenBufferCleared(DeviceResourceHandle buffer, uint32_t clearFlags = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectOffscreenBufferCleared(DeviceResourceHandle buffer, uint32_t clearFlags = EClearFlags_All, const glm::vec4& clearColor = Renderer::DefaultClearColor)
     {
         EXPECT_CALL(*renderer.m_displayController, clearBuffer(buffer, clearFlags, clearColor)).InSequence(SeqRender);
     }
@@ -87,7 +87,7 @@ public:
         EXPECT_CALL(*renderer.m_displayController, getRenderBackend()).Times(AnyNumber());
     }
 
-    void expectFrameBufferRendered(bool expectRerender = true, uint32_t expectRendererClear = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectFrameBufferRendered(bool expectRerender = true, uint32_t expectRendererClear = EClearFlags_All, const glm::vec4& clearColor = Renderer::DefaultClearColor)
     {
         EXPECT_CALL(*renderer.m_displayController, handleWindowEvents()).InSequence(SeqPreRender);
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).InSequence(SeqPreRender).WillOnce(Return(true));
@@ -128,7 +128,7 @@ public:
         SceneId sceneId,
         DeviceResourceHandle buffer,
         uint32_t dispBufferClearFlags,
-        const Vector4& dispBufferClearColor,
+        const glm::vec4& dispBufferClearColor,
         SceneRenderExecutionIterator expectedRenderBegin,
         SceneRenderExecutionIterator iteratorToReturn,
         uint32_t clearFlagsToModify,
@@ -151,7 +151,7 @@ public:
     }
 
     void expectSceneRendered(SceneId sceneId, DeviceResourceHandle buffer = DisplayControllerMock::FakeFrameBufferHandle,
-        uint32_t dispBufferClearFlags = EClearFlags_All, const Vector4& dispBufferClearColor = Renderer::DefaultClearColor)
+        uint32_t dispBufferClearFlags = EClearFlags_All, const glm::vec4& dispBufferClearColor = Renderer::DefaultClearColor)
     {
         expectSceneRenderedExt(sceneId, buffer, dispBufferClearFlags, dispBufferClearColor, sceneRenderBegin, sceneRenderBegin, dispBufferClearFlags, EDiscardDepth::Disallowed);
     }
@@ -421,7 +421,7 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToItAndNotShown)
 
 TEST_P(ARenderer, clearsOffscreenBufferAndFramebufferWithRelatedColors)
 {
-    const Vector4 displayClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 displayClearColor(.1f, .2f, .3f, .4f);
     createDisplayController();
     renderer.setClearColor(DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
 
@@ -442,7 +442,7 @@ TEST_P(ARenderer, clearsOffscreenBufferAndFramebufferWithRelatedColors)
 
 TEST_P(ARenderer, clearsFramebufferWithCustomClearColor)
 {
-    const Vector4 displayClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 displayClearColor(.1f, .2f, .3f, .4f);
     createDisplayController();
     renderer.setClearColor(DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
     expectFrameBufferRendered(true, EClearFlags_All, displayClearColor);
@@ -454,7 +454,7 @@ TEST_P(ARenderer, clearsOffscreenBufferWithCustomClearColor)
 {
     createDisplayController();
 
-    const Vector4 obClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 obClearColor(.1f, .2f, .3f, .4f);
     const SceneId sceneId(12u);
     createScene(sceneId);
 
@@ -475,10 +475,10 @@ TEST_P(ARenderer, clearsOffscreenBufferWithCustomClearColor)
 TEST_P(ARenderer, clearsBothFramebufferAndOffscreenBufferWithDifferentClearColors)
 {
     createDisplayController();
-    const Vector4 displayClearColor(.4f, .3f, .2f, .1f);
+    const glm::vec4 displayClearColor(.4f, .3f, .2f, .1f);
     renderer.setClearColor(DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
 
-    const Vector4 obClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 obClearColor(.1f, .2f, .3f, .4f);
     const SceneId sceneId(12u);
     createScene(sceneId);
 
@@ -542,14 +542,14 @@ TEST_P(ARenderer, clearsOBOnRerenderIfNoSceneAssigned)
     // use some non-default clear flags
     EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth));
     EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth));
-    EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer1, Vector4{ 1,2,3,4 }));
+    EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer1, glm::vec4{ 1,2,3,4 }));
     EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer2, Renderer::DefaultClearColor));
     renderer.setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth);
     renderer.setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth);
-    renderer.setClearColor(fakeOffscreenBuffer1, Vector4{ 1,2,3,4 });
+    renderer.setClearColor(fakeOffscreenBuffer1, glm::vec4{ 1,2,3,4 });
     renderer.setClearColor(fakeOffscreenBuffer2, Renderer::DefaultClearColor);
 
-    expectOffscreenBufferCleared(fakeOffscreenBuffer1, EClearFlags_Depth, Vector4{ 1,2,3,4 });
+    expectOffscreenBufferCleared(fakeOffscreenBuffer1, EClearFlags_Depth, glm::vec4{ 1,2,3,4 });
     expectFrameBufferRendered();
     expectOffscreenBufferCleared(fakeOffscreenBuffer2, EClearFlags_Depth);
     expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer2);
@@ -1311,7 +1311,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     const SceneId sceneId(12u);
     createScene(sceneId);
 
-    const Vector4 obClearColor1(.1f, .2f, .3f, .4f);
+    const glm::vec4 obClearColor1(.1f, .2f, .3f, .4f);
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
     renderer.setClearColor(fakeOffscreenBuffer, obClearColor1);
@@ -1330,7 +1330,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     doOneRendererLoop();
 
     // change clear color
-    const Vector4 obClearColor2(.2f, .3f, .4f, .5f);
+    const glm::vec4 obClearColor2(.2f, .3f, .4f, .5f);
     renderer.setClearColor(fakeOffscreenBuffer, obClearColor2);
     expectFrameBufferRendered(true);
     expectSceneRenderedExt(sceneId, fakeOffscreenBuffer, EClearFlags_All, obClearColor2, {}, {}, EClearFlags_All, EDiscardDepth::Allowed);

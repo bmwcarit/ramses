@@ -9,7 +9,7 @@
 #include "internals/UpdateReport.h"
 #include <cassert>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     void UpdateReport::sectionStarted(ETimingSection section)
     {

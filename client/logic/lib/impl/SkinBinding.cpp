@@ -11,7 +11,7 @@
 #include "impl/SkinBindingImpl.h"
 #include "impl/RamsesAppearanceBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     SkinBinding::SkinBinding(std::unique_ptr<internal::SkinBindingImpl> impl) noexcept
         : RamsesBinding(std::move(impl))
@@ -19,8 +19,6 @@ namespace rlogic
         , m_skinBinding{ static_cast<internal::SkinBindingImpl&>(RamsesBinding::m_impl) }
     {
     }
-
-    SkinBinding::~SkinBinding() noexcept = default;
 
     const RamsesAppearanceBinding& SkinBinding::getAppearanceBinding() const
     {

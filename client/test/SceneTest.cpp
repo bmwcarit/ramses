@@ -30,6 +30,7 @@
 #include "BlitPassImpl.h"
 #include "TextureSamplerImpl.h"
 #include "Texture2DImpl.h"
+#include "SceneConfigImpl.h"
 #include "ClientTestUtils.h"
 #include "SimpleSceneTopology.h"
 #include "Components/FlushTimeInformation.h"
@@ -68,6 +69,52 @@ namespace ramses
 
         // use case to retrieve scene object itself
         EXPECT_EQ(sceneA, client.getScene(fromSceneA->getSceneId()));
+    }
+
+    TEST(ASceneConfig, CanBeCopyAndMoveConstructed)
+    {
+        SceneConfig config;
+        config.setPublicationMode(EScenePublicationMode_LocalAndRemote);
+
+        SceneConfig configCopy{ config };
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, configCopy.m_impl.get().getPublicationMode());
+
+        SceneConfig configMove{ std::move(config) };
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, configMove.m_impl.get().getPublicationMode());
+    }
+
+    TEST(ASceneConfig, CanBeCopyAndMoveAssigned)
+    {
+        SceneConfig config;
+        config.setPublicationMode(EScenePublicationMode_LocalAndRemote);
+
+        SceneConfig configCopy;
+        configCopy = config;
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, configCopy.m_impl.get().getPublicationMode());
+
+        SceneConfig configMove;
+        configMove = std::move(config);
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, configMove.m_impl.get().getPublicationMode());
+    }
+
+    TEST(ASceneConfig, CanBeSelfAssigned)
+    {
+        SceneConfig config;
+        config.setPublicationMode(EScenePublicationMode_LocalAndRemote);
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+        config = config;
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, config.m_impl.get().getPublicationMode());
+        config = std::move(config);
+        // NOLINTNEXTLINE(bugprone-use-after-move)
+        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, config.m_impl.get().getPublicationMode());
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
     }
 
     class ASceneWithContent : public SimpleSceneTopology
@@ -208,8 +255,8 @@ namespace ramses
 
         m_scene.destroy(*mesh);
 
-        EXPECT_TRUE(group->impl.getAllMeshes().empty());
-        EXPECT_TRUE(group2->impl.getAllMeshes().empty());
+        EXPECT_TRUE(group->m_impl.getAllMeshes().empty());
+        EXPECT_TRUE(group2->m_impl.getAllMeshes().empty());
     }
 
     TEST_F(AScene, failsToCreateAppearanceWhenEffectIsFromAnotherScene)
@@ -342,27 +389,27 @@ namespace ramses
         m_vis1.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
 
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
 
         m_vis2.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
 
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh2b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         m_vis1.setVisibility(EVisibilityMode::Off);
         m_vis2.setVisibility(EVisibilityMode::Visible);
         m_scene.flush();
 
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, checksMeshVisibilityAddedToInvisibleParent)
@@ -373,7 +420,7 @@ namespace ramses
         addMeshNode->setParent(m_vis2);
 
         m_scene.flush();
-        EXPECT_EQ(addMeshNode->impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(addMeshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         //cleanup
         addMeshNode->removeParent();
@@ -387,7 +434,7 @@ namespace ramses
         addMeshNode->setParent(m_vis2);
 
         m_scene.flush();
-        EXPECT_EQ(addMeshNode->impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(addMeshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
 
         //cleanup
         addMeshNode->removeParent();
@@ -402,43 +449,43 @@ namespace ramses
         EXPECT_EQ(StatusOK, m_node9.setParent(m_node8));
 
         //Newly added mesh should be visible by default
-        EXPECT_EQ(m_node9.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_node9.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
 
         m_vis1.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
 
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_node9.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_node9.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         m_node8.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
 
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_node9.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_node9.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         m_vis1.setVisibility(EVisibilityMode::Visible);
         m_scene.flush();
 
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_node9.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_node9.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         m_node8.setVisibility(EVisibilityMode::Visible);
         m_scene.flush();
 
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh2b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_node9.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh2b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_node9.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, subTreeStaysInvisibleIfSettingVisibilityNodeVisibleParentedByInvisibleNode)
@@ -458,16 +505,16 @@ namespace ramses
 
         // should stay invisible
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
     }
 
     TEST_F(ASceneWithContent, nodesStayVisibleWhenRemovedVisibleParent)
     {
         m_scene.destroy(m_vis1);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, nodesBecomeVisibleWhenRemovedInvisibleParent)
@@ -477,8 +524,8 @@ namespace ramses
 
         m_scene.destroy(m_vis1);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, nodesBecomeVisibleWhenRemovedOffParent)
@@ -488,8 +535,8 @@ namespace ramses
 
         m_scene.destroy(m_vis1);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, visibleMeshBecomesInvisibleWhenMovedUnderInvisibleNode)
@@ -499,7 +546,7 @@ namespace ramses
 
         m_mesh2a.setParent(m_vis1);
         m_scene.flush();
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
     }
 
     TEST_F(ASceneWithContent, visibleMeshBecomesOffWhenMovedUnderOffNode)
@@ -509,7 +556,7 @@ namespace ramses
 
         m_mesh2a.setParent(m_vis1);
         m_scene.flush();
-        EXPECT_EQ(m_mesh2a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh2a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(ASceneWithContent, visibleMeshWithoutParentBecomesInvisibleWhenSetInvisibleNodeAsParent)
@@ -521,7 +568,7 @@ namespace ramses
         meshOrphan.setParent(m_vis1);
         m_scene.flush();
 
-        EXPECT_EQ(meshOrphan.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(meshOrphan.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
     }
 
     TEST_F(ASceneWithContent, visibleMeshWithoutParentBecomesOffWhenSetOffNodeAsParent)
@@ -533,7 +580,7 @@ namespace ramses
         meshOrphan.setParent(m_vis1);
         m_scene.flush();
 
-        EXPECT_EQ(meshOrphan.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(meshOrphan.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(ASceneWithContent, visibleMeshWithoutParentBecomesInvisibleWhenMovedUnderInvisibleNode)
@@ -545,7 +592,7 @@ namespace ramses
         m_vis1.addChild(meshOrphan);
         m_scene.flush();
 
-        EXPECT_EQ(meshOrphan.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(meshOrphan.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
     }
 
     TEST_F(ASceneWithContent, visibleMeshWithoutParentBecomesOffWhenMovedUnderOffNode)
@@ -557,7 +604,7 @@ namespace ramses
         m_vis1.addChild(meshOrphan);
         m_scene.flush();
 
-        EXPECT_EQ(meshOrphan.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(meshOrphan.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(ASceneWithContent, meshInInvisibleBranchBecomesVisibleWhenMovedUnderVisibleNode)
@@ -567,7 +614,7 @@ namespace ramses
 
         m_mesh1a.setParent(m_vis2);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, meshInOffBranchBecomesVisibleWhenMovedUnderVisibleNode)
@@ -577,7 +624,7 @@ namespace ramses
 
         m_mesh1a.setParent(m_vis2);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, nodesStayVisibleIfParentBecomesInvisibleAndIsDeletedInSameCommit)
@@ -585,8 +632,8 @@ namespace ramses
         m_vis1.setVisibility(EVisibilityMode::Invisible);
         m_scene.destroy(m_vis1);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, nodesStayVisibleIfParentBecomesOffAndIsDeletedInSameCommit)
@@ -594,28 +641,28 @@ namespace ramses
         m_vis1.setVisibility(EVisibilityMode::Off);
         m_scene.destroy(m_vis1);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, nodeBecomesVisibleIfInvisibleParentIsRemovedFromIt)
     {
         m_vis1.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
         m_mesh1a.removeParent();
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, nodeBecomesVisibleIfOffParentIsRemovedFromIt)
     {
         m_vis1.setVisibility(EVisibilityMode::Off);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
         m_mesh1a.removeParent();
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(ASceneWithContent, nodeBecomesInvisibleIfAnyOfItsAncestorsIsInvisible)
@@ -630,20 +677,20 @@ namespace ramses
         // set parent invisible
         vis1a.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         // revert
         vis1a.setVisibility(EVisibilityMode::Visible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
 
         // set grandparent invisible
         m_vis1.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
     }
 
     TEST_F(ASceneWithContent, nodeBecomesOffIfAnyOfItsAncestorsIsOff)
@@ -658,20 +705,20 @@ namespace ramses
         // set parent invisible
         vis1a.setVisibility(EVisibilityMode::Off);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
 
         // revert
         vis1a.setVisibility(EVisibilityMode::Visible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
 
         // set grandparent invisible
         m_vis1.setVisibility(EVisibilityMode::Off);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(ASceneWithContent, nodeBecomesOffIfAnyOfItsAncestorsIsOffAndInvisible)
@@ -687,20 +734,20 @@ namespace ramses
         vis1a.setVisibility(EVisibilityMode::Off);
         m_vis1.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
 
         // revert
         vis1a.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         // set grandparent invisible
         m_vis1.setVisibility(EVisibilityMode::Off);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(ASceneWithContent, offNodeStaysOffIndependentOfParentVisibility)
@@ -713,35 +760,35 @@ namespace ramses
         m_mesh1b.setVisibility(EVisibilityMode::Invisible);
         m_vis1.setVisibility(EVisibilityMode::Visible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         // revert
         m_vis1.setVisibility(EVisibilityMode::Invisible);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Invisible);
 
         // set grandparent invisible
         m_vis1.setVisibility(EVisibilityMode::Off);
         m_scene.flush();
-        EXPECT_EQ(m_mesh1a.impl.getFlattenedVisibility(), EVisibilityMode::Off);
-        EXPECT_EQ(m_mesh1b.impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1a.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
+        EXPECT_EQ(m_mesh1b.m_impl.getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
     TEST_F(AScene, canCreateATransformDataSlot)
     {
         Node* node = m_scene.createNode();
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         EXPECT_EQ(StatusOK, m_scene.createTransformationDataConsumer(*node, dataConsumerId_t(666u)));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(node->impl.getNodeHandle(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedNode);
-        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_TransformationConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(node->m_impl.getNodeHandle(), m_scene.m_impl.getIScene().getDataSlot(slotHandle).attachedNode);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TransformationConsumer, m_scene.m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(AScene, removesTransformDataSlotsOfNodeOnDestruction)
@@ -749,13 +796,13 @@ namespace ramses
         Node* node = m_scene.createNode();
         m_scene.createTransformationDataProvider(*node, dataProviderId_t(1412u));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle linkHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(linkHandle));
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(linkHandle));
 
         m_scene.destroy(*node);
 
-        EXPECT_FALSE(m_scene.impl.getIScene().isDataSlotAllocated(linkHandle));
+        EXPECT_FALSE(m_scene.m_impl.getIScene().isDataSlotAllocated(linkHandle));
     }
 
     TEST_F(AScene, canNotCreateMoreThanOneTransformationDataSlotForANode)
@@ -806,16 +853,16 @@ namespace ramses
     TEST_F(AScene, canCreateADataObjectDataSlot)
     {
         auto dataObject = m_scene.createDataObject(EDataType::Float);
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         EXPECT_EQ(StatusOK, m_scene.createDataConsumer(*dataObject, dataConsumerId_t(666u)));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(dataObject->impl.getDataReference(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedDataReference);
-        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_DataConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(dataObject->m_impl.getDataReference(), m_scene.m_impl.getIScene().getDataSlot(slotHandle).attachedDataReference);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_DataConsumer, m_scene.m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(AScene, removesDataSlotsOfDataObjectOnDestruction)
@@ -823,13 +870,13 @@ namespace ramses
         auto dataObject = m_scene.createDataObject(EDataType::Float);
         m_scene.createDataProvider(*dataObject, dataProviderId_t(1412u));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle linkHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(linkHandle));
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(linkHandle));
 
         m_scene.destroy(*dataObject);
 
-        EXPECT_FALSE(m_scene.impl.getIScene().isDataSlotAllocated(linkHandle));
+        EXPECT_FALSE(m_scene.m_impl.getIScene().isDataSlotAllocated(linkHandle));
     }
 
     TEST_F(AScene, canNotCreateMoreThanOneDataSlotForADataObject)
@@ -908,7 +955,7 @@ namespace ramses
 
     TEST_F(AScene, canCreateATextureProviderDataSlot)
     {
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
@@ -917,17 +964,17 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{666u}));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(texture->impl.getLowlevelResourceHash(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedTexture);
-        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_TextureProvider, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(texture->m_impl.getLowlevelResourceHash(), m_scene.m_impl.getIScene().getDataSlot(slotHandle).attachedTexture);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TextureProvider, m_scene.m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(AScene, canUpdateATextureProviderDataSlot)
     {
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         uint8_t data1 = 0u;
         MipLevelData mipData1(1u, &data1);
@@ -942,17 +989,17 @@ namespace ramses
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture1, dataProviderId_t{666u}));
         EXPECT_EQ(StatusOK, m_scene.updateTextureProvider(*texture2, dataProviderId_t{666u}));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(texture2->impl.getLowlevelResourceHash(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedTexture);
-        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_TextureProvider, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(texture2->m_impl.getLowlevelResourceHash(), m_scene.m_impl.getIScene().getDataSlot(slotHandle).attachedTexture);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TextureProvider, m_scene.m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(AScene, canCreateATextureConsumerDataSlot)
     {
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
@@ -964,17 +1011,17 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(sampler->impl.getTextureSamplerHandle(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
-        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(sampler->m_impl.getTextureSamplerHandle(), m_scene.m_impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(AScene, canCreateATextureConsumerDataSlotWithTextureSamplerMS)
     {
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         RenderBuffer* renderBuffer = m_scene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGB8, ERenderBufferAccessMode_ReadWrite, 4u);
         ASSERT_TRUE(nullptr != renderBuffer);
@@ -985,17 +1032,17 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 666u }));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(sampler->impl.getTextureSamplerHandle(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
-        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(sampler->m_impl.getTextureSamplerHandle(), m_scene.m_impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(AScene, canCreateATextureConsumerDataSlotWithTextureSamplerExternal)
     {
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         const TextureSamplerExternal* sampler = m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear);
 
@@ -1003,17 +1050,17 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 666u }));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle slotHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
-        EXPECT_EQ(sampler->impl.getTextureSamplerHandle(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
-        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
-        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(sampler->m_impl.getTextureSamplerHandle(), m_scene.m_impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.m_impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.m_impl.getIScene().getDataSlot(slotHandle).type);
     }
 
     TEST_F(AScene, canNotCreateATextureConsumerDataSlotIfOtherThan2DTextureAssigned)
     {
-        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(0u, m_scene.m_impl.getIScene().getDataSlotCount());
 
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
@@ -1038,13 +1085,13 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
 
-        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        EXPECT_EQ(1u, m_scene.m_impl.getIScene().getDataSlotCount());
         ramses_internal::DataSlotHandle linkHandle(0u);
-        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(linkHandle));
+        ASSERT_TRUE(m_scene.m_impl.getIScene().isDataSlotAllocated(linkHandle));
 
         m_scene.destroy(*sampler);
 
-        EXPECT_FALSE(m_scene.impl.getIScene().isDataSlotAllocated(linkHandle));
+        EXPECT_FALSE(m_scene.m_impl.getIScene().isDataSlotAllocated(linkHandle));
     }
 
     TEST_F(AScene, canNotCreateMoreThanOneConsumerForATextureSampler)
@@ -1359,9 +1406,9 @@ namespace ramses
 
     TEST_F(AScene, flushIncreasesStatisticCounter)
     {
-        EXPECT_EQ(0u, m_scene.impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
+        EXPECT_EQ(0u, m_scene.m_impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
         m_scene.flush();
-        EXPECT_EQ(1u, m_scene.impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
+        EXPECT_EQ(1u, m_scene.m_impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
     }
 
     TEST_F(AScene, canGetResourceByID)
@@ -1571,9 +1618,9 @@ namespace ramses
 
     TEST_F(AScene, resetUniformTimeMs)
     {
-        EXPECT_EQ(ramses_internal::FlushTime::InvalidTimestamp, m_scene.impl.getIScene().getEffectTimeSync());
+        EXPECT_EQ(ramses_internal::FlushTime::InvalidTimestamp, m_scene.m_impl.getIScene().getEffectTimeSync());
         EXPECT_EQ(StatusOK, m_scene.resetUniformTimeMs());
-        const auto timeSync = m_scene.impl.getIScene().getEffectTimeSync();
+        const auto timeSync = m_scene.m_impl.getIScene().getEffectTimeSync();
         EXPECT_NE(0, timeSync.time_since_epoch().count());
 
         EXPECT_EQ(StatusOK, m_scene.flush());

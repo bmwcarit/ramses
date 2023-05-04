@@ -43,8 +43,8 @@ namespace ramses
             , m_creationHelper(nullptr, &client)
             , sceneActionsCollector()
         {
-            sceneActionsCollector.init(framework.impl.getScenegraphComponent());
-            framework.impl.getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
+            sceneActionsCollector.init(framework.m_impl.getScenegraphComponent());
+            framework.m_impl.getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
         }
 
         template <typename ObjectType>
@@ -88,7 +88,7 @@ namespace ramses
             : LocalTestClient()
             , m_scene(*client.createScene(sceneId_t(123u), sceneConfig))
             , m_constRefToScene(m_scene)
-            , m_internalScene(m_scene.impl.getIScene())
+            , m_internalScene(m_scene.m_impl.getIScene())
         {
             m_creationHelper.setScene(&m_scene);
         }

@@ -21,7 +21,7 @@ namespace ramses_internal
         getArgument<1>().setDescription("opacity");
     }
 
-    Bool SystemCompositorControllerSetSurfaceOpacity::execute(Int32& surfaceId, Float& opacity) const
+    bool SystemCompositorControllerSetSurfaceOpacity::execute(Int32& surfaceId, Float& opacity) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCSetIviSurfaceOpacity{ WaylandIviSurfaceId(surfaceId), opacity });
         return true;

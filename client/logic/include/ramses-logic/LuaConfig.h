@@ -14,12 +14,12 @@
 #include <string>
 #include <memory>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LuaConfigImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LuaModule;
 
@@ -33,13 +33,13 @@ namespace rlogic
         RAMSES_API LuaConfig() noexcept;
 
         /**
-         * Adds a #rlogic::LuaModule as a dependency to be added when this config is used for script or module
+         * Adds a #ramses::LuaModule as a dependency to be added when this config is used for script or module
          * creation. The \p aliasName can be any valid Lua label which must obey following rules:
          * - can't use the same label twice in the same #LuaConfig object
          * - can't use standard module names (math, string etc.)
          *
          * The \p moduleInstance provided can be any module. You can't reference modules from
-         * different #rlogic::LogicEngine instances and the referenced modules must be from the same instance
+         * different #ramses::LogicEngine instances and the referenced modules must be from the same instance
          * on which the config is used for script creation.
          *
          * @param aliasName the alias name under which the dependency will be mapped into the parent script/module
@@ -50,7 +50,7 @@ namespace rlogic
         RAMSES_API bool addDependency(std::string_view aliasName, const LuaModule& moduleInstance);
 
         /**
-         * Adds a standard module dependency. The module is mapped under a name as documented in #rlogic::EStandardModule.
+         * Adds a standard module dependency. The module is mapped under a name as documented in #ramses::EStandardModule.
          *
          * @param stdModule the standard module which will be mapped into the parent script/module
          * @return true if the standard module was added successfully, false otherwise
@@ -66,7 +66,7 @@ namespace rlogic
          * Each with single string as argument.
          * Call from Lua script or module to any of these will forward the string message to a corresponding internal Ramses Logic logger.
          *
-         * IMPORTANT: These functions are meant for debug/prototype purposes only and attempt to save the project to file (#rlogic::LogicEngine::saveToFile)
+         * IMPORTANT: These functions are meant for debug/prototype purposes only and attempt to save the project to file (#ramses::LogicEngine::saveToFile)
          * with any script or module with these functions enabled will result in failure!
          */
         RAMSES_API void enableDebugLogFunctions();

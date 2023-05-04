@@ -11,15 +11,6 @@
 #include "RendererConfigImpl.h"
 #include "RendererTestUtils.h"
 #include "WindowEventHandlerMock.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 #include "Resource/EffectResource.h"
 #include "Resource/ResourceTypes.h"
 #include "RendererAPI/IRenderBackend.h"
@@ -85,14 +76,14 @@ namespace ramses_internal
             assert(nullptr == platform);
 
             ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
-            platform = ramses_internal::Platform_Base::CreatePlatform(rendererConfig.impl.getInternalRendererConfig());
+            platform = ramses_internal::Platform_Base::CreatePlatform(rendererConfig.m_impl.get().getInternalRendererConfig());
             assert(nullptr != platform);
 
             eventHandler = new NiceMock<WindowEventHandlerMock>();
 
             ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0);
             displayConfig.setWindowRectangle(0, 0, 16u, 16u);
-            renderBackend = platform->createRenderBackend(displayConfig.impl.getInternalDisplayConfig(), *eventHandler);
+            renderBackend = platform->createRenderBackend(displayConfig.m_impl.get().getInternalDisplayConfig(), *eventHandler);
             assert(nullptr != renderBackend);
 
             testDevice = &renderBackend->getDevice();
@@ -322,15 +313,15 @@ namespace ramses_internal
 
         const Int32 intValue = 5;
         const Float floatValue = 5.0f;
-        const Vector2 vec2Value(5.0f);
-        const Vector3 vec3Value(5.0f);
-        const Vector4 vec4Value(5.0f);
-        const Vector2i vec2iValue(5);
-        const Vector3i vec3iValue(5);
-        const Vector4i vec4iValue(5);
-        const Matrix22f mat22Value(1.0f, 2.0f, 3.0f, 4.0f);
-        const Matrix33f mat33Value(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f);
-        const Matrix44f mat44Value(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f);
+        const glm::vec2 vec2Value(5.0f);
+        const glm::vec3 vec3Value(5.0f);
+        const glm::vec4 vec4Value(5.0f);
+        const glm::ivec2 vec2iValue(5);
+        const glm::ivec3 vec3iValue(5);
+        const glm::ivec4 vec4iValue(5);
+        const glm::mat2 mat22Value(1.0f, 2.0f, 3.0f, 4.0f);
+        const glm::mat3 mat33Value(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f);
+        const glm::mat4 mat44Value(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f);
 
         EXPECT_TRUE(testDevice->isDeviceStatusHealthy()); // check that there were no errors (GL_NO_ERROR in case of OpenGL) - triggers an internal assert otherwise
         testDevice->setConstant(DataFieldHandle(testEffect.getUniformDataFieldHandleByName("u_int")), 1, &intValue);
@@ -466,7 +457,7 @@ namespace ramses_internal
         testDevice->activateShader(handleBinary);
 
         const Float floatValue = 5.0f;
-        const Vector2 vec2Value(5.0f);
+        const glm::vec2 vec2Value(5.0f);
 
         // This will trigger internal asserts if the shader is not correct/loaded properly
         testDevice->setConstant(DataFieldHandle(testEffect->getUniformDataFieldHandleByName("u_float")), 1, &floatValue);

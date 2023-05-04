@@ -12,7 +12,7 @@
 #include <string_view>
 #include <cstdint>
 
-namespace rlogic
+namespace ramses
 {
     /**
      * @brief Ramses Logic version information

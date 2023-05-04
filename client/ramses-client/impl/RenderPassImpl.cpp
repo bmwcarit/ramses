@@ -181,13 +181,13 @@ namespace ramses
         return const_cast<Camera*>((const_cast<const RenderPassImpl&>(*this)).getCamera());
     }
 
-    status_t RenderPassImpl::setClearColor(const ramses_internal::Vector4& clearColor)
+    status_t RenderPassImpl::setClearColor(const glm::vec4& clearColor)
     {
         getIScene().setRenderPassClearColor(m_renderPassHandle, clearColor);
         return StatusOK;
     }
 
-    const ramses_internal::Vector4& RenderPassImpl::getClearColor() const
+    const glm::vec4& RenderPassImpl::getClearColor() const
     {
         return getIScene().getRenderPass(m_renderPassHandle).clearColor;
     }

@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "LogResourceMemoryUsage.h"
+#include "SceneCommandBuffer.h"
 #include "RamsesClientImpl.h"
 #include "Utils/LogMacros.h"
 
@@ -20,7 +21,7 @@ namespace ramses_internal
         registerKeyword("lm");
     }
 
-    Bool LogResourceMemoryUsage::execute(uint64_t& sceneId) const
+    bool LogResourceMemoryUsage::execute(uint64_t& sceneId) const
     {
         LOG_INFO(CONTEXT_CLIENT,"LogResourceMemoryUsage");
         SceneCommandLogResourceMemoryUsage command;

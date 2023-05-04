@@ -17,7 +17,7 @@
 
 #include <fstream>
 
-namespace rlogic
+namespace ramses
 {
     class ALuaScript_Debug : public ALuaScript
     {
@@ -39,7 +39,7 @@ namespace rlogic
         )";
 
         // Silence logs, unless explicitly enabled, to reduce spam and speed up tests
-        ScopedLogContextLevel m_silenceLogs{ ELogMessageType::Off };
+        ScopedLogContextLevel m_silenceLogs{ ELogLevel::Off };
     };
 
     TEST_F(ALuaScript_Debug, ProducesErrorWithFullStackTrace_WhenErrorsInInterface)
@@ -82,7 +82,7 @@ namespace rlogic
 
     TEST_F(ALuaScript_Debug, LogsDebugMessage)
     {
-        ScopedLogContextLevel enableLogs{ ELogMessageType::Info };
+        ScopedLogContextLevel enableLogs{ ELogLevel::Info };
 
         constexpr std::string_view src = R"(
             function init()
@@ -107,7 +107,7 @@ namespace rlogic
 
     TEST_F(ALuaScript_Debug, LogsDebugMessageUsingModule)
     {
-        ScopedLogContextLevel enableLogs{ ELogMessageType::Info };
+        ScopedLogContextLevel enableLogs{ ELogLevel::Info };
 
         constexpr std::string_view moduleSrc = R"(
             local mymod = {}

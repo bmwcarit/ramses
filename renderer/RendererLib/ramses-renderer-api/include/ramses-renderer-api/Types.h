@@ -15,6 +15,11 @@
 namespace ramses
 {
     /**
+     * @addtogroup RendererAPI
+     * @{
+     */
+
+    /**
     * @deprecated This enum is not used and will be removed.
     */
     enum ESceneResourceStatus
@@ -34,11 +39,7 @@ namespace ramses
         /**
         * @brief Default constructor constructs invalid value
         */
-        constexpr rendererResourceId_t()
-            : lowPart(0)
-            , highPart(0)
-        {
-        }
+        constexpr rendererResourceId_t() = default;
 
         /**
         * @brief The constructor
@@ -72,11 +73,11 @@ namespace ramses
         /**
         * @brief The lower bits of the resource id
         */
-        uint64_t lowPart;
+        uint64_t lowPart{0};
         /**
         * @brief The higher bits of the resource id
         */
-        uint64_t highPart;
+        uint64_t highPart{0};
     };
 
     /**
@@ -290,6 +291,10 @@ namespace ramses
         EDepthBufferType_Depth,
         EDepthBufferType_DepthStencil
     };
+
+    /**
+     * @}
+     */
 }
 
 #endif

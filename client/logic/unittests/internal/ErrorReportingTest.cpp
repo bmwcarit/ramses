@@ -12,7 +12,7 @@
 #include "ramses-logic/Logger.h"
 #include "LogicNodeDummy.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AErrorReporting : public ::testing::Test
     {
@@ -22,8 +22,8 @@ namespace rlogic::internal
             // Explicitly check that default logging does not affect custom error logs
             Logger::SetDefaultLogging(false);
 
-            Logger::SetLogHandler([this](ELogMessageType type, std::string_view message) {
-                EXPECT_EQ(ELogMessageType::Error, type);
+            Logger::SetLogHandler([this](ELogLevel type, std::string_view message) {
+                EXPECT_EQ(ELogLevel::Error, type);
                 m_loggedErrors.emplace_back(std::string(message));
                 });
         }

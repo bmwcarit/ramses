@@ -67,7 +67,7 @@ namespace ramses
 
         void expectNumGroupsContained(uint32_t numGroups, const RenderPass& pass)
         {
-            EXPECT_EQ(numGroups, static_cast<uint32_t>(pass.impl.getAllRenderGroups().size()));
+            EXPECT_EQ(numGroups, static_cast<uint32_t>(pass.m_impl.getAllRenderGroups().size()));
         }
 
         void expectGroupContained(const RenderGroup& group, int32_t order, const RenderPass& pass)
@@ -77,17 +77,17 @@ namespace ramses
             EXPECT_EQ(StatusOK, pass.getRenderGroupOrder(group, actualOrder));
             EXPECT_EQ(order, actualOrder);
 
-            const ramses_internal::RenderPass& internalRP = m_internalScene.getRenderPass(pass.impl.getRenderPassHandle());
-            ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(group.impl.getRenderGroupHandle(), internalRP));
-            EXPECT_EQ(group.impl.getRenderGroupHandle(), ramses_internal::RenderGroupUtils::FindRenderGroupEntry(group.impl.getRenderGroupHandle(), internalRP)->renderGroup);
-            EXPECT_EQ(order, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(group.impl.getRenderGroupHandle(), internalRP)->order);
+            const ramses_internal::RenderPass& internalRP = m_internalScene.getRenderPass(pass.m_impl.getRenderPassHandle());
+            ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(group.m_impl.getRenderGroupHandle(), internalRP));
+            EXPECT_EQ(group.m_impl.getRenderGroupHandle(), ramses_internal::RenderGroupUtils::FindRenderGroupEntry(group.m_impl.getRenderGroupHandle(), internalRP)->renderGroup);
+            EXPECT_EQ(order, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(group.m_impl.getRenderGroupHandle(), internalRP)->order);
         }
 
         void expectGroupNotContained(const RenderGroup& group, const RenderPass& pass)
         {
             EXPECT_FALSE(pass.containsRenderGroup(group));
-            const ramses_internal::RenderPass& internalRP = m_internalScene.getRenderPass(pass.impl.getRenderPassHandle());
-            EXPECT_FALSE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(group.impl.getRenderGroupHandle(), internalRP));
+            const ramses_internal::RenderPass& internalRP = m_internalScene.getRenderPass(pass.m_impl.getRenderPassHandle());
+            EXPECT_FALSE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(group.m_impl.getRenderGroupHandle(), internalRP));
         }
 
         RenderPass& renderpass;
@@ -353,14 +353,14 @@ namespace ramses
     TEST_F(ARenderPass, hasFrameBufferAsDefaultRenderTarget)
     {
         EXPECT_EQ(nullptr, renderpass.getRenderTarget());
-        EXPECT_FALSE(m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget.isValid());
+        EXPECT_FALSE(m_scene.m_impl.getIScene().getRenderPass(renderpass.m_impl.getRenderPassHandle()).renderTarget.isValid());
     }
 
     TEST_F(ARenderPass, canBeAssignedFrameBufferAsRenderTarget)
     {
         EXPECT_EQ(StatusOK, renderpass.setRenderTarget(nullptr));
         EXPECT_EQ(nullptr, renderpass.getRenderTarget());
-        EXPECT_FALSE(m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget.isValid());
+        EXPECT_FALSE(m_scene.m_impl.getIScene().getRenderPass(renderpass.m_impl.getRenderPassHandle()).renderTarget.isValid());
     }
 
     TEST_F(ARenderPass, canSwitchFromRenderTargetBackToFramebuffer)
@@ -375,7 +375,7 @@ namespace ramses
         // then set framebuffer rendering
         EXPECT_EQ(StatusOK, renderpass.setRenderTarget(nullptr));
         EXPECT_EQ(nullptr, renderpass.getRenderTarget());
-        EXPECT_FALSE(m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget.isValid());
+        EXPECT_FALSE(m_scene.m_impl.getIScene().getRenderPass(renderpass.m_impl.getRenderPassHandle()).renderTarget.isValid());
     }
 
     TEST_F(ARenderPass, reportsErrorWhenSetRenderTargetFromAnotherScene)
@@ -399,7 +399,7 @@ namespace ramses
     {
         RenderTarget* renderTarget = createRenderTarget();
         EXPECT_NE(StatusOK, renderpass.setRenderTarget(renderTarget));
-        EXPECT_NE(renderTarget->impl.getRenderTargetHandle(), m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget);
+        EXPECT_NE(renderTarget->m_impl.getRenderTargetHandle(), m_scene.m_impl.getIScene().getRenderPass(renderpass.m_impl.getRenderPassHandle()).renderTarget);
         EXPECT_NE(renderTarget, renderpass.getRenderTarget());
     }
 
@@ -411,7 +411,7 @@ namespace ramses
         ASSERT_EQ(StatusOK, renderpass.setCamera(*orthoCamera));
         EXPECT_EQ(StatusOK, renderpass.setRenderTarget(renderTarget));
 
-        EXPECT_EQ(renderTarget->impl.getRenderTargetHandle(), m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget);
+        EXPECT_EQ(renderTarget->m_impl.getRenderTargetHandle(), m_scene.m_impl.getIScene().getRenderPass(renderpass.m_impl.getRenderPassHandle()).renderTarget);
         EXPECT_EQ(renderTarget, renderpass.getRenderTarget());
     }
 
@@ -423,7 +423,7 @@ namespace ramses
         ASSERT_EQ(StatusOK, renderpass.setCamera(*perspectiveCamera));
         EXPECT_EQ(StatusOK, renderpass.setRenderTarget(renderTarget));
 
-        EXPECT_EQ(renderTarget->impl.getRenderTargetHandle(), m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget);
+        EXPECT_EQ(renderTarget->m_impl.getRenderTargetHandle(), m_scene.m_impl.getIScene().getRenderPass(renderpass.m_impl.getRenderPassHandle()).renderTarget);
         EXPECT_EQ(renderTarget, renderpass.getRenderTarget());
     }
 
@@ -623,8 +623,8 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.destroy(*group));
 
-        EXPECT_TRUE(renderpass.impl.getAllRenderGroups().empty());
-        EXPECT_TRUE(renderpass2.impl.getAllRenderGroups().empty());
+        EXPECT_TRUE(renderpass.m_impl.getAllRenderGroups().empty());
+        EXPECT_TRUE(renderpass2.m_impl.getAllRenderGroups().empty());
     }
 
     TEST_F(ARenderPass, canRemoveAllRenderGroups)

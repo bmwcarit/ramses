@@ -76,7 +76,7 @@ namespace ramses
                 RamsesObjectRegistryIterator iter(registry, type);
                 while (const ObjectsBaseType* obj = iter.getNext<ObjectsBaseType>())
                 {
-                    CHECK_RETURN_ERR(obj->impl.serialize(outStream, serializationContext));
+                    CHECK_RETURN_ERR(obj->m_impl.serialize(outStream, serializationContext));
                 }
             }
 

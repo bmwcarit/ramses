@@ -20,7 +20,7 @@ namespace ramses
     class RamsesRenderer;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LogicEngine;
     class Property;
@@ -37,7 +37,7 @@ namespace rlogic
         * @param luafile the luafile argument provided by command line
         *        If it does not exist the LogicViewerGui will provide a UI to save the default settings
         */
-        explicit LogicViewerGui(rlogic::LogicViewer& viewer, LogicViewerSettings& settings, std::string luafile);
+        explicit LogicViewerGui(ramses::LogicViewer& viewer, LogicViewerSettings& settings, std::string luafile);
         void draw();
         void openErrorPopup(const std::string& message);
         void setSceneTexture(ramses::TextureSampler* sampler, uint32_t width, uint32_t height);
@@ -70,13 +70,13 @@ namespace rlogic
         void drawDisplaySettings();
         void drawSaveDefaultLuaFile();
 
-        static bool DrawTreeNode(rlogic::LogicObject* obj);
+        static bool DrawTreeNode(ramses::LogicObject* obj);
 
-        void drawNodeContextMenu(rlogic::LogicNode* obj, const std::string_view& ns);
-        void drawNode(rlogic::LogicNode* obj);
-        void drawProperty(rlogic::Property* prop, size_t index);
-        void drawOutProperty(const rlogic::Property* prop, size_t index);
-        static void DrawDataArray(const rlogic::DataArray* obj, std::string_view context = std::string_view());
+        void drawNodeContextMenu(ramses::LogicNode* obj, const std::string_view& ns);
+        void drawNode(ramses::LogicNode* obj);
+        void drawProperty(ramses::Property* prop, size_t index);
+        void drawOutProperty(const ramses::Property* prop, size_t index);
+        static void DrawDataArray(const ramses::DataArray* obj, std::string_view context = std::string_view());
 
         void reloadConfiguration();
         void loadLuaFile(const std::string& filename);
@@ -90,8 +90,8 @@ namespace rlogic
         void copyScriptInputs();
 
         LogicViewerSettings& m_settings;
-        rlogic::LogicViewer& m_viewer;
-        rlogic::LogicEngine& m_logicEngine;
+        ramses::LogicViewer& m_viewer;
+        ramses::LogicEngine& m_logicEngine;
 
         std::string m_lastErrorMessage;
         std::string m_filename;

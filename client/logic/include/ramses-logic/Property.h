@@ -17,17 +17,17 @@
 #include <memory>
 #include <string>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class PropertyImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LogicNode;
 
     /**
-    * Represents a generic property slot of the #rlogic::LogicNode and its derived classes.
+    * Represents a generic property slot of the #ramses::LogicNode and its derived classes.
     * Properties can have primitive types (string, integer, etc.) or complex types (structs, arrays).
     * Complex types can have "children", i.e. nested properties: named fields (structs), or indexed
     * fields (arrays).
@@ -53,9 +53,9 @@ namespace rlogic
 
         /**
         * Returns the amount of available child (nested) properties. If the Property
-        * is of type #rlogic::EPropertyType::Struct, the returned number will correspond
+        * is of type #ramses::EPropertyType::Struct, the returned number will correspond
         * to the number of named properties of the struct. If the Property is of type
-        * #rlogic::EPropertyType::Array, the method will return the array size. For all
+        * #ramses::EPropertyType::Array, the method will return the array size. For all
         * other property types #getChildCount returns zero.
         *
         * @return the number of nested properties.
@@ -63,7 +63,7 @@ namespace rlogic
         [[nodiscard]] RAMSES_API size_t getChildCount() const;
 
         /**
-        * Return whether the #rlogic::Property has a child with the given name
+        * Return whether the #ramses::Property has a child with the given name
         *
         * @param name the name of the child that should be checked for existence
         * @return whether the child with the given name exists
@@ -95,13 +95,13 @@ namespace rlogic
         [[nodiscard]] RAMSES_API Property* getChild(size_t index);
 
         /**
-        * Searches for a child with the given name. Only properties of type #rlogic::EPropertyType::Struct can return a child by name.
+        * Searches for a child with the given name. Only properties of type #ramses::EPropertyType::Struct can return a child by name.
         * In case of a primitive property or array this method will return nullptr.
         *
         * Note that this method may be slower than #getChild(size_t index) as it must do a string-based search.
         *
         * @param[in] name name of child property to retrieve
-        * @return the child with the given name, or nullptr if property is not of type #rlogic::EPropertyType::Struct
+        * @return the child with the given name, or nullptr if property is not of type #ramses::EPropertyType::Struct
         */
         [[nodiscard]] RAMSES_API Property* getChild(std::string_view name);
 
@@ -112,7 +112,7 @@ namespace rlogic
 
         /**
         * Returns the value of this property. The supported template types are defined by
-        * #rlogic::IsPrimitiveProperty where IsPrimitiveProperty<T>::value == true for a type T.
+        * #ramses::IsPrimitiveProperty where IsPrimitiveProperty<T>::value == true for a type T.
         *
         * Attention! We recommend always specifying the template argument T explicitly, and don't rely on the compiler's
         * type deduction! If T is not one of the supported types, a static_assert will be triggered!
@@ -139,7 +139,7 @@ namespace rlogic
         /**
         * Checks if this property is linked to a property of another node.
         *
-        * Property can be either on inputs side or outputs side of a node (or both in case of #rlogic::LuaInterface),
+        * Property can be either on inputs side or outputs side of a node (or both in case of #ramses::LuaInterface),
         * which defines what type of link is applicable - an incoming or outgoing.
         * This query checks for any links, regardless of data flow direction.
         * See #hasIncomingLink() #hasOutgoingLink() for dedicated checks
@@ -166,7 +166,7 @@ namespace rlogic
 
         /**
         * Returns information about the incoming link to this property, namely which property is the source of the link.
-        * Only certain properties can have an incoming link, see #rlogic::LogicEngine::link for details.
+        * Only certain properties can have an incoming link, see #ramses::LogicEngine::link for details.
         *
         * @return incoming link data or std::nullopt if there is no link.
         */
@@ -174,7 +174,7 @@ namespace rlogic
 
         /**
         * Returns the number of outgoing links from this property.
-        * Only certain properties can have outgoing links, see #rlogic::LogicEngine::link for details.
+        * Only certain properties can have outgoing links, see #ramses::LogicEngine::link for details.
         *
         * @return number of outgoing links from this property.
         */
@@ -183,7 +183,7 @@ namespace rlogic
         /**
         * Returns information about the outgoing link from this property, namely which property is the target of the link with given index.
         * Use #getOutgoingLinksCount to query how many outgoing links there are.
-        * Only certain properties can have outgoing links, see #rlogic::LogicEngine::link for details.
+        * Only certain properties can have outgoing links, see #ramses::LogicEngine::link for details.
         *
         * @param[in] index zero based index of outgoing link to retrieve
         * @return outgoing link data or std::nullopt if there is no link with given index.
@@ -191,27 +191,15 @@ namespace rlogic
         [[nodiscard]] RAMSES_API std::optional<PropertyLink> getOutgoingLink(size_t index) const;
 
         /**
-        * Get #rlogic::LogicNode that owns this property.
-        * Every property is owned by a #rlogic::LogicNode and represents either its input or output.
+        * Get #ramses::LogicNode that owns this property.
+        * Every property is owned by a #ramses::LogicNode and represents either its input or output.
         *
-        * @return #rlogic::LogicNode that owns this property.
+        * @return #ramses::LogicNode that owns this property.
         */
         [[nodiscard]] RAMSES_API const LogicNode& getOwningLogicNode() const;
 
         /// @copydoc getOwningLogicNode() const
         [[nodiscard]] RAMSES_API LogicNode& getOwningLogicNode();
-
-        /**
-        * Constructor of Property. User is not supposed to call this - properties are created by other factory classes
-        *
-        * @param impl implementation details of the property
-        */
-        explicit Property(std::unique_ptr<internal::PropertyImpl> impl) noexcept;
-
-        /**
-        * Destructor of Property. User is not supposed to call this - properties are destroyed by other factory classes
-        */
-        ~Property() noexcept;
 
         /**
         * Copy Constructor of Property is deleted because properties are not supposed to be copied
@@ -242,6 +230,19 @@ namespace rlogic
         */
         std::unique_ptr<internal::PropertyImpl> m_impl;
 
+    protected:
+            /**
+            * Constructor of Property. User is not supposed to call this - properties are created by other factory classes
+            *
+            * @param impl implementation details of the property
+            */
+            explicit Property(std::unique_ptr<internal::PropertyImpl> impl) noexcept;
+
+            /**
+            * Destructor of Property. User is not supposed to call this - properties are destroyed by other factory classes
+            */
+            ~Property() noexcept;
+
     private:
         /**
          * Internal implementation of #get
@@ -251,6 +252,8 @@ namespace rlogic
          * Internal implementation of #set
          */
         template <typename T> RAMSES_API bool setInternal(T value);
+
+        friend class internal::PropertyImpl;
     };
 
     template <typename T> std::optional<T> Property::get() const

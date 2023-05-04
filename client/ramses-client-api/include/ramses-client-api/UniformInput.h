@@ -16,28 +16,60 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief The UniformInput is a description of an uniform effect input
     */
-    class RAMSES_API UniformInput : public EffectInput
+    class UniformInput : public EffectInput
     {
     public:
         /**
         * @brief Constructor of UniformInput.
         */
-        UniformInput();
+        RAMSES_API UniformInput();
+
+        /**
+        * @brief Destructor of UniformInput
+        */
+        RAMSES_API ~UniformInput() override;
 
         /**
         * @brief Returns the effect input semantics.
         *
         * @return Effect input semantics
         */
-        [[nodiscard]] EEffectUniformSemantic getSemantics() const;
+        [[nodiscard]] RAMSES_API EEffectUniformSemantic getSemantics() const;
 
         /**
         * @brief Returns the number of elements that are assigned to this effect input
         * @return the element count or 0 if not initialized
         */
-        [[nodiscard]] uint32_t getElementCount() const;
+        [[nodiscard]] RAMSES_API uint32_t getElementCount() const;
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API UniformInput(const UniformInput& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API UniformInput(UniformInput&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API UniformInput& operator=(const UniformInput& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API UniformInput& operator=(UniformInput&& other) noexcept;
     };
 }
 

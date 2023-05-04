@@ -21,22 +21,22 @@ namespace ramses_internal
         LoggingDevice(const IDevice& deviceDelegate, RendererLogContext& context);
 
         void setConstant(DataFieldHandle field, UInt32 count, const Float* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Vector2* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Vector3* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Vector4* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::vec2* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::vec3* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::vec4* value) override;
         void setConstant(DataFieldHandle field, UInt32 count, const Int32* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Vector2i* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Vector3i* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Vector4i* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Matrix22f* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Matrix33f* value) override;
-        void setConstant(DataFieldHandle field, UInt32 count, const Matrix44f* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::ivec2* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::ivec3* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::ivec4* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::mat2* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::mat3* value) override;
+        void setConstant(DataFieldHandle field, UInt32 count, const glm::mat4* value) override;
 
-        void colorMask(Bool r, Bool g, Bool b, Bool a) override;
-        void clearColor(const Vector4& clearColor) override;
+        void colorMask(bool r, bool g, bool b, bool a) override;
+        void clearColor(const glm::vec4& clearColor) override;
         void blendOperations(EBlendOperation colorOperation, EBlendOperation alphaOperation) override;
         void blendFactors(EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) override;
-        void blendColor(const Vector4& color) override;
+        void blendColor(const glm::vec4& color) override;
         void cullMode(ECullMode mode) override;
         void depthFunc(EDepthFunc func) override;
         void depthWrite(EDepthWrite flag) override;
@@ -58,7 +58,7 @@ namespace ramses_internal
         std::unique_ptr<const GPUResource> uploadShader(const EffectResource& effect) override;
         DeviceResourceHandle registerShader(std::unique_ptr<const GPUResource> shaderResource) override;
         DeviceResourceHandle uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData = nullptr, UInt32 binaryShaderDataSize = 0, BinaryShaderFormatID binaryShaderFormat = {}) override;
-        Bool getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) override;
+        bool getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) override;
         void deleteShader(DeviceResourceHandle handle) override;
         void activateShader(DeviceResourceHandle handle) override;
         DeviceResourceHandle allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
@@ -86,13 +86,13 @@ namespace ramses_internal
         void                    activateRenderTarget(DeviceResourceHandle handle) override;
         void                    deleteRenderTarget(DeviceResourceHandle handle) override;
         void                    discardDepthStencil() override;
-        void                    blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, Bool colorOnly) override;
+        void                    blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, bool colorOnly) override;
 
         void drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
         void drawTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
         void clear(UInt32 clearFlags) override;
 
-        void                    pairRenderTargetsForDoubleBuffering(DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2]) override;
+        void                    pairRenderTargetsForDoubleBuffering(const std::array<DeviceResourceHandle, 2>& renderTargets, const std::array<DeviceResourceHandle, 2>& colorBuffers) override;
         void                    unpairRenderTargets(DeviceResourceHandle renderTarget) override;
         void                    swapDoubleBufferedRenderTarget(DeviceResourceHandle renderTarget) override;
 
@@ -107,7 +107,7 @@ namespace ramses_internal
         [[nodiscard]] Int32 getTextureAddress(DeviceResourceHandle handle) const override;
 
         void validateDeviceStatusHealthy() const override;
-        [[nodiscard]] Bool isDeviceStatusHealthy() const override;
+        [[nodiscard]] bool isDeviceStatusHealthy() const override;
         void getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const override;
         [[nodiscard]] bool isExternalTextureExtensionSupported() const override;
 

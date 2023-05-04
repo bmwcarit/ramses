@@ -27,13 +27,13 @@ class BinaryShaderProviderMock : public IBinaryShaderCache
 {
 public:
     MOCK_METHOD(void, deviceSupportsBinaryShaderFormats, (const std::vector<BinaryShaderFormatID>&), (override));
-    MOCK_METHOD(ramses_internal::Bool, hasBinaryShader, (ResourceContentHash), (const, override));
+    MOCK_METHOD(bool, hasBinaryShader, (ResourceContentHash), (const, override));
     MOCK_METHOD(UInt32, getBinaryShaderSize, (ResourceContentHash), (const, override));
     MOCK_METHOD(BinaryShaderFormatID, getBinaryShaderFormat, (ResourceContentHash), (const, override));
-    MOCK_METHOD(ramses_internal::Bool, shouldBinaryShaderBeCached, (ResourceContentHash, SceneId), (const, override));
+    MOCK_METHOD(bool, shouldBinaryShaderBeCached, (ResourceContentHash, SceneId), (const, override));
     MOCK_METHOD(void, getBinaryShaderData, (ResourceContentHash, UInt8*, UInt32), (const, override));
     MOCK_METHOD(void, storeBinaryShader, (ResourceContentHash, SceneId, const UInt8*, UInt32, BinaryShaderFormatID), (override));
-    MOCK_METHOD(void, binaryShaderUploaded, (ResourceContentHash, ramses_internal::Bool), (const, override));
+    MOCK_METHOD(void, binaryShaderUploaded, (ResourceContentHash, bool), (const, override));
     MOCK_METHOD(std::once_flag&, binaryShaderFormatsReported, (), (override));
 };
 
@@ -50,7 +50,7 @@ public:
         ON_CALL(*this, binaryShaderFormatsReported()).WillByDefault(ReturnRef(m_binaryShaderFormatReported));
     }
 
-    [[nodiscard]] ramses_internal::Bool hasBinaryShader(ResourceContentHash effectHash) const override
+    [[nodiscard]] bool hasBinaryShader(ResourceContentHash effectHash) const override
     {
         BinaryShaderProviderMock::hasBinaryShader(effectHash);
         if (effectHash == m_effectHash)

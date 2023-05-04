@@ -14,13 +14,13 @@
 #include "fmt/format.h"
 #include <deque>
 
-namespace rlogic
+namespace ramses
 {
     class ALuaScript_Interface : public ALuaScript
     {
     protected:
         // Silence logs, unless explicitly enabled, to reduce spam and speed up tests
-        ScopedLogContextLevel m_silenceLogs{ ELogMessageType::Off };
+        ScopedLogContextLevel m_silenceLogs{ ELogLevel::Off };
     };
 
     TEST_F(ALuaScript_Interface, DoesNotGenerateErrorWhenOverwritingInputsInInterfaceFunction)
@@ -653,7 +653,7 @@ namespace rlogic
     // Need to keep as confidence test to safeguard against regressions
     TEST_F(ALuaScript_Interface, Bugfix_Confidence_HandlesComplexTypeDeclarationWithNestedStructs)
     {
-        rlogic::LogicEngine logicEngine{ m_logicEngine.getFeatureLevel() };
+        ramses::LogicEngine logicEngine{ m_logicEngine.getFeatureLevel() };
 
         std::string scriptText = R"(
             function interface(IN,OUT)

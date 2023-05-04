@@ -37,7 +37,7 @@ public:
 class OffscreenSetup : public ISceneSetup
 {
 public:
-    OffscreenSetup(rlogic::ImguiClientHelper& imguiHelper, ramses::RamsesRenderer& renderer, ramses::Scene* scene, ramses::displayId_t display, uint32_t width, uint32_t height)
+    OffscreenSetup(ramses::ImguiClientHelper& imguiHelper, ramses::RamsesRenderer& renderer, ramses::Scene* scene, ramses::displayId_t display, uint32_t width, uint32_t height)
         : m_imguiHelper(imguiHelper)
         , m_sceneControl(renderer.getSceneControlAPI())
         , m_scene(scene)
@@ -107,7 +107,7 @@ public:
     }
 
 private:
-    rlogic::ImguiClientHelper&    m_imguiHelper;
+    ramses::ImguiClientHelper&    m_imguiHelper;
     ramses::RendererSceneControl* m_sceneControl;
     ramses::Scene*                m_scene;
     uint32_t m_width;
@@ -119,7 +119,7 @@ private:
 class FramebufferSetup : public ISceneSetup
 {
 public:
-    FramebufferSetup(rlogic::ImguiClientHelper& imguiHelper, ramses::RamsesRenderer& renderer, ramses::Scene* scene, ramses::displayId_t display)
+    FramebufferSetup(ramses::ImguiClientHelper& imguiHelper, ramses::RamsesRenderer& renderer, ramses::Scene* scene, ramses::displayId_t display)
         : m_imguiHelper(imguiHelper)
         , m_sceneControl(renderer.getSceneControlAPI())
         , m_scene(scene)
@@ -160,7 +160,7 @@ public:
     }
 
 private:
-    rlogic::ImguiClientHelper&    m_imguiHelper;
+    ramses::ImguiClientHelper&    m_imguiHelper;
     ramses::RendererSceneControl* m_sceneControl;
     ramses::Scene*                m_scene;
 };

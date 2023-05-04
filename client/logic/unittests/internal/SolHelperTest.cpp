@@ -15,7 +15,7 @@ namespace sol_helper
     TEST(ASolHelper, ConvertsSolTypeToString)
     {
         EXPECT_EQ("none", sol_helper::GetSolTypeName(sol::type::none));
-        EXPECT_EQ("nil", sol_helper::GetSolTypeName(sol::type::nil));
+        EXPECT_EQ("nil", sol_helper::GetSolTypeName(sol::type::lua_nil));
         EXPECT_EQ("string", sol_helper::GetSolTypeName(sol::type::string));
         EXPECT_EQ("number", sol_helper::GetSolTypeName(sol::type::number));
         EXPECT_EQ("thread", sol_helper::GetSolTypeName(sol::type::thread));

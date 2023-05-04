@@ -10,6 +10,7 @@
 #define RAMSES_RENDERGROUPMESHITERATOR_H
 
 #include "ramses-framework-api/APIExport.h"
+#include <memory>
 
 namespace ramses
 {
@@ -20,9 +21,10 @@ namespace ramses
     class IteratorImpl;
 
     /**
+    * @ingroup CoreAPI
     * @brief The RenderGroupMeshIterator traverses MeshNodes in a RenderGroup.
     */
-    class RAMSES_API RenderGroupMeshIterator
+    class RenderGroupMeshIterator
     {
     public:
         /**
@@ -30,12 +32,12 @@ namespace ramses
         *
         * @param[in] renderGroup RenderGroup whose MeshNodes to iterate through
         **/
-        explicit RenderGroupMeshIterator(const RenderGroup& renderGroup);
+        RAMSES_API explicit RenderGroupMeshIterator(const RenderGroup& renderGroup);
 
         /**
         * @brief Destructor
         **/
-        ~RenderGroupMeshIterator();
+        RAMSES_API ~RenderGroupMeshIterator();
 
         /**
         * @brief Iterate through all MeshNodes.
@@ -45,12 +47,10 @@ namespace ramses
         *
         * Iterator is invalid and may no longer be used if any objects are added or removed.
         **/
-        const MeshNode* getNext();
+        RAMSES_API const MeshNode* getNext();
 
     private:
-        RenderGroupMeshIterator(const RenderGroupMeshIterator& iterator);
-        RenderGroupMeshIterator& operator=(const RenderGroupMeshIterator& iterator);
-        IteratorImpl<const MeshNodeImpl*>* impl;
+        std::unique_ptr<IteratorImpl<const MeshNodeImpl*>> m_impl;
     };
 }
 

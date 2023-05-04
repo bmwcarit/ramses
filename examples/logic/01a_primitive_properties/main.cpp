@@ -17,10 +17,10 @@
  */
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a simple script which multiplies two numbers and stores the result in a string
-    rlogic::LuaScript* multiplyScript = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* multiplyScript = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             IN.param1 = Type:Int32()
             IN.param2 = Type:Float()
@@ -38,21 +38,21 @@ int main()
      * stored in a "Property" instance and can be used to
      * get the information about available inputs and outputs
      */
-    rlogic::Property* inputs = multiplyScript->getInputs();
+    ramses::Property* inputs = multiplyScript->getInputs();
 
     for (size_t i = 0u; i < inputs->getChildCount(); ++i)
     {
-        rlogic::Property* input = inputs->getChild(i);
-        std::cout << "Input: " << input->getName() << " is of type: " << rlogic::GetLuaPrimitiveTypeName(input->getType()) << std::endl;
+        ramses::Property* input = inputs->getChild(i);
+        std::cout << "Input: " << input->getName() << " is of type: " << ramses::GetLuaPrimitiveTypeName(input->getType()) << std::endl;
     }
 
     // We can do the same with the outputs
-    const rlogic::Property* outputs = multiplyScript->getOutputs();
+    const ramses::Property* outputs = multiplyScript->getOutputs();
 
     for (size_t i = 0u; i < outputs->getChildCount(); ++i)
     {
-        const rlogic::Property* output = outputs->getChild(i);
-        std::cout << "Output: " << output->getName() << " is of type: " << rlogic::GetLuaPrimitiveTypeName(output->getType()) << std::endl;
+        const ramses::Property* output = outputs->getChild(i);
+        std::cout << "Output: " << output->getName() << " is of type: " << ramses::GetLuaPrimitiveTypeName(output->getType()) << std::endl;
     }
 
     // Set some test values to the inputs before executing the script

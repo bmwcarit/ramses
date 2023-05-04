@@ -113,7 +113,7 @@ namespace ramses_internal
         }
     }
 
-    TextureCubeAnisotropicTextureFilteringScene::TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    TextureCubeAnisotropicTextureFilteringScene::TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();

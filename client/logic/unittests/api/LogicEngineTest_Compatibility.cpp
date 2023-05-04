@@ -31,7 +31,7 @@
 
 #include <fstream>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicEngine_Compatibility : public ALogicEngineBase, public ::testing::TestWithParam<ramses::EFeatureLevel>
     {
@@ -48,7 +48,7 @@ namespace rlogic::internal
 
         void createFlatLogicEngineData(
             ramses::RamsesVersion ramsesVersion,
-            rlogic::RamsesLogicVersion logicVersion,
+            ramses::RamsesLogicVersion logicVersion,
             const char* fileId = GetFileIdentifier(),
             ramses::EFeatureLevel featureLevel = GetParam())
         {
@@ -394,7 +394,7 @@ namespace rlogic::internal
         {
             WithTempDirectory tempDir;
 
-            rlogic::SaveFileConfig noValidationConfig;
+            ramses::SaveFileConfig noValidationConfig;
             noValidationConfig.setValidationEnabled(false);
             logicEngine.saveToFile("temp.rlogic", noValidationConfig);
 

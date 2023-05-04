@@ -15,7 +15,7 @@
 #include "impl/LogicEngineImpl.h"
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
     static void BM_Property_SetIntValue(benchmark::State& state)
     {

@@ -141,7 +141,7 @@ void RendererTestUtils::DestroyDisplayImmediate(ramses::RamsesRenderer& renderer
 ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
 {
     ramses::RendererConfig rendererConfig(*defaultRendererConfig);
-    ramses_internal::RendererConfig& internalRendererConfig = const_cast<ramses_internal::RendererConfig&>(rendererConfig.impl.getInternalRendererConfig());
+    ramses_internal::RendererConfig& internalRendererConfig = const_cast<ramses_internal::RendererConfig&>(rendererConfig.m_impl.get().getInternalRendererConfig());
 
     if (WaylandDisplayForSystemCompositorController.has_value())
     {
@@ -201,7 +201,7 @@ Image RendererTestUtils::ReadPixelData(
     ReadPixelCallbackHandler callbackHandler;
     while (true)
     {
-        if (!renderer.impl.isThreaded())
+        if (!renderer.m_impl.isThreaded())
             renderer.doOneLoop();
 
         renderer.dispatchEvents(callbackHandler);

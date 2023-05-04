@@ -14,7 +14,7 @@
 #include <string>
 #include <CLI/CLI.hpp>
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "ramses-logic/ELogMessageType.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-sdk-build-config.h"
 
 class Arguments
@@ -98,29 +98,6 @@ Loads and shows a ramses scene from the <ramsesfile>.
     ramses::ELogLevel ramsesLogLevel() const
     {
         return m_ramsesLogLevel;
-    }
-
-    rlogic::ELogMessageType ramsesLogicLogLevel() const
-    {
-        switch (m_ramsesLogLevel)
-        {
-        case ramses::ELogLevel::Off:
-            return rlogic::ELogMessageType::Off;
-        case ramses::ELogLevel::Fatal:
-            return rlogic::ELogMessageType::Fatal;
-        case ramses::ELogLevel::Error:
-            return rlogic::ELogMessageType::Error;
-        case ramses::ELogLevel::Warn:
-            return rlogic::ELogMessageType::Warn;
-        case ramses::ELogLevel::Info:
-            return rlogic::ELogMessageType::Info;
-        case ramses::ELogLevel::Debug:
-            return rlogic::ELogMessageType::Debug;
-        case ramses::ELogLevel::Trace:
-            return rlogic::ELogMessageType::Trace;
-        }
-
-        return rlogic::ELogMessageType::Error;
     }
 
 private:

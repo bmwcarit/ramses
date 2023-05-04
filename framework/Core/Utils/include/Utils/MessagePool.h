@@ -12,6 +12,7 @@
 #include "Collections/Vector.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "PlatformAbstraction/PlatformMemory.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -19,7 +20,7 @@ namespace ramses_internal
     {
         static const UInt32 MaxMessageLength = 128u;
 
-        Char m_text[MaxMessageLength];
+        std::array<Char, MaxMessageLength> m_text;
     };
 
     template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
@@ -54,8 +55,8 @@ namespace ramses_internal
     UInt32 MessagePool<MaxEntries, SuccessMessageEntryID>::addMessage(const Char* message)
     {
         const UInt32 arrayIndex = (m_nextIndex % MaxEntries);
-        PlatformMemory::Set(m_messages[arrayIndex].m_text, 0, MessageEntry::MaxMessageLength);
-        PlatformStringUtils::Copy(m_messages[arrayIndex].m_text, MessageEntry::MaxMessageLength, message);
+        PlatformMemory::Set(m_messages[arrayIndex].m_text.data(), 0, MessageEntry::MaxMessageLength);
+        PlatformStringUtils::Copy(m_messages[arrayIndex].m_text.data(), MessageEntry::MaxMessageLength, message);
         const UInt32 id = m_nextIndex;
         ++m_nextIndex;
 
@@ -75,7 +76,7 @@ namespace ramses_internal
             return getUnknownText();
         }
 
-        return m_messages[id % MaxEntries].m_text;
+        return m_messages[id % MaxEntries].m_text.data();
     }
 
     template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>

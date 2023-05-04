@@ -13,7 +13,7 @@
 #include "internals/ErrorReporting.h"
 #include "LogicNodeDummy.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicNodeDependencies : public ::testing::Test
     {

@@ -19,6 +19,7 @@ namespace ramses
     * @brief Provides an interface for handling the result of renderer scene control events.
     *        Implementation of this interface must be passed to #ramses::RendererSceneControl::dispatchEvents
     *        which will in return invoke methods of the interface according to events that occurred since last dispatching.
+    * @ingroup RendererAPI
     */
     class RAMSES_API IRendererSceneControlEventHandler
     {

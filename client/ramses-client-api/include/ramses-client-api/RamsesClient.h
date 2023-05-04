@@ -27,10 +27,11 @@ namespace ramses
 
     /**
     * @brief Entry point of RAMSES client API.
+    * @ingroup CoreAPI
     *
     * The RAMSES client class handles application state and and is a factory for scenes and client resources.
     */
-    class RAMSES_API RamsesClient : public RamsesObject
+    class RamsesClient : public RamsesObject
     {
     public:
         /**
@@ -41,7 +42,7 @@ namespace ramses
         * @param[in] name The optional name of the created Scene.
         * @return A pointer to the created Scene, null on failure
         */
-        Scene* createScene(sceneId_t sceneId, const SceneConfig& sceneConfig = SceneConfig(), const char* name = nullptr);
+        RAMSES_API Scene* createScene(sceneId_t sceneId, const SceneConfig& sceneConfig = SceneConfig(), const char* name = nullptr);
 
         /**
         * @brief Loads scene contents and resources from a file.
@@ -56,7 +57,7 @@ namespace ramses
         *                      SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
         * @return New instance of scene with contents loaded from a file.
         */
-        Scene* loadSceneFromFile(const char* fileName, bool localOnly = false);
+        RAMSES_API Scene* loadSceneFromFile(const char* fileName, bool localOnly = false);
 
         /**
         * @brief Loads scene contents and resources from a memory buffer.
@@ -79,7 +80,8 @@ namespace ramses
         *                      SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
         * @return New instance of scene with contents loaded from a file.
         */
-        Scene* loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly = false);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+        RAMSES_API Scene* loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly = false);
 
         /**
         * @brief Loads scene contents and resources from an open file descriptor.
@@ -104,7 +106,7 @@ namespace ramses
         *                      SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
         * @return New instance of scene with contents loaded from a file.
         */
-        Scene* loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly = false);
+        RAMSES_API Scene* loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly = false);
 
         /**
         * @brief Loads scene contents and resources from an open file descriptor.
@@ -131,7 +133,7 @@ namespace ramses
         *                      SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
         * @return New instance of scene with contents loaded from a file.
         */
-        Scene* loadSceneFromFileDescriptor(sceneId_t sceneId, int fd, size_t offset, size_t length, bool localOnly = false);
+        RAMSES_API Scene* loadSceneFromFileDescriptor(sceneId_t sceneId, int fd, size_t offset, size_t length, bool localOnly = false);
 
         /**
         * @brief Loads scene contents and resources asynchronously from a file.
@@ -151,7 +153,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t loadSceneFromFileAsync(const char* fileName, bool localOnly = false);
+        RAMSES_API status_t loadSceneFromFileAsync(const char* fileName, bool localOnly = false);
 
         /**
         * Attempts to parse feature level from a Ramses scene file.
@@ -160,7 +162,7 @@ namespace ramses
         * @param[out] detectedFeatureLevel feature level detected in given file (valid only if parsing successful!)
         * @return true if parsing was successful, false otherwise.
         */
-        static bool GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel);
+        RAMSES_API static bool GetFeatureLevelFromFile(const char* fileName, EFeatureLevel& detectedFeatureLevel);
 
         /**
         * Attempts to parse feature level from a Ramses scene file.
@@ -171,7 +173,7 @@ namespace ramses
         * @param[out] detectedFeatureLevel feature level detected in given file (valid only if parsing successful!)
         * @return true if parsing was successful, false otherwise.
         */
-        static bool GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel);
+        RAMSES_API static bool GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel);
 
         /**
         * @brief Destroys the given Scene. The reference of Scene is invalid after this call
@@ -180,7 +182,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t destroy(Scene& scene);
+        RAMSES_API status_t destroy(Scene& scene);
 
         /**
         * @brief Find a scene from the client by name.
@@ -188,12 +190,12 @@ namespace ramses
         * @param[in] name The name of the scene to find.
         * @return Pointer to the scene if found, nullptr otherwise.
         */
-        const Scene* findSceneByName(const char* name) const;
+        RAMSES_API const Scene* findSceneByName(const char* name) const;
 
         /**
         * @copydoc findSceneByName(const char*) const
         **/
-        Scene* findSceneByName(const char* name);
+        RAMSES_API Scene* findSceneByName(const char* name);
 
         /**
         * @brief Get a scene from the client by scene id.
@@ -201,12 +203,12 @@ namespace ramses
         * @param[in] sceneId The id of the scene to get.
         * @return Pointer to the scene if found, nullptr otherwise.
         */
-        [[nodiscard]] const Scene* getScene(sceneId_t sceneId) const;
+        [[nodiscard]] RAMSES_API const Scene* getScene(sceneId_t sceneId) const;
 
         /**
         * @copydoc getScene(sceneId_t) const
         **/
-        Scene* getScene(sceneId_t sceneId);
+        RAMSES_API Scene* getScene(sceneId_t sceneId);
 
         /**
         * @brief Some methods on the client provide asynchronous results. These can be synchronously
@@ -221,46 +223,23 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t dispatchEvents(IClientEventHandler& clientEventHandler);
+        RAMSES_API status_t dispatchEvents(IClientEventHandler& clientEventHandler);
 
         /**
         * Stores internal data for implementation specifics of the API.
         */
-        class RamsesClientImpl& impl;
+        class RamsesClientImpl& m_impl;
 
+    private:
         /**
          * @brief Constructor of RamsesClient
          */
-        explicit RamsesClient(RamsesClientImpl&);
+        explicit RamsesClient(std::unique_ptr<RamsesClientImpl>);
 
-        /**
-         * @brief Deleted default constructor
-         */
-        RamsesClient() = delete;
-
-        /**
-         * @brief Deleted copy constructor
-         * @param other unused
-         */
-        RamsesClient(const RamsesClient& other) = delete;
-
-        /**
-         * @brief Deleted copy assignment
-         * @param other unused
-         * @return unused
-         */
-        RamsesClient& operator=(const RamsesClient& other) = delete;
-
-    private:
         /**
         * @brief ClientFactory is the factory for RamsesClient
         */
         friend class ClientFactory;
-
-        /**
-        * @brief Destructor of RamsesClient
-        */
-        ~RamsesClient() override;
     };
 }
 

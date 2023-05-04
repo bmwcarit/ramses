@@ -16,12 +16,12 @@ namespace ramses
     class MeshNode;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesMeshNodeBindingImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
      * The #RamsesMeshNodeBinding binds to a Ramses object instance of ramses::MeshNode and exposes a set of input properties
@@ -39,38 +39,16 @@ namespace rlogic
      *
      * The initial values of the input properties are taken from the bound ramses::MeshNode when the #RamsesMeshNodeBinding is created.
      *
-     * The #RamsesMeshNodeBinding class has no output properties (thus #rlogic::LogicNode::getOutputs() will return nullptr) because
+     * The #RamsesMeshNodeBinding class has no output properties (thus #ramses::LogicNode::getOutputs() will return nullptr) because
      * the outputs are implicitly forwarded to the bound ramses::MeshNode.
      *
-     * The changes via binding objects are applied to the bound object right away when calling rlogic::LogicEngine::update(),
+     * The changes via binding objects are applied to the bound object right away when calling ramses::LogicEngine::update(),
      * however keep in mind that Ramses has a mechanism for bundling scene changes and applying them at once using ramses::Scene::flush,
      * so the changes will be applied all the way only after calling this method on the scene.
      */
     class RamsesMeshNodeBinding : public RamsesBinding
     {
     public:
-        /**
-        * Constructor of RamsesMeshNodeBinding. User is not supposed to call this - RamsesMeshNodeBindings are created by other factory classes
-        *
-        * @param impl implementation details of the RamsesMeshNodeBinding
-        */
-        explicit RamsesMeshNodeBinding(std::unique_ptr<internal::RamsesMeshNodeBindingImpl> impl) noexcept;
-
-        /// Destructor of RamsesMeshNodeBinding.
-        ~RamsesMeshNodeBinding() noexcept override;
-
-        /// Copy Constructor of RamsesMeshNodeBinding is deleted because RamsesMeshNodeBindings are not supposed to be copied
-        RamsesMeshNodeBinding(const RamsesMeshNodeBinding&) = delete;
-
-        /// Move Constructor of RamsesMeshNodeBinding is deleted because RamsesMeshNodeBindings are not supposed to be moved
-        RamsesMeshNodeBinding(RamsesMeshNodeBinding&&) = delete;
-
-        /// Assignment operator of RamsesMeshNodeBinding is deleted because RamsesMeshNodeBindings are not supposed to be copied
-        RamsesMeshNodeBinding& operator=(const RamsesMeshNodeBinding&) = delete;
-
-        /// Move assignment operator of RamsesMeshNodeBinding is deleted because RamsesMeshNodeBindings are not supposed to be moved
-        RamsesMeshNodeBinding& operator=(RamsesMeshNodeBinding&&) = delete;
-
         /**
         * Returns the bound Ramses MeshNode.
         *
@@ -87,5 +65,15 @@ namespace rlogic
 
         /// Implementation detail of RamsesMeshNodeBinding
         internal::RamsesMeshNodeBindingImpl& m_meshNodeBinding;
+
+    protected:
+        /**
+        * Constructor of RamsesMeshNodeBinding. User is not supposed to call this - RamsesMeshNodeBindings are created by other factory classes
+        *
+        * @param impl implementation details of the RamsesMeshNodeBinding
+        */
+        explicit RamsesMeshNodeBinding(std::unique_ptr<internal::RamsesMeshNodeBindingImpl> impl) noexcept;
+
+        friend class internal::ApiObjects;
     };
 }

@@ -15,7 +15,7 @@
 #include "ramses-logic/LogicNode.h"
 #include "ramses-logic/Property.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicNodeDummyImpl : public LogicNodeImpl
     {
@@ -24,8 +24,8 @@ namespace rlogic::internal
             : LogicNodeImpl(name, 1u)
         {
             setRootProperties(
-                std::make_unique<Property>(std::make_unique<PropertyImpl>(CreateTestInputsType(createNestedProperties), EPropertySemantics::ScriptInput)),
-                std::make_unique<Property>(std::make_unique<PropertyImpl>(CreateTestOutputsType(createNestedProperties), EPropertySemantics::ScriptOutput)));
+                std::make_unique<PropertyImpl>(CreateTestInputsType(createNestedProperties), EPropertySemantics::ScriptInput),
+                std::make_unique<PropertyImpl>(CreateTestOutputsType(createNestedProperties), EPropertySemantics::ScriptOutput));
         }
 
         std::optional<LogicNodeRuntimeError> update() override

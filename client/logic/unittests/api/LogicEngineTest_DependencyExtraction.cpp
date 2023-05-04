@@ -8,7 +8,7 @@
 
 #include "LogicEngineTest_Base.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_DependencyExtraction : public ALogicEngine
     {

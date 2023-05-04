@@ -14,7 +14,7 @@
 #include <cassert>
 #include "glm/gtx/range.hpp"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     template <typename T>
     DataArrayImpl::DataArrayImpl(std::vector<T>&& data, std::string_view name, uint64_t id)
@@ -25,7 +25,7 @@ namespace rlogic::internal
     }
 
     template <typename T>
-    const std::vector<T>* rlogic::internal::DataArrayImpl::getData() const
+    const std::vector<T>* ramses::internal::DataArrayImpl::getData() const
     {
         if (PropertyTypeToEnum<T>::TYPE != m_dataType)
         {

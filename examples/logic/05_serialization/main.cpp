@@ -54,30 +54,30 @@ int main()
      * After loadFromFile() returns, the bindings which point to Ramses objects will point
      * to objects from the scene provided as an argument.
      */
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
     logicEngine.loadFromFile(ramsesLogicFile, scene);
 
     /**
-     * rlogic::LogicEngine provides iterable collections to its objects. We can use them to resolve objects after loading
+     * ramses::LogicEngine provides iterable collections to its objects. We can use them to resolve objects after loading
      */
-    rlogic::Collection<rlogic::LuaScript> loadedScripts = logicEngine.getCollection<rlogic::LuaScript>();
-    rlogic::Collection<rlogic::RamsesNodeBinding> loadedNodeBindings = logicEngine.getCollection<rlogic::RamsesNodeBinding>();
+    ramses::Collection<ramses::LuaScript> loadedScripts = logicEngine.getCollection<ramses::LuaScript>();
+    ramses::Collection<ramses::RamsesNodeBinding> loadedNodeBindings = logicEngine.getCollection<ramses::RamsesNodeBinding>();
 
     /**
      * We can use any STL algorithm on the collections.
      * In this simple example, we use find_if() to search for a specific script by its name.
-     * We get an iterator which can be dereferenced to rlogic::LuaScript*
+     * We get an iterator which can be dereferenced to ramses::LuaScript*
      */
-    rlogic::Collection<rlogic::LuaScript>::iterator triangleRotationScript = std::find_if(loadedScripts.begin(), loadedScripts.end(),
-        [](rlogic::LuaScript* script) {return script->getName() == "simple rotation script"; });
+    ramses::Collection<ramses::LuaScript>::iterator triangleRotationScript = std::find_if(loadedScripts.begin(), loadedScripts.end(),
+        [](ramses::LuaScript* script) {return script->getName() == "simple rotation script"; });
 
     /**
      * We can do the same to find a ramses node binding. We can use the binding to obtain a pointer to the ramses::Node further down.
      * This is an alternative to ramses::Scene::findObjectById()/findObjectByName() methods.
      * Note that this example uses fully qualified names and type traits for documentation sake. You can also just use 'auto'.
      */
-    rlogic::Collection<rlogic::RamsesNodeBinding>::const_iterator triangleNodeBinding = std::find_if(loadedNodeBindings.cbegin(), loadedNodeBindings.cend(),
-        [](const rlogic::RamsesNodeBinding* binding) {return binding->getName() == "link to triangle node"; });
+    ramses::Collection<ramses::RamsesNodeBinding>::const_iterator triangleNodeBinding = std::find_if(loadedNodeBindings.cbegin(), loadedNodeBindings.cend(),
+        [](const ramses::RamsesNodeBinding* binding) {return binding->getName() == "link to triangle node"; });
 
     /**
      * The LogicEngine iterators work just like any other STL forward iterator - can be compared, dereferenced, incremented etc.
@@ -173,13 +173,13 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string&
     /**
      * Create a temporary LogicEngine instance for creating and saving a simple script which references a ramses Node
      */
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
-    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*meshNode, ramses::ERotationType::Euler_XYZ, "link to triangle node");
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*meshNode, ramses::ERotationType::Euler_XYZ, "link to triangle node");
 
     /**
      * Create a simple script which sets the rotation values of a node based on simulated time
      */
-    rlogic::LuaScript* simpleScript = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* simpleScript = logicEngine.createLuaScript(R"(
             function interface(IN,OUT)
                 IN.time_msec = Type:Int32()
                 OUT.rotationZ = Type:Vec3f()
@@ -208,7 +208,7 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string&
      * Note: in this example validation on saving is disabled for simplification, since normally a warning
      * gets generated for script input that is not linked.
      */
-    rlogic::SaveFileConfig saveFileConfig;
+    ramses::SaveFileConfig saveFileConfig;
     saveFileConfig.setValidationEnabled(false);
     logicEngine.saveToFile(ramsesLogicFile, saveFileConfig);
 

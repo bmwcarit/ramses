@@ -9,7 +9,7 @@
 #include "ramses-logic/DataArray.h"
 #include "impl/DataArrayImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     DataArray::DataArray(std::unique_ptr<internal::DataArrayImpl> impl) noexcept
         : LogicObject(std::move(impl))
@@ -17,8 +17,6 @@ namespace rlogic
         , m_impl{ static_cast<internal::DataArrayImpl&>(*LogicObject::m_impl) }
     {
     }
-
-    DataArray::~DataArray() noexcept = default;
 
     EPropertyType DataArray::getDataType() const
     {

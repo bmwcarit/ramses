@@ -10,7 +10,7 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "impl/RamsesRenderGroupBindingElementsImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ARamsesRenderGroupBindingElements : public ALogicEngine
     {
@@ -28,6 +28,32 @@ namespace rlogic::internal
         EXPECT_TRUE(m_elements.addElement(*m_meshNode, "mesh"));
         EXPECT_TRUE(m_elements.addElement(*m_renderGroup, "rg"));
         expectElements({ { "mesh", m_meshNode }, { "rg", m_renderGroup } });
+    }
+
+    TEST_F(ARamsesRenderGroupBindingElements, CanBeCopyAndMoveConstructed)
+    {
+        EXPECT_TRUE(m_elements.addElement(*m_meshNode, "mesh"));
+        const RamsesRenderGroupBindingElementsImpl::Elements expectedElements{ { "mesh", m_meshNode } };
+
+        RamsesRenderGroupBindingElements elementsCopy{ m_elements };
+        EXPECT_EQ(elementsCopy.m_impl->getElements(), expectedElements);
+
+        RamsesRenderGroupBindingElements elementsMove{ std::move(elementsCopy) };
+        EXPECT_EQ(elementsMove.m_impl->getElements(), expectedElements);
+    }
+
+    TEST_F(ARamsesRenderGroupBindingElements, CanBeCopyAndMoveAssigned)
+    {
+        EXPECT_TRUE(m_elements.addElement(*m_meshNode, "mesh"));
+        const RamsesRenderGroupBindingElementsImpl::Elements expectedElements{ { "mesh", m_meshNode } };
+
+        RamsesRenderGroupBindingElements elementsCopy;
+        elementsCopy = m_elements;
+        EXPECT_EQ(elementsCopy.m_impl->getElements(), expectedElements);
+
+        RamsesRenderGroupBindingElements elementsMove;
+        elementsMove = std::move(elementsCopy);
+        EXPECT_EQ(elementsMove.m_impl->getElements(), expectedElements);
     }
 
     TEST_F(ARamsesRenderGroupBindingElements, AddsElementUnderItsObjectNameIfNoElementNameProvided)

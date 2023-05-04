@@ -10,7 +10,7 @@
 
 #include "internals/LuaTypeConversions.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class TheLuaTypeConversions : public ::testing::Test
     {

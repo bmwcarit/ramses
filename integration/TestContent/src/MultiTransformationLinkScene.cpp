@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    MultiTransformationLinkScene::MultiTransformationLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    MultiTransformationLinkScene::MultiTransformationLinkScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_scaleFactor(10.f / NumRows)
         , m_dummyEffect(*getTestEffect("ramses-test-client-basic"))

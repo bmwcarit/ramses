@@ -14,13 +14,9 @@
 
 namespace ramses
 {
-    TextureSamplerExternal::TextureSamplerExternal(TextureSamplerImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    TextureSamplerExternal::~TextureSamplerExternal()
+    TextureSamplerExternal::TextureSamplerExternal(std::unique_ptr<TextureSamplerImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<TextureSamplerImpl&>(SceneObject::m_impl) }
     {
     }
 }

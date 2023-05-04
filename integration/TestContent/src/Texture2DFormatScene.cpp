@@ -226,7 +226,7 @@ const ramses::MipLevelData mipLevelData_null;
 
 namespace ramses_internal
 {
-    Texture2DFormatScene::Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    Texture2DFormatScene::Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         createOrthoCamera();

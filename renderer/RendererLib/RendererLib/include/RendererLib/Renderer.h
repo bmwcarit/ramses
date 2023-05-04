@@ -48,7 +48,7 @@ namespace ramses_internal
             RendererStatistics& rendererStatistics);
         virtual ~Renderer();
 
-        void                        registerOffscreenBuffer    (DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible);
+        void                        registerOffscreenBuffer    (DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, bool isInterruptible);
         void                        unregisterOffscreenBuffer  (DeviceResourceHandle bufferDeviceHandle);
 
         void                        doOneRenderLoop();
@@ -56,9 +56,9 @@ namespace ramses_internal
         void                        assignSceneToDisplayBuffer  (SceneId sceneId, DeviceResourceHandle buffer, Int32 globalSceneOrder);
         void                        unassignScene               (SceneId sceneId);
         [[nodiscard]] DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId) const;
-        [[nodiscard]] Bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
+        [[nodiscard]] bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
         [[nodiscard]] Int32                       getSceneGlobalOrder         (SceneId sceneId) const;
-        void                        setSceneShown               (SceneId sceneId, Bool show);
+        void                        setSceneShown               (SceneId sceneId, bool show);
 
         virtual void                markBufferWithSceneForRerender(SceneId sceneId);
 
@@ -72,23 +72,23 @@ namespace ramses_internal
         DisplayEventHandler&        getDisplayEventHandler();
 
         virtual void                setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
-        virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
+        virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const glm::vec4& clearColor);
         virtual bool                setExternallyOwnedWindowSize(uint32_t width, uint32_t height);
         void                        scheduleScreenshot(DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
         std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots();
 
-        [[nodiscard]] Bool                        hasAnyBufferWithInterruptedRendering() const;
+        [[nodiscard]] bool                        hasAnyBufferWithInterruptedRendering() const;
         void                        resetRenderInterruptState();
 
-        [[nodiscard]] Bool hasSystemCompositorController() const;
+        [[nodiscard]] bool hasSystemCompositorController() const;
         void updateSystemCompositorController() const;
         void systemCompositorListIviSurfaces() const;
-        void systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) const;
+        void systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility) const;
         void systemCompositorSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) const;
         void systemCompositorSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) const;
         void systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const;
-        void systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const;
-        [[nodiscard]] Bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
+        void systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, bool visibility) const;
+        [[nodiscard]] bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const;
 
@@ -96,7 +96,7 @@ namespace ramses_internal
         RendererStatistics&         getStatistics();
         FrameProfilerStatistics&    getProfilerStatistics();
 
-        static const Vector4 DefaultClearColor;
+        static const glm::vec4 DefaultClearColor;
 
         // TODO vaclav remove, for debugging only
         std::atomic_int m_traceId{ 0 };

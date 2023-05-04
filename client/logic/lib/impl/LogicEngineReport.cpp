@@ -9,7 +9,7 @@
 #include "ramses-logic/LogicEngineReport.h"
 #include "impl/LogicEngineReportImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     LogicEngineReport::LogicEngineReport() noexcept
         : m_impl{ std::make_unique<internal::LogicEngineReportImpl>() }

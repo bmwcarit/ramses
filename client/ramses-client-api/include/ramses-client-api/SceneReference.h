@@ -15,6 +15,7 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief The SceneReference object refers to another ramses scene using its sceneId.
     * @details The SceneReference object references a scene, which might be otherwise unknown
     *          to this RamsesClient, but is or expected to be known to a RamsesRenderer subscribed to its master scene
@@ -33,7 +34,7 @@ namespace ramses
     *          so it is possible to change its master scene regardless of its actual state on renderer side (even if actively rendered)
     *          but this should be done only with extra caution and understanding of the consequences mentioned above.
     */
-    class RAMSES_API SceneReference : public SceneObject
+    class SceneReference : public SceneObject
     {
     public:
         /**
@@ -63,19 +64,19 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t requestState(RendererSceneState requestedState);
+        RAMSES_API status_t requestState(RendererSceneState requestedState);
 
         /**
         * @brief Get the currently requested state for this scene reference.
         * @return The state of the reference.
         */
-        [[nodiscard]] RendererSceneState getRequestedState() const;
+        [[nodiscard]] RAMSES_API RendererSceneState getRequestedState() const;
 
         /**
         * @brief Get the sceneId of the referenced scene.
         * @return The scene id of the referenced scene
         */
-        [[nodiscard]] sceneId_t getReferencedSceneId() const;
+        [[nodiscard]] RAMSES_API sceneId_t getReferencedSceneId() const;
 
         /**
         * @brief Request callbacks (#ramses::IClientEventHandler::sceneReferenceFlushed) to be triggered whenever a flush
@@ -93,7 +94,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t requestNotificationsForSceneVersionTags(bool flag);
+        RAMSES_API status_t requestNotificationsForSceneVersionTags(bool flag);
 
         /**
         * @brief   Set scene render order
@@ -106,30 +107,25 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRenderOrder(int32_t renderOrder);
+        RAMSES_API status_t setRenderOrder(int32_t renderOrder);
 
         /**
         * Stores internal data for implementation specifics of SceneReference.
         */
-        class SceneReferenceImpl& impl;
+        class SceneReferenceImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating SceneReference instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for SceneReference.
         *
-        * @param[in] pimpl Internal data for implementation specifics of SceneReference (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of SceneReference (sink - instance becomes owner)
         */
-        explicit SceneReference(SceneReferenceImpl& pimpl);
-
-        /**
-        * @brief Destructor of the SceneReference
-        */
-        ~SceneReference() override;
+        explicit SceneReference(std::unique_ptr<SceneReferenceImpl> impl);
     };
 }
 

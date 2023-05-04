@@ -11,7 +11,7 @@
 #include "internals/SolState.h"
 #include "internals/EnvironmentProtection.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AEnvironmentProtection : public ::testing::Test
     {

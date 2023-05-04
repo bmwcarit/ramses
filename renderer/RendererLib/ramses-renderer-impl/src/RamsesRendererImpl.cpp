@@ -36,13 +36,13 @@ namespace ramses
 
     RamsesRendererImpl::RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config)
         : m_framework(framework)
-        , m_binaryShaderCache(config.impl.getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.impl.getBinaryShaderCache())) : nullptr)
-        , m_rendererResourceCache(config.impl.getRendererResourceCache() ? new RendererResourceCacheProxy(*(config.impl.getRendererResourceCache())) : nullptr)
+        , m_binaryShaderCache(config.m_impl.get().getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.m_impl.get().getBinaryShaderCache())) : nullptr)
+        , m_rendererResourceCache(config.m_impl.get().getRendererResourceCache() ? new RendererResourceCacheProxy(*(config.m_impl.get().getRendererResourceCache())) : nullptr)
         , m_pendingRendererCommands()
         , m_rendererFrameworkLogic(framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
         , m_threadWatchdog(framework.getThreadWatchdogConfig(), ERamsesThreadIdentifier_Renderer)
-        , m_displayDispatcher{ std::make_unique<ramses_internal::DisplayDispatcher>(config.impl.getInternalRendererConfig(), m_rendererFrameworkLogic, m_threadWatchdog) }
-        , m_systemCompositorEnabled(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled())
+        , m_displayDispatcher{ std::make_unique<ramses_internal::DisplayDispatcher>(config.m_impl.get().getInternalRendererConfig(), m_rendererFrameworkLogic, m_threadWatchdog) }
+        , m_systemCompositorEnabled(config.m_impl.get().getInternalRendererConfig().getSystemCompositorControlEnabled())
         , m_loopMode(ramses_internal::ELoopMode::UpdateAndRender)
         , m_rendererLoopThreadType(ERendererLoopThreadType_Undefined)
         , m_periodicLogSupplier(framework.getPeriodicLogger(), m_rendererCommandBuffer)
@@ -73,6 +73,8 @@ namespace ramses
 
         LOG_TRACE(ramses_internal::CONTEXT_PROFILING, "RamsesRenderer::RamsesRenderer finished initializing renderer");
     }
+
+    RamsesRendererImpl::~RamsesRendererImpl() = default;
 
     status_t RamsesRendererImpl::doOneLoop()
     {
@@ -108,7 +110,7 @@ namespace ramses
         m_displayFramebuffers.insert({ displayId, m_nextDisplayBufferId });
         m_nextDisplayBufferId.getReference() = m_nextDisplayBufferId.getValue() + 1;
 
-        ramses_internal::RendererCommand::CreateDisplay cmd{ ramses_internal::DisplayHandle(displayId.getValue()), config.impl.getInternalDisplayConfig(), m_binaryShaderCache.get() };
+        ramses_internal::RendererCommand::CreateDisplay cmd{ ramses_internal::DisplayHandle(displayId.getValue()), config.m_impl.get().getInternalDisplayConfig(), m_binaryShaderCache.get() };
         m_pendingRendererCommands.push_back(std::move(cmd));
 
         return displayId;
@@ -149,7 +151,8 @@ namespace ramses
         if (!m_sceneControlAPI)
         {
             LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: instantiating RendererSceneControl");
-            m_sceneControlAPI = UniquePtrWithDeleter<RendererSceneControl>{ new RendererSceneControl(*new RendererSceneControlImpl(*this)), [](RendererSceneControl* api) { delete api; } };
+            auto m_impl = std::make_unique<RendererSceneControlImpl>(*this);
+            m_sceneControlAPI = UniquePtrWithDeleter<RendererSceneControl>{ new RendererSceneControl{ std::move(m_impl) }, [](RendererSceneControl* api) { delete api; } };
         }
 
         return m_sceneControlAPI.get();
@@ -270,7 +273,7 @@ namespace ramses
             bufferHandle = ramses_internal::OffscreenBufferHandle::Invalid();
 
         const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
-        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetClearColor{ displayHandle, bufferHandle, ramses_internal::Vector4{color} });
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetClearColor{ displayHandle, bufferHandle, color });
 
         return StatusOK;
     }

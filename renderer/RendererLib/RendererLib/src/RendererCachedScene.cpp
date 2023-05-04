@@ -76,13 +76,13 @@ namespace ramses_internal
         m_renderableOrderingDirty = true;
     }
 
-    void RendererCachedScene::setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled)
+    void RendererCachedScene::setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled)
     {
         ResourceCachedScene::setBlitPassEnabled(passHandle, isEnabled);
         m_renderableOrderingDirty = true;
     }
 
-    void RendererCachedScene::setRenderPassEnabled(RenderPassHandle passHandle, Bool isEnabled)
+    void RendererCachedScene::setRenderPassEnabled(RenderPassHandle passHandle, bool isEnabled)
     {
         ResourceCachedScene::setRenderPassEnabled(passHandle, isEnabled);
         if (isEnabled && ResourceCachedScene::getRenderPass(passHandle).isRenderOnce)
@@ -96,7 +96,7 @@ namespace ramses_internal
         m_renderableOrderingDirty = true;
     }
 
-    void RendererCachedScene::setRenderPassRenderOnce(RenderPassHandle passHandle, Bool enable)
+    void RendererCachedScene::setRenderPassRenderOnce(RenderPassHandle passHandle, bool enable)
     {
         ResourceCachedScene::setRenderPassRenderOnce(passHandle, enable);
         if (enable && ResourceCachedScene::getRenderPass(passHandle).isEnabled)
@@ -209,7 +209,7 @@ namespace ramses_internal
         }
     }
 
-    const Matrix44f& RendererCachedScene::getRenderableWorldMatrix(RenderableHandle renderable) const
+    const glm::mat4& RendererCachedScene::getRenderableWorldMatrix(RenderableHandle renderable) const
     {
         assert(renderable.asMemoryHandle() < m_renderableMatrices.size());
         return m_renderableMatrices[renderable.asMemoryHandle()];
@@ -312,7 +312,7 @@ namespace ramses_internal
         }
     }
 
-    Bool RendererCachedScene::shouldRenderPassBeRendered(RenderPassHandle handle) const
+    bool RendererCachedScene::shouldRenderPassBeRendered(RenderPassHandle handle) const
     {
         if (!ResourceCachedScene::isRenderPassAllocated(handle))
         {

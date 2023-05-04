@@ -34,7 +34,7 @@ namespace ramses_internal
         m_renderBackend.getWindow().handleEvents();
     }
 
-    Bool DisplayController::canRenderNewFrame() const
+    bool DisplayController::canRenderNewFrame() const
     {
         return m_renderBackend.getWindow().canRenderNewFrame();
     }
@@ -59,7 +59,7 @@ namespace ramses_internal
         return executor.executeScene(scene);
     }
 
-    void DisplayController::clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor)
+    void DisplayController::clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const glm::vec4& clearColor)
     {
         if (clearFlags != EClearFlags_None)
         {

@@ -9,7 +9,7 @@
 #include "ramses-logic/LuaInterface.h"
 #include "impl/LuaInterfaceImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     LuaInterface::LuaInterface(std::unique_ptr<internal::LuaInterfaceImpl> impl) noexcept
         : LogicNode(std::move(impl))
@@ -17,6 +17,4 @@ namespace rlogic
         , m_interface{ static_cast<internal::LuaInterfaceImpl&>(LogicNode::m_impl) }
     {
     }
-
-    LuaInterface::~LuaInterface() noexcept = default;
 }

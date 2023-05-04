@@ -21,7 +21,7 @@
 #include "generated/SkinBindingGen.h"
 #include "glm/gtc/type_ptr.hpp"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ASkinBinding : public ALogicEngine
     {
@@ -119,7 +119,7 @@ namespace rlogic::internal
             0.f, 0.f, 0.f, 1.f
         };
 
-        std::array<ramses::matrix44f, 2u> uniformData;
+        std::array<ramses::matrix44f, 2u> uniformData{};
         m_appearance->getInputValue(m_uniform, 2u, uniformData.data());
         const matrix44f mat1 = uniformData[0];
         const matrix44f mat2 = uniformData[1];
@@ -150,7 +150,7 @@ namespace rlogic::internal
             -1.f, -2.f, -3.f, 1.f
         };
 
-        std::array<ramses::matrix44f, 2u> uniformData;
+        std::array<ramses::matrix44f, 2u> uniformData{};
         m_appearance->getInputValue(m_uniform, 2u, uniformData.data());
         const matrix44f mat1 = uniformData[0];
         const matrix44f mat2 = uniformData[1];

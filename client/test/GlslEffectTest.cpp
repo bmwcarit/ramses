@@ -789,7 +789,7 @@ public:
         createdSuccessfully = static_cast<bool>(resource);
     }
 
-    Bool createdSuccessfully;
+    bool createdSuccessfully;
 };
 
 TEST_F(AGlslEffect, UseGlslEffectFromDifferentThread)

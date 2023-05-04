@@ -41,7 +41,7 @@ namespace ramses_internal
         void                        releaseRenderState              (RenderStateHandle stateHandle) override;
         void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
         void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
-        void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const Vector4& color) override;
+        void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const glm::vec4& color) override;
         void                        setRenderStateCullMode          (RenderStateHandle stateHandle, ECullMode cullMode) override;
         void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) override;
         void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) override;
@@ -67,9 +67,9 @@ namespace ramses_internal
         void                        removeChildFromNode             (NodeHandle parent, NodeHandle child) override;
 
         // Transformation
-        void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationType rotationType) override;
-        void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
+        void                        setTranslation                  (TransformHandle handle, const glm::vec3& translation) override;
+        void                        setRotation                     (TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType) override;
+        void                        setScaling                      (TransformHandle handle, const glm::vec3& scaling) override;
 
 
         DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
@@ -79,16 +79,16 @@ namespace ramses_internal
         void                        releaseDataInstance             (DataInstanceHandle containerHandle) override;
 
         void                        setDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data) override;
-        void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data) override;
-        void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data) override;
-        void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data) override;
+        void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec2* data) override;
+        void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec3* data) override;
+        void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec4* data) override;
         void                        setDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data) override;
-        void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data) override;
-        void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data) override;
-        void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data) override;
-        void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data) override;
-        void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data) override;
-        void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data) override;
+        void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec2* data) override;
+        void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec3* data) override;
+        void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec4* data) override;
+        void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat2* data) override;
+        void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat3* data) override;
+        void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat4* data) override;
         void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
         void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
         void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
@@ -107,7 +107,7 @@ namespace ramses_internal
 
         RenderPassHandle            allocateRenderPass              (UInt32 renderGroupCount = 0u, RenderPassHandle handle = RenderPassHandle::Invalid()) override;
         void                        releaseRenderPass               (RenderPassHandle handle) override;
-        void                        setRenderPassClearColor         (RenderPassHandle passHandle, const Vector4& clearColor) override;
+        void                        setRenderPassClearColor         (RenderPassHandle passHandle, const glm::vec4& clearColor) override;
         void                        setRenderPassClearFlag          (RenderPassHandle passHandle, UInt32 clearFlag) override;
         void                        setRenderPassCamera             (RenderPassHandle passHandle, CameraHandle cameraHandle) override;
         void                        setRenderPassRenderTarget       (RenderPassHandle passHandle, RenderTargetHandle targetHandle) override;

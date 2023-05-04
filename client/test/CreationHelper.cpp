@@ -118,19 +118,19 @@ namespace ramses
     }
     template <> Texture2D* CreationHelper::createObjectOfType<Texture2D>(const char* name)
     {
-        uint8_t data[4] = { 0u };
-        MipLevelData mipLevelData(sizeof(data), data);
+        std::array<uint8_t, 4> data = { 0u };
+        MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
         return m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
     }
     template <> Texture3D* CreationHelper::createObjectOfType<Texture3D>(const char* name)
     {
-        uint8_t data[32] = { 0u };
-        MipLevelData mipLevelData(sizeof(data), data);
+        std::array<uint8_t, 32> data = { 0u };
+        MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
         return m_scene->createTexture3D(ETextureFormat::RGBA8, 1u, 2u, 4u, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, name);
     }
     template <> TextureCube* CreationHelper::createObjectOfType<TextureCube>(const char* name)
     {
-        uint8_t data[4] = { 0u };
+        uint8_t data[4] = { 0u }; // NOLINT(modernize-avoid-c-arrays)
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
         return m_scene->createTextureCube(ETextureFormat::RGBA8, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
     }
@@ -158,8 +158,8 @@ namespace ramses
 
     template <> TextureSampler* CreationHelper::createObjectOfType<TextureSampler>(const char* name)
     {
-        uint8_t data[4] = { 0u };
-        MipLevelData mipLevelData(sizeof(data), data);
+        std::array<uint8_t, 4> data = { 0u };
+        MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
         Texture2D* texture = m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
         return m_scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Nearest, *texture, 1u, name);
     }

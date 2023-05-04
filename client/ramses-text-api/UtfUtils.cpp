@@ -23,7 +23,7 @@ namespace ramses
             const uint32_t cUniSurLowEnd = 0xdfff;
             const uint32_t cHalfBase = 0x0010000;
 
-            const char TrailingBytesForUTF8[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            const std::array<char,256> TrailingBytesForUTF8 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -189,7 +189,7 @@ namespace ramses
                     else
                     {
                         //2 bytes -> last 5 bits are relevant; 3 bytes -> last 4 bits, etc.
-                        const uint8_t mask = (1 << (7 - trailingBytesRemaining)) - 1;
+                        const uint8_t mask = (1u << (7u - trailingBytesRemaining)) - 1u;
                         result.codePoint = currentByte & mask;
                         currentCharacterNumBytes = trailingBytesRemaining + 1;
                     }

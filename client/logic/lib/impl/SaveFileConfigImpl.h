@@ -12,12 +12,12 @@
 #include <string_view>
 #include "ramses-logic/ELuaSavingMode.h"
 
-namespace rlogic
+namespace ramses
 {
     class LuaModule;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SaveFileConfigImpl
     {

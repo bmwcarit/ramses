@@ -16,24 +16,42 @@
 namespace ramses
 {
     SceneConfig::SceneConfig()
-        : StatusObject(*new SceneConfigImpl())
-        , impl(static_cast<SceneConfigImpl&>(StatusObject::impl))
+        : StatusObject{ std::make_unique<SceneConfigImpl>() }
+        , m_impl{ static_cast<SceneConfigImpl&>(*StatusObject::m_impl) }
     {
     }
+
+    SceneConfig::~SceneConfig() = default;
 
     SceneConfig::SceneConfig(const SceneConfig& other)
-        : StatusObject(*new SceneConfigImpl(other.impl))
-        , impl(static_cast<SceneConfigImpl&>(StatusObject::impl))
+        : StatusObject{ std::make_unique<SceneConfigImpl>(other.m_impl) }
+        , m_impl{ static_cast<SceneConfigImpl&>(*StatusObject::m_impl) }
     {
     }
 
-    SceneConfig::~SceneConfig()
+    SceneConfig::SceneConfig(SceneConfig&& other) noexcept
+        : StatusObject{ std::move(other.StatusObject::m_impl) }
+        , m_impl{ static_cast<SceneConfigImpl&>(*StatusObject::m_impl) }
     {
+    }
+
+    SceneConfig& SceneConfig::operator=(const SceneConfig& other)
+    {
+        StatusObject::m_impl = std::make_unique<SceneConfigImpl>(other.m_impl);
+        m_impl = static_cast<SceneConfigImpl&>(*StatusObject::m_impl);
+        return *this;
+    }
+
+    SceneConfig& SceneConfig::operator=(SceneConfig&& other) noexcept
+    {
+        StatusObject::m_impl = std::move(other.StatusObject::m_impl);
+        m_impl = static_cast<SceneConfigImpl&>(*StatusObject::m_impl);
+        return *this;
     }
 
     status_t SceneConfig::setPublicationMode(EScenePublicationMode publicationMode)
     {
-        const status_t status = impl.setPublicationMode(publicationMode);
+        const status_t status = m_impl.get().setPublicationMode(publicationMode);
         LOG_HL_CLIENT_API1(status, publicationMode);
         return status;
     }

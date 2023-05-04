@@ -24,7 +24,7 @@
 #include "impl/AnchorPointImpl.h"
 #include "impl/SkinBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_Lookup : public ALogicEngine
     {

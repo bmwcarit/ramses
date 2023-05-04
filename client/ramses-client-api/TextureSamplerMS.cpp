@@ -14,13 +14,9 @@
 
 namespace ramses
 {
-    TextureSamplerMS::TextureSamplerMS(TextureSamplerImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    TextureSamplerMS::~TextureSamplerMS()
+    TextureSamplerMS::TextureSamplerMS(std::unique_ptr<TextureSamplerImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<TextureSamplerImpl&>(SceneObject::m_impl) }
     {
     }
 }

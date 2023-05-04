@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <string_view>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class PropertyImpl;
 

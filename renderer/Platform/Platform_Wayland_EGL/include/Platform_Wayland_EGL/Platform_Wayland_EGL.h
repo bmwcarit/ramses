@@ -26,7 +26,7 @@ namespace ramses_internal
         [[nodiscard]] uint32_t getSwapInterval() const override;
 
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
-        [[nodiscard]] Bool isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const;
+        [[nodiscard]] bool isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const;
 
         const std::chrono::microseconds m_frameCallbackMaxPollTime;
     };

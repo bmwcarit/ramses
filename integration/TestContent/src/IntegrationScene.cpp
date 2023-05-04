@@ -13,12 +13,11 @@
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
-#include "Math3d/Vector3.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    IntegrationScene::IntegrationScene(ramses::Scene& scene,  const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    IntegrationScene::IntegrationScene(ramses::Scene& scene,  const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : m_scene(scene)
         , m_defaultRenderGroup(*m_scene.createRenderGroup("defaultRenderGroup"))
         , m_defaultRenderPass(*m_scene.createRenderPass("defaultRenderPass"))

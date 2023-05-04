@@ -246,7 +246,7 @@ Here is an example:
     end
 
 The ``init()`` function is executed exactly once right after the script is created, and once when it is loaded from binary
-data (:cpp:func:`rlogic::LogicEngine::loadFromFile`, :cpp:func:`rlogic::LogicEngine::loadFromBuffer`). The contents of the ``GLOBAL``
+data (:cpp:func:`ramses::LogicEngine::loadFromFile`, :cpp:func:`ramses::LogicEngine::loadFromBuffer`). The contents of the ``GLOBAL``
 table can be modified the same way as normal global Lua variables, and can also be functions. It also allows declaring types which
 can be then used in the ``interface()`` function. The ``init()`` function is optional, contrary to the other
 two functions - ``interface()`` and ``run()``.
@@ -402,7 +402,7 @@ Some of the standard modules are deliberately not supported:
 Custom modules
 --------------------------------------------------
 
-It is possible to create custom user modules (see :cpp:class:`rlogic::LuaModule` for the ``C++`` docs).
+It is possible to create custom user modules (see :cpp:class:`ramses::LuaModule` for the ``C++`` docs).
 A custom module can contain any Lua source code which obeys the modern Lua module definition convention
 (i.e. declare a table, fill it with data and functions, and return the table as a result of the module
 script):

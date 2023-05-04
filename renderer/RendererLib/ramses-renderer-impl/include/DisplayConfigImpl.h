@@ -12,7 +12,7 @@
 #include "ramses-renderer-api/Types.h"
 #include "RendererLib/DisplayConfig.h"
 #include "StatusObjectImpl.h"
-#include "ramses-framework-api/DataTypes.h"
+#include "DataTypesImpl.h"
 
 namespace CLI
 {

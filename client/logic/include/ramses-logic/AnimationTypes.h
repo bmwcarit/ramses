@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-namespace rlogic
+namespace ramses
 {
     class DataArray;
 
@@ -31,7 +31,7 @@ namespace rlogic
     /**
     * Animation channel data bundle.
     * #timeStamps, #keyframes must always be provided,
-    * tangents #tangentsIn, #tangentsOut are mandatory only for #rlogic::EInterpolationType::Cubic
+    * tangents #tangentsIn, #tangentsOut are mandatory only for #ramses::EInterpolationType::Cubic
     * interpolation, ignored for other interpolation types.
     * See GLTF 2.0 specification appendix C for details on tangents
     * (https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic)

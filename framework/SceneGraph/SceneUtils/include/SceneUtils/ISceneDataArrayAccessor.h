@@ -31,19 +31,19 @@ namespace ramses_internal
     }
 
     template <>
-    inline const Vector2* ISceneDataArrayAccessor::GetDataArray<Vector2>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::vec2* ISceneDataArrayAccessor::GetDataArray<glm::vec2>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataVector2fArray(containerHandle, field);
     }
 
     template <>
-    inline const Vector3* ISceneDataArrayAccessor::GetDataArray<Vector3>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::vec3* ISceneDataArrayAccessor::GetDataArray<glm::vec3>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataVector3fArray(containerHandle, field);
     }
 
     template <>
-    inline const Vector4* ISceneDataArrayAccessor::GetDataArray<Vector4>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::vec4* ISceneDataArrayAccessor::GetDataArray<glm::vec4>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataVector4fArray(containerHandle, field);
     }
@@ -55,37 +55,37 @@ namespace ramses_internal
     }
 
     template <>
-    inline const Vector2i* ISceneDataArrayAccessor::GetDataArray<Vector2i>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::ivec2* ISceneDataArrayAccessor::GetDataArray<glm::ivec2>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataVector2iArray(containerHandle, field);
     }
 
     template <>
-    inline const Vector3i* ISceneDataArrayAccessor::GetDataArray<Vector3i>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::ivec3* ISceneDataArrayAccessor::GetDataArray<glm::ivec3>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataVector3iArray(containerHandle, field);
     }
 
     template <>
-    inline const Vector4i* ISceneDataArrayAccessor::GetDataArray<Vector4i>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::ivec4* ISceneDataArrayAccessor::GetDataArray<glm::ivec4>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataVector4iArray(containerHandle, field);
     }
 
     template <>
-    inline const Matrix22f* ISceneDataArrayAccessor::GetDataArray<Matrix22f>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::mat2* ISceneDataArrayAccessor::GetDataArray<glm::mat2>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataMatrix22fArray(containerHandle, field);
     }
 
     template <>
-    inline const Matrix33f* ISceneDataArrayAccessor::GetDataArray<Matrix33f>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::mat3* ISceneDataArrayAccessor::GetDataArray<glm::mat3>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataMatrix33fArray(containerHandle, field);
     }
 
     template <>
-    inline const Matrix44f* ISceneDataArrayAccessor::GetDataArray<Matrix44f>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
+    inline const glm::mat4* ISceneDataArrayAccessor::GetDataArray<glm::mat4>(const IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field)
     {
         return scene->getDataMatrix44fArray(containerHandle, field);
     }
@@ -98,19 +98,19 @@ namespace ramses_internal
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Vector2>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::vec2>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec2* data)
     {
         scene->setDataVector2fArray(containerHandle, field, elementCount, data);
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Vector3>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::vec3>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec3* data)
     {
         scene->setDataVector3fArray(containerHandle, field, elementCount, data);
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Vector4>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::vec4>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec4* data)
     {
         scene->setDataVector4fArray(containerHandle, field, elementCount, data);
     }
@@ -122,37 +122,37 @@ namespace ramses_internal
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Vector2i>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::ivec2>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec2* data)
     {
         scene->setDataVector2iArray(containerHandle, field, elementCount, data);
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Vector3i>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::ivec3>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec3* data)
     {
         scene->setDataVector3iArray(containerHandle, field, elementCount, data);
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Vector4i>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::ivec4>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec4* data)
     {
         scene->setDataVector4iArray(containerHandle, field, elementCount, data);
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Matrix22f>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::mat2>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat2* data)
     {
         scene->setDataMatrix22fArray(containerHandle, field, elementCount, data);
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Matrix33f>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::mat3>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat3* data)
     {
         scene->setDataMatrix33fArray(containerHandle, field, elementCount, data);
     }
 
     template <>
-    inline void ISceneDataArrayAccessor::SetDataArray<Matrix44f>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data)
+    inline void ISceneDataArrayAccessor::SetDataArray<glm::mat4>(IScene* scene, DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat4* data)
     {
         scene->setDataMatrix44fArray(containerHandle, field, elementCount, data);
     }

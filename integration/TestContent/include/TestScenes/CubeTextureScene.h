@@ -10,9 +10,8 @@
 #define RAMSES_CUBETEXTURESCENE_H
 
 #include "IntegrationScene.h"
-#include "ramses-framework-api/DataTypes.h"
+#include "DataTypesImpl.h"
 #include "SceneAPI/Handles.h"
-#include "Math3d/Vector3.h"
 #include "Collections/Vector.h"
 
 namespace ramses
@@ -26,7 +25,7 @@ namespace ramses_internal
     class CubeTextureScene : public IntegrationScene
     {
     public:
-        CubeTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        CubeTextureScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum EState
         {
@@ -38,7 +37,7 @@ namespace ramses_internal
     private:
         void init(EState state);
         void initializeUnitSphere();
-        void divideUnitSphereTriangle(Vector3 p1, Vector3 p2, Vector3 p3, long depth);
+        void divideUnitSphereTriangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, long depth);
         ramses::TextureCube* createTextureCube(EState state);
 
         ramses::Effect* m_effect;

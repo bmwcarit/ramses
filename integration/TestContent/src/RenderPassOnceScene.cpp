@@ -25,7 +25,7 @@
 
 namespace ramses_internal
 {
-    RenderPassOnceScene::RenderPassOnceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    RenderPassOnceScene::RenderPassOnceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_camera(*scene.createOrthographicCamera())
         , m_renderPass(*m_scene.createRenderPass())

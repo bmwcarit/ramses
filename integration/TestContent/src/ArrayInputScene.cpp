@@ -14,12 +14,11 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
-#include "Math3d/Vector4.h"
 
 namespace ramses_internal
 {
 
-    ArrayInputScene::ArrayInputScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    ArrayInputScene::ArrayInputScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::UniformInput caseNumber;

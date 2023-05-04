@@ -15,6 +15,7 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief The #ArrayResource stores a data array of a given type. The data is immutable.
     *        The resource can be used as input for a #ramses::GeometryBinding.
     *
@@ -22,57 +23,36 @@ namespace ramses
     *          is defined as one byte, rather than a logical vertex element. Hence, number of elements is
     *          the same as size in bytes.
     */
-    class RAMSES_API ArrayResource : public Resource
+    class ArrayResource : public Resource
     {
     public:
         /**
         * Stores internal data for implementation specifics of ArrayResource.
         */
-        class ArrayResourceImpl& impl;
+        class ArrayResourceImpl& m_impl;
 
         /**
         * @brief Returns number of elements of the array.
         */
-        [[nodiscard]] uint32_t getNumberOfElements() const;
+        [[nodiscard]] RAMSES_API uint32_t getNumberOfElements() const;
 
         /**
         * @brief Returns the data type of the data array.
         */
-        [[nodiscard]] EDataType getDataType() const;
+        [[nodiscard]] RAMSES_API EDataType getDataType() const;
 
     protected:
-
         /**
         * @brief Scene is the factory for creating ArrayResource instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor of ArrayResource
         *
-        * @param[in] pimpl Internal data for implementation specifics of ArrayResource (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of ArrayResource (sink - instance becomes owner)
         */
-        explicit ArrayResource(ArrayResourceImpl& pimpl);
-
-        /**
-        * @brief Copy constructor of ArrayResource
-        *
-        * @param[in] other Other instance of ArrayResource class
-        */
-        ArrayResource(const ArrayResource& other);
-
-        /**
-        * @brief Assignment operator of ArrayResource.
-        *
-        * @param[in] other Other instance of ArrayResource class
-        * @return This instance after assignment
-        */
-        ArrayResource& operator=(const ArrayResource& other);
-
-        /**
-        * @brief Destructor of the ArrayResource
-        */
-        ~ArrayResource() override;
+        explicit ArrayResource(std::unique_ptr<ArrayResourceImpl> impl);
     };
 }
 

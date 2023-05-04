@@ -17,60 +17,56 @@
 
 namespace ramses
 {
-    GeometryBinding::GeometryBinding(GeometryBindingImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    GeometryBinding::~GeometryBinding()
+    GeometryBinding::GeometryBinding(std::unique_ptr<GeometryBindingImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<GeometryBindingImpl&>(SceneObject::m_impl) }
     {
     }
 
     status_t GeometryBinding::setIndices(const ArrayResource& indicesResource)
     {
-        const status_t status = impl.setIndices(indicesResource.impl);
+        const status_t status = m_impl.setIndices(indicesResource.m_impl);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(indicesResource));
         return status;
     }
 
     status_t GeometryBinding::setIndices(const ArrayBuffer& arrayBuffer)
     {
-        const status_t status = impl.setIndices(arrayBuffer.impl);
+        const status_t status = m_impl.setIndices(arrayBuffer.m_impl);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(arrayBuffer));
         return status;
     }
 
     status_t GeometryBinding::setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint32_t instancingDivisor)
     {
-        const status_t status = impl.setInputBuffer(attributeInput.impl, arrayResource.impl, instancingDivisor, 0u, 0u);
+        const status_t status = m_impl.setInputBuffer(attributeInput.m_impl, arrayResource.m_impl, instancingDivisor, 0u, 0u);
         LOG_HL_CLIENT_API3(status, LOG_API_GENERIC_OBJECT_STRING(attributeInput), LOG_API_RAMSESOBJECT_STRING(arrayResource), instancingDivisor);
         return status;
     }
 
     status_t GeometryBinding::setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint16_t offset, uint16_t stride)
     {
-        const status_t status = impl.setInputBuffer(attributeInput.impl, arrayResource.impl, 0u, offset, stride);
+        const status_t status = m_impl.setInputBuffer(attributeInput.m_impl, arrayResource.m_impl, 0u, offset, stride);
         LOG_HL_CLIENT_API4(status, LOG_API_GENERIC_OBJECT_STRING(attributeInput), LOG_API_RAMSESOBJECT_STRING(arrayResource), offset, stride);
         return status;
     }
 
     status_t GeometryBinding::setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint32_t instancingDivisor /*= 0*/)
     {
-        const status_t status = impl.setInputBuffer(attributeInput.impl, arrayBuffer.impl, instancingDivisor, 0u, 0u);
+        const status_t status = m_impl.setInputBuffer(attributeInput.m_impl, arrayBuffer.m_impl, instancingDivisor, 0u, 0u);
         LOG_HL_CLIENT_API3(status, LOG_API_GENERIC_OBJECT_STRING(attributeInput), LOG_API_RAMSESOBJECT_STRING(arrayBuffer), instancingDivisor);
         return status;
     }
 
     status_t GeometryBinding::setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint16_t offset, uint16_t stride)
     {
-        const status_t status = impl.setInputBuffer(attributeInput.impl, arrayBuffer.impl, 0u, offset, stride);
+        const status_t status = m_impl.setInputBuffer(attributeInput.m_impl, arrayBuffer.m_impl, 0u, offset, stride);
         LOG_HL_CLIENT_API4(status, LOG_API_GENERIC_OBJECT_STRING(attributeInput), LOG_API_RAMSESOBJECT_STRING(arrayBuffer), offset, stride);
         return status;
     }
 
     const Effect& GeometryBinding::getEffect() const
     {
-        return impl.getEffect();
+        return m_impl.getEffect();
     }
 }

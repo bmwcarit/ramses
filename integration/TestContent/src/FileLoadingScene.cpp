@@ -23,12 +23,11 @@
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/UniformInput.h"
 #include "RamsesObjectTypeUtils.h"
-#include "Math3d/Vector3.h"
 #include "Utils/File.h"
 
 namespace ramses_internal
 {
-    FileLoadingScene::FileLoadingScene(ramses::RamsesClient& clientForLoading, UInt32 state, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::RamsesFrameworkConfig& config, uint32_t vpWidth, uint32_t vpHeight)
+    FileLoadingScene::FileLoadingScene(ramses::RamsesClient& clientForLoading, UInt32 state, ramses::sceneId_t sceneId, const glm::vec3& cameraPosition, const String& folder, const ramses::RamsesFrameworkConfig& config, uint32_t vpWidth, uint32_t vpHeight)
         : m_viewportWidth(vpWidth)
         , m_viewportHeight(vpHeight)
     {
@@ -56,7 +55,7 @@ namespace ramses_internal
         }
     }
 
-    void FileLoadingScene::createFiles(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::SceneConfig& sceneConfig)
+    void FileLoadingScene::createFiles(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const glm::vec3& cameraPosition, const String& folder, const ramses::SceneConfig& sceneConfig)
     {
         ramses::Scene* scene = client.createScene(sceneId, sceneConfig);
 

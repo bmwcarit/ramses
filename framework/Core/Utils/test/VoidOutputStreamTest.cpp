@@ -8,7 +8,6 @@
 
 #include "Utils/VoidOutputStream.h"
 #include "SceneAPI/ResourceContentHash.h"
-#include "Math3d/Matrix44f.h"
 #include "Collections/String.h"
 #include "Collections/Guid.h"
 #include "gmock/gmock.h"

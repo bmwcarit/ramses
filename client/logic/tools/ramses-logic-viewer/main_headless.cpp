@@ -10,6 +10,6 @@
 
 int main(int argc, char* argv[])
 {
-    rlogic::LogicViewerHeadlessApp app(argc, argv);
+    ramses::LogicViewerHeadlessApp app(argc, argv);
     return app.run();
 }

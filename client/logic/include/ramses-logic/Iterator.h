@@ -13,16 +13,16 @@
 #include <type_traits>
 #include <iterator>
 
-namespace rlogic
+namespace ramses
 {
     /**
      * An STL-style iterator for various object types (T) with forward-semantics. See also:
      *
-     * - #rlogic::Collection
-     * - #rlogic::LogicEngine::getCollection
+     * - #ramses::Collection
+     * - #ramses::LogicEngine::getCollection
      *
      * Template parameters:
-     * - T: the object type to iterate over, e.g. #rlogic::LuaScript
+     * - T: the object type to iterate over, e.g. #ramses::LuaScript
      * - internal_container: the internally wrapped container type. User code should *NOT* depend on this type
      *   to avoid API incompatibilities!
      * - isConst: true for const-iterators, false for non-const iterators
@@ -190,8 +190,8 @@ namespace rlogic
 
         /**
          * Internal constructor which should not be called by user code to avoid API dependencies. Use
-         * #rlogic::Collection::begin() and #rlogic::Collection::end() or their const-counterparts to
-         * obtain iterators to desired #rlogic::LogicEngine objects.
+         * #ramses::Collection::begin() and #ramses::Collection::end() or their const-counterparts to
+         * obtain iterators to desired #ramses::LogicEngine objects.
          * @param iter internal iterator to be constructed from
          */
         explicit Iterator(internal_iterator iter) noexcept

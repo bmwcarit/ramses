@@ -35,7 +35,7 @@ namespace ramses_internal
         EResourceType_NUMBER_OF_ELEMENTS
     };
 
-    static const char* ResourceTypeNames[] =
+    const std::array ResourceTypeNames =
     {
         "EResourceType_Invalid",
         "EResourceType_VertexArray",

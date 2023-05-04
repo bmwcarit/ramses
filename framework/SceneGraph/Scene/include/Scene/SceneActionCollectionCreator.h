@@ -71,7 +71,7 @@ namespace ramses_internal
         // Render state setters
         void setRenderStateBlendFactors(RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha);
         void setRenderStateBlendOperations(RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha);
-        void setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color);
+        void setRenderStateBlendColor(RenderStateHandle stateHandle, const glm::vec4& color);
         void setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode);
         void setRenderStateDrawMode(RenderStateHandle stateHandle, EDrawMode drawMode);
         void setRenderStateDepthFunc(RenderStateHandle stateHandle, EDepthFunc func);
@@ -97,9 +97,9 @@ namespace ramses_internal
         void removeChildFromNode(NodeHandle parent, NodeHandle child);
 
         // Transformation
-        void setTranslation(TransformHandle node, const Vector3& newValue);
-        void setRotation(TransformHandle node, const Vector4& newValue, ERotationType rotationType);
-        void setScaling(TransformHandle node, const Vector3& newValue);
+        void setTranslation(TransformHandle node, const glm::vec3& newValue);
+        void setRotation(TransformHandle node, const glm::vec4& newValue, ERotationType rotationType);
+        void setScaling(TransformHandle node, const glm::vec3& newValue);
 
         void allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);
         void releaseDataLayout(DataLayoutHandle layoutHandle);
@@ -108,16 +108,16 @@ namespace ramses_internal
         void releaseDataInstance(DataInstanceHandle containerHandle);
 
         void setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data);
-        void setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data);
-        void setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data);
-        void setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data);
+        void setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec2* data);
+        void setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec3* data);
+        void setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec4* data);
         void setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data);
-        void setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data);
-        void setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data);
-        void setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data);
-        void setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data);
-        void setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data);
-        void setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data);
+        void setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec2* data);
+        void setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec3* data);
+        void setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec4* data);
+        void setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat2* data);
+        void setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat3* data);
+        void setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat4* data);
         void setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride);
         void setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle);
         void setDataReference(DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef);
@@ -137,7 +137,7 @@ namespace ramses_internal
         // Render passes
         void allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle passHandle);
         void releaseRenderPass(RenderPassHandle passHandle);
-        void setRenderPassClearColor(RenderPassHandle passHandle, const Vector4& clearColor);
+        void setRenderPassClearColor(RenderPassHandle passHandle, const glm::vec4& clearColor);
         void setRenderPassClearFlag(RenderPassHandle passHandle, UInt32 clearFlag);
         void setRenderPassCamera(RenderPassHandle passHandle, CameraHandle cameraHandle);
         void setRenderPassRenderTarget(RenderPassHandle passHandle, RenderTargetHandle targetHandle);

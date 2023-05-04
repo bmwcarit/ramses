@@ -9,14 +9,14 @@
 #include "ramses-logic/Logger.h"
 #include "impl/LoggerImpl.h"
 
-namespace rlogic::Logger
+namespace ramses::Logger
 {
-    void SetLogVerbosityLimit(ELogMessageType verbosityLimit)
+    void SetLogVerbosityLimit(ELogLevel verbosityLimit)
     {
         internal::LoggerImpl::GetInstance().setLogVerbosityLimit(verbosityLimit);
     }
 
-    ELogMessageType GetLogVerbosityLimit()
+    ELogLevel GetLogVerbosityLimit()
     {
         return internal::LoggerImpl::GetInstance().getLogVerbosityLimit();
     }

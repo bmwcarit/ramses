@@ -18,19 +18,19 @@ namespace ramses
     class Camera;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesCameraBindingImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
-     * The RamsesCameraBinding is a type of #rlogic::RamsesBinding which allows the #rlogic::LogicEngine to control instances of ramses::Camera.
-     * RamsesCameraBinding's can be created with #rlogic::LogicEngine::createRamsesCameraBinding or #rlogic::LogicEngine::createRamsesCameraBindingWithFrustumPlanes,
+     * The RamsesCameraBinding is a type of #ramses::RamsesBinding which allows the #ramses::LogicEngine to control instances of ramses::Camera.
+     * RamsesCameraBinding's can be created with #ramses::LogicEngine::createRamsesCameraBinding or #ramses::LogicEngine::createRamsesCameraBindingWithFrustumPlanes,
      * which affects the set of input properties that will be used to control camera frustum as described below.
      *
-     * The #RamsesCameraBinding has a static link to a ramses::Camera. After creation, #rlogic::LogicNode::getInputs will
+     * The #RamsesCameraBinding has a static link to a ramses::Camera. After creation, #ramses::LogicNode::getInputs will
      * return a struct property with children equivalent to the camera settings of the provided ramses::Camera.
      *
      * There are two types of ramses::Camera:
@@ -48,9 +48,9 @@ namespace rlogic
      * To avoid unexpected behavior, we highly recommend setting all viewport values together, and also setting all frustum planes together
      * (either by link or by setting them directly). This way unwanted behavior can be avoided.
      *
-     * Since the RamsesCameraBinding derives from #rlogic::RamsesBinding, it also provides the #rlogic::LogicNode::getInputs
-     * and #rlogic::LogicNode::getOutputs method. For this class, the methods behave as follows:
-     *  - #rlogic::LogicNode::getInputs: returns inputs struct with two child properties: viewport and frustum.
+     * Since the RamsesCameraBinding derives from #ramses::RamsesBinding, it also provides the #ramses::LogicNode::getInputs
+     * and #ramses::LogicNode::getOutputs method. For this class, the methods behave as follows:
+     *  - #ramses::LogicNode::getInputs: returns inputs struct with two child properties: viewport and frustum.
      *          - 'viewport' (type struct) with these children:
      *              - 'offsetX' (type Int32)  - viewport offset horizontal
      *              - 'offsetY' (type Int32)  - viewport offset vertical
@@ -70,11 +70,11 @@ namespace rlogic
      *                  - 'fieldOfView' (type Float)  - frustum field of view in degrees
      *                  - 'aspectRatio' (type Float)  - aspect ratio of frustum width / frustum height
      *            Full set of frustum planes properties will be present if camera is ramses::Orthographic (regardless of which create method was used)
-     *            or camera is ramses::PerspectiveCamera and #rlogic::LogicEngine::createRamsesCameraBindingWithFrustumPlanes was used to create it.
-     *            Simplified set of frustum properties will be present if camera is ramses::PerspectiveCamera and #rlogic::LogicEngine::createRamsesCameraBinding was used to create it.
+     *            or camera is ramses::PerspectiveCamera and #ramses::LogicEngine::createRamsesCameraBindingWithFrustumPlanes was used to create it.
+     *            Simplified set of frustum properties will be present if camera is ramses::PerspectiveCamera and #ramses::LogicEngine::createRamsesCameraBinding was used to create it.
      *    Refer to ramses::Camera, ramses::PerspectiveCamera and ramses::OrthographicCamera for meaning and constraints of all these inputs.
      *
-     *  - #rlogic::LogicNode::getOutputs: returns always nullptr, because a #RamsesCameraBinding does not have outputs,
+     *  - #ramses::LogicNode::getOutputs: returns always nullptr, because a #RamsesCameraBinding does not have outputs,
      *    it implicitly controls the ramses Camera
      */
     class RamsesCameraBinding : public RamsesBinding
@@ -87,48 +87,18 @@ namespace rlogic
         [[nodiscard]] RAMSES_API ramses::Camera& getRamsesCamera() const;
 
         /**
+         * Implementation detail of RamsesCameraBinding
+         */
+        internal::RamsesCameraBindingImpl& m_cameraBinding;
+
+    protected:
+        /**
          * Constructor of RamsesCameraBinding. User is not supposed to call this - RamsesCameraBindings are created by other factory classes
          *
          * @param impl implementation details of the RamsesCameraBinding
          */
         explicit RamsesCameraBinding(std::unique_ptr<internal::RamsesCameraBindingImpl> impl) noexcept;
 
-        /**
-         * Destructor of RamsesCameraBinding.
-         */
-        ~RamsesCameraBinding() noexcept override;
-
-        /**
-         * Copy Constructor of RamsesCameraBinding is deleted because RamsesCameraBindings are not supposed to be copied
-         *
-         * @param other RamsesNodeBindings to copy from
-         */
-        RamsesCameraBinding(const RamsesCameraBinding& other) = delete;
-
-        /**
-         * Move Constructor of RamsesCameraBinding is deleted because RamsesCameraBindings are not supposed to be moved
-         *
-         * @param other RamsesCameraBinding to move from
-         */
-        RamsesCameraBinding(RamsesCameraBinding&& other) = delete;
-
-        /**
-         * Assignment operator of RamsesCameraBinding is deleted because RamsesCameraBindings are not supposed to be copied
-         *
-         * @param other RamsesCameraBinding to assign from
-         */
-        RamsesCameraBinding& operator=(const RamsesCameraBinding& other) = delete;
-
-        /**
-         * Move assignment operator of RamsesCameraBinding is deleted because RamsesCameraBindings are not supposed to be moved
-         *
-         * @param other RamsesCameraBinding to assign from
-         */
-        RamsesCameraBinding& operator=(RamsesCameraBinding&& other) = delete;
-
-        /**
-         * Implementation detail of RamsesCameraBinding
-         */
-        internal::RamsesCameraBindingImpl& m_cameraBinding;
+        friend class internal::ApiObjects;
     };
 }

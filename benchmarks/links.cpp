@@ -15,7 +15,7 @@
 
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
     static void BM_Links_CreateDestroyLink(benchmark::State& state)
     {

@@ -22,7 +22,7 @@ namespace ramses_internal
             SetDefaults(glslCompilationResources);
 
             const UInt32 version = GetVersionFromString(glslVersion);
-            const Bool isES = IsESVersion(glslVersion);
+            const bool isES = IsESVersion(glslVersion);
 
             if (isES)
             {
@@ -51,7 +51,7 @@ namespace ramses_internal
 
         static UInt32 GetVersionFromString(const String& glslVersion)
         {
-            Char buffer[16];
+            std::array<char, 16> buffer;
             UInt32 n = 0;
 
             for (size_t i = 0; i < glslVersion.size(); i++)
@@ -63,7 +63,7 @@ namespace ramses_internal
                     buffer[n++] = c;
                 }
 
-                if (n >= sizeof(buffer))
+                if (n >= buffer.size())
                 {
                     // Avoid out of bounds access, in case the shader contains some crazy version number
                     return 0;
@@ -71,10 +71,10 @@ namespace ramses_internal
             }
 
             buffer[n] = 0;
-            return atoi(buffer);
+            return atoi(buffer.data());
         }
 
-        static Bool IsESVersion(const String& glslVersion)
+        static bool IsESVersion(const String& glslVersion)
         {
             // The input parameter can contain newlines characters, so checking for endsWith() can fail.
             static String esIdentifier(" es");

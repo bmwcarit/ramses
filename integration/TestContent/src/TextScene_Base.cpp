@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    TextScene_Base::TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    TextScene_Base::TextScene_Base(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_textCache(scene, m_fontRegistry, 1024u, 1024u)
         , m_textOrthoCamera(m_scene.createOrthographicCamera("text camera"))

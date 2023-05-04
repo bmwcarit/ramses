@@ -19,16 +19,16 @@ namespace ramses
     class Node;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesNodeBindingImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
-     * The RamsesNodeBinding is a #rlogic::RamsesBinding which allows manipulation of a Ramses node.
-     * RamsesNodeBinding can be created using #rlogic::LogicEngine::createRamsesNodeBinding.
+     * The RamsesNodeBinding is a #ramses::RamsesBinding which allows manipulation of a Ramses node.
+     * RamsesNodeBinding can be created using #ramses::LogicEngine::createRamsesNodeBinding.
      *
      * The RamsesNodeBinding has a fixed set of inputs which correspond to the properties of a ramses::Node:
      *   'visibility' (type bool)     - binds to node's visibility mode to switch between visible and invisible,
@@ -62,7 +62,7 @@ namespace rlogic
 
      \endrst
      *
-     * The changes via binding objects are applied to the bound object right away when calling rlogic::LogicEngine::update(),
+     * The changes via binding objects are applied to the bound object right away when calling ramses::LogicEngine::update(),
      * however keep in mind that Ramses has a mechanism for bundling scene changes and applying them at once using ramses::Scene::flush,
      * so the changes will be applied all the way only after calling this method on the scene.
      */
@@ -84,48 +84,18 @@ namespace rlogic
         [[nodiscard]] RAMSES_API ramses::ERotationType getRotationType() const;
 
         /**
+         * Implementation detail of RamsesNodeBinding
+         */
+        internal::RamsesNodeBindingImpl& m_nodeBinding;
+
+    protected:
+        /**
         * Constructor of RamsesNodeBinding. User is not supposed to call this - RamsesNodeBindings are created by other factory classes
         *
         * @param impl implementation details of the RamsesNodeBinding
         */
         explicit RamsesNodeBinding(std::unique_ptr<internal::RamsesNodeBindingImpl> impl) noexcept;
 
-        /**
-         * Destructor of RamsesNodeBinding.
-         */
-        ~RamsesNodeBinding() noexcept override;
-
-        /**
-         * Copy Constructor of RamsesNodeBinding is deleted because RamsesNodeBindings are not supposed to be copied
-         *
-         * @param other RamsesNodeBindings to copy from
-         */
-        RamsesNodeBinding(const RamsesNodeBinding& other) = delete;
-
-        /**
-         * Move Constructor of RamsesNodeBinding is deleted because RamsesNodeBindings are not supposed to be moved
-         *
-         * @param other RamsesNodeBindings to move from
-         */
-        RamsesNodeBinding(RamsesNodeBinding&& other) = delete;
-
-        /**
-         * Assignment operator of RamsesNodeBinding is deleted because RamsesNodeBindings are not supposed to be copied
-         *
-         * @param other RamsesNodeBindings to assign from
-         */
-        RamsesNodeBinding& operator=(const RamsesNodeBinding& other) = delete;
-
-        /**
-         * Move assignment operator of RamsesNodeBinding is deleted because RamsesNodeBindings are not supposed to be moved
-         *
-         * @param other RamsesNodeBindings to assign from
-         */
-        RamsesNodeBinding& operator=(RamsesNodeBinding&& other) = delete;
-
-        /**
-         * Implementation detail of RamsesNodeBinding
-         */
-        internal::RamsesNodeBindingImpl& m_nodeBinding;
+        friend class internal::ApiObjects;
     };
 }

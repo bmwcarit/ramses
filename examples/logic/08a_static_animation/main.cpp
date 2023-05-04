@@ -58,14 +58,14 @@ int main()
      */
     auto [scene, tri1, tri2] = CreateSceneWithTriangles(*renderer.getClient());
 
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Create a binding object which serves as a bridge between logic nodes and animations on one end
     * and a Ramses scene on the other end.
     */
-    rlogic::RamsesNodeBinding* nodeBinding1 = logicEngine.createRamsesNodeBinding(*tri1);
-    rlogic::RamsesNodeBinding* nodeBinding2 = logicEngine.createRamsesNodeBinding(*tri2);
+    ramses::RamsesNodeBinding* nodeBinding1 = logicEngine.createRamsesNodeBinding(*tri1);
+    ramses::RamsesNodeBinding* nodeBinding2 = logicEngine.createRamsesNodeBinding(*tri2);
 
     /**
      * Create two simple animations (cubic and linear) by providing keyframes and timestamps.
@@ -73,27 +73,27 @@ int main()
      *
      * First, create the data arrays which contain the time stamp data, the key-frame data points, and tangent arrays for the cubic animation.
      */
-    rlogic::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 1.f, 2.f, 4.f }); // will be interpreted as seconds
-    rlogic::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 90.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 360.f} });
-    rlogic::DataArray* cubicAnimTangentsIn = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ { 0.f, 0.f, -300.f }, { 0.f, 0.f, 300.f }, { 0.f, 0.f, -300.f }, { 0.f, 0.f, -300.f } });
-    rlogic::DataArray* cubicAnimTangentsOut = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ { 0.f, 0.f, -300.f }, { 0.f, 0.f, -300.f }, { 0.f, 0.f, 300.f }, { 0.f, 0.f, 300.f } });
+    ramses::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 1.f, 2.f, 4.f }); // will be interpreted as seconds
+    ramses::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 90.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 360.f} });
+    ramses::DataArray* cubicAnimTangentsIn = logicEngine.createDataArray(std::vector<ramses::vec3f>{ { 0.f, 0.f, -300.f }, { 0.f, 0.f, 300.f }, { 0.f, 0.f, -300.f }, { 0.f, 0.f, -300.f } });
+    ramses::DataArray* cubicAnimTangentsOut = logicEngine.createDataArray(std::vector<ramses::vec3f>{ { 0.f, 0.f, -300.f }, { 0.f, 0.f, -300.f }, { 0.f, 0.f, 300.f }, { 0.f, 0.f, 300.f } });
 
     /**
      * Create a channel for each animation - cubic and linear.
      */
-    const rlogic::AnimationChannel cubicAnimChannel { "rotationZcubic", animTimestamps, animKeyframes, rlogic::EInterpolationType::Cubic, cubicAnimTangentsIn, cubicAnimTangentsOut };
-    const rlogic::AnimationChannel linearAnimChannel { "rotationZlinear", animTimestamps, animKeyframes, rlogic::EInterpolationType::Linear };
+    const ramses::AnimationChannel cubicAnimChannel { "rotationZcubic", animTimestamps, animKeyframes, ramses::EInterpolationType::Cubic, cubicAnimTangentsIn, cubicAnimTangentsOut };
+    const ramses::AnimationChannel linearAnimChannel { "rotationZlinear", animTimestamps, animKeyframes, ramses::EInterpolationType::Linear };
 
     /**
      * Create the animation nodes by passing in the channel data via config
      */
-    rlogic::AnimationNodeConfig animConfigCubic;
+    ramses::AnimationNodeConfig animConfigCubic;
     animConfigCubic.addChannel(cubicAnimChannel);
-    rlogic::AnimationNode* cubicAnimNode = logicEngine.createAnimationNode(animConfigCubic);
+    ramses::AnimationNode* cubicAnimNode = logicEngine.createAnimationNode(animConfigCubic);
 
-    rlogic::AnimationNodeConfig animConfigLinear;
+    ramses::AnimationNodeConfig animConfigLinear;
     animConfigLinear.addChannel(linearAnimChannel);
-    rlogic::AnimationNode* linearAnimNode = logicEngine.createAnimationNode(animConfigLinear);
+    ramses::AnimationNode* linearAnimNode = logicEngine.createAnimationNode(animConfigLinear);
 
     /**
     * Connect the animation channel 'rotationZ' output with the rotation property of the RamsesNodeBinding object.
@@ -109,9 +109,9 @@ int main()
     /**
     * Create control script which uses simple logic to control the animations' progress
     */
-    rlogic::LuaConfig scriptConfig;
-    scriptConfig.addStandardModuleDependency(rlogic::EStandardModule::Math);
-    rlogic::LuaScript* controlScript = logicEngine.createLuaScript(R"(
+    ramses::LuaConfig scriptConfig;
+    scriptConfig.addStandardModuleDependency(ramses::EStandardModule::Math);
+    ramses::LuaScript* controlScript = logicEngine.createLuaScript(R"(
         function init()
             GLOBAL.startTick = 0
         end
@@ -150,7 +150,7 @@ int main()
     * or we can create a TimerNode which generates system time for us. Note that its 'ticker_us' output is in microseconds, control script needs
     * to convert it to whatever units are used in the animation timestamps (in this example seconds).
     */
-    rlogic::TimerNode* timer = logicEngine.createTimerNode();
+    ramses::TimerNode* timer = logicEngine.createTimerNode();
     logicEngine.link(
         *timer->getOutputs()->getChild("ticker_us"),
         *controlScript->getInputs()->getChild("ticker"));
@@ -158,7 +158,7 @@ int main()
     /**
     * Set duration of both animations to control script, so it can calculate and manage their progress
     * Note that we could also link these properties but as this would form a cycle in the dependency graph, it would have to be a weak link
-    * (see #rlogic::LogicEngine::linkWeak). We know that the durations will not change so setting them here once is sufficient.
+    * (see #ramses::LogicEngine::linkWeak). We know that the durations will not change so setting them here once is sufficient.
     **/
     controlScript->getInputs()->getChild("anim1Duration")->set(*cubicAnimNode->getOutputs()->getChild("duration")->get<float>());
     controlScript->getInputs()->getChild("anim2Duration")->set(*linearAnimNode->getOutputs()->getChild("duration")->get<float>());

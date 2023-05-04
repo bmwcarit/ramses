@@ -14,46 +14,42 @@
 
 namespace ramses
 {
-    Texture2DBuffer::Texture2DBuffer(Texture2DBufferImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    Texture2DBuffer::~Texture2DBuffer()
+    Texture2DBuffer::Texture2DBuffer(std::unique_ptr<Texture2DBufferImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<Texture2DBufferImpl&>(SceneObject::m_impl) }
     {
     }
 
     status_t Texture2DBuffer::updateData(uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const void* data)
     {
-        const status_t status = impl.setData(static_cast<const ramses_internal::Byte*>(data), mipLevel, offsetX, offsetY, width, height);
+        const status_t status = m_impl.setData(static_cast<const ramses_internal::Byte*>(data), mipLevel, offsetX, offsetY, width, height);
         LOG_HL_CLIENT_API6(status, LOG_API_GENERIC_PTR_STRING(data), mipLevel, offsetX, offsetY, width, height);
         return status;
     }
 
     uint32_t Texture2DBuffer::getMipLevelCount() const
     {
-        return impl.getMipLevelCount();
+        return m_impl.getMipLevelCount();
     }
 
     status_t Texture2DBuffer::getMipLevelSize(uint32_t mipLevel, uint32_t& widthOut, uint32_t& heightOut) const
     {
-        return impl.getMipLevelSize(mipLevel, widthOut, heightOut);
+        return m_impl.getMipLevelSize(mipLevel, widthOut, heightOut);
     }
 
     uint32_t Texture2DBuffer::getMipLevelDataSizeInBytes(uint32_t mipLevel) const
     {
-        return impl.getMipLevelDataSizeInBytes(mipLevel);
+        return m_impl.getMipLevelDataSizeInBytes(mipLevel);
     }
 
     ETextureFormat Texture2DBuffer::getTexelFormat() const
     {
-        return impl.getTexelFormat();
+        return m_impl.getTexelFormat();
     }
 
     status_t Texture2DBuffer::getMipLevelData(uint32_t mipLevel, void* buffer, uint32_t bufferSize) const
     {
-        return impl.getMipLevelData(mipLevel, static_cast<char *>(buffer), bufferSize);
+        return m_impl.getMipLevelData(mipLevel, static_cast<char *>(buffer), bufferSize);
     }
 
 }

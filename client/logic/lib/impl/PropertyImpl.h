@@ -21,8 +21,9 @@
 #include <optional>
 #include <variant>
 #include <memory>
+#include <functional>
 
-namespace rlogic
+namespace ramses
 {
     class Property;
 }
@@ -37,13 +38,14 @@ namespace flatbuffers
     class FlatBufferBuilder;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicNodeImpl;
     class ErrorReporting;
 
     using PropertyValue = std::variant<int32_t, int64_t, float, bool, std::string, vec2f, vec3f, vec4f, vec2i, vec3i, vec4i>;
-    using PropertyList = std::vector<std::unique_ptr<Property>>;
+    using PropertyUniquePtr = std::unique_ptr<Property, std::function<void(Property*)>>;
+    using PropertyList = std::vector<PropertyUniquePtr>;
 
     class PropertyImpl
     {
@@ -133,6 +135,8 @@ namespace rlogic::internal
 
         void setIncomingLink(PropertyImpl& output, bool isWeakLink);
         void resetIncomingLink();
+
+        static PropertyUniquePtr CreateProperty(std::unique_ptr<PropertyImpl> impl);
 
     private:
         TypeData        m_typeData;

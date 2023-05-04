@@ -33,7 +33,7 @@
 #include "RamsesTestUtils.h"
 #include "FeatureLevelTestValues.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicEngine_SerializedSize : public ALogicEngineBase, public ::testing::TestWithParam<ramses::EFeatureLevel>
     {
@@ -131,7 +131,7 @@ namespace rlogic::internal
     INSTANTIATE_TEST_SUITE_P(
         ALogicEngine_SerializedSizeTests,
         ALogicEngine_SerializedSize,
-        rlogic::internal::GetFeatureLevelTestValues());
+        ramses::internal::GetFeatureLevelTestValues());
 
     TEST_P(ALogicEngine_SerializedSize, ChecksSerializedSizeWithoutContent)
     {

@@ -17,7 +17,7 @@ namespace ramses_internal
     class GeometryShaderScene : public IntegrationScene
     {
     public:
-        GeometryShaderScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        GeometryShaderScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {

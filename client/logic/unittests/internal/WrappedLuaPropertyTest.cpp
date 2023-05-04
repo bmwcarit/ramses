@@ -15,7 +15,7 @@
 
 #include "fmt/format.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AWrappedLuaProperty : public ::testing::Test
     {
@@ -101,7 +101,7 @@ namespace rlogic::internal
             TypeData{"Bool", EPropertyType::Bool}});
 
         sol::state m_sol;
-        ScopedLogContextLevel m_silenceLogs = ScopedLogContextLevel{ELogMessageType::Off};
+        ScopedLogContextLevel m_silenceLogs = ScopedLogContextLevel{ELogLevel::Off};
     };
 
     class AWrappedLuaProperty_Access : public AWrappedLuaProperty

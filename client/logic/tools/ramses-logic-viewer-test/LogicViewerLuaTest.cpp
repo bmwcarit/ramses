@@ -12,7 +12,7 @@
 
 const char* const logicFile = "test.rlogic";
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     /**
      * Tests for the lua configuration file handling
@@ -115,15 +115,15 @@ namespace rlogic::internal
             auto* timer = engine.createTimerNode("foo");
             auto* anchor = engine.createAnchorPoint(*nodeBinding, *cameraBinding, "foo");
             m_renderGroup->addRenderGroup(*m_nestedRenderGroup);
-            rlogic::RamsesRenderGroupBindingElements elements;
+            ramses::RamsesRenderGroupBindingElements elements;
             elements.addElement(*m_nestedRenderGroup, "nestedRG");
             auto rgBinding = engine.createRamsesRenderGroupBinding(*m_renderGroup, elements, "rg");
             auto meshBinding = engine.createRamsesMeshNodeBinding(*m_meshNode, "mn");
 
-            rlogic::DataArray* animTimestamps = engine.createDataArray(std::vector<float>{ 0.f, 0.5f, 1.f, 1.5f }); // will be interpreted as seconds
-            rlogic::DataArray* animKeyframes = engine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
-            const rlogic::AnimationChannel stepAnimChannel { "rotationZstep", animTimestamps, animKeyframes, rlogic::EInterpolationType::Step };
-            rlogic::AnimationNodeConfig config;
+            ramses::DataArray* animTimestamps = engine.createDataArray(std::vector<float>{ 0.f, 0.5f, 1.f, 1.5f }); // will be interpreted as seconds
+            ramses::DataArray* animKeyframes = engine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
+            const ramses::AnimationChannel stepAnimChannel { "rotationZstep", animTimestamps, animKeyframes, ramses::EInterpolationType::Step };
+            ramses::AnimationNodeConfig config;
             config.addChannel(stepAnimChannel);
             auto* animation = engine.createAnimationNode(config, "foo");
 
@@ -184,10 +184,10 @@ namespace rlogic::internal
             engine.saveToFile(logicFile);
         }
 
-        void unlinkInput(const rlogic::Property& inputProperty)
+        void unlinkInput(const ramses::Property& inputProperty)
         {
             assert(inputProperty.hasIncomingLink());
-            const rlogic::Property& sourceProperty = *inputProperty.getIncomingLink()->source;
+            const ramses::Property& sourceProperty = *inputProperty.getIncomingLink()->source;
             EXPECT_TRUE(viewer.getEngine().unlink(sourceProperty, inputProperty));
         }
     };
@@ -201,7 +201,7 @@ namespace rlogic::internal
     {
         const Result ok;
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramBool.value = true)"));
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramBool");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramBool");
         EXPECT_TRUE(property->get<bool>().value());
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramBool.value = false)"));
         EXPECT_FALSE(property->get<bool>().value());
@@ -211,14 +211,14 @@ namespace rlogic::internal
     {
         const Result ok;
         EXPECT_EQ(ok, loadLua(R"(rlogic.interfaces.foo.IN.paramInt32.value = 42)"));
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramInt32");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramInt32");
         EXPECT_EQ(42, property->get<int32_t>());
     }
 
     TEST_F(ALogicViewerLua, setInputInt64)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramInt64");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramInt64");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramInt64.value = 42)"));
         EXPECT_EQ(42, property->get<int64_t>());
     }
@@ -227,14 +227,14 @@ namespace rlogic::internal
     {
         const Result ok;
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramFloat.value = 42.5)"));
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramFloat");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramFloat");
         EXPECT_FLOAT_EQ(42.5f, property->get<float>().value());
     }
 
     TEST_F(ALogicViewerLua, setInputString)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramString");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramString");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramString.value = "Hello World")"));
         EXPECT_EQ("Hello World", property->get<std::string>());
     }
@@ -242,61 +242,61 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, setInputVec2f)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramVec2f");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramVec2f");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramVec2f.value = {42.5, 1.3})"));
-        EXPECT_FLOAT_EQ(42.5f, property->get<rlogic::vec2f>().value()[0]);
-        EXPECT_FLOAT_EQ(1.3f, property->get<rlogic::vec2f>().value()[1]);
+        EXPECT_FLOAT_EQ(42.5f, property->get<ramses::vec2f>().value()[0]);
+        EXPECT_FLOAT_EQ(1.3f, property->get<ramses::vec2f>().value()[1]);
     }
 
     TEST_F(ALogicViewerLua, setInputVec3f)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramVec3f");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramVec3f");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramVec3f.value = {42.5, 1.3, 100000})"));
-        EXPECT_FLOAT_EQ(42.5f, property->get<rlogic::vec3f>().value()[0]);
-        EXPECT_FLOAT_EQ(1.3f, property->get<rlogic::vec3f>().value()[1]);
-        EXPECT_FLOAT_EQ(100000.f, property->get<rlogic::vec3f>().value()[2]);
+        EXPECT_FLOAT_EQ(42.5f, property->get<ramses::vec3f>().value()[0]);
+        EXPECT_FLOAT_EQ(1.3f, property->get<ramses::vec3f>().value()[1]);
+        EXPECT_FLOAT_EQ(100000.f, property->get<ramses::vec3f>().value()[2]);
     }
 
     TEST_F(ALogicViewerLua, setInputVec4f)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramVec4f");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramVec4f");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramVec4f.value = {42.5, 1.3, -8.2, 0.0001})"));
-        EXPECT_FLOAT_EQ(42.5f, property->get<rlogic::vec4f>().value()[0]);
-        EXPECT_FLOAT_EQ(1.3f, property->get<rlogic::vec4f>().value()[1]);
-        EXPECT_FLOAT_EQ(-8.2f, property->get<rlogic::vec4f>().value()[2]);
-        EXPECT_FLOAT_EQ(0.0001f, property->get<rlogic::vec4f>().value()[3]);
+        EXPECT_FLOAT_EQ(42.5f, property->get<ramses::vec4f>().value()[0]);
+        EXPECT_FLOAT_EQ(1.3f, property->get<ramses::vec4f>().value()[1]);
+        EXPECT_FLOAT_EQ(-8.2f, property->get<ramses::vec4f>().value()[2]);
+        EXPECT_FLOAT_EQ(0.0001f, property->get<ramses::vec4f>().value()[3]);
     }
 
     TEST_F(ALogicViewerLua, setInputVec2i)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramVec2i");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramVec2i");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramVec2i.value = {5, -18})"));
-        EXPECT_EQ(rlogic::vec2i({5, -18}), property->get<rlogic::vec2i>());
+        EXPECT_EQ(ramses::vec2i({5, -18}), property->get<ramses::vec2i>());
     }
 
     TEST_F(ALogicViewerLua, setInputVec3i)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramVec3i");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramVec3i");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramVec3i.value = {5, 0xffad, -10000})"));
-        EXPECT_EQ(rlogic::vec3i({5, 0xffad, -10000}), property->get<rlogic::vec3i>());
+        EXPECT_EQ(ramses::vec3i({5, 0xffad, -10000}), property->get<ramses::vec3i>());
     }
 
     TEST_F(ALogicViewerLua, setInputVec4i)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramVec4i");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramVec4i");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.paramVec4i.value = {2147483647, -2147483647, 5, -18})"));
-        EXPECT_EQ(rlogic::vec4i({2147483647, -2147483647, 5, -18}), property->get<rlogic::vec4i>());
+        EXPECT_EQ(ramses::vec4i({2147483647, -2147483647, 5, -18}), property->get<ramses::vec4i>());
     }
 
     TEST_F(ALogicViewerLua, setInputArrayFloat)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "array");
+        auto* property = getInput<ramses::LuaScript>("foo", "array");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.array.value = {99, 118.119, 1.3, -8.2, 0.0001})"));
         EXPECT_EQ(5u, property->getChildCount());
         EXPECT_FLOAT_EQ(99.f, property->getChild(0)->get<float>().value());
@@ -308,7 +308,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, setInputArrayByIndex)
     {
-        auto* property = getInput<rlogic::LuaScript>("foo", "array");
+        auto* property = getInput<ramses::LuaScript>("foo", "array");
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.array.value = {99, 42, 11, 13, 0.1}
             rlogic.scripts.foo.IN.array[1].value = rlogic.scripts.foo.IN.array[5].value
@@ -337,7 +337,7 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, setInputStruct)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "struct");
+        auto* property = getInput<ramses::LuaScript>("foo", "struct");
         EXPECT_EQ(ok, loadLua(R"(rlogic.scripts.foo.IN.struct.value = { nested = {data1 = "Baz", data2 = 400}})"));
         EXPECT_EQ("Baz", property->getChild("nested")->getChild("data1")->get<std::string>());
         EXPECT_EQ(400, property->getChild("nested")->getChild("data2")->get<int32_t>());
@@ -364,114 +364,114 @@ namespace rlogic::internal
                 rlogic.scripts.foo.IN.paramString.value = "false"
             end
         )";
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramBool")->set(false));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramBool")->set(false));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(lua));
-        EXPECT_EQ("true", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramBool")->set(true));
+        EXPECT_EQ("true", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramBool")->set(true));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(lua));
-        EXPECT_EQ("false", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("false", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputInt32)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaInterface>("foo", "paramInt32")->set(static_cast<int32_t>(43)));
+        EXPECT_TRUE(getInput<ramses::LuaInterface>("foo", "paramInt32")->set(static_cast<int32_t>(43)));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramInt32.value
         )"));
-        EXPECT_EQ("86", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("86", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputInt64)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramInt64")->set(static_cast<int64_t>(12)));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramInt64")->set(static_cast<int64_t>(12)));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramInt64.value
         )"));
-        EXPECT_EQ("13", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("13", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputFloat)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramFloat")->set(-3.2f));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramFloat")->set(-3.2f));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramFloat.value
         )"));
-        EXPECT_THAT(getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value(), testing::StartsWith("-9.6"));
+        EXPECT_THAT(getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value(), testing::StartsWith("-9.6"));
     }
 
     TEST_F(ALogicViewerLua, getOutputString)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramString")->set(std::string("Hello")));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramString")->set(std::string("Hello")));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramString.value
         )"));
-        EXPECT_EQ("Hellofoo", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("Hellofoo", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputVec2f)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramFloat")->set(1.0f));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramFloat")->set(1.0f));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramVec2f.value[2]
         )"));
-        EXPECT_EQ("1", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("1", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputVec3f)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramFloat")->set(2.0f));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramFloat")->set(2.0f));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramVec3f.value[3]
         )"));
-        EXPECT_EQ("2", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("2", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputVec4f)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramFloat")->set(-1.0f));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramFloat")->set(-1.0f));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramVec4f.value[4]
         )"));
-        EXPECT_EQ("-1", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("-1", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputVec2i)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaInterface>("foo", "paramInt32")->set(17));
+        EXPECT_TRUE(getInput<ramses::LuaInterface>("foo", "paramInt32")->set(17));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramVec2i.value[2]
         )"));
-        EXPECT_EQ("17", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("17", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputVec3i)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaInterface>("foo", "paramInt32")->set(18));
+        EXPECT_TRUE(getInput<ramses::LuaInterface>("foo", "paramInt32")->set(18));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramVec3i.value[3]
         )"));
-        EXPECT_EQ("18", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("18", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputVec4i)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaInterface>("foo", "paramInt32")->set(19));
+        EXPECT_TRUE(getInput<ramses::LuaInterface>("foo", "paramInt32")->set(19));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.paramVec4i.value[4]
         )"));
-        EXPECT_EQ("19", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("19", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputArray)
@@ -479,7 +479,7 @@ namespace rlogic::internal
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.array[5].value
         )"));
-        EXPECT_EQ("50", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("50", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, getOutputArrayOutOfBounds)
@@ -491,13 +491,13 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, getOutputStruct)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaInterface>("foo", "paramInt32")->set(15));
-        EXPECT_TRUE(getInput<rlogic::LuaScript>("foo", "paramString")->set(std::string("Hello")));
+        EXPECT_TRUE(getInput<ramses::LuaInterface>("foo", "paramInt32")->set(15));
+        EXPECT_TRUE(getInput<ramses::LuaScript>("foo", "paramString")->set(std::string("Hello")));
         EXPECT_EQ(Result(), viewer.update());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = rlogic.scripts.foo.OUT.struct.nested.data1.value..rlogic.scripts.foo.OUT.struct.nested.data2.value
         )"));
-        EXPECT_EQ("Hello15", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("Hello15", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, outputPropertyToString)
@@ -505,7 +505,7 @@ namespace rlogic::internal
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = tostring(rlogic.scripts.foo.OUT.paramInt32)
         )"));
-        EXPECT_EQ("ConstProperty: paramInt32", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("ConstProperty: paramInt32", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, inputPropertyToString)
@@ -513,7 +513,7 @@ namespace rlogic::internal
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = tostring(rlogic.scripts.foo.IN.paramInt32)
         )"));
-        EXPECT_EQ("Property: paramInt32", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("Property: paramInt32", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, nodeToString)
@@ -521,7 +521,7 @@ namespace rlogic::internal
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.paramString.value = tostring(rlogic.scripts.foo)
         )"));
-        EXPECT_EQ("LogicNode: foo", getInput<rlogic::LuaScript>("foo", "paramString")->get<std::string>().value());
+        EXPECT_EQ("LogicNode: foo", getInput<ramses::LuaScript>("foo", "paramString")->get<std::string>().value());
     }
 
     TEST_F(ALogicViewerLua, invalidView)
@@ -538,7 +538,7 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, simpleView)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaScript>("foo", "paramInt32");
+        auto* property = getInput<ramses::LuaScript>("foo", "paramInt32");
         EXPECT_EQ(0u, viewer.getViewCount());
         EXPECT_FALSE(viewer.getView(0u).isValid());
         EXPECT_FALSE(viewer.getView(1u).isValid());
@@ -597,7 +597,7 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, viewWithInput)
     {
         const Result ok;
-        auto* property = getInput<rlogic::LuaInterface>("foo", "paramInt32");
+        auto* property = getInput<ramses::LuaInterface>("foo", "paramInt32");
         ASSERT_TRUE(property != nullptr);
 
         EXPECT_EQ(ok, loadLua(R"(
@@ -626,8 +626,8 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, changeView)
     {
         const Result ok;
-        auto* property1 = getInput<rlogic::LuaInterface>("foo", "paramInt32");
-        auto* property2 = getInput<rlogic::LuaScript>("foo", "paramString");
+        auto* property1 = getInput<ramses::LuaInterface>("foo", "paramInt32");
+        auto* property2 = getInput<ramses::LuaScript>("foo", "paramString");
         ASSERT_TRUE(property1 != nullptr);
         ASSERT_TRUE(property2 != nullptr);
 
@@ -682,7 +682,7 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, callByName)
     {
         const Result ok;
-        auto* property1 = getInput<rlogic::LuaInterface>("foo", "paramInt32");
+        auto* property1 = getInput<ramses::LuaInterface>("foo", "paramInt32");
 
         EXPECT_EQ(ok, loadLua(R"(
             function f1()
@@ -714,18 +714,18 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, update)
     {
-        EXPECT_TRUE(getInput<rlogic::LuaInterface>("foo", "paramInt32")->set(static_cast<int32_t>(43)));
-        EXPECT_EQ(0, getOutput<rlogic::LuaScript>("foo", "paramInt32")->get<int32_t>());
+        EXPECT_TRUE(getInput<ramses::LuaInterface>("foo", "paramInt32")->set(static_cast<int32_t>(43)));
+        EXPECT_EQ(0, getOutput<ramses::LuaScript>("foo", "paramInt32")->get<int32_t>());
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.update()
         )"));
-        EXPECT_EQ(86, getOutput<rlogic::LuaScript>("foo", "paramInt32")->get<int32_t>());
+        EXPECT_EQ(86, getOutput<ramses::LuaScript>("foo", "paramInt32")->get<int32_t>());
     }
 
     TEST_F(ALogicViewerLua, link_unlink)
     {
-        auto* in = getInput<rlogic::TimerNode>("foo", "ticker_us");
-        auto* out = getOutput<rlogic::LuaScript>("foo", "paramInt64");
+        auto* in = getInput<ramses::TimerNode>("foo", "ticker_us");
+        auto* out = getOutput<ramses::LuaScript>("foo", "paramInt64");
         EXPECT_FALSE(in->isLinked());
         EXPECT_FALSE(in->hasIncomingLink());
         EXPECT_FALSE(in->hasOutgoingLink());
@@ -757,18 +757,18 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, nodeBindingByName)
     {
-        auto* translation = getInput<rlogic::RamsesNodeBinding>("foo", "translation");
+        auto* translation = getInput<ramses::RamsesNodeBinding>("foo", "translation");
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.nodeBindings.foo.IN.translation.value = {1,2,3}
         )"));
-        EXPECT_FLOAT_EQ(1.f, translation->get<rlogic::vec3f>().value()[0]);
-        EXPECT_FLOAT_EQ(2.f, translation->get<rlogic::vec3f>().value()[1]);
-        EXPECT_FLOAT_EQ(3.f, translation->get<rlogic::vec3f>().value()[2]);
+        EXPECT_FLOAT_EQ(1.f, translation->get<ramses::vec3f>().value()[0]);
+        EXPECT_FLOAT_EQ(2.f, translation->get<ramses::vec3f>().value()[1]);
+        EXPECT_FLOAT_EQ(3.f, translation->get<ramses::vec3f>().value()[2]);
     }
 
     TEST_F(ALogicViewerLua, appearanceBindingByName)
     {
-        auto* floatUniform = getInput<rlogic::RamsesAppearanceBinding>("foo", "floatUniform");
+        auto* floatUniform = getInput<ramses::RamsesAppearanceBinding>("foo", "floatUniform");
         //unlink input to avoid generating error for setting value for a linked input
         unlinkInput(*floatUniform);
 
@@ -780,7 +780,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, cameraBindingByName)
     {
-        auto* frustum = getInput<rlogic::RamsesCameraBinding>("foo", "frustum");
+        auto* frustum = getInput<ramses::RamsesCameraBinding>("foo", "frustum");
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.cameraBindings.foo.IN.frustum.nearPlane.value = 0.93
         )"));
@@ -789,7 +789,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, renderPassBindingByName)
     {
-        auto* renderOrder = getInput<rlogic::RamsesRenderPassBinding>("foo", "renderOrder");
+        auto* renderOrder = getInput<ramses::RamsesRenderPassBinding>("foo", "renderOrder");
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.renderPassBindings.foo.IN.renderOrder.value = 42
         )"));
@@ -798,7 +798,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, renderGroupBindingByName)
     {
-        auto* renderOrder = getInput<rlogic::RamsesRenderGroupBinding>("rg", "renderOrders")->getChild("nestedRG");
+        auto* renderOrder = getInput<ramses::RamsesRenderGroupBinding>("rg", "renderOrders")->getChild("nestedRG");
         //unlink input to avoid generating error for setting value for a linked input
         unlinkInput(*renderOrder);
 
@@ -810,10 +810,10 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, meshNodeBindingByName)
     {
-        auto* vertexOffset = getInput<rlogic::RamsesMeshNodeBinding>("mn", "vertexOffset");
-        auto* indexOffset = getInput<rlogic::RamsesMeshNodeBinding>("mn", "indexOffset");
-        auto* indexCount = getInput<rlogic::RamsesMeshNodeBinding>("mn", "indexCount");
-        auto* instanceCount = getInput<rlogic::RamsesMeshNodeBinding>("mn", "instanceCount");
+        auto* vertexOffset = getInput<ramses::RamsesMeshNodeBinding>("mn", "vertexOffset");
+        auto* indexOffset = getInput<ramses::RamsesMeshNodeBinding>("mn", "indexOffset");
+        auto* indexCount = getInput<ramses::RamsesMeshNodeBinding>("mn", "indexCount");
+        auto* instanceCount = getInput<ramses::RamsesMeshNodeBinding>("mn", "instanceCount");
         //unlink input to avoid generating error for setting value for a linked input
         unlinkInput(*vertexOffset);
 
@@ -831,7 +831,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, timerNodeByName)
     {
-        auto* ticker = getInput<rlogic::TimerNode>("foo", "ticker_us");
+        auto* ticker = getInput<ramses::TimerNode>("foo", "ticker_us");
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.timerNodes.foo.IN.ticker_us.value = 19083
         )"));
@@ -840,7 +840,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, animationNodeByName)
     {
-        auto* progress = getInput<rlogic::AnimationNode>("foo", "progress");
+        auto* progress = getInput<ramses::AnimationNode>("foo", "progress");
         //unlink input to avoid generating error for setting value for a linked input
         unlinkInput(*progress);
 
@@ -853,15 +853,15 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, anchorPointByName)
     {
         // unlink anchor from script inputs so that we can overwrite values
-        unlinkInput(*getInput<rlogic::LuaScript>("foo", "anchorData1"));
-        unlinkInput(*getInput<rlogic::LuaScript>("foo", "anchorData2"));
+        unlinkInput(*getInput<ramses::LuaScript>("foo", "anchorData1"));
+        unlinkInput(*getInput<ramses::LuaScript>("foo", "anchorData2"));
 
         // first overwrite with some dummy values to 'reset' them
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.anchorData1.value = { 1, 2 }
             rlogic.scripts.foo.IN.anchorData2.value = 3
         )"));
-        auto* outScript = getNode<rlogic::LuaScript>("foo");
+        auto* outScript = getNode<ramses::LuaScript>("foo");
         EXPECT_FLOAT_EQ(1.f, GetOutput(outScript, "anchorData1")->get<vec2f>().value()[0]);
         EXPECT_FLOAT_EQ(2.f, GetOutput(outScript, "anchorData1")->get<vec2f>().value()[1]);
         EXPECT_FLOAT_EQ(3.f, GetOutput(outScript, "anchorData2")->get<float>().value());
@@ -879,7 +879,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, interfaceById)
     {
-        auto* node = getNode<rlogic::LuaInterface>("foo");
+        auto* node = getNode<ramses::LuaInterface>("foo");
         ASSERT_EQ(1u, node->getId());
         EXPECT_EQ(Result(), loadLua(R"(rlogic.interfaces[1].IN.paramInt32.value = 42)"));
         EXPECT_EQ(42, GetInput(node, "paramInt32")->get<int32_t>().value());
@@ -887,7 +887,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, scriptById)
     {
-        auto* node = getNode<rlogic::LuaScript>("foo");
+        auto* node = getNode<ramses::LuaScript>("foo");
         ASSERT_EQ(2u, node->getId());
         EXPECT_EQ(Result(), loadLua(R"(rlogic.scripts[2].IN.paramInt64.value = 99)"));
         EXPECT_EQ(99, GetInput(node, "paramInt64")->get<int64_t>().value());
@@ -895,20 +895,20 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, nodeBindingById)
     {
-        auto* node = getNode<rlogic::RamsesNodeBinding>("foo");
+        auto* node = getNode<ramses::RamsesNodeBinding>("foo");
         ASSERT_EQ(3u, node->getId());
         auto* translation = GetInput(node, "translation");
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.nodeBindings[3].IN.translation.value = {1,2,3}
         )"));
-        EXPECT_FLOAT_EQ(1.f, translation->get<rlogic::vec3f>().value()[0]);
-        EXPECT_FLOAT_EQ(2.f, translation->get<rlogic::vec3f>().value()[1]);
-        EXPECT_FLOAT_EQ(3.f, translation->get<rlogic::vec3f>().value()[2]);
+        EXPECT_FLOAT_EQ(1.f, translation->get<ramses::vec3f>().value()[0]);
+        EXPECT_FLOAT_EQ(2.f, translation->get<ramses::vec3f>().value()[1]);
+        EXPECT_FLOAT_EQ(3.f, translation->get<ramses::vec3f>().value()[2]);
     }
 
     TEST_F(ALogicViewerLua, appearanceBindingById)
     {
-        auto* node = getNode<rlogic::RamsesAppearanceBinding>("foo");
+        auto* node = getNode<ramses::RamsesAppearanceBinding>("foo");
         ASSERT_EQ(4u, node->getId());
         auto* floatUniform = GetInput(node, "floatUniform");
         //unlink input to avoid generating error for setting value for a linked input
@@ -922,7 +922,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, cameraBindingById)
     {
-        auto* node = getNode<rlogic::RamsesCameraBinding>("foo");
+        auto* node = getNode<ramses::RamsesCameraBinding>("foo");
         ASSERT_EQ(5u, node->getId());
         auto* frustum = GetInput(node, "frustum");
         EXPECT_EQ(Result(), loadLua(R"(
@@ -933,7 +933,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, renderPassBindingById)
     {
-        auto* rp = getNode<rlogic::RamsesRenderPassBinding>("foo");
+        auto* rp = getNode<ramses::RamsesRenderPassBinding>("foo");
         ASSERT_EQ(6u, rp->getId());
         auto* renderOrder = GetInput(rp, "renderOrder");
         EXPECT_EQ(Result(), loadLua(R"(
@@ -944,7 +944,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, renderGroupBindingById)
     {
-        auto* rg = getNode<rlogic::RamsesRenderGroupBinding>("rg");
+        auto* rg = getNode<ramses::RamsesRenderGroupBinding>("rg");
         ASSERT_EQ(9u, rg->getId());
         auto* renderOrder = GetInput(rg, "renderOrders")->getChild("nestedRG");
         //unlink input to avoid generating error for setting value for a linked input
@@ -958,7 +958,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, meshNodeBindingById)
     {
-        auto* mn = getNode<rlogic::RamsesMeshNodeBinding>("mn");
+        auto* mn = getNode<ramses::RamsesMeshNodeBinding>("mn");
         ASSERT_EQ(10u, mn->getId());
         auto* vertexOffset = GetInput(mn, "vertexOffset");
         auto* indexOffset = GetInput(mn, "indexOffset");
@@ -982,7 +982,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, timerNodeById)
     {
-        auto* node = getNode<rlogic::TimerNode>("foo");
+        auto* node = getNode<ramses::TimerNode>("foo");
         ASSERT_EQ(7u, node->getId());
         auto* ticker = GetInput(node, "ticker_us");
         EXPECT_EQ(Result(), loadLua(R"(
@@ -994,15 +994,15 @@ namespace rlogic::internal
     TEST_F(ALogicViewerLua, anchorPointById)
     {
         // unlink anchor from script inputs so that we can overwrite values
-        unlinkInput(*getInput<rlogic::LuaScript>("foo", "anchorData1"));
-        unlinkInput(*getInput<rlogic::LuaScript>("foo", "anchorData2"));
+        unlinkInput(*getInput<ramses::LuaScript>("foo", "anchorData1"));
+        unlinkInput(*getInput<ramses::LuaScript>("foo", "anchorData2"));
 
         EXPECT_EQ(Result(), loadLua(R"(
             rlogic.scripts.foo.IN.anchorData1.value = { rlogic.anchorPoints[8].OUT.viewportCoords.value[1], rlogic.anchorPoints[8].OUT.viewportCoords.value[2] }
             rlogic.scripts.foo.IN.anchorData2.value = rlogic.anchorPoints[8].OUT.depth.value
         )"));
 
-        auto* outScript = getNode<rlogic::LuaScript>("foo");
+        auto* outScript = getNode<ramses::LuaScript>("foo");
         EXPECT_FLOAT_EQ(0.f, GetOutput(outScript, "anchorData1")->get<vec2f>().value()[0]);
         EXPECT_FLOAT_EQ(8.f, GetOutput(outScript, "anchorData1")->get<vec2f>().value()[1]);
         EXPECT_FLOAT_EQ(-0.01010102f, GetOutput(outScript, "anchorData2")->get<float>().value());
@@ -1010,7 +1010,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, animationNodeById)
     {
-        auto* node = getNode<rlogic::AnimationNode>("foo");
+        auto* node = getNode<ramses::AnimationNode>("foo");
         ASSERT_EQ(13u, node->getId());
         auto* progress = GetInput(node, "progress");
         //unlink input to avoid generating error for setting value for a linked input
@@ -1024,7 +1024,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, animationNodeWrongId)
     {
-        auto* node = getNode<rlogic::AnimationNode>("foo");
+        auto* node = getNode<ramses::AnimationNode>("foo");
         ASSERT_EQ(13u, node->getId());
         EXPECT_THAT(loadLua(R"(
             rlogic.animationNodes[89032].IN.progress.value = 198
@@ -1033,7 +1033,7 @@ namespace rlogic::internal
 
     TEST_F(ALogicViewerLua, iterateAnimationNodes)
     {
-        auto* progress = getInput<rlogic::AnimationNode>("foo", "progress");
+        auto* progress = getInput<ramses::AnimationNode>("foo", "progress");
         //unlink input to avoid generating error for setting value for a linked input
         unlinkInput(*progress);
 

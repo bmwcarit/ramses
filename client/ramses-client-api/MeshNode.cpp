@@ -17,100 +17,96 @@
 
 namespace ramses
 {
-    MeshNode::MeshNode(MeshNodeImpl& pimpl)
-        : Node(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    MeshNode::~MeshNode()
+    MeshNode::MeshNode(std::unique_ptr<MeshNodeImpl> impl)
+        : Node{ std::move(impl) }
+        , m_impl{ static_cast<MeshNodeImpl&>(Node::m_impl) }
     {
     }
 
     status_t MeshNode::setAppearance(Appearance& appearance)
     {
-        const status_t status = impl.setAppearance(appearance.impl);
+        const status_t status = m_impl.setAppearance(appearance.m_impl);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(appearance));
         return status;
     }
 
     status_t MeshNode::setGeometryBinding(GeometryBinding& geometry)
     {
-        const status_t status = impl.setGeometryBinding(geometry.impl);
+        const status_t status = m_impl.setGeometryBinding(geometry.m_impl);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(geometry));
         return status;
     }
 
     status_t MeshNode::removeAppearanceAndGeometry()
     {
-        const status_t status = impl.removeAppearanceAndGeometry();
+        const status_t status = m_impl.removeAppearanceAndGeometry();
         LOG_HL_CLIENT_API_NOARG(status);
         return status;
     }
 
     status_t MeshNode::setStartIndex(uint32_t startIndex)
     {
-        const status_t status = impl.setStartIndex(startIndex);
+        const status_t status = m_impl.setStartIndex(startIndex);
         LOG_HL_CLIENT_API1(status, startIndex);
         return status;
     }
 
     status_t MeshNode::setStartVertex(uint32_t startVertex)
     {
-        const status_t status = impl.setStartVertex(startVertex);
+        const status_t status = m_impl.setStartVertex(startVertex);
         LOG_HL_CLIENT_API1(status, startVertex);
         return status;
     }
 
     status_t MeshNode::setIndexCount(uint32_t indexCount)
     {
-        const status_t status = impl.setIndexCount(indexCount);
+        const status_t status = m_impl.setIndexCount(indexCount);
         LOG_HL_CLIENT_API1(status, indexCount);
         return status;
     }
 
     const Appearance* MeshNode::getAppearance() const
     {
-        return impl.getAppearance();
+        return m_impl.getAppearance();
     }
 
     Appearance* MeshNode::getAppearance()
     {
-        return impl.getAppearance();
+        return m_impl.getAppearance();
     }
 
     const GeometryBinding* MeshNode::getGeometryBinding() const
     {
-        return impl.getGeometryBinding();
+        return m_impl.getGeometryBinding();
     }
 
     GeometryBinding* MeshNode::getGeometryBinding()
     {
-        return impl.getGeometryBinding();
+        return m_impl.getGeometryBinding();
     }
 
     uint32_t MeshNode::getStartIndex() const
     {
-        return impl.getStartIndex();
+        return m_impl.getStartIndex();
     }
 
     uint32_t MeshNode::getStartVertex() const
     {
-        return impl.getStartVertex();
+        return m_impl.getStartVertex();
     }
 
     uint32_t MeshNode::getIndexCount() const
     {
-        return impl.getIndexCount();
+        return m_impl.getIndexCount();
     }
 
     status_t MeshNode::setInstanceCount(uint32_t instanceCount)
     {
-        return impl.setInstanceCount(instanceCount);
+        return m_impl.setInstanceCount(instanceCount);
     }
 
     uint32_t MeshNode::getInstanceCount() const
     {
-        return impl.getInstanceCount();
+        return m_impl.getInstanceCount();
     }
 }

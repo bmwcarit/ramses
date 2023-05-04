@@ -69,7 +69,7 @@ private:
     };
 
     template <typename INTEGRATION_SCENE>
-    ramses::sceneId_t createAndShowScene(RendererTestsFramework& testFramework, uint32_t displayIdx, uint32_t sceneState, const ramses_internal::Vector3& camPos, uint32_t vpWidth = ramses_internal::IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = ramses_internal::IntegrationScene::DefaultViewportHeight);
+    ramses::sceneId_t createAndShowScene(RendererTestsFramework& testFramework, uint32_t displayIdx, uint32_t sceneState, const glm::vec3& camPos, uint32_t vpWidth = ramses_internal::IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = ramses_internal::IntegrationScene::DefaultViewportHeight);
     template <typename INTEGRATION_SCENE>
     bool renderSceneToBufferAndExpectScreenshot(RendererTestsFramework& testFramework, const TestBufferInfo& testBuffer, uint32_t sceneState, const std::string& screenshotImage);
 
@@ -98,7 +98,7 @@ private:
     static constexpr uint32_t DefaultUsageFlags = GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT;
     static constexpr uint32_t DefaultFourccBufferFormat = DRM_FORMAT_ARGB8888;
 
-    const ramses_internal::Vector3 m_cameraTranslation{ 0.f, 0.f, 8.f };
+    const glm::vec3 m_cameraTranslation{ 0.f, 0.f, 8.f };
     TestBufferInfo testBuffer1;
     TestBufferInfo testBuffer2;
 };

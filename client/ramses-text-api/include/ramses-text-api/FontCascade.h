@@ -22,6 +22,7 @@ namespace ramses
     using OrderedFontList = std::vector<FontInstanceId>;
 
     /**
+     * @ingroup TextAPI
      * @brief struct to define a font cascade
      *
      * Allows to define a list of fonts that are tried sequentially for character

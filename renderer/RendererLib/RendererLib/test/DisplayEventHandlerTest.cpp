@@ -73,7 +73,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnKeyReleasedEvent)
 
 TEST_F(ADisplayEventHandler, createsRendererEventOnMouseMoveEvent)
 {
-    const Vector2i mousePos(5, 20);
+    const glm::ivec2 mousePos(5, 20);
     m_displayEventHandler.onMouseEvent(EMouseEventType_Move, mousePos.x, mousePos.y);
     const RendererEvent event = getRendererEvent(0u);
     EXPECT_EQ(ERendererEventType::WindowMouseEvent, event.eventType);
@@ -84,7 +84,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnMouseMoveEvent)
 
 TEST_F(ADisplayEventHandler, createsRendererEventAndInvokesTouchHandlerOnMouseEvent)
 {
-    Vector2i mousePosition(90u, 250u);
+    glm::ivec2 mousePosition(90u, 250u);
     EMouseEventType mouseEventType = EMouseEventType_LeftButtonDown;
     m_displayEventHandler.onMouseEvent(mouseEventType, mousePosition.x, mousePosition.y);
 
@@ -103,7 +103,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnMouseEventWindowEnter)
     EXPECT_EQ(ERendererEventType::WindowMouseEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(EMouseEventType_WindowEnter, event.mouseEvent.type);
-    EXPECT_EQ(Vector2i(5, 10), event.mouseEvent.pos);
+    EXPECT_EQ(glm::ivec2(5, 10), event.mouseEvent.pos);
 }
 
 TEST_F(ADisplayEventHandler, createsRendererEventOnMouseEventWindowLeave)
@@ -113,7 +113,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnMouseEventWindowLeave)
     EXPECT_EQ(ERendererEventType::WindowMouseEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(EMouseEventType_WindowLeave, event.mouseEvent.type);
-    EXPECT_EQ(Vector2i(10, 20), event.mouseEvent.pos);
+    EXPECT_EQ(glm::ivec2(10, 20), event.mouseEvent.pos);
 }
 
 TEST_F(ADisplayEventHandler, createsRendererEventOnWindowClosedEvent)

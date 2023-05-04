@@ -16,6 +16,7 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * @brief The ArrayBuffer is a data object used to provide vertex or index data to #ramses::GeometryBinding::setInputBuffer
      *        and #ramses::GeometryBinding::setIndices. The buffer data of an ArrayBuffer is not filled initially and can be fully
      *        or partially updated in between scene flushes.
@@ -24,7 +25,7 @@ namespace ramses
      *          is defined as one byte, rather than a logical vertex element. Hence, all functions of #ArrayBuffer
      *          referring to element refer to a single byte within byte array.
      */
-    class RAMSES_API ArrayBuffer : public SceneObject
+    class ArrayBuffer : public SceneObject
     {
     public:
         /**
@@ -58,7 +59,7 @@ namespace ramses
         *
         * @return Maximum number of elements
         */
-        [[nodiscard]] uint32_t getMaximumNumberOfElements() const;
+        [[nodiscard]] RAMSES_API uint32_t getMaximumNumberOfElements() const;
 
         /**
         * @brief Returns the used number of data elements.
@@ -69,14 +70,14 @@ namespace ramses
         *
         * @return Used size in number of elements
         */
-        [[nodiscard]] uint32_t getUsedNumberOfElements() const;
+        [[nodiscard]] RAMSES_API uint32_t getUsedNumberOfElements() const;
 
         /**
         * @brief Returns the data type associated with the buffer data
         *
         * @return data type of buffer data
         */
-        [[nodiscard]] EDataType getDataType() const;
+        [[nodiscard]] RAMSES_API EDataType getDataType() const;
 
         /**
         * @brief Copies the data of the data buffer into a user-provided buffer.
@@ -97,25 +98,20 @@ namespace ramses
         /**
         * Stores internal data for implementation specifics of ArrayBuffer.
         */
-        class ArrayBufferImpl& impl;
+        class ArrayBufferImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating ArrayBuffer instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for ArrayBuffer.
         *
-        * @param[in] pimpl Internal data for implementation specifics of ArrayBuffer (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of ArrayBuffer (sink - instance becomes owner)
         */
-        explicit ArrayBuffer(ArrayBufferImpl& pimpl);
-
-        /**
-        * @brief Destructor of the ArrayBuffer
-        */
-        ~ArrayBuffer() override;
+        explicit ArrayBuffer(std::unique_ptr<ArrayBufferImpl> impl);
 
     private:
         /// Internal implementation of #updateData

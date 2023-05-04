@@ -19,6 +19,7 @@ namespace ramses
     class RenderTarget;
 
     /**
+     * @ingroup CoreAPI
      * @brief The RenderPass is a container used to collect meshes which are supposed
      * to be rendered together.
      * @details A RenderPass has a Camera which is used for all MeshNodes
@@ -28,7 +29,7 @@ namespace ramses
      * which is also shared with BlitPass objects, i.e, RenderPass and BlitPass objects
      * can all be ordered relative to each other.
      */
-    class RAMSES_API RenderPass : public SceneObject
+    class RenderPass : public SceneObject
     {
     public:
         /**
@@ -37,18 +38,18 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setCamera(const Camera& camera);
+        RAMSES_API status_t setCamera(const Camera& camera);
 
         /**
         * Get the camera of this RenderPass.
         * @return The camera or null if Camera has not been set.
         */
-        [[nodiscard]] const Camera* getCamera() const;
+        [[nodiscard]] RAMSES_API const Camera* getCamera() const;
 
         /**
         * @copydoc getCamera() const
         */
-        Camera* getCamera();
+        [[nodiscard]] RAMSES_API Camera* getCamera();
 
         /**
         * @brief Add a RenderGroup to this RenderPass for rendering.
@@ -61,7 +62,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t addRenderGroup(const RenderGroup& renderGroup, int32_t orderWithinPass = 0);
+        RAMSES_API status_t addRenderGroup(const RenderGroup& renderGroup, int32_t orderWithinPass = 0);
 
         /**
         * @brief Remove a RenderGroup from this RenderPass.
@@ -70,7 +71,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeRenderGroup(const RenderGroup& renderGroup);
+        RAMSES_API status_t removeRenderGroup(const RenderGroup& renderGroup);
 
         /**
         * @brief Checks whether a RenderGroup is part of the RenderPass
@@ -78,7 +79,7 @@ namespace ramses
         * @param[in] renderGroup The RenderGroup to look for
         * @return \c true if the mesh is used in this RenderPass \c false otherwise
         */
-        [[nodiscard]] bool containsRenderGroup(const RenderGroup& renderGroup) const;
+        [[nodiscard]] RAMSES_API bool containsRenderGroup(const RenderGroup& renderGroup) const;
 
         /**
         * @brief Gets a render order of given RenderGroup within this RenderPass.
@@ -88,7 +89,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getRenderGroupOrder(const RenderGroup& renderGroup, int32_t& orderWithinPass) const;
+        RAMSES_API status_t getRenderGroupOrder(const RenderGroup& renderGroup, int32_t& orderWithinPass) const;
 
         /**
         * @brief Will make the RenderPass empty.
@@ -96,7 +97,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeAllRenderGroups();
+        RAMSES_API status_t removeAllRenderGroups();
 
         /**
         * @brief Set the render target for the render pass to render into.
@@ -105,14 +106,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRenderTarget(RenderTarget* renderTarget);
+        RAMSES_API status_t setRenderTarget(RenderTarget* renderTarget);
 
         /**
         * @brief Get the render target of this render pass.
         *
         * @return The render target or null if render target has not been set.
         */
-        [[nodiscard]] const RenderTarget* getRenderTarget() const;
+        [[nodiscard]] RAMSES_API const RenderTarget* getRenderTarget() const;
 
         /**
         * @brief Set the render order for the render pass.
@@ -126,14 +127,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRenderOrder(int32_t renderOrder);
+        RAMSES_API status_t setRenderOrder(int32_t renderOrder);
 
         /**
         * @brief Get the render order of this render pass.
         *
         * @return The render order of this render pass.
         */
-        [[nodiscard]] int32_t getRenderOrder() const;
+        [[nodiscard]] RAMSES_API int32_t getRenderOrder() const;
 
         /**
         * @brief Set the clear color for the RenderPass (default: [0,0,0,1])
@@ -144,14 +145,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setClearColor(const vec4f& color);
+        RAMSES_API status_t setClearColor(const vec4f& color);
 
         /**
         * @brief Returns the clear color of the RenderPass
         *
         * @return color channels of clear color
         */
-        [[nodiscard]] vec4f getClearColor() const;
+        [[nodiscard]] RAMSES_API vec4f getClearColor() const;
 
         /**
         * @brief Set the clear flags which enable/disable the clearing of the render target assigned to this RenderPass(default: #ramses::EClearFlags_All)
@@ -162,14 +163,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setClearFlags(uint32_t clearFlags);
+        RAMSES_API status_t setClearFlags(uint32_t clearFlags);
 
         /**
         * @brief Returns the clear flags of the RenderPass
         *
         * @returns clear flags, which is a bitmask of the #ramses::EClearFlags enum
         */
-        [[nodiscard]] uint32_t getClearFlags() const;
+        [[nodiscard]] RAMSES_API uint32_t getClearFlags() const;
 
         /**
         * @brief Enable/Disable render pass
@@ -178,14 +179,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setEnabled(bool enable);
+        RAMSES_API status_t setEnabled(bool enable);
 
         /**
         * @brief Get the enable state of the render pass
         *
         * @return Indicates if the render pass is enabled
         */
-        [[nodiscard]] bool isEnabled() const;
+        [[nodiscard]] RAMSES_API bool isEnabled() const;
 
         /**
         * @brief Set/unset render once flag - rendering of the render pass only once.
@@ -205,14 +206,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRenderOnce(bool enable);
+        RAMSES_API status_t setRenderOnce(bool enable);
 
         /**
         * @brief Get the render once state of the render pass
         *
         * @return Indicates if the render pass is to be rendered only once
         */
-        [[nodiscard]] bool isRenderOnce() const;
+        [[nodiscard]] RAMSES_API bool isRenderOnce() const;
 
         /**
         * @brief Will re-render a render once pass.
@@ -226,30 +227,25 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t retriggerRenderOnce();
+        RAMSES_API status_t retriggerRenderOnce();
 
         /**
         * Stores internal data for implementation specifics of RenderPass.
         */
-        class RenderPassImpl& impl;
+        class RenderPassImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating RenderPass instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for RenderPass.
         *
-        * @param[in] pimpl Internal data for implementation specifics of RenderPass (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of RenderPass (sink - instance becomes owner)
         */
-        explicit RenderPass(RenderPassImpl& pimpl);
-
-        /**
-        * @brief Destructor of the RenderPass
-        */
-        ~RenderPass() override;
+        explicit RenderPass(std::unique_ptr<RenderPassImpl> impl);
     };
 }
 

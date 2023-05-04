@@ -32,7 +32,7 @@ namespace ramses_internal
     {
     }
 
-    Bool Context_WGL::init()
+    bool Context_WGL::init()
     {
         LOG_DEBUG(CONTEXT_RENDERER, " Context_WGL::init:  initializing Context_WGL");
 
@@ -84,7 +84,7 @@ namespace ramses_internal
         wglDeleteContext(m_wglContextHandle);
     }
 
-    Bool Context_WGL::swapBuffers()
+    bool Context_WGL::swapBuffers()
     {
         return SwapBuffers(m_displayHandle) == TRUE;
     }
@@ -96,14 +96,14 @@ namespace ramses_internal
         return true;
     }
 
-    Bool Context_WGL::disable()
+    bool Context_WGL::disable()
     {
         if (!wglMakeCurrent(NULL, NULL))
             return false;
         return true;
     }
 
-    Bool Context_WGL::initCustomPixelFormat()
+    bool Context_WGL::initCustomPixelFormat()
     {
         if (!m_ext.procs.wglChoosePixelFormatARB)
         {

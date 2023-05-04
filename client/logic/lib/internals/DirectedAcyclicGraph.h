@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <cstdint>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // We don't depend on any functionality of LogicNodeImpl here, just using the
     // pointer as a unique identifier of the node

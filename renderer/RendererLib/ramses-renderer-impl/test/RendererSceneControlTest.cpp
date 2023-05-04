@@ -36,7 +36,7 @@ namespace ramses
         ARendererSceneControl()
             : m_renderer(*m_framework.createRenderer({}))
             , m_sceneControlAPI(*m_renderer.getSceneControlAPI())
-            , m_pendingCommands(m_sceneControlAPI.impl.getPendingCommands())
+            , m_pendingCommands(m_sceneControlAPI.m_impl.getPendingCommands())
             , m_displayId(m_renderer.createDisplay(DisplayConfig{}))
         {
             ramses_internal::ThreadLocalLog::SetPrefix(2);
@@ -49,7 +49,7 @@ namespace ramses
             ramses_internal::RendererEvent event{ eventType };
             event.sceneId = sceneId;
             event.state = state;
-            m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(event));
+            m_renderer.m_impl.getDisplayDispatcher().injectSceneControlEvent(std::move(event));
         }
 
         void submitEventsFromRenderer()
@@ -58,9 +58,9 @@ namespace ramses
             ramses_internal::RendererEventVector sceneEvts;
             m_eventsFromRenderer.appendAndConsumePendingEvents(rendererEvts, sceneEvts);
             for (auto&& evt : rendererEvts)
-                m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(evt));
+                m_renderer.m_impl.getDisplayDispatcher().injectSceneControlEvent(std::move(evt));
             for (auto&& evt : sceneEvts)
-                m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(evt));
+                m_renderer.m_impl.getDisplayDispatcher().injectSceneControlEvent(std::move(evt));
         }
 
         void dispatchSceneControlEvents()
@@ -146,7 +146,7 @@ namespace ramses
         EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.handlePickEvent(scene, 1, 2));
         EXPECT_CALL(m_cmdVisitor, handlePick(
             ramses_internal::SceneId{ scene.getValue() },
-            ramses_internal::Vector2{ 1, 2 }));
+            glm::vec2{ 1, 2 }));
         m_cmdVisitor.visit(m_pendingCommands);
     }
 
@@ -616,7 +616,7 @@ namespace ramses
                 ramses_internal::RendererEvent event{ eventType };
                 event.sceneId = sceneId;
                 event.state = state;
-                m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(event));
+                m_renderer.m_impl.getDisplayDispatcher().injectSceneControlEvent(std::move(event));
             }
 
             RendererSceneControl& m_sceneControl;

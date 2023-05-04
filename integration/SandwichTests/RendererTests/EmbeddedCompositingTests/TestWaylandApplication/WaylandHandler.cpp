@@ -211,6 +211,7 @@ namespace ramses_internal
             return false;
         }
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (pfd.revents & POLLIN)
         {
             return wl_display_dispatch(wayland.display) != 0;

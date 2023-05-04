@@ -64,13 +64,13 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_ConsumerNotLinkedToProvider:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerOvrSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consAndProvSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_AND_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.publishAndFlushScene(consumerOvrSceneId);
@@ -85,9 +85,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_ConsumerLinkedToProvider:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.getSceneToRendered(providerSceneId);
@@ -99,9 +99,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_LinkOverridesComsumerTransform:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerOvrSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerOvrSceneId);
         testFramework.getSceneToRendered(providerSceneId);
@@ -113,9 +113,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_LinkRemoved:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.getSceneToRendered(providerSceneId);
@@ -128,11 +128,11 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_ConsumerLinkedToProviderNested:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consAndProvSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_AND_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consAndProvSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
@@ -148,9 +148,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_RemovedConsumerFromScene:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.getSceneToRendered(providerSceneId);

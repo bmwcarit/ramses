@@ -12,24 +12,20 @@
 
 namespace ramses
 {
-    ArrayResource::ArrayResource(ArrayResourceImpl& pimpl)
-        : Resource(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    ArrayResource::~ArrayResource()
+    ArrayResource::ArrayResource(std::unique_ptr<ArrayResourceImpl> impl)
+        : Resource{ std::move(impl) }
+        , m_impl{ static_cast<ArrayResourceImpl&>(Resource::m_impl) }
     {
     }
 
     uint32_t ArrayResource::getNumberOfElements() const
     {
-        return impl.getElementCount();
+        return m_impl.getElementCount();
     }
 
     EDataType ArrayResource::getDataType() const
     {
-        return impl.getElementType();
+        return m_impl.getElementType();
     }
 
 }

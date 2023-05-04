@@ -32,7 +32,7 @@
 
 #include "ramses-utils.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ARamsesAppearanceBinding : public ALogicEngine
     {

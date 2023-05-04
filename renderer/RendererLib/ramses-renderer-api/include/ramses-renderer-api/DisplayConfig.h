@@ -16,27 +16,24 @@
 
 namespace ramses
 {
+    class DisplayConfigImpl;
+
     /**
+    * @ingroup RendererAPI
     * @brief The DisplayConfig holds a set of parameters to be used to initialize a display.
     */
-    class RAMSES_API DisplayConfig : public StatusObject
+    class DisplayConfig : public StatusObject
     {
     public:
         /**
         * @brief Default constructor of DisplayConfig
         */
-        DisplayConfig();
-
-        /**
-        * @brief Copy constructor of DisplayConfig
-        * @param[in] other Other instance of DisplayConfig
-        */
-        DisplayConfig(const DisplayConfig& other);
+        RAMSES_API DisplayConfig();
 
         /**
         * @brief Destructor of DisplayConfig
         */
-        ~DisplayConfig() override;
+        RAMSES_API ~DisplayConfig() override;
 
         /**
         * @brief Sets the window size and position in display pixel space.
@@ -49,7 +46,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
+        RAMSES_API status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
         /**
         * @brief Get the window size and position in display pixel space, as it was specified by setWindowRectangle() or command line options
@@ -62,7 +59,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
+        RAMSES_API status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
 
         /**
         * @brief Automatically sets the window size so that it fills the entire display.
@@ -72,14 +69,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWindowFullscreen(bool fullscreen);
+        RAMSES_API status_t setWindowFullscreen(bool fullscreen);
 
         /**
         * @brief Gets the currently set fullscreen state, which was set
         *        either via DisplayConfig::setWindowFullscreen or parsed from command line arguments.
         * @return True if this DisplayConfig is set to use fullscreen window, false otherwise.
         */
-        [[nodiscard]] bool isWindowFullscreen() const;
+        [[nodiscard]] RAMSES_API bool isWindowFullscreen() const;
 
         /**
         * @brief Sets window hints/properties to tell the window manager to disable window borders
@@ -88,7 +85,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWindowBorderless(bool borderless);
+        RAMSES_API status_t setWindowBorderless(bool borderless);
 
         /**
         * @brief   Set number of samples to be used for multisampled rendering.
@@ -104,7 +101,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setMultiSampling(uint32_t numSamples);
+        RAMSES_API status_t setMultiSampling(uint32_t numSamples);
 
         /**
         * @brief Get number of samples currently set.
@@ -113,7 +110,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getMultiSamplingSamples(uint32_t& numSamples) const;
+        RAMSES_API status_t getMultiSamplingSamples(uint32_t& numSamples) const;
 
         /**
         * @brief [Mandatory on Wayland] Set IVI layer ID to use for attaching the IVI surface created by the display.
@@ -128,14 +125,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID);
+        RAMSES_API status_t setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID);
 
         /**
         * @brief Get the ID of the Wayland IVI layer to which the IVI surface used by the display is attached.
         *
         * @return the current setting of wayland IVI layer ID, returns waylandIviLayerId_t::Invalid() if no value has been set yet
         */
-        [[nodiscard]] waylandIviLayerId_t getWaylandIviLayerID() const;
+        [[nodiscard]] RAMSES_API waylandIviLayerId_t getWaylandIviLayerID() const;
 
         /**
         * @brief [Mandatory on Wayland] Set IVI surface ID to use when creating the display window on Wayland.
@@ -148,21 +145,21 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandIviSurfaceID(waylandIviSurfaceId_t waylandIviSurfaceID);
+        RAMSES_API status_t setWaylandIviSurfaceID(waylandIviSurfaceId_t waylandIviSurfaceID);
 
         /**
         * @brief Get the current setting of IVI surface ID
         *
         * @return the current setting of IVI surface ID, returns waylandIviSurfaceId_t::Invalid() if no value has been set yet
         */
-        [[nodiscard]] waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
+        [[nodiscard]] RAMSES_API waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
 
         /**
         * @brief Get the current setting of Android native window
         *
         * @return the current setting of Android native window, returns nullptr if no value has been set yet
         */
-        [[nodiscard]] void* getAndroidNativeWindow() const;
+        [[nodiscard]] RAMSES_API void* getAndroidNativeWindow() const;
 
         /**
         * @brief [Mandatory on Android] Set native window to use for rendering on Android.
@@ -174,7 +171,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setAndroidNativeWindow(void* nativeWindowPtr);
+        RAMSES_API status_t setAndroidNativeWindow(void* nativeWindowPtr);
 
         /**
         * @brief Set IVI window to be visible right after window creation
@@ -182,7 +179,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWindowIviVisible();
+        RAMSES_API status_t setWindowIviVisible();
 
         /**
         * @brief By default uploaded effects are kept forever in VRAM to avoid
@@ -196,7 +193,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t keepEffectsUploaded(bool enable);
+        RAMSES_API status_t keepEffectsUploaded(bool enable);
 
         /**
         * @brief Set the amount of GPU memory in bytes that will be used as cache for resources.
@@ -216,7 +213,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setGPUMemoryCacheSize(uint64_t size);
+        RAMSES_API status_t setGPUMemoryCacheSize(uint64_t size);
 
         /**
          * @brief Enables/disables resizing of the window (Default=Disabled)
@@ -225,7 +222,7 @@ namespace ramses
          * @return  StatusOK on success, otherwise the returned status can be used to resolve
          *          to resolve error message using getStatusMessage()
          */
-        status_t setResizable(bool resizable);
+        RAMSES_API status_t setResizable(bool resizable);
 
         /**
         * @brief Sets the clear color of the displays framebuffer (Default=0.0, 0.0, 0.0, 1.0)
@@ -234,7 +231,7 @@ namespace ramses
         * @return  StatusOK on success, otherwise the returned status can be used to resolve
         *          to resolve error message using getStatusMessage()
         */
-        status_t setClearColor(const vec4f& color);
+        RAMSES_API status_t setClearColor(const vec4f& color);
 
         /**
         * @brief Sets whether depth/stencil buffer should be created for the framebuffer of the display.
@@ -252,7 +249,7 @@ namespace ramses
         * @return  StatusOK on success, otherwise the returned status can be used to resolve
         *          to resolve error message using getStatusMessage()
         */
-        status_t setDepthStencilBufferType(EDepthBufferType depthBufferType);
+        RAMSES_API status_t setDepthStencilBufferType(EDepthBufferType depthBufferType);
 
         /**
         * @brief [Only for X11] Set the X11 window handle to create a ramses display from an existing X11 window.
@@ -265,7 +262,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setX11WindowHandle(unsigned long x11WindowHandle);
+        RAMSES_API status_t setX11WindowHandle(unsigned long x11WindowHandle); // NOLINT(google-runtime-int) use platform type
 
         /**
         * @brief [Only for X11] Get the current setting of the X11 window handle
@@ -273,7 +270,7 @@ namespace ramses
         * @return the current setting of the X11 window handle, returns numerical maximum value if no value has been set yet.
         * The returned type is equivalent to \verbatim ::Window \endverbatim from the X11 headers.
         */
-        [[nodiscard]] unsigned long getX11WindowHandle() const;
+        [[nodiscard]] RAMSES_API unsigned long getX11WindowHandle() const; // NOLINT(google-runtime-int) use platform type
 
         /**
         * @brief [Only for Windows] Set the HWND handle to create a ramses display from an existing HWND window on a Window platform.
@@ -285,14 +282,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWindowsWindowHandle(void* hwnd);
+        RAMSES_API status_t setWindowsWindowHandle(void* hwnd);
 
         /**
         * @brief Get the current setting of the Windows window handle (HWND)
         *
         * @return the current setting of the Windows window handle, returns nullptr if no value has been set yet
         */
-        [[nodiscard]] void* getWindowsWindowHandle() const;
+        [[nodiscard]] RAMSES_API void* getWindowsWindowHandle() const;
 
         /**
         * @brief Set the Wayland display name to connect to.
@@ -302,14 +299,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandDisplay(std::string_view waylandDisplay);
+        RAMSES_API status_t setWaylandDisplay(std::string_view waylandDisplay);
 
         /**
         * @brief Get the current setting of Wayland display name
         *
         * @return Wayland display name to use for connection, empty means default
         */
-        [[nodiscard]] std::string_view getWaylandDisplay() const;
+        [[nodiscard]] RAMSES_API std::string_view getWaylandDisplay() const;
 
         /**
         * @brief   Sets whether async shader/effect compilation and upload should be enabled.
@@ -333,7 +330,7 @@ namespace ramses
         * @return  StatusOK on success, otherwise the returned status can be used to resolve
         *          to resolve error message using getStatusMessage()
         */
-        status_t setAsyncEffectUploadEnabled(bool enabled);
+        RAMSES_API status_t setAsyncEffectUploadEnabled(bool enabled);
 
         /**
          * @brief      Set the name to be used for the embedded compositing
@@ -365,14 +362,14 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setWaylandEmbeddedCompositingSocketName(std::string_view socketname);
+        RAMSES_API status_t setWaylandEmbeddedCompositingSocketName(std::string_view socketname);
 
         /**
         * @brief Get the current setting of embedded compositing display socket name
         *
         * @return Wayland display name to use for embedded compositing socket
         */
-        [[nodiscard]] std::string_view getWaylandEmbeddedCompositingSocketName() const;
+        [[nodiscard]] RAMSES_API std::string_view getWaylandEmbeddedCompositingSocketName() const;
 
         /**
         * @brief Request that the embedded compositing display socket belongs to the given group.
@@ -381,7 +378,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandEmbeddedCompositingSocketGroup(std::string_view groupname);
+        RAMSES_API status_t setWaylandEmbeddedCompositingSocketGroup(std::string_view groupname);
 
         /**
          * @brief      Set the file descriptor for the embedded compositor
@@ -411,7 +408,7 @@ namespace ramses
          *             be used to resolve error message using
          *             getStatusMessage().
          */
-        status_t setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor);
+        RAMSES_API status_t setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor);
 
         /**
         * @brief       Request that the embedded compositing display socket obtains the permissions given.
@@ -431,7 +428,7 @@ namespace ramses
         * @return      StatusOK for success, otherwise the returned status can be used
         *              to resolve error message using getStatusMessage().
         */
-        status_t setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
+        RAMSES_API status_t setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
 
         /**
         * @brief Set the Wayland display name to connect system compositor to.
@@ -441,7 +438,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
+        RAMSES_API status_t setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
 
         /**
         * @brief Set the render node to use for creating GBM buffer objects used for creating DMA Offscreen buffers
@@ -462,7 +459,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setPlatformRenderNode(std::string_view renderNode);
+        RAMSES_API status_t setPlatformRenderNode(std::string_view renderNode);
 
         /**
         * @brief Specifies the minimum number of video frames that are displayed before a buffer swap will occur
@@ -475,7 +472,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setSwapInterval(int32_t interval);
+        RAMSES_API status_t setSwapInterval(int32_t interval);
 
         /**
         * @brief Specifies the scene's priority on this display
@@ -493,7 +490,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setScenePriority(sceneId_t sceneId, int32_t priority);
+        RAMSES_API status_t setScenePriority(sceneId_t sceneId, int32_t priority);
 
         /**
         * @brief Sets the batch size for resource uploads
@@ -508,19 +505,38 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setResourceUploadBatchSize(uint32_t batchSize);
+        RAMSES_API status_t setResourceUploadBatchSize(uint32_t batchSize);
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API DisplayConfig(const DisplayConfig& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API DisplayConfig(DisplayConfig&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API DisplayConfig& operator=(const DisplayConfig& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API DisplayConfig& operator=(DisplayConfig&& other) noexcept;
 
         /**
         * Stores internal data for implementation specifics of DisplayConfig.
         */
-        class DisplayConfigImpl& impl;
-
-        /**
-         * @brief Deleted copy assignment
-         * @param other unused
-         * @return unused
-         */
-        DisplayConfig& operator=(const DisplayConfig& other) = delete;
+        std::reference_wrapper<DisplayConfigImpl> m_impl;
     };
 }
 

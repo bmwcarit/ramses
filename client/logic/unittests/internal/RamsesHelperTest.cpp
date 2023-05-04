@@ -10,7 +10,7 @@
 
 #include "internals/RamsesHelper.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     TEST(ARamsesHelper, ConvertsRamsesUniformTypeToEpropertyType)
     {

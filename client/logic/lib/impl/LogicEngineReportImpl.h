@@ -11,10 +11,8 @@
 #include "ramses-logic/LogicNode.h"
 #include "internals/UpdateReport.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
-    class ApiObjects;
-
     class LogicEngineReportImpl
     {
     public:
@@ -22,7 +20,7 @@ namespace rlogic::internal
         using LogicNodes = std::vector<LogicNode*>;
 
         LogicEngineReportImpl();
-        explicit LogicEngineReportImpl(const UpdateReport& reportData, const ApiObjects& apiObjects);
+        explicit LogicEngineReportImpl(const UpdateReport& reportData);
 
         [[nodiscard]] const LogicNodesTimed& getNodesExecuted() const;
         [[nodiscard]] const LogicNodes& getNodesSkippedExecution() const;

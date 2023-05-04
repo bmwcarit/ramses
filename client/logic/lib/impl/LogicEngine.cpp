@@ -29,7 +29,7 @@
 
 #include <string>
 
-namespace rlogic
+namespace ramses
 {
     LogicEngine::LogicEngine(ramses::EFeatureLevel featureLevel) noexcept
         : m_impl(std::make_unique<internal::LogicEngineImpl>(featureLevel))
@@ -221,7 +221,7 @@ namespace rlogic
         m_impl->setStatisticsLoggingRate(loggingRate);
     }
 
-    void LogicEngine::setStatisticsLogLevel(ELogMessageType logLevel)
+    void LogicEngine::setStatisticsLogLevel(ELogLevel logLevel)
     {
         m_impl->setStatisticsLogLevel(logLevel);
     }

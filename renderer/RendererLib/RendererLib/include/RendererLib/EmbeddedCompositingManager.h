@@ -28,11 +28,11 @@ namespace ramses_internal
 
         void dispatchStateChangesOfSources(WaylandIviSurfaceIdVector& streamsWithAvailabilityChanged, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams) override;
         void processClientRequests() override;
-        [[nodiscard]] Bool hasUpdatedContentFromStreamSourcesToUpload() const override;
+        [[nodiscard]] bool hasUpdatedContentFromStreamSourcesToUpload() const override;
         void uploadResourcesAndGetUpdates(StreamSourceUpdates& updatedStreams) override;
         void notifyClients() override;
         [[nodiscard]] DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(WaylandIviSurfaceId source) const override;
-        [[nodiscard]] Bool hasRealCompositor() const override; //TODO Mohamed: remove this as soon as EC dummy is removed
+        [[nodiscard]] bool hasRealCompositor() const override; //TODO Mohamed: remove this as soon as EC dummy is removed
 
     private:
         struct StreamTextureSourceInfo

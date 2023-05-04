@@ -19,7 +19,7 @@
 
 namespace ramses_internal
 {
-    RenderBufferScene::RenderBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    RenderBufferScene::RenderBufferScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : CommonRenderBufferTestScene(scene, cameraPosition)
         , m_readWriteColorRenderBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
         , m_writeOnlyDepthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_WriteOnly))

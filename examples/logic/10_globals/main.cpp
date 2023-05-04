@@ -19,11 +19,11 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a script which initializes global variables in its init() method
     // They are used during the interface definition as well as at runtime
-    rlogic::LuaScript* script = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script = logicEngine.createLuaScript(R"(
         function init()
             GLOBAL.outputType = Type:String()
             GLOBAL.outputName = "name"

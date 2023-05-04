@@ -10,6 +10,7 @@
 #define RAMSES_DATATYPEUTILS_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -29,16 +30,6 @@ namespace ramses_internal
         EDataTypeID_Matrix33f,
         EDataTypeID_Matrix44f
     };
-
-    class Vector2;
-    class Vector3;
-    class Vector4;
-    class Vector2i;
-    class Vector3i;
-    class Vector4i;
-    class Matrix22f;
-    class Matrix33f;
-    class Matrix44f;
 
     // Maps data type to its data type ID
     template <typename T>
@@ -66,55 +57,55 @@ namespace ramses_internal
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Vector2 >
+    struct DataTypeToDataIDSelector < glm::vec2 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Vector2f;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Vector3 >
+    struct DataTypeToDataIDSelector < glm::vec3 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Vector3f;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Vector4 >
+    struct DataTypeToDataIDSelector < glm::vec4 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Vector4f;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Matrix22f >
+    struct DataTypeToDataIDSelector < glm::mat2 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Matrix22f;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Matrix33f >
+    struct DataTypeToDataIDSelector < glm::mat3 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Matrix33f;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Matrix44f >
+    struct DataTypeToDataIDSelector < glm::mat4 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Matrix44f;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Vector2i >
+    struct DataTypeToDataIDSelector < glm::ivec2 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Vector2i;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Vector3i >
+    struct DataTypeToDataIDSelector < glm::ivec3 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Vector3i;
     };
 
     template <>
-    struct DataTypeToDataIDSelector < Vector4i >
+    struct DataTypeToDataIDSelector < glm::ivec4 >
     {
         static const EDataTypeID DataTypeID = EDataTypeID_Vector4i;
     };
@@ -146,55 +137,55 @@ namespace ramses_internal
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector2f >
     {
-        using DataType = Vector2;
+        using DataType = glm::vec2;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector3f >
     {
-        using DataType = Vector3;
+        using DataType = glm::vec3;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector4f >
     {
-        using DataType = Vector4;
+        using DataType = glm::vec4;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Matrix22f >
     {
-        using DataType = Matrix22f;
+        using DataType = glm::mat2;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Matrix33f >
     {
-        using DataType = Matrix33f;
+        using DataType = glm::mat3;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Matrix44f >
     {
-        using DataType = Matrix44f;
+        using DataType = glm::mat4;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector2i >
     {
-        using DataType = Vector2i;
+        using DataType = glm::ivec2;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector3i >
     {
-        using DataType = Vector3i;
+        using DataType = glm::ivec3;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector4i >
     {
-        using DataType = Vector4i;
+        using DataType = glm::ivec4;
     };
 }
 

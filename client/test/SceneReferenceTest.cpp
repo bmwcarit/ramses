@@ -26,7 +26,7 @@ namespace ramses
         SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(444),"testSceneReference");
         ASSERT_NE(nullptr, sceneReference);
 
-        const auto sceneRefHandle = sceneReference->impl.getSceneReferenceHandle();
+        const auto sceneRefHandle = sceneReference->m_impl.getSceneReferenceHandle();
         EXPECT_TRUE(sceneRefHandle.isValid());
         ASSERT_TRUE(this->getInternalScene().isSceneReferenceAllocated(sceneRefHandle));
         const auto& sceneRef = this->getInternalScene().getSceneReference(sceneRefHandle);
@@ -80,7 +80,7 @@ namespace ramses
         sceneReference->requestState(RendererSceneState::Ready);
         ASSERT_EQ(RendererSceneState::Ready, sceneReference->getRequestedState());
 
-        const auto sceneRefHandle = sceneReference->impl.getSceneReferenceHandle();
+        const auto sceneRefHandle = sceneReference->m_impl.getSceneReferenceHandle();
         ASSERT_TRUE(this->getInternalScene().isSceneReferenceAllocated(sceneRefHandle));
         EXPECT_EQ(ramses_internal::RendererSceneState::Ready, this->getInternalScene().getSceneReference(sceneRefHandle).requestedState);
     }
@@ -97,15 +97,15 @@ namespace ramses
         EXPECT_NE(StatusOK, m_scene.linkData(nullptr, dataProviderId_t(1), reference2, dataConsumerId_t(2)));
         EXPECT_NE(StatusOK, m_scene.linkData(reference2, dataProviderId_t(1), nullptr, dataConsumerId_t(2)));
 
-        reference1->impl.setReportedState(RendererSceneState::Available);
+        reference1->m_impl.setReportedState(RendererSceneState::Available);
         EXPECT_NE(StatusOK, m_scene.linkData(reference1, dataProviderId_t(1), reference2, dataConsumerId_t(2)));
         EXPECT_NE(StatusOK, m_scene.linkData(reference2, dataProviderId_t(1), reference1, dataConsumerId_t(2)));
 
-        reference1->impl.setReportedState(RendererSceneState::Ready);
+        reference1->m_impl.setReportedState(RendererSceneState::Ready);
         EXPECT_NE(StatusOK, m_scene.linkData(reference1, dataProviderId_t(1), reference2, dataConsumerId_t(2)));
         EXPECT_NE(StatusOK, m_scene.linkData(reference2, dataProviderId_t(1), reference1, dataConsumerId_t(2)));
 
-        reference1->impl.setReportedState(RendererSceneState::Rendered);
+        reference1->m_impl.setReportedState(RendererSceneState::Rendered);
         EXPECT_NE(StatusOK, m_scene.linkData(reference1, dataProviderId_t(1), reference2, dataConsumerId_t(2)));
         EXPECT_NE(StatusOK, m_scene.linkData(reference2, dataProviderId_t(1), reference1, dataConsumerId_t(2)));
     }
@@ -114,8 +114,8 @@ namespace ramses
     {
         auto reference1 = m_scene.createSceneReference(sceneId_t(111));
         auto reference2 = m_scene.createSceneReference(sceneId_t(222));
-        reference1->impl.setReportedState(RendererSceneState::Ready);
-        reference2->impl.setReportedState(RendererSceneState::Rendered);
+        reference1->m_impl.setReportedState(RendererSceneState::Ready);
+        reference2->m_impl.setReportedState(RendererSceneState::Rendered);
 
         EXPECT_EQ(StatusOK, m_scene.linkData(reference1, dataProviderId_t(1), nullptr, dataConsumerId_t(2)));
         EXPECT_EQ(StatusOK, m_scene.linkData(nullptr, dataProviderId_t(1), reference1, dataConsumerId_t(2)));
@@ -130,9 +130,9 @@ namespace ramses
 
         auto reference1 = m_scene.createSceneReference(sceneId_t(333));
 
-        reference1->impl.setReportedState(RendererSceneState::Ready);
-        referenceFromOtherScene1->impl.setReportedState(RendererSceneState::Rendered);
-        referenceFromOtherScene2->impl.setReportedState(RendererSceneState::Rendered);
+        reference1->m_impl.setReportedState(RendererSceneState::Ready);
+        referenceFromOtherScene1->m_impl.setReportedState(RendererSceneState::Rendered);
+        referenceFromOtherScene2->m_impl.setReportedState(RendererSceneState::Rendered);
 
         EXPECT_NE(StatusOK, m_scene.linkData(nullptr, dataProviderId_t(1), nullptr, dataConsumerId_t(2)));
         EXPECT_NE(StatusOK, m_scene.linkData(reference1, dataProviderId_t(1), reference1, dataConsumerId_t(2)));
@@ -162,7 +162,7 @@ namespace ramses
         constexpr sceneId_t sceneId{ 444 };
         auto reference = m_scene.createSceneReference(sceneId);
         ASSERT_NE(nullptr, reference);
-        const auto sceneRefHandle = reference->impl.getSceneReferenceHandle();
+        const auto sceneRefHandle = reference->m_impl.getSceneReferenceHandle();
         ASSERT_TRUE(this->getInternalScene().isSceneReferenceAllocated(sceneRefHandle));
 
         EXPECT_EQ(StatusOK, reference->requestNotificationsForSceneVersionTags(true));
@@ -180,7 +180,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, reference->setRenderOrder(-13));
 
-        const auto sceneRefHandle = reference->impl.getSceneReferenceHandle();
+        const auto sceneRefHandle = reference->m_impl.getSceneReferenceHandle();
         ASSERT_TRUE(this->getInternalScene().isSceneReferenceAllocated(sceneRefHandle));
         EXPECT_EQ(-13, this->getInternalScene().getSceneReference(sceneRefHandle).renderOrder);
     }
@@ -195,10 +195,10 @@ namespace ramses
         auto reference2 = m_scene.createSceneReference(sceneId2);
         ASSERT_NE(nullptr, reference1);
         ASSERT_NE(nullptr, reference2);
-        const auto sceneRefHandle1 = reference1->impl.getSceneReferenceHandle();
-        const auto sceneRefHandle2 = reference2->impl.getSceneReferenceHandle();
-        reference1->impl.setReportedState(RendererSceneState::Ready);
-        reference2->impl.setReportedState(RendererSceneState::Ready);
+        const auto sceneRefHandle1 = reference1->m_impl.getSceneReferenceHandle();
+        const auto sceneRefHandle2 = reference2->m_impl.getSceneReferenceHandle();
+        reference1->m_impl.setReportedState(RendererSceneState::Ready);
+        reference2->m_impl.setReportedState(RendererSceneState::Ready);
 
         EXPECT_EQ(StatusOK, m_scene.linkData(reference1, providerId, reference2, consumerId));
         EXPECT_EQ(StatusOK, m_scene.linkData(reference1, providerId, nullptr, consumerId));
@@ -232,7 +232,7 @@ namespace ramses
         constexpr dataConsumerId_t consumerId{ 13 };
         auto reference = m_scene.createSceneReference(sceneId);
         ASSERT_NE(nullptr, reference);
-        const auto sceneRefHandle = reference->impl.getSceneReferenceHandle();
+        const auto sceneRefHandle = reference->m_impl.getSceneReferenceHandle();
 
         EXPECT_EQ(StatusOK, m_scene.unlinkData(reference, consumerId));
         EXPECT_EQ(StatusOK, m_scene.unlinkData(nullptr, consumerId));

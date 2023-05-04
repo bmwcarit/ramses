@@ -19,7 +19,7 @@
 #include "glm/gtx/range.hpp"
 #include <cmath>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     AnimationNodeImpl::AnimationNodeImpl(AnimationChannels channels, bool exposeDataAsProperties, std::string_view name, uint64_t id) noexcept
         : LogicNodeImpl(name, id)
@@ -90,7 +90,7 @@ namespace rlogic::internal
         }
         auto outputsImpl = std::make_unique<PropertyImpl>(std::move(outputs), EPropertySemantics::AnimationOutput);
 
-        setRootProperties(std::make_unique<Property>(std::move(inputsImpl)), std::make_unique<Property>(std::move(outputsImpl)));
+        setRootProperties(std::move(inputsImpl), std::move(outputsImpl));
 
         if (m_hasChannelDataExposedViaProperties)
             initAnimationDataPropertyValues();
@@ -439,7 +439,7 @@ namespace rlogic::internal
             return nullptr;
         }
 
-        deserialized->setRootProperties(std::make_unique<Property>(std::move(rootInProperty)), std::make_unique<Property>(std::move(rootOutProperty)));
+        deserialized->setRootProperties(std::move(rootInProperty), std::move(rootOutProperty));
 
         // reset property values of all channel data to original channel data provided at creation time
         if (hasChannelDataProperties)

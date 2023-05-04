@@ -62,7 +62,7 @@ namespace ramses_internal
         }
     }
 
-    Bool ResourceUploadingManager::hasAnythingToUpload() const
+    bool ResourceUploadingManager::hasAnythingToUpload() const
     {
         return !m_resources.getAllProvidedResources().empty() || m_resources.hasAnyResourcesScheduledForUpload();
     }
@@ -150,7 +150,7 @@ namespace ramses_internal
             m_stats.resourceUploaded(resourceSize);
             sizeUploaded += resourceSize;
 
-            const Bool checkTimeLimit = (i % m_resourceUploadBatchSize == 0) || (resourceSize > LargeResourceByteSizeThreshold);
+            const bool checkTimeLimit = (i % m_resourceUploadBatchSize == 0) || (resourceSize > LargeResourceByteSizeThreshold);
             std::chrono::milliseconds sectionDuration{};
             if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ResourcesUpload, &sectionDuration))
             {
@@ -234,7 +234,7 @@ namespace ramses_internal
         m_resources.unregisterResource(rd.hash);
     }
 
-    void ResourceUploadingManager::getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, Bool keepEffects, UInt64 sizeToBeFreed) const
+    void ResourceUploadingManager::getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, bool keepEffects, UInt64 sizeToBeFreed) const
     {
         assert(resourcesToUnload.empty());
         const ResourceContentHashVector& unusedResources = m_resources.getAllResourcesNotInUseByScenes();
@@ -253,7 +253,7 @@ namespace ramses_internal
             const ResourceDescriptor& rd = m_resources.getResourceDescriptor(hash);
             if (rd.status == EResourceStatus::Uploaded)
             {
-                const Bool keepEffectCached = keepEffects && (rd.type == EResourceType_Effect);
+                const bool keepEffectCached = keepEffects && (rd.type == EResourceType_Effect);
                 if (!keepEffectCached)
                 {
                     resourcesToUnload.push_back(hash);

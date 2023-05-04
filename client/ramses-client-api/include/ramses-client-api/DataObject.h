@@ -16,6 +16,7 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief   The DataObject is a data container for storing data within a scene.
     * @details The DataObject can be bound to some inputs of some object types
     *          (e.g. #ramses::Appearance::bindInput or #ramses::Camera::bindViewportOffset).
@@ -27,7 +28,7 @@ namespace ramses
     *          (#ramses::Scene::createDataProvider and #ramses::Scene::createDataConsumer) see SDK examples for typical use cases.
     *          A value set to a #DataObject is then propagated everywhere it is bound to and it is linked to.
     */
-    class RAMSES_API DataObject : public SceneObject
+    class DataObject : public SceneObject
     {
     public:
         /**
@@ -35,7 +36,7 @@ namespace ramses
         *
         * @return data type held in this #DataObject
         */
-        [[nodiscard]] EDataType getDataType() const;
+        [[nodiscard]] RAMSES_API EDataType getDataType() const;
 
         /**
          * @brief   Sets/updates the stored value.
@@ -62,25 +63,20 @@ namespace ramses
         /**
         * Stores internal data for implementation specifics
         */
-        class DataObjectImpl& impl;
+        class DataObjectImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating DataObject instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor of DataObject
         *
-        * @param[in] pimpl Internal data for implementation specifics of DataObject
+        * @param[in] impl Internal data for implementation specifics of DataObject
         */
-        explicit DataObject(DataObjectImpl& pimpl);
-
-        /**
-        * @brief Destructor for a DataObject
-        */
-        ~DataObject() override;
+        explicit DataObject(std::unique_ptr<DataObjectImpl> impl);
 
     private:
         /// Internal implementation of #setValue

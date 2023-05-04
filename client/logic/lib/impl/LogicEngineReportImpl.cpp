@@ -7,24 +7,24 @@
 //  -------------------------------------------------------------------------
 
 #include "impl/LogicEngineReportImpl.h"
-#include "internals/ApiObjects.h"
+#include "LogicNodeImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LogicEngineReportImpl::LogicEngineReportImpl() = default;
 
-    LogicEngineReportImpl::LogicEngineReportImpl(const UpdateReport& reportData, const ApiObjects& apiObjects)
+    LogicEngineReportImpl::LogicEngineReportImpl(const UpdateReport& reportData)
         : m_totalUpdateExecutionTime{ reportData.getSectionExecutionTime(UpdateReport::ETimingSection::TotalUpdate) }
         , m_topologySortExecutionTime{ reportData.getSectionExecutionTime(UpdateReport::ETimingSection::TopologySort) }
         , m_activatedLinks{ reportData.getLinkActivations() }
     {
         m_nodesExecuted.reserve(reportData.getNodesExecuted().size());
         for (const auto& n : reportData.getNodesExecuted())
-            m_nodesExecuted.push_back({ apiObjects.getApiObject(*n.first), n.second });
+            m_nodesExecuted.push_back({ n.first->getLogicObject().as<LogicNode>(), n.second });
 
         m_nodesSkippedExecution.reserve(reportData.getNodesSkippedExecution().size());
         for (const auto& n : reportData.getNodesSkippedExecution())
-            m_nodesSkippedExecution.push_back(apiObjects.getApiObject(*n));
+            m_nodesSkippedExecution.push_back(n->getLogicObject().as<LogicNode>());
     }
 
     const LogicEngineReportImpl::LogicNodesTimed& LogicEngineReportImpl::getNodesExecuted() const

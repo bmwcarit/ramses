@@ -16,6 +16,7 @@ namespace ramses
     class MeshNode;
 
     /**
+    * @ingroup CoreAPI
     * @brief The RenderGroup is a container used to collect renderables which are supposed
     * to be rendered together. Renderables added to it can be ordered within the RenderGroup
     * so that they will be rendered in given order. RenderGroup can then be added to a RenderPass
@@ -27,7 +28,7 @@ namespace ramses
     * The order inside a nested RenderGroup is local, i.e. all its renderables/RenderGroups are
     * rendered before the next renderable/RenderGroup of its parent RenderGroup.
     */
-    class RAMSES_API RenderGroup : public SceneObject
+    class RenderGroup : public SceneObject
     {
     public:
         /**
@@ -41,7 +42,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t addMeshNode(const MeshNode& mesh, int32_t orderWithinGroup = 0);
+        RAMSES_API status_t addMeshNode(const MeshNode& mesh, int32_t orderWithinGroup = 0);
 
         /**
         * @brief Remove a mesh from this RenderGroup.
@@ -50,7 +51,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeMeshNode(const MeshNode& mesh);
+        RAMSES_API status_t removeMeshNode(const MeshNode& mesh);
 
         /**
         * @brief Checks whether a mesh was added to this RenderGroup.
@@ -58,7 +59,7 @@ namespace ramses
         * @param[in] mesh The mesh to query
         * @return \c true if the mesh is contained in this RenderGroup \c false otherwise
         */
-        [[nodiscard]] bool containsMeshNode(const MeshNode& mesh) const;
+        [[nodiscard]] RAMSES_API bool containsMeshNode(const MeshNode& mesh) const;
 
         /**
         * @brief Gets a render order of given MeshNode within this RenderGroup.
@@ -68,7 +69,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getMeshNodeOrder(const MeshNode& mesh, int32_t& orderWithinGroup) const;
+        RAMSES_API status_t getMeshNodeOrder(const MeshNode& mesh, int32_t& orderWithinGroup) const;
 
         /**
         * @brief Add a RenderGroup to this RenderGroup.
@@ -81,7 +82,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t addRenderGroup(const RenderGroup& renderGroup, int32_t orderWithinGroup = 0);
+        RAMSES_API status_t addRenderGroup(const RenderGroup& renderGroup, int32_t orderWithinGroup = 0);
 
         /**
         * @brief Remove a RenderGroup from this RenderGroup.
@@ -90,7 +91,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeRenderGroup(const RenderGroup& renderGroup);
+        RAMSES_API status_t removeRenderGroup(const RenderGroup& renderGroup);
 
         /**
         * @brief Checks whether a RenderGroup was added to this RenderGroup.
@@ -98,7 +99,7 @@ namespace ramses
         * @param[in] renderGroup The RenderGroup to query
         * @return \c true if the RenderGroup is contained in this RenderGroup \c false otherwise
         */
-        [[nodiscard]] bool containsRenderGroup(const RenderGroup& renderGroup) const;
+        [[nodiscard]] RAMSES_API bool containsRenderGroup(const RenderGroup& renderGroup) const;
 
         /**
         * @brief Gets a render order of given RenderGroup within this RenderGroup.
@@ -108,7 +109,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getRenderGroupOrder(const RenderGroup& renderGroup, int32_t& orderWithinGroup) const;
+        RAMSES_API status_t getRenderGroupOrder(const RenderGroup& renderGroup, int32_t& orderWithinGroup) const;
 
         /**
         * @brief Will remove all renderables from this RenderGroup.
@@ -117,7 +118,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeAllRenderables();
+        RAMSES_API status_t removeAllRenderables();
 
         /**
         * @brief Will remove all RenderGroups from this RenderGroup.
@@ -126,30 +127,25 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeAllRenderGroups();
+        RAMSES_API status_t removeAllRenderGroups();
 
         /**
         * Stores internal data for implementation specifics of RenderGroup.
         */
-        class RenderGroupImpl& impl;
+        class RenderGroupImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating RenderGroup instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for RenderGroup.
         *
-        * @param[in] pimpl Internal data for implementation specifics of RenderGroup (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of RenderGroup (sink - instance becomes owner)
         */
-        explicit RenderGroup(RenderGroupImpl& pimpl);
-
-        /**
-        * @brief Destructor of the RenderGroup
-        */
-        ~RenderGroup() override;
+        explicit RenderGroup(std::unique_ptr<RenderGroupImpl> impl);
     };
 }
 

@@ -18,7 +18,7 @@ namespace ramses_internal
         getArgument<0>().setDescription("test step nr.");
     }
 
-    Bool TestStepCommand::execute(Int& testStep) const
+    bool TestStepCommand::execute(Int& testStep) const
     {
         m_testStep = testStep;
         m_testStepSetEvent.signal();

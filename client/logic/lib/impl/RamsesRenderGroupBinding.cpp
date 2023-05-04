@@ -9,7 +9,7 @@
 #include "ramses-logic/RamsesRenderGroupBinding.h"
 #include "impl/RamsesRenderGroupBindingImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesRenderGroupBinding::RamsesRenderGroupBinding(std::unique_ptr<internal::RamsesRenderGroupBindingImpl> impl) noexcept
         : RamsesBinding(std::move(impl))
@@ -17,8 +17,6 @@ namespace rlogic
         , m_renderGroupBinding{ static_cast<internal::RamsesRenderGroupBindingImpl&>(RamsesBinding::m_impl) }
     {
     }
-
-    RamsesRenderGroupBinding::~RamsesRenderGroupBinding() noexcept = default;
 
     const ramses::RenderGroup& RamsesRenderGroupBinding::getRamsesRenderGroup() const
     {

@@ -15,16 +15,16 @@
 #include <memory>
 #include <vector>
 
-namespace rlogic
+namespace ramses
 {
     /**
      * A Collection which allows STL-style algorithm with forward semantics to be executed (e.g. find_if, for_each etc.).
-     * A Collection cannot be instantiated directly, it can only be obtained using #rlogic::LogicEngine::getCollection.
+     * A Collection cannot be instantiated directly, it can only be obtained using #ramses::LogicEngine::getCollection.
      *
-     * See also #rlogic::Iterator for more info on the iterator objects returned by #begin and #end.
+     * See also #ramses::Iterator for more info on the iterator objects returned by #begin and #end.
      *
      * Template parameters:
-     * - T: the object type to iterate over, e.g. #rlogic::LuaScript
+     * - T: the object type to iterate over, e.g. #ramses::LuaScript
      */
     template <typename T>
     class Collection
@@ -125,8 +125,8 @@ namespace rlogic
 
         /**
          * Default constructor is deleted because a collection is supposed to provide read-only access to
-         * internal data of the #rlogic::LogicEngine class, therefore it can only be obtained by calling
-         * #rlogic::LogicEngine::getCollection
+         * internal data of the #ramses::LogicEngine class, therefore it can only be obtained by calling
+         * #ramses::LogicEngine::getCollection
          */
         Collection() = delete;
 

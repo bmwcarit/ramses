@@ -66,7 +66,7 @@ namespace ramses_internal
         RendererSceneUpdater::handleSceneUpdate(sceneId, std::move(copyOfActionsForScene)); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
     }
 
-    void RendererSceneUpdaterFacade::handlePickEvent(SceneId sceneId, Vector2 coords)
+    void RendererSceneUpdaterFacade::handlePickEvent(SceneId sceneId, glm::vec2 coords)
     {
         RendererSceneUpdaterPartialMock::handlePickEvent(sceneId, coords);
         RendererSceneUpdater::handlePickEvent(sceneId, coords); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater

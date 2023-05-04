@@ -10,7 +10,7 @@
 
 #include "ramses-logic/EPropertyType.h"
 
-namespace rlogic
+namespace ramses
 {
     TEST(PropertyTypeToEnumTypeTrait, ConvertsSupportedTypesToCorrectEnum)
     {

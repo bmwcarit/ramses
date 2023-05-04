@@ -26,7 +26,7 @@ namespace rlogic_serialization
     struct RamsesReference;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesBindingImpl : public LogicNodeImpl
     {
@@ -37,7 +37,7 @@ namespace rlogic::internal
         // Used by subclasses to handle serialization
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::RamsesReference> SerializeRamsesReference(const ramses::SceneObject& object, flatbuffers::FlatBufferBuilder& builder);
 
-        void setRootInputs(std::unique_ptr<Property> rootInputs);
+        void setRootInputs(std::unique_ptr<PropertyImpl> rootInputs);
 
     private:
         using LogicNodeImpl::setRootProperties;

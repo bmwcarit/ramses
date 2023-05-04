@@ -16,7 +16,7 @@
 #include "ramses-logic/AnimationTypes.h"
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
     const auto  animationIterations = 100;
 
@@ -109,8 +109,8 @@ namespace rlogic
     {
         LogicEngine logicEngine;
         const auto* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 1.5f }); // will be interpreted as seconds
-        const auto* animKeyframes = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 360.f} });
-        const rlogic::AnimationChannel channelLinear { "rotationZ", animTimestamps, animKeyframes, rlogic::EInterpolationType::Linear };
+        const auto* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 360.f} });
+        const ramses::AnimationChannel channelLinear { "rotationZ", animTimestamps, animKeyframes, ramses::EInterpolationType::Linear };
 
         AnimationNodeConfig config;
         for (int64_t i = 0; i < state.range(0); ++i)
@@ -125,8 +125,8 @@ namespace rlogic
     {
         LogicEngine logicEngine;
         const auto* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 0.5f, 1.f, 1.5f }); // will be interpreted as seconds
-        const auto* animKeyframes = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
-        const rlogic::AnimationChannel channelLinear { "rotationZ", animTimestamps, animKeyframes, rlogic::EInterpolationType::Linear };
+        const auto* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
+        const ramses::AnimationChannel channelLinear { "rotationZ", animTimestamps, animKeyframes, ramses::EInterpolationType::Linear };
 
         AnimationNodeConfig config;
         for (int64_t i = 0; i < state.range(0); ++i)
@@ -141,10 +141,10 @@ namespace rlogic
     {
         LogicEngine logicEngine;
         const auto* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 0.5f, 1.f, 1.5f }); // will be interpreted as seconds
-        const auto* animKeyframes = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
-        const auto* cubicAnimTangentsIn = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f } });
-        const auto* cubicAnimTangentsOut = logicEngine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f } });
-        const rlogic::AnimationChannel channelCubic { "rotationZcubic", animTimestamps, animKeyframes, rlogic::EInterpolationType::Cubic, cubicAnimTangentsIn, cubicAnimTangentsOut };
+        const auto* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
+        const auto* cubicAnimTangentsIn = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f } });
+        const auto* cubicAnimTangentsOut = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f } });
+        const ramses::AnimationChannel channelCubic { "rotationZcubic", animTimestamps, animKeyframes, ramses::EInterpolationType::Cubic, cubicAnimTangentsIn, cubicAnimTangentsOut };
 
         AnimationNodeConfig config;
         for (int64_t i = 0; i < state.range(0); ++i)

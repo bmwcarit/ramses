@@ -12,17 +12,43 @@
 namespace ramses
 {
     UniformInput::UniformInput()
-        : EffectInput(*(new EffectInputImpl()))
+        : EffectInput{ std::make_unique<EffectInputImpl>() }
     {
+    }
+
+    UniformInput::~UniformInput() = default;
+
+    UniformInput::UniformInput(const UniformInput& other)
+        : EffectInput{ std::make_unique<EffectInputImpl>(other.m_impl) }
+    {
+    }
+
+    UniformInput::UniformInput(UniformInput&& other) noexcept
+        : EffectInput{ std::unique_ptr<EffectInputImpl>(static_cast<EffectInputImpl*>(other.StatusObject::m_impl.release())) }
+    {
+    }
+
+    UniformInput& UniformInput::operator=(const UniformInput& other)
+    {
+        StatusObject::m_impl = std::make_unique<EffectInputImpl>(other.m_impl);
+        m_impl = static_cast<EffectInputImpl&>(*StatusObject::m_impl);
+        return *this;
+    }
+
+    UniformInput& UniformInput::operator=(UniformInput&& other) noexcept
+    {
+        StatusObject::m_impl = std::move(other.StatusObject::m_impl);
+        m_impl = static_cast<EffectInputImpl&>(*StatusObject::m_impl);
+        return *this;
     }
 
     EEffectUniformSemantic UniformInput::getSemantics() const
     {
-        return impl.getUniformSemantics();
+        return m_impl.get().getUniformSemantics();
     }
 
     uint32_t UniformInput::getElementCount() const
     {
-        return impl.getElementCount();
+        return m_impl.get().getElementCount();
     }
 }

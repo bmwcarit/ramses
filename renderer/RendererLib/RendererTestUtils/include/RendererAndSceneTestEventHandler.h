@@ -152,7 +152,7 @@ namespace ramses
             const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + m_timeout;
             while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
             {
-                if (!m_renderer.impl.isThreaded())
+                if (!m_renderer.m_impl.isThreaded())
                     m_renderer.doOneLoop();
 
                 std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes

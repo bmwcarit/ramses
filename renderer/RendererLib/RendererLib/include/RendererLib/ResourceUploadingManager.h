@@ -37,7 +37,7 @@ namespace ramses_internal
             RendererStatistics& stats);
         ~ResourceUploadingManager();
 
-        [[nodiscard]] Bool hasAnythingToUpload() const;
+        [[nodiscard]] bool hasAnythingToUpload() const;
         void uploadAndUnloadPendingResources();
 
         [[nodiscard]] UInt32 getResourceUploadBatchSize() const
@@ -53,7 +53,7 @@ namespace ramses_internal
         void syncEffects();
         void uploadResource(const ResourceDescriptor& rd);
         void unloadResource(const ResourceDescriptor& rd);
-        void getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, Bool keepEffects, UInt64 sizeToBeFreed) const;
+        void getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, bool keepEffects, UInt64 sizeToBeFreed) const;
         void getAndPrepareResourcesToUploadNext(ResourceContentHashVector& resourcesToUpload, UInt64& totalSize) const;
         [[nodiscard]] Int32 getScenePriority(const ResourceDescriptor& rd) const;
         [[nodiscard]] UInt64 getAmountOfMemoryToBeFreedForNewResources(UInt64 sizeToUpload) const;
@@ -65,7 +65,7 @@ namespace ramses_internal
         EffectsRawResources             m_effectsToUpload;
         EffectsGpuResources             m_effectsUploadedTemp; //to avoid re-allocation each frame
 
-        const Bool   m_keepEffects;
+        const bool   m_keepEffects;
         const FrameTimer& m_frameTimer;
 
         using SizeMap = HashMap<ResourceContentHash, UInt32>;

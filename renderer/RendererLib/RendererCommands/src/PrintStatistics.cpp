@@ -20,7 +20,7 @@ namespace ramses_internal
         registerKeyword(";");
     }
 
-    Bool PrintStatistics::executeInput(const std::vector<std::string>& /*input*/)
+    bool PrintStatistics::executeInput(const std::vector<std::string>& /*input*/)
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::LogStatistics{});
         return true;

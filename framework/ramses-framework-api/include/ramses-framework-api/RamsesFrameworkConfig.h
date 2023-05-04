@@ -18,22 +18,24 @@
 
 namespace ramses
 {
+    class RamsesFrameworkConfigImpl;
+
     /**
     * @brief The RamsesFrameworkConfig holds a set of parameters to be used
     * to initialize ramses.
     */
-    class RAMSES_API RamsesFrameworkConfig : public StatusObject
+    class RamsesFrameworkConfig : public StatusObject
     {
     public:
         /**
         * @brief Default constructor of RamsesFrameworkConfig
         */
-        RamsesFrameworkConfig();
+        RAMSES_API RamsesFrameworkConfig();
 
         /**
         * @brief Destructor of RamsesFrameworkConfig
         */
-        ~RamsesFrameworkConfig() override;
+        RAMSES_API ~RamsesFrameworkConfig() override;
 
         /**
         * @brief Set feature level
@@ -49,7 +51,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setFeatureLevel(EFeatureLevel featureLevel);
+        RAMSES_API status_t setFeatureLevel(EFeatureLevel featureLevel);
 
         /**
         * @brief Get feature level
@@ -58,7 +60,7 @@ namespace ramses
         *
         * @return currently set feature level.
         */
-        [[nodiscard]] EFeatureLevel getFeatureLevel() const;
+        [[nodiscard]] RAMSES_API EFeatureLevel getFeatureLevel() const;
 
         /**
          * @brief Request a certain type of ramses shell
@@ -66,7 +68,7 @@ namespace ramses
          * @return StatusOK on success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t setRequestedRamsesShellType(ERamsesShellType requestedShellType);
+        RAMSES_API status_t setRequestedRamsesShellType(ERamsesShellType requestedShellType);
 
         /**
         * @brief Set watchdog notification interval of ramses threads
@@ -76,7 +78,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWatchdogNotificationInterval(ERamsesThreadIdentifier thread, uint32_t interval);
+        RAMSES_API status_t setWatchdogNotificationInterval(ERamsesThreadIdentifier thread, uint32_t interval);
 
         /**
         * @brief Set watchdog callback
@@ -89,7 +91,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
+        RAMSES_API status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
 
         /**
          * @brief Disable DLT application registration
@@ -103,42 +105,42 @@ namespace ramses
          * @return StatusOK on success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t disableDLTApplicationRegistration();
+        RAMSES_API status_t disableDLTApplicationRegistration();
 
         /**
         * @brief Set the application ID name for DLT (4 chars)
         *
         * @param[in] id to use as DLT application id
         */
-        void setDLTApplicationID(std::string_view id);
+        RAMSES_API void setDLTApplicationID(std::string_view id);
 
         /**
         * @brief Return the DLT application id value set in configuration object
         *
         * @return DLT application id value set in this configuration object
         */
-        [[nodiscard]] std::string_view getDLTApplicationID() const;
+        [[nodiscard]] RAMSES_API std::string_view getDLTApplicationID() const;
 
         /**
         * @brief Set the application description for DLT
         *
         * @param[in] description to use as DLT application description
         */
-        void setDLTApplicationDescription(std::string_view description);
+        RAMSES_API void setDLTApplicationDescription(std::string_view description);
 
         /**
         * @brief Return the DLT application description set in configuration object
         *
         * @return DLT application description set in this configuration object
         */
-        [[nodiscard]] std::string_view getDLTApplicationDescription() const;
+        [[nodiscard]] RAMSES_API std::string_view getDLTApplicationDescription() const;
 
         /**
         * @brief Sets the log level for all contexts
         *
         * @param[in] logLevel the log level to be applied
         */
-        void setLogLevel(ELogLevel logLevel);
+        RAMSES_API void setLogLevel(ELogLevel logLevel);
 
         /**
         * @brief Sets the log level for the provided context
@@ -148,7 +150,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setLogLevel(std::string_view context, ELogLevel logLevel);
+        RAMSES_API status_t setLogLevel(std::string_view context, ELogLevel logLevel);
 
         /**
         * @brief Sets the maximum log level for all contexts on console output
@@ -157,7 +159,7 @@ namespace ramses
         *
         * @param[in] logLevel the log level to be applied
         */
-        void setLogLevelConsole(ELogLevel logLevel);
+        RAMSES_API void setLogLevelConsole(ELogLevel logLevel);
 
         /**
         * @brief Sets the logging interval for the periodic log messages
@@ -169,7 +171,7 @@ namespace ramses
         *
         * @param[in] interval logging interval in seconds.
         */
-        void setPeriodicLogInterval(std::chrono::seconds interval);
+        RAMSES_API void setPeriodicLogInterval(std::chrono::seconds interval);
 
         /**
         * @brief Sets the participant identifier
@@ -182,7 +184,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setParticipantGuid(uint64_t guid);
+        RAMSES_API status_t setParticipantGuid(uint64_t guid);
 
         /**
         * @brief Sets the participant name in a distributed rendering setup
@@ -193,7 +195,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setParticipantName(std::string_view name);
+        RAMSES_API status_t setParticipantName(std::string_view name);
 
         /**
         * @brief Sets the connection system for a distributed setup
@@ -202,35 +204,35 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setConnectionSystem(EConnectionSystem connectionSystem);
+        RAMSES_API status_t setConnectionSystem(EConnectionSystem connectionSystem);
 
         /**
         * @brief Sets the IP address that is used to select the local network interface
         *
         * @param[in] ip IP to use
         */
-        void setInterfaceSelectionIPForTCPCommunication(std::string_view ip);
+        RAMSES_API void setInterfaceSelectionIPForTCPCommunication(std::string_view ip);
 
         /**
         * @brief Sets the port that is used to select the local network interface
         *
         * @param[in] port Port to use
         */
-        void setInterfaceSelectionPortForTCPCommunication(uint16_t port);
+        RAMSES_API void setInterfaceSelectionPortForTCPCommunication(uint16_t port);
 
         /**
         * @brief Sets the IP address of the communication daemon
         *
         * @param[in] ip IP to use
         */
-        void setDaemonIPForTCPCommunication(std::string_view ip);
+        RAMSES_API void setDaemonIPForTCPCommunication(std::string_view ip);
 
         /**
         * @brief Sets the port of the communication daemon
         *
         * @param[in] port Port to use
         */
-        void setDaemonPortForTCPCommunication(uint16_t port);
+        RAMSES_API void setDaemonPortForTCPCommunication(uint16_t port);
 
         /**
         * @brief Configures the network connection monitoring
@@ -245,25 +247,39 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setConnectionKeepaliveSettings(std::chrono::milliseconds interval, std::chrono::milliseconds timeout);
+        RAMSES_API status_t setConnectionKeepaliveSettings(std::chrono::milliseconds interval, std::chrono::milliseconds timeout);
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API RamsesFrameworkConfig(const RamsesFrameworkConfig& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API RamsesFrameworkConfig(RamsesFrameworkConfig&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API RamsesFrameworkConfig& operator=(const RamsesFrameworkConfig& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API RamsesFrameworkConfig& operator=(RamsesFrameworkConfig&& other) noexcept;
 
         /**
         * Stores internal data for implementation specifics of RamsesFrameworkConfig
         */
-        class RamsesFrameworkConfigImpl& impl;
-
-        /**
-         * @brief Deleted copy constructor
-         */
-        RamsesFrameworkConfig(const RamsesFrameworkConfig&) = delete;
-
-        /**
-         * @brief Deleted copy assignment
-         * @return unused
-         */
-        RamsesFrameworkConfig& operator=(const RamsesFrameworkConfig&) = delete;
+        std::reference_wrapper<RamsesFrameworkConfigImpl> m_impl;
     };
-
 }
 
 #endif

@@ -10,7 +10,7 @@
 
 #include "ramses-logic/AnimationTypes.h"
 #include "ramses-logic/LogicEngineReport.h"
-#include "ramses-logic/DataTypes.h"
+#include "ramses-framework-api/DataTypes.h"
 #include "ramses-framework-api/EFeatureLevel.h"
 #include "internals/ApiObjects.h"
 #include "internals/LogicNodeDependencies.h"
@@ -41,7 +41,7 @@ namespace ramses
     class MeshNode;
 }
 
-namespace rlogic
+namespace ramses
 {
     class RamsesNodeBinding;
     class RamsesAppearanceBinding;
@@ -61,7 +61,7 @@ namespace rlogic
     class LuaModule;
     class LogicNode;
     class Property;
-    enum class ELogMessageType;
+    enum class ELogLevel;
 }
 
 namespace rlogic_serialization
@@ -70,7 +70,7 @@ namespace rlogic_serialization
     struct Metadata;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LuaConfigImpl;
     class SaveFileConfigImpl;
@@ -147,7 +147,7 @@ namespace rlogic::internal
         [[nodiscard]] LogicEngineReport getLastUpdateReport() const;
 
         void setStatisticsLoggingRate(size_t loggingRate);
-        void setStatisticsLogLevel(ELogMessageType logLevel);
+        void setStatisticsLogLevel(ELogLevel logLevel);
 
         [[nodiscard]] size_t getTotalSerializedSize(ELuaSavingMode luaSavingMode) const;
         template<typename T>

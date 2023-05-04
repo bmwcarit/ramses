@@ -9,7 +9,7 @@
 #include "ramses-logic/AnimationNodeConfig.h"
 #include "impl/AnimationNodeConfigImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     AnimationNodeConfig::AnimationNodeConfig() noexcept
         : m_impl(std::make_unique<internal::AnimationNodeConfigImpl>())

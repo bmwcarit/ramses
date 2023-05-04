@@ -52,7 +52,7 @@ int main()
      */
     auto [scene, meshNode] = CreateSceneWithTriangles(*renderer.getClient());
 
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
     * Show the scene on the renderer.
@@ -64,9 +64,9 @@ int main()
     * This script takes in time ticker and adjusts mesh parameters so that it cycles through up to 3 instances
     * of it also cycles through subsets of vertices to be used to render it.
     */
-    rlogic::LuaConfig scriptConfig;
-    scriptConfig.addStandardModuleDependency(rlogic::EStandardModule::Math);
-    rlogic::LuaScript* controlScript = logicEngine.createLuaScript(R"(
+    ramses::LuaConfig scriptConfig;
+    scriptConfig.addStandardModuleDependency(ramses::EStandardModule::Math);
+    ramses::LuaScript* controlScript = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             IN.ticker = Type:Int64()
             OUT.vertexOffset = Type:Int32()
@@ -85,7 +85,7 @@ int main()
     /**
     * As mentioned above the control script requires time ticker, here we create it and link it to the script.
     */
-    rlogic::TimerNode* timer = logicEngine.createTimerNode();
+    ramses::TimerNode* timer = logicEngine.createTimerNode();
     logicEngine.link(
         *timer->getOutputs()->getChild("ticker_us"),
         *controlScript->getInputs()->getChild("ticker"));

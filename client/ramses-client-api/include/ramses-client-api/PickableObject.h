@@ -17,6 +17,7 @@ namespace ramses
     class Camera;
 
     /**
+    * @ingroup CoreAPI
     * @brief PickableObject provides a way to specify a 'pickable' area.
     * @details The purpose of the PickableObject is to enable user to add 'pickable' components to a scene.
     *          When this area is picked (see ramses::RamsesRenderer API) a message is sent to RamsesClient with list of picked objects,
@@ -40,7 +41,7 @@ namespace ramses
     *              4) Assign the camera used to render the car to our PickableObject - the pickable geometry was computed from the car's geometry
     *                 and therefore should use same camera for both rendering and picking.
     */
-    class RAMSES_API PickableObject : public Node
+    class PickableObject : public Node
     {
     public:
         /**
@@ -49,7 +50,7 @@ namespace ramses
         * @return The geometry buffer.
         *
         **/
-        [[nodiscard]] const ArrayBuffer& getGeometryBuffer() const;
+        [[nodiscard]] RAMSES_API const ArrayBuffer& getGeometryBuffer() const;
 
         /**
         *
@@ -58,7 +59,7 @@ namespace ramses
         * @return The PickableObject's camera, nullptr if no camera assigned.
         *
         **/
-        [[nodiscard]] const Camera* getCamera() const;
+        [[nodiscard]] RAMSES_API const Camera* getCamera() const;
 
         /**
         *
@@ -72,7 +73,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         **/
-        status_t setCamera(const Camera& camera);
+        RAMSES_API status_t setCamera(const Camera& camera);
 
         /**
         *
@@ -81,7 +82,7 @@ namespace ramses
         * @return The PickableObject's user ID
         *
         **/
-        [[nodiscard]] pickableObjectId_t getPickableObjectId() const;
+        [[nodiscard]] RAMSES_API pickableObjectId_t getPickableObjectId() const;
 
         /**
         *
@@ -93,7 +94,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         **/
-        status_t setPickableObjectId(pickableObjectId_t id);
+        RAMSES_API status_t setPickableObjectId(pickableObjectId_t id);
 
         /**
         * @brief Enable/Disable PickableObject
@@ -105,37 +106,32 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setEnabled(bool enabled);
+        RAMSES_API status_t setEnabled(bool enabled);
 
         /**
         * @brief Get the enabled state of the PickableObject
         *
         * @return Indicates if the PickableObject is enabled
         */
-        [[nodiscard]] bool isEnabled() const;
+        [[nodiscard]] RAMSES_API bool isEnabled() const;
 
         /**
         * Stores internal data for implementation specifics of PickableObject.
         */
-        class PickableObjectImpl& impl;
+        class PickableObjectImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating PickableObject instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for PickableObject.
         *
-        * @param pimpl Internal data for implementation specifics of PickableObject (sink - instance becomes owner)
+        * @param impl Internal data for implementation specifics of PickableObject (sink - instance becomes owner)
         */
-        explicit PickableObject(PickableObjectImpl& pimpl);
-
-        /**
-        * @brief Destructor of the PickableObject
-        */
-        ~PickableObject() override;
+        explicit PickableObject(std::unique_ptr<PickableObjectImpl> impl);
     };
 }
 

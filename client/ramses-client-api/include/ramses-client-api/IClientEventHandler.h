@@ -19,6 +19,7 @@ namespace ramses
     class SceneReference;
 
     /**
+    * @ingroup CoreAPI
     * @brief Provides an interface for handling the result of client events.
     *        Implementation of this interface must be passed to RamsesClient::dispatchEvents
     *        which will in return invoke methods of the interface according to events that occurred since last dispatching.

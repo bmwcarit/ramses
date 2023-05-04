@@ -78,7 +78,7 @@ namespace ramses_internal
 
         const uint32_t textureWidth = 64;
         const uint32_t textureHeight = 32;
-        std::unique_ptr<uint8_t[]> rawData(new uint8_t[textureWidth * textureHeight * 3]);
+        std::unique_ptr<uint8_t[]> rawData(new uint8_t[textureWidth * textureHeight * 3]); // NOLINT(modernize-avoid-c-arrays)
 
         for (uint32_t x = 0; x < textureWidth; ++x)
         {

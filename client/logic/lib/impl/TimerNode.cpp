@@ -9,7 +9,7 @@
 #include "ramses-logic/TimerNode.h"
 #include "impl/TimerNodeImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     TimerNode::TimerNode(std::unique_ptr<internal::TimerNodeImpl> impl) noexcept
         : LogicNode(std::move(impl))
@@ -17,6 +17,4 @@ namespace rlogic
         , m_timerNodeImpl{ static_cast<internal::TimerNodeImpl&>(LogicNode::m_impl) }
     {
     }
-
-    TimerNode::~TimerNode() noexcept = default;
 }

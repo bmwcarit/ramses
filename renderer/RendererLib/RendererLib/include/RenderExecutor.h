@@ -51,7 +51,7 @@ namespace ramses_internal
         void executeCamera(CameraHandle camera) const;
 
     private:
-        [[nodiscard]] Bool executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const;
+        [[nodiscard]] bool executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const;
         void executeBlitPass(const RendererCachedScene& scene, const BlitPassHandle pass) const;
         [[nodiscard]] bool canDiscardDepthBuffer() const;
 

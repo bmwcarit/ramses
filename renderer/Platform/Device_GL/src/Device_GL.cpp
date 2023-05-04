@@ -24,20 +24,11 @@
 #include "RendererAPI/IDeviceExtension.h"
 #include "Resource/EffectResource.h"
 
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
-
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "PlatformAbstraction/Macros.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace ramses_internal
 {
@@ -121,7 +112,7 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(m_framebufferRenderTarget);
     }
 
-    Bool Device_GL::init()
+    bool Device_GL::init()
     {
         LOAD_ALL_API_PROCS(m_context);
 
@@ -204,26 +195,29 @@ namespace ramses_internal
         GLbitfield deviceClearFlags = 0;
         if (clearFlags & EClearFlags_Color)
         {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             deviceClearFlags |= GL_COLOR_BUFFER_BIT;
         }
         if (clearFlags & EClearFlags_Depth)
         {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             deviceClearFlags |= GL_DEPTH_BUFFER_BIT;
         }
         if (clearFlags & EClearFlags_Stencil)
         {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             deviceClearFlags |= GL_STENCIL_BUFFER_BIT;
         }
 
         glClear(deviceClearFlags);
     }
 
-    void Device_GL::clearColor(const Vector4& clearColor)
+    void Device_GL::clearColor(const glm::vec4& clearColor)
     {
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     }
 
-    void Device_GL::colorMask(Bool r, Bool g, Bool b, Bool a)
+    void Device_GL::colorMask(bool r, bool g, bool b, bool a)
     {
         glColorMask(ToGLboolean(r),
                     ToGLboolean(g),
@@ -299,7 +293,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::blendColor(const Vector4& color)
+    void Device_GL::blendColor(const glm::vec4& color)
     {
         glBlendColor(color.r, color.g, color.b, color.a);
     }
@@ -401,14 +395,14 @@ namespace ramses_internal
         return renderbufferHandle;
     }
 
-    Bool Device_GL::getUniformLocation(DataFieldHandle field, GLInputLocation& location) const
+    bool Device_GL::getUniformLocation(DataFieldHandle field, GLInputLocation& location) const
     {
         assert(nullptr != m_activeShader);
         location = m_activeShader->getUniformLocation(field);
         return location != GLInputLocationInvalid;
     }
 
-    Bool Device_GL::getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const
+    bool Device_GL::getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const
     {
         assert(nullptr != m_activeShader);
         location = m_activeShader->getAttributeLocation(field);
@@ -425,33 +419,33 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector2* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::vec2* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform2fv(uniformLocation.getValue(), count, value[0].data);
+            glUniform2fv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector3* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::vec3* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform3fv(uniformLocation.getValue(), count, value[0].data);
+            glUniform3fv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector4* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::vec4* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform4fv(uniformLocation.getValue(), count, value[0].data);
+            glUniform4fv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
@@ -465,63 +459,63 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector2i* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::ivec2* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform2iv(uniformLocation.getValue(), count, value[0].data);
+            glUniform2iv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector3i* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::ivec3* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform3iv(uniformLocation.getValue(), count, value[0].data);
+            glUniform3iv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector4i* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::ivec4* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform4iv(uniformLocation.getValue(), count, value[0].data);
+            glUniform4iv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Matrix22f* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::mat2* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix2fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
+            glUniformMatrix2fv(uniformLocation.getValue(), count, ToGLboolean(false), glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Matrix33f* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::mat3* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix3fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
+            glUniformMatrix3fv(uniformLocation.getValue(), count, ToGLboolean(false), glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Matrix44f* value)
+    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const glm::mat4* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix4fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
+            glUniformMatrix4fv(uniformLocation.getValue(), count, ToGLboolean(false), glm::value_ptr(value[0]));
         }
     }
 
@@ -913,7 +907,7 @@ namespace ramses_internal
         activateTextureSampler(it->second, field);
     }
 
-    Bool Device_GL::allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const
+    bool Device_GL::allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const
     {
         assert(!renderBuffers.empty());
         assert(renderBuffers.size() <= 16u);
@@ -1076,7 +1070,7 @@ namespace ramses_internal
         glBindFramebuffer(GL_FRAMEBUFFER, rtGlAddress);
     }
 
-    void Device_GL::pairRenderTargetsForDoubleBuffering(DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2])
+    void Device_GL::pairRenderTargetsForDoubleBuffering(const std::array<DeviceResourceHandle, 2>& renderTargets, const std::array<DeviceResourceHandle, 2>& colorBuffers)
     {
         m_pairedRenderTargets.push_back({ { renderTargets[0], renderTargets[1] },{ colorBuffers[0], colorBuffers[1] }, 0u });
     }
@@ -1242,7 +1236,7 @@ namespace ramses_internal
     {
         ShaderProgramInfo programInfo;
         String debugErrorLog;
-        const Bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromSource(shader, programInfo, debugErrorLog);
+        const bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromSource(shader, programInfo, debugErrorLog);
 
         if (uploadSuccessful)
             return std::make_unique<const ShaderGPUResource_GL>(shader, programInfo);
@@ -1262,7 +1256,7 @@ namespace ramses_internal
     {
         ShaderProgramInfo programInfo;
         String debugErrorLog;
-        const Bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromBinary(binaryShaderData, binaryShaderDataSize, binaryShaderFormat, programInfo, debugErrorLog);
+        const bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromBinary(binaryShaderData, binaryShaderDataSize, binaryShaderFormat, programInfo, debugErrorLog);
 
         if (uploadSuccessful)
         {
@@ -1276,7 +1270,7 @@ namespace ramses_internal
         }
     }
 
-    Bool Device_GL::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
+    bool Device_GL::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
     {
         binaryShader.clear();
 
@@ -1353,7 +1347,7 @@ namespace ramses_internal
         return m_framebufferRenderTarget;
     }
 
-    void Device_GL::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, Bool colorOnly)
+    void Device_GL::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, bool colorOnly)
     {
         const GPUResource& rtSrcResource = m_resourceMapper.getResource(rtSrc);
         const GPUResource& rtDstResource = m_resourceMapper.getResource(rtDst);
@@ -1361,6 +1355,7 @@ namespace ramses_internal
         const GLuint blittingSourceFrameBuffer = rtSrcResource.getGPUAddress();
         const GLuint blittingDestinationFrameBuffer = rtDstResource.getGPUAddress();
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         const GLenum blittingMask = (colorOnly ? GL_COLOR_BUFFER_BIT : (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
         glBindFramebuffer(GL_READ_FRAMEBUFFER, blittingSourceFrameBuffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blittingDestinationFrameBuffer);
@@ -1378,7 +1373,7 @@ namespace ramses_internal
             GL_NEAREST);
     }
 
-    Bool Device_GL::isApiExtensionAvailable(const String& extensionName) const
+    bool Device_GL::isApiExtensionAvailable(const String& extensionName) const
     {
         return m_apiExtensions.contains(extensionName);
     }
@@ -1504,7 +1499,7 @@ namespace ramses_internal
         return m_resourceMapper.getTotalGpuMemoryUsageInKB();
     }
 
-    Bool Device_GL::isDeviceStatusHealthy() const
+    bool Device_GL::isDeviceStatusHealthy() const
     {
         if (m_debugOutput.isAvailable())
         {

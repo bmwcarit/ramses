@@ -27,7 +27,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "Window_Android::~Window_Android");
     }
 
-    Bool Window_Android::init()
+    bool Window_Android::init()
     {
         return true;
     }
@@ -42,7 +42,7 @@ namespace ramses_internal
         return m_nativeWindow;
     }
 
-    Bool Window_Android::setFullscreen(Bool fullscreen)
+    bool Window_Android::setFullscreen(bool fullscreen)
     {
         UNUSED(fullscreen);
         return true;

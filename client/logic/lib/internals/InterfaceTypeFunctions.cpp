@@ -9,7 +9,7 @@
 #include "internals/InterfaceTypeFunctions.h"
 #include "internals/SolHelper.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
 
     sol::object InterfaceTypeFunctions::CreateArray(sol::this_state state, const sol::object& /*unused*/, const sol::object& size, std::optional<sol::object> arrayType)

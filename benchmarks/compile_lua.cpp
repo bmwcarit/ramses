@@ -12,7 +12,7 @@
 #include "ramses-logic/LuaScript.h"
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
     static void CompileLua(LogicEngine& logicEngine, std::string_view src, const LuaConfig& config)
     {

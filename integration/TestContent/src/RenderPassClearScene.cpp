@@ -21,11 +21,10 @@
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/MeshNode.h"
 #include "TestScenes/RenderPassClearScene.h"
-#include "Math3d/Vector3.h"
 
 namespace ramses_internal
 {
-    RenderPassClearScene::RenderPassClearScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    RenderPassClearScene::RenderPassClearScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect("ramses-test-client-basic"))
         , m_blueTriangle(scene, m_effect, ramses::TriangleAppearance::EColor_Blue)

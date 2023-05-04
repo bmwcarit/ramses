@@ -14,6 +14,7 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * Specifies the mode of node visibility.
     */
 

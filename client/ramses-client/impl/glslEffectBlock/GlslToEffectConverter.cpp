@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     }
 
-    Bool GlslToEffectConverter::parseShaderProgram(glslang::TProgram* program)
+    bool GlslToEffectConverter::parseShaderProgram(glslang::TProgram* program)
     {
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangVertex)->getTreeRoot(), EShaderStage::Vertex)); // Parse data for vertex stage
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangFragment)->getTreeRoot(), EShaderStage::Fragment)); // Parse data for fragment stage

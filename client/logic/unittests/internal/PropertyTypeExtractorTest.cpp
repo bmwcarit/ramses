@@ -10,7 +10,7 @@
 
 #include "internals/PropertyTypeExtractor.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     TEST(ThePropertyTypeExtractorGlobalSymbols, AreVisibleOnlyToSpecifiedEnvironment)
     {

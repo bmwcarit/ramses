@@ -12,6 +12,7 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief Effect uniform semantic type
     */
     enum class EEffectUniformSemantic
@@ -36,6 +37,7 @@ namespace ramses
     };
 
     /**
+    * @ingroup CoreAPI
     * @brief Effect attribute semantic type
     */
     enum class EEffectAttributeSemantic

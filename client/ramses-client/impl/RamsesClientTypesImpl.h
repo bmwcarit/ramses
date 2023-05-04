@@ -31,7 +31,7 @@ struct fmt::formatter<ramses::TextureSwizzle> : public ramses_internal::SimpleFo
 
 namespace ramses
 {
-    static const char* DataTypeNames[] =
+    const std::array DataTypeNames =
     {
         "UINT16",
         "UINT32",

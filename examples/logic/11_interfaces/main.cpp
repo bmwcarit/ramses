@@ -20,7 +20,7 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create an interface which could represent a scene with a node that should be translated
     const std::string_view interfaceSrc = R"(
@@ -43,8 +43,8 @@ int main()
 
 
     // Create a script and an interface using the Lua source code from above
-    rlogic::LuaScript* wheelRotationScript = logicEngine.createLuaScript(wheelTranslationScriptSrc);
-    rlogic::LuaInterface* intf = logicEngine.createLuaInterface(interfaceSrc, "TranslateInterface");
+    ramses::LuaScript* wheelRotationScript = logicEngine.createLuaScript(wheelTranslationScriptSrc);
+    ramses::LuaInterface* intf = logicEngine.createLuaInterface(interfaceSrc, "TranslateInterface");
 
     // Create a link between the property of the interface and the input property of the wheel rotation script
     logicEngine.link(
@@ -62,7 +62,7 @@ int main()
     // New results, based on the input value of the logic script and the IN/OUT links of the interface
     assert(42 == *intf->getOutputs()->getChild("translation_x")->get<int32_t>());
     assert(42 == *wheelRotationScript->getInputs()->getChild("translation_x")->get<int32_t>());
-    assert(42 == (*wheelRotationScript->getOutputs()->getChild("translation_vec")->get<rlogic::vec3i>())[0]);
+    assert(42 == (*wheelRotationScript->getOutputs()->getChild("translation_vec")->get<ramses::vec3i>())[0]);
 
     return 0;
 }

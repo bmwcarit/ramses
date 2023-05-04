@@ -17,30 +17,28 @@
 
 namespace ramses
 {
-    RamsesObjectRegistry::~RamsesObjectRegistry()
-    {
-    }
+    RamsesObjectRegistry::~RamsesObjectRegistry() = default;
 
-    void RamsesObjectRegistry::addObject(RamsesObject& object)
+    void RamsesObjectRegistry::registerObjectInternal(RamsesObject& object)
     {
         assert(!containsObject(object));
 
-        const ERamsesObjectType type = object.impl.getType();
+        const ERamsesObjectType type = object.m_impl.getType();
         const RamsesObjectHandle handle = m_objects[type].allocate();
         *m_objects[type].getMemory(handle) = &object;
-        object.impl.setObjectRegistry(*this);
-        object.impl.setObjectRegistryHandle(handle);
+        object.m_impl.setObjectRegistry(*this);
+        object.m_impl.setObjectRegistryHandle(handle);
 
-        updateName(object, object.impl.getName());
+        updateName(object, object.m_impl.getName());
         trackSceneObjectById(object);
     }
 
-    void RamsesObjectRegistry::removeObject(RamsesObject& object)
+    void RamsesObjectRegistry::destroyAndUnregisterObject(RamsesObject& object)
     {
         assert(containsObject(object));
 
         if (object.isOfType(ERamsesObjectType_Node))
-            setNodeDirty(RamsesObjectTypeUtils::ConvertTo<Node>(object).impl, false);
+            setNodeDirty(RamsesObjectTypeUtils::ConvertTo<Node>(object).m_impl, false);
 
         if (object.isOfType(ERamsesObjectType_SceneObject))
         {
@@ -49,11 +47,15 @@ namespace ramses
             m_objectsById.remove(sceneObjectId);
         }
 
-        m_objectsByName.remove(object.impl.getName());
+        m_objectsByName.remove(object.m_impl.getName());
 
-        const RamsesObjectHandle handle = object.impl.getObjectRegistryHandle();
-        const ERamsesObjectType type = object.impl.getType();
+        const RamsesObjectHandle handle = object.m_impl.getObjectRegistryHandle();
+        const ERamsesObjectType type = object.m_impl.getType();
         m_objects[type].release(handle);
+
+        auto it = std::find_if(m_objectsOwningContainer.begin(), m_objectsOwningContainer.end(), [&object](auto& ro) { return ro.get() == &object; });
+        assert(it != m_objectsOwningContainer.end());
+        m_objectsOwningContainer.erase(it);
     }
 
     void RamsesObjectRegistry::reserveAdditionalGeneralCapacity(uint32_t additionalCount)
@@ -61,6 +63,7 @@ namespace ramses
         // not every object has a name. this might reserve more than needed but never more than
         // num of current objects with name + additionalCapacity
         m_objectsByName.reserve(m_objectsByName.size() + additionalCount);
+        m_objectsOwningContainer.reserve(m_objectsOwningContainer.size() + additionalCount);
     }
 
     void RamsesObjectRegistry::reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount)
@@ -77,8 +80,8 @@ namespace ramses
 
     bool RamsesObjectRegistry::containsObject(const RamsesObject& object) const
     {
-        const RamsesObjectHandle handle = object.impl.getObjectRegistryHandle();
-        const ERamsesObjectType type = object.impl.getType();
+        const RamsesObjectHandle handle = object.m_impl.getObjectRegistryHandle();
+        const ERamsesObjectType type = object.m_impl.getType();
         const RamsesObjectsPool& objectsPool = m_objects[type];
         return objectsPool.isAllocated(handle) && (*objectsPool.getMemory(handle) == &object);
     }
@@ -86,7 +89,7 @@ namespace ramses
     void RamsesObjectRegistry::updateName(RamsesObject& object, const ramses_internal::String& name)
     {
         assert(containsObject(object));
-        const ramses_internal::String& oldName = object.impl.getName();
+        const ramses_internal::String& oldName = object.m_impl.getName();
         if (!oldName.empty())
         {
             m_objectsByName.remove(oldName);

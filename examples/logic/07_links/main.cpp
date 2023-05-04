@@ -20,7 +20,7 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // Create a simple script which increments an integer and prints the result
     const std::string_view scriptSrc = R"(
@@ -41,12 +41,12 @@ int main()
     )";
 
     // Enable the Lua base library so the print() function will be available in the script
-    rlogic::LuaConfig config;
-    config.addStandardModuleDependency(rlogic::EStandardModule::Base);
+    ramses::LuaConfig config;
+    config.addStandardModuleDependency(ramses::EStandardModule::Base);
 
     // Create two scripts using the Lua source code from above
-    rlogic::LuaScript* script1 = logicEngine.createLuaScript(scriptSrc, config);
-    rlogic::LuaScript* script2 = logicEngine.createLuaScript(scriptSrc, config);
+    ramses::LuaScript* script1 = logicEngine.createLuaScript(scriptSrc, config);
+    ramses::LuaScript* script2 = logicEngine.createLuaScript(scriptSrc, config);
 
     // Assign the scripts their names so that we can see their execution order
     script1->getInputs()->getChild("script_name")->set<std::string>("script 1");

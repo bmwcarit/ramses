@@ -9,7 +9,7 @@
 #include "ramses-logic/LuaScript.h"
 #include "impl/LuaScriptImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     LuaScript::LuaScript(std::unique_ptr<internal::LuaScriptImpl> impl) noexcept
         : LogicNode(std::move(impl))
@@ -17,6 +17,4 @@ namespace rlogic
         , m_script{ static_cast<internal::LuaScriptImpl&>(LogicNode::m_impl) }
     {
     }
-
-    LuaScript::~LuaScript() noexcept = default;
 }

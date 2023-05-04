@@ -35,7 +35,7 @@ namespace ramses
 
         AssertionResult renderableDataInstancesAreSetInScene(DataInstanceHandle uniformDataInstance, DataInstanceHandle attributeDataInstance)
         {
-            const RenderableHandle renderableHandle = m_meshNode->impl.getRenderableHandle();
+            const RenderableHandle renderableHandle = m_meshNode->m_impl.getRenderableHandle();
             const auto actualDataInstances = m_internalScene.getRenderable(renderableHandle).dataInstances;
             if (uniformDataInstance != actualDataInstances[ERenderableDataSlotType_Uniforms])
             {
@@ -50,8 +50,8 @@ namespace ramses
 
         AssertionResult effectResourceIsSetInScene(const Appearance& appearance)
         {
-            const EffectImpl* effect = appearance.impl.getEffectImpl();
-            const Renderable renderable = m_internalScene.getRenderable(m_meshNode->impl.getRenderableHandle());
+            const EffectImpl* effect = appearance.m_impl.getEffectImpl();
+            const Renderable renderable = m_internalScene.getRenderable(m_meshNode->m_impl.getRenderableHandle());
             const DataLayoutHandle& dataLayout = m_internalScene.getLayoutOfDataInstance(renderable.dataInstances[ERenderableDataSlotType_Geometry]);
             const ResourceContentHash& effectHash = m_internalScene.getDataLayout(dataLayout).getEffectHash();
 
@@ -62,16 +62,16 @@ namespace ramses
 
         AssertionResult renderableStateIsSetInScene(const Appearance& appearance)
         {
-            const RenderableHandle renderableHandle = m_meshNode->impl.getRenderableHandle();
+            const RenderableHandle renderableHandle = m_meshNode->m_impl.getRenderableHandle();
 
-            EXPECT_EQ(appearance.impl.getRenderStateHandle(), m_internalScene.getRenderable(renderableHandle).renderState);
+            EXPECT_EQ(appearance.m_impl.getRenderStateHandle(), m_internalScene.getRenderable(renderableHandle).renderState);
 
             return AssertionSuccess();
         }
 
         AssertionResult meshNodeUniformAndAttributesIsSetInScene(const Appearance& appearance, const GeometryBinding& geometry)
         {
-            EXPECT_TRUE(renderableDataInstancesAreSetInScene(appearance.impl.getUniformDataInstance(), geometry.impl.getAttributeDataInstance()));
+            EXPECT_TRUE(renderableDataInstancesAreSetInScene(appearance.m_impl.getUniformDataInstance(), geometry.m_impl.getAttributeDataInstance()));
 
             EXPECT_TRUE(effectResourceIsSetInScene(appearance));
             EXPECT_TRUE(renderableStateIsSetInScene(appearance));
@@ -205,7 +205,7 @@ namespace ramses
         ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry));
-        EXPECT_EQ(indexArray.impl.getElementCount(), m_meshNode->getIndexCount());
+        EXPECT_EQ(indexArray.m_impl.getElementCount(), m_meshNode->getIndexCount());
     }
 
     TEST_F(MeshNodeTest, settingGeometryHavingDifferentEffectFromAppearanceReportsError)
@@ -282,7 +282,7 @@ namespace ramses
         EXPECT_TRUE(nullptr == m_meshNode->getAppearance());
         EXPECT_TRUE(nullptr == m_meshNode->getGeometryBinding());
 
-        const RenderableHandle renderableHandle = m_meshNode->impl.getRenderableHandle();
+        const RenderableHandle renderableHandle = m_meshNode->m_impl.getRenderableHandle();
         EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).dataInstances[ERenderableDataSlotType_Uniforms].isValid());
         EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).dataInstances[ERenderableDataSlotType_Geometry].isValid());
         EXPECT_FALSE(this->m_internalScene.getRenderable(renderableHandle).renderState.isValid());
@@ -313,7 +313,7 @@ namespace ramses
 
     TEST_F(MeshNodeTest, checksIfMeshNodeIsInitiallyVisible)
     {
-        EXPECT_EQ(m_meshNode->impl.getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_meshNode->m_impl.getFlattenedVisibility(), EVisibilityMode::Visible);
     }
 
     TEST_F(MeshNodeTest, setsAndGetsSameStartIndex)

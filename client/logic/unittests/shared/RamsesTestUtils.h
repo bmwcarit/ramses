@@ -27,7 +27,7 @@
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/DataTypes.h"
 
-namespace rlogic
+namespace ramses
 {
     struct TriangleTestScene
     {

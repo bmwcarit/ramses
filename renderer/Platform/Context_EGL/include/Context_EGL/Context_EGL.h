@@ -11,7 +11,6 @@
 
 #include <EGL/egl.h>
 
-#undef Bool // Xlib.h (included from EGL/egl.h) defines Bool as int - this collides with ramses_internal::Bool
 #undef Status
 #undef None
 
@@ -52,7 +51,7 @@ namespace ramses_internal
         Context_EGL(Generic_EGLNativeDisplayType eglDisplay, Generic_EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext = nullptr);
         ~Context_EGL() override;
 
-        Bool init();
+        bool init();
 
         bool swapBuffers() override;
         bool enable() override;

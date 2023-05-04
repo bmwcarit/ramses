@@ -9,7 +9,6 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Resource/ArrayResource.h"
-#include "Math3d/Vector2.h"
 
 namespace ramses_internal
 {

@@ -22,17 +22,17 @@ namespace ramses_internal
         void                    addChildToNode(NodeHandle parent, NodeHandle child) override;
         void                    removeChildFromNode(NodeHandle parent, NodeHandle child) override;
 
-        void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
-        void                    setRotation(TransformHandle transform, const Vector4& rotation, ERotationType rotationType) override;
-        void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
+        void                    setTranslation(TransformHandle transform, const glm::vec3& translation) override;
+        void                    setRotation(TransformHandle transform, const glm::vec4& rotation, ERotationType rotationType) override;
+        void                    setScaling(TransformHandle transform, const glm::vec3& scaling) override;
 
         void                    releaseDataSlot(DataSlotHandle handle) override;
-        [[nodiscard]] Matrix44f updateMatrixCacheWithLinks(ETransformationMatrixType matrixType, NodeHandle node) const;
+        [[nodiscard]] glm::mat4 updateMatrixCacheWithLinks(ETransformationMatrixType matrixType, NodeHandle node) const;
         void      propagateDirtyToConsumers(NodeHandle node) const;
 
     private:
-        void getMatrixForNode(ETransformationMatrixType matrixType, NodeHandle node, Matrix44f& chainMatrix) const;
-        void resolveMatrix(ETransformationMatrixType matrixType, NodeHandle node, Matrix44f& chainMatrix) const;
+        void getMatrixForNode(ETransformationMatrixType matrixType, NodeHandle node, glm::mat4& chainMatrix) const;
+        void resolveMatrix(ETransformationMatrixType matrixType, NodeHandle node, glm::mat4& chainMatrix) const;
 
         // to avoid memory allocations the pool for dirty nodes is member variable
         // even though it is used in the scope of matrix cache update only

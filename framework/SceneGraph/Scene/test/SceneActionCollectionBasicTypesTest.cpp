@@ -31,7 +31,7 @@ namespace ramses_internal
     template<> const Int64                     ASceneActionCollectionBasicTypes<Int64>::m_value = -4;
     template<> const UInt64                    ASceneActionCollectionBasicTypes<UInt64>::m_value = 4u;
     template<> const Float                     ASceneActionCollectionBasicTypes<Float>::m_value = 5.0f;
-    template<> const Double                    ASceneActionCollectionBasicTypes<Double>::m_value = 6.0f;
+    template<> const double                    ASceneActionCollectionBasicTypes<double>::m_value = 6.0f;
     template<> const NodeHandle                ASceneActionCollectionBasicTypes<NodeHandle>::m_value = NodeHandle();
     template<> const RenderableHandle          ASceneActionCollectionBasicTypes<RenderableHandle>::m_value = RenderableHandle();
     template<> const TransformHandle           ASceneActionCollectionBasicTypes<TransformHandle>::m_value = TransformHandle();
@@ -57,7 +57,7 @@ namespace ramses_internal
         Int64,
         UInt64,
         Float,
-        Double,
+        double,
         NodeHandle,
         RenderableHandle,
         TransformHandle,

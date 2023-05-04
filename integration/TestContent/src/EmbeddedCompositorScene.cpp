@@ -22,7 +22,7 @@
 
 namespace ramses_internal
 {
-    EmbeddedCompositorScene::EmbeddedCompositorScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    EmbeddedCompositorScene::EmbeddedCompositorScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_effect(createTestEffect(state))
         , m_textureCoords(createTextureCoordinates(state))

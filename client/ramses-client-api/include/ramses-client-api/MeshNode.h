@@ -18,13 +18,13 @@ namespace ramses
     class Effect;
 
     /**
+     * @ingroup CoreAPI
      * @brief The MeshNode holds all information which is
      * needed to render an object to the screen.
     */
-    class RAMSES_API MeshNode : public Node
+    class MeshNode : public Node
     {
     public:
-
         /**
          * @brief Sets the Appearance of the MeshNode.
          *
@@ -32,7 +32,7 @@ namespace ramses
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t setAppearance(Appearance& appearance);
+        RAMSES_API status_t setAppearance(Appearance& appearance);
 
         /**
          * @brief Sets the GeometryBinding of the MeshNode.
@@ -45,7 +45,7 @@ namespace ramses
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t setGeometryBinding(GeometryBinding& geometry);
+        RAMSES_API status_t setGeometryBinding(GeometryBinding& geometry);
 
         /**
         * @brief Sets the first index of indices array that will be used for rendering.
@@ -54,13 +54,13 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setStartIndex(uint32_t startIndex);
+        RAMSES_API status_t setStartIndex(uint32_t startIndex);
 
         /**
         * @brief Gets the first index of indices array that will be used for rendering.
         * @return the first index of indices array that will be used for rendering.
         */
-        [[nodiscard]] uint32_t getStartIndex() const;
+        [[nodiscard]] RAMSES_API uint32_t getStartIndex() const;
 
         /**
         * @brief Sets the offset of the first vertex to use from each vertex array
@@ -70,13 +70,13 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setStartVertex(uint32_t startVertex);
+        RAMSES_API status_t setStartVertex(uint32_t startVertex);
 
         /**
         * @brief Gets the first vertex of vertex arrays that will be used for rendering.
         * @return the first index of indices array that will be used for rendering.
         */
-        [[nodiscard]] uint32_t getStartVertex() const;
+        [[nodiscard]] RAMSES_API uint32_t getStartVertex() const;
 
         /**
         * @brief Sets the number of indices that will be used for rendering.
@@ -85,19 +85,19 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setIndexCount(uint32_t indexCount);
+        RAMSES_API status_t setIndexCount(uint32_t indexCount);
 
         /**
         * @brief Gets the number of indices that will be used for rendering.
         * @return the number of indices that will be used for rendering.
         */
-        [[nodiscard]] uint32_t getIndexCount() const;
+        [[nodiscard]] RAMSES_API uint32_t getIndexCount() const;
 
         /**
         * @brief Returns the appearance.
         * @return The appearance, null on failure or if none is set.
         */
-        [[nodiscard]] const Appearance* getAppearance() const;
+        [[nodiscard]] RAMSES_API const Appearance* getAppearance() const;
 
         /**
         * @brief Removes the Appearance and GeometryBinding previously set to the MeshNode.
@@ -105,25 +105,25 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeAppearanceAndGeometry();
+        RAMSES_API status_t removeAppearanceAndGeometry();
 
         /**
         * @brief Returns the appearance.
         * @return The appearance, null on failure or if none is set.
         */
-        Appearance* getAppearance();
+        RAMSES_API Appearance* getAppearance();
 
         /**
         * @brief Returns the geometry binding.
         * @return The geometry binding, null on failure or if none is set.
         */
-        [[nodiscard]] const GeometryBinding* getGeometryBinding() const;
+        [[nodiscard]] RAMSES_API const GeometryBinding* getGeometryBinding() const;
 
         /**
         * @brief Returns the geometry binding.
         * @return The geometry binding, null on failure or if none is set.
         */
-        GeometryBinding* getGeometryBinding();
+        RAMSES_API GeometryBinding* getGeometryBinding();
 
         /**
         * @brief Sets the number of instances that will be drawn for this
@@ -134,52 +134,32 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInstanceCount(uint32_t instanceCount);
+        RAMSES_API status_t setInstanceCount(uint32_t instanceCount);
 
         /**
         * @brief Gets the number of instance that will be drawn for this mesh
         *        by the renderer.
         * @return the number of instances of this mesh drawn on rendering.
         */
-        [[nodiscard]] uint32_t getInstanceCount() const;
+        [[nodiscard]] RAMSES_API uint32_t getInstanceCount() const;
 
         /**
         * Stores internal data for implementation specifics of MeshNode.
         */
-        class MeshNodeImpl& impl;
+        class MeshNodeImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating MeshNode instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for MeshNode.
         *
-        * @param[in] pimpl Internal data for implementation specifics of MeshNode (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of MeshNode (sink - instance becomes owner)
         */
-        explicit MeshNode(MeshNodeImpl& pimpl);
-
-        /**
-        * @brief Copy constructor of MeshNode
-        *
-        * @param[in] other Other instance of MeshNode class
-        */
-        MeshNode(const MeshNode& other);
-
-        /**
-        * @brief Assignment operator of MeshNode.
-        *
-        * @param[in] other Other instance of MeshNode class
-        * @return This instance after assignment
-        */
-        MeshNode& operator=(const MeshNode& other);
-
-        /**
-        * @brief Destructor of the MeshNode
-        */
-        ~MeshNode() override;
+        explicit MeshNode(std::unique_ptr<MeshNodeImpl> impl);
     };
 }
 

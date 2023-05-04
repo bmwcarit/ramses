@@ -26,7 +26,7 @@ namespace ramses_internal
 
         DeviceResourceHandle    registerResource(std::unique_ptr<const GPUResource> resource);
         void                    deleteResource  (DeviceResourceHandle resourceHandle);
-        [[nodiscard]] Bool                    containsResource(DeviceResourceHandle resourceHandle) const;
+        [[nodiscard]] bool                    containsResource(DeviceResourceHandle resourceHandle) const;
         [[nodiscard]] const GPUResource&      getResource     (DeviceResourceHandle resourceHandle) const;
 
         template <typename TYPE>
@@ -45,7 +45,7 @@ namespace ramses_internal
         return static_cast<const TYPE&>(getResource(resourceHandle));
     }
 
-    inline Bool DeviceResourceMapper::containsResource(DeviceResourceHandle resourceHandle) const
+    inline bool DeviceResourceMapper::containsResource(DeviceResourceHandle resourceHandle) const
     {
         return m_resources.isAllocated(resourceHandle);
     }

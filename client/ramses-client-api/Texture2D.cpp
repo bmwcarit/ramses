@@ -12,34 +12,30 @@
 namespace ramses
 {
 
-    Texture2D::Texture2D(Texture2DImpl& pimpl)
-        : Resource(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    Texture2D::~Texture2D()
+    Texture2D::Texture2D(std::unique_ptr<Texture2DImpl> impl)
+        : Resource{ std::move(impl) }
+        , m_impl{ static_cast<Texture2DImpl&>(Resource::m_impl) }
     {
     }
 
     uint32_t Texture2D::getWidth() const
     {
-        return impl.getWidth();
+        return m_impl.getWidth();
     }
 
     uint32_t Texture2D::getHeight() const
     {
-        return impl.getHeight();
+        return m_impl.getHeight();
     }
 
     ETextureFormat Texture2D::getTextureFormat() const
     {
-        return impl.getTextureFormat();
+        return m_impl.getTextureFormat();
     }
 
     const TextureSwizzle& Texture2D::getTextureSwizzle() const
     {
-        return impl.getTextureSwizzle();
+        return m_impl.getTextureSwizzle();
     }
 }
 

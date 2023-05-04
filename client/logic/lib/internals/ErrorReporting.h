@@ -12,7 +12,7 @@
 #include <string>
 #include "ramses-logic/ErrorData.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ErrorReporting
     {
@@ -21,9 +21,9 @@ namespace rlogic::internal
         void clear();
         void add(std::string errorMessage, const LogicObject* logicObject, EErrorType type);
 
-        [[nodiscard]] const std::vector<rlogic::ErrorData>& getErrors() const;
+        [[nodiscard]] const std::vector<ramses::ErrorData>& getErrors() const;
 
     private:
-        std::vector<rlogic::ErrorData> m_errors;
+        std::vector<ramses::ErrorData> m_errors;
     };
 }

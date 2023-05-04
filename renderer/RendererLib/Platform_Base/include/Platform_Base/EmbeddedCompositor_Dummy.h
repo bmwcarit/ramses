@@ -18,25 +18,25 @@ namespace ramses_internal
     public:
         EmbeddedCompositor_Dummy();
 
-        Bool init();
+        bool init();
 
         void handleRequestsFromClients() override;
-        [[nodiscard]] Bool hasUpdatedStreamTextureSources() const override;
+        [[nodiscard]] bool hasUpdatedStreamTextureSources() const override;
         WaylandIviSurfaceIdSet dispatchUpdatedStreamTextureSourceIds() override;
         WaylandIviSurfaceIdSet dispatchNewStreamTextureSourceIds() override;
         WaylandIviSurfaceIdSet dispatchObsoleteStreamTextureSourceIds() override;
-        void endFrame(Bool notifyClients) override;
+        void endFrame(bool notifyClients) override;
         UInt32 uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) override;
 
-        [[nodiscard]] Bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
+        [[nodiscard]] bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
         [[nodiscard]] UInt64 getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const override;
-        [[nodiscard]] Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
+        [[nodiscard]] bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         [[nodiscard]] UInt32 getNumberOfCompositorConnections() const override;
-        [[nodiscard]] Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
+        [[nodiscard]] bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
         [[nodiscard]] String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         void logInfos(RendererLogContext& context) const override;
 
-        [[nodiscard]] Bool isRealCompositor() const override;
+        [[nodiscard]] bool isRealCompositor() const override;
     };
 }
 

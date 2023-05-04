@@ -21,7 +21,7 @@
 
 namespace ramses_internal
 {
-    AntiAliasingScene::AntiAliasingScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    AntiAliasingScene::AntiAliasingScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         std::vector<ramses::vec3f> pos;

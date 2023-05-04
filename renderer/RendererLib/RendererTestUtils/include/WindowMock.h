@@ -22,10 +22,10 @@ namespace ramses_internal
         WindowMock();
         ~WindowMock() override;
 
-        MOCK_METHOD(Bool, init, (), (override));
+        MOCK_METHOD(bool, init, (), (override));
         MOCK_METHOD(bool, setExternallyOwnedWindowSize, (uint32_t, uint32_t ), (override));
-        MOCK_METHOD(Bool, setFullscreen, (Bool), (override));
-        MOCK_METHOD(Bool, canRenderNewFrame, (), (const, override));
+        MOCK_METHOD(bool, setFullscreen, (bool), (override));
+        MOCK_METHOD(bool, canRenderNewFrame, (), (const, override));
         MOCK_METHOD(void, handleEvents, (), (override));
         MOCK_METHOD(void, frameRendered, (), (override));
 

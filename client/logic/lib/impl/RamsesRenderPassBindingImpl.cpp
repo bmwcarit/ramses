@@ -19,7 +19,7 @@
 
 #include "generated/RamsesRenderPassBindingGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     RamsesRenderPassBindingImpl::RamsesRenderPassBindingImpl(ramses::RenderPass& ramsesRenderPass, std::string_view name, uint64_t id)
         : RamsesBindingImpl{ name, id }
@@ -36,7 +36,7 @@ namespace rlogic::internal
                 TypeData{"clearColor", EPropertyType::Vec4f},
                 TypeData{"renderOnce", EPropertyType::Bool}
             });
-        auto inputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(std::move(inputsType), EPropertySemantics::BindingInput));
+        auto inputs = std::make_unique<PropertyImpl>(std::move(inputsType), EPropertySemantics::BindingInput);
 
         setRootInputs(std::move(inputs));
 
@@ -120,7 +120,7 @@ namespace rlogic::internal
 
         auto binding = std::make_unique<RamsesRenderPassBindingImpl>(*ramsesRenderPass, name, id);
         binding->setUserId(userIdHigh, userIdLow);
-        binding->setRootInputs(std::make_unique<Property>(std::move(deserializedRootInput)));
+        binding->setRootInputs(std::move(deserializedRootInput));
 
         ApplyRamsesValuesToInputProperties(*binding, *ramsesRenderPass);
 

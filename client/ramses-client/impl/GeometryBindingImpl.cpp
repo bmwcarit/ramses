@@ -119,7 +119,7 @@ namespace ramses
         while (nullptr != ramsesObject)
         {
             const Effect& effect = RamsesObjectTypeUtils::ConvertTo<Effect>(*ramsesObject);
-            if (&effect.impl == m_effectImpl)
+            if (&effect.m_impl == m_effectImpl)
                 return addValidationOfDependentObject(*m_effectImpl);
 
             ramsesObject = iter.getNext();
@@ -166,7 +166,7 @@ namespace ramses
         if (nullptr == resource)
             return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to resource that does not exist");
 
-        return addValidationOfDependentObject(resource->impl);
+        return addValidationOfDependentObject(resource->m_impl);
     }
 
     status_t GeometryBindingImpl::validateDataBuffer(ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType) const
@@ -189,9 +189,9 @@ namespace ramses
         RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_ArrayBufferObject);
         while (const ArrayBuffer* dataBuffer = arrayBufferIter.getNext<ArrayBuffer>())
         {
-            if (dataBuffer->impl.getDataBufferHandle() == dataBufferHandle)
+            if (dataBuffer->m_impl.getDataBufferHandle() == dataBufferHandle)
             {
-                return &dataBuffer->impl;
+                return &dataBuffer->m_impl;
             }
         }
 

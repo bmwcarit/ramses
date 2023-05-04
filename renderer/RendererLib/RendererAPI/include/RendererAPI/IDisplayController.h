@@ -11,6 +11,7 @@
 
 #include "RendererAPI/Types.h"
 #include "RendererAPI/SceneRenderExecutionIterator.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -18,9 +19,6 @@ namespace ramses_internal
     class IEmbeddedCompositingManager;
     struct RenderingContext;
     class RendererCachedScene;
-    class Matrix44f;
-    class Vector3;
-    class Vector4;
     class ProjectionParams;
     class FrameTimer;
 
@@ -30,11 +28,11 @@ namespace ramses_internal
         virtual ~IDisplayController() {};
 
         virtual void                    handleWindowEvents() = 0;
-        [[nodiscard]] virtual Bool                    canRenderNewFrame() const = 0;
+        [[nodiscard]] virtual bool                    canRenderNewFrame() const = 0;
         virtual void                    enableContext() = 0;
         virtual void                    swapBuffers() = 0;
         virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) = 0;
-        virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) = 0;
+        virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const glm::vec4& clearColor) = 0;
 
         [[nodiscard]] virtual DeviceResourceHandle    getDisplayBuffer() const = 0;
         [[nodiscard]] virtual IRenderBackend&         getRenderBackend() const = 0;

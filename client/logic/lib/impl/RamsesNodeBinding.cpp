@@ -10,7 +10,7 @@
 
 #include "ramses-logic/RamsesNodeBinding.h"
 
-namespace rlogic
+namespace ramses
 {
     RamsesNodeBinding::RamsesNodeBinding(std::unique_ptr<internal::RamsesNodeBindingImpl> impl) noexcept
         : RamsesBinding(std::move(impl))
@@ -18,8 +18,6 @@ namespace rlogic
         , m_nodeBinding{ static_cast<internal::RamsesNodeBindingImpl&>(RamsesBinding::m_impl) }
     {
     }
-
-    RamsesNodeBinding::~RamsesNodeBinding() noexcept = default;
 
     ramses::Node& RamsesNodeBinding::getRamsesNode() const
     {

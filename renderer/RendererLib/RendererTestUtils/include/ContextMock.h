@@ -23,7 +23,7 @@ namespace ramses_internal
         ContextMock();
         ~ContextMock() override;
 
-        MOCK_METHOD(Bool, init, ()); // Does not exist in IContext, needed for only for testing
+        MOCK_METHOD(bool, init, ()); // Does not exist in IContext, needed for only for testing
 
         MOCK_METHOD(bool,  swapBuffers, (), (override));
         MOCK_METHOD(bool,  enable, (), (override));

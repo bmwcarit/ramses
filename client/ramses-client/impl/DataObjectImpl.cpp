@@ -10,15 +10,6 @@
 #include "SceneObjectImpl.h"
 #include "Scene/ClientScene.h"
 #include "SceneUtils/ISceneDataArrayAccessor.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "DataTypeUtils.h"
 
@@ -113,25 +104,25 @@ namespace ramses
 
     template status_t DataObjectImpl::setValue<int32_t>(const int32_t&);
     template status_t DataObjectImpl::setValue<float>(const float&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector2>(const ramses_internal::Vector2&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector3>(const ramses_internal::Vector3&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector4>(const ramses_internal::Vector4&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector2i>(const ramses_internal::Vector2i&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector3i>(const ramses_internal::Vector3i&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector4i>(const ramses_internal::Vector4i&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Matrix22f>(const ramses_internal::Matrix22f&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Matrix33f>(const ramses_internal::Matrix33f&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Matrix44f>(const ramses_internal::Matrix44f&);
+    template status_t DataObjectImpl::setValue<glm::vec2>(const glm::vec2&);
+    template status_t DataObjectImpl::setValue<glm::vec3>(const glm::vec3&);
+    template status_t DataObjectImpl::setValue<glm::vec4>(const glm::vec4&);
+    template status_t DataObjectImpl::setValue<glm::ivec2>(const glm::ivec2&);
+    template status_t DataObjectImpl::setValue<glm::ivec3>(const glm::ivec3&);
+    template status_t DataObjectImpl::setValue<glm::ivec4>(const glm::ivec4&);
+    template status_t DataObjectImpl::setValue<glm::mat2>(const glm::mat2&);
+    template status_t DataObjectImpl::setValue<glm::mat3>(const glm::mat3&);
+    template status_t DataObjectImpl::setValue<glm::mat4>(const glm::mat4&);
 
     template status_t DataObjectImpl::getValue<int32_t>(int32_t&) const;
     template status_t DataObjectImpl::getValue<float>(float&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector2>(ramses_internal::Vector2&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector3>(ramses_internal::Vector3&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector4>(ramses_internal::Vector4&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector2i>(ramses_internal::Vector2i&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector3i>(ramses_internal::Vector3i&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector4i>(ramses_internal::Vector4i&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Matrix22f>(ramses_internal::Matrix22f&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Matrix33f>(ramses_internal::Matrix33f&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Matrix44f>(ramses_internal::Matrix44f&) const;
+    template status_t DataObjectImpl::getValue<glm::vec2>(glm::vec2&) const;
+    template status_t DataObjectImpl::getValue<glm::vec3>(glm::vec3&) const;
+    template status_t DataObjectImpl::getValue<glm::vec4>(glm::vec4&) const;
+    template status_t DataObjectImpl::getValue<glm::ivec2>(glm::ivec2&) const;
+    template status_t DataObjectImpl::getValue<glm::ivec3>(glm::ivec3&) const;
+    template status_t DataObjectImpl::getValue<glm::ivec4>(glm::ivec4&) const;
+    template status_t DataObjectImpl::getValue<glm::mat2>(glm::mat2&) const;
+    template status_t DataObjectImpl::getValue<glm::mat3>(glm::mat3&) const;
+    template status_t DataObjectImpl::getValue<glm::mat4>(glm::mat4&) const;
 }

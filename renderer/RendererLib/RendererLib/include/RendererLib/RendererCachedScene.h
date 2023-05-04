@@ -55,8 +55,8 @@ namespace ramses_internal
 
         void                        releaseRenderPass               (RenderPassHandle passHandle) override;
         void                        setRenderPassRenderOrder        (RenderPassHandle passHandle, Int32 renderOrder) override;
-        void                        setRenderPassEnabled            (RenderPassHandle passHandle, Bool isEnabled) override;
-        void                        setRenderPassRenderOnce         (RenderPassHandle passHandle, Bool enable) override;
+        void                        setRenderPassEnabled            (RenderPassHandle passHandle, bool isEnabled) override;
+        void                        setRenderPassRenderOnce         (RenderPassHandle passHandle, bool enable) override;
         void                        retriggerRenderPassRenderOnce   (RenderPassHandle passHandle) override;
         void                        addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order) override;
         void                        removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
@@ -66,24 +66,24 @@ namespace ramses_internal
         BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
         void                        releaseBlitPass(BlitPassHandle passHandle) override;
         void                        setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder) override;
-        void                        setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled) override;
+        void                        setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled) override;
 
         const RenderingPassInfoVector&      getSortedRenderingPasses        () const;
         const RenderableVector&             getOrderedRenderablesForPass    (RenderPassHandle pass) const;
-        const Matrix44f&                    getRenderableWorldMatrix        (RenderableHandle renderable) const;
+        const glm::mat4&                    getRenderableWorldMatrix        (RenderableHandle renderable) const;
 
     private:
         void updatePassRenderableSorting();
         void updateRenderablesInPass(RenderPassHandle passHandle);
         void addRenderablesFromRenderGroup(RenderableVector& orderedRenderables, RenderGroupHandle renderGroupHandle);
-        Bool shouldRenderPassBeRendered(RenderPassHandle handle) const;
+        bool shouldRenderPassBeRendered(RenderPassHandle handle) const;
 
         RenderingPassInfoVector m_sortedRenderingPasses;
         using PassRenderableOrder = std::vector<RenderableVector>;
         PassRenderableOrder     m_passRenderableOrder;
-        mutable Bool            m_renderableOrderingDirty;
+        mutable bool            m_renderableOrderingDirty;
 
-        using MatrixVector = std::vector<Matrix44f>;
+        using MatrixVector = std::vector<glm::mat4>;
         MatrixVector            m_renderableMatrices;
 
         using RenderPasses = HashSet<RenderPassHandle>;

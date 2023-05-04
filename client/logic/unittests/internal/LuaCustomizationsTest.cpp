@@ -18,7 +18,7 @@
 #include "glm/gtx/range.hpp"
 #include <numeric>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     enum class EWrappedType
     {

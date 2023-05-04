@@ -28,7 +28,7 @@
 #include <iostream>
 #include <fstream>
 
-namespace rlogic
+namespace ramses
 {
     namespace
     {

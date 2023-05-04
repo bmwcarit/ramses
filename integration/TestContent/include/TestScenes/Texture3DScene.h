@@ -23,7 +23,7 @@ namespace ramses_internal
     class Texture3DScene : public IntegrationScene
     {
     public:
-        Texture3DScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        Texture3DScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {

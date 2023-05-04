@@ -46,8 +46,6 @@ namespace ramses
     public:
         ~RamsesFrameworkImpl() override;
 
-        static RamsesFrameworkImpl& createImpl(const RamsesFrameworkConfig& config);
-
         RamsesRenderer* createRenderer(const RendererConfig& config);
         RamsesClient* createClient(const char* applicationName);
 
@@ -72,6 +70,8 @@ namespace ramses
         static void SetLogHandler(const LogHandlerFunc& logHandlerFunc);
         status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
         status_t executeRamshCommand(const std::string& input);
+
+        static std::unique_ptr<RamsesFrameworkImpl> CreateImpl(const RamsesFrameworkConfig& config);
 
     private:
         RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress);

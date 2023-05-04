@@ -12,7 +12,7 @@
 #include "internals/LuaCompilationUtils.h"
 #include "internals/SolState.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     bool LuaConfigImpl::addDependency(std::string_view aliasName, const LuaModule& moduleInstance)
     {

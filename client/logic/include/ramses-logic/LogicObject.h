@@ -12,12 +12,13 @@
 #include <string>
 #include <memory>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicObjectImpl;
+    class ApiObjects;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
     * A base class for all rlogic API objects
@@ -89,14 +90,19 @@ namespace rlogic
         LogicObject(const LogicObject&) = delete;
 
         /**
+        * Deleted move constructor
+        */
+        LogicObject(LogicObject&&) = delete;
+
+        /**
         * Deleted assignment operator
         */
         LogicObject& operator=(const LogicObject&) = delete;
 
         /**
-        * Destructor of #LogicObject
+        * Deleted move assignment operator
         */
-        virtual ~LogicObject() noexcept;
+        LogicObject& operator=(LogicObject&&) = delete;
 
         std::unique_ptr<internal::LogicObjectImpl> m_impl;
 
@@ -109,6 +115,11 @@ namespace rlogic
         explicit LogicObject(std::unique_ptr<internal::LogicObjectImpl> impl) noexcept;
 
         /**
+        * Destructor of #LogicObject
+        */
+        virtual ~LogicObject() noexcept;
+
+        /**
         * Internal implementation of #as<T> with check that T is the correct type
         */
         template <typename T>
@@ -119,6 +130,8 @@ namespace rlogic
         */
         template <typename T>
         [[nodiscard]] RAMSES_API T* internalCast();
+
+        friend class internal::ApiObjects;
     };
 
     template <typename T> const T* LogicObject::as() const

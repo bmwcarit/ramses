@@ -21,7 +21,7 @@
 #include <vector>
 #include <thread>
 
-namespace rlogic
+namespace ramses
 {
     class ImguiClientHelper : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
     {

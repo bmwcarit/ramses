@@ -12,7 +12,7 @@
 
 #include "impl/PropertyImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LogicNodeImpl::LogicNodeImpl(std::string_view name, uint64_t id) noexcept
         : LogicObjectImpl(name, id)
@@ -51,17 +51,20 @@ namespace rlogic::internal
         return m_dirty;
     }
 
-    void LogicNodeImpl::setRootProperties(std::unique_ptr<Property> rootInput, std::unique_ptr<Property> rootOutput)
+    void LogicNodeImpl::setRootProperties(std::unique_ptr<PropertyImpl> rootInput, std::unique_ptr<PropertyImpl> rootOutput)
     {
-        m_inputs = std::move(rootInput);
-        if (m_inputs)
+        assert(!m_inputs);
+        assert(!m_outputs);
+
+        if (rootInput)
         {
+            m_inputs = PropertyImpl::CreateProperty(std::move(rootInput));
             m_inputs->m_impl->setLogicNode(*this);
         }
 
-        m_outputs = std::move(rootOutput);
-        if (m_outputs)
+        if (rootOutput)
         {
+            m_outputs = PropertyImpl::CreateProperty(std::move(rootOutput));
             m_outputs->m_impl->setLogicNode(*this);
         }
     }

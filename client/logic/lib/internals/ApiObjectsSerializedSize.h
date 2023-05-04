@@ -10,7 +10,7 @@
 
 #include "ramses-logic/ELuaSavingMode.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ApiObjects;
 

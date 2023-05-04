@@ -31,7 +31,7 @@ namespace ramses_internal
         [[nodiscard]] virtual bool shouldBinaryShaderBeCached(ResourceContentHash effectHash, SceneId sceneId) const = 0;
 
         virtual void storeBinaryShader(ResourceContentHash effectHash, SceneId sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) = 0;
-        virtual void binaryShaderUploaded(ResourceContentHash effectHash, Bool success) const = 0;
+        virtual void binaryShaderUploaded(ResourceContentHash effectHash, bool success) const = 0;
         virtual std::once_flag& binaryShaderFormatsReported() = 0;
     };
 }

@@ -12,16 +12,15 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ERotationType.h"
 #include "SceneAPI/IScene.h"
-#include "Math3d/Vector3.h"
 #include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
     struct TopologyTransform
     {
-        Vector3 translation = IScene::IdentityTranslation;
-        Vector4 rotation    = IScene::IdentityRotation;
-        Vector3 scaling     = IScene::IdentityScaling;
+        glm::vec3 translation = IScene::IdentityTranslation;
+        glm::vec4 rotation    = IScene::IdentityRotation;
+        glm::vec3 scaling     = IScene::IdentityScaling;
         ERotationType rotationType = ERotationType::Euler_XYZ;
 
         NodeHandle node;

@@ -14,6 +14,7 @@
 namespace ramses
 {
     /**
+    * @ingroup RendererAPI
     * @brief The DefaultRendererResourceCache provides a simple example on how the IRendererResourceCache
     *        interface can be implemented. It is only intended as an example, as the optimal implementation
     *        would be very specific to how RAMSES is being utilized.

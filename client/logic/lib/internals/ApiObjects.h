@@ -10,7 +10,7 @@
 
 #include "ramses-logic/AnimationTypes.h"
 #include "ramses-logic/PropertyLink.h"
-#include "ramses-logic/DataTypes.h"
+#include "ramses-framework-api/DataTypes.h"
 #include "ramses-logic/ELuaSavingMode.h"
 #include "ramses-framework-api/EFeatureLevel.h"
 
@@ -49,7 +49,7 @@ namespace flatbuffers
     class FlatBufferBuilder;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LogicObject;
     class LogicNode;
@@ -70,7 +70,7 @@ namespace rlogic
     class AnchorPoint;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SolState;
     class IRamsesObjectResolver;
@@ -83,7 +83,7 @@ namespace rlogic::internal
 
     template <typename T>
     using ApiObjectContainer = std::vector<T*>;
-    using ApiObjectOwningContainer = std::vector<std::unique_ptr<LogicObject>>;
+    using ApiObjectOwningContainer = std::vector<std::unique_ptr<LogicObject, std::function<void(LogicObject*)>>>;
 
     class ApiObjects
     {
@@ -162,48 +162,32 @@ namespace rlogic::internal
         [[nodiscard]] const LogicNodeDependencies& getLogicNodeDependencies() const;
         [[nodiscard]] LogicNodeDependencies& getLogicNodeDependencies();
 
-        [[nodiscard]] LogicNode* getApiObject(LogicNodeImpl& impl) const;
         [[nodiscard]] LogicObject* getApiObjectById(uint64_t id) const;
 
         // Internally used
         [[nodiscard]] bool bindingsDirty() const;
         [[nodiscard]] uint64_t getNextLogicObjectId();
 
-        // Strictly for testing purposes (inverse mappings require extra attention and test coverage)
-        [[nodiscard]] const std::unordered_map<LogicNodeImpl*, LogicNode*>& getReverseImplMapping() const;
-
         [[nodiscard]] int getNumElementsInLuaStack() const;
 
         [[nodiscard]] const std::vector<PropertyLink>& getAllPropertyLinks() const;
 
     private:
-        // Handle internal data structures and mappings
-        void registerLogicNode(LogicNode& logicNode);
-        void unregisterLogicNode(LogicNode& logicNode);
-        void registerLogicObject(std::unique_ptr<LogicObject> obj);
-        void unregisterLogicObject(LogicObject& objToDelete);
-
-        bool checkLuaModules(
-            const ModuleMapping& moduleMapping,
-            ErrorReporting& errorReporting);
+        template <typename T, typename ImplT>
+        T& createAndRegisterObject(std::unique_ptr<ImplT> impl);
+        template <typename T>
+        [[nodiscard]] bool destroyAndUnregisterObject(T& objToDelete, ErrorReporting& errorReporting);
 
         // Type-specific destruction logic
         [[nodiscard]] bool destroyInternal(RamsesNodeBinding& ramsesNodeBinding, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(LuaScript& luaScript, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(LuaInterface& luaInterface, ErrorReporting& errorReporting);
         [[nodiscard]] bool destroyInternal(LuaModule& luaModule, ErrorReporting& errorReporting);
         [[nodiscard]] bool destroyInternal(RamsesAppearanceBinding& ramsesAppearanceBinding, ErrorReporting& errorReporting);
         [[nodiscard]] bool destroyInternal(RamsesCameraBinding& ramsesCameraBinding, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(RamsesRenderPassBinding& ramsesRenderPassBinding, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(RamsesRenderGroupBinding& ramsesRenderGroupBinding, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(RamsesMeshNodeBinding& ramsesMeshNodeBinding, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(SkinBinding& skinBinding, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(AnimationNode& node, ErrorReporting& errorReporting);
         [[nodiscard]] bool destroyInternal(DataArray& dataArray, ErrorReporting& errorReporting);
-        [[nodiscard]] bool destroyInternal(TimerNode& node, ErrorReporting& errorReporting);
         [[nodiscard]] bool destroyInternal(AnchorPoint& node, ErrorReporting& errorReporting);
 
-        std::vector<PropertyLink> collectPropertyLinks() const;
+        [[nodiscard]] bool checkLuaModules(const ModuleMapping& moduleMapping, ErrorReporting& errorReporting);
+        [[nodiscard]] std::vector<PropertyLink> collectPropertyLinks() const;
 
         std::unique_ptr<SolState> m_solState {std::make_unique<SolState>()};
 
@@ -226,9 +210,7 @@ namespace rlogic::internal
 
         LogicNodeDependencies                        m_logicNodeDependencies;
         uint64_t                                     m_lastObjectId = 0;
-
-        std::unordered_map<LogicNodeImpl*, LogicNode*> m_reverseImplMapping;
-        std::unordered_map<uint64_t, LogicObject*>     m_logicObjectIdMapping;
+        std::unordered_map<uint64_t, LogicObject*>   m_logicObjectIdMapping;
 
         // persistent storage for links to be given out via public API getPropertyLinks()
         mutable std::vector<PropertyLink> m_collectedLinks;

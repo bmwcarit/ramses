@@ -30,7 +30,7 @@ namespace ramses_internal
         Quaternion,
     };
 
-    static constexpr const char* const ERotationTypeNames[] = {
+    const std::array ERotationTypeNames = {
         "Euler_XYZ",
         "Euler_XZY",
         "Euler_YXZ",

@@ -9,7 +9,6 @@
 
 #include "RendererCommands/TriggerPickEvent.h"
 #include "RendererLib/RendererCommandBuffer.h"
-#include "Math3d/Vector2i.h"
 
 namespace ramses_internal
 {
@@ -23,9 +22,9 @@ namespace ramses_internal
         getArgument<2>().setDescription("normalized pick coordinate Y");
     }
 
-    Bool TriggerPickEvent::execute(UInt64& sceneId, Float& pickCoordX, Float& pickCoordY) const
+    bool TriggerPickEvent::execute(UInt64& sceneId, Float& pickCoordX, Float& pickCoordY) const
     {
-        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::PickEvent{ SceneId{sceneId}, Vector2{pickCoordX, pickCoordY} });
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::PickEvent{ SceneId{sceneId}, glm::vec2{pickCoordX, pickCoordY} });
         return true;
     }
 }

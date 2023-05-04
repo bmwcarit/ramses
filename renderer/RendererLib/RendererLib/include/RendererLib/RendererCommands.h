@@ -16,8 +16,8 @@
 #include "Components/SceneUpdate.h"
 #include "RendererLib/DisplayConfig.h"
 #include "Collections/String.h"
-#include "Math3d/Vector2.h"
 #include "PlatformAbstraction/VariantWrapper.h"
+#include "DataTypesImpl.h"
 #include <vector>
 
 namespace ramses_internal
@@ -105,7 +105,7 @@ namespace ramses_internal
         struct PickEvent
         {
             SceneId scene;
-            Vector2 coordsNormalizedToBufferSize;
+            glm::vec2 coordsNormalizedToBufferSize;
         };
 
         struct CreateDisplay
@@ -184,7 +184,7 @@ namespace ramses_internal
         {
             DisplayHandle display;
             OffscreenBufferHandle offscreenBuffer;
-            Vector4 clearColor;
+            glm::vec4 clearColor;
         };
 
         struct SetExterallyOwnedWindowSize

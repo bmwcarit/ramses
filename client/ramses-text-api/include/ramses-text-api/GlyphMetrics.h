@@ -14,6 +14,7 @@
 namespace ramses
 {
     /**
+    * @ingroup TextAPI
     * @brief GlyphMetrics describes a glyph's position and dimensions in the rasterized glyph bitmap space.
     *
     * Width and height are the pixel dimensions of the glyph - must match the pixel data of

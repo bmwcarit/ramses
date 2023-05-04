@@ -738,7 +738,7 @@ TEST_F(ARendererSceneUpdater, setsClearColorForOB)
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
 
-    EXPECT_CALL(renderer, setClearColor(DeviceMock::FakeRenderTargetDeviceHandle, Vector4{ 1, 2, 3, 4 }));
+    EXPECT_CALL(renderer, setClearColor(DeviceMock::FakeRenderTargetDeviceHandle, glm::vec4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(buffer, { 1, 2, 3, 4 });
 
     expectOffscreenBufferDeleted(buffer);
@@ -756,7 +756,7 @@ TEST_F(ARendererSceneUpdater, setsClearColorForFBIfNoOBSpecified)
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
-    EXPECT_CALL(renderer, setClearColor(renderer.getDisplayController().getDisplayBuffer(), Vector4{ 1, 2, 3, 4 }));
+    EXPECT_CALL(renderer, setClearColor(renderer.getDisplayController().getDisplayBuffer(), glm::vec4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(OffscreenBufferHandle::Invalid(), { 1, 2, 3, 4 });
 
     expectOffscreenBufferDeleted(buffer);
@@ -807,8 +807,8 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFramebuffer)
     const UInt32 y = 2u;
     const UInt32 width = 3u;
     const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
     const String& filename = "";
 
     readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
@@ -833,8 +833,8 @@ TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
     const UInt32 y = 2u;
     const UInt32 width = 3u;
     const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
     const String& filename = "";
 
     readPixels(buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
@@ -856,8 +856,8 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfInvalidOffscreenBuff
     const UInt32 y = 2u;
     const UInt32 width = 3u;
     const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
     const String& filename = "";
 
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
@@ -882,8 +882,8 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfDisp
     dispConfig.setDesiredWindowHeight(displayHeight);
     createDisplayAndExpectSuccess(dispConfig);
 
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
     const String& filename = "";
 
 
@@ -915,8 +915,8 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfOffs
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
     const String& filename = "";
 
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).Times(4).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
@@ -947,8 +947,8 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayAndSaveToFileWithoutGeneratin
     const UInt32 y = 2u;
     const UInt32 width = 3u;
     const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
     const String& filename = "testScreenshot";
 
     readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
@@ -975,8 +975,8 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFullscreen)
     const UInt32 y = 2u;
     const UInt32 width = 3u;
     const UInt32 height = 4u;
-    const Bool fullScreen = true;
-    const Bool sendViaDLT = false;
+    const bool fullScreen = true;
+    const bool sendViaDLT = false;
     const String& filename = "";
 
     readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);

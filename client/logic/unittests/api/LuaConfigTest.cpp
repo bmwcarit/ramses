@@ -16,7 +16,7 @@
 
 #include "fmt/format.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALuaConfig : public ::testing::Test
     {
@@ -31,9 +31,9 @@ namespace rlogic::internal
         )") };
 
         std::string m_errorMessage;
-        ScopedLogContextLevel m_scopedLogs{ELogMessageType::Error, [&](ELogMessageType msgType, std::string_view message) {
+        ScopedLogContextLevel m_scopedLogs{ELogLevel::Error, [&](ELogLevel msgType, std::string_view message) {
             m_errorMessage = message;
-            if (msgType != ELogMessageType::Error)
+            if (msgType != ELogLevel::Error)
             {
                 ASSERT_TRUE(false) << "Should be error!";
             }

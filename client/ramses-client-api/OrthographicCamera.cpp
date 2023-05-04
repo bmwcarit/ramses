@@ -9,12 +9,13 @@
 // API
 #include "ramses-client-api/OrthographicCamera.h"
 
+//internal
+#include "CameraNodeImpl.h"
+
 namespace ramses
 {
-    OrthographicCamera::OrthographicCamera(CameraNodeImpl& pimpl)
-        : Camera(pimpl)
+    OrthographicCamera::OrthographicCamera(std::unique_ptr<CameraNodeImpl> impl)
+        : Camera{ std::move(impl) }
     {
     }
-
-    OrthographicCamera::~OrthographicCamera() = default;
 }

@@ -15,19 +15,15 @@
 namespace ramses
 {
     SceneGraphIterator::SceneGraphIterator(Node& startNode, ETreeTraversalStyle traversalStyle, ERamsesObjectType objectType)
-        : impl(new SceneGraphIteratorImpl(startNode, traversalStyle, objectType))
+        : m_impl{ std::make_unique<SceneGraphIteratorImpl>(startNode, traversalStyle, objectType) }
     {
     }
+
+    SceneGraphIterator::~SceneGraphIterator() = default;
 
     Node* SceneGraphIterator::getNext()
     {
-        return impl->getNext();
+        return m_impl->getNext();
     }
-
-    SceneGraphIterator::~SceneGraphIterator()
-    {
-        delete impl;
-    }
-
 }
 

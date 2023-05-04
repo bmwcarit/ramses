@@ -14,7 +14,7 @@
 #include "generated/RamsesRenderPassBindingGen.h"
 #include "generated/RamsesRenderGroupBindingGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SerializationTestUtils
     {

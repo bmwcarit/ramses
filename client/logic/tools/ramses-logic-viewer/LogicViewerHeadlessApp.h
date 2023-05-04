@@ -10,7 +10,7 @@
 
 #include "LogicViewerApp.h"
 
-namespace rlogic
+namespace ramses
 {
     class LogicViewerHeadlessApp : public LogicViewerApp
     {

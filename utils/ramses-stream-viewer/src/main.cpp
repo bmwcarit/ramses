@@ -84,11 +84,11 @@ public:
         const std::array<ramses::vec2f, 4u> vertexPositionsArray{ ramses::vec2f{-1.0f, -1.0f}, ramses::vec2f{1.0f, -1.0f}, ramses::vec2f{-1.0f, 1.0f}, ramses::vec2f{1.0f, 1.0f} };
         m_vertexPositions = m_scene->createArrayResource(4u, vertexPositionsArray.data());
 
-        uint16_t indicesArray[] = {0, 1, 2, 2, 1, 3};
-        m_indices = m_scene->createArrayResource(6u, indicesArray);
+        std::array<uint16_t, 6> indicesArray = {0, 1, 2, 2, 1, 3};
+        m_indices = m_scene->createArrayResource(6u, indicesArray.data());
 
-        static const uint8_t textureData[] = {1u, 1u, 1u, 1u};
-        const ramses::MipLevelData mipLevelData(sizeof(textureData), textureData);
+        const std::array<uint8_t, 4> textureData = {1u, 1u, 1u, 1u};
+        const ramses::MipLevelData mipLevelData(4, textureData.data());
         m_texture = m_scene->createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "");
 
         ramses::EffectDescription effectDesc;

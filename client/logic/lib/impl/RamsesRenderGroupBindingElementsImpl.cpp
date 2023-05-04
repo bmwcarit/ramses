@@ -10,7 +10,7 @@
 #include "impl/LoggerImpl.h"
 #include "ramses-client-api/SceneObject.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     bool RamsesRenderGroupBindingElementsImpl::addElement(const ramses::SceneObject& ramsesObject, std::string_view elementName)
     {

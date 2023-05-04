@@ -10,7 +10,7 @@
 
 #include "ramses-logic/AnimationTypes.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AnimationNodeConfigImpl
     {

@@ -22,7 +22,7 @@ namespace ramses_internal
     class HierarchicalRedTrianglesScene : public IntegrationScene
     {
     public:
-        HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& position, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const glm::vec3& position, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {

@@ -198,7 +198,7 @@ namespace ramses_internal
         m_renderer->flush();
     }
 
-    void TestRenderer::setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor)
+    void TestRenderer::setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const glm::vec4& clearColor)
     {
         m_renderer->setDisplayBufferClearColor(displayId, buffer, {clearColor.r, clearColor.g, clearColor.b, clearColor.a});
         m_renderer->flush();
@@ -219,7 +219,7 @@ namespace ramses_internal
 
     void TestRenderer::destroyStreamBuffer(ramses::displayId_t displayId, ramses::streamBufferId_t buffer)
     {
-        m_renderer->impl.destroyStreamBuffer(displayId, buffer);
+        m_renderer->m_impl.destroyStreamBuffer(displayId, buffer);
         m_renderer->flush();
     }
 
@@ -231,7 +231,7 @@ namespace ramses_internal
 
     void TestRenderer::createBufferDataLink(ramses::streamBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
     {
-        m_sceneControlAPI->impl.linkStreamBuffer(providerBuffer, consumerScene, consumerTag);
+        m_sceneControlAPI->m_impl.linkStreamBuffer(providerBuffer, consumerScene, consumerTag);
         m_sceneControlAPI->flush();
     }
 
@@ -301,21 +301,21 @@ namespace ramses_internal
     {
         RendererCommands cmds;
         cmds.push_back(RendererCommand::SCSetIviSurfaceVisibility{ surfaceId, visibility });
-        m_renderer->impl.pushAndConsumeRendererCommands(cmds);
+        m_renderer->m_impl.pushAndConsumeRendererCommands(cmds);
     }
 
     IEmbeddedCompositor& TestRenderer::getEmbeddedCompositor(ramses::displayId_t displayId)
     {
-        return m_renderer->impl.getDisplayDispatcher().getEC(ramses_internal::DisplayHandle{ displayId.getValue() });
+        return m_renderer->m_impl.getDisplayDispatcher().getEC(ramses_internal::DisplayHandle{ displayId.getValue() });
     }
 
     IEmbeddedCompositingManager& TestRenderer::getEmbeddedCompositorManager(ramses::displayId_t displayId)
     {
-        return m_renderer->impl.getDisplayDispatcher().getECManager(ramses_internal::DisplayHandle{ displayId.getValue() });
+        return m_renderer->m_impl.getDisplayDispatcher().getECManager(ramses_internal::DisplayHandle{ displayId.getValue() });
     }
 
     bool TestRenderer::hasSystemCompositorController() const
     {
-        return m_renderer->impl.getDisplayDispatcher().hasSystemCompositorController();
+        return m_renderer->m_impl.getDisplayDispatcher().hasSystemCompositorController();
     }
 }

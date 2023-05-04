@@ -35,12 +35,12 @@ namespace rlogic_serialization
     struct LuaScript;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LuaModule;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SolState;
     class SerializationMap;

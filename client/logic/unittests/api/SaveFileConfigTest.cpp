@@ -14,7 +14,7 @@
 
 #include "fmt/format.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ASaveFileConfig : public ::testing::Test
     {

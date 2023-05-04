@@ -47,7 +47,7 @@ namespace ramses_internal
         m_androidNativeWindowPtr = nativeWindowPtr;
     }
 
-    Bool DisplayConfig::getStartVisibleIvi() const
+    bool DisplayConfig::getStartVisibleIvi() const
     {
         return m_startVisibleIvi;
     }
@@ -57,22 +57,22 @@ namespace ramses_internal
         m_startVisibleIvi = startVisible;
     }
 
-    Bool DisplayConfig::getFullscreenState() const
+    bool DisplayConfig::getFullscreenState() const
     {
         return m_fullscreen;
     }
 
-    void DisplayConfig::setFullscreenState(Bool state)
+    void DisplayConfig::setFullscreenState(bool state)
     {
         m_fullscreen = state;
     }
 
-    Bool DisplayConfig::getBorderlessState() const
+    bool DisplayConfig::getBorderlessState() const
     {
         return m_borderless;
     }
 
-    void DisplayConfig::setBorderlessState(Bool state)
+    void DisplayConfig::setBorderlessState(bool state)
     {
         m_borderless = state;
     }
@@ -124,22 +124,22 @@ namespace ramses_internal
         m_windowPositionY = posy;
     }
 
-    void DisplayConfig::setKeepEffectsUploaded(Bool enabled)
+    void DisplayConfig::setKeepEffectsUploaded(bool enabled)
     {
         m_keepEffectsUploaded = enabled;
     }
 
-    Bool DisplayConfig::getKeepEffectsUploaded() const
+    bool DisplayConfig::getKeepEffectsUploaded() const
     {
         return m_keepEffectsUploaded;
     }
 
-    Bool DisplayConfig::isResizable() const
+    bool DisplayConfig::isResizable() const
     {
         return m_resizable;
     }
 
-    void DisplayConfig::setResizable(Bool resizable)
+    void DisplayConfig::setResizable(bool resizable)
     {
         m_resizable = resizable;
     }
@@ -154,12 +154,12 @@ namespace ramses_internal
         m_gpuMemoryCacheSize = size;
     }
 
-    void DisplayConfig::setClearColor(const Vector4& clearColor)
+    void DisplayConfig::setClearColor(const glm::vec4& clearColor)
     {
         m_clearColor = clearColor;
     }
 
-    const Vector4& DisplayConfig::getClearColor() const
+    const glm::vec4& DisplayConfig::getClearColor() const
     {
         return m_clearColor;
     }
@@ -306,7 +306,7 @@ namespace ramses_internal
         return m_resourceUploadBatchSize;
     }
 
-    Bool DisplayConfig::operator == (const DisplayConfig& other) const
+    bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
         return
             m_fullscreen                 == other.m_fullscreen &&
@@ -336,7 +336,7 @@ namespace ramses_internal
             m_resourceUploadBatchSize    == other.m_resourceUploadBatchSize;
     }
 
-    Bool DisplayConfig::operator != (const DisplayConfig& other) const
+    bool DisplayConfig::operator != (const DisplayConfig& other) const
     {
         return !operator==(other);
     }

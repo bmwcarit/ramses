@@ -56,7 +56,7 @@ template <> struct fmt::formatter<std::chrono::microseconds>
 };
 
 
-namespace rlogic
+namespace ramses
 {
     namespace
     {
@@ -194,7 +194,7 @@ namespace rlogic
         }
     }
 
-    LogicViewerGui::LogicViewerGui(rlogic::LogicViewer& viewer, LogicViewerSettings& settings, std::string luafile)
+    LogicViewerGui::LogicViewerGui(ramses::LogicViewer& viewer, LogicViewerSettings& settings, std::string luafile)
         : m_settings(settings)
         , m_viewer(viewer)
         , m_logicEngine(viewer.getEngine())
@@ -527,7 +527,7 @@ namespace rlogic
         }
     }
 
-    bool LogicViewerGui::DrawTreeNode(rlogic::LogicObject* obj)
+    bool LogicViewerGui::DrawTreeNode(ramses::LogicObject* obj)
     {
         return TreeNode(obj, fmt::format("[{}]: {}", obj->getId(), obj->getName()));
     }
@@ -881,12 +881,12 @@ namespace rlogic
             const auto& sortTime = report.getSortTime();
             ImGui::TextUnformatted(fmt::format("Topology Sort Time (ms): max:{} min:{} avg:{}", sortTime.maxValue, sortTime.minValue, sortTime.average).c_str());
             ImGui::SameLine();
-            HelpMarker("Time it took to sort logic nodes by their topology during update (see rlogic::LogicEngineReport::getTopologySortExecutionTime()");
+            HelpMarker("Time it took to sort logic nodes by their topology during update (see ramses::LogicEngineReport::getTopologySortExecutionTime()");
 
             const auto& links = report.getLinkActivations();
             ImGui::TextUnformatted(fmt::format("Activated Links: max:{} min:{} avg:{}", links.maxValue, links.minValue, links.average).c_str());
             ImGui::SameLine();
-            HelpMarker("Number of input properties that had been updated by an output property (see rlogic::LogicEngineReport::getTotalLinkActivations()).");
+            HelpMarker("Number of input properties that had been updated by an output property (see ramses::LogicEngineReport::getTotalLinkActivations()).");
             ImGui::Unindent();
 
             ImGui::TextUnformatted(fmt::format("Details for the longest update ({} ms):", longest).c_str());
@@ -1026,7 +1026,7 @@ namespace rlogic
     }
 
 
-    void LogicViewerGui::drawNodeContextMenu(rlogic::LogicNode* obj, const std::string_view& ns)
+    void LogicViewerGui::drawNodeContextMenu(ramses::LogicNode* obj, const std::string_view& ns)
     {
         if (ImGui::BeginPopupContextItem(obj->getName().data()))
         {
@@ -1043,7 +1043,7 @@ namespace rlogic
         }
     }
 
-    void LogicViewerGui::drawNode(rlogic::LogicNode* obj)
+    void LogicViewerGui::drawNode(ramses::LogicNode* obj)
     {
         auto* in = obj->getInputs();
         const auto* out = obj->getOutputs();
@@ -1073,7 +1073,7 @@ namespace rlogic
         }
     }
 
-    void LogicViewerGui::drawProperty(rlogic::Property* prop, size_t index)
+    void LogicViewerGui::drawProperty(ramses::Property* prop, size_t index)
     {
         const bool isLinked = prop->hasIncomingLink();
         if (isLinked && !m_settings.showLinkedInputs)
@@ -1086,7 +1086,7 @@ namespace rlogic
 
         switch (prop->getType())
         {
-        case rlogic::EPropertyType::Int32: {
+        case ramses::EPropertyType::Int32: {
             auto value = prop->get<int32_t>().value();
             if (isLinked)
             {
@@ -1098,7 +1098,7 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Int64: {
+        case ramses::EPropertyType::Int64: {
             auto value = prop->get<int64_t>().value();
             if (isLinked)
             {
@@ -1110,7 +1110,7 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Float: {
+        case ramses::EPropertyType::Float: {
             auto value = prop->get<float>().value();
             if (isLinked)
             {
@@ -1122,8 +1122,8 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Vec2f: {
-            auto value = prop->get<rlogic::vec2f>().value();
+        case ramses::EPropertyType::Vec2f: {
+            auto value = prop->get<ramses::vec2f>().value();
             if (isLinked)
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {})", name, value[0], value[1]).c_str());
@@ -1134,8 +1134,8 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Vec3f: {
-            auto value = prop->get<rlogic::vec3f>().value();
+        case ramses::EPropertyType::Vec3f: {
+            auto value = prop->get<ramses::vec3f>().value();
             if (isLinked)
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {})", name, value[0], value[1], value[2]).c_str());
@@ -1146,8 +1146,8 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Vec4f: {
-            auto value = prop->get<rlogic::vec4f>().value();
+        case ramses::EPropertyType::Vec4f: {
+            auto value = prop->get<ramses::vec4f>().value();
             if (isLinked)
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {}, {})", name, value[0], value[1], value[2], value[3]).c_str());
@@ -1158,8 +1158,8 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Vec2i: {
-            auto value = prop->get<rlogic::vec2i>().value();
+        case ramses::EPropertyType::Vec2i: {
+            auto value = prop->get<ramses::vec2i>().value();
             if (isLinked)
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {})", name, value[0], value[1]).c_str());
@@ -1170,8 +1170,8 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Vec3i: {
-            auto value = prop->get<rlogic::vec3i>().value();
+        case ramses::EPropertyType::Vec3i: {
+            auto value = prop->get<ramses::vec3i>().value();
             if (isLinked)
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {})", name, value[0], value[1], value[2]).c_str());
@@ -1182,8 +1182,8 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Vec4i: {
-            auto value = prop->get<rlogic::vec4i>().value();
+        case ramses::EPropertyType::Vec4i: {
+            auto value = prop->get<ramses::vec4i>().value();
             if (isLinked)
             {
                 ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {}, {})", name, value[0], value[1], value[2], value[3]).c_str());
@@ -1194,7 +1194,7 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Struct:
+        case ramses::EPropertyType::Struct:
             if (TreeNode(prop, fmt::format("Struct {}", name)))
             {
                 for (size_t i = 0U; i < prop->getChildCount(); ++i)
@@ -1205,7 +1205,7 @@ namespace rlogic
                 ImGui::TreePop();
             }
             break;
-        case rlogic::EPropertyType::Bool: {
+        case ramses::EPropertyType::Bool: {
             auto value = prop->get<bool>().value();
             if (isLinked)
             {
@@ -1217,7 +1217,7 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::String: {
+        case ramses::EPropertyType::String: {
             auto value = prop->get<std::string>().value();
             if (isLinked)
             {
@@ -1229,7 +1229,7 @@ namespace rlogic
             }
             break;
         }
-        case rlogic::EPropertyType::Array:
+        case ramses::EPropertyType::Array:
             if (TreeNode(prop, fmt::format("Array {}", name)))
             {
                 for (size_t i = 0U; i < prop->getChildCount(); ++i)
@@ -1243,7 +1243,7 @@ namespace rlogic
         }
     }
 
-    void LogicViewerGui::drawOutProperty(const rlogic::Property* prop, size_t index)
+    void LogicViewerGui::drawOutProperty(const ramses::Property* prop, size_t index)
     {
         std::string strName = prop->getName().data();
         if (prop->getName().empty())
@@ -1252,52 +1252,52 @@ namespace rlogic
 
         switch (prop->getType())
         {
-        case rlogic::EPropertyType::Int32: {
+        case ramses::EPropertyType::Int32: {
             auto value = prop->get<int32_t>().value();
             ImGui::TextUnformatted(fmt::format("{}: {}", name, value).c_str());
             break;
         }
-        case rlogic::EPropertyType::Int64: {
+        case ramses::EPropertyType::Int64: {
             auto value = prop->get<int64_t>().value();
             ImGui::TextUnformatted(fmt::format("{}: {}", name, value).c_str());
             break;
         }
-        case rlogic::EPropertyType::Float: {
+        case ramses::EPropertyType::Float: {
             auto value = prop->get<float>().value();
             ImGui::TextUnformatted(fmt::format("{}: {}", name, value).c_str());
             break;
         }
-        case rlogic::EPropertyType::Vec2f: {
-            auto value = prop->get<rlogic::vec2f>().value();
+        case ramses::EPropertyType::Vec2f: {
+            auto value = prop->get<ramses::vec2f>().value();
             ImGui::TextUnformatted(fmt::format("{}: ({}, {})", name, value[0], value[1]).c_str());
             break;
         }
-        case rlogic::EPropertyType::Vec3f: {
-            auto value = prop->get<rlogic::vec3f>().value();
+        case ramses::EPropertyType::Vec3f: {
+            auto value = prop->get<ramses::vec3f>().value();
             ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {})", name, value[0], value[1], value[2]).c_str());
             break;
         }
-        case rlogic::EPropertyType::Vec4f: {
-            auto value = prop->get<rlogic::vec4f>().value();
+        case ramses::EPropertyType::Vec4f: {
+            auto value = prop->get<ramses::vec4f>().value();
             ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {}, {})", name, value[0], value[1], value[2], value[3]).c_str());
             break;
         }
-        case rlogic::EPropertyType::Vec2i: {
-            auto value = prop->get<rlogic::vec2i>().value();
+        case ramses::EPropertyType::Vec2i: {
+            auto value = prop->get<ramses::vec2i>().value();
             ImGui::TextUnformatted(fmt::format("{}: ({}, {})", name, value[0], value[1]).c_str());
             break;
         }
-        case rlogic::EPropertyType::Vec3i: {
-            auto value = prop->get<rlogic::vec3i>().value();
+        case ramses::EPropertyType::Vec3i: {
+            auto value = prop->get<ramses::vec3i>().value();
             ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {})", name, value[0], value[1], value[2]).c_str());
             break;
         }
-        case rlogic::EPropertyType::Vec4i: {
-            auto value = prop->get<rlogic::vec4i>().value();
+        case ramses::EPropertyType::Vec4i: {
+            auto value = prop->get<ramses::vec4i>().value();
             ImGui::TextUnformatted(fmt::format("{}: ({}, {}, {}, {})", name, value[0], value[1], value[2], value[3]).c_str());
             break;
         }
-        case rlogic::EPropertyType::Struct:
+        case ramses::EPropertyType::Struct:
             if (TreeNode(prop, fmt::format("Struct {}", name)))
             {
                 for (size_t i = 0U; i < prop->getChildCount(); ++i)
@@ -1308,17 +1308,17 @@ namespace rlogic
                 ImGui::TreePop();
             }
             break;
-        case rlogic::EPropertyType::String: {
+        case ramses::EPropertyType::String: {
             auto value = prop->get<std::string>().value();
             ImGui::TextUnformatted(fmt::format("{}: {}", name, value).c_str());
             break;
         }
-        case rlogic::EPropertyType::Bool: {
+        case ramses::EPropertyType::Bool: {
             auto value = prop->get<bool>().value();
             ImGui::TextUnformatted(fmt::format("{}: {}", name, value ? "true" : "false").c_str());
             break;
         }
-        case rlogic::EPropertyType::Array:
+        case ramses::EPropertyType::Array:
             if (TreeNode(prop, fmt::format("Array {}", name)))
             {
                 for (size_t i = 0U; i < prop->getChildCount(); ++i)
@@ -1332,7 +1332,7 @@ namespace rlogic
         }
     }
 
-    void LogicViewerGui::DrawDataArray(const rlogic::DataArray* obj, std::string_view context)
+    void LogicViewerGui::DrawDataArray(const ramses::DataArray* obj, std::string_view context)
     {
         if (obj != nullptr)
         {

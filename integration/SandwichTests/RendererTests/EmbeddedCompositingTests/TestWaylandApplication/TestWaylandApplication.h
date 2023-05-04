@@ -26,14 +26,14 @@ namespace ramses_internal
     public:
         TestWaylandApplication(const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName);
         ~TestWaylandApplication();
-        Bool run();
+        bool run();
 
     private:
         bool readFromTestFramework(void* data, UInt32 numberOfBytes);
         template <typename T>
         bool readFromTestFramework(T& value);
         bool readBufferFromTestFramework();
-        Bool dispatchIncomingMessage();
+        bool dispatchIncomingMessage();
 
         bool initializeWayland(const String& displayName, bool connectUsingFD);
         void stopWayland();

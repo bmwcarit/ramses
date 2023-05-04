@@ -12,7 +12,7 @@
 #include <optional>
 #include <vector>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class FileUtils
     {

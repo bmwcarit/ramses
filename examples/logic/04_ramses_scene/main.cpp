@@ -63,19 +63,19 @@ int main()
      */
     auto [scene, triangleNode] = CreateSceneWithTriangle(*ramsesClient);
 
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
      * Create a binding object which serves as a bridge between logic scripts and animations on one end
      * and a Ramses scene on the other end
      */
-    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*triangleNode, ramses::ERotationType::Euler_XYZ, "binding to triangle mesh node");
+    ramses::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*triangleNode, ramses::ERotationType::Euler_XYZ, "binding to triangle mesh node");
 
     /**
      * Create a simple script which takes the current time in milliseconds
      * and rotates around the Z axis slowly based on how much time is passed
      */
-    rlogic::LuaScript* script = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             IN.time_msec = Type:Int32()
             OUT.rotationZ = Type:Vec3f()

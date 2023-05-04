@@ -18,63 +18,59 @@
 
 namespace ramses
 {
-    RamsesClient::RamsesClient(RamsesClientImpl& impl_)
-    : RamsesObject(impl_)
-    , impl(impl_)
+    RamsesClient::RamsesClient(std::unique_ptr<RamsesClientImpl> impl)
+        : RamsesObject{ std::move(impl) }
+        , m_impl{ static_cast<RamsesClientImpl&>(RamsesObject::m_impl) }
     {
-        impl.setHLObject(this);
-    }
-
-    RamsesClient::~RamsesClient()
-    {
-        LOG_HL_CLIENT_API_NOARG(LOG_API_VOID);
+        m_impl.setHLObject(this);
     }
 
     Scene* RamsesClient::createScene(sceneId_t sceneId, const SceneConfig& sceneConfig /*= SceneConfig()*/, const char* name)
     {
-        Scene* scene =  impl.createScene(sceneId, sceneConfig.impl, name);
+        Scene* scene =  m_impl.createScene(sceneId, sceneConfig.m_impl, name);
         LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), sceneId, name);
         return scene;
     }
 
     status_t RamsesClient::destroy(Scene& scene)
     {
-        const status_t status = impl.destroy(scene);
+        const status_t status = m_impl.destroy(scene);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(scene));
         return status;
     }
 
     ramses::Scene* RamsesClient::loadSceneFromFile(const char* fileName, bool localOnly)
     {
-        auto scene = impl.loadSceneFromFile(fileName, localOnly);
+        auto scene = m_impl.loadSceneFromFile(fileName, localOnly);
         LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), fileName, localOnly);
         return scene;
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     ramses::Scene* RamsesClient::loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly)
     {
-        auto scene = impl.loadSceneFromMemory(std::move(data), size, localOnly);
+        auto scene = m_impl.loadSceneFromMemory(std::move(data), size, localOnly);
         LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), size, localOnly);
         return scene;
     }
 
     ramses::Scene* RamsesClient::loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly)
     {
-        auto scene = impl.loadSceneFromFileDescriptor(fd, offset, length, localOnly);
+        auto scene = m_impl.loadSceneFromFileDescriptor(fd, offset, length, localOnly);
         LOG_HL_CLIENT_API4(LOG_API_RAMSESOBJECT_PTR_STRING(scene), fd, offset, length, localOnly);
         return scene;
     }
 
     ramses::Scene* RamsesClient::loadSceneFromFileDescriptor(sceneId_t sceneId, int fd, size_t offset, size_t length, bool localOnly)
     {
-        auto scene = impl.loadSceneFromFileDescriptor(sceneId, fd, offset, length, localOnly);
+        auto scene = m_impl.loadSceneFromFileDescriptor(sceneId, fd, offset, length, localOnly);
         LOG_HL_CLIENT_API5(LOG_API_RAMSESOBJECT_PTR_STRING(scene), sceneId, fd, offset, length, localOnly);
         return scene;
     }
 
     status_t RamsesClient::loadSceneFromFileAsync(const char* fileName, bool localOnly)
     {
-        auto status = impl.loadSceneFromFileAsync(fileName, localOnly);
+        auto status = m_impl.loadSceneFromFileAsync(fileName, localOnly);
         LOG_HL_CLIENT_API2(status, fileName, localOnly);
         return status;
     }
@@ -95,27 +91,27 @@ namespace ramses
 
     const Scene* RamsesClient::findSceneByName(const char* name) const
     {
-        return impl.findSceneByName(name);
+        return m_impl.findSceneByName(name);
     }
 
     Scene* RamsesClient::findSceneByName(const char* name)
     {
-        return impl.findSceneByName(name);
+        return m_impl.findSceneByName(name);
     }
 
     const Scene* RamsesClient::getScene(sceneId_t sceneId) const
     {
-        return impl.getScene(sceneId);
+        return m_impl.getScene(sceneId);
     }
 
     Scene* RamsesClient::getScene(sceneId_t sceneId)
     {
-        return impl.getScene(sceneId);
+        return m_impl.getScene(sceneId);
     }
 
     status_t RamsesClient::dispatchEvents(IClientEventHandler& clientEventHandler)
     {
-        auto status = impl.dispatchEvents(clientEventHandler);
+        auto status = m_impl.dispatchEvents(clientEventHandler);
         LOG_HL_RENDERER_API1(status, LOG_API_GENERIC_OBJECT_STRING(clientEventHandler));
         return status;
     }

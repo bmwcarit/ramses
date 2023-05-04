@@ -9,16 +9,16 @@
 #pragma once
 
 #include "ramses-framework-api/APIExport.h"
-#include "ramses-logic/DataTypes.h"
+#include "ramses-framework-api/DataTypes.h"
 #include <array>
 #include <string>
 #include <vector>
 #include <cassert>
 
-namespace rlogic
+namespace ramses
 {
     /**
-    * #EPropertyType lists the types of properties created and managed by the #rlogic::LogicNode
+    * #EPropertyType lists the types of properties created and managed by the #ramses::LogicNode
     * class and its derivates.
     */
     enum class EPropertyType : int
@@ -36,11 +36,11 @@ namespace rlogic
         String, ///< corresponds to std::string
         Bool,   ///< corresponds to bool
         Array   ///< Has no value itself, but can have unnamed child properties of homogeneous types (primitive or structs).
-                ///< When used in #rlogic::DataArray this type refers to an array of float arrays (std::vector<float> is the element type).
+                ///< When used in #ramses::DataArray this type refers to an array of float arrays (std::vector<float> is the element type).
     };
 
     /**
-    * Type trait which converts C++ types to #rlogic::EPropertyType enum for primitive types.
+    * Type trait which converts C++ types to #ramses::EPropertyType enum for primitive types.
     */
     template <typename T> struct PropertyTypeToEnum;
 
@@ -105,7 +105,7 @@ namespace rlogic
     };
 
     /**
-    * Type trait which converts #rlogic::EPropertyType enum to a C++ type.
+    * Type trait which converts #ramses::EPropertyType enum to a C++ type.
     */
     template <EPropertyType T> struct PropertyEnumToType;
 
@@ -172,7 +172,7 @@ namespace rlogic
     /**
     * Type trait which can be used to check if a type is primitive or not.
     * "primitive" in this context means the type can be used as a template for
-    * #rlogic::Property::set() and #rlogic::Property::get(), i.e. it has a
+    * #ramses::Property::set() and #ramses::Property::get(), i.e. it has a
     * value which can be directly set/obtained, as opposed to non-primitive types
     * like structs or arrays which don't have a singular settable value.
     */
@@ -237,7 +237,7 @@ namespace rlogic
     };
 
     /**
-    * Helper to determine if given property type can be stored in a #rlogic::DataArray.
+    * Helper to determine if given property type can be stored in a #ramses::DataArray.
     */
     constexpr bool CanPropertyTypeBeStoredInDataArray(EPropertyType type)
     {
@@ -267,7 +267,7 @@ namespace rlogic
     }
 
     /**
-    * Helper to determine if given property type can be animated using #rlogic::AnimationNode.
+    * Helper to determine if given property type can be animated using #ramses::AnimationNode.
     */
     constexpr bool CanPropertyTypeBeAnimated(EPropertyType type)
     {

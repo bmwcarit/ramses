@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "ramses-framework-api/EFeatureLevel.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     static
         ::testing::internal::ValueArray<ramses::EFeatureLevel>

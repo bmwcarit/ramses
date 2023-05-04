@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace rlogic
+namespace ramses
 {
     using IteratorTypeForStaticAsserts = Iterator<LuaScript, std::vector<std::unique_ptr<LuaScript>>, false>;
     using ConstIteratorTypeForStaticAsserts = Iterator<LuaScript, std::vector<std::unique_ptr<LuaScript>>, true>;

@@ -110,7 +110,7 @@ bool DmaOffscreenBufferTests::run(RendererTestsFramework& testFramework, const R
 }
 
 template <typename INTEGRATION_SCENE>
-ramses::sceneId_t DmaOffscreenBufferTests::createAndShowScene(RendererTestsFramework& testFramework, uint32_t displayIdx, uint32_t sceneState, const Vector3& camPos, uint32_t vpWidth, uint32_t vpHeight)
+ramses::sceneId_t DmaOffscreenBufferTests::createAndShowScene(RendererTestsFramework& testFramework, uint32_t displayIdx, uint32_t sceneState, const glm::vec3& camPos, uint32_t vpWidth, uint32_t vpHeight)
 {
     const auto sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, camPos, vpWidth, vpHeight);
     testFramework.publishAndFlushScene(sceneId);
@@ -123,7 +123,7 @@ template <typename INTEGRATION_SCENE>
 bool DmaOffscreenBufferTests::renderSceneToBufferAndExpectScreenshot(RendererTestsFramework& testFramework, const TestBufferInfo& testBuffer, uint32_t sceneState, const std::string& screenshotImage)
 {
     //render a scene into OB, then read mapped memory for that OB and compare it with screenshot image
-    const auto sceneId = createAndShowScene<INTEGRATION_SCENE>(testFramework, testBuffer.displayIdx, sceneState, Vector3{0.f}, testBuffer.width, testBuffer.height);
+    const auto sceneId = createAndShowScene<INTEGRATION_SCENE>(testFramework, testBuffer.displayIdx, sceneState, glm::vec3{0.f}, testBuffer.width, testBuffer.height);
     testFramework.assignSceneToDisplayBuffer(sceneId, testBuffer.displaBufferId);
 
     //make two loops to make sure swap buffers was called twice after scene was assigned to OB
@@ -502,9 +502,9 @@ bool DmaOffscreenBufferTests::runDoubleBufferedReadTest(RendererTestsFramework& 
     const float expectedPixelError = RendererTestUtils::DefaultMaxAveragePercentPerPixel;
 
     //Create a dummy scene and assign to FB to make sure swap buffers is called every frame
-    createAndShowScene<MultipleTrianglesScene>(testFramework, 0u, MultipleTrianglesScene::THREE_TRIANGLES, Vector3{0.f}, bufferWidth, bufferHeight);
+    createAndShowScene<MultipleTrianglesScene>(testFramework, 0u, MultipleTrianglesScene::THREE_TRIANGLES, glm::vec3{0.f}, bufferWidth, bufferHeight);
 
-    const auto sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, 0u, MultipleTrianglesScene::THREE_TRIANGLES, Vector3{0.f}, bufferWidth, bufferHeight);
+    const auto sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, 0u, MultipleTrianglesScene::THREE_TRIANGLES, glm::vec3{0.f}, bufferWidth, bufferHeight);
 
     if(!createAndMapDmaOffscreenBuffer(testFramework, 0, bufferWidth, bufferHeight, fourccFormat, bufferUsageFlags, EMappingBufferAccessRight::ReadOnly, testBuffer1))
         return false;

@@ -14,7 +14,7 @@
 #include "flatbuffers/flatbuffers.h"
 #include "fmt/format.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     TimerNodeImpl::TimerNodeImpl(std::string_view name, uint64_t id) noexcept
         : LogicNodeImpl(name, id)
@@ -33,7 +33,7 @@ namespace rlogic::internal
             });
         auto outputsImpl = std::make_unique<PropertyImpl>(std::move(outputs), EPropertySemantics::ScriptOutput);
 
-        setRootProperties(std::make_unique<Property>(std::move(inputsImpl)), std::make_unique<Property>(std::move(outputsImpl)));
+        setRootProperties(std::move(inputsImpl), std::move(outputsImpl));
     }
 
     std::optional<LogicNodeRuntimeError> TimerNodeImpl::update()
@@ -116,7 +116,7 @@ namespace rlogic::internal
             errorReporting.add(fmt::format("Fatal error during loading of TimerNode '{}': missing or invalid properties!", name), nullptr, EErrorType::BinaryVersionMismatch);
             return nullptr;
         }
-        deserialized->setRootProperties(std::make_unique<Property>(std::move(rootInProperty)), std::make_unique<Property>(std::move(rootOutProperty)));
+        deserialized->setRootProperties(std::move(rootInProperty), std::move(rootOutProperty));
 
         return deserialized;
     }

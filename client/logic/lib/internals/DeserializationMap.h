@@ -16,12 +16,12 @@ namespace rlogic_serialization
     struct DataArray;
 }
 
-namespace rlogic
+namespace ramses
 {
     class DataArray;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class PropertyImpl;
     class LogicObjectImpl;

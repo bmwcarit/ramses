@@ -28,7 +28,7 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AnAnchorPoint : public ALogicEngine
     {

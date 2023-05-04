@@ -8,7 +8,6 @@
 
 #include "internals/LuaCompilationUtils.h"
 
-#include "ramses-logic/Property.h"
 #include "ramses-logic/LuaModule.h"
 #include "impl/PropertyImpl.h"
 #include "impl/LuaModuleImpl.h"
@@ -22,7 +21,7 @@
 #include "fmt/format.h"
 #include "SolHelper.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     std::optional<LuaCompiledScript> LuaCompilationUtils::CompileScriptOrImportPrecompiled(
         SolState& solState,
@@ -32,8 +31,8 @@ namespace rlogic::internal
         std::string_view name,
         ErrorReporting& errorReporting,
         sol::bytecode byteCodeFromPrecompiledScript,
-        std::unique_ptr<Property> inputsFromPrecompiledScript,
-        std::unique_ptr<Property> outputsFromPrecompiledScript,
+        std::unique_ptr<PropertyImpl> inputsFromPrecompiledScript,
+        std::unique_ptr<PropertyImpl> outputsFromPrecompiledScript,
         bool enableDebugLogFunctions)
     {
         sol::environment env = solState.createEnvironment(stdModules, userModules, enableDebugLogFunctions);
@@ -129,8 +128,8 @@ namespace rlogic::internal
             return std::nullopt;
         }
 
-        std::unique_ptr<Property> resultInputs;
-        std::unique_ptr<Property> resultOutputs;
+        std::unique_ptr<PropertyImpl> resultInputs;
+        std::unique_ptr<PropertyImpl> resultOutputs;
 
         if (inputsFromPrecompiledScript)
         {
@@ -181,8 +180,8 @@ namespace rlogic::internal
             extractedInputsType.typeData.name = "";
             extractedOutputsType.typeData.name = "";
 
-            resultInputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(extractedInputsType, EPropertySemantics::ScriptInput));
-            resultOutputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(extractedOutputsType, EPropertySemantics::ScriptOutput));
+            resultInputs = std::make_unique<PropertyImpl>(extractedInputsType, EPropertySemantics::ScriptInput);
+            resultOutputs = std::make_unique<PropertyImpl>(extractedOutputsType, EPropertySemantics::ScriptOutput);
         }
 
         sol::bytecode resultByteCode = (byteCodeFromPrecompiledScript.empty() ? mainFunction.dump() : std::move(byteCodeFromPrecompiledScript));
@@ -204,7 +203,7 @@ namespace rlogic::internal
         };
     }
 
-    std::optional<rlogic::internal::LuaCompiledInterface> LuaCompilationUtils::CompileInterface(
+    std::optional<ramses::internal::LuaCompiledInterface> LuaCompilationUtils::CompileInterface(
         SolState& solState,
         const ModuleMapping& userModules,
         const StandardModules& stdModules,
@@ -284,7 +283,7 @@ namespace rlogic::internal
         HierarchicalTypeData extractedInputsType = inputsExtractor.getExtractedTypeData();
         extractedInputsType.typeData.name = "";
 
-        auto rootProperty = std::make_unique<Property>(std::make_unique<PropertyImpl>(extractedInputsType, EPropertySemantics::Interface));
+        auto rootProperty = std::make_unique<PropertyImpl>(extractedInputsType, EPropertySemantics::Interface);
 
         return LuaCompiledInterface
         {

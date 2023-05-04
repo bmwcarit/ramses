@@ -159,13 +159,13 @@ namespace ramses_internal
         return blitPassHandle;
     }
 
-    Bool ResourceCachedScene::renderableResourcesDirty(RenderableHandle handle) const
+    bool ResourceCachedScene::renderableResourcesDirty(RenderableHandle handle) const
     {
         UInt32 renderableAsIndex = handle.asMemoryHandle();
         return m_renderableResourcesDirty[renderableAsIndex];
     }
 
-    Bool ResourceCachedScene::renderableResourcesDirty(const RenderableVector& handles) const
+    bool ResourceCachedScene::renderableResourcesDirty(const RenderableVector& handles) const
     {
         for (const auto handle : handles)
         {
@@ -208,7 +208,7 @@ namespace ramses_internal
         return m_renderableVertexArrayDirty;
     }
 
-    Bool ResourceCachedScene::CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash)
+    bool ResourceCachedScene::CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash)
     {
         deviceHandleInOut = DeviceResourceHandle::Invalid();
         if (resourceHash.isValid())
@@ -217,7 +217,7 @@ namespace ramses_internal
         return deviceHandleInOut.isValid();
     }
 
-    Bool ResourceCachedScene::checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
+    bool ResourceCachedScene::checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
     {
         const DataInstanceHandle dataInstance = getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry];
         ResourceContentHash effectHash = ResourceContentHash::Invalid();
@@ -230,7 +230,7 @@ namespace ramses_internal
         return CheckAndUpdateDeviceHandle(resourceAccessor, m_effectDeviceHandleCache[renderable.asMemoryHandle()], effectHash);
     }
 
-    Bool ResourceCachedScene::checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
+    bool ResourceCachedScene::checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
     {
         const DataInstanceHandle dataInstance = getRenderable(renderable).dataInstances[ERenderableDataSlotType_Uniforms];
         if (!dataInstance.isValid())
@@ -352,7 +352,7 @@ namespace ramses_internal
         m_blitPassesDirty = false;
     }
 
-    Bool ResourceCachedScene::updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler)
+    bool ResourceCachedScene::updateTextureSamplerResource(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler)
     {
         assert(sampler.asMemoryHandle() < m_deviceHandleCacheForTextures.size());
         const TextureSampler& samplerData = getTextureSampler(sampler);
@@ -389,7 +389,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool ResourceCachedScene::updateTextureSamplerResourceAsRenderBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut)
+    bool ResourceCachedScene::updateTextureSamplerResourceAsRenderBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut)
     {
         assert(getRenderBuffer(bufferHandle).type != ERenderBufferType_InvalidBuffer);
         const DeviceResourceHandle textureDeviceHandle = resourceAccessor.getRenderTargetBufferDeviceHandle(bufferHandle, getSceneId());
@@ -398,7 +398,7 @@ namespace ramses_internal
         return textureDeviceHandle.isValid();
     }
 
-    Bool ResourceCachedScene::updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut)
+    bool ResourceCachedScene::updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut)
     {
         const DeviceResourceHandle textureDeviceHandle = resourceAccessor.getTextureBufferDeviceHandle(bufferHandle, getSceneId());
 
@@ -434,7 +434,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool ResourceCachedScene::resolveTextureSamplerResourceDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler, DeviceResourceHandle& deviceHandleInOut)
+    bool ResourceCachedScene::resolveTextureSamplerResourceDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler, DeviceResourceHandle& deviceHandleInOut)
     {
         const ResourceContentHash& hash = getTextureSampler(sampler).textureResource;
         return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, hash);
@@ -507,7 +507,7 @@ namespace ramses_internal
         }
     }
 
-    void ResourceCachedScene::setRenderableResourcesDirtyFlag(RenderableHandle handle, Bool dirty) const
+    void ResourceCachedScene::setRenderableResourcesDirtyFlag(RenderableHandle handle, bool dirty) const
     {
         const UInt32 indexIntoCache = handle.asMemoryHandle();
         assert(indexIntoCache < m_renderableResourcesDirty.size());
@@ -523,7 +523,7 @@ namespace ramses_internal
         m_renderableVertexArraysDirty |= dirty;
     }
 
-    void ResourceCachedScene::setDataInstanceDirtyFlag(DataInstanceHandle handle, Bool dirty) const
+    void ResourceCachedScene::setDataInstanceDirtyFlag(DataInstanceHandle handle, bool dirty) const
     {
         const UInt32 indexIntoCache = handle.asMemoryHandle();
         assert(indexIntoCache < m_dataInstancesDirty.size());
@@ -532,7 +532,7 @@ namespace ramses_internal
         m_renderableResourcesDirtinessNeedsUpdate |= dirty;
     }
 
-    void ResourceCachedScene::setTextureSamplerDirtyFlag(TextureSamplerHandle handle, Bool dirty) const
+    void ResourceCachedScene::setTextureSamplerDirtyFlag(TextureSamplerHandle handle, bool dirty) const
     {
         const UInt32 indexIntoCache = handle.asMemoryHandle();
         assert(indexIntoCache < m_textureSamplersDirty.size());
@@ -541,35 +541,35 @@ namespace ramses_internal
         m_renderableResourcesDirtinessNeedsUpdate |= dirty;
     }
 
-    Bool ResourceCachedScene::doesRenderableReferToDirtyUniforms(RenderableHandle handle) const
+    bool ResourceCachedScene::doesRenderableReferToDirtyUniforms(RenderableHandle handle) const
     {
         assert(isRenderableAllocated(handle));
         const DataInstanceHandle uniformsDataInstance = getRenderable(handle).dataInstances[ERenderableDataSlotType_Uniforms];
         return uniformsDataInstance.isValid() && isDataInstanceDirty(uniformsDataInstance);
     }
 
-    Bool ResourceCachedScene::doesRenderableReferToDirtyGeometry(RenderableHandle handle) const
+    bool ResourceCachedScene::doesRenderableReferToDirtyGeometry(RenderableHandle handle) const
     {
         assert(isRenderableAllocated(handle));
         const DataInstanceHandle geometryDataInstance = getRenderable(handle).dataInstances[ERenderableDataSlotType_Geometry];
         return geometryDataInstance.isValid() && isDataInstanceDirty(geometryDataInstance);
     }
 
-    Bool ResourceCachedScene::isDataInstanceDirty(DataInstanceHandle handle) const
+    bool ResourceCachedScene::isDataInstanceDirty(DataInstanceHandle handle) const
     {
         const UInt32 indexIntoCache = handle.asMemoryHandle();
         assert(indexIntoCache < m_dataInstancesDirty.size());
         return m_dataInstancesDirty[indexIntoCache];
     }
 
-    Bool ResourceCachedScene::isTextureSamplerDirty(TextureSamplerHandle handle) const
+    bool ResourceCachedScene::isTextureSamplerDirty(TextureSamplerHandle handle) const
     {
         const UInt32 indexIntoCache = handle.asMemoryHandle();
         assert(indexIntoCache < m_textureSamplersDirty.size());
         return m_textureSamplersDirty[indexIntoCache];
     }
 
-    Bool ResourceCachedScene::isGeometryDataLayout(const DataLayout& layout) const
+    bool ResourceCachedScene::isGeometryDataLayout(const DataLayout& layout) const
     {
         // TODO vaclav mark data layout explicitly if used for geometry or uniforms when network protocol can change
         // For now we check if indices field is contained to determine geometry data instance - this field exists even if no indices are actually used
@@ -630,7 +630,7 @@ namespace ramses_internal
         m_renderableVertexArraysDirty = false;
     }
 
-    Bool ResourceCachedScene::doesDataInstanceReferToDirtyTextureSampler(DataInstanceHandle handle) const
+    bool ResourceCachedScene::doesDataInstanceReferToDirtyTextureSampler(DataInstanceHandle handle) const
     {
         if (isDataInstanceAllocated(handle))
         {

@@ -144,7 +144,7 @@ namespace ramses_internal
         return m_width * m_height;
     }
 
-    Vector4i Image::getSumOfPixelValues() const
+    glm::ivec4 Image::getSumOfPixelValues() const
     {
         auto addWithoutOverflow = [](int32_t& dest, uint8_t value) {
             constexpr int32_t maximumValueBeforeOverflow = std::numeric_limits<int32_t>::max() - std::numeric_limits<uint8_t>::max() - 1;
@@ -159,7 +159,7 @@ namespace ramses_internal
         };
 
         bool overflow = false;
-        Vector4i result{0};
+        glm::ivec4 result{0};
         for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
             const UInt8* pxData = &m_data[4 * px];

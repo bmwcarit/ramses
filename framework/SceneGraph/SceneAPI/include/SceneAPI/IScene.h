@@ -27,18 +27,10 @@
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
 #include "Components/FlushTimeInformation.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
-    class Vector2;
-    class Vector3;
-    class Vector4;
-    class Vector2i;
-    class Vector3i;
-    class Vector4i;
-    class Matrix22f;
-    class Matrix33f;
-    class Matrix44f;
     class DataLayout;
     struct SceneSizeInformation;
     struct PixelRectangle;
@@ -96,7 +88,7 @@ namespace ramses_internal
         [[nodiscard]] virtual UInt32                      getRenderStateCount             () const = 0;
         virtual void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) = 0;
         virtual void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) = 0;
-        virtual void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const Vector4& color) = 0;
+        virtual void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const glm::vec4& color) = 0;
         virtual void                        setRenderStateCullMode          (RenderStateHandle stateHandle, ECullMode cullMode) = 0;
         virtual void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) = 0;
         virtual void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) = 0;
@@ -126,22 +118,22 @@ namespace ramses_internal
         [[nodiscard]] virtual NodeHandle                  getChild                        (NodeHandle parent, UInt32 childNumber) const = 0;
 
         // Transformation
-        constexpr static Vector3 IdentityTranslation = {0.f, 0.f, 0.f};
-        constexpr static Vector4 IdentityRotation    = {0.f, 0.f, 0.f, 1.f}; // zero rotation for both euler and quaternion
-        constexpr static Vector3 IdentityScaling     = {1.f, 1.f, 1.f};
+        constexpr static glm::vec3 IdentityTranslation = {0.f, 0.f, 0.f};
+        constexpr static glm::vec4 IdentityRotation    = {0.f, 0.f, 0.f, 1.f}; // zero rotation for both euler and quaternion
+        constexpr static glm::vec3 IdentityScaling     = {1.f, 1.f, 1.f};
 
         virtual TransformHandle             allocateTransform               (NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) = 0;
         virtual void                        releaseTransform                (TransformHandle transform) = 0;
         [[nodiscard]] virtual bool                        isTransformAllocated            (TransformHandle transformHandle) const = 0;
         [[nodiscard]] virtual UInt32                      getTransformCount               () const = 0;
         [[nodiscard]] virtual NodeHandle                  getTransformNode                (TransformHandle handle) const = 0;
-        [[nodiscard]] virtual const Vector3&              getTranslation                  (TransformHandle handle) const = 0;
-        [[nodiscard]] virtual const Vector4&              getRotation                     (TransformHandle handle) const = 0;
+        [[nodiscard]] virtual const glm::vec3&              getTranslation                  (TransformHandle handle) const = 0;
+        [[nodiscard]] virtual const glm::vec4&              getRotation                     (TransformHandle handle) const = 0;
         [[nodiscard]] virtual ERotationType         getRotationType           (TransformHandle handle) const = 0;
-        [[nodiscard]] virtual const Vector3&              getScaling                      (TransformHandle handle) const = 0;
-        virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) = 0;
-        virtual void                        setRotation                     (TransformHandle handle, const Vector4& rotation, ERotationType rotationType) = 0;
-        virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) = 0;
+        [[nodiscard]] virtual const glm::vec3&              getScaling                      (TransformHandle handle) const = 0;
+        virtual void                        setTranslation                  (TransformHandle handle, const glm::vec3& translation) = 0;
+        virtual void                        setRotation                     (TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType) = 0;
+        virtual void                        setScaling                      (TransformHandle handle, const glm::vec3& scaling) = 0;
 
         virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) = 0;
         virtual void                        releaseDataLayout               (DataLayoutHandle layoutHandle) = 0;
@@ -157,59 +149,59 @@ namespace ramses_internal
         [[nodiscard]] virtual DataLayoutHandle            getLayoutOfDataInstance         (DataInstanceHandle containerHandle) const = 0;
 
         [[nodiscard]] virtual const Float*                getDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector2*              getDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector3*              getDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector4*              getDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::vec2*              getDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::vec3*              getDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::vec4*              getDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
         [[nodiscard]] virtual const Int32*                getDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Matrix22f*            getDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Matrix33f*            getDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Matrix44f*            getDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector2i*             getDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector3i*             getDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector4i*             getDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::mat2*            getDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::mat3*            getDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::mat4*            getDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::ivec2*             getDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::ivec3*             getDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::ivec4*             getDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
         [[nodiscard]] virtual const ResourceField&        getDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
         [[nodiscard]] virtual TextureSamplerHandle        getDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
         [[nodiscard]] virtual DataInstanceHandle          getDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
 
         virtual void                        setDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data) = 0;
-        virtual void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data) = 0;
-        virtual void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data) = 0;
-        virtual void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data) = 0;
+        virtual void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec2* data) = 0;
+        virtual void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec3* data) = 0;
+        virtual void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::vec4* data) = 0;
         virtual void                        setDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data) = 0;
-        virtual void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data) = 0;
-        virtual void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data) = 0;
-        virtual void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data) = 0;
-        virtual void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data) = 0;
-        virtual void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data) = 0;
-        virtual void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data) = 0;
+        virtual void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec2* data) = 0;
+        virtual void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec3* data) = 0;
+        virtual void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::ivec4* data) = 0;
+        virtual void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat2* data) = 0;
+        virtual void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat3* data) = 0;
+        virtual void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const glm::mat4* data) = 0;
         virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) = 0;
         virtual void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) = 0;
         virtual void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) = 0;
 
         // get/setData*Array wrappers for elementCount == 1
         [[nodiscard]] virtual Float                       getDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector2&              getDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector3&              getDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector4&              getDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::vec2&              getDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::vec3&              getDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::vec4&              getDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
         [[nodiscard]] virtual Int32                       getDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Matrix22f&            getDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Matrix33f&            getDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Matrix44f&            getDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector2i&             getDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector3i&             getDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
-        [[nodiscard]] virtual const Vector4i&             getDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::mat2&            getDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::mat3&            getDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::mat4&            getDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::ivec2&             getDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::ivec3&             getDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual const glm::ivec4&             getDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
 
         virtual void                        setDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field, Float data) = 0;
-        virtual void                        setDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2& data) = 0;
-        virtual void                        setDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3& data) = 0;
-        virtual void                        setDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4& data) = 0;
+        virtual void                        setDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec2& data) = 0;
+        virtual void                        setDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec3& data) = 0;
+        virtual void                        setDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec4& data) = 0;
         virtual void                        setDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field, Int32 data) = 0;
-        virtual void                        setDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2i& data) = 0;
-        virtual void                        setDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3i& data) = 0;
-        virtual void                        setDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4i& data) = 0;
-        virtual void                        setDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix22f& data) = 0;
-        virtual void                        setDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix33f& data) = 0;
-        virtual void                        setDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix44f& data) = 0;
+        virtual void                        setDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec2& data) = 0;
+        virtual void                        setDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec3& data) = 0;
+        virtual void                        setDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec4& data) = 0;
+        virtual void                        setDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat2& data) = 0;
+        virtual void                        setDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat3& data) = 0;
+        virtual void                        setDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat4& data) = 0;
 
         // Texture sampler description
         virtual TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) = 0;
@@ -234,7 +226,7 @@ namespace ramses_internal
         virtual void                        releaseRenderPass               (RenderPassHandle passHandle) = 0;
         [[nodiscard]] virtual bool                        isRenderPassAllocated           (RenderPassHandle passHandle) const = 0;
         [[nodiscard]] virtual UInt32                      getRenderPassCount              () const = 0;
-        virtual void                        setRenderPassClearColor         (RenderPassHandle passHandle, const Vector4& clearColor) = 0;
+        virtual void                        setRenderPassClearColor         (RenderPassHandle passHandle, const glm::vec4& clearColor) = 0;
         virtual void                        setRenderPassClearFlag          (RenderPassHandle passHandle, UInt32 clearFlag) = 0;
         virtual void                        setRenderPassCamera             (RenderPassHandle passHandle, CameraHandle cameraHandle) = 0;
         virtual void                        setRenderPassRenderTarget       (RenderPassHandle passHandle, RenderTargetHandle targetHandle) = 0;

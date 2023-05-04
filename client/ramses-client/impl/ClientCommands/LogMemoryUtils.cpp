@@ -39,7 +39,7 @@ namespace ramses_internal
         for (const auto it : resources)
         {
             const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(*it);
-            const IResource* resourceObject  = scene.getClientImpl().getResource(resource.impl.getLowlevelResourceHash()).get();
+            const IResource* resourceObject  = scene.getClientImpl().getResource(resource.m_impl.getLowlevelResourceHash()).get();
 
             if (nullptr != resourceObject)
             {

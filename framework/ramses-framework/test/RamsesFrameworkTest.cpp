@@ -20,7 +20,7 @@ using namespace testing;
 TEST(ARamsesFramework, canDefaultConstruct)
 {
     RamsesFramework fw;
-    EXPECT_GT(fw.impl.getParticipantAddress().getParticipantId().get(), 0xFF);
+    EXPECT_GT(fw.m_impl.getParticipantAddress().getParticipantId().get(), 0xFF);
 }
 
 TEST(ARamsesFramework, canConstructFromConfig)
@@ -28,7 +28,7 @@ TEST(ARamsesFramework, canConstructFromConfig)
     RamsesFrameworkConfig config;
     config.setParticipantGuid(0x123);
     RamsesFramework fw(config);
-    EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x123);
+    EXPECT_EQ(fw.m_impl.getParticipantAddress().getParticipantId().get(), 0x123);
 }
 
 TEST(ARamsesFramework, isNotConnectedInitially)

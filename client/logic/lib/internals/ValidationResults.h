@@ -13,16 +13,16 @@
 #include <vector>
 #include <string>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ValidationResults
     {
     public:
         void clear();
         void add(std::string warningMessage, const LogicObject* logicObject, EWarningType type);
-        [[nodiscard]] const std::vector<rlogic::WarningData>& getWarnings() const;
+        [[nodiscard]] const std::vector<ramses::WarningData>& getWarnings() const;
 
     private:
-        std::vector<rlogic::WarningData> m_warnings;
+        std::vector<ramses::WarningData> m_warnings;
     };
 }

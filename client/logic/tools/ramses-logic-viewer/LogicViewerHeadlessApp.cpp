@@ -13,7 +13,7 @@
 #include "LogicViewerSettings.h"
 #include "ramses-logic/Logger.h"
 
-namespace rlogic
+namespace ramses
 {
     LogicViewerHeadlessApp::LogicViewerHeadlessApp(int argc, const char * const * argv)
     {

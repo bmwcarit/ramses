@@ -36,12 +36,12 @@ namespace ramses
 
         void expectNumMeshesContained(uint32_t numMeshes, const RenderGroup& group)
         {
-            EXPECT_EQ(numMeshes, static_cast<uint32_t>(group.impl.getAllMeshes().size()));
+            EXPECT_EQ(numMeshes, static_cast<uint32_t>(group.m_impl.getAllMeshes().size()));
         }
 
         void expectNumRenderGroupsContained(uint32_t numRenderGroups, const RenderGroup& group)
         {
-            EXPECT_EQ(numRenderGroups, static_cast<uint32_t>(group.impl.getAllRenderGroups().size()));
+            EXPECT_EQ(numRenderGroups, static_cast<uint32_t>(group.m_impl.getAllRenderGroups().size()));
         }
 
         void expectMeshContained(const MeshNode& mesh, int32_t order, const RenderGroup& group)
@@ -51,9 +51,9 @@ namespace ramses
             EXPECT_EQ(StatusOK, group.getMeshNodeOrder(mesh, actualOrder));
             EXPECT_EQ(order, actualOrder);
 
-            const auto& internalRg = m_internalScene.getRenderGroup(group.impl.getRenderGroupHandle());
-            ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(mesh.impl.getRenderableHandle(), internalRg));
-            EXPECT_EQ(order, ramses_internal::RenderGroupUtils::FindRenderableEntry(mesh.impl.getRenderableHandle(), internalRg)->order);
+            const auto& internalRg = m_internalScene.getRenderGroup(group.m_impl.getRenderGroupHandle());
+            ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderable(mesh.m_impl.getRenderableHandle(), internalRg));
+            EXPECT_EQ(order, ramses_internal::RenderGroupUtils::FindRenderableEntry(mesh.m_impl.getRenderableHandle(), internalRg)->order);
         }
 
         void expectRenderGroupContained(const RenderGroup& nestedRenderGroup, int32_t order, const RenderGroup& group)
@@ -63,23 +63,23 @@ namespace ramses
             EXPECT_EQ(StatusOK, group.getRenderGroupOrder(nestedRenderGroup, actualOrder));
             EXPECT_EQ(order, actualOrder);
 
-            const auto& internalRg = m_internalScene.getRenderGroup(group.impl.getRenderGroupHandle());
-            ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(nestedRenderGroup.impl.getRenderGroupHandle(), internalRg));
-            EXPECT_EQ(order, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(nestedRenderGroup.impl.getRenderGroupHandle(), internalRg)->order);
+            const auto& internalRg = m_internalScene.getRenderGroup(group.m_impl.getRenderGroupHandle());
+            ASSERT_TRUE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(nestedRenderGroup.m_impl.getRenderGroupHandle(), internalRg));
+            EXPECT_EQ(order, ramses_internal::RenderGroupUtils::FindRenderGroupEntry(nestedRenderGroup.m_impl.getRenderGroupHandle(), internalRg)->order);
         }
 
         void expectMeshNotContained(const MeshNode& mesh, const RenderGroup& group)
         {
             EXPECT_FALSE(group.containsMeshNode(mesh));
-            const auto& internalRg = m_internalScene.getRenderGroup(group.impl.getRenderGroupHandle());
-            EXPECT_FALSE(ramses_internal::RenderGroupUtils::ContainsRenderable(mesh.impl.getRenderableHandle(), internalRg));
+            const auto& internalRg = m_internalScene.getRenderGroup(group.m_impl.getRenderGroupHandle());
+            EXPECT_FALSE(ramses_internal::RenderGroupUtils::ContainsRenderable(mesh.m_impl.getRenderableHandle(), internalRg));
         }
 
         void expectRenderGroupNotContained(const RenderGroup& nestedRenderGroup, const RenderGroup& group)
         {
             EXPECT_FALSE(group.containsRenderGroup(nestedRenderGroup));
-            const auto& internalRg = m_internalScene.getRenderGroup(group.impl.getRenderGroupHandle());
-            EXPECT_FALSE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(nestedRenderGroup.impl.getRenderGroupHandle(), internalRg));
+            const auto& internalRg = m_internalScene.getRenderGroup(group.m_impl.getRenderGroupHandle());
+            EXPECT_FALSE(ramses_internal::RenderGroupUtils::ContainsRenderGroup(nestedRenderGroup.m_impl.getRenderGroupHandle(), internalRg));
         }
 
         void addValidMeshToRenderGroup()

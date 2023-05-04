@@ -9,6 +9,11 @@
 #ifndef RAMSES_RAMSES_TEXT_H
 #define RAMSES_RAMSES_TEXT_H
 
+/**
+ * @defgroup TextAPI The Ramses Text API
+ * This group contains all of the Ramses Text API types.
+ */
+
 #include "ramses-text-api/FontInstanceId.h"
 #include "ramses-text-api/FontInstanceOffsets.h"
 #include "ramses-text-api/FontRegistry.h"

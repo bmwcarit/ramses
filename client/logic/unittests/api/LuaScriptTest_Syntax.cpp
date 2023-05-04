@@ -13,7 +13,7 @@
 
 #include "fmt/format.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALuaScript_Syntax : public ALuaScript
     {

@@ -30,14 +30,14 @@ namespace ramses_internal
         void                       addLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
         void                       removeLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
 
-        [[nodiscard]] Bool                       hasAnyLinksToProvider(SceneId consumerSceneId) const;
-        [[nodiscard]] Bool                       hasAnyLinksToConsumer(SceneId providerSceneId) const;
+        [[nodiscard]] bool                       hasAnyLinksToProvider(SceneId consumerSceneId) const;
+        [[nodiscard]] bool                       hasAnyLinksToConsumer(SceneId providerSceneId) const;
 
-        [[nodiscard]] Bool                       hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const;
+        [[nodiscard]] bool                       hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const;
         void                       getLinkedProviders(SceneId consumerSceneId, SceneLinkVector& links) const;
         [[nodiscard]] const SceneLink&           getLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const;
 
-        [[nodiscard]] Bool                       hasLinkedConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle) const;
+        [[nodiscard]] bool                       hasLinkedConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle) const;
         void                       getLinkedConsumers(SceneId providerSceneId, SceneLinkVector& links) const;
         void                       getLinkedConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneLinkVector& links) const;
 

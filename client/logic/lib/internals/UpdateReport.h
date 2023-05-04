@@ -13,7 +13,7 @@
 #include <optional>
 #include <array>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicNodeImpl;
 

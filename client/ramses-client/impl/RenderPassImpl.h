@@ -11,12 +11,12 @@
 
 #include "SceneObjectImpl.h"
 #include "SceneAPI/Handles.h"
+#include "DataTypesImpl.h"
 #include <vector>
 
 namespace ramses_internal
 {
     class IScene;
-    class Vector4;
 }
 
 namespace ramses
@@ -48,8 +48,8 @@ namespace ramses
         const Camera* getCamera()const;
         Camera* getCamera();
 
-        status_t setClearColor(const ramses_internal::Vector4& clearColor);
-        const ramses_internal::Vector4& getClearColor() const;
+        status_t setClearColor(const glm::vec4& clearColor);
+        const glm::vec4& getClearColor() const;
 
         status_t setClearFlags(uint32_t clearFlags);
         uint32_t getClearFlags() const;

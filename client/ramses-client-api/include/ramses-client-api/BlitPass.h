@@ -16,28 +16,28 @@ namespace ramses
     class RenderBuffer;
 
     /**
+     * @ingroup CoreAPI
      * @brief The BlitPass blits contents of one RendeBuffer to another. The source and destination
      * RenderBuffer objects must have same type, format and dimensions. BlitPass objects are ordered together
      * using a render order, which is also shared with RenderPass objects, i.e, BlitPass and RenderPass objects
      * can all be ordered relative to each other.
      */
-    class RAMSES_API BlitPass : public SceneObject
+    class BlitPass : public SceneObject
     {
     public:
-
         /**
         * @brief Get the source render buffer used for blitting.
         *
         * @return The source render buffer.
         */
-        [[nodiscard]] const RenderBuffer& getSourceRenderBuffer() const;
+        [[nodiscard]] RAMSES_API const RenderBuffer& getSourceRenderBuffer() const;
 
         /**
         * @brief Get the destination render buffer used for blitting.
         *
         * @return The destination render buffer.
         */
-        [[nodiscard]] const RenderBuffer& getDestinationRenderBuffer() const;
+        [[nodiscard]] RAMSES_API const RenderBuffer& getDestinationRenderBuffer() const;
 
         /**
         * @brief Set the region for blitting from source and destination render buffers.
@@ -55,8 +55,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setBlittingRegion(uint32_t sourceX, uint32_t sourceY, uint32_t destinationX, uint32_t destinationY, uint32_t width, uint32_t height);
-
+        RAMSES_API status_t setBlittingRegion(uint32_t sourceX, uint32_t sourceY, uint32_t destinationX, uint32_t destinationY, uint32_t width, uint32_t height);
 
         /**
         * @brief Get the blitting region in source and destination render buffers.
@@ -69,7 +68,7 @@ namespace ramses
         * @param[out] height Height of blitting region, used for source and destination blitting regions
         *
         */
-        void getBlittingRegion(uint32_t& sourceX, uint32_t& sourceY, uint32_t& destinationX, uint32_t& destinationY, uint32_t& width, uint32_t& height) const;
+        RAMSES_API void getBlittingRegion(uint32_t& sourceX, uint32_t& sourceY, uint32_t& destinationX, uint32_t& destinationY, uint32_t& width, uint32_t& height) const;
 
         /**
         * @brief Set the render order for the blit pass.
@@ -83,14 +82,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRenderOrder(int32_t renderOrder);
+        RAMSES_API status_t setRenderOrder(int32_t renderOrder);
 
         /**
         * @brief Get the render order of this blit pass.
         *
         * @return The render order of this blit pass.
         */
-        [[nodiscard]] int32_t getRenderOrder() const;
+        [[nodiscard]] RAMSES_API int32_t getRenderOrder() const;
 
         /**
         * @brief Enable/Disable blit pass
@@ -99,37 +98,32 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setEnabled(bool enable);
+        RAMSES_API status_t setEnabled(bool enable);
 
         /**
         * @brief Get the enable state of the blit pass
         *
         * @return Indicates if the blit pass is enabled
         */
-        [[nodiscard]] bool isEnabled() const;
+        [[nodiscard]] RAMSES_API bool isEnabled() const;
 
         /**
         * Stores internal data for implementation specifics of BlitPass.
         */
-        class BlitPassImpl& impl;
+        class BlitPassImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating BlitPass instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for BlitPass.
         *
-        * @param pimpl Internal data for implementation specifics of BlitPass (sink - instance becomes owner)
+        * @param impl Internal data for implementation specifics of BlitPass (sink - instance becomes owner)
         */
-        explicit BlitPass(BlitPassImpl& pimpl);
-
-        /**
-        * @brief Destructor of the BlitPass
-        */
-        ~BlitPass() override;
+        explicit BlitPass(std::unique_ptr<BlitPassImpl> impl);
     };
 }
 

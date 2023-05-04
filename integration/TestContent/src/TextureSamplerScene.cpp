@@ -28,7 +28,7 @@ namespace ramses
 
 namespace ramses_internal
 {
-    TextureSamplerScene::TextureSamplerScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
+    TextureSamplerScene::TextureSamplerScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         const UInt8 rgb8[] =

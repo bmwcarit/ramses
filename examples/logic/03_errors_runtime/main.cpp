@@ -17,14 +17,14 @@
  */
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
      * This script contains a runtime error, i.e. from Lua point of view this is
      * valid syntax, but the type check of the Logic engine will fire a runtime
      * error for trying to assign a string to a Type:Vec4f() property
      */
-    rlogic::LuaScript* faultyScript = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* faultyScript = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             OUT.vec4f = Type:Vec4f()
         end

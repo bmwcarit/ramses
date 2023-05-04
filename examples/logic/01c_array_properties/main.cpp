@@ -19,10 +19,10 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     // A script which demonstrates how to access vector and array properties
-    rlogic::LuaScript* script = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             IN.vec3f = Type:Vec3f()
 
@@ -59,14 +59,14 @@ int main()
      * Note that with this notation (using C++ initializer lists) it is possible to accidentally
      * provide fewer entries than the vector expects. This will result in zeros filling the unspecified slots
      */
-    script->getInputs()->getChild("vec3f")->set<rlogic::vec3f>({ 0.1f, 0.2f, 0.3f });
+    script->getInputs()->getChild("vec3f")->set<ramses::vec3f>({ 0.1f, 0.2f, 0.3f });
 
     // Update the logic engine including our script
     logicEngine.update();
 
     // Inspect the results of the script
-    const rlogic::Property* arrayProperty = script->getOutputs()->getChild("array");
-    const rlogic::vec4f vec4f = *script->getOutputs()->getChild("vec4f")->get<rlogic::vec4f>();
+    const ramses::Property* arrayProperty = script->getOutputs()->getChild("array");
+    const ramses::vec4f vec4f = *script->getOutputs()->getChild("vec4f")->get<ramses::vec4f>();
 
     for (size_t i = 0; i < arrayProperty->getChildCount(); ++i)
     {

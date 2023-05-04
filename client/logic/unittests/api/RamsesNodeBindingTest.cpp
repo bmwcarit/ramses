@@ -28,7 +28,7 @@
 #include "generated/RamsesNodeBindingGen.h"
 #include "glm/gtc/type_ptr.hpp"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ARamsesNodeBinding : public ALogicEngine
     {
@@ -483,7 +483,7 @@ namespace rlogic::internal
         for (const auto& rotationType : enumValues)
         {
             m_node->setRotation({1, 2, 3}, rotationType);
-            rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, rotationType, "NodeBinding");
+            ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, rotationType, "NodeBinding");
 
             EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(1.f, 2.f, 3.f));
             EXPECT_EQ(binding->getRotationType(), rotationType);
@@ -495,7 +495,7 @@ namespace rlogic::internal
     TEST_F(ARamsesNodeBinding_RotationTypes, TakesOverQuaternionFromRamsesNode_WhenEnumMatches)
     {
         m_node->setRotation(quat(1.f, 2.f, 3.f, 4.f));
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
+        ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
 
         EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(2.f, 3.f, 4.f, 1.f));
         EXPECT_EQ(binding->getRotationType(), ramses::ERotationType::Quaternion);
@@ -516,8 +516,8 @@ namespace rlogic::internal
         };
 
         std::string warningMessage;
-        ELogMessageType messageType;
-        ScopedLogContextLevel scopedLogs(ELogMessageType::Warn, [&warningMessage, &messageType](ELogMessageType msgType, std::string_view message) {
+        ELogLevel messageType;
+        ScopedLogContextLevel scopedLogs(ELogLevel::Warn, [&warningMessage, &messageType](ELogLevel msgType, std::string_view message) {
             warningMessage = message;
             messageType = msgType;
             });
@@ -525,9 +525,9 @@ namespace rlogic::internal
         for (const auto& [logicEnum, ramsesEnum] : mismatchedEnumPairs)
         {
             m_node->setRotation({1, 2, 3}, ramsesEnum);
-            rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, logicEnum, "NodeBinding");
+            ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, logicEnum, "NodeBinding");
 
-            EXPECT_EQ(messageType, ELogMessageType::Warn);
+            EXPECT_EQ(messageType, ELogLevel::Warn);
             EXPECT_EQ(warningMessage, fmt::format("Initial rotation values for RamsesNodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.", binding->m_impl.getIdentificationString()));
 
             EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
@@ -535,7 +535,7 @@ namespace rlogic::internal
 
             ASSERT_TRUE(m_logicEngine.destroy(*binding));
 
-            messageType = ELogMessageType::Off;
+            messageType = ELogLevel::Off;
             warningMessage = "";
         }
     }
@@ -543,16 +543,16 @@ namespace rlogic::internal
     TEST_F(ARamsesNodeBinding_RotationTypes, InitializesQuaternionWithIdentityAndPrintsWarning_WhenConventionEnumsDontMatch)
     {
         std::string warningMessage;
-        ELogMessageType messageType;
-        ScopedLogContextLevel scopedLogs(ELogMessageType::Warn, [&warningMessage, &messageType](ELogMessageType msgType, std::string_view message) {
+        ELogLevel messageType;
+        ScopedLogContextLevel scopedLogs(ELogLevel::Warn, [&warningMessage, &messageType](ELogLevel msgType, std::string_view message) {
             warningMessage = message;
             messageType = msgType;
             });
 
         m_node->setRotation({1, 2, 3});
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
+        ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
 
-        EXPECT_EQ(messageType, ELogMessageType::Warn);
+        EXPECT_EQ(messageType, ELogLevel::Warn);
         EXPECT_EQ(warningMessage, fmt::format("Initial rotation values for RamsesNodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.", binding->m_impl.getIdentificationString()));
 
         EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));
@@ -560,18 +560,18 @@ namespace rlogic::internal
 
         ASSERT_TRUE(m_logicEngine.destroy(*binding));
 
-        messageType = ELogMessageType::Off;
+        messageType = ELogLevel::Off;
         warningMessage = "";
     }
 
     TEST_F(ARamsesNodeBinding_RotationTypes, PrintsNoWarning_WhenConventionEnumsDontMatch_InSpecialCaseWhereRamsesRotationValuesAreZero)
     {
-        ScopedLogContextLevel scopedLogs(ELogMessageType::Warn, [](ELogMessageType /*unused*/, std::string_view /*unused*/) {
+        ScopedLogContextLevel scopedLogs(ELogLevel::Warn, [](ELogLevel /*unused*/, std::string_view /*unused*/) {
             FAIL() << "Should not cause any warnings!";
             });
 
         m_node->setRotation({0.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYX);
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
+        ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
 
         EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
         EXPECT_EQ(binding->getRotationType(), ramses::ERotationType::Euler_XYZ);
@@ -581,12 +581,12 @@ namespace rlogic::internal
 
     TEST_F(ARamsesNodeBinding_RotationTypes, PrintsNoWarning_WhenNoQuaternion_InSpecialCaseWhereRamsesRotationValuesAreZero)
     {
-        ScopedLogContextLevel scopedLogs(ELogMessageType::Warn, [](ELogMessageType /*unused*/, std::string_view /*unused*/) {
+        ScopedLogContextLevel scopedLogs(ELogLevel::Warn, [](ELogLevel /*unused*/, std::string_view /*unused*/) {
             FAIL() << "Should not cause any warnings!";
             });
 
         m_node->setRotation({0.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYX);
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
+        ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion, "NodeBinding");
 
         EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));
         EXPECT_EQ(binding->getRotationType(), ramses::ERotationType::Quaternion);
@@ -596,7 +596,7 @@ namespace rlogic::internal
 
     TEST_F(ARamsesNodeBinding_RotationTypes, InitializesQuaternionAsVec4f)
     {
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
+        ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
 
         EXPECT_EQ(5u, binding->getInputs()->getChildCount());
         EXPECT_EQ(EPropertyType::Vec4f, binding->getInputs()->getChild("rotation")->getType());
@@ -610,8 +610,8 @@ namespace rlogic::internal
 
     TEST_F(ARamsesNodeBinding_RotationTypes, InitializesQuaternionValues_WhichResultsToNoRotationInEuler)
     {
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
-        rlogic::Property* quatInput = binding->getInputs()->getChild("rotation");
+        ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
+        ramses::Property* quatInput = binding->getInputs()->getChild("rotation");
 
         ASSERT_EQ(quatInput->getType(), EPropertyType::Vec4f);
         EXPECT_EQ(*quatInput->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));
@@ -623,8 +623,8 @@ namespace rlogic::internal
 
     TEST_F(ARamsesNodeBinding_RotationTypes, QuaternionValuesAreReturned)
     {
-        rlogic::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
-        rlogic::Property* quatInput = binding->getInputs()->getChild("rotation");
+        ramses::RamsesNodeBinding* binding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Quaternion);
+        ramses::Property* quatInput = binding->getInputs()->getChild("rotation");
 
         quatInput->set<vec4f>({0.5f, 0, 0, 0.8660254f});
         EXPECT_TRUE(m_logicEngine.update());

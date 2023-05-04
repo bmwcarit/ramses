@@ -30,7 +30,7 @@ namespace ramses
             , sourceRenderBuffer(*createRenderBuffer())
             , destinationRenderBuffer(*createRenderBuffer())
             , blitpass(*m_scene.createBlitPass(sourceRenderBuffer, destinationRenderBuffer, "BlitPass"))
-            , blitpassHandle(blitpass.impl.getBlitPassHandle())
+            , blitpassHandle(blitpass.m_impl.getBlitPassHandle())
         {
         }
 
@@ -49,21 +49,21 @@ namespace ramses
     TEST_F(ABlitPass, CanGetSourceAndDestinationBuffers)
     {
         const RenderBuffer& srcRB = blitpass.getSourceRenderBuffer();
-        EXPECT_EQ(srcRB.impl.getRenderBufferHandle(), sourceRenderBuffer.impl.getRenderBufferHandle());
+        EXPECT_EQ(srcRB.m_impl.getRenderBufferHandle(), sourceRenderBuffer.m_impl.getRenderBufferHandle());
 
         const RenderBuffer& dstRB = blitpass.getDestinationRenderBuffer();
-        EXPECT_EQ(dstRB.impl.getRenderBufferHandle(), destinationRenderBuffer.impl.getRenderBufferHandle());
+        EXPECT_EQ(dstRB.m_impl.getRenderBufferHandle(), destinationRenderBuffer.m_impl.getRenderBufferHandle());
     }
 
     TEST_F(ABlitPass, BlittingRegionIsSetToCompleteBufferByDefault)
     {
-        const ramses_internal::PixelRectangle& sourceRegion = m_scene.impl.getIScene().getBlitPass(blitpassHandle).sourceRegion;
+        const ramses_internal::PixelRectangle& sourceRegion = m_scene.m_impl.getIScene().getBlitPass(blitpassHandle).sourceRegion;
         EXPECT_EQ(0u, sourceRegion.x);
         EXPECT_EQ(0u, sourceRegion.y);
         EXPECT_EQ(static_cast<ramses_internal::Int32>(sourceRenderBuffer.getWidth()), sourceRegion.width);
         EXPECT_EQ(static_cast<ramses_internal::Int32>(sourceRenderBuffer.getHeight()), sourceRegion.height);
 
-        const ramses_internal::PixelRectangle& destinationRegion = m_scene.impl.getIScene().getBlitPass(blitpassHandle).destinationRegion;
+        const ramses_internal::PixelRectangle& destinationRegion = m_scene.m_impl.getIScene().getBlitPass(blitpassHandle).destinationRegion;
         EXPECT_EQ(0u, destinationRegion.x);
         EXPECT_EQ(0u, destinationRegion.y);
         EXPECT_EQ(static_cast<ramses_internal::Int32>(destinationRenderBuffer.getWidth()), destinationRegion.width);
@@ -97,13 +97,13 @@ namespace ramses
         const int32_t height(6u);
         EXPECT_EQ(StatusOK, blitpass.setBlittingRegion(sourceX, sourceY, destinationX, destinationY, width, height));
 
-        const ramses_internal::PixelRectangle& sourceRegion = m_scene.impl.getIScene().getBlitPass(blitpassHandle).sourceRegion;
+        const ramses_internal::PixelRectangle& sourceRegion = m_scene.m_impl.getIScene().getBlitPass(blitpassHandle).sourceRegion;
         EXPECT_EQ(sourceX, sourceRegion.x);
         EXPECT_EQ(sourceY, sourceRegion.y);
         EXPECT_EQ(width, sourceRegion.width);
         EXPECT_EQ(height, sourceRegion.height);
 
-        const ramses_internal::PixelRectangle& destinationRegion = m_scene.impl.getIScene().getBlitPass(blitpassHandle).destinationRegion;
+        const ramses_internal::PixelRectangle& destinationRegion = m_scene.m_impl.getIScene().getBlitPass(blitpassHandle).destinationRegion;
         EXPECT_EQ(destinationX, destinationRegion.x);
         EXPECT_EQ(destinationY, destinationRegion.y);
         EXPECT_EQ(width, destinationRegion.width);
@@ -136,13 +136,13 @@ namespace ramses
         EXPECT_NE(StatusOK, blitpass.setBlittingRegion(0u, 0u, sourceRenderBuffer.getWidth(), 0u, 10, 10u));
         EXPECT_NE(StatusOK, blitpass.setBlittingRegion(0u, 0u, 0, sourceRenderBuffer.getHeight(), 10, 10u));
 
-        const ramses_internal::PixelRectangle& sourceRegion = m_scene.impl.getIScene().getBlitPass(blitpassHandle).sourceRegion;
+        const ramses_internal::PixelRectangle& sourceRegion = m_scene.m_impl.getIScene().getBlitPass(blitpassHandle).sourceRegion;
         EXPECT_EQ(0u, sourceRegion.x);
         EXPECT_EQ(0u, sourceRegion.y);
         EXPECT_EQ(static_cast<ramses_internal::Int32>(sourceRenderBuffer.getWidth()), sourceRegion.width);
         EXPECT_EQ(static_cast<ramses_internal::Int32>(sourceRenderBuffer.getHeight()), sourceRegion.height);
 
-        const ramses_internal::PixelRectangle& destinationRegion = m_scene.impl.getIScene().getBlitPass(blitpassHandle).destinationRegion;
+        const ramses_internal::PixelRectangle& destinationRegion = m_scene.m_impl.getIScene().getBlitPass(blitpassHandle).destinationRegion;
         EXPECT_EQ(0u, destinationRegion.x);
         EXPECT_EQ(0u, destinationRegion.y);
         EXPECT_EQ(static_cast<ramses_internal::Int32>(destinationRenderBuffer.getWidth()), destinationRegion.width);

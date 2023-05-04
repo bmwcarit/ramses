@@ -25,7 +25,7 @@
 
 #include "generated/RamsesAppearanceBindingGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     RamsesAppearanceBindingImpl::RamsesAppearanceBindingImpl(ramses::Appearance& ramsesAppearance, std::string_view name, uint64_t id)
         : RamsesBindingImpl(name, id)
@@ -81,7 +81,7 @@ namespace rlogic::internal
 
         HierarchicalTypeData bindingInputsType(TypeData{ "", EPropertyType::Struct }, bindingInputs);
 
-        setRootInputs(std::make_unique<Property>(std::make_unique<PropertyImpl>(bindingInputsType, EPropertySemantics::BindingInput)));
+        setRootInputs(std::make_unique<PropertyImpl>(bindingInputsType, EPropertySemantics::BindingInput));
     }
 
     flatbuffers::Offset<rlogic_serialization::RamsesAppearanceBinding> RamsesAppearanceBindingImpl::Serialize(
@@ -177,7 +177,7 @@ namespace rlogic::internal
 
         auto binding = std::make_unique<RamsesAppearanceBindingImpl>(*resolvedAppearance, name, id);
         binding->setUserId(userIdHigh, userIdLow);
-        binding->setRootInputs(std::make_unique<Property>(std::move(deserializedRootInput)));
+        binding->setRootInputs(std::move(deserializedRootInput));
 
         return binding;
     }
@@ -207,9 +207,13 @@ namespace rlogic::internal
                 std::visit([&](auto v) {
                     using RamsesValueType = typename RlogicTypeToRamsesType<std::remove_const_t<std::remove_reference_t<decltype(v)>>>::TYPE;
                     if constexpr (ramses::IsUniformInputDataType<RamsesValueType>())
+                    {
                         m_ramsesAppearance.get().setInputValue(uniform, RamsesValueType{ std::move(v) });
+                    }
                     else
+                    {
                         assert(false && "This should never happen");
+                    }
                 }, inputProperty.getValue());
             }
         }

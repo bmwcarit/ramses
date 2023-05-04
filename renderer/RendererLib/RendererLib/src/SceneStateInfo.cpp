@@ -17,7 +17,7 @@ namespace ramses_internal
         m_scenesInfo.put(sceneId, sceneInfo);
     }
 
-    Bool SceneStateInfo::hasScene(SceneId sceneId) const
+    bool SceneStateInfo::hasScene(SceneId sceneId) const
     {
         return m_scenesInfo.contains(sceneId);
     }

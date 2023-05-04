@@ -14,34 +14,30 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief The #ramses::TextureSamplerExternal is used to sample from external textures data when bound
     *      to a #ramses::Appearance uniform input (#ramses::Appearance::setInputTexture called with #ramses::TextureSamplerExternal)
     */
-    class RAMSES_API TextureSamplerExternal : public SceneObject
+    class TextureSamplerExternal : public SceneObject
     {
     public:
         /**
         * Stores internal data for implementation specifics of TextureSamplerExternal.
         */
-        class TextureSamplerImpl& impl;
+        class TextureSamplerImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating TextureSamplerExternal instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for TextureSamplerExternal.
         *
-        * @param[in] pimpl Internal data for implementation specifics of TextureSamplerExternal (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of TextureSamplerExternal (sink - instance becomes owner)
         */
-        explicit TextureSamplerExternal(TextureSamplerImpl& pimpl);
-
-        /**
-        * @brief Destructor of the TextureSamplerExternal
-        */
-        ~TextureSamplerExternal() override;
+        explicit TextureSamplerExternal(std::unique_ptr<TextureSamplerImpl> impl);
     };
 }
 

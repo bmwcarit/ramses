@@ -14,13 +14,9 @@
 
 namespace ramses
 {
-    ClientObject::ClientObject(ClientObjectImpl& pimpl)
-        : RamsesObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    ClientObject::~ClientObject()
+    ClientObject::ClientObject(std::unique_ptr<ClientObjectImpl> impl)
+        : RamsesObject{ std::move(impl) }
+        , m_impl{ static_cast<ClientObjectImpl&>(RamsesObject::m_impl) }
     {
     }
 }

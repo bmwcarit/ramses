@@ -14,7 +14,13 @@
 namespace ramses
 {
     /**
+     * @addtogroup CoreAPI
+     * @{
+     */
+
+    /**
     * Specifies the blending operation.
+    * @ingroup CoreAPI
     */
     enum EBlendOperation
     {
@@ -29,6 +35,7 @@ namespace ramses
 
     /**
     * Specifies the blending factor used with blending operation.
+    * @ingroup CoreAPI
     */
     enum EBlendFactor
     {
@@ -227,6 +234,10 @@ namespace ramses
      * @return String representation of the draw mode
      */
     RAMSES_API const char* getDrawModeString(EDrawMode drawMode);
+
+    /**
+     * @}
+     */
 }
 
 #endif  //RAMSES_APPEARANCEENUMS_H

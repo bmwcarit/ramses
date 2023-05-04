@@ -143,7 +143,7 @@ public:
     const int32_t hline             = 4;
     const int32_t yMiddle           = padding + fontHeight / 2; // half height of a button
 
-    void setup(const rlogic::LogicViewerSettings* settings)
+    void setup(const ramses::LogicViewerSettings* settings)
     {
         m_settings = settings;
     }
@@ -227,7 +227,7 @@ public:
     }
 
 private:
-    const rlogic::LogicViewerSettings* m_settings = nullptr;
+    const ramses::LogicViewerSettings* m_settings = nullptr;
 };
 
 std::string rtrim(const std::string& str)
@@ -237,7 +237,7 @@ std::string rtrim(const std::string& str)
 }
 
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     const char* const logicFile  = "ALogicViewerAppTest.rlogic";
     const char* const ramsesFile = "ALogicViewerAppTest.ramses";
@@ -383,17 +383,17 @@ namespace rlogic::internal
             engine.createRamsesAppearanceBinding(*m_scene.appearance, "myAppearance");
             engine.createRamsesCameraBinding(*m_scene.camera, "myCamera");
             engine.createRamsesRenderPassBinding(*m_scene.renderPass, "myRenderPass");
-            rlogic::RamsesRenderGroupBindingElements rgElements;
+            ramses::RamsesRenderGroupBindingElements rgElements;
             rgElements.addElement(*m_scene.meshNode, "myMeshNode");
             engine.createRamsesRenderGroupBinding(*m_scene.renderGroup, rgElements, "myRenderGroup");
             engine.createRamsesMeshNodeBinding(*m_scene.meshNode, "myMeshNode");
 
             engine.createTimerNode("myTimer");
 
-            rlogic::DataArray* animTimestamps = engine.createDataArray(std::vector<float>{ 0.f, 0.5f, 1.f, 1.5f }); // will be interpreted as seconds
-            rlogic::DataArray* animKeyframes = engine.createDataArray(std::vector<rlogic::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
-            const rlogic::AnimationChannel stepAnimChannel { "rotationZstep", animTimestamps, animKeyframes, rlogic::EInterpolationType::Step };
-            rlogic::AnimationNodeConfig config;
+            ramses::DataArray* animTimestamps = engine.createDataArray(std::vector<float>{ 0.f, 0.5f, 1.f, 1.5f }); // will be interpreted as seconds
+            ramses::DataArray* animKeyframes = engine.createDataArray(std::vector<ramses::vec3f>{ {0.f, 0.f, 0.f}, {0.f, 0.f, 180.f}, {0.f, 0.f, 100.f}, {0.f, 0.f, 360.f} });
+            const ramses::AnimationChannel stepAnimChannel { "rotationZstep", animTimestamps, animKeyframes, ramses::EInterpolationType::Step };
+            ramses::AnimationNodeConfig config;
             config.addChannel(stepAnimChannel);
             engine.createAnimationNode(config, "myAnimation");
 
@@ -402,7 +402,7 @@ namespace rlogic::internal
 
             engine.update();
 
-            rlogic::SaveFileConfig noValidationConfig;
+            ramses::SaveFileConfig noValidationConfig;
             noValidationConfig.setValidationEnabled(false);
             engine.saveToFile(logicFile, noValidationConfig);
         }
@@ -789,7 +789,7 @@ namespace rlogic::internal
         )");
         createApp({ R"(--exec-lua=test_default('almost_yellow.png', 0.9))", ramsesFile });
         EXPECT_EQ(0, m_app->run());
-        auto appearance = m_app->getViewer()->getEngine().findByName<rlogic::RamsesAppearanceBinding>("myAppearance");
+        auto appearance = m_app->getViewer()->getEngine().findByName<ramses::RamsesAppearanceBinding>("myAppearance");
         ASSERT_TRUE(appearance != nullptr);
         auto prop = appearance->getInputs()->getChild("green");
         ASSERT_TRUE(prop != nullptr);
@@ -801,7 +801,7 @@ namespace rlogic::internal
     {
         this->createApp({ R"(--exec-lua=rlogic.appearanceBindings.myAppearance.IN.green.value = 0.44)", ramsesFile });
         EXPECT_EQ(0, this->m_app->run());
-        auto appearance = this->m_app->getViewer()->getEngine().template findByName<typename rlogic::RamsesAppearanceBinding>("myAppearance");
+        auto appearance = this->m_app->getViewer()->getEngine().template findByName<typename ramses::RamsesAppearanceBinding>("myAppearance");
         ASSERT_TRUE(appearance != nullptr);
         auto prop = appearance->getInputs()->getChild("green");
         ASSERT_TRUE(prop != nullptr);
@@ -820,7 +820,7 @@ namespace rlogic::internal
     {
         createApp({ R"(--exec-lua=rlogic.appearanceBindings.myAppearance.IN.green.value = 0.24)", "--headless", ramsesFile });
         ASSERT_EQ(0, m_app->run());
-        auto appearance = m_app->getViewer()->getEngine().findByName<rlogic::RamsesAppearanceBinding>("myAppearance");
+        auto appearance = m_app->getViewer()->getEngine().findByName<ramses::RamsesAppearanceBinding>("myAppearance");
         ASSERT_TRUE(appearance != nullptr);
         auto prop = appearance->getInputs()->getChild("green");
         ASSERT_TRUE(prop != nullptr);
@@ -885,11 +885,11 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.interfaces() + ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 30, ui.interfaces() + ui.buttonHeight + 2 * ui.smallButtonHeight));
 
-        auto* script = m_app->getViewer()->getEngine().findByName<rlogic::LuaScript>("myScript");
+        auto* script = m_app->getViewer()->getEngine().findByName<ramses::LuaScript>("myScript");
         ASSERT_TRUE(script != nullptr);
         auto* prop = script->getOutputs()->getChild("paramVec3f");
         ASSERT_TRUE(prop != nullptr);
-        const auto value = prop->get<rlogic::vec3f>().value();
+        const auto value = prop->get<ramses::vec3f>().value();
         EXPECT_FLOAT_EQ(0.f, value[0]);
         EXPECT_FLOAT_EQ(0.f, value[1]);
         EXPECT_FLOAT_EQ(3.f, value[2]);
@@ -902,7 +902,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.scripts() + 2 * ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 30, ui.animationNodes() + ui.buttonHeight + 4 * ui.smallButtonHeight));
 
-        auto* script = m_app->getViewer()->getEngine().findByName<rlogic::LuaScript>("allTypesScript");
+        auto* script = m_app->getViewer()->getEngine().findByName<ramses::LuaScript>("allTypesScript");
         ASSERT_TRUE(script != nullptr);
         auto* prop = script->getOutputs()->getChild("paramFloat");
         ASSERT_TRUE(prop != nullptr);
@@ -916,7 +916,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.animationNodes() + ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 10, ui.animationNodes() + ui.buttonHeight + 4 * ui.smallButtonHeight));
 
-        auto* animation = m_app->getViewer()->getEngine().findByName<rlogic::AnimationNode>("myAnimation");
+        auto* animation = m_app->getViewer()->getEngine().findByName<ramses::AnimationNode>("myAnimation");
         ASSERT_TRUE(animation != nullptr);
         auto* prop = animation->getInputs()->getChild("progress");
         ASSERT_TRUE(prop != nullptr);
@@ -930,7 +930,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.timerNodes() + ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 30, ui.timerNodes() + ui.buttonHeight + 2 * ui.smallButtonHeight));
 
-        auto* timer = m_app->getViewer()->getEngine().findByName<rlogic::TimerNode>("myTimer");
+        auto* timer = m_app->getViewer()->getEngine().findByName<ramses::TimerNode>("myTimer");
         ASSERT_TRUE(timer != nullptr);
         auto* prop = timer->getInputs()->getChild("ticker_us");
         ASSERT_TRUE(prop != nullptr);
@@ -944,7 +944,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.appearanceBindings() + ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 10, ui.appearanceBindings() + ui.buttonHeight + 3 * ui.smallButtonHeight));
 
-        auto* appearance = m_app->getViewer()->getEngine().findByName<rlogic::RamsesAppearanceBinding>("myAppearance");
+        auto* appearance = m_app->getViewer()->getEngine().findByName<ramses::RamsesAppearanceBinding>("myAppearance");
         ASSERT_TRUE(appearance != nullptr);
         auto* prop = appearance->getInputs()->getChild("green");
         ASSERT_TRUE(prop != nullptr);
@@ -958,11 +958,11 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.nodeBindings() + ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 20, ui.nodeBindings() + 2 * ui.buttonHeight + 5 * ui.smallButtonHeight));
 
-        auto* node = m_app->getViewer()->getEngine().findByName<rlogic::RamsesNodeBinding>("myNode");
+        auto* node = m_app->getViewer()->getEngine().findByName<ramses::RamsesNodeBinding>("myNode");
         ASSERT_TRUE(node != nullptr);
         auto* prop = node->getInputs()->getChild("translation");
         ASSERT_TRUE(prop != nullptr);
-        const auto value = prop->get<rlogic::vec3f>().value();
+        const auto value = prop->get<ramses::vec3f>().value();
         EXPECT_FLOAT_EQ(2.f, value[0]);
         EXPECT_FLOAT_EQ(0.f, value[1]);
         EXPECT_FLOAT_EQ(0.f, value[2]);
@@ -976,7 +976,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.cameraBindings() + 4 * ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX - 30, ui.cameraBindings() + 3 * ui.buttonHeight + 4 * ui.smallButtonHeight));
 
-        auto* camera = m_app->getViewer()->getEngine().findByName<rlogic::RamsesCameraBinding>("myCamera");
+        auto* camera = m_app->getViewer()->getEngine().findByName<ramses::RamsesCameraBinding>("myCamera");
         ASSERT_TRUE(camera != nullptr);
         auto* prop = camera->getInputs()->getChild("viewport");
         ASSERT_TRUE(prop != nullptr);
@@ -992,7 +992,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.renderPassBindings() + ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 30, ui.renderPassBindings() + 2 * ui.buttonHeight + 3 * ui.smallButtonHeight));
 
-        auto* renderPass = m_app->getViewer()->getEngine().findByName<rlogic::RamsesRenderPassBinding>("myRenderPass");
+        auto* renderPass = m_app->getViewer()->getEngine().findByName<ramses::RamsesRenderPassBinding>("myRenderPass");
         ASSERT_TRUE(renderPass != nullptr);
         auto* prop = renderPass->getInputs()->getChild("renderOrder");
         ASSERT_TRUE(prop != nullptr);
@@ -1007,7 +1007,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.renderGroupBindings() + 4 * ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 30, ui.renderGroupBindings() + ui.buttonHeight + 4 * ui.smallButtonHeight));
 
-        auto* renderGroup = m_app->getViewer()->getEngine().findByName<rlogic::RamsesRenderGroupBinding>("myRenderGroup");
+        auto* renderGroup = m_app->getViewer()->getEngine().findByName<ramses::RamsesRenderGroupBinding>("myRenderGroup");
         ASSERT_TRUE(renderGroup != nullptr);
         auto* prop = renderGroup->getInputs()->getChild("renderOrders")->getChild("myMeshNode");
         ASSERT_TRUE(prop != nullptr);
@@ -1021,7 +1021,7 @@ namespace rlogic::internal
         EXPECT_TRUE(click(mouseX, ui.meshNodeBindings() + ui.smallButtonHeight));
         EXPECT_TRUE(dragX(mouseX, mouseX + 30, ui.meshNodeBindings() + 4 * ui.smallButtonHeight));
 
-        auto* meshNode = m_app->getViewer()->getEngine().findByName<rlogic::RamsesMeshNodeBinding>("myMeshNode");
+        auto* meshNode = m_app->getViewer()->getEngine().findByName<ramses::RamsesMeshNodeBinding>("myMeshNode");
         ASSERT_TRUE(meshNode != nullptr);
         auto* prop = meshNode->getInputs()->getChild("vertexOffset");
         ASSERT_TRUE(prop != nullptr);
@@ -1031,7 +1031,7 @@ namespace rlogic::internal
     TEST_F(ALogicViewerAppUI, reloadConfiguration)
     {
         const int32_t xFile = 25;
-        auto* script = m_app->getViewer()->getEngine().findByName<rlogic::LuaScript>("allTypesScript");
+        auto* script = m_app->getViewer()->getEngine().findByName<ramses::LuaScript>("allTypesScript");
         ASSERT_TRUE(script != nullptr);
         auto* prop = script->getOutputs()->getChild("paramString");
         ASSERT_TRUE(prop != nullptr);
@@ -1346,7 +1346,7 @@ ShowDisplaySettings=0)");
         EXPECT_EQ(1, report.getNodesExecuted().size());
         EXPECT_EQ(10, report.getNodesSkippedExecution().size());
 
-        auto* interface = m_app->getViewer()->getEngine().findByName<rlogic::LuaInterface>("myInterface");
+        auto* interface = m_app->getViewer()->getEngine().findByName<ramses::LuaInterface>("myInterface");
         ASSERT_TRUE(interface != nullptr);
         auto* prop = interface->getInputs()->getChild("paramFloat");
         ASSERT_TRUE(prop != nullptr);

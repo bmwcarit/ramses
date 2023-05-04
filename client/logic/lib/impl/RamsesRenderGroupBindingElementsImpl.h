@@ -16,7 +16,7 @@ namespace ramses
     class SceneObject;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesRenderGroupBindingElementsImpl
     {

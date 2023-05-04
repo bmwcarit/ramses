@@ -15,42 +15,40 @@
 
 namespace ramses
 {
+    class EffectInputImpl;
+
     /**
+    * @ingroup CoreAPI
     * @brief The EffectInput is a description of an effect input
     */
-    class RAMSES_API EffectInput : public StatusObject
+    class EffectInput : public StatusObject
     {
     public:
-        /**
-        * Stores internal data for implementation specifics of EffectInput.
-        */
-        class EffectInputImpl& impl;
-
-        /**
-        * @brief Destructor of EffectInput
-        */
-        ~EffectInput() override;
-
         /**
         * @brief Returns the name of the effect input.
         *
         * @return Name of the effect input
         */
-        [[nodiscard]] const char* getName() const;
+        [[nodiscard]] RAMSES_API const char* getName() const;
 
         /**
         * @brief Returns the state of the EffectInput object.
         *
         * @return Returns true if this EffectInput object is initialized and refers to an existing effect input
         */
-        [[nodiscard]] bool isValid() const;
+        [[nodiscard]] RAMSES_API bool isValid() const;
 
         /**
         * @brief Returns the effect input data type.
         *
         * @return Effect input data type if #isValid, std::nullopt otherwise
         */
-        [[nodiscard]] std::optional<EDataType> getDataType() const;
+        [[nodiscard]] RAMSES_API std::optional<EDataType> getDataType() const;
+
+        /**
+        * Stores internal data for implementation specifics of EffectInput.
+        */
+        std::reference_wrapper<EffectInputImpl> m_impl;
 
     protected:
         /**
@@ -58,7 +56,7 @@ namespace ramses
         *
         * @param[in] effectInputImpl Internal data for implementation specifics of EffectInput (sink - instance becomes owner)
         */
-        explicit EffectInput(EffectInputImpl& effectInputImpl);
+        explicit EffectInput(std::unique_ptr<EffectInputImpl> effectInputImpl);
     };
 }
 

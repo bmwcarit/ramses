@@ -30,7 +30,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_FALSE(m_config.getStartVisibleIvi());
     EXPECT_FALSE(m_config.isResizable());
     EXPECT_EQ(0u, m_config.getGPUMemoryCacheSize());
-    EXPECT_EQ(ramses_internal::Vector4(0.f,0.f,0.f,1.f), m_config.getClearColor());
+    EXPECT_EQ(glm::vec4(0.f,0.f,0.f,1.f), m_config.getClearColor());
     EXPECT_EQ("", m_config.getWaylandDisplay());
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthStencilBuffer, m_config.getDepthStencilBufferType());
     EXPECT_TRUE(m_config.isAsyncEffectUploadEnabled());
@@ -82,7 +82,7 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     m_config.setResizable(false);
     EXPECT_FALSE(m_config.isResizable());
 
-    const ramses_internal::Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+    const glm::vec4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
     m_config.setClearColor(clearColor);
     EXPECT_EQ(clearColor, m_config.getClearColor());
 

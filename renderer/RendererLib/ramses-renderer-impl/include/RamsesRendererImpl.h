@@ -11,7 +11,7 @@
 
 #include "ramses-renderer-api/Types.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-framework-api/DataTypes.h"
+#include "DataTypesImpl.h"
 #include "StatusObjectImpl.h"
 #include "CommandDispatchingThread.h"
 #include "RendererLib/RendererCommandBuffer.h"
@@ -54,6 +54,7 @@ namespace ramses
     {
     public:
         RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config);
+        ~RamsesRendererImpl() override;
 
         status_t doOneLoop();
         status_t flush();

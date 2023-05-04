@@ -19,7 +19,7 @@
 
 namespace ramses_internal
 {
-    Texture3DScene::Texture3DScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    Texture3DScene::Texture3DScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-3d-textured"))
     {

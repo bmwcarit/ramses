@@ -95,9 +95,9 @@ int main(int argc, char* argv[])
 
     ramses::Scene* scene = ramsesClient->createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "");
     scene->flush();
-    rlogic::LogicEngine logicEngine{ featureLevel };
+    ramses::LogicEngine logicEngine{ featureLevel };
 
-    rlogic::LuaScript* script1 = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script1 = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             IN.intInput =      Type:Int32()
             IN.int64Input =    Type:Int64()
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
             return mymath
         )", {}, "nestedModuleMath");
 
-    rlogic::LuaConfig config;
+    ramses::LuaConfig config;
     config.addDependency("nestedMath", *luaNestedModuleMath);
 
     const auto luaModuleMath = logicEngine.createLuaModule(R"(
@@ -165,9 +165,9 @@ int main(int argc, char* argv[])
     config = {};
     config.addDependency("modulemath", *luaModuleMath);
     config.addDependency("moduletypes", *luaModuleTypes);
-    config.addStandardModuleDependency(rlogic::EStandardModule::Math);
+    config.addStandardModuleDependency(ramses::EStandardModule::Math);
 
-    rlogic::LuaScript* script2 = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script2 = logicEngine.createLuaScript(R"(
         modules("modulemath", "moduletypes")
         function interface(IN,OUT)
             IN.floatInput = Type:Float()
@@ -205,29 +205,29 @@ int main(int argc, char* argv[])
     renderGroup->addMeshNode(*meshNode);
     renderGroup->addRenderGroup(*nestedRenderGroup);
 
-    rlogic::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*node, ramses::ERotationType::Euler_XYZ, "nodebinding");
-    rlogic::RamsesCameraBinding* camBindingOrtho = logicEngine.createRamsesCameraBinding(*cameraOrtho, "camerabinding");
-    rlogic::RamsesAppearanceBinding* appBinding = logicEngine.createRamsesAppearanceBinding(*appearance, "appearancebinding");
+    ramses::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*node, ramses::ERotationType::Euler_XYZ, "nodebinding");
+    ramses::RamsesCameraBinding* camBindingOrtho = logicEngine.createRamsesCameraBinding(*cameraOrtho, "camerabinding");
+    ramses::RamsesAppearanceBinding* appBinding = logicEngine.createRamsesAppearanceBinding(*appearance, "appearancebinding");
     logicEngine.createRamsesCameraBinding(*cameraPersp, "camerabindingPersp");
     logicEngine.createRamsesRenderPassBinding(*renderPass, "renderpassbinding");
     logicEngine.createAnchorPoint(*nodeBinding, *camBindingOrtho, "anchorpoint");
     logicEngine.createRamsesCameraBindingWithFrustumPlanes(*cameraPersp, "camerabindingPerspWithFrustumPlanes");
 
-    rlogic::RamsesRenderGroupBindingElements elements;
+    ramses::RamsesRenderGroupBindingElements elements;
     elements.addElement(*meshNode, "mesh");
     elements.addElement(*nestedRenderGroup, "nestedRenderGroup");
     logicEngine.createRamsesRenderGroupBinding(*renderGroup, elements, "rendergroupbinding");
 
     ramses::UniformInput uniform;
     appearance->getEffect().findUniformInput("jointMat", uniform);
-    logicEngine.createSkinBinding({ nodeBinding }, { rlogic::matrix44f{ 0.f } }, * appBinding, uniform, "skin");
+    logicEngine.createSkinBinding({ nodeBinding }, { ramses::matrix44f{ 0.f } }, * appBinding, uniform, "skin");
     logicEngine.createDataArray(std::vector<std::vector<float>>{ { 1.f, 2.f, 3.f, 4.f, 5.f }, { 6.f, 7.f, 8.f, 9.f, 10.f } }, "dataarrayOfArrays");
 
     logicEngine.createRamsesMeshNodeBinding(*meshNode, "meshnodebinding");
 
     const auto dataArray = logicEngine.createDataArray(std::vector<float>{ 1.f, 2.f }, "dataarray");
-    rlogic::AnimationNodeConfig animConfig;
-    animConfig.addChannel({ "channel", dataArray, dataArray, rlogic::EInterpolationType::Linear });
+    ramses::AnimationNodeConfig animConfig;
+    animConfig.addChannel({ "channel", dataArray, dataArray, ramses::EInterpolationType::Linear });
     const auto animNode = logicEngine.createAnimationNode(animConfig, "animNode");
     animConfig.setExposingOfChannelDataAsProperties(true);
     logicEngine.createAnimationNode(animConfig, "animNodeWithDataProperties");
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
     if (!logicEngine.update())
         return 1;
 
-    rlogic::SaveFileConfig noValidationConfig;
+    ramses::SaveFileConfig noValidationConfig;
     noValidationConfig.setValidationEnabled(false);
     logicEngine.saveToFile(basePath + "/" + logicFilename, noValidationConfig);
 

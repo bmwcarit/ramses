@@ -55,8 +55,8 @@ namespace ramses_internal
 
     bool WaylandDisplay::addSocketToDisplay(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD)
     {
-        const Bool socketNameProvided = socketName.size() > 0u;
-        const Bool socketFDProvided   = socketFD >= 0;
+        const bool socketNameProvided = socketName.size() > 0u;
+        const bool socketFDProvided   = socketFD >= 0;
 
         if (socketFDProvided && !socketNameProvided)
         {
@@ -153,12 +153,12 @@ namespace ramses_internal
         {
             group  permissionGroup;
             group* permissionGroupResult = nullptr;
-            char   bufferForStringFields[10000];
+            std::array<char, 10000> bufferForStringFields;
 
             const int status = getgrnam_r(socketGroupName.c_str(),
                                           &permissionGroup,
-                                          bufferForStringFields,
-                                          sizeof(bufferForStringFields),
+                                          bufferForStringFields.data(),
+                                          bufferForStringFields.size(),
                                           &permissionGroupResult);
             if (0 != status)
             {

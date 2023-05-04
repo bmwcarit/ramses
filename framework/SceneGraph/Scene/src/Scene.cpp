@@ -8,16 +8,6 @@
 
 #include "Scene/Scene.h"
 
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
-
 #include "Utils/MemoryPoolExplicit.h"
 #include "Utils/MemoryPool.h"
 #include "Utils/LogMacros.h"
@@ -62,7 +52,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderPassClearColor(RenderPassHandle passHandle, const Vector4& clearColor)
+    void SceneT<MEMORYPOOL>::setRenderPassClearColor(RenderPassHandle passHandle, const glm::vec4& clearColor)
     {
         m_renderPasses.getMemory(passHandle)->clearColor = clearColor;
     }
@@ -507,7 +497,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    void SceneT<MEMORYPOOL>::setRenderStateBlendColor(RenderStateHandle stateHandle, const glm::vec4& color)
     {
         RenderState& state = *m_states.getMemory(stateHandle);
         state.blendColor = color;
@@ -791,39 +781,39 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector2* data)
+    void SceneT<MEMORYPOOL>::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::vec2* data)
     {
-        setInstanceDataInternal<Vector2>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::vec2>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector3* data)
+    void SceneT<MEMORYPOOL>::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::vec3* data)
     {
-        setInstanceDataInternal<Vector3>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::vec3>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector4* data)
+    void SceneT<MEMORYPOOL>::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::vec4* data)
     {
-        setInstanceDataInternal<Vector4>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::vec4>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Matrix22f* data)
+    void SceneT<MEMORYPOOL>::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::mat2* data)
     {
-        setInstanceDataInternal<Matrix22f>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::mat2>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Matrix33f* data)
+    void SceneT<MEMORYPOOL>::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::mat3* data)
     {
-        setInstanceDataInternal<Matrix33f>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::mat3>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Matrix44f* data)
+    void SceneT<MEMORYPOOL>::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::mat4* data)
     {
-        setInstanceDataInternal<Matrix44f>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::mat4>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -833,21 +823,21 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector2i* data)
+    void SceneT<MEMORYPOOL>::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::ivec2* data)
     {
-        setInstanceDataInternal<Vector2i>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::ivec2>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector3i* data)
+    void SceneT<MEMORYPOOL>::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::ivec3* data)
     {
-        setInstanceDataInternal<Vector3i>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::ivec3>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector4i* data)
+    void SceneT<MEMORYPOOL>::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const glm::ivec4* data)
     {
-        setInstanceDataInternal<Vector4i>(containerHandle, fieldId, elementCount, data);
+        setInstanceDataInternal<glm::ivec4>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1056,13 +1046,13 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector3& SceneT<MEMORYPOOL>::getTranslation(TransformHandle handle) const
+    const glm::vec3& SceneT<MEMORYPOOL>::getTranslation(TransformHandle handle) const
     {
         return m_transforms.getMemory(handle)->translation;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector4& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
+    const glm::vec4& SceneT<MEMORYPOOL>::getRotation(TransformHandle handle) const
     {
         return m_transforms.getMemory(handle)->rotation;
     }
@@ -1074,19 +1064,19 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector3& SceneT<MEMORYPOOL>::getScaling(TransformHandle handle) const
+    const glm::vec3& SceneT<MEMORYPOOL>::getScaling(TransformHandle handle) const
     {
         return m_transforms.getMemory(handle)->scaling;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setTranslation(TransformHandle handle, const Vector3& translation)
+    void SceneT<MEMORYPOOL>::setTranslation(TransformHandle handle, const glm::vec3& translation)
     {
         m_transforms.getMemory(handle)->translation = translation;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector4& rotation, ERotationType rotationType)
+    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType)
     {
         auto transformMemory = m_transforms.getMemory(handle);
         transformMemory->rotation = rotation;
@@ -1094,7 +1084,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setScaling(TransformHandle handle, const Vector3& scaling)
+    void SceneT<MEMORYPOOL>::setScaling(TransformHandle handle, const glm::vec3& scaling)
     {
         m_transforms.getMemory(handle)->scaling = scaling;
     }
@@ -1207,21 +1197,21 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector2& SceneT<MEMORYPOOL>::getDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec2& SceneT<MEMORYPOOL>::getDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataVector2fArray(containerHandle, field)[0];
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector3& SceneT<MEMORYPOOL>::getDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec3& SceneT<MEMORYPOOL>::getDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataVector3fArray(containerHandle, field)[0];
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector4& SceneT<MEMORYPOOL>::getDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec4& SceneT<MEMORYPOOL>::getDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataVector4fArray(containerHandle, field)[0];
@@ -1235,42 +1225,42 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Matrix22f& SceneT<MEMORYPOOL>::getDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat2& SceneT<MEMORYPOOL>::getDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataMatrix22fArray(containerHandle, field)[0];
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Matrix33f& SceneT<MEMORYPOOL>::getDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat3& SceneT<MEMORYPOOL>::getDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataMatrix33fArray(containerHandle, field)[0];
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Matrix44f& SceneT<MEMORYPOOL>::getDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat4& SceneT<MEMORYPOOL>::getDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataMatrix44fArray(containerHandle, field)[0];
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector2i& SceneT<MEMORYPOOL>::getDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec2& SceneT<MEMORYPOOL>::getDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataVector2iArray(containerHandle, field)[0];
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector3i& SceneT<MEMORYPOOL>::getDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec3& SceneT<MEMORYPOOL>::getDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataVector3iArray(containerHandle, field)[0];
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Vector4i& SceneT<MEMORYPOOL>::getDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec4& SceneT<MEMORYPOOL>::getDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         assert(getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount == 1);
         return getDataVector4iArray(containerHandle, field)[0];
@@ -1285,7 +1275,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2& data)
+    void SceneT<MEMORYPOOL>::setDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec2& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1293,7 +1283,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3& data)
+    void SceneT<MEMORYPOOL>::setDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec3& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1301,7 +1291,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4& data)
+    void SceneT<MEMORYPOOL>::setDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec4& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1317,7 +1307,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2i& data)
+    void SceneT<MEMORYPOOL>::setDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec2& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1325,7 +1315,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3i& data)
+    void SceneT<MEMORYPOOL>::setDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec3& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1333,7 +1323,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4i& data)
+    void SceneT<MEMORYPOOL>::setDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec4& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1341,7 +1331,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix22f& data)
+    void SceneT<MEMORYPOOL>::setDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat2& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1349,7 +1339,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix33f& data)
+    void SceneT<MEMORYPOOL>::setDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat3& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);
@@ -1357,7 +1347,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix44f& data)
+    void SceneT<MEMORYPOOL>::setDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat4& data)
     {
         UInt32 elementCount = getDataLayout(getLayoutOfDataInstance(containerHandle)).getField(field).elementCount;
         assert(elementCount == 1);

@@ -14,29 +14,25 @@
 
 namespace ramses
 {
-    PerspectiveCamera::PerspectiveCamera(CameraNodeImpl& pimpl)
-        : Camera(pimpl)
-    {
-    }
-
-    PerspectiveCamera::~PerspectiveCamera()
+    PerspectiveCamera::PerspectiveCamera(std::unique_ptr<CameraNodeImpl> impl)
+        : Camera{ std::move(impl) }
     {
     }
 
     status_t PerspectiveCamera::setFrustum(float fov, float aspectRatio, float nearPlane, float farPlane)
     {
-        const status_t status = impl.setPerspectiveFrustum(fov, aspectRatio, nearPlane, farPlane);
+        const status_t status = m_impl.setPerspectiveFrustum(fov, aspectRatio, nearPlane, farPlane);
         LOG_HL_CLIENT_API4(status, fov, aspectRatio, nearPlane, farPlane);
         return status;
     }
 
     float PerspectiveCamera::getVerticalFieldOfView() const
     {
-        return impl.getVerticalFieldOfView();
+        return m_impl.getVerticalFieldOfView();
     }
 
     float PerspectiveCamera::getAspectRatio() const
     {
-        return impl.getAspectRatio();
+        return m_impl.getAspectRatio();
     }
 }

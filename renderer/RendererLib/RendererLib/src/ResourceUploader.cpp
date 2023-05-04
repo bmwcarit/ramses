@@ -99,7 +99,7 @@ namespace ramses_internal
 
     DeviceResourceHandle ResourceUploader::uploadTexture(IDevice& device, const TextureResource& texture, UInt32& vramSize)
     {
-        const Bool generateMipsFlag = texture.getGenerateMipChainFlag();
+        const bool generateMipsFlag = texture.getGenerateMipChainFlag();
         const auto& mipDataSizes = texture.getMipDataSizes();
         const UInt32 numProvidedMipLevels = static_cast<UInt32>(mipDataSizes.size());
         assert(numProvidedMipLevels == 1u || !generateMipsFlag);

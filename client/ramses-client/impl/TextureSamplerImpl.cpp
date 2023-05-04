@@ -58,10 +58,10 @@ namespace ramses
 
     status_t TextureSamplerImpl::setTextureData(const Texture2D& texture)
     {
-        if (!isFromTheSameSceneAs(texture.impl))
+        if (!isFromTheSameSceneAs(texture.m_impl))
             return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
 
-        return setTextureDataInternal(ERamsesObjectType_Texture2D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
+        return setTextureDataInternal(ERamsesObjectType_Texture2D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.m_impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
     }
 
     status_t TextureSamplerImpl::setTextureData(const Texture3D& texture)
@@ -69,37 +69,37 @@ namespace ramses
         if (m_textureType != ERamsesObjectType_Texture3D)
             return addErrorEntry("TextureSampler::setTextureData failed, changing data from non 3D texture to 3D texture is not supported. Create a new TextureSampler instead.");
 
-        if (!isFromTheSameSceneAs(texture.impl))
+        if (!isFromTheSameSceneAs(texture.m_impl))
             return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
 
-        return setTextureDataInternal(ERamsesObjectType_Texture3D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
+        return setTextureDataInternal(ERamsesObjectType_Texture3D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.m_impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
     }
 
     status_t TextureSamplerImpl::setTextureData(const TextureCube& texture)
     {
-        if (!isFromTheSameSceneAs(texture.impl))
+        if (!isFromTheSameSceneAs(texture.m_impl))
             return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
 
-        return setTextureDataInternal(ERamsesObjectType_TextureCube, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
+        return setTextureDataInternal(ERamsesObjectType_TextureCube, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.m_impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
     }
 
     status_t TextureSamplerImpl::setTextureData(const Texture2DBuffer& texture)
     {
-        if (!getSceneImpl().containsSceneObject(texture.impl))
+        if (!getSceneImpl().containsSceneObject(texture.m_impl))
             return addErrorEntry("TextureSampler::setTextureData failed, texture2D buffer is not from the same scene as this sampler.");
 
-        return setTextureDataInternal(ERamsesObjectType_Texture2DBuffer, ramses_internal::TextureSampler::ContentType::TextureBuffer, {}, texture.impl.getTextureBufferHandle().asMemoryHandle());
+        return setTextureDataInternal(ERamsesObjectType_Texture2DBuffer, ramses_internal::TextureSampler::ContentType::TextureBuffer, {}, texture.m_impl.getTextureBufferHandle().asMemoryHandle());
     }
 
     status_t TextureSamplerImpl::setTextureData(const RenderBuffer& texture)
     {
-        if (!getSceneImpl().containsSceneObject(texture.impl))
+        if (!getSceneImpl().containsSceneObject(texture.m_impl))
             return addErrorEntry("TextureSampler::setTextureData failed, render buffer is not from the same scene as this sampler.");
 
-        if (ERenderBufferAccessMode_WriteOnly == texture.impl.getAccessMode())
+        if (ERenderBufferAccessMode_WriteOnly == texture.m_impl.getAccessMode())
             return addErrorEntry("TextureSampler::setTextureData failed, render buffer has access mode write only.");
 
-        return setTextureDataInternal(ERamsesObjectType_RenderBuffer, ramses_internal::TextureSampler::ContentType::RenderBuffer, {}, texture.impl.getRenderBufferHandle().asMemoryHandle());
+        return setTextureDataInternal(ERamsesObjectType_RenderBuffer, ramses_internal::TextureSampler::ContentType::RenderBuffer, {}, texture.m_impl.getRenderBufferHandle().asMemoryHandle());
     }
 
     status_t TextureSamplerImpl::setTextureDataInternal(ERamsesObjectType textureType,
@@ -256,10 +256,10 @@ namespace ramses
             RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_RenderBuffer);
             while (const RenderBuffer* renderBuffer = iter.getNext<RenderBuffer>())
             {
-                if (renderBufferHandle == renderBuffer->impl.getRenderBufferHandle())
+                if (renderBufferHandle == renderBuffer->m_impl.getRenderBufferHandle())
                 {
                     foundRenderBuffer = true;
-                    status = addValidationOfDependentObject(renderBuffer->impl);
+                    status = addValidationOfDependentObject(renderBuffer->m_impl);
                     break;
                 }
             }
@@ -282,10 +282,10 @@ namespace ramses
             RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_Texture2DBuffer);
             while (const Texture2DBuffer* textureBuffer = iter.getNext<Texture2DBuffer>())
             {
-                if (textureBufferHandle == textureBuffer->impl.getTextureBufferHandle())
+                if (textureBufferHandle == textureBuffer->m_impl.getTextureBufferHandle())
                 {
                     foundTextureBuffer = true;
-                    status = addValidationOfDependentObject(textureBuffer->impl);
+                    status = addValidationOfDependentObject(textureBuffer->m_impl);
                     break;
                 }
             }
@@ -309,19 +309,19 @@ namespace ramses
         case ERamsesObjectType_Texture2D:
         {
             const Texture2D& texture = RamsesObjectTypeUtils::ConvertTo<Texture2D>(*resource);
-            textureStatus = addValidationOfDependentObject(texture.impl);
+            textureStatus = addValidationOfDependentObject(texture.m_impl);
             break;
         }
         case ERamsesObjectType_Texture3D:
         {
             const Texture3D& texture = RamsesObjectTypeUtils::ConvertTo<Texture3D>(*resource);
-            textureStatus = addValidationOfDependentObject(texture.impl);
+            textureStatus = addValidationOfDependentObject(texture.m_impl);
             break;
         }
         case ERamsesObjectType_TextureCube:
         {
             const TextureCube& texture = RamsesObjectTypeUtils::ConvertTo<TextureCube>(*resource);
-            textureStatus = addValidationOfDependentObject(texture.impl);
+            textureStatus = addValidationOfDependentObject(texture.m_impl);
             break;
         }
         default:

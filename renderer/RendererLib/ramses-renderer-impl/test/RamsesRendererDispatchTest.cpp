@@ -91,7 +91,7 @@ namespace ramses_internal
         constexpr ramses::displayId_t displayId{ 123u };
         RendererEvent evt{ ramses_internal::ERendererEventType::DisplayCreateFailed };
         evt.displayHandle = DisplayHandle{ displayId.getValue() };
-        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        m_renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
         m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult::ERendererEventResult_FAIL);
     }
@@ -204,7 +204,7 @@ namespace ramses_internal
     {
         ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowClosed };
         evt.displayHandle = DisplayHandle{ 2u };
-        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        m_renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
         m_handler.expectWindowClosed(ramses::displayId_t{ 2u });
     }
@@ -214,7 +214,7 @@ namespace ramses_internal
         evt.displayHandle = DisplayHandle{ 2u };
         evt.resizeEvent.width = 100;
         evt.resizeEvent.height = 200;
-        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        m_renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
         m_handler.expectWindowResized(ramses::displayId_t{ 2u }, 100, 200);
     }
@@ -225,7 +225,7 @@ namespace ramses_internal
         evt.displayHandle = DisplayHandle{ 2u };
         evt.moveEvent.posX = 100;
         evt.moveEvent.posY = 200;
-        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        m_renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
         m_handler.expectWindowMoved(ramses::displayId_t{ 2u }, 100, 200);
     }
@@ -237,7 +237,7 @@ namespace ramses_internal
         evt.keyEvent.type = ramses_internal::EKeyEventType_Pressed;
         evt.keyEvent.modifier = ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift;
         evt.keyEvent.keyCode = ramses_internal::EKeyCode_E;
-        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        m_renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
         m_handler.expectKeyEvent(ramses::displayId_t{ 2u }, ramses::EKeyEvent_Pressed, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_E);
     }
@@ -249,7 +249,7 @@ namespace ramses_internal
         evt.keyEvent.type = ramses_internal::EKeyEventType_Released;
         evt.keyEvent.modifier = ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift;
         evt.keyEvent.keyCode = ramses_internal::EKeyCode_F;
-        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        m_renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
         m_handler.expectKeyEvent(ramses::displayId_t{ 2u }, ramses::EKeyEvent_Released, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_F);
     }
@@ -260,7 +260,7 @@ namespace ramses_internal
         evt.displayHandle = DisplayHandle{ 2u };
         evt.mouseEvent.type = ramses_internal::EMouseEventType_RightButtonDown;
         evt.mouseEvent.pos = { 20, 30 };
-        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        m_renderer.m_impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
         m_handler.expectMouseEvent(ramses::displayId_t{ 2u }, ramses::EMouseEvent_RightButtonDown, 20, 30);
     }

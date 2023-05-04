@@ -25,12 +25,12 @@ namespace flatbuffers
     class FlatBufferBuilder;
 }
 
-namespace rlogic
+namespace ramses
 {
     class LuaModule;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ErrorReporting;
     class SolState;

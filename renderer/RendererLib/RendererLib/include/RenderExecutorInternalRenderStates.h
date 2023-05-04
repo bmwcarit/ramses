@@ -27,7 +27,7 @@ namespace ramses_internal
         UInt8           m_stencilMask = 0;
         UInt8           m_stencilRefValue = 0;
 
-        Bool operator!=(const StencilState& other) const
+        bool operator!=(const StencilState& other) const
         {
             return m_stencilFunc != other.m_stencilFunc
                 || m_stencilOpFail != other.m_stencilOpFail

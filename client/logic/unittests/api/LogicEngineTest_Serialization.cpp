@@ -50,7 +50,7 @@
 #include <fstream>
 #include <deque>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicEngine_Serialization : public ALogicEngineBase, public ::testing::TestWithParam<ramses::EFeatureLevel>
     {
@@ -145,7 +145,7 @@ namespace rlogic::internal
     INSTANTIATE_TEST_SUITE_P(
         ALogicEngine_SerializationTests,
         ALogicEngine_Serialization,
-        rlogic::internal::GetFeatureLevelTestValues());
+        ramses::internal::GetFeatureLevelTestValues());
 
     TEST_P(ALogicEngine_Serialization, ProducesErrorIfDeserilizedFromInvalidFile)
     {
@@ -309,7 +309,7 @@ namespace rlogic::internal
 
         SaveBufferToFile(CreateTestBuffer(config2), "LogicEngine.bin");
 
-        TestLogCollector logCollector(ELogMessageType::Info);
+        TestLogCollector logCollector(ELogLevel::Info);
 
         // Test with file API
         {
@@ -340,7 +340,7 @@ namespace rlogic::internal
         SaveFileConfig config;
         SaveBufferToFile(CreateTestBuffer(config), "LogicEngine.bin");
 
-        TestLogCollector logCollector(ELogMessageType::Info);
+        TestLogCollector logCollector(ELogLevel::Info);
 
         // Test with file API
         {
@@ -508,8 +508,8 @@ namespace rlogic::internal
         RamsesNodeBinding* nodeBinding = m_logicEngine.createRamsesNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
 
         std::vector<std::string> messages;
-        std::vector<ELogMessageType> messageTypes;
-        ScopedLogContextLevel scopedLogs(ELogMessageType::Warn, [&](ELogMessageType msgType, std::string_view message) {
+        std::vector<ELogLevel> messageTypes;
+        ScopedLogContextLevel scopedLogs(ELogLevel::Warn, [&](ELogLevel msgType, std::string_view message) {
             messages.emplace_back(message);
             messageTypes.emplace_back(msgType);
         });
@@ -523,12 +523,12 @@ namespace rlogic::internal
         EXPECT_EQ("Saving logic engine content with manually updated binding values without calling update() will result in those values being lost!", messages[0]);
         EXPECT_EQ("[binding [Id=1]] Node [binding] has no ingoing links! Node should be deleted or properly linked!", messages[1]);
         EXPECT_EQ("Failed to saveToFile() because validation warnings were encountered! Refer to the documentation of saveToFile() for details how to address these gracefully.", messages[2]);
-        EXPECT_EQ(ELogMessageType::Warn, messageTypes[0]);
-        EXPECT_EQ(ELogMessageType::Warn, messageTypes[1]);
-        EXPECT_EQ(ELogMessageType::Error, messageTypes[2]);
+        EXPECT_EQ(ELogLevel::Warn, messageTypes[0]);
+        EXPECT_EQ(ELogLevel::Warn, messageTypes[1]);
+        EXPECT_EQ(ELogLevel::Error, messageTypes[2]);
 
         // Unset custom log handler
-        Logger::SetLogHandler([](ELogMessageType msgType, std::string_view message) {
+        Logger::SetLogHandler([](ELogLevel msgType, std::string_view message) {
             (void)message;
             (void)msgType;
         });
@@ -544,7 +544,7 @@ namespace rlogic::internal
         ramses::Node* node2 = scene2->createNode("node2");
 
         m_logicEngine.createRamsesNodeBinding(*node1, ramses::ERotationType::Euler_XYZ, "binding1");
-        rlogic::RamsesNodeBinding* binding2 = m_logicEngine.createRamsesNodeBinding(*node2, ramses::ERotationType::Euler_XYZ, "binding2");
+        ramses::RamsesNodeBinding* binding2 = m_logicEngine.createRamsesNodeBinding(*node2, ramses::ERotationType::Euler_XYZ, "binding2");
 
         EXPECT_FALSE(m_logicEngine.saveToFile("will_not_be_written.logic"));
         ASSERT_EQ(2u, m_logicEngine.getErrors().size());
@@ -564,7 +564,7 @@ namespace rlogic::internal
         ramses::PerspectiveCamera* camera2 = scene2->createPerspectiveCamera("camera2");
 
         m_logicEngine.createRamsesCameraBinding(*camera1, "binding1");
-        rlogic::RamsesCameraBinding* binding2 = m_logicEngine.createRamsesCameraBinding(*camera2, "binding2");
+        ramses::RamsesCameraBinding* binding2 = m_logicEngine.createRamsesCameraBinding(*camera2, "binding2");
 
         EXPECT_FALSE(m_logicEngine.saveToFile("will_not_be_written.logic"));
         ASSERT_EQ(2u, m_logicEngine.getErrors().size());
@@ -649,7 +649,7 @@ namespace rlogic::internal
         ramses::Scene* scene2 = m_ramses.createScene(ramses::sceneId_t(2));
 
         m_logicEngine.createRamsesNodeBinding(*scene2->createNode(), ramses::ERotationType::Euler_XYZ, "node binding");
-        rlogic::RamsesAppearanceBinding* appBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "app binding");
+        ramses::RamsesAppearanceBinding* appBinding = m_logicEngine.createRamsesAppearanceBinding(*m_appearance, "app binding");
 
         EXPECT_FALSE(m_logicEngine.saveToFile("will_not_be_written.logic"));
         EXPECT_EQ(2u, m_logicEngine.getErrors().size());

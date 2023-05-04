@@ -10,7 +10,7 @@
 
 #include "internals/SolWrapper.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     enum class EEnvProtectionFlag
     {

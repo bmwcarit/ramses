@@ -12,7 +12,7 @@
 #include "ramses-logic/DataArray.h"
 #include "impl/LoggerImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     bool AnimationNodeConfigImpl::addChannel(const AnimationChannel& channelData)
     {

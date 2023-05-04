@@ -22,7 +22,7 @@
 #include <cassert>
 #include <algorithm>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     PropertyImpl::PropertyImpl(HierarchicalTypeData type, EPropertySemantics semantics)
         : m_typeData(std::move(type.typeData))
@@ -75,7 +75,7 @@ namespace rlogic::internal
         {
             for (const auto& childType : type.children)
             {
-                m_children.emplace_back(std::make_unique<Property>(std::make_unique<PropertyImpl>(childType, semantics)));
+                m_children.emplace_back(CreateProperty(std::make_unique<PropertyImpl>(childType, semantics)));
             }
         }
     }
@@ -117,7 +117,7 @@ namespace rlogic::internal
         std::vector<flatbuffers::Offset<rlogic_serialization::Property>> child_vector;
         child_vector.reserve(prop.m_children.size());
 
-        std::transform(prop.m_children.begin(), prop.m_children.end(), std::back_inserter(child_vector), [&builder, &serializationMap](const std::vector<std::unique_ptr<Property>>::value_type& child) {
+        std::transform(prop.m_children.begin(), prop.m_children.end(), std::back_inserter(child_vector), [&builder, &serializationMap](auto& child) {
             return SerializeRecursive(*child->m_impl, builder, serializationMap);
             });
 
@@ -403,7 +403,7 @@ namespace rlogic::internal
                     return nullptr;
                 }
 
-                impl->m_children.emplace_back(std::make_unique<Property>(std::move(deserializedChild)));
+                impl->m_children.push_back(CreateProperty(std::move(deserializedChild)));
             }
         }
 
@@ -457,7 +457,7 @@ namespace rlogic::internal
 
     const Property* PropertyImpl::getChild(std::string_view name) const
     {
-        auto it = std::find_if(m_children.begin(), m_children.end(), [&name](const std::vector<std::unique_ptr<Property>>::value_type& property) {
+        auto it = std::find_if(m_children.begin(), m_children.end(), [&name](const auto& property) {
             return property->getName() == name;
         });
         if (it != m_children.end())
@@ -470,7 +470,7 @@ namespace rlogic::internal
 
     bool PropertyImpl::hasChild(std::string_view name) const
     {
-        return m_children.end() != std::find_if(m_children.begin(), m_children.end(), [&name](const std::vector<std::unique_ptr<Property>>::value_type& property) {
+        return m_children.end() != std::find_if(m_children.begin(), m_children.end(), [&name](const auto& property) {
             return property->getName() == name;
             });
     }
@@ -723,5 +723,11 @@ namespace rlogic::internal
     {
         setValue(std::move(value));
         m_bindingInputHasNewValue = false;
+    }
+
+    PropertyUniquePtr PropertyImpl::CreateProperty(std::unique_ptr<PropertyImpl> impl)
+    {
+        assert(impl);
+        return PropertyUniquePtr{ new Property{ std::move(impl) }, [](Property* p) { delete p; } };
     }
 }

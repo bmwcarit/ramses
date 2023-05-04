@@ -19,7 +19,7 @@
 
 namespace ramses_internal
 {
-    GeometryInstanceScene::GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    GeometryInstanceScene::GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = nullptr;

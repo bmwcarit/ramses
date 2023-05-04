@@ -29,7 +29,7 @@
 namespace ramses_internal
 {
 
-    Texture2DSamplingScene::Texture2DSamplingScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
+    Texture2DSamplingScene::Texture2DSamplingScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();

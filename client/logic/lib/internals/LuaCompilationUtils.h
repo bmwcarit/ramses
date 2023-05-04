@@ -15,16 +15,16 @@
 #include <memory>
 #include <optional>
 
-namespace rlogic
+namespace ramses
 {
-    class Property;
     class LuaModule;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class SolState;
     class ErrorReporting;
+    class PropertyImpl;
 
     struct LuaCompiledSource
     {
@@ -45,13 +45,13 @@ namespace rlogic::internal
         sol::protected_function runFunction;
 
         // Parsed interface properties
-        std::unique_ptr<Property> rootInput;
-        std::unique_ptr<Property> rootOutput;
+        std::unique_ptr<PropertyImpl> rootInput;
+        std::unique_ptr<PropertyImpl> rootOutput;
     };
 
     struct LuaCompiledInterface
     {
-        std::unique_ptr<Property> rootProperty;
+        std::unique_ptr<PropertyImpl> rootProperty;
     };
 
     struct LuaCompiledModule
@@ -71,8 +71,8 @@ namespace rlogic::internal
             std::string_view name,
             ErrorReporting& errorReporting,
             sol::bytecode byteCodeFromPrecompiledScript,
-            std::unique_ptr<Property> inputsFromPrecompiledScript,
-            std::unique_ptr<Property> outputsFromPrecompiledScript,
+            std::unique_ptr<PropertyImpl> inputsFromPrecompiledScript,
+            std::unique_ptr<PropertyImpl> outputsFromPrecompiledScript,
             bool enableDebugLogFunctions);
 
         [[nodiscard]] static std::optional<LuaCompiledInterface> CompileInterface(

@@ -23,19 +23,19 @@ namespace ramses_internal
         EmbeddedCompositorMock();
         ~EmbeddedCompositorMock() override;
 
-        MOCK_METHOD(Bool, init, ());
+        MOCK_METHOD(bool, init, ());
         MOCK_METHOD(void, handleRequestsFromClients, (), (override));
         MOCK_METHOD(bool, hasUpdatedStreamTextureSources, (), (const, override));
         MOCK_METHOD(WaylandIviSurfaceIdSet, dispatchUpdatedStreamTextureSourceIds, (), (override));
         MOCK_METHOD(WaylandIviSurfaceIdSet, dispatchNewStreamTextureSourceIds, (), (override));
         MOCK_METHOD(WaylandIviSurfaceIdSet, dispatchObsoleteStreamTextureSourceIds, (), (override));
-        MOCK_METHOD(void, endFrame, (Bool), (override));
+        MOCK_METHOD(void, endFrame, (bool), (override));
         MOCK_METHOD(UInt32, uploadCompositingContentForStreamTexture, (WaylandIviSurfaceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter&), (override));
-        MOCK_METHOD(Bool , isContentAvailableForStreamTexture, (WaylandIviSurfaceId), (const, override));
+        MOCK_METHOD(bool , isContentAvailableForStreamTexture, (WaylandIviSurfaceId), (const, override));
         MOCK_METHOD(UInt64, getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime, (WaylandIviSurfaceId), (const, override));
-        MOCK_METHOD(Bool, isBufferAttachedToWaylandIviSurface, (WaylandIviSurfaceId), (const, override));
+        MOCK_METHOD(bool, isBufferAttachedToWaylandIviSurface, (WaylandIviSurfaceId), (const, override));
         MOCK_METHOD(UInt32, getNumberOfCompositorConnections, (), (const, override));
-        MOCK_METHOD(Bool , hasSurfaceForStreamTexture, (WaylandIviSurfaceId), (const, override));
+        MOCK_METHOD(bool , hasSurfaceForStreamTexture, (WaylandIviSurfaceId), (const, override));
         MOCK_METHOD(String , getTitleOfWaylandIviSurface, (WaylandIviSurfaceId), (const, override));
         MOCK_METHOD(void, logInfos, (RendererLogContext&), (const, override));
         MOCK_METHOD(bool, isRealCompositor, (), (const, override));

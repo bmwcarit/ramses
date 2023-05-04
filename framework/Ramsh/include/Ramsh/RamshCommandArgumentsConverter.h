@@ -136,12 +136,12 @@ namespace ramses_internal
     DEFINE_INT_CONVERTER(Int16)
 
     template<>
-    struct ArgumentConverter<Double>
+    struct ArgumentConverter<double>
     {
-        static inline bool tryConvert(const RamshArgumentData& data, Double& value)
+        static inline bool tryConvert(const RamshArgumentData& data, double& value)
         {
             Char* endptr;
-            value = static_cast<Double>(strtod(data.c_str(),&endptr));
+            value = static_cast<double>(strtod(data.c_str(),&endptr));
             // conversion is only successful if anything was converted
             return endptr != data.c_str();
         }
@@ -152,9 +152,9 @@ namespace ramses_internal
     {
         static inline bool tryConvert(const RamshArgumentData& data, Float& value)
         {
-            Double val = 0.0;
-            // reuse the Double converter
-            bool result = ArgumentConverter<Double>::tryConvert(data,val);
+            double val = 0.0;
+            // reuse the double converter
+            bool result = ArgumentConverter<double>::tryConvert(data,val);
             value = static_cast<Float>(val);
             return result;
         }

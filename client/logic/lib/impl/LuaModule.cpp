@@ -9,7 +9,7 @@
 #include "ramses-logic/LuaModule.h"
 #include "impl/LuaModuleImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     LuaModule::LuaModule(std::unique_ptr<internal::LuaModuleImpl> impl) noexcept
         : LogicObject(std::move(impl))
@@ -17,6 +17,4 @@ namespace rlogic
         , m_impl{ static_cast<internal::LuaModuleImpl&>(*LogicObject::m_impl) }
     {
     }
-
-    LuaModule::~LuaModule() noexcept = default;
 }

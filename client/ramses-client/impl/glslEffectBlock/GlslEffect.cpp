@@ -173,8 +173,8 @@ namespace ramses_internal
 
     bool GlslEffect::parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const String& shaderName)
     {
-        const char* fragmentShaderCodeCString[] = { shaderParts.version.c_str(), shaderParts.defines.c_str(), shaderParts.userCode.c_str() };
-        tShader.setStrings(fragmentShaderCodeCString, 3);
+        const std::array fragmentShaderCodeCString = { shaderParts.version.c_str(), shaderParts.defines.c_str(), shaderParts.userCode.c_str() };
+        tShader.setStrings(fragmentShaderCodeCString.data(), 3);
         bool parsingSuccessful = tShader.parse(&glslCompilationResources, 100, false, EShMsgDefault);
         if (!parsingSuccessful)
         {

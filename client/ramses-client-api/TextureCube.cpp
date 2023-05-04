@@ -11,28 +11,24 @@
 
 namespace ramses
 {
-    TextureCube::TextureCube(TextureCubeImpl& pimpl)
-        : Resource(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    TextureCube::~TextureCube()
+    TextureCube::TextureCube(std::unique_ptr<TextureCubeImpl> impl)
+        : Resource{ std::move(impl) }
+        , m_impl{ static_cast<TextureCubeImpl&>(Resource::m_impl) }
     {
     }
 
     ETextureFormat TextureCube::getTextureFormat() const
     {
-        return impl.getTextureFormat();
+        return m_impl.getTextureFormat();
     }
 
     uint32_t TextureCube::getSize() const
     {
-        return impl.getSize();
+        return m_impl.getSize();
     }
 
     const TextureSwizzle& TextureCube::getTextureSwizzle() const
     {
-        return impl.getTextureSwizzle();
+        return m_impl.getTextureSwizzle();
     }
 }

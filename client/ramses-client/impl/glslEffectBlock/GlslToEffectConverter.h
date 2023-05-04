@@ -25,7 +25,7 @@ namespace ramses_internal
         explicit GlslToEffectConverter(const HashMap<String, EFixedSemantics>& semanticInputs);
         ~GlslToEffectConverter();
 
-        Bool parseShaderProgram(glslang::TProgram* program);
+        bool parseShaderProgram(glslang::TProgram* program);
         String getStatusMessage() const;
 
         const EffectInputInformationVector& getUniformInputs() const;

@@ -96,7 +96,7 @@ namespace ramses_internal
         }
     };
 
-    static const char* SceneResourceActionNames[ESceneResourceAction_NUMBER_OF_ELEMENTS] =
+    const std::array SceneResourceActionNames =
     {
         "Invalid",
         "CreateRenderBuffer",

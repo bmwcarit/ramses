@@ -22,22 +22,22 @@ namespace ramses_internal
         virtual ~IEmbeddedCompositor() = default;
 
         virtual void handleRequestsFromClients() = 0;
-        [[nodiscard]] virtual Bool hasUpdatedStreamTextureSources() const = 0;
+        [[nodiscard]] virtual bool hasUpdatedStreamTextureSources() const = 0;
         virtual WaylandIviSurfaceIdSet dispatchUpdatedStreamTextureSourceIds() = 0;
         virtual WaylandIviSurfaceIdSet dispatchNewStreamTextureSourceIds() = 0;
         virtual WaylandIviSurfaceIdSet dispatchObsoleteStreamTextureSourceIds() = 0;
-        virtual void endFrame(Bool notifyClients) = 0;
+        virtual void endFrame(bool notifyClients) = 0;
         virtual UInt32 uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) = 0;
 
-        [[nodiscard]] virtual Bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const = 0;
+        [[nodiscard]] virtual bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const = 0;
         [[nodiscard]] virtual UInt64 getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const = 0;
-        [[nodiscard]] virtual Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const = 0;
+        [[nodiscard]] virtual bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const = 0;
         [[nodiscard]] virtual UInt32 getNumberOfCompositorConnections() const = 0;
-        [[nodiscard]] virtual Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const = 0;
+        [[nodiscard]] virtual bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const = 0;
         [[nodiscard]] virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const = 0;
         virtual void logInfos(RendererLogContext& context) const = 0;
 
-        [[nodiscard]] virtual Bool isRealCompositor() const = 0; //TODO Mohamed: remove this when dummy EC is removed
+        [[nodiscard]] virtual bool isRealCompositor() const = 0; //TODO Mohamed: remove this when dummy EC is removed
     };
 }
 

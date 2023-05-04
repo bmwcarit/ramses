@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         void addScene(SceneId sceneId, EScenePublicationMode mode);
-        [[nodiscard]] Bool hasScene(SceneId sceneId) const;
+        [[nodiscard]] bool hasScene(SceneId sceneId) const;
         void removeScene(SceneId sceneId);
         void setSceneState(SceneId sceneId, ESceneState sceneState);
         [[nodiscard]] ESceneState getSceneState(SceneId sceneId) const;

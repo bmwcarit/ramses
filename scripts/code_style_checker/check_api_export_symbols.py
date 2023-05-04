@@ -22,11 +22,11 @@ def check_api_export_symbols(filename, clean_file_contents):
 
     if is_api_header:
         # symbol_def_re matches following patterns:
-        #   (correct case) class|struct RAMSES_API SymbolName { [...]
-        #   (correct case) class|struct RAMSES_API SymbolName : [...]
-        #   (correct case) enum|enum class SymbolName : [...]
-        #   (wrong case)   class|struct SymbolName { [...]
-        #   (wrong case)   class|struct SymbolName : [...]
+        #   (correct case) class RAMSES_API SymbolName { [...]
+        #   (correct case) class RAMSES_API SymbolName : [...]
+        #   (correct case) struct/enum|enum class SymbolName : [...]
+        #   (correct case) class SymbolName : [..no symbol exported (but base class can be exported)..]
+        #   (wrong case)   class SymbolName { [..no symbol exported..]
         symbol_def_re = re.compile(r'(template [^;]+?)?\s+(enum|class|struct|enum\s+class)(\s+)(\w+)(\s+)(\w*)(\s*)(\{|\:)')
 
         for symbol_match in re.finditer(symbol_def_re, clean_file_contents):
@@ -37,6 +37,7 @@ def check_api_export_symbols(filename, clean_file_contents):
             isEnum = symbolNameGroups[1].strip() == "enum"
             isStruct = symbolNameGroups[1].strip() == "struct"
             isEnumClass = "enum " in symbolNameGroups[1].strip()
+            isDerived = (symbolNameGroups[7] is not None) and (symbolNameGroups[7].strip() == ":")
             firstWord = symbolNameGroups[3].strip()
             secondWord = symbolNameGroups[5].strip()
 
@@ -54,8 +55,9 @@ def check_api_export_symbols(filename, clean_file_contents):
                 if firstWord == "RAMSES_API":
                     common.log_warning("check_api_export_symbols", filename, line_number + 1, "Template exported as RAMSES_API: " + secondWord)
             else:
-                # remaining cases should have RAMSES_API
-                if firstWord != "RAMSES_API":
+                # Ramses SDK uses selective export which is not easy to check via source parsing, this only ensures that classes which are not derived
+                # have any symbol exported (basic sanity check that reminds developer to export properly)
+                if (firstWord != "RAMSES_API") and ("RAMSES_API" not in clean_file_contents) and (not isDerived):
                     common.log_warning("check_api_export_symbols", filename, line_number + 1, "Public symbol not exported as RAMSES_API: " + firstWord)
     else:
         # Will find occurances of 'RAMSES_API' (whole word) but not containing 'template' (whole word),

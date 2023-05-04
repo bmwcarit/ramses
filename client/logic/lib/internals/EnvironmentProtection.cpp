@@ -12,18 +12,18 @@
 
 #include "internals/SolHelper.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     sol::table EnvironmentProtection::GetProtectedEnvironmentTable(const sol::environment& environmentTable) noexcept
     {
         sol::object protectedTable = environmentTable[sol::metatable_key]["__sensitive"];
-        assert(protectedTable != sol::nil && "No protection added!");
+        assert(protectedTable != sol::lua_nil && "No protection added!");
         return protectedTable;
     }
 
     void EnvironmentProtection::AddProtectedEnvironmentTable(sol::environment& env, sol::state& state)
     {
-        assert(env[sol::metatable_key] == sol::nil && "Already has protection!");
+        assert(env[sol::metatable_key] == sol::lua_nil && "Already has protection!");
         sol::table sensitiveTable(state, sol::create);
         sol::table metatable = state.create_table();
         metatable["__sensitive"] = sensitiveTable;
@@ -37,8 +37,8 @@ namespace rlogic::internal
         switch (protectionFlag)
         {
         case EEnvProtectionFlag::None:
-            protectedMetatable[sol::meta_function::new_index] = sol::nil;
-            protectedMetatable[sol::meta_function::index] = sol::nil;
+            protectedMetatable[sol::meta_function::new_index] = sol::lua_nil;
+            protectedMetatable[sol::meta_function::index] = sol::lua_nil;
             break;
         case EEnvProtectionFlag::LoadScript:
             protectedMetatable[sol::meta_function::new_index] = EnvironmentProtection::protectedNewIndex_LoadScript;
@@ -97,7 +97,7 @@ namespace rlogic::internal
             sol_helper::throwSolException("Unexpected function name '{}'! Allowed names: 'init', 'interface', 'run'", keyStr);
         }
 
-        if (GetProtectedEnvironmentTable(tbl).raw_get<sol::object>(key) != sol::nil)
+        if (GetProtectedEnvironmentTable(tbl).raw_get<sol::object>(key) != sol::lua_nil)
         {
             sol_helper::throwSolException("Function '{}' can only be declared once!", keyStr);
         }
@@ -136,7 +136,7 @@ namespace rlogic::internal
             sol_helper::throwSolException("Unexpected function name '{}'! Only 'interface' function can be declared!", keyStr);
         }
 
-        if (GetProtectedEnvironmentTable(tbl).raw_get<sol::object>(key) != sol::nil)
+        if (GetProtectedEnvironmentTable(tbl).raw_get<sol::object>(key) != sol::lua_nil)
         {
             sol_helper::throwSolException("Function '{}' can only be declared once!", keyStr);
         }

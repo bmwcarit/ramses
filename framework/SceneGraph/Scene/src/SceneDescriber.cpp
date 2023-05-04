@@ -15,11 +15,6 @@
 #include "SceneAPI/TextureSamplerStates.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector2i.h"
 
 namespace ramses_internal
 {
@@ -109,18 +104,18 @@ namespace ramses_internal
         {
             if (source.isTransformAllocated(t))
             {
-                const Vector3& translation = source.getTranslation(t);
+                const auto& translation = source.getTranslation(t);
                 if (translation != IScene::IdentityTranslation)
                 {
                     collector.setTranslation(t, translation);
                 }
-                const Vector4& rotation = source.getRotation(t);
+                const auto& rotation = source.getRotation(t);
                 if (rotation != IScene::IdentityRotation)
                 {
                     const auto rotationType = source.getRotationType(t);
                     collector.setRotation(t, rotation, rotationType);
                 }
-                const Vector3& scaling = source.getScaling(t);
+                const auto& scaling = source.getScaling(t);
                 if (scaling != IScene::IdentityScaling)
                 {
                     collector.setScaling(t, scaling);
@@ -216,7 +211,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector2F:
                     {
-                        const Vector2* value = source.getDataVector2fArray(i, f);
+                        const auto* value = source.getDataVector2fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector2fArray(i, f, elementCount, value);
@@ -225,7 +220,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector3F:
                     {
-                        const Vector3* value = source.getDataVector3fArray(i, f);
+                        const auto* value = source.getDataVector3fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector3fArray(i, f, elementCount, value);
@@ -234,7 +229,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector4F:
                     {
-                        const Vector4* value = source.getDataVector4fArray(i, f);
+                        const auto* value = source.getDataVector4fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector4fArray(i, f, elementCount, value);
@@ -243,7 +238,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix22F:
                     {
-                        const Matrix22f* value = source.getDataMatrix22fArray(i, f);
+                        const glm::mat2* value = source.getDataMatrix22fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix22fArray(i, f, elementCount, value);
@@ -252,7 +247,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix33F:
                     {
-                        const Matrix33f* value = source.getDataMatrix33fArray(i, f);
+                        const auto* value = source.getDataMatrix33fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix33fArray(i, f, elementCount, value);
@@ -261,7 +256,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix44F:
                     {
-                        const Matrix44f* value = source.getDataMatrix44fArray(i, f);
+                        const auto* value = source.getDataMatrix44fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix44fArray(i, f, elementCount, value);
@@ -279,7 +274,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector2I:
                     {
-                        const Vector2i* value = source.getDataVector2iArray(i, f);
+                        const auto* value = source.getDataVector2iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector2iArray(i, f, elementCount, value);
@@ -288,7 +283,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector3I:
                     {
-                        const Vector3i* value = source.getDataVector3iArray(i, f);
+                        const auto* value = source.getDataVector3iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector3iArray(i, f, elementCount, value);
@@ -297,7 +292,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector4I:
                     {
-                        const Vector4i* value = source.getDataVector4iArray(i, f);
+                        const auto* value = source.getDataVector4iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector4iArray(i, f, elementCount, value);

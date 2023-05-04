@@ -27,6 +27,7 @@ namespace ramses_internal
     {
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     void DltAdapterImpl::DltLogLevelChangedCallback(char context_id[DLT_ID_SIZE], uint8_t log_level, uint8_t /*trace_status*/)
     {
         const String contextIDString(context_id, 0, DLT_ID_SIZE - 1); //set end value as passed char-array is not null-terminated

@@ -61,9 +61,9 @@ private:
     ramses::sceneId_t m_sceneIdProviderConsumer;
     ramses::sceneId_t m_sceneIdConsumer;
 
-    const ramses_internal::Vector3 m_cameraLow{ -1.f, 2.f, 8.f };
-    const ramses_internal::Vector3 m_cameraHigh{ 1.f, -2.f, 8.f };
-    const ramses_internal::Vector3 m_cameraMid{ 0.f, 0.f, 8.f };
+    const glm::vec3 m_cameraLow{ -1.f, 2.f, 8.f };
+    const glm::vec3 m_cameraHigh{ 1.f, -2.f, 8.f };
+    const glm::vec3 m_cameraMid{ 0.f, 0.f, 8.f };
 };
 
 #endif

@@ -22,7 +22,7 @@ int main()
      * Create an instance of the LogicEngine class. This holds all data
      * and offers methods to load and execute scripts among other things.
      */
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
      * Create a script by providing the source code of the script with a string.
@@ -31,7 +31,7 @@ int main()
      * outputs of the script.
      * The run function contains the real code, which is executed during runtime
      */
-    rlogic::LuaScript* script = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* script = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             IN.rotate_x = Type:Float()
             OUT.rotation = Type:Vec3f()
@@ -56,9 +56,9 @@ int main()
      * Inspect the result of the script by getting the value of its single output
      */
     std::cout << "Script ran successfully! The result is: ["
-        << (*script->getOutputs()->getChild("rotation")->get<rlogic::vec3f>())[0] << ", "
-        << (*script->getOutputs()->getChild("rotation")->get<rlogic::vec3f>())[1] << ", "
-        << (*script->getOutputs()->getChild("rotation")->get<rlogic::vec3f>())[2] << "]";
+        << (*script->getOutputs()->getChild("rotation")->get<ramses::vec3f>())[0] << ", "
+        << (*script->getOutputs()->getChild("rotation")->get<ramses::vec3f>())[1] << ", "
+        << (*script->getOutputs()->getChild("rotation")->get<ramses::vec3f>())[2] << "]";
 
     /**
      * Destroy all created objects, in this case a single script. In this example

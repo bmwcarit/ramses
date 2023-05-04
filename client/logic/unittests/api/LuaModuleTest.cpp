@@ -24,7 +24,7 @@
 
 #include <fstream>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALuaModule : public ::testing::Test
     {

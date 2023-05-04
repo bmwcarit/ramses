@@ -22,7 +22,7 @@ namespace ramses_internal
         {
         }
 
-        Bool operator()(const RenderingPassInfo& pass1, const RenderingPassInfo& pass2) const
+        bool operator()(const RenderingPassInfo& pass1, const RenderingPassInfo& pass2) const
         {
             const Int32 pass1RenderOrder = getRenderingPassRenderOrder(pass1);
             const Int32 pass2RenderOrder = getRenderingPassRenderOrder(pass2);

@@ -21,16 +21,19 @@ namespace ramses
     struct FontIdTag {};
 
     /**
+    * @ingroup TextAPI
     * @brief A strongly typed integer to distinguish between different fonts
     */
     using FontId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), FontIdTag>;
 
     /**
+    * @ingroup TextAPI
     * @brief An empty struct to make FontInstanceId a strong type
     */
     struct FontInstanceIdTag {};
 
     /**
+    * @ingroup TextAPI
     * @brief A strongly typed integer to distinguish between different font instances
     */
     using FontInstanceId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), FontInstanceIdTag>;

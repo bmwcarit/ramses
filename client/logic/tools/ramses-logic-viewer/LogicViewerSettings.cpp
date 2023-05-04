@@ -18,7 +18,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-namespace rlogic
+namespace ramses
 {
     namespace
     {

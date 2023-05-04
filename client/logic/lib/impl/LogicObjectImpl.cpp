@@ -13,7 +13,7 @@
 #include "flatbuffers/flatbuffers.h"
 #include "generated/LogicObjectGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LogicObjectImpl::LogicObjectImpl(std::string_view name, uint64_t id) noexcept
         : m_name(name)

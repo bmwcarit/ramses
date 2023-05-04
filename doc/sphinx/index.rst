@@ -51,7 +51,7 @@ Ramses documentation
     :maxdepth: 3
     :caption: Class Index
 
-    classes/generated/index
+    classes/index
 
 .. toctree::
     :maxdepth: 3

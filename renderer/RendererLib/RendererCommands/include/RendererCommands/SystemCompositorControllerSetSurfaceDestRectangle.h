@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorControllerSetSurfaceDestRectangle(RendererCommandBuffer& rendererCommandBuffer);
-        Bool execute(Int32& surfaceId, Int32& x, Int32& y, Int32& width, Int32& height) const override;
+        bool execute(Int32& surfaceId, Int32& x, Int32& y, Int32& width, Int32& height) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

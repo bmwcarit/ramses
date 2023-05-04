@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <iterator>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     struct TypeData
     {

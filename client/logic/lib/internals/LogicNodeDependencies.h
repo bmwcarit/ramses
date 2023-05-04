@@ -12,7 +12,7 @@
 
 #include <unordered_set>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class LogicNodeImpl;
     class ErrorReporting;

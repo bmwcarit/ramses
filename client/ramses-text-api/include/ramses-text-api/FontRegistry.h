@@ -15,6 +15,7 @@
 namespace ramses
 {
     /**
+    * @ingroup TextAPI
     * @brief Font registry can be used to load Freetype2 fonts and create font instances (optionally with Harfbuzz).
     *        These are owned and managed by FontRegistry.
     */

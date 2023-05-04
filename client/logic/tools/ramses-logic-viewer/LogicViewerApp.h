@@ -17,7 +17,7 @@
 class Arguments;
 struct ImGuiContext;
 
-namespace rlogic
+namespace ramses
 {
     struct LogicViewerSettings;
 
@@ -51,9 +51,9 @@ namespace rlogic
 
         [[nodiscard]] int run();
 
-        [[nodiscard]] rlogic::LogicViewer* getViewer();
+        [[nodiscard]] ramses::LogicViewer* getViewer();
 
-        [[nodiscard]] const rlogic::LogicViewerSettings* getSettings() const;
+        [[nodiscard]] const ramses::LogicViewerSettings* getSettings() const;
 
     protected:
         [[nodiscard]] int loadScene(const Arguments& args);
@@ -61,12 +61,12 @@ namespace rlogic
 
         ImGuiContext*                                m_imguiContext = nullptr;
         std::unique_ptr<ramses::RamsesFramework>     m_framework;
-        std::unique_ptr<rlogic::LogicViewerSettings> m_settings;
-        std::unique_ptr<rlogic::LogicViewer>         m_viewer;
+        std::unique_ptr<ramses::LogicViewerSettings> m_settings;
+        std::unique_ptr<ramses::LogicViewer>         m_viewer;
 
         ramses::RamsesClient* m_client = nullptr;
         ramses::Scene* m_scene = nullptr;
-        rlogic::Result m_loadLuaStatus;
+        ramses::Result m_loadLuaStatus;
 
         int m_exitCode = -1;
         bool m_interactive = false;
@@ -84,12 +84,12 @@ namespace rlogic
         return m_exitCode;
     }
 
-    inline rlogic::LogicViewer* LogicViewerApp::getViewer()
+    inline ramses::LogicViewer* LogicViewerApp::getViewer()
     {
         return m_viewer.get();
     }
 
-    inline const rlogic::LogicViewerSettings* LogicViewerApp::getSettings() const
+    inline const ramses::LogicViewerSettings* LogicViewerApp::getSettings() const
     {
         return m_settings.get();
     }

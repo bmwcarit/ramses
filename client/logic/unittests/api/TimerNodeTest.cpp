@@ -25,7 +25,7 @@
 #include <numeric>
 #include <thread>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ATimerNode : public ::testing::Test
     {
@@ -58,7 +58,7 @@ namespace rlogic::internal
         LogicEngine otherEngine{ m_logicEngine.getFeatureLevel() };
         EXPECT_FALSE(otherEngine.destroy(*timerNode));
         ASSERT_FALSE(otherEngine.getErrors().empty());
-        EXPECT_EQ("Can't find TimerNode in logic engine!", otherEngine.getErrors().front().message);
+        EXPECT_EQ("Failed to destroy object 'timerNode [Id=1]', cannot find it in this LogicEngine instance.", otherEngine.getErrors().front().message);
     }
 
     TEST_F(ATimerNode, ChangesName)

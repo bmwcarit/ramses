@@ -13,7 +13,7 @@
 #include "LogicViewer.h"
 #include <string>
 
-namespace rlogic
+namespace ramses
 {
     class LogicEngine;
     class Property;
@@ -23,15 +23,15 @@ namespace rlogic
     class LogicViewerLog
     {
     public:
-        explicit LogicViewerLog(rlogic::LogicEngine& engine, const LogicViewerSettings& settings);
+        explicit LogicViewerLog(ramses::LogicEngine& engine, const LogicViewerSettings& settings);
 
         void logText(const std::string& text);
 
         template<class T> void logAllInputs(std::string_view headline, std::string_view ltn);
 
         using PathVector = std::vector<std::string_view>;
-        void logInputs(rlogic::LogicNode* obj, const PathVector& path);
-        void logProperty(rlogic::Property* prop, const std::string& prefix, PathVector& path);
+        void logInputs(ramses::LogicNode* obj, const PathVector& path);
+        void logProperty(ramses::Property* prop, const std::string& prefix, PathVector& path);
 
         [[nodiscard]] const std::string& getText() const
         {
@@ -40,7 +40,7 @@ namespace rlogic
 
     private:
         const LogicViewerSettings& m_settings;
-        rlogic::LogicEngine& m_logicEngine;
+        ramses::LogicEngine& m_logicEngine;
         std::string m_text;
     };
 

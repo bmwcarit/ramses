@@ -11,13 +11,13 @@
 #include "internals/SolWrapper.h"
 #include "ramses-logic/EPropertyType.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // TODO Violin consider reworking this to use HierarchicalTypeData instead
     struct InterfaceTypeInfo
     {
         EPropertyType typeId = EPropertyType::Struct;
         size_t arraySize = 0u;
-        sol::object complexType = sol::nil;
+        sol::object complexType = sol::lua_nil;
     };
 }

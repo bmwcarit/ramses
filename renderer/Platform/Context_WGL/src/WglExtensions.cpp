@@ -107,12 +107,12 @@ namespace ramses_internal
         m_loaded = true;
     }
 
-    Bool WglExtensions::areLoaded() const
+    bool WglExtensions::areLoaded() const
     {
         return m_loaded;
     }
 
-    Bool WglExtensions::isExtensionAvailable(const String& extensionName)
+    bool WglExtensions::isExtensionAvailable(const String& extensionName)
     {
         // try out various prefixes; add more if required
         String nameEXT = "WGL_EXT_" + extensionName;

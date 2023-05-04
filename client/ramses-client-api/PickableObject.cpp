@@ -16,52 +16,50 @@
 
 namespace ramses
 {
-    PickableObject::PickableObject(PickableObjectImpl& pimpl)
-        : Node(pimpl)
-        , impl(pimpl)
+    PickableObject::PickableObject(std::unique_ptr<PickableObjectImpl> impl)
+        : Node{ std::move(impl) }
+        , m_impl{ static_cast<PickableObjectImpl&>(Node::m_impl) }
     {
     }
 
-    PickableObject::~PickableObject() = default;
-
     const ArrayBuffer& PickableObject::getGeometryBuffer() const
     {
-        return impl.getGeometryBuffer();
+        return m_impl.getGeometryBuffer();
     }
 
     const Camera* PickableObject::getCamera() const
     {
-        return impl.getCamera();
+        return m_impl.getCamera();
     }
 
     status_t PickableObject::setCamera(const Camera& camera)
     {
-        const status_t status = impl.setCamera(camera.impl);
+        const status_t status = m_impl.setCamera(camera.m_impl);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(camera));
         return status;
     }
 
     pickableObjectId_t PickableObject::getPickableObjectId() const
     {
-        return impl.getPickableObjectId();
+        return m_impl.getPickableObjectId();
     }
 
     status_t PickableObject::setPickableObjectId(pickableObjectId_t id)
     {
-        const status_t status = impl.setPickableObjectId(id);
+        const status_t status = m_impl.setPickableObjectId(id);
         LOG_HL_CLIENT_API1(status, id);
         return status;
     }
 
     status_t PickableObject::setEnabled(bool enable)
     {
-        const status_t status = impl.setEnabled(enable);
+        const status_t status = m_impl.setEnabled(enable);
         LOG_HL_CLIENT_API1(status, enable);
         return status;
     }
 
     bool PickableObject::isEnabled() const
     {
-        return impl.isEnabled();
+        return m_impl.isEnabled();
     }
 }

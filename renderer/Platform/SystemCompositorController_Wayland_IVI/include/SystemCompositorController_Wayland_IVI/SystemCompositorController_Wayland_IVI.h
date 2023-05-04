@@ -29,18 +29,18 @@ namespace ramses_internal
         explicit SystemCompositorController_Wayland_IVI(std::string_view waylandDisplay = std::string_view());
         ~SystemCompositorController_Wayland_IVI() override;
 
-        virtual Bool init();
+        virtual bool init();
         void update() override;
         void listIVISurfaces() const override;
-        Bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) override;
-        Bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) override;
-        Bool setSurfaceDestinationRectangle(
+        bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility) override;
+        bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) override;
+        bool setSurfaceDestinationRectangle(
             WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) override;
-        Bool doScreenshot(const String& fileName, int32_t screenIviId) override;
-        Bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
-        Bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
-        Bool destroySurface(WaylandIviSurfaceId surfaceId) override;
-        Bool setLayerVisibility(WaylandIviLayerId layerId, Bool visibility) override;
+        bool doScreenshot(const String& fileName, int32_t screenIviId) override;
+        bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
+        bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
+        bool destroySurface(WaylandIviSurfaceId surfaceId) override;
+        bool setLayerVisibility(WaylandIviLayerId layerId, bool visibility) override;
         void         deleteControllerSurface(IVIControllerSurface& controllerSurface);
 
     private:

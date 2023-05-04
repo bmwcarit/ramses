@@ -59,7 +59,7 @@ namespace ramses
         EXPECT_EQ(ERenderBufferFormat_RGBA8, renderBuffer->getBufferFormat());
         EXPECT_EQ(ERenderBufferAccessMode_WriteOnly, renderBuffer->getAccessMode());
         EXPECT_EQ(4u, renderBuffer->getSampleCount());
-        const ramses_internal::RenderBufferHandle rbHandle = renderBuffer->impl.getRenderBufferHandle();
+        const ramses_internal::RenderBufferHandle rbHandle = renderBuffer->m_impl.getRenderBufferHandle();
         EXPECT_TRUE(m_internalScene.isRenderBufferAllocated(rbHandle));
     }
 
@@ -92,7 +92,7 @@ namespace ramses
         EXPECT_EQ(ERenderBufferFormat_RGBA8, renderBuffer->getBufferFormat());
         EXPECT_EQ(ERenderBufferAccessMode_ReadWrite, renderBuffer->getAccessMode());
         EXPECT_EQ(4u, renderBuffer->getSampleCount());
-        const ramses_internal::RenderBufferHandle rbHandle = renderBuffer->impl.getRenderBufferHandle();
+        const ramses_internal::RenderBufferHandle rbHandle = renderBuffer->m_impl.getRenderBufferHandle();
         EXPECT_TRUE(m_internalScene.isRenderBufferAllocated(rbHandle));
     }
 

@@ -9,7 +9,6 @@
 #include "Utils/BinaryInputStream.h"
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
-#include "Math3d/Matrix44f.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Collections/String.h"
 #include "UnsafeTestMemoryHelpers.h"

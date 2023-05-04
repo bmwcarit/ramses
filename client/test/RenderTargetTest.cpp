@@ -34,10 +34,10 @@ namespace ramses
         EXPECT_EQ(16u, renderTarget->getWidth());
         EXPECT_EQ(8u, renderTarget->getHeight());
 
-        const ramses_internal::RenderTargetHandle rtHandle = renderTarget->impl.getRenderTargetHandle();
+        const ramses_internal::RenderTargetHandle rtHandle = renderTarget->m_impl.getRenderTargetHandle();
         EXPECT_TRUE(m_internalScene.isRenderTargetAllocated(rtHandle));
         ASSERT_EQ(1u, m_internalScene.getRenderTargetRenderBufferCount(rtHandle));
-        EXPECT_EQ(rb.impl.getRenderBufferHandle(), m_internalScene.getRenderTargetRenderBuffer(rtHandle, 0u));
+        EXPECT_EQ(rb.m_impl.getRenderBufferHandle(), m_internalScene.getRenderTargetRenderBuffer(rtHandle, 0u));
     }
 
     TEST_F(ARenderTarget, failsToCreateUsingInvalidRenderTargetDescription)

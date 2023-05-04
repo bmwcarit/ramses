@@ -18,7 +18,7 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/RenderPass.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ARamsesObjectResolver : public ::testing::Test
     {

@@ -16,6 +16,7 @@ namespace ramses
     namespace LayoutUtils
     {
         /**
+        * @ingroup TextAPI
         * @brief Helper data structure describing multiple glyphs metrics.
         *
         * StringBoundingBox is essentially a union of a set of GlyphMetrics.
@@ -41,6 +42,7 @@ namespace ramses
         };
 
         /**
+        * @ingroup TextAPI
         * @brief Compute a bounding box for a string represented by a range of GlyphMetrics.
         * @param[in] first Beginning of range of GlyphMetrics to compute bounding box
         * @param[in] last End of range of GlyphMetrics to compute bounding box, glyph pointed to by last is not included
@@ -49,6 +51,7 @@ namespace ramses
         RAMSES_API StringBoundingBox GetBoundingBoxForString(GlyphMetricsVector::const_iterator first, GlyphMetricsVector::const_iterator last);
 
         /**
+        * @ingroup TextAPI
         * @copydoc GetBoundingBoxForString(GlyphMetricsVector::const_iterator first, GlyphMetricsVector::const_iterator last)
         **/
         RAMSES_API StringBoundingBox GetBoundingBoxForString(const GlyphMetricsVector::const_reverse_iterator& first, const GlyphMetricsVector::const_reverse_iterator& last);

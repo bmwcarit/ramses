@@ -13,7 +13,6 @@
 #include "RendererAPI/SceneRenderExecutionIterator.h"
 #include "SceneAPI/Viewport.h"
 #include "SceneAPI/RenderState.h"
-#include "Math3d/Vector4.h"
 
 namespace ramses_internal
 {
@@ -25,7 +24,7 @@ namespace ramses_internal
         SceneRenderExecutionIterator renderFrom;
 
         uint32_t displayBufferClearPending = EClearFlags_None;
-        Vector4 displayBufferClearColor;
+        glm::vec4 displayBufferClearColor;
         bool displayBufferDepthDiscard = false;
     };
 }

@@ -27,7 +27,7 @@ namespace ramses_internal
 {
     Texture2DCompressedMipMapScene::Texture2DCompressedMipMapScene(ramses::Scene&        scene,
                                                                    uint32_t              state,
-                                                                   const Vector3&        cameraPosition)
+                                                                   const glm::vec3&        cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_textureWidth(8)
         , m_textureHeight(8)

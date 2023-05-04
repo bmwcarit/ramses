@@ -16,6 +16,7 @@ namespace ramses
     class IFontInstance;
 
     /**
+    * @ingroup TextAPI
     * @brief Interface for getting font instances using font instance ids.
     *
     * This interface allows overriding the standard Freetype/Harfbuzz logic

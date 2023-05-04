@@ -32,7 +32,7 @@ namespace ramses_internal
         m_msaaSampleCount = displayConfig.getAntialiasingSampleCount();
     }
 
-    Bool Window_Base::canRenderNewFrame() const
+    bool Window_Base::canRenderNewFrame() const
     {
         return true;
     }

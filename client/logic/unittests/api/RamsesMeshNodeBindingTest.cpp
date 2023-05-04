@@ -22,7 +22,7 @@
 
 #include "generated/RamsesMeshNodeBindingGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ARamsesMeshNodeBinding : public ALogicEngine
     {

@@ -21,6 +21,7 @@
 #include <memory>
 #include <thread>
 #include <unordered_set>
+#include <array>
 
 /**
  * @example ramses-example-local-datalink/src/main.cpp
@@ -104,7 +105,7 @@ public:
     // Node that will be used as transformation provider
     ramses::Node* translateNode;
     // Textures that will be used as texture provider
-    ramses::Texture2D* textures[2];
+    std::array<ramses::Texture2D*, 2> textures;
     // Data object that will be used as data consumer
     ramses::DataObject* colorData;
     // Provider scene

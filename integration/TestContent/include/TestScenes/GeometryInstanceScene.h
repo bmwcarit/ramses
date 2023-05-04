@@ -19,7 +19,7 @@ namespace ramses_internal
     class GeometryInstanceScene : public IntegrationScene
     {
     public:
-        GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {

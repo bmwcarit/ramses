@@ -29,10 +29,10 @@ namespace ramses
     TEST_F(ATexture2DBuffer, IsAllocatedOnInternalSceneAfterCreation)
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
-        const ramses_internal::TextureBufferHandle textureBufferHandle = textureBuffer.impl.getTextureBufferHandle();
+        const ramses_internal::TextureBufferHandle textureBufferHandle = textureBuffer.m_impl.getTextureBufferHandle();
 
         EXPECT_TRUE(textureBufferHandle.isValid());
-        EXPECT_TRUE(this->m_scene.impl.getIScene().isTextureBufferAllocated(textureBufferHandle));
+        EXPECT_TRUE(this->m_scene.m_impl.getIScene().isTextureBufferAllocated(textureBufferHandle));
     }
 
     TEST_F(ATexture2DBuffer, CanGetTexelFormat)
@@ -45,8 +45,8 @@ namespace ramses
     TEST_F(ATexture2DBuffer, PropagatesItsPropertiesToInternalScene)
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
-        const ramses_internal::TextureBufferHandle textureBufferHandle = textureBuffer.impl.getTextureBufferHandle();
-        const ramses_internal::TextureBuffer& internalTexBuffer = this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle);
+        const ramses_internal::TextureBufferHandle textureBufferHandle = textureBuffer.m_impl.getTextureBufferHandle();
+        const ramses_internal::TextureBuffer& internalTexBuffer = this->m_scene.m_impl.getIScene().getTextureBuffer(textureBufferHandle);
 
         EXPECT_EQ(ramses_internal::ETextureFormat::RGBA8, internalTexBuffer.textureFormat);
         ASSERT_EQ(2u, internalTexBuffer.mipMaps.size());
@@ -85,11 +85,11 @@ namespace ramses
     TEST_F(ATexture2DBuffer, PropagatesDataUpdatesToInternalScene)
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
-        const ramses_internal::TextureBufferHandle textureBufferHandle = textureBuffer.impl.getTextureBufferHandle();
+        const ramses_internal::TextureBufferHandle textureBufferHandle = textureBuffer.m_impl.getTextureBufferHandle();
 
         // update mipLevel = 0
         EXPECT_EQ(StatusOK, textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
-        const Byte* textureBufferDataMip0 = this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[0].data.data();
+        const Byte* textureBufferDataMip0 = this->m_scene.m_impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[0].data.data();
 
         EXPECT_EQ(12u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 0));
         EXPECT_EQ(23u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 1));
@@ -98,7 +98,7 @@ namespace ramses
 
         // update mipLevel = 1
         EXPECT_EQ(StatusOK, textureBuffer.updateData(1, 0, 0, 1, 1, std::array<uint32_t, 1>{ {78} }.data()));
-        const Byte* textureBufferDataMip1 = this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[1].data.data();
+        const Byte* textureBufferDataMip1 = this->m_scene.m_impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[1].data.data();
         EXPECT_EQ(78u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip1, 0));
     }
 

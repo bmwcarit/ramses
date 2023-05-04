@@ -61,8 +61,8 @@ namespace ramses
 
     TYPED_TEST(AnArrayBuffer, IsAllocatedOnInternalSceneAfterCreation)
     {
-        EXPECT_TRUE(this->m_dataBuffer.impl.getDataBufferHandle().isValid());
-        EXPECT_TRUE(this->m_scene.impl.getIScene().isDataBufferAllocated(this->m_dataBuffer.impl.getDataBufferHandle()));
+        EXPECT_TRUE(this->m_dataBuffer.m_impl.getDataBufferHandle().isValid());
+        EXPECT_TRUE(this->m_scene.m_impl.getIScene().isDataBufferAllocated(this->m_dataBuffer.m_impl.getDataBufferHandle()));
     }
 
     TYPED_TEST(AnArrayBuffer, ContainsZeroedDataAfterCreation)
@@ -220,7 +220,7 @@ namespace ramses
     TYPED_TEST(AnArrayBuffer, CanGetMaximumSize)
     {
         EXPECT_EQ(this->m_data.size(), this->m_dataBuffer.getMaximumNumberOfElements());
-        EXPECT_EQ(this->m_data.size(), this->m_dataBuffer.impl.getElementCount());
+        EXPECT_EQ(this->m_data.size(), this->m_dataBuffer.m_impl.getElementCount());
     }
 
     TYPED_TEST(AnArrayBuffer, CanGetUsedSize)

@@ -18,12 +18,11 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/RenderTargetDescription.h"
-#include "Math3d/Vector3.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : CommonRenderBufferTestScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_renderBuffer1(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
         , m_renderBuffer2(initRenderBuffer(scene, state))
@@ -97,7 +96,7 @@ namespace ramses_internal
         return *m_scene.createRenderTarget(rtDesc);
     }
 
-    const ramses::MeshNode& MultipleRenderTargetScene::createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const Vector3& translation, const Vector4& modulateColor)
+    const ramses::MeshNode& MultipleRenderTargetScene::createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const glm::vec3& translation, const glm::vec4& modulateColor)
     {
         const ramses::Effect* effect = getTestEffect("ramses-test-client-texturedWithColor");
 
@@ -119,7 +118,7 @@ namespace ramses_internal
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
         ramses::UniformInput colorInput;
         effect->findUniformInput("u_color", colorInput);
-        appearance->setInputValue(colorInput, modulateColor.getAsVec4());
+        appearance->setInputValue(colorInput, modulateColor);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
@@ -233,15 +232,15 @@ namespace ramses_internal
 
         if (state != DEPTH_WRITTEN_AND_READ)
         {
-            quad1 = &createQuadWithTexture(m_renderBuffer1, Vector3(-0.6f, 0.f, -8.f));
-            quad2 = &createQuadWithTexture(m_renderBuffer2, Vector3(0.6f, 0.f, -8.f));
+            quad1 = &createQuadWithTexture(m_renderBuffer1, glm::vec3(-0.6f, 0.f, -8.f));
+            quad2 = &createQuadWithTexture(m_renderBuffer2, glm::vec3(0.6f, 0.f, -8.f));
         }
         else
         {
             // Modulate depth sampled as color with red color only, so that it can be tested consistently on different platforms.
             // Some platforms give the depth value in all RGBA channels, some only in R channel.
-            quad1 = &createQuadWithTexture(m_depthBuffer, Vector3(-0.6f, 0.f, -8.f), Vector4(1.f, 0.f, 0.f, 1.f));
-            quad2 = &createQuadWithTexture(m_depthBuffer, Vector3(0.6f, 0.f, -8.f), Vector4(1.f, 0.f, 0.f, 1.f));
+            quad1 = &createQuadWithTexture(m_depthBuffer, glm::vec3(-0.6f, 0.f, -8.f), glm::vec4(1.f, 0.f, 0.f, 1.f));
+            quad2 = &createQuadWithTexture(m_depthBuffer, glm::vec3(0.6f, 0.f, -8.f), glm::vec4(1.f, 0.f, 0.f, 1.f));
         }
 
         ramses::Camera& camera = createCameraWithDefaultParameters();

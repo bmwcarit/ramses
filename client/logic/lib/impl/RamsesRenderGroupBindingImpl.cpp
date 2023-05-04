@@ -16,7 +16,7 @@
 #include "generated/RamsesRenderGroupBindingGen.h"
 #include "fmt/format.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     RamsesRenderGroupBindingImpl::RamsesRenderGroupBindingImpl(ramses::RenderGroup& ramsesRenderGroup, const RamsesRenderGroupBindingElementsImpl& elements, std::string_view name, uint64_t id)
         : RamsesBindingImpl{ name, id }
@@ -38,7 +38,7 @@ namespace rlogic::internal
         for (const auto& e : m_elements)
             elementInputs.push_back(MakeType(e.first, EPropertyType::Int32));
 
-        auto inputs = std::make_unique<Property>(std::make_unique<PropertyImpl>(std::move(inputsType), EPropertySemantics::BindingInput));
+        auto inputs = std::make_unique<PropertyImpl>(std::move(inputsType), EPropertySemantics::BindingInput);
 
         setRootInputs(std::move(inputs));
 
@@ -166,7 +166,7 @@ namespace rlogic::internal
 
         auto binding = std::make_unique<RamsesRenderGroupBindingImpl>(*ramsesRenderGroup, elements, name, id);
         binding->setUserId(userIdHigh, userIdLow);
-        binding->setRootInputs(std::make_unique<Property>(std::move(deserializedRootInput)));
+        binding->setRootInputs(std::move(deserializedRootInput));
 
         ApplyRamsesValuesToInputProperties(*binding, *ramsesRenderGroup);
 

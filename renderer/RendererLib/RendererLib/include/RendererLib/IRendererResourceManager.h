@@ -39,7 +39,7 @@ namespace ramses_internal
         virtual void             unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
 
         virtual void             provideResourceData(const ManagedResource& mr) = 0;
-        [[nodiscard]] virtual Bool             hasResourcesToBeUploaded() const = 0;
+        [[nodiscard]] virtual bool             hasResourcesToBeUploaded() const = 0;
         virtual void             uploadAndUnloadPendingResources() = 0;
 
         // Scene resources
@@ -67,7 +67,7 @@ namespace ramses_internal
         [[nodiscard]] virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const = 0;
 
         // Renderer resources
-        virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
+        virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
         virtual void             uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) = 0;
         virtual void             unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) = 0;
 

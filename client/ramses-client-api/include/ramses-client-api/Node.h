@@ -17,10 +17,11 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * @brief The Node is the base class of all nodes and provides
      * scene graph functionality which propagates to its children.
      */
-    class RAMSES_API Node : public SceneObject
+    class Node : public SceneObject
     {
     public:
         /**
@@ -28,14 +29,14 @@ namespace ramses
          *
          * @return true if this Node has at least one child Node, false otherwise.
          */
-        [[nodiscard]] bool hasChild() const;
+        [[nodiscard]] RAMSES_API bool hasChild() const;
 
         /**
         * @brief Gets the number of child Nodes of this node.
         *
         * @return Number of child Nodes of this Node.
         */
-        [[nodiscard]] uint32_t getChildCount() const;
+        [[nodiscard]] RAMSES_API uint32_t getChildCount() const;
 
         /**
         * @brief Gets child node at provided index.
@@ -47,7 +48,7 @@ namespace ramses
         */
         Node* getChild(uint32_t index);
         /** @copydoc getChild(uint32_t) */
-        [[nodiscard]] const Node* getChild(uint32_t index) const;
+        [[nodiscard]] RAMSES_API const Node* getChild(uint32_t index) const;
 
         /**
         * @brief Adds child Node to this node.
@@ -57,7 +58,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t addChild(Node& node);
+        RAMSES_API status_t addChild(Node& node);
 
         /**
         * @brief Removes a child Node from this node.
@@ -67,7 +68,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeChild(Node& node);
+        RAMSES_API status_t removeChild(Node& node);
 
         /**
         * @brief Removes all child Nodes from this node.
@@ -75,14 +76,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeAllChildren();
+        RAMSES_API status_t removeAllChildren();
 
         /**
         * @brief Returns if Node has a parent Node.
         *
         * @return true if Node has a parent Node, false otherwise.
         */
-        [[nodiscard]] bool hasParent() const;
+        [[nodiscard]] RAMSES_API bool hasParent() const;
 
         /**
         * @brief Gets parent Node of this Node.
@@ -91,7 +92,7 @@ namespace ramses
         */
         Node* getParent();
         /** @copydoc getParent() */
-        [[nodiscard]] const Node* getParent() const;
+        [[nodiscard]] RAMSES_API const Node* getParent() const;
 
         /**
         * @brief Sets parent Node for this node.
@@ -101,7 +102,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setParent(Node& node);
+        RAMSES_API status_t setParent(Node& node);
 
         /**
         * @brief Removes the parent Node from this Node.
@@ -109,7 +110,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t removeParent();
+        RAMSES_API status_t removeParent();
 
         /**
         * @brief Gets model (world in scene space) matrix computed from the scene graph.
@@ -121,7 +122,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getModelMatrix(matrix44f& modelMatrix) const;
+        RAMSES_API status_t getModelMatrix(matrix44f& modelMatrix) const;
 
         /**
         * @brief Gets inverse model (world in scene space) matrix computed from the scene graph.
@@ -133,7 +134,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getInverseModelMatrix(matrix44f& inverseModelMatrix) const;
+        RAMSES_API status_t getInverseModelMatrix(matrix44f& inverseModelMatrix) const;
 
         /**
         * @brief Sets the absolute rotation in all three directions for right-handed rotation using the chosen Euler
@@ -146,7 +147,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRotation(const vec3f& rotation, ERotationType rotationType = ERotationType::Euler_XYZ);
+        RAMSES_API status_t setRotation(const vec3f& rotation, ERotationType rotationType = ERotationType::Euler_XYZ);
 
         /**
         * @brief Sets the absolute rotation defined by a quaternion.
@@ -157,7 +158,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setRotation(const quat& rotation);
+        RAMSES_API status_t setRotation(const quat& rotation);
 
         /**
         * @brief Returns the current rotation type applied to the node
@@ -166,7 +167,7 @@ namespace ramses
         *
         * @return rotation type
         */
-        [[nodiscard]] ERotationType getRotationType() const;
+        [[nodiscard]] RAMSES_API ERotationType getRotationType() const;
 
         /**
         * @brief Retrieves the absolute rotation for right-handed rotation in all three directions for the used Euler
@@ -179,7 +180,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getRotation(vec3f& rotation) const;
+        RAMSES_API status_t getRotation(vec3f& rotation) const;
 
         /**
         * @brief Retrieves the absolute rotation defined by a quaternion.
@@ -190,7 +191,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getRotation(quat& rotation) const;
+        RAMSES_API status_t getRotation(quat& rotation) const;
 
         /**
         * @brief Translates in all three directions with the given values.
@@ -199,7 +200,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t translate(const vec3f& translation);
+        RAMSES_API status_t translate(const vec3f& translation);
 
         /**
         * @brief Sets the absolute translation  the absolute values.
@@ -208,7 +209,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setTranslation(const vec3f& translation);
+        RAMSES_API status_t setTranslation(const vec3f& translation);
 
         /**
         * @brief Retrieves the current absolute translation.
@@ -217,7 +218,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getTranslation(vec3f& translation) const;
+        RAMSES_API status_t getTranslation(vec3f& translation) const;
 
         /**
         * @brief Scales in all three directions with the given values.
@@ -226,7 +227,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t scale(const vec3f& scaling);
+        RAMSES_API status_t scale(const vec3f& scaling);
 
         /**
         * @brief Sets the absolute scale in all three dimensions.
@@ -235,7 +236,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setScaling(const vec3f& scaling);
+        RAMSES_API status_t setScaling(const vec3f& scaling);
 
         /**
         * @brief Retrieves the current absolute scale in all three dimensions.
@@ -244,7 +245,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getScaling(vec3f& scaling) const;
+        RAMSES_API status_t getScaling(vec3f& scaling) const;
 
         /**
         * @brief Sets the visibility of the Node.
@@ -258,7 +259,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setVisibility(EVisibilityMode mode);
+        RAMSES_API status_t setVisibility(EVisibilityMode mode);
 
         /**
         * @brief Gets the visibility property of the Node. This is just the visibility
@@ -267,30 +268,25 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        [[nodiscard]] EVisibilityMode getVisibility() const;
+        [[nodiscard]] RAMSES_API EVisibilityMode getVisibility() const;
 
         /**
         * Stores internal data for implementation specifics of Node.
         */
-        class NodeImpl& impl;
+        class NodeImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating Node instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for Node.
         *
-        * @param[in] pimpl Internal data for implementation specifics of Node (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of Node (sink - instance becomes owner)
         */
-        explicit Node(NodeImpl& pimpl);
-
-        /**
-        * @brief Destructor of the Node
-        */
-        ~Node() override;
+        explicit Node(std::unique_ptr<NodeImpl> impl);
     };
 }
 

@@ -25,7 +25,7 @@ namespace ramses_internal
     class BlitPassScene : public CommonRenderBufferTestScene
     {
     public:
-        BlitPassScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        BlitPassScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {

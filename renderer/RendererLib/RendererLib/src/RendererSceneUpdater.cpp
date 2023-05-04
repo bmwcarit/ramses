@@ -527,12 +527,12 @@ namespace ramses_internal
     void RendererSceneUpdater::updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo)
     {
         const ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneID);
-        const Bool sceneIsRenderedOrRequested = (sceneState == ESceneState::Rendered || sceneState == ESceneState::RenderRequested); // requested can become rendered still in this frame
-        const Bool sceneIsMapped = (sceneState == ESceneState::Mapped) || sceneIsRenderedOrRequested;
-        const Bool sceneIsMappedOrMapping = (sceneState == ESceneState::MappingAndUploading) || sceneIsMapped;
-        const Bool resourcesReady = sceneIsMappedOrMapping && areResourcesFromPendingFlushesUploaded(sceneID);
+        const bool sceneIsRenderedOrRequested = (sceneState == ESceneState::Rendered || sceneState == ESceneState::RenderRequested); // requested can become rendered still in this frame
+        const bool sceneIsMapped = (sceneState == ESceneState::Mapped) || sceneIsRenderedOrRequested;
+        const bool sceneIsMappedOrMapping = (sceneState == ESceneState::MappingAndUploading) || sceneIsMapped;
+        const bool resourcesReady = sceneIsMappedOrMapping && areResourcesFromPendingFlushesUploaded(sceneID);
 
-        Bool canApplyFlushes = !sceneIsMappedOrMapping || resourcesReady;
+        bool canApplyFlushes = !sceneIsMappedOrMapping || resourcesReady;
 
         if (sceneIsRenderedOrRequested && m_renderer.hasAnyBufferWithInterruptedRendering())
             canApplyFlushes &= !m_renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneID);
@@ -1142,7 +1142,7 @@ namespace ramses_internal
         }
     }
 
-    bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
+    bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
         bool success = false;
         if (!m_renderer.hasDisplayController())
@@ -1364,7 +1364,7 @@ namespace ramses_internal
         m_renderer.setClearFlags(bufferDeviceHandle, clearFlags);
     }
 
-    void RendererSceneUpdater::handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor)
+    void RendererSceneUpdater::handleSetClearColor(OffscreenBufferHandle buffer, const glm::vec4& clearColor)
     {
         if (!m_renderer.hasDisplayController())
         {
@@ -1446,7 +1446,7 @@ namespace ramses_internal
             m_renderer.scheduleScreenshot(renderTargetHandle, std::move(screenshotInfo));
     }
 
-    Bool RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, int32_t sceneRenderOrder)
+    bool RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, int32_t sceneRenderOrder)
     {
         if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(sceneId))
         {
@@ -1564,7 +1564,7 @@ namespace ramses_internal
         m_renderer.resetRenderInterruptState();
     }
 
-    void RendererSceneUpdater::handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize)
+    void RendererSceneUpdater::handlePickEvent(SceneId sceneId, glm::vec2 coordsNormalizedToBufferSize)
     {
         const auto bufferHandle = m_renderer.getBufferSceneIsAssignedTo(sceneId);
         if (!m_rendererScenes.hasScene(sceneId) || !bufferHandle.isValid())
@@ -1574,7 +1574,7 @@ namespace ramses_internal
         }
 
         const auto& buffer = m_renderer.getDisplaySetup().getDisplayBuffer(bufferHandle);
-        const Vector2i coordsInBufferSpace = { static_cast<Int32>(std::lroundf((coordsNormalizedToBufferSize.x + 1.f) * buffer.viewport.width / 2.f)) ,
+        const glm::ivec2 coordsInBufferSpace = { static_cast<Int32>(std::lroundf((coordsNormalizedToBufferSize.x + 1.f) * buffer.viewport.width / 2.f)) ,
                                                 static_cast<Int32>(std::lroundf((coordsNormalizedToBufferSize.y + 1.f) * buffer.viewport.height / 2.f)) };
 
         PickableObjectIds pickedObjects;
@@ -1586,7 +1586,7 @@ namespace ramses_internal
             m_rendererEventCollector.addPickedEvent(ERendererEventType::ObjectsPicked, sceneId, std::move(pickedObjects));
     }
 
-    Bool RendererSceneUpdater::hasPendingFlushes(SceneId sceneId) const
+    bool RendererSceneUpdater::hasPendingFlushes(SceneId sceneId) const
     {
         return m_rendererScenes.hasScene(sceneId) && !m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes.empty();
     }

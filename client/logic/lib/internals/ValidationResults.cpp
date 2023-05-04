@@ -11,7 +11,7 @@
 #include "impl/LoggerImpl.h"
 #include "impl/LogicObjectImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     void ValidationResults::add(std::string warningMessage, const LogicObject* logicObject, EWarningType type)
     {

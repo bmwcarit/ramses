@@ -16,20 +16,12 @@
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/ERotationType.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
 #include "Resource/IResource.h"
 #include "Components/SingleResourceSerialization.h"
 #include "Components/FlushTimeInformation.h"
 #include "Utils/RawBinaryOutputStream.h"
+#include "glm/gtx/range.hpp"
 
 namespace ramses_internal
 {
@@ -44,26 +36,26 @@ namespace ramses_internal
         putSceneSizeInformation(sizeInfo);
     }
 
-    void SceneActionCollectionCreator::setTranslation(TransformHandle node, const Vector3& newValue)
+    void SceneActionCollectionCreator::setTranslation(TransformHandle node, const glm::vec3& newValue)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetTranslation);
         collection.write(node);
-        collection.write(newValue.data);
+        collection.write(newValue);
     }
 
-    void SceneActionCollectionCreator::setRotation(TransformHandle node, const Vector4& newValue, ERotationType rotationType)
+    void SceneActionCollectionCreator::setRotation(TransformHandle node, const glm::vec4& newValue, ERotationType rotationType)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetRotation);
         collection.write(node);
-        collection.write(newValue.data);
+        collection.write(newValue);
         collection.write(rotationType);
     }
 
-    void SceneActionCollectionCreator::setScaling(TransformHandle node, const Vector3& newValue)
+    void SceneActionCollectionCreator::setScaling(TransformHandle node, const glm::vec3& newValue)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetScaling);
         collection.write(node);
-        collection.write(newValue.data);
+        collection.write(newValue);
     }
 
     void SceneActionCollectionCreator::allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle)
@@ -91,94 +83,94 @@ namespace ramses_internal
         collection.write(stride);
     }
 
-    void SceneActionCollectionCreator::setDataMatrix22fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data)
+    void SceneActionCollectionCreator::setDataMatrix22fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::mat2* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataMatrix22fArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataMatrix33fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data)
+    void SceneActionCollectionCreator::setDataMatrix33fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::mat3* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataMatrix33fArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataMatrix44fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data)
+    void SceneActionCollectionCreator::setDataMatrix44fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::mat4* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataMatrix44fArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataVector4fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector4* data)
+    void SceneActionCollectionCreator::setDataVector4fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::vec4* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataVector4fArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataVector4iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data)
+    void SceneActionCollectionCreator::setDataVector4iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::ivec4* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataVector4iArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataVector3fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector3* data)
+    void SceneActionCollectionCreator::setDataVector3fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::vec3* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataVector3fArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataVector3iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data)
+    void SceneActionCollectionCreator::setDataVector3iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::ivec3* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataVector3iArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataVector2fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector2* data)
+    void SceneActionCollectionCreator::setDataVector2fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::vec2* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataVector2fArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
-    void SceneActionCollectionCreator::setDataVector2iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data)
+    void SceneActionCollectionCreator::setDataVector2iArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const glm::ivec2* data)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataVector2iArray);
         collection.write(handle);
         collection.write(field);
         collection.write(elementCount);
         for (UInt32 i = 0; i < elementCount; ++i)
-            collection.write(data[i].data);
+            collection.write(data[i]);
     }
 
     void SceneActionCollectionCreator::setDataFloatArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Float* data)
@@ -392,7 +384,7 @@ namespace ramses_internal
         collection.write(destAlpha);
     }
 
-    void SceneActionCollectionCreator::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    void SceneActionCollectionCreator::setRenderStateBlendColor(RenderStateHandle stateHandle, const glm::vec4& color)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetStateBlendColor);
         collection.write(stateHandle);
@@ -842,11 +834,11 @@ namespace ramses_internal
         collection.write(renderOrder);
     }
 
-    void SceneActionCollectionCreator::setRenderPassClearColor(RenderPassHandle handle, const Vector4& clearColor)
+    void SceneActionCollectionCreator::setRenderPassClearColor(RenderPassHandle handle, const glm::vec4& clearColor)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetRenderPassClearColor);
         collection.write(handle);
-        collection.write(clearColor.data);
+        collection.write(clearColor);
     }
 
     void SceneActionCollectionCreator::setRenderPassClearFlag(RenderPassHandle handle, UInt32 clearFlag)

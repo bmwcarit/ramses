@@ -65,8 +65,8 @@ int main()
     ramses::UniformInput scaleAndShearInput;
     effect->findUniformInput("u_transformations", scaleAndShearInput);
 
-    const ramses::vec4f scaleAndShearArrayData[2] = { ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f}, ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f} };
-    appearance->setInputValue(scaleAndShearInput, 2, scaleAndShearArrayData);
+    const std::array scaleAndShearArrayData = { ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f}, ramses::vec4f{0.3f, 0.6f, 0.0f, 0.0f} };
+    appearance->setInputValue(scaleAndShearInput, 2, scaleAndShearArrayData.data());
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");

@@ -14,39 +14,30 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * @brief The Resource is the base class of all resources, such as arrays and textures.
      */
-    class RAMSES_API Resource : public SceneObject
+    class Resource : public SceneObject
     {
     public:
         /**
          * @brief Get resource Id.
          * @return the Id of the resource.
          */
-        [[nodiscard]] resourceId_t getResourceId() const;
+        [[nodiscard]] RAMSES_API resourceId_t getResourceId() const;
 
         /**
         * Stores internal data for implementation specifics of Resource.
         */
-        class ResourceImpl& impl;
+        class ResourceImpl& m_impl;
 
     protected:
         /**
-        * @brief RamsesClient is the factory for destroying Resource instances.
-        */
-        friend class RamsesClientImpl;
-
-        /**
         * @brief Constructor for Resource.
         *
-        * @param[in] pimpl Internal data for implementation specifics of Resource (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of Resource (sink - instance becomes owner)
         */
-        explicit Resource(ResourceImpl& pimpl);
-
-        /**
-        * @brief Destructor for Resource.
-        */
-        ~Resource() override;
+        explicit Resource(std::unique_ptr<ResourceImpl> impl);
     };
 }
 

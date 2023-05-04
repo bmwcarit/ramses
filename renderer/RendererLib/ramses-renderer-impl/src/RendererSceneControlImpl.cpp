@@ -129,7 +129,7 @@ namespace ramses
 
     status_t RendererSceneControlImpl::handlePickEvent(sceneId_t scene, float bufferNormalizedCoordX, float bufferNormalizedCoordY)
     {
-        const ramses_internal::Vector2 coords(bufferNormalizedCoordX, bufferNormalizedCoordY);
+        const glm::vec2 coords(bufferNormalizedCoordX, bufferNormalizedCoordY);
         const ramses_internal::SceneId sceneId(scene.getValue());
         m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::PickEvent{ sceneId, coords });
         return StatusOK;

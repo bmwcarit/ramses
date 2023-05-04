@@ -90,7 +90,7 @@ namespace ramses_internal
 #define FRAME_PROFILER_REGION(Region) \
     ScopedFrameProfilerRegion region(m_renderer.getProfilerStatistics(), Region)
 
-    static const char* RegionNames[] =
+    const std::array RegionNames =
     {
         "RendererCommands",
         "UpdateClientResources",

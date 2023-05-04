@@ -9,26 +9,26 @@
 #include "gmock/gmock.h"
 
 #include "ramses-logic/Logger.h"
-#include "ramses-logic/ELogMessageType.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 #include "impl/LoggerImpl.h"
 
 #include "LogTestUtils.h"
 
-namespace rlogic
+namespace ramses
 {
     // Test default state without fixture
     TEST(ALogger_ByDefault, HasInfoAsVerbosityLimit)
     {
-        EXPECT_EQ(ELogMessageType::Info, Logger::GetLogVerbosityLimit());
+        EXPECT_EQ(ELogLevel::Info, Logger::GetLogVerbosityLimit());
     }
 
     class ALogger : public ::testing::Test
     {
     protected:
-        std::vector<ELogMessageType> m_logTypes;
+        std::vector<ELogLevel> m_logTypes;
         std::vector<std::string> m_logMessages;
-        ScopedLogContextLevel m_logCollector{ ELogMessageType::Trace, [this](ELogMessageType type, std::string_view message)
+        ScopedLogContextLevel m_logCollector{ ELogLevel::Trace, [this](ELogLevel type, std::string_view message)
             {
                 m_logTypes.emplace_back(type);
                 m_logMessages.emplace_back(message);
@@ -45,7 +45,7 @@ namespace rlogic
         LOG_DEBUG("Debug");
         LOG_TRACE("Trace");
 
-        EXPECT_THAT(m_logTypes, ::testing::ElementsAre(ELogMessageType::Fatal, ELogMessageType::Error, ELogMessageType::Warn, ELogMessageType::Info, ELogMessageType::Debug, ELogMessageType::Trace));
+        EXPECT_THAT(m_logTypes, ::testing::ElementsAre(ELogLevel::Fatal, ELogLevel::Error, ELogLevel::Warn, ELogLevel::Info, ELogLevel::Debug, ELogLevel::Trace));
         EXPECT_THAT(m_logMessages, ::testing::ElementsAre("Fatal", "Error", "Warn", "Info", "Debug", "Trace"));
     }
 
@@ -86,7 +86,7 @@ namespace rlogic
 
     TEST_F(ALogger, ChangesLogVerbosityAffectsWhichMessagesAreProcessed)
     {
-        Logger::SetLogVerbosityLimit(ELogMessageType::Error);
+        Logger::SetLogVerbosityLimit(ELogLevel::Error);
 
         // Simulate logs of all types. Only error and fatal error should be logged
         LOG_TRACE("trace");
@@ -97,6 +97,6 @@ namespace rlogic
         LOG_DEBUG("debug");
         LOG_ERROR("error");
 
-        EXPECT_THAT(m_logTypes, ::testing::ElementsAre(ELogMessageType::Fatal, ELogMessageType::Error));
+        EXPECT_THAT(m_logTypes, ::testing::ElementsAre(ELogLevel::Fatal, ELogLevel::Error));
     }
 }

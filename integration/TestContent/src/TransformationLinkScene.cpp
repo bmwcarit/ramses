@@ -16,7 +16,7 @@
 
 namespace ramses_internal
 {
-    TransformationLinkScene::TransformationLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    TransformationLinkScene::TransformationLinkScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
 

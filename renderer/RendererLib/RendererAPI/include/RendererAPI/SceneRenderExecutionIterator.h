@@ -43,14 +43,14 @@ namespace ramses_internal
             return m_flattenedRenderableIdx;
         }
 
-        Bool operator==(const SceneRenderExecutionIterator& other) const
+        bool operator==(const SceneRenderExecutionIterator& other) const
         {
             return m_renderPassIdx == other.m_renderPassIdx
                 && m_renderableIdx == other.m_renderableIdx
                 && m_flattenedRenderableIdx == other.m_flattenedRenderableIdx;
         }
 
-        Bool operator!=(const SceneRenderExecutionIterator& other) const
+        bool operator!=(const SceneRenderExecutionIterator& other) const
         {
             return !operator==(other);
         }

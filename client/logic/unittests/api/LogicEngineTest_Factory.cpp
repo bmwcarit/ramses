@@ -25,7 +25,7 @@
 #include <fmt/format.h>
 #include <fstream>
 
-namespace rlogic
+namespace ramses
 {
     // There are more specific "create/destroy" tests in ApiObjects unit tests!
     class ALogicEngine_Factory : public ALogicEngineBase, public ::testing::TestWithParam<ramses::EFeatureLevel>
@@ -42,7 +42,7 @@ namespace rlogic
     INSTANTIATE_TEST_SUITE_P(
         ALogicEngine_FactoryTests,
         ALogicEngine_Factory,
-        rlogic::internal::GetFeatureLevelTestValues());
+        ramses::internal::GetFeatureLevelTestValues());
 
     TEST_P(ALogicEngine_Factory, ProducesErrorWhenCreatingEmptyScript)
     {
@@ -72,7 +72,7 @@ namespace rlogic
         ASSERT_TRUE(script);
         ASSERT_FALSE(m_logicEngine.destroy(*script));
         EXPECT_EQ(m_logicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Can't find script in logic engine!");
+        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Failed to destroy object ' [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, CreatesLuaModule)
@@ -128,7 +128,7 @@ namespace rlogic
 
         EXPECT_FALSE(m_logicEngine.destroy(*module));
         ASSERT_EQ(1u, m_logicEngine.getErrors().size());
-        EXPECT_EQ(m_logicEngine.getErrors().front().message, "Can't find Lua module in logic engine!");
+        EXPECT_EQ(m_logicEngine.getErrors().front().message, "Failed to destroy object ' [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, FailsToDestroyLuaModuleIfUsedInLuaScript)
@@ -204,7 +204,7 @@ namespace rlogic
         ASSERT_TRUE(ramsesNodeBinding);
         ASSERT_FALSE(m_logicEngine.destroy(*ramsesNodeBinding));
         EXPECT_EQ(m_logicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Can't find RamsesNodeBinding in logic engine!");
+        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Failed to destroy object 'NodeBinding [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, ProducesErrorsWhenDestroyingRamsesAppearanceBindingFromAnotherEngineInstance)
@@ -214,7 +214,7 @@ namespace rlogic
         ASSERT_TRUE(binding);
         ASSERT_FALSE(m_logicEngine.destroy(*binding));
         EXPECT_EQ(m_logicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Can't find RamsesAppearanceBinding in logic engine!");
+        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Failed to destroy object 'AppearanceBinding [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysRamsesCameraBindingWithoutErrors)
@@ -231,7 +231,7 @@ namespace rlogic
         ASSERT_TRUE(binding);
         ASSERT_FALSE(m_logicEngine.destroy(*binding));
         EXPECT_EQ(m_logicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Can't find RamsesCameraBinding in logic engine!");
+        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Failed to destroy object 'CameraBinding [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysRamsesRenderPassBindingWithoutErrors)
@@ -248,7 +248,7 @@ namespace rlogic
         ASSERT_TRUE(binding);
         ASSERT_FALSE(m_logicEngine.destroy(*binding));
         EXPECT_EQ(m_logicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Can't find RamsesRenderPassBinding in logic engine!");
+        EXPECT_EQ(m_logicEngine.getErrors()[0].message, "Failed to destroy object 'rp [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysRamsesRenderGroupBindingWithoutErrors)
@@ -266,7 +266,7 @@ namespace rlogic
         LogicEngine otherLogicEngine{ GetParam() };
         ASSERT_FALSE(otherLogicEngine.destroy(*binding));
         EXPECT_EQ(otherLogicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(otherLogicEngine.getErrors()[0].message, "Can't find RamsesRenderGroupBinding in logic engine!");
+        EXPECT_EQ(otherLogicEngine.getErrors()[0].message, "Failed to destroy object 'renderGroupBinding [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysRamsesMeshNodeBindingWithoutErrors)
@@ -284,7 +284,7 @@ namespace rlogic
         LogicEngine otherLogicEngine{ GetParam() };
         ASSERT_FALSE(otherLogicEngine.destroy(*binding));
         EXPECT_EQ(otherLogicEngine.getErrors().size(), 1u);
-        EXPECT_EQ(otherLogicEngine.getErrors()[0].message, "Can't find RamsesMeshNodeBinding in logic engine!");
+        EXPECT_EQ(otherLogicEngine.getErrors()[0].message, "Failed to destroy object ' [Id=1]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, ProducesErrorWhenCreatingAnchorPointAndNodeOrCameraFromAnotherInstance)

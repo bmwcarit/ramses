@@ -15,27 +15,24 @@
 
 namespace ramses
 {
+    class SceneConfigImpl;
+
     /**
+    * @ingroup CoreAPI
     * @brief The SceneConfig holds a set of parameters to be used when creating a scene.
     */
-    class RAMSES_API SceneConfig : public StatusObject
+    class SceneConfig : public StatusObject
     {
     public:
         /**
         * @brief Empty constructor of SceneConfig - has default values
         */
-        SceneConfig();
-
-        /**
-        * @brief Copy constructor of SceneConfig
-        * @param[in] other Other instance of SceneConfig
-        */
-        SceneConfig(const SceneConfig& other);
+        RAMSES_API SceneConfig();
 
         /**
         * @brief Destructor of SceneConfig
         */
-        ~SceneConfig() override;
+        RAMSES_API ~SceneConfig() override;
 
         /**
         * @brief Set the publication mode that will be used for this scene.
@@ -48,12 +45,38 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setPublicationMode(EScenePublicationMode publicationMode);
+        RAMSES_API status_t setPublicationMode(EScenePublicationMode publicationMode);
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API SceneConfig(const SceneConfig& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API SceneConfig(SceneConfig&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API SceneConfig& operator=(const SceneConfig& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API SceneConfig& operator=(SceneConfig&& other) noexcept;
 
         /**
         * Stores internal data for implementation specifics of SceneConfig.
         */
-        class SceneConfigImpl& impl;
+        std::reference_wrapper<SceneConfigImpl> m_impl;
     };
 }
 

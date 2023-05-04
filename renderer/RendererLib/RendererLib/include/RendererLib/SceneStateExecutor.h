@@ -39,18 +39,18 @@ namespace ramses_internal
         void setRendered                      (SceneId sceneId);
         void setHidden                        (SceneId sceneId);
 
-        [[nodiscard]] Bool checkIfCanBePublished            (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeUnpublished          (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeSubscriptionRequested(SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeSubscriptionPending  (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeSubscribed           (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeUnsubscribed         (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeMapRequested         (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeMapped               (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeUnmapped             (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeRenderedRequested    (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeShown                (SceneId sceneId) const;
-        [[nodiscard]] Bool checkIfCanBeHidden               (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBePublished            (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeUnpublished          (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeSubscriptionRequested(SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeSubscriptionPending  (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeSubscribed           (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeUnsubscribed         (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeMapRequested         (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeMapped               (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeUnmapped             (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeRenderedRequested    (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeShown                (SceneId sceneId) const;
+        [[nodiscard]] bool checkIfCanBeHidden               (SceneId sceneId) const;
 
         [[nodiscard]] ESceneState getSceneState(SceneId sceneId) const;
         [[nodiscard]] EScenePublicationMode getScenePublicationMode(SceneId sceneId) const;
@@ -58,15 +58,15 @@ namespace ramses_internal
     private:
         void rollBackToUnsubscribedAndTriggerIndirectEvents(ESceneState sceneState, SceneId sceneId);
 
-        [[nodiscard]] Bool canBeSubscriptionRequested(SceneId sceneId) const;
-        [[nodiscard]] Bool canBeUnsubscribed         (SceneId sceneId) const;
-        [[nodiscard]] Bool canBeMapRequested         (SceneId sceneId) const;
-        [[nodiscard]] Bool canBeMappingAndUploading  (SceneId sceneId) const;
-        [[nodiscard]] Bool canBeMapped               (SceneId sceneId) const;
-        [[nodiscard]] Bool canBeUnmapped             (SceneId sceneId) const;
-        [[nodiscard]] Bool canBeRenderedRequested    (SceneId sceneId) const;
-        [[nodiscard]] Bool canBeShown                (SceneId sceneId) const;
-        [[nodiscard]] Bool canBeHidden               (SceneId sceneId) const;
+        [[nodiscard]] bool canBeSubscriptionRequested(SceneId sceneId) const;
+        [[nodiscard]] bool canBeUnsubscribed         (SceneId sceneId) const;
+        [[nodiscard]] bool canBeMapRequested         (SceneId sceneId) const;
+        [[nodiscard]] bool canBeMappingAndUploading  (SceneId sceneId) const;
+        [[nodiscard]] bool canBeMapped               (SceneId sceneId) const;
+        [[nodiscard]] bool canBeUnmapped             (SceneId sceneId) const;
+        [[nodiscard]] bool canBeRenderedRequested    (SceneId sceneId) const;
+        [[nodiscard]] bool canBeShown                (SceneId sceneId) const;
+        [[nodiscard]] bool canBeHidden               (SceneId sceneId) const;
 
         const Renderer&               m_renderer;
         RendererEventCollector&       m_rendererEventCollector;

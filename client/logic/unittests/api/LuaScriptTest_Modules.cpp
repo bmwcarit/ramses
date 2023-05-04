@@ -19,7 +19,7 @@
 
 using namespace testing;
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALuaScriptWithModule : public ::testing::Test
     {

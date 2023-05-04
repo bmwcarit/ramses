@@ -10,7 +10,7 @@
 
 const char* const logicFile = "test.rlogic";
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALogicViewer : public ALogicViewerBase
     {

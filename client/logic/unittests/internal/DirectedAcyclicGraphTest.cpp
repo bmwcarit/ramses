@@ -12,7 +12,7 @@
 
 #include "LogicNodeDummy.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
 
     class ADirectedAcyclicGraph : public ::testing::Test

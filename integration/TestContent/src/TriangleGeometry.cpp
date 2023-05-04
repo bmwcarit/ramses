@@ -44,9 +44,9 @@ namespace ramses
 
     const ArrayResource& TriangleGeometry::createIndices(Scene& scene, EVerticesOrder vertOrder)
     {
-        const uint16_t indiceData_ccw[] = { 0, 1, 2 };
-        const uint16_t indiceData_cw[] = { 0, 2, 1 };
-        const uint16_t* indiceData = (vertOrder == EVerticesOrder_CCW ? indiceData_ccw : indiceData_cw);
+        const std::array<uint16_t, 3> indiceData_ccw = { 0, 1, 2 };
+        const std::array<uint16_t, 3> indiceData_cw = { 0, 2, 1 };
+        const uint16_t* indiceData = (vertOrder == EVerticesOrder_CCW ? indiceData_ccw.data() : indiceData_cw.data());
         return *scene.createArrayResource(3u, indiceData);
     }
 }

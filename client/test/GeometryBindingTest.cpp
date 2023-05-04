@@ -51,8 +51,8 @@ namespace ramses
     protected:
         void checkHashSetToInternalScene(const GeometryBinding& geometryBinding, ramses_internal::DataFieldHandle field, const Resource& resource, ramses_internal::UInt32 expectedInstancingDivisor) const
         {
-            const ramses_internal::ResourceContentHash expectedHash = resource.impl.getLowlevelResourceHash();
-            const ramses_internal::ResourceField& actualDataResource = sharedTestState->getInternalScene().getDataResource(geometryBinding.impl.getAttributeDataInstance(), field);
+            const ramses_internal::ResourceContentHash expectedHash = resource.m_impl.getLowlevelResourceHash();
+            const ramses_internal::ResourceField& actualDataResource = sharedTestState->getInternalScene().getDataResource(geometryBinding.m_impl.getAttributeDataInstance(), field);
             EXPECT_EQ(expectedHash, actualDataResource.hash);
             EXPECT_EQ(expectedInstancingDivisor, actualDataResource.instancingDivisor);
         }
@@ -60,7 +60,7 @@ namespace ramses
         void checkDataBufferSetToInternalScene(const GeometryBinding& geometryBinding, ramses_internal::DataFieldHandle field, const ArrayBufferImpl& dataBuffer, ramses_internal::UInt32 expectedInstancingDivisor) const
         {
             const ramses_internal::DataBufferHandle dataBufferHandle = dataBuffer.getDataBufferHandle();
-            const ramses_internal::ResourceField& actualDataResource = sharedTestState->getInternalScene().getDataResource(geometryBinding.impl.getAttributeDataInstance(), field);
+            const ramses_internal::ResourceField& actualDataResource = sharedTestState->getInternalScene().getDataResource(geometryBinding.m_impl.getAttributeDataInstance(), field);
             EXPECT_EQ(dataBufferHandle, actualDataResource.dataBuffer);
             EXPECT_EQ(expectedInstancingDivisor, actualDataResource.instancingDivisor);
         }
@@ -128,7 +128,7 @@ namespace ramses
             EXPECT_TRUE(indices != nullptr);
             assert(indices);
 
-            EXPECT_EQ(0u, geometry.impl.getIndicesCount());
+            EXPECT_EQ(0u, geometry.m_impl.getIndicesCount());
             EXPECT_EQ(StatusOK, geometry.setIndices(*indices));
 
             return indices;
@@ -148,9 +148,9 @@ namespace ramses
 
         const Effect& resultEffect = geometry->getEffect();
         EXPECT_EQ(resultEffect.getResourceId(), emptyEffect->getResourceId());
-        EXPECT_EQ(resultEffect.impl.getLowlevelResourceHash(), emptyEffect->impl.getLowlevelResourceHash());
+        EXPECT_EQ(resultEffect.m_impl.getLowlevelResourceHash(), emptyEffect->m_impl.getLowlevelResourceHash());
 
-        const uint32_t fieldCount = sharedTestState->getInternalScene().getDataLayout(geometry->impl.getAttributeDataLayout()).getFieldCount();
+        const uint32_t fieldCount = sharedTestState->getInternalScene().getDataLayout(geometry->m_impl.getAttributeDataLayout()).getFieldCount();
         EXPECT_EQ(1u, fieldCount);
 
         sharedTestState->getScene().destroy(*geometry);
@@ -164,7 +164,7 @@ namespace ramses
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        const uint32_t fieldCount = sharedTestState->getInternalScene().getDataLayout(geometry->impl.getAttributeDataLayout()).getFieldCount();
+        const uint32_t fieldCount = sharedTestState->getInternalScene().getDataLayout(geometry->m_impl.getAttributeDataLayout()).getFieldCount();
         EXPECT_EQ(1u, fieldCount);
 
         sharedTestState->getScene().destroy(*geometry);
@@ -178,10 +178,10 @@ namespace ramses
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        const ramses_internal::DataLayout geometryLayout = sharedTestState->getInternalScene().getDataLayout(geometry->impl.getAttributeDataLayout());
+        const ramses_internal::DataLayout geometryLayout = sharedTestState->getInternalScene().getDataLayout(geometry->m_impl.getAttributeDataLayout());
         const ramses_internal::ResourceContentHash& effectHashFromGeometryLayout = geometryLayout.getEffectHash();
 
-        EXPECT_EQ(emptyEffect->impl.getLowlevelResourceHash(), effectHashFromGeometryLayout);
+        EXPECT_EQ(emptyEffect->m_impl.getLowlevelResourceHash(), effectHashFromGeometryLayout);
 
         sharedTestState->getScene().destroy(*geometry);
         sharedTestState->getScene().destroy(*emptyEffect);
@@ -193,7 +193,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         const ramses_internal::DataFieldHandle indicesField(GeometryBindingImpl::IndicesDataFieldIndex);
-        const ramses_internal::EFixedSemantics semantics = sharedTestState->getInternalScene().getDataLayout(geometry->impl.getAttributeDataLayout()).getField(indicesField).semantics;
+        const ramses_internal::EFixedSemantics semantics = sharedTestState->getInternalScene().getDataLayout(geometry->m_impl.getAttributeDataLayout()).getField(indicesField).semantics;
         EXPECT_EQ(ramses_internal::EFixedSemantics::Indices, semantics);
 
         sharedTestState->getScene().destroy(*geometry);
@@ -367,7 +367,7 @@ namespace ramses
         ArrayResource* const indices = anotherScene.createArrayResource(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
-        EXPECT_EQ(0u, geometry->impl.getIndicesCount());
+        EXPECT_EQ(0u, geometry->m_impl.getIndicesCount());
         EXPECT_NE(StatusOK, geometry->setIndices(*indices));
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
@@ -383,10 +383,10 @@ namespace ramses
         ArrayResource* const indices = sharedTestState->getScene().createArrayResource(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
-        EXPECT_EQ(0u, geometry->impl.getIndicesCount());
+        EXPECT_EQ(0u, geometry->m_impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
         checkHashSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(0u), *indices, 0u);
-        EXPECT_EQ(indices->impl.getElementCount(), geometry->impl.getIndicesCount());
+        EXPECT_EQ(indices->m_impl.getElementCount(), geometry->m_impl.getIndicesCount());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
@@ -401,10 +401,10 @@ namespace ramses
         ArrayResource* const indices = sharedTestState->getScene().createArrayResource(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
-        EXPECT_EQ(0u, geometry->impl.getIndicesCount());
+        EXPECT_EQ(0u, geometry->m_impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
         checkHashSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(0u), *indices, 0u);
-        EXPECT_EQ(indices->impl.getElementCount(), geometry->impl.getIndicesCount());
+        EXPECT_EQ(indices->m_impl.getElementCount(), geometry->m_impl.getIndicesCount());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
@@ -418,10 +418,10 @@ namespace ramses
         ArrayBuffer* const indices = sharedTestState->getScene().createArrayBuffer(EDataType::UInt16, 1u, "index data buffer");
         ASSERT_TRUE(indices != nullptr);
 
-        EXPECT_EQ(0u, geometry->impl.getIndicesCount());
+        EXPECT_EQ(0u, geometry->m_impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
-        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(0u), indices->impl, 0u);
-        EXPECT_EQ(indices->impl.getElementCount(), geometry->impl.getIndicesCount());
+        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(0u), indices->m_impl, 0u);
+        EXPECT_EQ(indices->m_impl.getElementCount(), geometry->m_impl.getIndicesCount());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
@@ -435,10 +435,10 @@ namespace ramses
         ArrayBuffer* const indices = sharedTestState->getScene().createArrayBuffer(EDataType::UInt32, 1u, "index data buffer");
         ASSERT_TRUE(indices != nullptr);
 
-        EXPECT_EQ(0u, geometry->impl.getIndicesCount());
+        EXPECT_EQ(0u, geometry->m_impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
-        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(0u), indices->impl, 0u);
-        EXPECT_EQ(indices->impl.getElementCount(), geometry->impl.getIndicesCount());
+        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(0u), indices->m_impl, 0u);
+        EXPECT_EQ(indices->m_impl.getElementCount(), geometry->m_impl.getIndicesCount());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
@@ -628,7 +628,7 @@ namespace ramses
         ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(input, *vertices, 16u));
-        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), vertices->impl, 16u);
+        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), vertices->m_impl, 16u);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertices));
@@ -650,8 +650,8 @@ namespace ramses
         constexpr uint16_t nonZeroStride = 17u;
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(inputVec2, *interleavedVertices, 0u, nonZeroStride));
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(inputVec3, *interleavedVertices, 2 * sizeof(float), nonZeroStride));
-        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(2u), interleavedVertices->impl, 0u);
-        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), interleavedVertices->impl, 0u);
+        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(2u), interleavedVertices->m_impl, 0u);
+        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), interleavedVertices->m_impl, 0u);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*interleavedVertices));
@@ -694,7 +694,7 @@ namespace ramses
         ASSERT_TRUE(vertices);
 
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(input, *vertices));
-        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(2u), vertices->impl, 0u);
+        checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(2u), vertices->m_impl, 0u);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertices));
@@ -1047,11 +1047,11 @@ namespace ramses
         EXPECT_EQ(StatusOK, geometry->validate());
 
         //delete data buffer and create new one with same handle
-        ramses_internal::DataBufferHandle dataBufferHandle = vertexDataBuffer->impl.getDataBufferHandle();
+        ramses_internal::DataBufferHandle dataBufferHandle = vertexDataBuffer->m_impl.getDataBufferHandle();
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertexDataBuffer));
-        ASSERT_FALSE(sharedTestState->getScene().impl.getIScene().isDataBufferAllocated(dataBufferHandle));
-        sharedTestState->getScene().impl.getIScene().allocateDataBuffer(ramses_internal::EDataBufferType::VertexBuffer, ramses_internal::EDataType::Vector2F, 10 * sizeof(float), dataBufferHandle);
-        ASSERT_TRUE(sharedTestState->getScene().impl.getIScene().isDataBufferAllocated(dataBufferHandle));
+        ASSERT_FALSE(sharedTestState->getScene().m_impl.getIScene().isDataBufferAllocated(dataBufferHandle));
+        sharedTestState->getScene().m_impl.getIScene().allocateDataBuffer(ramses_internal::EDataBufferType::VertexBuffer, ramses_internal::EDataType::Vector2F, 10 * sizeof(float), dataBufferHandle);
+        ASSERT_TRUE(sharedTestState->getScene().m_impl.getIScene().isDataBufferAllocated(dataBufferHandle));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));

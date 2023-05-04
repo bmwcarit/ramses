@@ -11,7 +11,7 @@
 
 namespace ramses
 {
-    static const char* const RamsesObjectTypeNames[] =
+    const std::array RamsesObjectTypeNames =
     {
         "ERamsesObjectType_Invalid",
         "ERamsesObjectType_RamsesObject",
@@ -49,7 +49,7 @@ namespace ramses
 
     ENUM_TO_STRING(ERamsesObjectType, RamsesObjectTypeNames, ERamsesObjectType_NUMBER_OF_TYPES);
 
-    static_assert(ERamsesObjectType_NUMBER_OF_TYPES == (sizeof(RamsesObjectTraits) / sizeof(RamsesObjectTraits[0])), "Every RamsesObject type must register its traits!");
+    static_assert(ERamsesObjectType_NUMBER_OF_TYPES == RamsesObjectTraits.size(), "Every RamsesObject type must register its traits!");
 
     const char* RamsesObjectTypeUtils::GetRamsesObjectTypeName(ERamsesObjectType type)
     {

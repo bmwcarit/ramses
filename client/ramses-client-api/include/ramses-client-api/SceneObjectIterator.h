@@ -17,11 +17,12 @@ namespace ramses
     class Scene;
 
     /**
+    * @ingroup CoreAPI
     * @brief The SceneObjectIterator traverses objects in a Scene.
     *
     * It provides a way to traverse all objects owned by a given scene.
     */
-    class RAMSES_API SceneObjectIterator
+    class SceneObjectIterator
     {
     public:
         /**
@@ -30,12 +31,12 @@ namespace ramses
         * @param[in] scene Scene whose objects to iterate through
         * @param[in] objectType Optional type of objects to iterate through.
         **/
-        explicit SceneObjectIterator(const Scene& scene, ERamsesObjectType objectType = ERamsesObjectType_RamsesObject);
+        RAMSES_API explicit SceneObjectIterator(const Scene& scene, ERamsesObjectType objectType = ERamsesObjectType_RamsesObject);
 
         /**
         * @brief Destructor
         **/
-        ~SceneObjectIterator();
+        RAMSES_API ~SceneObjectIterator();
 
         /**
         * @brief Iterate through all objects of given type
@@ -43,12 +44,10 @@ namespace ramses
         *
         * Iterator is invalid and may no longer be used if any objects are added or removed.
         **/
-        RamsesObject* getNext();
+        RAMSES_API RamsesObject* getNext();
 
     private:
-        SceneObjectIterator(const SceneObjectIterator& iterator);
-        SceneObjectIterator& operator=(const SceneObjectIterator& iterator);
-        ObjectIteratorImpl* impl;
+        std::unique_ptr<ObjectIteratorImpl> m_impl;
     };
 }
 

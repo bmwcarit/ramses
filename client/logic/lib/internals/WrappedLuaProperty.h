@@ -13,12 +13,12 @@
 #include "impl/PropertyImpl.h"
 #include "internals/SolState.h"
 
-namespace rlogic
+namespace ramses
 {
     class Property;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // This class provides a Lua-like interface to the logic engine types
     class WrappedLuaProperty

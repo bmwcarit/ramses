@@ -227,8 +227,8 @@ ramses::Effect& createEffect(ramses::Scene& scene, const std::string& effectName
 
 ramses::MeshNode& createQuadWithTexture(ramses::Scene& scene, ramses::Effect& effect, ramses::TextureSampler& textureSampler)
 {
-    const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::ArrayResource* indices = scene.createArrayResource(6u, indicesArray);
+    const std::array<uint16_t, 6> indicesArray = { 0, 1, 2, 2, 1, 3 };
+    const ramses::ArrayResource* indices = scene.createArrayResource(6u, indicesArray.data());
 
     const std::array<ramses::vec3f, 4u> vertexPositionsArray
     {

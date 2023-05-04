@@ -28,7 +28,7 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     constexpr int32_t DefaultViewportOffsetX = 0;
     constexpr int32_t DefaultViewportOffsetY = 0;
@@ -87,7 +87,7 @@ namespace rlogic::internal
             EXPECT_EQ(camera.getFarPlane(), FarPlaneDefault);
         }
 
-        static void ExpectDefaultValues(const rlogic::RamsesCameraBinding& cameraBinding)
+        static void ExpectDefaultValues(const ramses::RamsesCameraBinding& cameraBinding)
         {
             ExpectDefaultViewportValues(cameraBinding.getRamsesCamera());
             if (cameraBinding.m_cameraBinding.hasFrustumPlanesProperties())

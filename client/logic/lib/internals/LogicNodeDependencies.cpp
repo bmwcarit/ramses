@@ -20,7 +20,7 @@
 #include <cassert>
 #include "fmt/format.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
 
     void LogicNodeDependencies::addNode(LogicNodeImpl& node)

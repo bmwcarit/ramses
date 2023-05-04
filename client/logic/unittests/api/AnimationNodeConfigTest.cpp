@@ -12,7 +12,7 @@
 #include "ramses-logic/DataArray.h"
 #include <numeric>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AnAnimationNodeConfig : public ::testing::Test
     {

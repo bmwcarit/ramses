@@ -14,47 +14,24 @@
 namespace ramses
 {
     /**
+   * @ingroup CoreAPI
     * @brief The ClientObject is a base class for all client API objects owned by a RamsesClient.
     */
-    class RAMSES_API ClientObject : public RamsesObject
+    class ClientObject : public RamsesObject
     {
     public:
         /**
         * Stores internal data for implementation specifics of ClientObject.
         */
-        class ClientObjectImpl& impl;
+        class ClientObjectImpl& m_impl;
 
     protected:
         /**
         * @brief Constructor for ClientObject.
         *
-        * @param[in] pimpl Internal data for implementation specifics of ClientObject (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of ClientObject (sink - instance becomes owner)
         */
-        explicit ClientObject(ClientObjectImpl& pimpl);
-
-        /**
-        * @brief Destructor of the ClientObject
-        */
-        ~ClientObject() override;
-
-        /**
-        * @brief RamsesClientImpl is the factory for creating client objects.
-        */
-        friend class RamsesClientImpl;
-
-    private:
-        /**
-        * @brief Copy constructor of ClientObject
-        */
-        ClientObject(const ClientObject& other);
-
-        /**
-        * @brief Assignment operator of ClientObject.
-        *
-        * @param[in] other Instance to assign from
-        * @return This instance after assignment
-        */
-        ClientObject& operator=(const ClientObject& other);
+        explicit ClientObject(std::unique_ptr<ClientObjectImpl> impl);
     };
 }
 

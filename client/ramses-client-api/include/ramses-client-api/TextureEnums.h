@@ -14,6 +14,11 @@
 
 namespace ramses
 {
+    /**
+     * @addtogroup CoreAPI
+     * @{
+     */
+
     /// Texture sampling method
     enum ETextureSamplingMethod
     {
@@ -252,6 +257,10 @@ namespace ramses
             return true;
         }
     }
+
+    /**
+     * @}
+     */
 }
 
 #endif

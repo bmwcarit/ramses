@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/RamsesObjectTypes.h"
 #include "ramses-framework-api/APIExport.h"
+#include <memory>
 
 namespace ramses
 {
@@ -21,12 +22,14 @@ namespace ramses
         ETreeTraversalStyle_BreadthFirst
     };
 
+    class SceneGraphIteratorImpl;
     class Node;
 
     /**
+    * @ingroup CoreAPI
     * @brief A SceneObjectIterator can iterate through the nodes in the scene graph with the order specified as traversal style
     */
-    class RAMSES_API SceneGraphIterator
+    class SceneGraphIterator
     {
     public:
         /**
@@ -37,12 +40,12 @@ namespace ramses
         * @param[in] traversalStyle traversal style that should be used
         * @param[in] objectType Type of objects to iterate through
         */
-        SceneGraphIterator(Node& startNode, ETreeTraversalStyle traversalStyle, ERamsesObjectType objectType = ERamsesObjectType_Node);
+        RAMSES_API SceneGraphIterator(Node& startNode, ETreeTraversalStyle traversalStyle, ERamsesObjectType objectType = ERamsesObjectType_Node);
 
         /**
-        * @brief Destructor
+        * @brief Destructor.
         */
-        ~SceneGraphIterator();
+        RAMSES_API ~SceneGraphIterator();
 
         /**
         * @brief Returns the next node while iterating.
@@ -51,28 +54,13 @@ namespace ramses
         *
         * Iterator is invalid and may no longer be used if any nodes are added or removed.
         */
-        Node* getNext();
+        RAMSES_API Node* getNext();
 
     protected:
         /**
-        * @brief Copy constructor of SceneGraphIterator
-        *
-        * @param[in] other Other instance of SceneGraphIterator class
-        */
-        SceneGraphIterator(const SceneGraphIterator& other);
-
-        /**
-        * @brief Assignment operator of SceneGraphIterator.
-        *
-        * @param[in] other Other instance of SceneGraphIterator class
-        * @return This instance after assignment
-        */
-        SceneGraphIterator& operator=(const SceneGraphIterator& other);
-
-        /**
         * @brief Stores internal data for implementation specifics of SceneGraphIterator.
         */
-        class SceneGraphIteratorImpl* impl;
+        std::unique_ptr<SceneGraphIteratorImpl> m_impl;
     };
 }
 

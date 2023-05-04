@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // NOLINTNEXTLINE(performance-unnecessary-value-param) The signature is forced by SOL. Therefore we have to disable this warning.
     static int solExceptionHandler(lua_State* L, sol::optional<const std::exception&> maybe_exception, sol::string_view description)
@@ -145,7 +145,7 @@ namespace rlogic::internal
         env[name] = std::move(copy);
     }
 
-    std::optional<std::string_view> SolState::GetStdModuleName(rlogic::EStandardModule m)
+    std::optional<std::string_view> SolState::GetStdModuleName(ramses::EStandardModule m)
     {
         switch (m)
         {

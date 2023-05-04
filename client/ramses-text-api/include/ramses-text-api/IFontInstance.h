@@ -17,6 +17,7 @@
 namespace ramses
 {
     /**
+    * @ingroup TextAPI
     * @brief Interface for font instance that can be used to query glyph metadata and bitmaps
     */
     class RAMSES_API IFontInstance

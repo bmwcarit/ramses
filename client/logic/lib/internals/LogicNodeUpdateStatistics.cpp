@@ -11,7 +11,7 @@
 #include "internals/LogicNodeUpdateStatistics.h"
 #include "impl/LoggerImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     void LogicNodeUpdateStatistics::clear()
     {
@@ -24,7 +24,7 @@ namespace rlogic::internal
         m_lastTimeUpdateDataAdded = std::nullopt;
     }
 
-    void LogicNodeUpdateStatistics::setLogLevel(ELogMessageType logLevel)
+    void LogicNodeUpdateStatistics::setLogLevel(ELogLevel logLevel)
     {
         m_logLevel = logLevel;
     }

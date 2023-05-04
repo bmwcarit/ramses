@@ -29,7 +29,7 @@ namespace ramses
     * @brief Class representing ramses framework components that are needed
     *        to initialize an instance of ramses client and renderer.
     */
-    class RAMSES_API RamsesFramework : public StatusObject
+    class RamsesFramework : public StatusObject
     {
     public:
         /**
@@ -37,7 +37,7 @@ namespace ramses
         *
         * @param[in] config Configuration object
         */
-        explicit RamsesFramework(const RamsesFrameworkConfig& config = {});
+        RAMSES_API explicit RamsesFramework(const RamsesFrameworkConfig& config = {});
 
         /**
         * @brief Tries to establish a connection to the RAMSES system.
@@ -48,14 +48,14 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using #getStatusMessage().
         */
-        status_t connect();
+        RAMSES_API status_t connect();
 
         /**
         * @brief Check if the RamsesClient is connected or not
         *
         * @return true if connected, false otherwise.
         */
-        [[nodiscard]] bool isConnected() const;
+        [[nodiscard]] RAMSES_API bool isConnected() const;
 
         /**
         * @brief Disconnects the RamsesClient from the system
@@ -63,7 +63,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using #getStatusMessage().
         */
-        status_t disconnect();
+        RAMSES_API status_t disconnect();
 
         /**
         * @brief Create a new #ramses::RamsesClient linked to this framework. Creation of multiple clients is
@@ -79,7 +79,7 @@ namespace ramses
         *
         * @return The new #ramses::RamsesClient object or nullptr if the creation failed or was denied.
         */
-        RamsesClient* createClient(const char* applicationName);
+        RAMSES_API RamsesClient* createClient(const char* applicationName);
 
         /**
         * @brief Destroy a #ramses::RamsesClient created with this framework.
@@ -92,7 +92,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using #getStatusMessage().
         */
-        status_t destroyClient(RamsesClient& client);
+        RAMSES_API status_t destroyClient(RamsesClient& client);
 
         /**
         * @brief Create a new #ramses::RamsesRenderer linked to this framework.
@@ -109,7 +109,7 @@ namespace ramses
         *
         * @return The new #ramses::RamsesRenderer object or nullptr if the creation failed or was denied.
         */
-        RamsesRenderer* createRenderer(const RendererConfig& config);
+        RAMSES_API RamsesRenderer* createRenderer(const RendererConfig& config);
 
         /**
         * @brief Destroy a #ramses::RamsesRenderer created with this framework.
@@ -122,7 +122,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using #getStatusMessage().
         */
-        status_t destroyRenderer(RamsesRenderer& renderer);
+        RAMSES_API status_t destroyRenderer(RamsesRenderer& renderer);
 
         /**
         * @brief Set the log level for all console log messages and apply it immediately.
@@ -135,7 +135,7 @@ namespace ramses
         *
         * @param[in] logLevel the log level to be applied
         */
-        static void SetConsoleLogLevel(ELogLevel logLevel);
+        RAMSES_API static void SetConsoleLogLevel(ELogLevel logLevel);
 
         /**
         * Sets a custom log handler function, which is called each time a log message occurs.
@@ -152,7 +152,7 @@ namespace ramses
         *  -# logHandlerFunc may never call back into ramses code
         *  -# this method should not be used in target code, it is only for testing and tooling
         */
-        static void SetLogHandler(const LogHandlerFunc& logHandlerFunc);
+        RAMSES_API static void SetLogHandler(const LogHandlerFunc& logHandlerFunc);
 
         /**
         * Gets the current value of the synchronized clock in milliseconds
@@ -166,7 +166,7 @@ namespace ramses
         *
         * @return current time point of synchronized clock in milliseconds
         */
-        static uint64_t GetSynchronizedClockMilliseconds();
+        RAMSES_API static uint64_t GetSynchronizedClockMilliseconds();
 
         /**
         * @brief Register a ramsh command that can be invoked via console and DLT injection
@@ -185,7 +185,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using #getStatusMessage().
         */
-        status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
+        RAMSES_API status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
 
         /**
         * @brief Execute a ramsh command programmatically
@@ -198,7 +198,7 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using #getStatusMessage().
         */
-        status_t executeRamshCommand(const std::string& input);
+        RAMSES_API status_t executeRamshCommand(const std::string& input);
 
         /**
         * @brief Destructor of RamsesFramework
@@ -207,12 +207,7 @@ namespace ramses
         * so there is no general need to explicitly destroy these objects individually, if not specifically intended to do so.
         *
         */
-        ~RamsesFramework() override;
-
-        /**
-        * Stores internal data for implementation specifics of RamsesFramework
-        */
-        class RamsesFrameworkImpl& impl;
+        RAMSES_API ~RamsesFramework() override;
 
         /**
          * @brief Deleted copy constructor
@@ -220,10 +215,26 @@ namespace ramses
         RamsesFramework(const RamsesFramework&) = delete;
 
         /**
+         * @brief Deleted move constructor
+         */
+        RamsesFramework(RamsesFramework&&) = delete;
+
+        /**
          * @brief Deleted copy assignment
          * @return unused
          */
         RamsesFramework& operator=(const RamsesFramework&) = delete;
+
+        /**
+         * @brief Deleted move assignment
+         * @return unused
+         */
+        RamsesFramework& operator=(RamsesFramework&&) = delete;
+
+        /**
+        * Stores internal data for implementation specifics of RamsesFramework
+        */
+        class RamsesFrameworkImpl& m_impl;
     };
 }
 

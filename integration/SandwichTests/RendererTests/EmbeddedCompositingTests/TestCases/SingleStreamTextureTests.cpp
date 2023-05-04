@@ -758,7 +758,7 @@ namespace ramses_internal
     {
         testFramework.sendSetSurfaceSizeToTestApplicaton(testSurfaceId, surfaceWidth, surfaceHeight);
         testFramework.sendRenderOneFrameToEGLBufferToTestApplication(testSurfaceId);
-        const Bool frameCountReached = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(waylandSurfaceIviId.getValue()), frameCount);
+        const bool frameCountReached = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(waylandSurfaceIviId.getValue()), frameCount);
         return frameCountReached && testFramework.renderAndCompareScreenshot(expectedImageName);
     }
 
@@ -777,7 +777,7 @@ namespace ramses_internal
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(testSurfaceId);
         }
 
-        Bool testResult = true;
+        bool testResult = true;
 
         for (UInt32 frameIndex = 0u; frameIndex < frameCountToRender; ++frameIndex)
         {

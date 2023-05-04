@@ -8,13 +8,12 @@
 
 #include "gtest/gtest.h"
 #include "RendererLib/IntersectionUtils.h"
-#include "Math3d/Matrix44f.h"
-#include "Math3d/Vector2i.h"
 #include "RendererEventCollector.h"
 #include "RendererLib/RendererScenes.h"
 #include "SceneAllocateHelper.h"
 #include "Math3d/ProjectionParams.h"
 #include "Math3d/CameraMatrixHelper.h"
+#include "glm/gtx/transform.hpp"
 
 using namespace ramses_internal;
 
@@ -26,7 +25,7 @@ static DataBufferHandle prepareGeometryBuffer(TransformationLinkCachedScene& sce
     return geometryBuffer;
 }
 
-static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, const Vector2i viewportOffset, const Vector2i viewportSize, const Vector3 translation, const Vector3 rotation, const Vector3 scale)
+static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, const glm::ivec2 viewportOffset, const glm::ivec2 viewportSize, const glm::vec3 translation, const glm::vec3 rotation, const glm::vec3 scale)
 {
     NodeHandle cameraNodeHandle = sceneAllocator.allocateNode();
     const auto dataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
@@ -51,23 +50,23 @@ static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, 
 
     TransformHandle cameraTransformation = sceneAllocator.allocateTransform(cameraNodeHandle);
     scene.setTranslation(cameraTransformation, translation);
-    scene.setRotation(cameraTransformation, Vector4(rotation), ERotationType::Euler_XYZ);
+    scene.setRotation(cameraTransformation, glm::vec4(rotation, 1.f), ERotationType::Euler_XYZ);
     scene.setScaling(cameraTransformation, scale);
     return cameraHandle;
 }
 
-static void preparePickableObject(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, DataBufferHandle geometryBuffer, CameraHandle cameraHandle, PickableObjectId pickableId, const Vector3 translation, const Vector3 rotation, const Vector3 scale)
+static void preparePickableObject(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, DataBufferHandle geometryBuffer, CameraHandle cameraHandle, PickableObjectId pickableId, const glm::vec3 translation, const glm::vec3 rotation, const glm::vec3 scale)
 {
     const NodeHandle pickableNodeHandle = sceneAllocator.allocateNode();
     const PickableObjectHandle pickableHandle = sceneAllocator.allocatePickableObject(geometryBuffer, pickableNodeHandle, pickableId);
     scene.setPickableObjectCamera(pickableHandle, cameraHandle);
     TransformHandle pickableTransformation = sceneAllocator.allocateTransform(pickableNodeHandle);
     scene.setTranslation(pickableTransformation, translation);
-    scene.setRotation(pickableTransformation, Vector4(rotation), ERotationType::Euler_XYZ);
+    scene.setRotation(pickableTransformation, glm::vec4(rotation, 1.f), ERotationType::Euler_XYZ);
     scene.setScaling(pickableTransformation, scale);
 }
 
-static void checkSceneForIntersectedPickableObjects(const TransformationLinkCachedScene& scene, const Vector2 coords, const Vector2i dispResolution, const PickableObjectIds& expectedPickables)
+static void checkSceneForIntersectedPickableObjects(const TransformationLinkCachedScene& scene, const glm::vec2 coords, const glm::ivec2 dispResolution, const PickableObjectIds& expectedPickables)
 {
     const Int32 xCoordDisplaySpace = static_cast<Int32>(std::lroundf((coords.x + 1.f) * dispResolution.x / 2.f));
     const Int32 yCoordDisplaySpace = static_cast<Int32>(std::lroundf((coords.y + 1.f) * dispResolution.y / 2.f));
@@ -80,13 +79,13 @@ static void checkSceneForIntersectedPickableObjects(const TransformationLinkCach
 
 TEST(IntersectionUtilsTest, canIntersectTriangle1)
 {
-    const Vector3 rayOrig(0, 0, 0);
-    const Vector3 v0(0, 0, 5);
-    const Vector3 v1(1, 0, 5);
-    const Vector3 v2(0, 1, 5);
+    const glm::vec3 rayOrig(0, 0, 0);
+    const glm::vec3 v0(0, 0, 5);
+    const glm::vec3 v1(1, 0, 5);
+    const glm::vec3 v2(0, 1, 5);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayHit(0, 0, 1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayHit(0, 0, 1);
+    glm::vec3 intersectionPoint;
     float distance;
     bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayHit, intersectionPoint, distance);
     EXPECT_TRUE(intersectionHappened);
@@ -98,13 +97,13 @@ TEST(IntersectionUtilsTest, canIntersectTriangle1)
 
 TEST(IntersectionUtilsTest, canIntersectTriangle2)
 {
-    const Vector3 rayOrig(1, 1, 1);
-    const Vector3 v0(1, 1, 5);
-    const Vector3 v1(2, 1, 5);
-    const Vector3 v2(1, 2, 5);
+    const glm::vec3 rayOrig(1, 1, 1);
+    const glm::vec3 v0(1, 1, 5);
+    const glm::vec3 v1(2, 1, 5);
+    const glm::vec3 v2(1, 2, 5);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayHit(0, 0, 1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayHit(0, 0, 1);
+    glm::vec3 intersectionPoint;
     float distance;
     bool intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayHit, intersectionPoint, distance);
     EXPECT_TRUE(intersectionHappened);
@@ -116,27 +115,27 @@ TEST(IntersectionUtilsTest, canIntersectTriangle2)
 
 TEST(IntersectionUtilsTest, noIntersectRayNotPointingToTriangle)
 {
-    const Vector3 rayOrig(0, 0, 0);
-    const Vector3 v0(0, 0, 5);
-    const Vector3 v1(1, 0, 5);
-    const Vector3 v2(0, 1, 5);
+    const glm::vec3 rayOrig(0, 0, 0);
+    const glm::vec3 v0(0, 0, 5);
+    const glm::vec3 v1(1, 0, 5);
+    const glm::vec3 v2(0, 1, 5);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayMiss(0, 20, 1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayMiss(0, 20, 1);
+    glm::vec3 intersectionPoint;
     float distance;
-    bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayMiss.normalize(), intersectionPoint, distance);
+    bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, glm::normalize(rayMiss), intersectionPoint, distance);
     EXPECT_FALSE(intersectionHappened);
 }
 
 TEST(IntersectionUtilsTest, noIntersectRayPrallelToTriangle)
 {
-    const Vector3 rayOrig(0, 0, 0);
-    const Vector3 v0(0, 0, 5);
-    const Vector3 v1(1, 0, 5);
-    const Vector3 v2(0, 1, 5);
+    const glm::vec3 rayOrig(0, 0, 0);
+    const glm::vec3 v0(0, 0, 5);
+    const glm::vec3 v1(1, 0, 5);
+    const glm::vec3 v2(0, 1, 5);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayParallel(0, 1, 0);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayParallel(0, 1, 0);
+    glm::vec3 intersectionPoint;
     float distance;
     bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayParallel, intersectionPoint, distance);
     EXPECT_FALSE(intersectionHappened);
@@ -144,13 +143,13 @@ TEST(IntersectionUtilsTest, noIntersectRayPrallelToTriangle)
 
 TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay1)
 {
-    const Vector3 rayOrig(0, 0, 1);
-    const Vector3 v0(0, 0, 0);
-    const Vector3 v1(1, 0, 0);
-    const Vector3 v2(0, 1, 0);
+    const glm::vec3 rayOrig(0, 0, 1);
+    const glm::vec3 v0(0, 0, 0);
+    const glm::vec3 v1(1, 0, 0);
+    const glm::vec3 v2(0, 1, 0);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayDir(0, 0, 1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayDir(0, 0, 1);
+    glm::vec3 intersectionPoint;
     float distance;
     bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayDir, intersectionPoint, distance);
     EXPECT_FALSE(intersectionHappened);
@@ -158,13 +157,13 @@ TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay1)
 
 TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay2)
 {
-    const Vector3 rayOrig(0, 0, 1);
-    const Vector3 v0(0, 0, 0);
-    const Vector3 v1(1, 0, 0);
-    const Vector3 v2(0, 1, 0);
+    const glm::vec3 rayOrig(0, 0, 1);
+    const glm::vec3 v0(0, 0, 0);
+    const glm::vec3 v1(1, 0, 0);
+    const glm::vec3 v2(0, 1, 0);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayDir(0, 0, -1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayDir(0, 0, -1);
+    glm::vec3 intersectionPoint;
     float distance;
     bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayDir, intersectionPoint, distance);
     EXPECT_TRUE(intersectionHappened);
@@ -176,13 +175,13 @@ TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay2)
 
 TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay3)
 {
-    const Vector3 rayOrig(0, 0, -1);
-    const Vector3 v0(0, 0, 0);
-    const Vector3 v1(1, 0, 0);
-    const Vector3 v2(0, 1, 0);
+    const glm::vec3 rayOrig(0, 0, -1);
+    const glm::vec3 v0(0, 0, 0);
+    const glm::vec3 v1(1, 0, 0);
+    const glm::vec3 v2(0, 1, 0);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayDir(0, 0, 1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayDir(0, 0, 1);
+    glm::vec3 intersectionPoint;
     float distance;
     bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayDir, intersectionPoint, distance);
     EXPECT_TRUE(intersectionHappened);
@@ -194,13 +193,13 @@ TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay3)
 
 TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay4)
 {
-    const Vector3 rayOrig(0, 0, -1);
-    const Vector3 v0(0, 0, 0);
-    const Vector3 v1(1, 0, 0);
-    const Vector3 v2(0, 1, 0);
+    const glm::vec3 rayOrig(0, 0, -1);
+    const glm::vec3 v0(0, 0, 0);
+    const glm::vec3 v1(1, 0, 0);
+    const glm::vec3 v2(0, 1, 0);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayDir(0, 0, -1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayDir(0, 0, -1);
+    glm::vec3 intersectionPoint;
     float distance;
     bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayDir, intersectionPoint, distance);
     EXPECT_FALSE(intersectionHappened);
@@ -208,13 +207,13 @@ TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay4)
 
 TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay5)
 {
-    const Vector3 rayOrig(1, 1, 3);
-    const Vector3 v0(1, 1, 1);
-    const Vector3 v1(2, 1, 1);
-    const Vector3 v2(1, 2, 1);
+    const glm::vec3 rayOrig(1, 1, 3);
+    const glm::vec3 v0(1, 1, 1);
+    const glm::vec3 v1(2, 1, 1);
+    const glm::vec3 v2(1, 2, 1);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    const Vector3 rayDir(0, 0, 1);
-    Vector3 intersectionPoint;
+    const glm::vec3 rayDir(0, 0, 1);
+    glm::vec3 intersectionPoint;
     float distance;
     bool          intersectionHappened = IntersectionUtils::IntersectRayVsTriangle(triangle, rayOrig, rayDir, intersectionPoint, distance);
     EXPECT_FALSE(intersectionHappened);
@@ -222,12 +221,12 @@ TEST(IntersectionUtilsTest, noIntersectTriangleBehindRay5)
 
 TEST(IntersectionUtilsTest, canCalculateNormalOfPlane)
 {
-    const Vector3 v0(0, 0, 5);
-    const Vector3 v1(1, 0, 5);
-    const Vector3 v2(0, 1, 5);
+    const glm::vec3 v0(0, 0, 5);
+    const glm::vec3 v1(1, 0, 5);
+    const glm::vec3 v2(0, 1, 5);
     const IntersectionUtils::Triangle triangle{ v0, v1, v2 };
-    Vector3       normal = IntersectionUtils::CalculatePlaneNormal(triangle);
-    Vector3       expectedNormal(0.0f, 0.0f, 1.0f);
+    glm::vec3       normal = IntersectionUtils::CalculatePlaneNormal(triangle);
+    glm::vec3       expectedNormal(0.0f, 0.0f, 1.0f);
 
     for (UInt32 i = 0; i < 3; ++i)
     {
@@ -240,13 +239,15 @@ TEST(IntersectionUtilsTest, canPickSingleTriangle)
     const std::vector<float> triangleData{ -1.0f, 0.0f, 0.0f,
                                             1.0f, 0.0f, 0.0f,
                                             0.0f, 1.0f, 0.0f };
-    const Matrix44f                modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
-    const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
-    const Matrix44f                projectionMatrix = Matrix44f::Identity;
-    const Vector2 ndsPickCoords(0.0f, 0.0f);
 
-    Vector3 intersectionPoint;
+    const auto modelMatrix                = glm::identity<glm::mat4>();
+    const auto cameraTransformationMatrix = glm::translate(glm::vec3{ 0.0f, 0.0f, 1.0f });
+    const auto viewMatrix                 = glm::inverse(cameraTransformationMatrix);
+    const auto projectionMatrix           = glm::identity<glm::mat4>();
+
+    const glm::vec2 ndsPickCoords(0.0f, 0.0f);
+
+    glm::vec3 intersectionPoint;
     bool intersectionHappened =
         IntersectionUtils::TestGeometryPicked(ndsPickCoords, triangleData.data(), triangleData.size(), modelMatrix, viewMatrix, projectionMatrix, intersectionPoint);
     EXPECT_TRUE(intersectionHappened);
@@ -254,7 +255,7 @@ TEST(IntersectionUtilsTest, canPickSingleTriangle)
     EXPECT_FLOAT_EQ(intersectionPoint.y, 0.f);
     EXPECT_FLOAT_EQ(intersectionPoint.z, 0.f);
 
-    const Matrix44f scalingModelMatrix = Matrix44f::Scaling({ 1.0f, 2.0f, 3.0f });
+    const auto scalingModelMatrix = glm::scale(glm::vec3{ 1.0f, 2.0f, 3.0f });
 
     intersectionHappened =
         IntersectionUtils::TestGeometryPicked(ndsPickCoords, triangleData.data(), triangleData.size(), scalingModelMatrix, viewMatrix, projectionMatrix, intersectionPoint);
@@ -270,13 +271,13 @@ TEST(IntersectionUtilsTest, noPickSingleTriangleTranslatedAwayFromPick)
                                             1.0f, 0.0f, 0.0f,
                                             0.0f, 1.0f, 0.0f };
 
-    const Matrix44f modelMatrix = Matrix44f::Translation({ 0.0f, 1.0f, 0.0f });
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
-    const Matrix44f viewMatrix       = cameraTransformationMatrix.inverse();
-    const Matrix44f projectionMatrix = Matrix44f::Identity;
-    const Vector2 ndsPickCoords(0.0f, 0.0f);
+    const auto modelMatrix = glm::translate(glm::vec3{ 0.0f, 1.0f, 0.0f });
+    const auto cameraTransformationMatrix = glm::translate(glm::vec3{ 0.0f, 0.0f, 1.0f });
+    const auto viewMatrix       = glm::inverse(cameraTransformationMatrix);
+    const auto projectionMatrix = glm::identity<glm::mat4>();
+    const glm::vec2 ndsPickCoords(0.0f, 0.0f);
 
-    Vector3 intersectionPoint;
+    glm::vec3 intersectionPoint;
     bool intersectionHappened =
         IntersectionUtils::TestGeometryPicked(ndsPickCoords, triangle1Data.data(), triangle1Data.size(), modelMatrix, viewMatrix, projectionMatrix, intersectionPoint);
     EXPECT_FALSE(intersectionHappened);
@@ -301,13 +302,13 @@ TEST(IntersectionUtilsTest, canIntersectMultipleTriangleGeometry)
     quad.insert(quad.end(), triangle1Data.begin(), triangle1Data.end());
     quad.insert(quad.end(), triangle2Data.begin(), triangle2Data.end());
 
-    const Matrix44f modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
-    const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
-    const Matrix44f projectionMatrix = Matrix44f::Identity;
-    const Vector2 ndsPickCoords(0.0f, 0.0f);
+    const auto modelMatrix                = glm::identity<glm::mat4>();
+    const auto cameraTransformationMatrix = glm::translate(glm::vec3{0.0f, 0.0f, 1.0f});
+    const auto viewMatrix = glm::inverse(cameraTransformationMatrix);
+    const auto projectionMatrix           = glm::identity<glm::mat4>();
+    const glm::vec2 ndsPickCoords(0.0f, 0.0f);
 
-    Vector3 intersectionPoint;
+    glm::vec3 intersectionPoint;
     bool intersectionHappened =
         IntersectionUtils::TestGeometryPicked(ndsPickCoords, quad.data(), quad.size(), modelMatrix, viewMatrix, projectionMatrix, intersectionPoint);
     EXPECT_TRUE(intersectionHappened);
@@ -329,13 +330,13 @@ TEST(IntersectionUtilsTest, noIntersectPickNotPointingToMultipleTriangles)
     quad.insert(quad.end(), triangle1Data.begin(), triangle1Data.end());
     quad.insert(quad.end(), triangle2Data.begin(), triangle2Data.end());
 
-    const Matrix44f modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
-    const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
-    const Matrix44f projectionMatrix = Matrix44f::Identity;
-    const Vector2 ndsPickCoords(0.0f, 0.0f);
+    const auto modelMatrix = glm::identity<glm::mat4>();
+    const auto cameraTransformationMatrix = glm::translate(glm::vec3{0.0f, 0.0f, 1.0f});
+    const auto viewMatrix = glm::inverse(cameraTransformationMatrix);
+    const auto projectionMatrix = glm::identity<glm::mat4>();
+    const glm::vec2 ndsPickCoords(0.0f, 0.0f);
 
-    Vector3 intersectionPoint;
+    glm::vec3 intersectionPoint;
     bool intersectionHappened =
         IntersectionUtils::TestGeometryPicked(ndsPickCoords, quad.data(), quad.size(), modelMatrix, viewMatrix, projectionMatrix, intersectionPoint);
     EXPECT_FALSE(intersectionHappened);
@@ -348,7 +349,7 @@ TEST(IntersectionUtilsTest, findsPickedObjectInSceneWhenIntersected)
     TransformationLinkCachedScene scene(rendererScenes.getSceneLinksManager(), {});
     SceneAllocateHelper sceneAllocator(scene);
     float vertexPositionsTriangle[] = { -1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f };
-    const Vector2i dispResolution = { 1280, 480 };
+    const glm::ivec2 dispResolution = { 1280, 480 };
 
     //Prepare PickableCamera
     const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, -40.f, 0.f }, { 1.f, 1.f, 1.f });
@@ -361,15 +362,15 @@ TEST(IntersectionUtilsTest, findsPickedObjectInSceneWhenIntersected)
     preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId, { 0.1f, 1.0f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
 
     //Testing scene for intersection
-    const Vector2 coordsInViewportSpaceHit1 = {0.310937f, 0.354166f};
-    const Vector2 coordsInViewportSpaceMiss1_1 = {0.309374f, 0.395833f};
-    const Vector2 coordsInViewportSpaceMiss1_2 = {0.312500f, 0.312500f};
+    const glm::vec2 coordsInViewportSpaceHit1 = {0.310937f, 0.354166f};
+    const glm::vec2 coordsInViewportSpaceMiss1_1 = {0.309374f, 0.395833f};
+    const glm::vec2 coordsInViewportSpaceMiss1_2 = {0.312500f, 0.312500f};
 
-    const Vector2 coordsInViewportSpaceHit2 = { -0.603125f, 0.945833f };
-    const Vector2 coordsInViewportSpaceMiss2 = { -0.603125f, 0.987500f };
+    const glm::vec2 coordsInViewportSpaceHit2 = { -0.603125f, 0.945833f };
+    const glm::vec2 coordsInViewportSpaceMiss2 = { -0.603125f, 0.987500f };
 
-    const Vector2 coordsInViewportSpaceHit3 = { -0.970313f, 0.533333f };
-    const Vector2 coordsInViewportSpaceMiss3 = { -0.968750f, 0.495833f };
+    const glm::vec2 coordsInViewportSpaceHit3 = { -0.970313f, 0.533333f };
+    const glm::vec2 coordsInViewportSpaceMiss3 = { -0.968750f, 0.495833f };
 
     //Test first area of PickableObject
     checkSceneForIntersectedPickableObjects(scene, coordsInViewportSpaceHit1, dispResolution, { pickableId });
@@ -392,7 +393,7 @@ TEST(IntersectionUtilsTest, findsMultiplePickedObjectsNotOverlappingInSceneWhenI
     TransformationLinkCachedScene scene(rendererScenes.getSceneLinksManager(), {});
     SceneAllocateHelper sceneAllocator(scene);
     float vertexPositionsTriangle[] = { -1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f };
-    const Vector2i dispResolution = { 1280, 480 };
+    const glm::ivec2 dispResolution = { 1280, 480 };
 
     //Prepare PickableCamera
     const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, -40.f, 0.f }, { 1.f, 1.f, 1.f });
@@ -409,11 +410,11 @@ TEST(IntersectionUtilsTest, findsMultiplePickedObjectsNotOverlappingInSceneWhenI
     preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId2, { 6.0f, 0.9f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
 
     //Testing scene for intersection
-    const Vector2 coordsInViewportSpaceHitPickable1 = { -0.382812f, 0.441667f };
-    const Vector2 coordsInViewportSpaceHitPickable2 = { -0.379687f, 0.395833f };
-    const Vector2 coordsInViewportSpaceMiss1 = { -0.382812f, 0.466667f };
-    const Vector2 coordsInViewportSpaceMiss2 = { -0.378125f, 0.425000f };
-    const Vector2 coordsInViewportSpaceMiss3 = { -0.379687f, 0.383333f };
+    const glm::vec2 coordsInViewportSpaceHitPickable1 = { -0.382812f, 0.441667f };
+    const glm::vec2 coordsInViewportSpaceHitPickable2 = { -0.379687f, 0.395833f };
+    const glm::vec2 coordsInViewportSpaceMiss1 = { -0.382812f, 0.466667f };
+    const glm::vec2 coordsInViewportSpaceMiss2 = { -0.378125f, 0.425000f };
+    const glm::vec2 coordsInViewportSpaceMiss3 = { -0.379687f, 0.383333f };
 
     //Test PickableObjects
     checkSceneForIntersectedPickableObjects(scene, coordsInViewportSpaceHitPickable1, dispResolution, { pickableId });
@@ -431,7 +432,7 @@ TEST(IntersectionUtilsTest, findsMultiplePickedObjectsOverlappingInSceneWhenInte
     TransformationLinkCachedScene scene(rendererScenes.getSceneLinksManager(), {});
     SceneAllocateHelper sceneAllocator(scene);
     float vertexPositionsTriangle[] = { -1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f };
-    const Vector2i dispResolution = { 1280, 480 };
+    const glm::ivec2 dispResolution = { 1280, 480 };
 
     //Prepare PickableCamera
     const CameraHandle cameraHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { -4.f, 0.f, 11.f }, { 0.f, -40.f, 0.f }, { 1.f, 1.f, 1.f });
@@ -448,11 +449,11 @@ TEST(IntersectionUtilsTest, findsMultiplePickedObjectsOverlappingInSceneWhenInte
     preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraHandle, pickableId2, { 4.0f, 0.9f, -1.0f }, { -70.0f, 0.0f, 0.0f }, { 3.0f, 3.0f, 3.0f });
 
     //Testing scene for intersection
-    const Vector2 coordsInViewportSpaceHitPickable1 = { -0.585938f, 0.575000f };
-    const Vector2 coordsInViewportSpaceHitPickable2 = { -0.590625f, 0.458333f };
-    const Vector2 coordsInViewportSpaceHitPickable1and2 = { -0.582812f, 0.512500f };
-    const Vector2 coordsInViewportSpaceMiss1 = { -0.585938f, 0.595833f };
-    const Vector2 coordsInViewportSpaceMiss2 = { -0.607812f, 0.408333f };
+    const glm::vec2 coordsInViewportSpaceHitPickable1 = { -0.585938f, 0.575000f };
+    const glm::vec2 coordsInViewportSpaceHitPickable2 = { -0.590625f, 0.458333f };
+    const glm::vec2 coordsInViewportSpaceHitPickable1and2 = { -0.582812f, 0.512500f };
+    const glm::vec2 coordsInViewportSpaceMiss1 = { -0.585938f, 0.595833f };
+    const glm::vec2 coordsInViewportSpaceMiss2 = { -0.607812f, 0.408333f };
 
     //Test PickableObjects
     checkSceneForIntersectedPickableObjects(scene, coordsInViewportSpaceHitPickable1, dispResolution, { pickableId });
@@ -487,13 +488,13 @@ TEST(IntersectionUtilsTest, picksIntersectionPointAtNearestTriangleInPickable)
                                              0.0f,  1.0f, -15.0f
                                              };
 
-    const Matrix44f modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
-    const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
-    const Matrix44f projectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(30.f, 1.f, 0.1f, 100.f));
-    const Vector2 ndsPickCoords(0.0f, 0.0f);
+    const auto modelMatrix = glm::identity<glm::mat4>();
+    const auto cameraTransformationMatrix = glm::translate(glm::vec3{ 0.0f, 0.0f, 1.0f });
+    const auto viewMatrix = glm::inverse(cameraTransformationMatrix);
+    const auto projectionMatrix(CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(30.f, 1.f, 0.1f, 100.f)));
+    const glm::vec2 ndsPickCoords(0.0f, 0.0f);
 
-    Vector3 intersectionPoint;
+    glm::vec3 intersectionPoint;
     const bool intersectionHappened =
         IntersectionUtils::TestGeometryPicked(ndsPickCoords, trianglesVertices.data(), trianglesVertices.size(), modelMatrix, viewMatrix, projectionMatrix, intersectionPoint);
     ASSERT_TRUE(intersectionHappened);
@@ -509,7 +510,7 @@ TEST(IntersectionUtilsTest, canSortPickedPickablesWithDistanceWhenPickablesUseDi
     TransformationLinkCachedScene scene(rendererScenes.getSceneLinksManager(), {});
     SceneAllocateHelper sceneAllocator(scene);
     float vertexPositionsTriangle[] = { -1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f };
-    const Vector2i dispResolution = { 1280, 480 };
+    const glm::ivec2 dispResolution = { 1280, 480 };
 
     //Prepare PickableCamera
     const CameraHandle cameraFrontPickableHandle = preparePickableCamera(scene, sceneAllocator, { 0, 0 }, dispResolution, { 0.f, 0.f, 11.f }, { 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f });
@@ -527,9 +528,9 @@ TEST(IntersectionUtilsTest, canSortPickedPickablesWithDistanceWhenPickablesUseDi
     preparePickableObject(scene, sceneAllocator, geometryBuffer, cameraBackPickableHandle, backPickableId, { 12.5f, 0.f, 24.0f }, { 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 1.0f });
 
     //Testing scene for intersection
-    const Vector2 coordsInNDSHitFrontPickable = { -0.0625f, 0.16666666666f };
-    const Vector2 coordsInNDSHitBackPickable = { -0.21875f, 0.02083333333f };
-    const Vector2 coordsInNDSHitBothPickables = { -0.1875f, 0.02083333333f };
+    const glm::vec2 coordsInNDSHitFrontPickable = { -0.0625f, 0.16666666666f };
+    const glm::vec2 coordsInNDSHitBackPickable = { -0.21875f, 0.02083333333f };
+    const glm::vec2 coordsInNDSHitBothPickables = { -0.1875f, 0.02083333333f };
 
     //Test PickableObjects
     checkSceneForIntersectedPickableObjects(scene, coordsInNDSHitFrontPickable, dispResolution, { frontPickableId });
@@ -544,12 +545,12 @@ TEST(IntersectionUtilsTest, handlesPickableViewportCorrectly)
     TransformationLinkCachedScene scene(rendererScenes.getSceneLinksManager(), {});
     SceneAllocateHelper sceneAllocator(scene);
     float vertexPositionsTriangle[] = { -1.f, -1.f, 0.f, 1.f, -1.f, 0.f, 0.f, 1.f, 0.f };
-    const Vector2i dispResolution = { 1280, 480 };
+    const glm::ivec2 dispResolution = { 1280, 480 };
 
     //Prepare two cameras with overlapping viewports
-    const Vector2i viewportSize             = { 1280 * 2 / 3, 480 * 2 / 3 };
-    const Vector2i viewportOffset1          = { 0, 0 };
-    const Vector2i viewportOffset2          = { 1280 / 3, 480 / 3 };
+    const glm::ivec2 viewportSize             = { 1280 * 2 / 3, 480 * 2 / 3 };
+    const glm::ivec2 viewportOffset1          = { 0, 0 };
+    const glm::ivec2 viewportOffset2          = { 1280 / 3, 480 / 3 };
     const CameraHandle bottomLeftCamera     = preparePickableCamera(scene, sceneAllocator, viewportOffset1, viewportSize, { 0.f, 0.f, 1.f }, { 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f });
     const CameraHandle topRightCamera       = preparePickableCamera(scene, sceneAllocator, viewportOffset2, viewportSize, { 0.f, 0.f, 1.01f }, { 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f });
 
@@ -563,11 +564,11 @@ TEST(IntersectionUtilsTest, handlesPickableViewportCorrectly)
     preparePickableObject(scene, sceneAllocator, geometryBuffer, topRightCamera, topRightPickableId, { 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, { 1.0f, 1.0f, 1.0f });
 
     //Testing scene for intersection
-    const Vector2 coordsInNDSHitBottomLeftPickable      = { -.5f, -.5f };
-    const Vector2 coordsInNDSHitTopRightPickable        = { .5f,  .5f };
-    const Vector2 coordsInNDSHitBothPickables           = { 0.f, 0.f };
-    const Vector2 coordsInNDSMissPickablesInBottomRight = { .5f, -.5f };
-    const Vector2 coordsInNDSMissPickablesInTopLeft     = { -.5f, .5f };
+    const glm::vec2 coordsInNDSHitBottomLeftPickable      = { -.5f, -.5f };
+    const glm::vec2 coordsInNDSHitTopRightPickable        = { .5f,  .5f };
+    const glm::vec2 coordsInNDSHitBothPickables           = { 0.f, 0.f };
+    const glm::vec2 coordsInNDSMissPickablesInBottomRight = { .5f, -.5f };
+    const glm::vec2 coordsInNDSMissPickablesInTopLeft     = { -.5f, .5f };
 
     //Test PickableObjects
     checkSceneForIntersectedPickableObjects(scene, coordsInNDSHitBottomLeftPickable, dispResolution, { bottomLeftPickableId });

@@ -16,7 +16,7 @@ namespace ramses_internal
         m_systemCompositorEnabled = true;
     }
 
-    Bool RendererConfig::getSystemCompositorControlEnabled() const
+    bool RendererConfig::getSystemCompositorControlEnabled() const
     {
         return m_systemCompositorEnabled;
     }

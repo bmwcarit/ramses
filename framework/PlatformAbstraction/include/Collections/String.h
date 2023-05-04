@@ -324,6 +324,7 @@ namespace ramses_internal
 
     inline void String::operator+=(Char character)
     {
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         char tmp[2] = {character, '\0'};
         operator+=(tmp);
     }
@@ -362,6 +363,7 @@ namespace ramses_internal
 
     inline String& String::operator=(Char character)
     {
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         char tmp[2] = {character, '\0'};
         operator=(tmp);
         return *this;

@@ -41,7 +41,7 @@ int main()
     //                 This should not be the case for real applications.
 
     // prepare triangle geometry: interleaved position and color data for each vertex
-    const float vertexData[] = {
+    const std::array vertexData = {
         -1.f, 0.f, -1.f, 1.f,   //vertex 1 position vec4
         1.f, 0.f, 0.f,          //vertex 1 color vec3
 
@@ -53,7 +53,7 @@ int main()
     };
     // interleaved data must be created as ByteBlob and passed as byte array
     ramses::ArrayBuffer* vertexDataBuffer = scene->createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertexData));
-    vertexDataBuffer->updateData(0u, sizeof(vertexData), reinterpret_cast<const ramses::Byte*>(vertexData));
+    vertexDataBuffer->updateData(0u, sizeof(vertexData), reinterpret_cast<const ramses::Byte*>(vertexData.data()));
 
     // create an appearance for triangle
     ramses::EffectDescription effectDesc;

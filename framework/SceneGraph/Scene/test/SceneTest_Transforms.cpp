@@ -50,7 +50,7 @@ namespace ramses_internal
     {
         const TransformHandle transform = this->m_scene.allocateTransform(this->m_scene.allocateNode());
 
-        const Vector3 translation(1, 2, 3);
+        const glm::vec3 translation(1, 2, 3);
 
         this->m_scene.setTranslation(transform, translation);
         EXPECT_EQ(translation, this->m_scene.getTranslation(transform));
@@ -60,7 +60,7 @@ namespace ramses_internal
     {
         const TransformHandle transform = this->m_scene.allocateTransform(this->m_scene.allocateNode());
 
-        const Vector4 rotation(4, 5, 6, 1.f);
+        const glm::vec4 rotation(4, 5, 6, 1.f);
 
         this->m_scene.setRotation(transform, rotation, ERotationType::Euler_XYX);
         EXPECT_EQ(rotation, this->m_scene.getRotation(transform));
@@ -71,7 +71,7 @@ namespace ramses_internal
     {
         const TransformHandle transform = this->m_scene.allocateTransform(this->m_scene.allocateNode());
 
-        const Vector3 scaling(7, 8, 9);
+        const glm::vec3 scaling(7, 8, 9);
 
         this->m_scene.setScaling(transform, scaling);
         EXPECT_EQ(scaling, this->m_scene.getScaling(transform));

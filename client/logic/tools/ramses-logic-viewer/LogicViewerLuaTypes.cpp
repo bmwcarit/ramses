@@ -30,7 +30,7 @@
 namespace glm
 {
     template <int N, typename T, qualifier Q>
-    int sol_lua_push(sol::types<vec<N,T,Q>>, lua_State* L, const vec<N,T,Q>& value)
+    int sol_lua_push(sol::types<vec<N, T, Q>> /*unused*/, lua_State* L, const vec<N, T, Q>& value)
     {
         auto vectable = sol::table::create(L, N);
         for (const auto& v : value)
@@ -42,10 +42,10 @@ namespace glm
     }
 
     template <int N, typename T, qualifier Q>
-    vec<N,T,Q> sol_lua_get(sol::types<vec<N,T,Q>>, lua_State* L, int index, sol::stack::record& tracking)
+    vec<N, T, Q> sol_lua_get(sol::types<vec<N, T, Q>> /*unused*/, lua_State* L, int index, sol::stack::record& tracking)
     {
         sol::lua_table vectable = sol::stack::get<sol::lua_table>(L, index, tracking);
-        vec<N, T, Q> result;
+        vec<N, T, Q> result{};
         for (glm::length_t i = 0; i < N; ++i)
         {
             result[i] = vectable[i + 1];
@@ -54,7 +54,7 @@ namespace glm
     }
 }
 
-namespace rlogic
+namespace ramses
 {
     namespace
     {
@@ -62,15 +62,15 @@ namespace rlogic
         {
             switch (prop.getType())
             {
-            case rlogic::EPropertyType::Int32: {
+            case ramses::EPropertyType::Int32: {
                 prop.set(val.as<int32_t>());
                 break;
             }
-            case rlogic::EPropertyType::Int64: {
+            case ramses::EPropertyType::Int64: {
                 prop.set(val.as<int64_t>());
                 break;
             }
-            case rlogic::EPropertyType::Struct: {
+            case ramses::EPropertyType::Struct: {
                 auto tbl = val.as<sol::table>();
                 for (const auto& item : tbl)
                 {
@@ -82,34 +82,34 @@ namespace rlogic
                 }
                 break;
             }
-            case rlogic::EPropertyType::Float:
+            case ramses::EPropertyType::Float:
                 prop.set(val.as<float>());
                 break;
-            case rlogic::EPropertyType::Vec2f:
+            case ramses::EPropertyType::Vec2f:
                 prop.set(val.as<vec2f>());
                 break;
-            case rlogic::EPropertyType::Vec3f:
+            case ramses::EPropertyType::Vec3f:
                 prop.set(val.as<vec3f>());
                 break;
-            case rlogic::EPropertyType::Vec4f:
+            case ramses::EPropertyType::Vec4f:
                 prop.set(val.as<vec4f>());
                 break;
-            case rlogic::EPropertyType::Vec2i:
+            case ramses::EPropertyType::Vec2i:
                 prop.set(val.as<vec2i>());
                 break;
-            case rlogic::EPropertyType::Vec3i:
+            case ramses::EPropertyType::Vec3i:
                 prop.set(val.as<vec3i>());
                 break;
-            case rlogic::EPropertyType::Vec4i:
+            case ramses::EPropertyType::Vec4i:
                 prop.set(val.as<vec4i>());
                 break;
-            case rlogic::EPropertyType::Bool:
+            case ramses::EPropertyType::Bool:
                 prop.set(val.as<bool>());
                 break;
-            case rlogic::EPropertyType::String:
+            case ramses::EPropertyType::String:
                 prop.set(val.as<std::string>());
                 break;
-            case rlogic::EPropertyType::Array:
+            case ramses::EPropertyType::Array:
                 auto tbl = val.as<sol::table>();
                 for (const auto& item : tbl)
                 {
@@ -123,34 +123,34 @@ namespace rlogic
             }
         }
 
-        sol::object getPropertyValue(const rlogic::Property& prop, sol::this_state L)
+        sol::object getPropertyValue(const ramses::Property& prop, sol::this_state L)
         {
             switch (prop.getType())
             {
-            case rlogic::EPropertyType::Int32:
+            case ramses::EPropertyType::Int32:
                 return sol::object(L, sol::in_place, prop.get<int32_t>());
-            case rlogic::EPropertyType::Int64:
+            case ramses::EPropertyType::Int64:
                 return sol::object(L, sol::in_place, prop.get<int64_t>());
-            case rlogic::EPropertyType::Float:
+            case ramses::EPropertyType::Float:
                 return sol::object(L, sol::in_place, prop.get<float>());
-            case rlogic::EPropertyType::Vec2f:
+            case ramses::EPropertyType::Vec2f:
                 return sol::object(L, sol::in_place, prop.get<vec2f>());
-            case rlogic::EPropertyType::Vec3f:
+            case ramses::EPropertyType::Vec3f:
                 return sol::object(L, sol::in_place, prop.get<vec3f>());
-            case rlogic::EPropertyType::Vec4f:
+            case ramses::EPropertyType::Vec4f:
                 return sol::object(L, sol::in_place, prop.get<vec4f>());
-            case rlogic::EPropertyType::Vec2i:
+            case ramses::EPropertyType::Vec2i:
                 return sol::object(L, sol::in_place, prop.get<vec2i>());
-            case rlogic::EPropertyType::Vec3i:
+            case ramses::EPropertyType::Vec3i:
                 return sol::object(L, sol::in_place, prop.get<vec3i>());
-            case rlogic::EPropertyType::Vec4i:
+            case ramses::EPropertyType::Vec4i:
                 return sol::object(L, sol::in_place, prop.get<vec4i>());
-            case rlogic::EPropertyType::Bool:
+            case ramses::EPropertyType::Bool:
                 return sol::object(L, sol::in_place, prop.get<bool>());
-            case rlogic::EPropertyType::String:
+            case ramses::EPropertyType::String:
                 return sol::object(L, sol::in_place, prop.get<std::string>());
-            case rlogic::EPropertyType::Array:
-            case rlogic::EPropertyType::Struct:
+            case ramses::EPropertyType::Array:
+            case ramses::EPropertyType::Struct:
                 // no values for array and struct
                 break;
             }
@@ -158,7 +158,7 @@ namespace rlogic
         }
 
         template<bool Const>
-        sol::object getChildProperty(rlogic::Property& prop, sol::stack_object key, sol::this_state L)
+        sol::object getChildProperty(ramses::Property& prop, sol::stack_object key, sol::this_state L)
         {
             using ChildWrapper = std::conditional_t<Const, ConstPropertyWrapper, PropertyWrapper>;
             auto strKey = key.as<sol::optional<std::string>>();
@@ -188,7 +188,7 @@ namespace rlogic
         }
     } // namespace
 
-    ConstPropertyWrapper::ConstPropertyWrapper(const rlogic::Property& property)
+    ConstPropertyWrapper::ConstPropertyWrapper(const ramses::Property& property)
         : m_property(property)
     {
     }
@@ -211,7 +211,7 @@ namespace rlogic
         return getChildProperty<true>(const_cast<Property&>(m_property), key, L);
     }
 
-    PropertyWrapper::PropertyWrapper(rlogic::Property& property)
+    PropertyWrapper::PropertyWrapper(ramses::Property& property)
         : m_property(property)
     {
     }
@@ -288,7 +288,7 @@ namespace rlogic
     sol::object NodeListWrapper<T>::get(sol::stack_object key, sol::this_state L)
     {
         auto strKey = key.as<sol::optional<std::string>>();
-        rlogic::LogicNode* node = nullptr;
+        ramses::LogicNode* node = nullptr;
         if (strKey)
         {
             node = find(*strKey);
@@ -301,7 +301,7 @@ namespace rlogic
                 auto* obj = m_logicEngine.findLogicObjectById(static_cast<uint64_t>(*intKey));
                 if (obj != nullptr)
                 {
-                    node = obj->as<rlogic::LogicNode>();
+                    node = obj->template as<ramses::LogicNode>();
                 }
             }
         }
@@ -343,5 +343,5 @@ namespace rlogic
     template struct NodeListWrapper<RamsesMeshNodeBinding>;
     template struct NodeListWrapper<AnchorPoint>;
     template struct NodeListWrapper<SkinBinding>;
-} // namespace rlogic
+} // namespace ramses
 

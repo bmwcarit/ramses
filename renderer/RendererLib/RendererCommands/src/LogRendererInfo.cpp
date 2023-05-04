@@ -31,7 +31,7 @@ namespace ramses_internal
         getArgument<2>().registerKeyword("f");
     }
 
-    Bool LogRendererInfo::execute(String& topic, Bool& verbose, MemoryHandle& nodeHandleFilter) const
+    bool LogRendererInfo::execute(String& topic, bool& verbose, MemoryHandle& nodeHandleFilter) const
     {
         const ERendererLogTopic etopic = GetRendererTopic(topic);
         if (etopic == ERendererLogTopic::COUNT)

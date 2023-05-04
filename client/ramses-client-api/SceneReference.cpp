@@ -11,42 +11,40 @@
 
 namespace ramses
 {
-    SceneReference::SceneReference(SceneReferenceImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
+    SceneReference::SceneReference(std::unique_ptr<SceneReferenceImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<SceneReferenceImpl&>(SceneObject::m_impl) }
     {
     }
 
-    SceneReference::~SceneReference() = default;
-
     status_t SceneReference::requestState(RendererSceneState requestedState)
     {
-        const status_t status = impl.requestState(requestedState);
+        const status_t status = m_impl.requestState(requestedState);
         LOG_HL_CLIENT_API1(status, static_cast<uint32_t>(requestedState));
         return status;
     }
 
     sceneId_t SceneReference::getReferencedSceneId() const
     {
-        return impl.getReferencedSceneId();
+        return m_impl.getReferencedSceneId();
     }
 
     status_t SceneReference::requestNotificationsForSceneVersionTags(bool flag)
     {
-        const auto status = impl.requestNotificationsForSceneVersionTags(flag);
+        const auto status = m_impl.requestNotificationsForSceneVersionTags(flag);
         LOG_HL_CLIENT_API1(status, flag);
         return status;
     }
 
     status_t SceneReference::setRenderOrder(int32_t renderOrder)
     {
-        const auto status = impl.setRenderOrder(renderOrder);
+        const auto status = m_impl.setRenderOrder(renderOrder);
         LOG_HL_CLIENT_API1(status, renderOrder);
         return status;
     }
 
     ramses::RendererSceneState SceneReference::getRequestedState() const
     {
-        return impl.getRequestedState();
+        return m_impl.getRequestedState();
     }
 }

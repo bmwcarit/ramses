@@ -91,7 +91,7 @@ namespace ramses_internal
 
     int SceneViewer::run()
     {
-        GetRamsesLogger().initialize(m_frameworkConfig.impl.loggerConfig, false, true);
+        GetRamsesLogger().initialize(m_frameworkConfig.m_impl.get().loggerConfig, false, true);
         const String scenePathAndFile = m_sceneName.c_str();
         const File sceneFile(scenePathAndFile);
         m_sceneName = sceneFile.getFileName().stdRef();

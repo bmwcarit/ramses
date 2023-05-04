@@ -49,13 +49,13 @@ namespace ramses_internal
 {
     namespace
     {
-        void getRotation(ramses::NodeImpl* node, Vector4& rot, ERotationType& rotationConventionInternal)
+        void getRotation(ramses::NodeImpl* node, glm::vec4& rot, ERotationType& rotationConventionInternal)
         {
             rotationConventionInternal = node->getIScene().getRotationType(node->getTransformHandle());
             rot = node->getIScene().getRotation(node->getTransformHandle());
         }
 
-        void setRotation(ramses::NodeImpl* node, const Vector4& rot, ramses_internal::ERotationType rotationType)
+        void setRotation(ramses::NodeImpl* node, const glm::vec4& rot, ramses_internal::ERotationType rotationType)
         {
             if (rotationType == ERotationType::Quaternion)
             {
@@ -237,7 +237,7 @@ namespace ramses_internal
                 auto range = m_resourceInfo->equal_range(hlResource.getLowlevelResourceHash());
                 for (auto it = range.first; it != range.second; ++it)
                 {
-                    draw(it->second->impl);
+                    draw(it->second->m_impl);
                 }
                 ImGui::TreePop();
             }
@@ -263,25 +263,26 @@ namespace ramses_internal
         , m_imageCache(imguiHelper.getScene())
     {
         ramses_internal::StringOutputStream dummyStream;
-        ramses::SceneDumper sceneDumper(scene.impl);
+        ramses::SceneDumper sceneDumper(scene.m_impl);
         sceneDumper.dumpUnrequiredObjects(dummyStream);
         m_usedObjects = sceneDumper.getRequiredObjects();
         m_resourceInfo = std::make_unique<ResourceList>(scene, m_usedObjects);
         const char* report = m_scene.getValidationReport(ramses::EValidationSeverity_Warning);
         m_hasSceneErrors = ((report != nullptr) && (report[0] != 0));
         ImGuiIO& io = ImGui::GetIO();
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     }
 
     const ramses::RenderBuffer* SceneViewerGui::findRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isRenderBufferAllocated(renderBufferHandle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isRenderBufferAllocated(renderBufferHandle);
         if (isAllocated)
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_RenderBuffer);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.m_impl.getObjectRegistry(), ramses::ERamsesObjectType_RenderBuffer);
             while (const ramses::RenderBuffer* renderBuffer = iter.getNext<ramses::RenderBuffer>())
             {
-                if (renderBufferHandle == renderBuffer->impl.getRenderBufferHandle())
+                if (renderBufferHandle == renderBuffer->m_impl.getRenderBufferHandle())
                 {
                     return renderBuffer;
                 }
@@ -292,13 +293,13 @@ namespace ramses_internal
 
     const ramses::Texture2DBuffer* SceneViewerGui::findTextureBuffer(ramses_internal::TextureBufferHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isTextureBufferAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isTextureBufferAllocated(handle);
         if (isAllocated)
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2DBuffer);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.m_impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2DBuffer);
             while (const ramses::Texture2DBuffer* textureBuffer = iter.getNext<ramses::Texture2DBuffer>())
             {
-                if (handle == textureBuffer->impl.getTextureBufferHandle())
+                if (handle == textureBuffer->m_impl.getTextureBufferHandle())
                 {
                     return textureBuffer;
                 }
@@ -309,13 +310,13 @@ namespace ramses_internal
 
     const ramses::TextureSampler* SceneViewerGui::findTextureSampler(ramses_internal::TextureSamplerHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isTextureSamplerAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isTextureSamplerAllocated(handle);
         if (isAllocated)
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_TextureSampler);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.m_impl.getObjectRegistry(), ramses::ERamsesObjectType_TextureSampler);
             while (const ramses::TextureSampler* textureSampler = iter.getNext<ramses::TextureSampler>())
             {
-                if (handle == textureSampler->impl.getTextureSamplerHandle())
+                if (handle == textureSampler->m_impl.getTextureSamplerHandle())
                 {
                     return textureSampler;
                 }
@@ -326,13 +327,13 @@ namespace ramses_internal
 
     const ramses::ArrayBuffer* SceneViewerGui::findArrayBuffer(ramses_internal::DataBufferHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isDataBufferAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isDataBufferAllocated(handle);
         if (isAllocated)
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_ArrayBufferObject);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.m_impl.getObjectRegistry(), ramses::ERamsesObjectType_ArrayBufferObject);
             while (const ramses::ArrayBuffer* dataBuffer = iter.getNext<ramses::ArrayBuffer>())
             {
-                if (handle == dataBuffer->impl.getDataBufferHandle())
+                if (handle == dataBuffer->m_impl.getDataBufferHandle())
                 {
                     return dataBuffer;
                 }
@@ -343,13 +344,13 @@ namespace ramses_internal
 
     const ramses::Node* SceneViewerGui::findNode(ramses_internal::NodeHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isNodeAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isNodeAllocated(handle);
         if (isAllocated)
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_Node);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.m_impl.getObjectRegistry(), ramses::ERamsesObjectType_Node);
             while (const ramses::Node* node = iter.getNext<ramses::Node>())
             {
-                if (handle == node->impl.getNodeHandle())
+                if (handle == node->m_impl.getNodeHandle())
                 {
                     return node;
                 }
@@ -360,14 +361,14 @@ namespace ramses_internal
 
     const ramses::DataObject* SceneViewerGui::findDataObject(ramses_internal::DataInstanceHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isDataInstanceAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isDataInstanceAllocated(handle);
         if (isAllocated)
         {
             ramses::RamsesObjectVector objects;
-            m_scene.impl.getObjectRegistry().getObjectsOfType(objects, ramses::ERamsesObjectType_DataObject);
+            m_scene.m_impl.getObjectRegistry().getObjectsOfType(objects, ramses::ERamsesObjectType_DataObject);
             for (auto it = objects.begin(); it != objects.end(); ++it)
             {
-                if (handle == static_cast<ramses::DataObject*>(*it)->impl.getDataReference())
+                if (handle == static_cast<ramses::DataObject*>(*it)->m_impl.getDataReference())
                 {
                     return static_cast<ramses::DataObject*>(*it);
                 }
@@ -380,10 +381,10 @@ namespace ramses_internal
     {
         if (hash.isValid())
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2D);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.m_impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2D);
             while (const ramses::Texture2D* texture = iter.getNext<ramses::Texture2D>())
             {
-                if (texture->impl.getLowlevelResourceHash() == hash)
+                if (texture->m_impl.getLowlevelResourceHash() == hash)
                 {
                     return texture;
                 }
@@ -394,10 +395,10 @@ namespace ramses_internal
 
     const ramses_internal::DataSlot* SceneViewerGui::findDataSlot(ramses_internal::NodeHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isNodeAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isNodeAllocated(handle);
         if (isAllocated)
         {
-            const auto& slots = m_scene.impl.getIScene().getDataSlots();
+            const auto& slots = m_scene.m_impl.getIScene().getDataSlots();
             for (auto it : slots)
             {
                 if (it.second->attachedNode == handle)
@@ -411,10 +412,10 @@ namespace ramses_internal
 
     const ramses_internal::DataSlot* SceneViewerGui::findDataSlot(ramses_internal::DataInstanceHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isDataInstanceAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isDataInstanceAllocated(handle);
         if (isAllocated)
         {
-            const auto& slots = m_scene.impl.getIScene().getDataSlots();
+            const auto& slots = m_scene.m_impl.getIScene().getDataSlots();
             for (auto it : slots)
             {
                 if (it.second->attachedDataReference == handle)
@@ -428,10 +429,10 @@ namespace ramses_internal
 
     const ramses_internal::DataSlot* SceneViewerGui::findDataSlot(ramses_internal::TextureSamplerHandle handle) const
     {
-        const bool isAllocated = m_scene.impl.getIScene().isTextureSamplerAllocated(handle);
+        const bool isAllocated = m_scene.m_impl.getIScene().isTextureSamplerAllocated(handle);
         if (isAllocated)
         {
-            const auto& slots = m_scene.impl.getIScene().getDataSlots();
+            const auto& slots = m_scene.m_impl.getIScene().getDataSlots();
             for (auto it : slots)
             {
                 if (it.second->attachedTextureSampler == handle)
@@ -447,7 +448,7 @@ namespace ramses_internal
     {
         if (hash.isValid())
         {
-            const auto& slots = m_scene.impl.getIScene().getDataSlots();
+            const auto& slots = m_scene.m_impl.getIScene().getDataSlots();
             for (auto it : slots)
             {
                 if (it.second->attachedTexture == hash)
@@ -471,7 +472,7 @@ namespace ramses_internal
             // fill the list initially
             const auto type = ramses::TYPE_ID_OF_RAMSES_OBJECT<T>::ID;
             ramses::RamsesObjectVector objects;
-            m_scene.impl.getObjectRegistry().getObjectsOfType(objects, type);
+            m_scene.m_impl.getObjectRegistry().getObjectsOfType(objects, type);
             for (ramses::RamsesObject* obj : objects)
             {
                 const T* tObj = static_cast<const T*>(obj);
@@ -486,7 +487,7 @@ namespace ramses_internal
             {
                 for (ramses::RamsesObject* obj : filteredList)
                 {
-                    draw(obj->impl);
+                    draw(obj->m_impl);
                 }
                 ImGui::TreePop();
             }
@@ -604,21 +605,21 @@ namespace ramses_internal
             ImGui::Text("DataSlot: %u %s", slot->id.getValue(), EnumToString(slot->type));
         if (ImGui::TreeNode("Transformation"))
         {
-            Vector4 rot;
+            glm::vec4 rot;
             ramses_internal::ERotationType rotationType;
             getRotation(&obj, rot, rotationType);
             if (rotationType == ERotationType::Quaternion)
             {
-                if (ImGui::DragFloat4("Rotation (x,y,z,w)", rot.data, .01f, -1.f, 1.f, "%.6f"))
+                if (ImGui::DragFloat4("Rotation (x,y,z,w)", glm::value_ptr(rot), .01f, -1.f, 1.f, "%.6f"))
                     setRotation(&obj, rot, rotationType);
             }
             else
             {
-                if (ImGui::DragFloat3("Rotation (x,y,z)", rot.data, 1.0f, -360.f, 360.f, "%.1f"))
+                if (ImGui::DragFloat3("Rotation (x,y,z)", glm::value_ptr(rot), 1.0f, -360.f, 360.f, "%.1f"))
                     setRotation(&obj, rot, rotationType);
             }
             int rotationConventionInt = static_cast<int>(rotationType);
-            if (ImGui::Combo("RotationConvention", &rotationConventionInt, ramses_internal::ERotationTypeNames, 13, -1))
+            if (ImGui::Combo("RotationConvention", &rotationConventionInt, ERotationTypeNames.data(), static_cast<int>(ERotationTypeNames.size()), -1))
                 setRotation(&obj, rot, static_cast<ramses_internal::ERotationType>(rotationConventionInt));
             ramses::vec3f xyz;
             obj.getTranslation(xyz);
@@ -639,7 +640,7 @@ namespace ramses_internal
     {
         for (uint32_t i = 0; i < obj.getChildCount(); ++i)
         {
-            draw(obj.getChild(i)->impl);
+            draw(obj.getChild(i)->m_impl);
         }
         if (obj.getParentImpl() != nullptr)
         {
@@ -652,27 +653,27 @@ namespace ramses_internal
     void SceneViewerGui::drawMeshNode(ramses::MeshNodeImpl& obj)
     {
         drawNode(obj);
-        draw(obj.getAppearance()->impl);
-        draw(obj.getGeometryBinding()->impl);
+        draw(obj.getAppearance()->m_impl);
+        draw(obj.getGeometryBinding()->m_impl);
         drawNodeChildrenParent(obj);
-        drawRefs<ramses::RenderGroup>("Used by RenderGroup", obj, [&](const ramses::RenderGroup* ref) { return ref->impl.contains(obj); });
+        drawRefs<ramses::RenderGroup>("Used by RenderGroup", obj, [&](const ramses::RenderGroup* ref) { return ref->m_impl.contains(obj); });
     }
 
     void SceneViewerGui::drawPickableObject(ramses::PickableObjectImpl& obj)
     {
         drawNode(obj);
-        draw(obj.getGeometryBuffer().impl);
+        draw(obj.getGeometryBuffer().m_impl);
         auto camera = obj.getCamera();
         if (camera != nullptr)
-            draw(camera->impl);
+            draw(camera->m_impl);
         drawNodeChildrenParent(obj);
     }
 
     void SceneViewerGui::drawCameraNode(ramses::CameraNodeImpl& obj)
     {
         drawNode(obj);
-        int32_t xy[2];
-        int32_t wh[2];
+        std::array<int32_t, 2> xy;
+        std::array<int32_t, 2> wh;
         xy[0] = obj.getViewportX();
         xy[1] = obj.getViewportY();
         wh[0] = obj.getViewportWidth();
@@ -684,12 +685,12 @@ namespace ramses_internal
             if (dataObject != nullptr)
             {
                 ImGui::SameLine();
-                draw(dataObject->impl);
+                draw(dataObject->m_impl);
             }
         }
         else
         {
-            if (ImGui::DragInt2("Viewport Offset(x, y)", xy))
+            if (ImGui::DragInt2("Viewport Offset(x, y)", xy.data()))
                 obj.setViewport(xy[0], xy[1], wh[0], wh[1]);
         }
 
@@ -700,12 +701,12 @@ namespace ramses_internal
             if (dataObject != nullptr)
             {
                 ImGui::SameLine();
-                draw(dataObject->impl);
+                draw(dataObject->m_impl);
             }
         }
         else
         {
-            if (ImGui::DragInt2("Viewport Size(w, h)", wh))
+            if (ImGui::DragInt2("Viewport Size(w, h)", wh.data()))
                 obj.setViewport(xy[0], xy[1], wh[0], wh[1]);
         }
 
@@ -716,7 +717,7 @@ namespace ramses_internal
             if (frustrum != nullptr)
             {
                 ImGui::SameLine();
-                draw(frustrum->impl);
+                draw(frustrum->m_impl);
             }
 
             ImGui::Text("Frustrum (n,f):");
@@ -724,42 +725,42 @@ namespace ramses_internal
             if (nearFar != nullptr)
             {
                 ImGui::SameLine();
-                draw(nearFar->impl);
+                draw(nearFar->m_impl);
             }
         }
         else
         {
-            float lrbp[4];
+            std::array<float, 4> lrbp;
             lrbp[0] = obj.getLeftPlane();
             lrbp[1] = obj.getRightPlane();
             lrbp[2] = obj.getBottomPlane();
             lrbp[3] = obj.getTopPlane();
-            float nf[2];
+            std::array<float, 2> nf;
             nf[0] = obj.getNearPlane();
             nf[1] = obj.getFarPlane();
-            if (ImGui::DragFloat4("Frustrum (l,r,b,t)", lrbp, 0.001f))
+            if (ImGui::DragFloat4("Frustrum (l,r,b,t)", lrbp.data(), 0.001f))
                 obj.setFrustum(lrbp[0], lrbp[1], lrbp[2], lrbp[3], nf[0], nf[1]);
-            if (ImGui::DragFloat2("Frustrum (n,f)", nf, 0.1f))
+            if (ImGui::DragFloat2("Frustrum (n,f)", nf.data(), 0.1f))
                 obj.setFrustum(lrbp[0], lrbp[1], lrbp[2], lrbp[3], nf[0], nf[1]);
             if (obj.getType() == ramses::ERamsesObjectType_PerspectiveCamera)
             {
-                float va[2];
+                std::array<float, 2> va;
                 va[0] = obj.getVerticalFieldOfView();
                 va[1] = obj.getAspectRatio();
-                if (ImGui::DragFloat2("VerticalFoV, AspectRatio", va, 0.1f))
+                if (ImGui::DragFloat2("VerticalFoV, AspectRatio", va.data(), 0.1f))
                     obj.setPerspectiveFrustum(va[0], va[1], nf[0], nf[1]);
             }
         }
         drawNodeChildrenParent(obj);
         drawRefs<ramses::RenderPass>("Used by RenderPass", obj, [&](const ramses::RenderPass* ref) {
-            return ref->impl.getCamera() == &obj.getRamsesObject();
+            return ref->m_impl.getCamera() == &obj.getRamsesObject();
         });
     }
 
     void SceneViewerGui::drawResource(ramses::ResourceImpl& obj)
     {
         const auto hash = obj.getLowlevelResourceHash();
-        auto resource = m_scene.getRamsesClient().impl.getResource(hash);
+        auto resource = m_scene.getRamsesClient().m_impl.getResource(hash);
         const auto hashString = fmt::format("{}", hash);
         ImGui::Text("Hash: %s", hashString.c_str());
         if (ImGui::BeginPopupContextItem(hashString.c_str()))
@@ -803,7 +804,7 @@ namespace ramses_internal
     void SceneViewerGui::drawEffect(ramses::EffectImpl& obj)
     {
         drawResource(obj);
-        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        auto resource = m_scene.getRamsesClient().m_impl.getResource(obj.getLowlevelResourceHash());
         if (resource)
         {
             if (ImGui::Button("Shader Sources..."))
@@ -865,8 +866,8 @@ namespace ramses_internal
             ImGui::BulletText(format, shortName(a.dataType), a.inputName.c_str(), a.elementCount, EFixedSemanticsNames[static_cast<int>(a.semantics)]);
         }
 
-        drawRefs<ramses::Appearance>("Used by Appearance", obj, [&](const ramses::Appearance* ref) { return ref->impl.getEffectImpl()== &obj; });
-        drawRefs<ramses::GeometryBinding>("Used by GeometryBinding", obj, [&](const ramses::GeometryBinding* ref) { return &ref->impl.getEffect().impl == &obj; });
+        drawRefs<ramses::Appearance>("Used by Appearance", obj, [&](const ramses::Appearance* ref) { return ref->m_impl.getEffectImpl()== &obj; });
+        drawRefs<ramses::GeometryBinding>("Used by GeometryBinding", obj, [&](const ramses::GeometryBinding* ref) { return &ref->m_impl.getEffect().m_impl == &obj; });
     }
 
     void SceneViewerGui::drawRenderPass(ramses::RenderPassImpl& obj)
@@ -885,14 +886,14 @@ namespace ramses_internal
                 obj.setClearFlags(clearFlags);
             if (clearFlags & ramses::EClearFlags_Color)
             {
-                float rgba[4];
+                std::array<float, 4> rgba;
                 const auto& color = obj.getClearColor();
                 rgba[0] = color.r;
                 rgba[1] = color.g;
                 rgba[2] = color.b;
                 rgba[3] = color.a;
-                if (ImGui::ColorEdit4("ClearColor", rgba))
-                    obj.setClearColor(ramses_internal::Vector4(rgba[0], rgba[1], rgba[2], rgba[3]));
+                if (ImGui::ColorEdit4("ClearColor", rgba.data()))
+                    obj.setClearColor(glm::vec4(rgba[0], rgba[1], rgba[2], rgba[3]));
             }
             ImGui::TreePop();
         }
@@ -909,11 +910,11 @@ namespace ramses_internal
                 obj.retriggerRenderOnce();
         }
 
-        draw(obj.getCamera()->impl);
+        draw(obj.getCamera()->m_impl);
 
         auto rt = obj.getRenderTarget();
         if (rt != nullptr)
-            draw(rt->impl);
+            draw(rt->m_impl);
         else
             ImGui::Text("No render target");
 
@@ -998,7 +999,7 @@ namespace ramses_internal
         }
 
         drawRefs<ramses::RenderPass>("Used by RenderPass", obj, [&](const ramses::RenderPass* ref) {
-            const auto& groups = ref->impl.getAllRenderGroups();
+            const auto& groups = ref->m_impl.getAllRenderGroups();
             return std::find(groups.begin(), groups.end(), &obj) != groups.end();
         });
     }
@@ -1006,82 +1007,82 @@ namespace ramses_internal
     void SceneViewerGui::drawRenderTarget(ramses::RenderTargetImpl& obj)
     {
         const auto rtHandle = obj.getRenderTargetHandle();
-        const uint32_t numBuffers = m_scene.impl.getIScene().getRenderTargetRenderBufferCount(rtHandle);
+        const uint32_t numBuffers = m_scene.m_impl.getIScene().getRenderTargetRenderBufferCount(rtHandle);
         for (uint32_t i = 0; i < numBuffers; ++i)
         {
-            const auto rbHandle = m_scene.impl.getIScene().getRenderTargetRenderBuffer(rtHandle, i);
+            const auto rbHandle = m_scene.m_impl.getIScene().getRenderTargetRenderBuffer(rtHandle, i);
             const ramses::RenderBuffer* rb = findRenderBuffer(rbHandle);
             if (rb != nullptr)
-                draw(rb->impl);
+                draw(rb->m_impl);
             else
                 ImGui::Text("RenderBuffer not found");
         }
         drawRefs<ramses::RenderPass>("Used by RenderPass", obj, [&](const ramses::RenderPass* ref) {
-            return (ref->impl.getRenderTarget() == &obj.getRamsesObject());
+            return (ref->m_impl.getRenderTarget() == &obj.getRamsesObject());
         });
     }
 
     void SceneViewerGui::drawRenderBuffer(ramses::RenderBufferImpl& obj)
     {
-        const auto& rb = m_scene.impl.getIScene().getRenderBuffer(obj.getRenderBufferHandle());
+        const auto& rb = m_scene.m_impl.getIScene().getRenderBuffer(obj.getRenderBufferHandle());
         ImGui::Text("Width:%u Height:%u", rb.width, rb.height);
         ImGui::Text("BufferType: %s", EnumToString(rb.type));
         ImGui::Text("BufferFormat: %s", EnumToString(rb.format));
         ImGui::Text("AccessMode: %s", EnumToString(rb.accessMode));
         ImGui::Text("SampleCount: %u", rb.sampleCount);
         drawRefs<ramses::RenderTarget>("Used by RenderTarget", obj, [&](const ramses::RenderTarget* ref) {
-            const auto rtHandle   = ref->impl.getRenderTargetHandle();
-            const uint32_t numBuffers = m_scene.impl.getIScene().getRenderTargetRenderBufferCount(rtHandle);
+            const auto rtHandle   = ref->m_impl.getRenderTargetHandle();
+            const uint32_t numBuffers = m_scene.m_impl.getIScene().getRenderTargetRenderBufferCount(rtHandle);
             for (uint32_t i = 0; i < numBuffers; ++i)
             {
-                const auto rbHandle = m_scene.impl.getIScene().getRenderTargetRenderBuffer(rtHandle, i);
+                const auto rbHandle = m_scene.m_impl.getIScene().getRenderTargetRenderBuffer(rtHandle, i);
                 if (rbHandle == obj.getRenderBufferHandle())
                     return true;
             }
             return false;
         });
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
-            const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->m_impl.getTextureSamplerHandle());
             return (sampler.isRenderBuffer()) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
         });
         drawRefs<ramses::TextureSamplerMS>("Used by TextureSamplerMS", obj, [&](const ramses::TextureSamplerMS* ref) {
-            const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->m_impl.getTextureSamplerHandle());
             return (sampler.isRenderBuffer()) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
         });
         drawRefs<ramses::BlitPass>("Used by BlitPass", obj, [&](const ramses::BlitPass* ref) {
-            const auto& bp = m_scene.impl.getIScene().getBlitPass(ref->impl.getBlitPassHandle());
+            const auto& bp = m_scene.m_impl.getIScene().getBlitPass(ref->m_impl.getBlitPassHandle());
             return (bp.sourceRenderBuffer == obj.getRenderBufferHandle()) || (bp.destinationRenderBuffer == obj.getRenderBufferHandle());
         });
     }
 
     void SceneViewerGui::drawBlitPass(ramses::BlitPassImpl& obj)
     {
-        const auto& bp = m_scene.impl.getIScene().getBlitPass(obj.getBlitPassHandle());
-        int src[4] = {static_cast<int>(bp.sourceRegion.x), static_cast<int>(bp.sourceRegion.y), bp.sourceRegion.width, bp.sourceRegion.height};
-        int dst[2] = {static_cast<int>(bp.destinationRegion.x), static_cast<int>(bp.destinationRegion.y)};
+        const auto& bp = m_scene.m_impl.getIScene().getBlitPass(obj.getBlitPassHandle());
+        std::array src = {static_cast<int>(bp.sourceRegion.x), static_cast<int>(bp.sourceRegion.y), bp.sourceRegion.width, bp.sourceRegion.height};
+        std::array dst = {static_cast<int>(bp.destinationRegion.x), static_cast<int>(bp.destinationRegion.y)};
         bool isEnabled = bp.isEnabled;
         int renderOrder = obj.getRenderOrder();
         if (ImGui::Checkbox("Enabled", &isEnabled))
             obj.setEnabled(isEnabled);
         if (ImGui::DragInt("RenderOrder", &renderOrder))
             obj.setRenderOrder(renderOrder);
-        if (ImGui::DragInt4("SourceRegion (x,y,w,h)", src))
+        if (ImGui::DragInt4("SourceRegion (x,y,w,h)", src.data()))
             obj.setBlittingRegion(src[0], src[1], dst[0], dst[1], src[2], src[3]);
-        if (ImGui::DragInt2("Destination (x,y)", dst))
+        if (ImGui::DragInt2("Destination (x,y)", dst.data()))
             obj.setBlittingRegion(src[0], src[1], dst[0], dst[1], src[2], src[3]);
         ImGui::Text("src:");
         ImGui::SameLine();
-        draw(obj.getSourceRenderBuffer().impl);
+        draw(obj.getSourceRenderBuffer().m_impl);
         ImGui::Text("dst:");
         ImGui::SameLine();
-        draw(obj.getDestinationRenderBuffer().impl);
+        draw(obj.getDestinationRenderBuffer().m_impl);
     }
 
     void SceneViewerGui::drawAppearance(ramses::Appearance& appearance)
     {
-        auto& obj = appearance.impl;
+        auto& obj = appearance.m_impl;
         const ramses::Effect& effect = obj.getEffect();
-        ramses_internal::ClientScene& iscene   = m_scene.impl.getIScene();
+        ramses_internal::ClientScene& iscene   = m_scene.m_impl.getIScene();
 
         imgui::RenderState(iscene, obj.getRenderStateHandle());
 
@@ -1092,18 +1093,18 @@ namespace ramses_internal
                 ramses::UniformInput uniform;
                 effect.getUniformInput(i, uniform);
                 assert(uniform.isValid());
-                const ramses::DataObject* boundObj = obj.getBoundDataObject(uniform.impl);
+                const ramses::DataObject* boundObj = obj.getBoundDataObject(uniform.m_impl);
                 if (uniform.getSemantics() != ramses::EEffectUniformSemantic::Invalid)
                 {
-                    ImGui::BulletText("%s %s[%u] (%s)", shortName(uniform.impl.getInternalDataType()), uniform.getName(), uniform.getElementCount(), EFixedSemanticsNames[static_cast<int>(uniform.impl.getSemantics())]);
+                    ImGui::BulletText("%s %s[%u] (%s)", shortName(uniform.m_impl.get().getInternalDataType()), uniform.getName(), uniform.getElementCount(), EFixedSemanticsNames[static_cast<int>(uniform.m_impl.get().getSemantics())]);
                 }
                 else
                 {
                     ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-                    if (ImGui::TreeNode(uniform.getName(), "%s %s[%u]:", shortName(uniform.impl.getInternalDataType()), uniform.getName(), uniform.getElementCount()))
+                    if (ImGui::TreeNode(uniform.getName(), "%s %s[%u]:", shortName(uniform.m_impl.get().getInternalDataType()), uniform.getName(), uniform.getElementCount()))
                     {
                         if (boundObj != nullptr)
-                            draw(boundObj->impl);
+                            draw(boundObj->m_impl);
                         else
                             drawUniformValue(appearance, uniform);
                         ImGui::TreePop();
@@ -1112,9 +1113,9 @@ namespace ramses_internal
             }
             ImGui::TreePop();
         }
-        draw(effect.impl);
+        draw(effect.m_impl);
         drawRefs<ramses::MeshNode>("Used by MeshNode", obj, [&](const ramses::MeshNode* ref) {
-            return ref->impl.getAppearanceImpl() == &obj;
+            return ref->m_impl.getAppearanceImpl() == &obj;
         });
     }
 
@@ -1245,21 +1246,21 @@ namespace ramses_internal
             status = appearance.getInputTexture(uniform, textureSampler);
             if (ramses::StatusOK == status)
             {
-                draw(textureSampler->impl);
+                draw(textureSampler->m_impl);
             }
             break;
         case ramses::EDataType::TextureSampler2DMS:
             status = appearance.getInputTextureMS(uniform, textureSamplerMS);
             if (ramses::StatusOK == status)
             {
-                draw(textureSamplerMS->impl);
+                draw(textureSamplerMS->m_impl);
             }
             break;
         case ramses::EDataType::TextureSamplerExternal:
             status = appearance.getInputTextureExternal(uniform, textureSamplerExternal);
             if (ramses::StatusOK == status)
             {
-                draw(textureSamplerExternal->impl);
+                draw(textureSamplerExternal->m_impl);
             }
             break;
         case ramses::EDataType::UInt16:
@@ -1268,7 +1269,7 @@ namespace ramses_internal
         case ramses::EDataType::Matrix33F:
         case ramses::EDataType::Matrix44F:
         case ramses::EDataType::ByteBlob:
-            ImGui::Text("tbd. %s", EnumToString(uniform.impl.getInternalDataType()));
+            ImGui::Text("tbd. %s", EnumToString(uniform.m_impl.get().getInternalDataType()));
             break;
         }
 
@@ -1281,7 +1282,7 @@ namespace ramses_internal
         const ramses::Effect& effect = obj.getEffect();
         if (ImGui::TreeNode("Attribute input"))
         {
-            auto& iScene = m_scene.impl.getIScene();
+            auto& iScene = m_scene.m_impl.getIScene();
             const ramses_internal::DataLayout& layout = iScene.getDataLayout(obj.getAttributeDataLayout());
             const uint32_t dataLayoutFieldCount = layout.getFieldCount();
             for (uint32_t i = 0U; i < dataLayoutFieldCount; ++i)
@@ -1303,13 +1304,13 @@ namespace ramses_internal
                 {
                     auto buf = findArrayBuffer(dataResource.dataBuffer);
                     assert(buf != nullptr);
-                    draw(buf->impl);
+                    draw(buf->m_impl);
                 }
                 else if (dataResource.hash.isValid())
                 {
-                    const ramses::Resource* resource = m_scene.impl.scanForResourceWithHash(dataResource.hash);
+                    const ramses::Resource* resource = m_scene.m_impl.scanForResourceWithHash(dataResource.hash);
                     if (resource != nullptr)
-                        draw(resource->impl);
+                        draw(resource->m_impl);
                     else
                         ImGui::Text("Resource missing");
                 }
@@ -1317,9 +1318,9 @@ namespace ramses_internal
             ImGui::TreePop();
         }
 
-        draw(effect.impl);
+        draw(effect.m_impl);
         drawRefs<ramses::MeshNode>("Used by MeshNode", obj, [&](const ramses::MeshNode* ref) {
-            return ref->impl.getGeometryBindingImpl() == &obj;
+            return ref->m_impl.getGeometryBindingImpl() == &obj;
         });
     }
 
@@ -1336,7 +1337,7 @@ namespace ramses_internal
         const auto* slot = findDataSlot(obj.getLowlevelResourceHash());
         if (slot)
             ImGui::Text("DataSlot: %u %s", slot->id.getValue(), EnumToString(slot->type));
-        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        auto resource = m_scene.getRamsesClient().m_impl.getResource(obj.getLowlevelResourceHash());
         if (resource)
         {
             const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
@@ -1353,7 +1354,7 @@ namespace ramses_internal
         }
 
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
-            const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            const auto& sampler = obj.getIScene().getTextureSampler(ref->m_impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::ClientTexture) && (sampler.textureResource == obj.getLowlevelResourceHash());
         });
     }
@@ -1365,14 +1366,14 @@ namespace ramses_internal
         ImGui::Text("Depth:%u", obj.getDepth());
 
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
-            const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            const auto& sampler = obj.getIScene().getTextureSampler(ref->m_impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::ClientTexture) && (sampler.textureResource == obj.getLowlevelResourceHash());
         });
     }
 
     void SceneViewerGui::drawTexture2DBuffer(ramses::Texture2DBufferImpl& obj)
     {
-        const auto& tb = m_scene.impl.getIScene().getTextureBuffer(obj.getTextureBufferHandle());
+        const auto& tb = m_scene.m_impl.getIScene().getTextureBuffer(obj.getTextureBufferHandle());
         ImGui::Text("Format:%s", EnumToString(tb.textureFormat));
         for (auto it = tb.mipMaps.begin(); it != tb.mipMaps.end(); ++it)
         {
@@ -1382,7 +1383,7 @@ namespace ramses_internal
             ImGui::BulletText("size (kB): %" PRIu32, static_cast<uint32_t>(it->data.size() / 1024));
         }
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
-            const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            const auto& sampler = obj.getIScene().getTextureSampler(ref->m_impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::TextureBuffer) && (sampler.contentHandle == obj.getTextureBufferHandle());
         });
     }
@@ -1399,7 +1400,7 @@ namespace ramses_internal
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelAlpha)));
 
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
-            const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
+            const auto& sampler = obj.getIScene().getTextureSampler(ref->m_impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::ClientTexture) && (sampler.textureResource == obj.getLowlevelResourceHash());
         });
     }
@@ -1427,7 +1428,7 @@ namespace ramses_internal
         case TextureSampler::ContentType::ClientTexture:
             resource = obj.getSceneImpl().scanForResourceWithHash(sampler.textureResource);
             if (resource != nullptr)
-                draw(resource->impl);
+                draw(resource->m_impl);
             else
                 ImGui::Text("Resource missing");
             break;
@@ -1435,14 +1436,14 @@ namespace ramses_internal
         case TextureSampler::ContentType::RenderBufferMS:
             rb = findRenderBuffer(RenderBufferHandle(sampler.contentHandle));
             if (rb != nullptr)
-                draw(rb->impl);
+                draw(rb->m_impl);
             else
                 ImGui::Text("RenderBuffer missing");
             break;
         case TextureSampler::ContentType::TextureBuffer:
             textureBuffer = findTextureBuffer(TextureBufferHandle(sampler.contentHandle));
             if (textureBuffer != nullptr)
-                draw(textureBuffer->impl);
+                draw(textureBuffer->m_impl);
             else
                 ImGui::Text("TextureBuffer missing");
             break;
@@ -1471,17 +1472,17 @@ namespace ramses_internal
                 case ramses::EDataType::TextureSampler2D:
                 case ramses::EDataType::TextureSampler3D:
                 case ramses::EDataType::TextureSamplerCube:
-                    if (ref->impl.getInputTexture(uniform.impl, textureSampler) == ramses::StatusOK)
+                    if (ref->m_impl.getInputTexture(uniform.m_impl, textureSampler) == ramses::StatusOK)
                         if (textureSampler == &obj.getRamsesObject())
                             return true;
                     break;
                 case ramses::EDataType::TextureSampler2DMS:
-                    if (ref->impl.getInputTextureMS(uniform.impl, textureSamplerMS) == ramses::StatusOK)
+                    if (ref->m_impl.getInputTextureMS(uniform.m_impl, textureSamplerMS) == ramses::StatusOK)
                         if (textureSamplerMS == &obj.getRamsesObject())
                             return true;
                     break;
                 case ramses::EDataType::TextureSamplerExternal:
-                    if (ref->impl.getInputTextureExternal(uniform.impl, textureSamplerExternal) == ramses::StatusOK)
+                    if (ref->m_impl.getInputTextureExternal(uniform.m_impl, textureSamplerExternal) == ramses::StatusOK)
                         if (textureSamplerExternal == &obj.getRamsesObject())
                             return true;
                     break;
@@ -1498,13 +1499,13 @@ namespace ramses_internal
         drawResource(obj);
         ImGui::Text("%s[%u]", EnumToString(obj.getElementType()), obj.getElementCount());
         drawRefs<ramses::GeometryBinding>("Used by GeometryBinding", obj, [&](const ramses::GeometryBinding* ref) {
-            auto&          iScene     = m_scene.impl.getIScene();
-            const auto&    layout     = iScene.getDataLayout(ref->impl.getAttributeDataLayout());
+            auto&          iScene     = m_scene.m_impl.getIScene();
+            const auto&    layout     = iScene.getDataLayout(ref->m_impl.getAttributeDataLayout());
             const uint32_t fieldCount = layout.getFieldCount();
             for (uint32_t i = 0U; i < fieldCount; ++i)
             {
                 const ramses_internal::DataFieldHandle fieldIndex(i);
-                const ramses_internal::ResourceField&  dataResource = iScene.getDataResource(ref->impl.getAttributeDataInstance(), fieldIndex);
+                const ramses_internal::ResourceField&  dataResource = iScene.getDataResource(ref->m_impl.getAttributeDataInstance(), fieldIndex);
                 if (dataResource.hash == obj.getLowlevelResourceHash())
                     return true;
             }
@@ -1516,13 +1517,13 @@ namespace ramses_internal
     {
         ImGui::Text("%s[%u]", EnumToString(obj.getDataType()), obj.getElementCount());
         drawRefs<ramses::GeometryBinding>("Used by GeometryBinding", obj, [&](const ramses::GeometryBinding* ref) {
-            auto&          iScene     = m_scene.impl.getIScene();
-            const auto&    layout     = iScene.getDataLayout(ref->impl.getAttributeDataLayout());
+            auto&          iScene     = m_scene.m_impl.getIScene();
+            const auto&    layout     = iScene.getDataLayout(ref->m_impl.getAttributeDataLayout());
             const uint32_t fieldCount = layout.getFieldCount();
             for (uint32_t i = 0U; i < fieldCount; ++i)
             {
                 const ramses_internal::DataFieldHandle fieldIndex(i);
-                const ramses_internal::ResourceField&  dataResource = iScene.getDataResource(ref->impl.getAttributeDataInstance(), fieldIndex);
+                const ramses_internal::ResourceField&  dataResource = iScene.getDataResource(ref->m_impl.getAttributeDataInstance(), fieldIndex);
                 if (dataResource.dataBuffer == obj.getDataBufferHandle())
                     return true;
             }
@@ -1540,7 +1541,7 @@ namespace ramses_internal
         ramses::vec2i value2I;
         ramses::vec3i value3I;
         ramses::vec4i value4I;
-        const auto* slot = findDataSlot(obj.impl.getDataReference());
+        const auto* slot = findDataSlot(obj.m_impl.getDataReference());
         if (slot)
             ImGui::Text("DataSlot: %u %s", slot->id.getValue(), EnumToString(slot->type));
         switch (obj.getDataType())
@@ -1589,24 +1590,24 @@ namespace ramses_internal
             ImGui::Text("tbd. %s", EnumToString(obj.getDataType()));
         }
 
-        drawRefs<ramses::Appearance>("Used by Appearance", obj.impl, [&](const ramses::Appearance* ref) {
+        drawRefs<ramses::Appearance>("Used by Appearance", obj.m_impl, [&](const ramses::Appearance* ref) {
             const ramses::Effect& effect = ref->getEffect();
             for (uint32_t i = 0; i < effect.getUniformInputCount(); ++i)
             {
                 ramses::UniformInput uniform;
                 effect.getUniformInput(i, uniform);
-                const ramses::DataObject* boundObj = ref->impl.getBoundDataObject(uniform.impl);
+                const ramses::DataObject* boundObj = ref->m_impl.getBoundDataObject(uniform.m_impl);
                 if (boundObj == &obj)
                     return true;
             }
             return false;
         });
 
-        drawRefs<ramses::Camera>("Used by Camera", obj.impl, [&](const ramses::Camera* ref) {
-            auto fp = findDataObject(ref->impl.getFrustrumPlanesHandle());
-            auto nf = findDataObject(ref->impl.getFrustrumNearFarPlanesHandle());
-            auto pos = findDataObject(ref->impl.getViewportOffsetHandle());
-            auto size = findDataObject(ref->impl.getViewportSizeHandle());
+        drawRefs<ramses::Camera>("Used by Camera", obj.m_impl, [&](const ramses::Camera* ref) {
+            auto fp = findDataObject(ref->m_impl.getFrustrumPlanesHandle());
+            auto nf = findDataObject(ref->m_impl.getFrustrumNearFarPlanesHandle());
+            auto pos = findDataObject(ref->m_impl.getViewportOffsetHandle());
+            auto size = findDataObject(ref->m_impl.getViewportSizeHandle());
             const auto objPtr = &obj;
             return (objPtr == fp || objPtr == nf || objPtr == pos || objPtr == size);
         });
@@ -1627,7 +1628,7 @@ namespace ramses_internal
             {
                 auto tex = findTexture2D(obj.attachedTexture);
                 if (tex != nullptr)
-                    draw(tex->impl);
+                    draw(tex->m_impl);
                 else
                     ImGui::Text("Texture not found: %" PRIx64 ":%" PRIx64, obj.attachedTexture.highPart, obj.attachedTexture.lowPart);
             }
@@ -1635,7 +1636,7 @@ namespace ramses_internal
             {
                 auto node = findNode(obj.attachedNode);
                 if (node != nullptr)
-                    draw(node->impl);
+                    draw(node->m_impl);
                 else
                     ImGui::Text("Node not found: %u", obj.attachedNode.asMemoryHandle());
             }
@@ -1643,7 +1644,7 @@ namespace ramses_internal
             {
                 auto ref = findDataObject(obj.attachedDataReference);
                 if (ref != nullptr)
-                    draw(ref->impl);
+                    draw(ref->m_impl);
                 else
                     ImGui::Text("DataReference not found: %u", obj.attachedDataReference.asMemoryHandle());
             }
@@ -1651,7 +1652,7 @@ namespace ramses_internal
             {
                 auto ref = findTextureSampler(obj.attachedTextureSampler);
                 if (ref != nullptr)
-                    draw(ref->impl);
+                    draw(ref->m_impl);
                 else
                     ImGui::Text("TextureSampler not found: %u", obj.attachedTextureSampler.asMemoryHandle());
             }
@@ -1678,7 +1679,7 @@ namespace ramses_internal
 
         if (filterModified || m_sceneObjects.empty())
         {
-            const auto& reg = m_scene.impl.getObjectRegistry();
+            const auto& reg = m_scene.m_impl.getObjectRegistry();
             for (uint32_t i = 0u; i < ramses::ERamsesObjectType_NUMBER_OF_TYPES; ++i)
             {
                 const auto type = static_cast<ramses::ERamsesObjectType>(i);
@@ -1695,7 +1696,7 @@ namespace ramses_internal
                         ramses::RamsesObjectRegistryIterator iter(reg, ramses::ERamsesObjectType(i));
                         while (const auto* obj = iter.getNext())
                         {
-                            if (passFilter(obj->impl))
+                            if (passFilter(obj->m_impl))
                                 objects.push_back(obj);
                         }
                     }
@@ -1748,14 +1749,14 @@ namespace ramses_internal
                     {
                         for (auto* obj : it.second)
                         {
-                            draw(obj->impl);
+                            draw(obj->m_impl);
                         }
                         ImGui::TreePop();
                     }
                 }
             }
 
-            const auto& slots = m_scene.impl.getIScene().getDataSlots();
+            const auto& slots = m_scene.m_impl.getIScene().getDataSlots();
             if (slots.getTotalCount() != 0)
             {
                 if (ImGui::TreeNode("DataSlots", "Data Slots (%u)", slots.getTotalCount()))
@@ -1779,7 +1780,7 @@ namespace ramses_internal
             while (const ramses::Node* node = static_cast<const ramses::Node*>(it.getNext()))
             {
                 if (node->getParent() == nullptr)
-                    draw(node->impl);
+                    draw(node->m_impl);
             }
         }
     }
@@ -1820,7 +1821,7 @@ namespace ramses_internal
             ImGui::TextUnformatted(fmt::format("Resources sorted by {} (decending):", m_resourceInfo->orderCriteriaItems[m_resourceInfo->getOrderCriteriaIndex()]).c_str());
             for (auto it : *m_resourceInfo)
             {
-                draw(it->impl);
+                draw(it->m_impl);
             }
         }
     }
@@ -1840,7 +1841,7 @@ namespace ramses_internal
 
             if (m_renderInfo.renderPassVector.empty())
             {
-                const auto& reg = m_scene.impl.getObjectRegistry();
+                const auto& reg = m_scene.m_impl.getObjectRegistry();
                 reg.getObjectsOfType(m_renderInfo.renderPassVector, ramses::ERamsesObjectType_RenderPass);
                 std::sort(m_renderInfo.renderPassVector.begin(), m_renderInfo.renderPassVector.end(), [](const auto* a, const auto* b) {
                     return static_cast<const ramses::RenderPass*>(a)->getRenderOrder() < static_cast<const ramses::RenderPass*>(b)->getRenderOrder();
@@ -1848,7 +1849,7 @@ namespace ramses_internal
             }
             for (auto pObj : m_renderInfo.renderPassVector)
             {
-                ramses::RenderPassImpl& renderPass = static_cast<ramses::RenderPassImpl&>(pObj->impl);
+                ramses::RenderPassImpl& renderPass = static_cast<ramses::RenderPassImpl&>(pObj->m_impl);
                 const ramses::RenderTarget* rt = renderPass.getRenderTarget();
                 const auto handle = renderPass.getObjectRegistryHandle().asMemoryHandle();
                 const char* name = renderPass.getName().c_str();
@@ -1874,7 +1875,7 @@ namespace ramses_internal
                 ImGui::Text("Hover mouse for details");
                 if (m_objectsWithErrors.empty())
                 {
-                    const auto&                reg = m_scene.impl.getObjectRegistry();
+                    const auto&                reg = m_scene.m_impl.getObjectRegistry();
                     ramses::RamsesObjectVector allObjects;
                     reg.getObjectsOfType(allObjects, ramses::ERamsesObjectType_RamsesObject);
                     for (auto* obj : allObjects)
@@ -1888,7 +1889,7 @@ namespace ramses_internal
                 }
                 for (auto* obj : m_objectsWithErrors)
                 {
-                    draw(obj->impl);
+                    draw(obj->m_impl);
                 }
             }
         }
@@ -2156,12 +2157,12 @@ namespace ramses_internal
     {
         if (ImGui::MenuItem("Copy Texture2D list (CSV)"))
         {
-            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2D);
+            ramses::RamsesObjectRegistryIterator iter(m_scene.m_impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2D);
             ImGui::LogToClipboard();
             ImGui::LogText("Id, Name, Type, Hash, Loaded, Size, CompressedSize, Width, Height, Format, Swizzle, GenerateMipChain\n");
             while (const auto* obj = iter.getNext<ramses::Texture2D>())
             {
-                logTexture2D(obj->impl);
+                logTexture2D(obj->m_impl);
             }
             ImGui::LogFinish();
         }
@@ -2171,7 +2172,7 @@ namespace ramses_internal
     void SceneViewerGui::processObjectsAsync(F&& func, ramses::ERamsesObjectType objType, const char* message)
     {
         ramses::RamsesObjectVector objects;
-        m_scene.impl.getObjectRegistry().getObjectsOfType(objects, objType);
+        m_scene.m_impl.getObjectRegistry().getObjectsOfType(objects, objType);
         m_progress.stop();
         ProgressMonitor::FutureList futures;
         const size_t tasks     = objects.size() > 16u ? 4u : 1u;
@@ -2201,7 +2202,7 @@ namespace ramses_internal
                 {
                     const ramses::Texture2D* obj = static_cast<ramses::Texture2D*>(*it);
                     ++m_progress.current;
-                    const auto error = saveTexture2D(obj->impl);
+                    const auto error = saveTexture2D(obj->m_impl);
                     if (!error.empty())
                     {
                         errorList.push_back(error);
@@ -2224,7 +2225,7 @@ namespace ramses_internal
                 {
                     const ramses::Effect* obj = static_cast<ramses::Effect*>(*it);
                     ++m_progress.current;
-                    const auto error = saveShaderSources(obj->impl);
+                    const auto error = saveShaderSources(obj->m_impl);
                     if (!error.empty())
                     {
                         errorList.push_back(error);
@@ -2248,7 +2249,7 @@ namespace ramses_internal
 
     std::string SceneViewerGui::saveTexture2D(const ramses::Texture2DImpl& obj) const
     {
-        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        auto resource = m_scene.getRamsesClient().m_impl.getResource(obj.getLowlevelResourceHash());
         std::string errorMsg;
         if (resource)
         {
@@ -2261,7 +2262,7 @@ namespace ramses_internal
 
     std::string SceneViewerGui::saveShaderSources(const ramses::EffectImpl& obj) const
     {
-        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        auto resource = m_scene.getRamsesClient().m_impl.getResource(obj.getLowlevelResourceHash());
         std::string errorMsg;
         if (resource)
         {
@@ -2317,7 +2318,7 @@ namespace ramses_internal
     {
         logRamsesObject(obj);
         const auto hash = obj.getLowlevelResourceHash();
-        auto resource = m_scene.getRamsesClient().impl.getResource(hash);
+        auto resource = m_scene.getRamsesClient().m_impl.getResource(hash);
         ImGui::LogText("%s", fmt::format("{},", hash).c_str());
         if (resource)
         {
@@ -2339,7 +2340,7 @@ namespace ramses_internal
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelGreen)),
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelBlue)),
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelAlpha)));
-        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        auto resource = m_scene.getRamsesClient().m_impl.getResource(obj.getLowlevelResourceHash());
         if (resource)
         {
             const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();

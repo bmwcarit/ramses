@@ -21,7 +21,7 @@
 
 #include "SerializationTestUtils.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class ALuaInterface : public ::testing::Test
     {
@@ -65,10 +65,10 @@ namespace rlogic::internal
         EXPECT_EQ("", intf->getInputs()->getName());
 
         EXPECT_EQ("param1", intf->getInputs()->getChild(0)->getName());
-        EXPECT_EQ(rlogic::EPropertyType::Int32, intf->getInputs()->getChild(0)->getType());
+        EXPECT_EQ(ramses::EPropertyType::Int32, intf->getInputs()->getChild(0)->getType());
 
         EXPECT_EQ("param2", intf->getInputs()->getChild(1)->getName());
-        EXPECT_EQ(rlogic::EPropertyType::Float, intf->getInputs()->getChild(1)->getType());
+        EXPECT_EQ(ramses::EPropertyType::Float, intf->getInputs()->getChild(1)->getType());
     }
 
     TEST_F(ALuaInterface, ReturnsSameResultForOutputsAsInputs)
@@ -80,10 +80,10 @@ namespace rlogic::internal
         EXPECT_EQ("", intf->getOutputs()->getName());
 
         EXPECT_EQ("param1", intf->getInputs()->getChild(0)->getName());
-        EXPECT_EQ(rlogic::EPropertyType::Int32, intf->getOutputs()->getChild(0)->getType());
+        EXPECT_EQ(ramses::EPropertyType::Int32, intf->getOutputs()->getChild(0)->getType());
 
         EXPECT_EQ("param2", intf->getOutputs()->getChild(1)->getName());
-        EXPECT_EQ(rlogic::EPropertyType::Float, intf->getOutputs()->getChild(1)->getType());
+        EXPECT_EQ(ramses::EPropertyType::Float, intf->getOutputs()->getChild(1)->getType());
     }
 
     TEST_F(ALuaInterface, FailsIfNameEmpty)

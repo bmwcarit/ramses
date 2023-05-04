@@ -9,7 +9,7 @@
 #include "ramses-logic/LogicNode.h"
 #include "impl/LogicNodeImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     LogicNode::LogicNode(std::unique_ptr<internal::LogicNodeImpl> impl) noexcept
         : LogicObject(std::move(impl))
@@ -17,8 +17,6 @@ namespace rlogic
         , m_impl{ static_cast<internal::LogicNodeImpl&>(*LogicObject::m_impl) }
     {
     }
-
-    LogicNode::~LogicNode() noexcept = default;
 
     Property* LogicNode::getInputs()
     {

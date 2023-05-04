@@ -10,7 +10,6 @@
 
 #include "impl/RamsesBindingImpl.h"
 #include "ramses-logic/Property.h"
-#include "ramses-logic/DataTypes.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-framework-api/DataTypes.h"
 #include <memory>
@@ -26,7 +25,7 @@ namespace flatbuffers
     template<typename T> struct Offset;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class RamsesNodeBindingImpl;
     class RamsesAppearanceBindingImpl;

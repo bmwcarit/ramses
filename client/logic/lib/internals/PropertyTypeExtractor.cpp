@@ -16,7 +16,7 @@
 #include "fmt/format.h"
 #include <algorithm>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     PropertyTypeExtractor::PropertyTypeExtractor(std::string rootName, EPropertyType rootType)
         : m_typeData(std::move(rootName), rootType)

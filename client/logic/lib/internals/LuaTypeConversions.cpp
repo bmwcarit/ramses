@@ -11,7 +11,7 @@
 
 #include <cmath>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // extracts a plain Lua table, or one which was made read-only (e.g. module data tables)
     std::optional<sol::lua_table> LuaTypeConversions::ExtractLuaTable(const sol::object& object)
@@ -50,7 +50,7 @@ namespace rlogic::internal
         return potentialTable;
     }
 
-    size_t LuaTypeConversions::GetMaxIndexForVectorType(rlogic::EPropertyType type)
+    size_t LuaTypeConversions::GetMaxIndexForVectorType(ramses::EPropertyType type)
     {
         switch (type)
         {

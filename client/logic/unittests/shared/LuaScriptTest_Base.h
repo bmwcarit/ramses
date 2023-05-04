@@ -10,7 +10,7 @@
 
 #include "LogicEngineTest_Base.h"
 
-namespace rlogic
+namespace ramses
 {
     class ALuaScript : public ALogicEngine
     {

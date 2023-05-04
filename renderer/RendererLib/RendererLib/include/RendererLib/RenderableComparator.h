@@ -21,7 +21,7 @@ namespace ramses_internal
         {
         }
 
-        Bool operator()(const RenderableOrderEntry& renderableOrder1, const RenderableOrderEntry& renderableOrder2) const
+        bool operator()(const RenderableOrderEntry& renderableOrder1, const RenderableOrderEntry& renderableOrder2) const
         {
             if (renderableOrder1.order == renderableOrder2.order)
             {

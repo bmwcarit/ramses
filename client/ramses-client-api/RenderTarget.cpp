@@ -14,23 +14,19 @@
 
 namespace ramses
 {
-    RenderTarget::RenderTarget(RenderTargetImpl& pimpl)
-        : SceneObject(pimpl)
-        , impl(pimpl)
-    {
-    }
-
-    RenderTarget::~RenderTarget()
+    RenderTarget::RenderTarget(std::unique_ptr<RenderTargetImpl> impl)
+        : SceneObject{ std::move(impl) }
+        , m_impl{ static_cast<RenderTargetImpl&>(SceneObject::m_impl) }
     {
     }
 
     uint32_t RenderTarget::getWidth() const
     {
-        return impl.getWidth();
+        return m_impl.getWidth();
     }
 
     uint32_t RenderTarget::getHeight() const
     {
-        return impl.getHeight();
+        return m_impl.getHeight();
     }
 }

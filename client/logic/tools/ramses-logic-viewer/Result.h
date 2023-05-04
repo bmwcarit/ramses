@@ -10,7 +10,7 @@
 #include <string>
 #include <ostream>
 
-namespace rlogic
+namespace ramses
 {
     /**
      * @brief Result class as a return object for functions

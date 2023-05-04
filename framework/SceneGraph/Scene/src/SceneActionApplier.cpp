@@ -15,21 +15,13 @@
 #include "SceneAPI/Camera.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/ERotationType.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
 #include "Components/SingleResourceSerialization.h"
 #include "Components/FlushTimeInformation.h"
 #include "Resource/IResource.h"
 #include "Utils/BinaryInputStream.h"
 #include "Utils/LogMacros.h"
+#include "glm/gtx/range.hpp"
 
 #define ALLOCATE_AND_ASSERT_HANDLE(_allocateExpr, _handleToCheck) \
 { \
@@ -81,19 +73,19 @@ namespace ramses_internal
         case ESceneActionId::SetTranslation:
         {
             TransformHandle transform;
-            Vector3 vec;
+            glm::vec3 vec;
             action.read(transform);
-            action.read(vec.data);
+            action.read(vec);
             scene.setTranslation(transform, vec);
             break;
         }
         case ESceneActionId::SetRotation:
         {
             TransformHandle transform;
-            Vector4 vec;
+            glm::vec4 vec;
             ERotationType rotationType;
             action.read(transform);
-            action.read(vec.data);
+            action.read(vec);
             action.read(rotationType);
             scene.setRotation(transform, vec, rotationType);
             break;
@@ -101,9 +93,9 @@ namespace ramses_internal
         case ESceneActionId::SetScaling:
         {
             TransformHandle transform;
-            Vector3 vec;
+            glm::vec3 vec;
             action.read(transform);
-            action.read(vec.data);
+            action.read(vec);
             scene.setScaling(transform, vec);
             break;
         }
@@ -142,9 +134,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Vector2* array = const_cast<Vector2*>(scene.getDataVector2fArray(handle, field));
+            auto* array = const_cast<glm::vec2*>(scene.getDataVector2fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataVector2fArray(handle, field, elementCount, array);
             break;
         }
@@ -156,9 +148,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Vector3* array = const_cast<Vector3*>(scene.getDataVector3fArray(handle, field));
+            auto* array = const_cast<glm::vec3*>(scene.getDataVector3fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataVector3fArray(handle, field, elementCount, array);
             break;
         }
@@ -170,9 +162,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Vector4* array = const_cast<Vector4*>(scene.getDataVector4fArray(handle, field));
+            auto* array = const_cast<glm::vec4*>(scene.getDataVector4fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataVector4fArray(handle, field, elementCount, array);
             break;
         }
@@ -184,9 +176,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Matrix22f* array = const_cast<Matrix22f*>(scene.getDataMatrix22fArray(handle, field));
+            auto* array = const_cast<glm::mat2*>(scene.getDataMatrix22fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataMatrix22fArray(handle, field, elementCount, array);
             break;
         }
@@ -198,9 +190,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Matrix33f* array = const_cast<Matrix33f*>(scene.getDataMatrix33fArray(handle, field));
+            auto* array = const_cast<glm::mat3*>(scene.getDataMatrix33fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataMatrix33fArray(handle, field, elementCount, array);
             break;
         }
@@ -212,9 +204,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Matrix44f* array = const_cast<Matrix44f*>(scene.getDataMatrix44fArray(handle, field));
+            auto* array = const_cast<glm::mat4*>(scene.getDataMatrix44fArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataMatrix44fArray(handle, field, elementCount, array);
             break;
         }
@@ -238,9 +230,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Vector2i* array = const_cast<Vector2i*>(scene.getDataVector2iArray(handle, field));
+            auto* array = const_cast<glm::ivec2*>(scene.getDataVector2iArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataVector2iArray(handle, field, elementCount, array);
             break;
         }
@@ -252,9 +244,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Vector3i* array = const_cast<Vector3i*>(scene.getDataVector3iArray(handle, field));
+            auto* array = const_cast<glm::ivec3*>(scene.getDataVector3iArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataVector3iArray(handle, field, elementCount, array);
             break;
         }
@@ -266,9 +258,9 @@ namespace ramses_internal
             action.read(handle);
             action.read(field);
             action.read(elementCount);
-            Vector4i* array = const_cast<Vector4i*>(scene.getDataVector4iArray(handle, field));
+            auto* array = const_cast<glm::ivec4*>(scene.getDataVector4iArray(handle, field));
             for (UInt32 i = 0; i < elementCount; ++i)
-                action.read(array[i].data);
+                action.read(array[i]);
             scene.setDataVector4iArray(handle, field, elementCount, array);
             break;
         }
@@ -636,7 +628,7 @@ namespace ramses_internal
         case ESceneActionId::SetStateBlendColor:
         {
             RenderStateHandle stateHandle;
-            Vector4 color{ 0.f, 0.f, 0.f, 0.f };
+            glm::vec4 color{ 0.f, 0.f, 0.f, 0.f };
             action.read(stateHandle);
             action.read(color.r);
             action.read(color.g);
@@ -1007,10 +999,10 @@ namespace ramses_internal
         }
         case ESceneActionId::SetRenderPassClearColor:
         {
-            Vector4 clearColor;
+            glm::vec4 clearColor;
             RenderPassHandle renderPassHandle;
             action.read(renderPassHandle);
-            action.read(clearColor.data);
+            action.read(clearColor);
             scene.setRenderPassClearColor(renderPassHandle, clearColor);
             break;
         }
@@ -1265,7 +1257,7 @@ namespace ramses_internal
             EBlendFactor bfDstAlpha;
             EBlendOperation boColor;
             EBlendOperation boAlpha;
-            Vector4 blendColor;
+            glm::vec4 blendColor;
             ECullMode cullMode;
             EDrawMode drawMode;
             EDepthWrite depthWrite;

@@ -1066,13 +1066,13 @@ namespace ramses_internal
         const TransformHandle transform = sceneAllocator.allocateTransform(transformNode);
 
         scene.addChildToNode(transformNode, rendNode);
-        scene.setTranslation(transform, Vector3(1, 2, 3));
+        scene.setTranslation(transform, glm::vec3(1, 2, 3));
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         scene.updateRenderableWorldMatrices();
 
-        const Matrix44f expectedWorldMatrix = scene.updateMatrixCache(ETransformationMatrixType_World, rendNode);
-        const Matrix44f cachedWorldMatrix = scene.getRenderableWorldMatrix(rend);
+        const auto expectedWorldMatrix = scene.updateMatrixCache(ETransformationMatrixType_World, rendNode);
+        const auto cachedWorldMatrix = scene.getRenderableWorldMatrix(rend);
         EXPECT_EQ(expectedWorldMatrix, cachedWorldMatrix);
     }
 
@@ -1087,13 +1087,13 @@ namespace ramses_internal
         const TransformHandle transform = sceneAllocator.allocateTransform(transformNode);
 
         scene.addChildToNode(transformNode, rendNode);
-        scene.setTranslation(transform, Vector3(1, 2, 3));
+        scene.setTranslation(transform, glm::vec3(1, 2, 3));
 
         scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
         scene.updateRenderableWorldMatricesWithLinks();
 
-        const Matrix44f expectedWorldMatrix = scene.updateMatrixCache(ETransformationMatrixType_World, rendNode);
-        const Matrix44f cachedWorldMatrix = scene.getRenderableWorldMatrix(rend);
+        const auto expectedWorldMatrix = scene.updateMatrixCache(ETransformationMatrixType_World, rendNode);
+        const auto cachedWorldMatrix = scene.getRenderableWorldMatrix(rend);
         EXPECT_EQ(expectedWorldMatrix, cachedWorldMatrix);
     }
 

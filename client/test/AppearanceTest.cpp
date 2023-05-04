@@ -17,10 +17,6 @@
 #include "ramses-client-api/TextureSamplerExternal.h"
 #include "TestEffectCreator.h"
 #include "ClientTestUtils.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
 #include "EffectImpl.h"
 #include "DataObjectImpl.h"
 #include "TextureSamplerImpl.h"
@@ -150,9 +146,9 @@ namespace ramses
         const Effect& effect = appearance->getEffect();
         EXPECT_EQ(&effect, sharedTestState->effect);
 
-        const ramses_internal::DataLayout uniformLayout = sharedTestState->getInternalScene().getDataLayout(appearance->impl.getUniformDataLayout());
+        const ramses_internal::DataLayout uniformLayout = sharedTestState->getInternalScene().getDataLayout(appearance->m_impl.getUniformDataLayout());
         const ramses_internal::ResourceContentHash& effectHashFromUniformLayout = uniformLayout.getEffectHash();
-        EXPECT_EQ(appearance->getEffect().impl.getLowlevelResourceHash(), effectHashFromUniformLayout);
+        EXPECT_EQ(appearance->getEffect().m_impl.getLowlevelResourceHash(), effectHashFromUniformLayout);
     }
 
     TEST_F(AAppearanceTest, setGetBlendingFactors)
@@ -540,7 +536,6 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->getInputValue(inputObject, 11u, getValues));
     }
 
-    /// Vector2i
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector2i)
     {
         UniformInput inputObject;
@@ -578,7 +573,6 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->getInputValue(inputObject, 11u, getValues.data()));
     }
 
-    /// Vector3i
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector3i)
     {
         UniformInput inputObject;
@@ -616,7 +610,6 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->getInputValue(inputObject, 11u, getValues.data()));
     }
 
-    /// Vector4i
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector4i)
     {
         UniformInput inputObject;
@@ -654,7 +647,6 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->getInputValue(inputObject, 11u, getValues.data()));
     }
 
-    /// Vector2
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector2f)
     {
         UniformInput inputObject;
@@ -692,7 +684,6 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->getInputValue(inputObject, 11u, getValues.data()));
     }
 
-    /// Vector3
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector3f)
     {
         UniformInput inputObject;
@@ -730,7 +721,6 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->getInputValue(inputObject, 11u, getValues.data()));
     }
 
-    /// Vector4
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector4f)
     {
         UniformInput inputObject;
@@ -768,7 +758,7 @@ namespace ramses
         EXPECT_NE(StatusOK, appearance->getInputValue(inputObject, 11u, getValues.data()));
     }
 
-    /// Matrix22f
+    /// matrix22f
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix22f)
     {
         UniformInput inputObject;
@@ -931,7 +921,7 @@ namespace ramses
         TextureSamplerMS* textureSampler = sharedTestState->getScene().createTextureSamplerMS(*renderBuffer, "renderBuffer");
         ASSERT_TRUE(textureSampler != nullptr);
 
-        EXPECT_EQ(textureSampler->impl.getTextureDataType(), ramses_internal::EDataType::TextureSampler2DMS);
+        EXPECT_EQ(textureSampler->m_impl.getTextureDataType(), ramses_internal::EDataType::TextureSampler2DMS);
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
         const TextureSamplerMS* actualSampler = nullptr;
@@ -975,7 +965,7 @@ namespace ramses
         TextureSamplerExternal* textureSampler = sharedTestState->getScene().createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear);
         ASSERT_TRUE(textureSampler != nullptr);
 
-        EXPECT_EQ(textureSampler->impl.getTextureDataType(), ramses_internal::EDataType::TextureSamplerExternal);
+        EXPECT_EQ(textureSampler->m_impl.getTextureDataType(), ramses_internal::EDataType::TextureSamplerExternal);
         EXPECT_EQ(StatusOK, appearance->setInputTexture(inputObject, *textureSampler));
 
         const TextureSamplerExternal* actualSampler = nullptr;
@@ -1003,7 +993,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->bindInput(inputObject, *dataObject));
         EXPECT_TRUE(appearance->isInputBound(inputObject));
-        EXPECT_EQ(dataObject->impl.getDataReference(), appearance->getDataObjectBoundToInput(inputObject)->impl.getDataReference());
+        EXPECT_EQ(dataObject->m_impl.getDataReference(), appearance->getDataObjectBoundToInput(inputObject)->m_impl.getDataReference());
 
         EXPECT_EQ(StatusOK, appearance->unbindInput(inputObject));
         EXPECT_FALSE(appearance->isInputBound(inputObject));

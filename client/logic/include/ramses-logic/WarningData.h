@@ -10,12 +10,12 @@
 
 #include <string>
 
-namespace rlogic
+namespace ramses
 {
     class LogicObject;
 
     /**
-    * #EWarningType lists the types of content warnings issued by #rlogic::LogicEngine::validate
+    * #EWarningType lists the types of content warnings issued by #ramses::LogicEngine::validate
     */
     enum class EWarningType : int
     {
@@ -29,7 +29,7 @@ namespace rlogic
     };
 
     /**
-     * Holds information about a warning returned by #rlogic::LogicEngine::validate()
+     * Holds information about a warning returned by #ramses::LogicEngine::validate()
      */
     struct WarningData
     {
@@ -44,7 +44,7 @@ namespace rlogic
         EWarningType type;
 
         /**
-         * The #rlogic::LogicObject which caused the warning. Can be nullptr if the warning was not originating from a specific object.
+         * The #ramses::LogicObject which caused the warning. Can be nullptr if the warning was not originating from a specific object.
          */
         const LogicObject* object;
     };

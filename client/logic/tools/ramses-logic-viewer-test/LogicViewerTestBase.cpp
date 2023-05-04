@@ -8,7 +8,7 @@
 
 #include "LogicViewerTestBase.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables) must be static and non-const (see SetMockScreenshot)
     ALogicViewerBase::MockScreenshot* ALogicViewerBase::m_mockScreenshot = nullptr;

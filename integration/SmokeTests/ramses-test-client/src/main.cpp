@@ -68,7 +68,7 @@ IntegrationScenePtr createSceneAndSetState(
     std::vector<ramses::Scene*>& scenes,
     ramses_internal::UInt32 testState,
     ramses::sceneId_t sceneId,
-    const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+    const glm::vec3& cameraPosition = glm::vec3(0.0f),
     uint32_t vpWidth = DefaultViewportWidth,
     uint32_t vpHeight = DefaultViewportHeight
     )
@@ -113,9 +113,9 @@ int main(int argc, const char* argv[])
 
     ramses::RamsesFramework framework(frameworkConfig);
     auto commandExit = std::make_shared<ramses_internal::RamshCommandExit>();
-    framework.impl.getRamsh().add(commandExit);
+    framework.m_impl.getRamsh().add(commandExit);
     auto testStepCommand = std::make_shared<ramses_internal::TestStepCommand>();
-    framework.impl.getRamsh().add(testStepCommand);
+    framework.m_impl.getRamsh().add(testStepCommand);
 
     ramses::RamsesClient* ramses(framework.createClient("ramses test client"));
     if (!ramses)
@@ -128,7 +128,7 @@ int main(int argc, const char* argv[])
     // Default scene, when no parameters set
     // Used by integration tests which don't expect any particular rendered image
 
-    ramses_internal::Vector3 cameraPosParam(cameraX, cameraY, cameraZ);
+    glm::vec3 cameraPosParam(cameraX, cameraY, cameraZ);
 
     std::vector<ramses::Scene*> scenes;
     std::vector<IntegrationScenePtr> integrationScenes;
@@ -138,9 +138,9 @@ int main(int argc, const char* argv[])
     case 2:
     {
         auto integrationScene1 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses::sceneId_t(21u),
-            cameraPosParam + ramses_internal::Vector3(2.0f, 0.0f, 0.0f));
+            cameraPosParam + glm::vec3(2.0f, 0.0f, 0.0f));
         auto integrationScene2 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses::sceneId_t(22u),
-            cameraPosParam + ramses_internal::Vector3(-2.0f, 0.0f, 0.0f));
+            cameraPosParam + glm::vec3(-2.0f, 0.0f, 0.0f));
         integrationScenes.push_back(std::move(integrationScene1));
         integrationScenes.push_back(std::move(integrationScene2));
         break;
@@ -148,9 +148,9 @@ int main(int argc, const char* argv[])
     case 3:
     {
         auto integrationScene1 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses::sceneId_t(23u),
-            cameraPosParam + ramses_internal::Vector3(2.0f, 0.0f, 0.0f));
+            cameraPosParam + glm::vec3(2.0f, 0.0f, 0.0f));
         auto integrationScene2 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses::sceneId_t(24u),
-            cameraPosParam + ramses_internal::Vector3(-2.0f, 0.0f, 0.0f));
+            cameraPosParam + glm::vec3(-2.0f, 0.0f, 0.0f));
         integrationScenes.push_back(std::move(integrationScene1));
         integrationScenes.push_back(std::move(integrationScene2));
         ramses::Scene* sceneToBeDestroyed = scenes.front();
@@ -175,16 +175,16 @@ int main(int argc, const char* argv[])
     case 7:
     {
         auto integrationScene1 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses::sceneId_t(29u),
-                                                                                                 cameraPosParam + ramses_internal::Vector3(30.0f, 0.0f, 0.0f));
+                                                                                                 cameraPosParam + glm::vec3(30.0f, 0.0f, 0.0f));
 
         auto integrationScene2 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses::sceneId_t(30u),
-                                                                                                 cameraPosParam + ramses_internal::Vector3(10.0f, 0.0f, 0.0f));
+                                                                                                 cameraPosParam + glm::vec3(10.0f, 0.0f, 0.0f));
 
         auto integrationScene3 = createSceneAndSetState<ramses_internal::HierarchicalRedTrianglesScene>(*ramses, scenes, ramses_internal::HierarchicalRedTrianglesScene::THREE_ROWS_TRIANGLES, ramses::sceneId_t(31u),
-                                                                                                        cameraPosParam + ramses_internal::Vector3(-10.0f, 0.0f, 0.0f));
+                                                                                                        cameraPosParam + glm::vec3(-10.0f, 0.0f, 0.0f));
 
         auto integrationScene4 = createSceneAndSetState<ramses_internal::HierarchicalRedTrianglesScene>(*ramses, scenes, ramses_internal::HierarchicalRedTrianglesScene::THREE_ROWS_TRIANGLES, ramses::sceneId_t(32u),
-                                                                                                        cameraPosParam + ramses_internal::Vector3(-30.0f, 0.0f, 0.0f));
+                                                                                                        cameraPosParam + glm::vec3(-30.0f, 0.0f, 0.0f));
 
         integrationScenes.push_back(std::move(integrationScene1));
         integrationScenes.push_back(std::move(integrationScene2));
@@ -201,8 +201,8 @@ int main(int argc, const char* argv[])
     }
     case 15:
     {
-        auto integrationScene1 = createSceneAndSetState<ramses_internal::MultiTypeLinkScene>(*ramses, scenes, ramses_internal::MultiTypeLinkScene::TRANSFORMATION_CONSUMER_DATA_AND_TEXTURE_PROVIDER, ramses::sceneId_t(39u), cameraPosParam + ramses_internal::Vector3(1.f, -2.f, 0.f));
-        auto integrationScene2 = createSceneAndSetState<ramses_internal::MultiTypeLinkScene>(*ramses, scenes, ramses_internal::MultiTypeLinkScene::TRANSFORMATION_PROVIDER_DATA_AND_TEXTURE_CONSUMER, ramses::sceneId_t(40u), cameraPosParam + ramses_internal::Vector3(-1.f, 2.f, 0.f));
+        auto integrationScene1 = createSceneAndSetState<ramses_internal::MultiTypeLinkScene>(*ramses, scenes, ramses_internal::MultiTypeLinkScene::TRANSFORMATION_CONSUMER_DATA_AND_TEXTURE_PROVIDER, ramses::sceneId_t(39u), cameraPosParam + glm::vec3(1.f, -2.f, 0.f));
+        auto integrationScene2 = createSceneAndSetState<ramses_internal::MultiTypeLinkScene>(*ramses, scenes, ramses_internal::MultiTypeLinkScene::TRANSFORMATION_PROVIDER_DATA_AND_TEXTURE_CONSUMER, ramses::sceneId_t(40u), cameraPosParam + glm::vec3(-1.f, 2.f, 0.f));
         integrationScenes.push_back(std::move(integrationScene1));
         integrationScenes.push_back(std::move(integrationScene2));
         break;

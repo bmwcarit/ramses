@@ -13,7 +13,7 @@
 
 #include "generated/LuaInterfaceGen.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     LuaInterfaceImpl::LuaInterfaceImpl(LuaCompiledInterface compiledInterface, std::string_view name, uint64_t id)
         : LogicNodeImpl(name, id)
@@ -73,12 +73,8 @@ namespace rlogic::internal
             return nullptr;
         }
 
-        auto root = std::make_unique<Property>(std::move(rootProperty));
-
         auto deserialized = std::make_unique<LuaInterfaceImpl>(
-            LuaCompiledInterface{
-                std::move(root)
-            },
+            LuaCompiledInterface{ std::move(rootProperty) },
             name, id);
         deserialized->setUserId(userIdHigh, userIdLow);
 

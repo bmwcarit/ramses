@@ -18,7 +18,7 @@
 #include <deque>
 #include <algorithm>
 
-namespace rlogic
+namespace ramses
 {
     class PropertyLinkTestUtils
     {

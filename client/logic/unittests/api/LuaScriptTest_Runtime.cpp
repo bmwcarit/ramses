@@ -27,7 +27,7 @@
 
 #include <fstream>
 
-namespace rlogic
+namespace ramses
 {
     class ALuaScript_Runtime : public ALuaScript
     {

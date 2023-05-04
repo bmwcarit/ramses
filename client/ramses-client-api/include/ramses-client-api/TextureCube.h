@@ -19,56 +19,50 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * @brief TextureCube stores pixel data with 6 equally sized quadratic faces.
      */
-
-    class RAMSES_API TextureCube : public Resource
+    class TextureCube : public Resource
     {
     public:
-
-        /**
-        * Stores internal data for implementation specifics of TextureCube.
-        */
-        class TextureCubeImpl& impl;
-
         /**
         * @brief Gets cube texture edge length
         *
         * @return Texture cube edge length
         */
-        [[nodiscard]] uint32_t getSize() const;
+        [[nodiscard]] RAMSES_API uint32_t getSize() const;
 
         /**
         * @brief Gets texture format
         *
         * @return Texture format
         */
-        [[nodiscard]] ETextureFormat getTextureFormat() const;
+        [[nodiscard]] RAMSES_API ETextureFormat getTextureFormat() const;
 
         /**
         * @brief Gets swizzle description
         *
         * @return Swizzle Description
         */
-        [[nodiscard]] const TextureSwizzle& getTextureSwizzle() const;
+        [[nodiscard]] RAMSES_API const TextureSwizzle& getTextureSwizzle() const;
+
+        /**
+        * Stores internal data for implementation specifics of TextureCube.
+        */
+        class TextureCubeImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating TextureCube instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor of TextureCube
         *
-        * @param[in] pimpl Internal data for implementation specifics of TextureCube (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of TextureCube (sink - instance becomes owner)
         */
-        explicit TextureCube(TextureCubeImpl& pimpl);
-
-        /**
-        * @brief Destructor of the TextureCube
-        */
-        ~TextureCube() override;
+        explicit TextureCube(std::unique_ptr<TextureCubeImpl> impl);
     };
 }
 

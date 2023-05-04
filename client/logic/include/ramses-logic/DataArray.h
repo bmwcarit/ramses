@@ -15,12 +15,12 @@
 #include <memory>
 #include <vector>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class DataArrayImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
     * Storage for data - e.g. animation data like keyframes or timestamps.
@@ -38,8 +38,8 @@ namespace rlogic
         /**
         * Returns the data stored in this #DataArray.
         * Make sure to use the right template type, query #getDataType
-        * to see what data type is stored (see also #rlogic::PropertyTypeToEnum traits
-        * and #rlogic::CanPropertyTypeBeStoredInDataArray).
+        * to see what data type is stored (see also #ramses::PropertyTypeToEnum traits
+        * and #ramses::CanPropertyTypeBeStoredInDataArray).
         * When called with an unsupported type, a compile-time assert is triggered.
         * When called with a mismatching type (e.g. getData<float>() when the type
         * is vec4f) the method returns nullptr.
@@ -57,37 +57,13 @@ namespace rlogic
         [[nodiscard]] RAMSES_API size_t getNumElements() const;
 
         /**
-        * Destructor of #DataArray
-        */
-        ~DataArray() noexcept override;
-
-        /**
-        * Copy Constructor of DataArray is deleted because DataArray is not supposed to be copied
-        */
-        DataArray(const DataArray&) = delete;
-
-        /**
-        * Move Constructor of DataArray is deleted because DataArray is not supposed to be moved
-        */
-        DataArray(DataArray&&) = delete;
-
-        /**
-        * Assignment operator of DataArray is deleted because DataArray is not supposed to be copied
-        */
-        DataArray& operator=(const DataArray&) = delete;
-
-        /**
-        * Move assignment operator of DataArray is deleted because DataArray is not supposed to be moved
-        */
-        DataArray& operator=(DataArray&&) = delete;
-
-        /**
         * Implementation detail of DataArray
         */
         internal::DataArrayImpl& m_impl;
 
+    protected:
         /**
-        * Constructor of DataArray. Use #rlogic::LogicEngine::createDataArray.
+        * Constructor of DataArray. Use #ramses::LogicEngine::createDataArray.
         *
         * @param impl implementation details of the DataArray
         */
@@ -101,6 +77,8 @@ namespace rlogic
         */
         template <typename T>
         [[nodiscard]] RAMSES_API const std::vector<T>* getDataInternal() const;
+
+        friend class internal::ApiObjects;
     };
 
     template <typename T>

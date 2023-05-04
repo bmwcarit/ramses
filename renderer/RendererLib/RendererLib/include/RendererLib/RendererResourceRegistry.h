@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         void                       registerResource     (const ResourceContentHash& hash);
         void                       unregisterResource   (const ResourceContentHash& hash);
-        [[nodiscard]] Bool                       containsResource     (const ResourceContentHash& hash) const;
+        [[nodiscard]] bool                       containsResource     (const ResourceContentHash& hash) const;
 
         void                       setResourceData      (const ResourceContentHash& hash, const ManagedResource& resourceObject);
         void                       setResourceScheduledForUpload(const ResourceContentHash& hash);
@@ -43,7 +43,7 @@ namespace ramses_internal
         void setResourceStatus(const ResourceContentHash& hash, EResourceStatus status);
         void updateCachedLists(const ResourceContentHash& hash, EResourceStatus currentStatus, EResourceStatus newStatus);
         void updateListOfResourcesNotInUseByScenes(const ResourceContentHash& hash);
-        static Bool ValidateStatusChange(EResourceStatus currentStatus, EResourceStatus newStatus);
+        static bool ValidateStatusChange(EResourceStatus currentStatus, EResourceStatus newStatus);
 
         ResourceDescriptors m_resources;
 

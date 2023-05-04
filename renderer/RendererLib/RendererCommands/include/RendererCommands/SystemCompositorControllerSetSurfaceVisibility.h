@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorControllerSetSurfaceVisibility(RendererCommandBuffer& rendererCommandBuffer);
-        Bool execute(Int32& surfaceId, Int32& visibility) const override;
+        bool execute(Int32& surfaceId, Int32& visibility) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

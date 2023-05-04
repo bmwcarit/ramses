@@ -11,7 +11,7 @@
 
 namespace ramses
 {
-    static const char* const TextureSamplingMethodNames[] =
+    const std::array TextureSamplingMethodNames =
     {
         "ETextureSamplingMethod_Nearest",
         "ETextureSamplingMethod_Linear",
@@ -21,14 +21,13 @@ namespace ramses
         "ETextureSamplingMethod_Linear_MipMapLinear",
     };
 
-
-    static const char* const TextureAddressModeNames[] = {
+    const std::array TextureAddressModeNames = {
         "ETextureAddressMode_Clamp",
         "ETextureAddressMode_Repeat",
         "ETextureAddressMode_Mirror"
     };
 
-    static const char* const TextureFormatNames[] = {
+    const std::array TextureFormatNames = {
         "ETextureFormat_Invalid",
         "ETextureFormat_R8",
         "ETextureFormat_RG8",
@@ -79,7 +78,7 @@ namespace ramses
         "ETextureFormat_ASTC_SRGBA_12x12"
     };
 
-    static const char* const TextureCubeFaceNames[] = {
+    const std::array TextureCubeFaceNames = {
         "ETextureCubeFace_PositiveX",
         "ETextureCubeFace_NegativeX",
         "ETextureCubeFace_PositiveY",
@@ -112,5 +111,4 @@ namespace ramses
     {
         return EnumToString(face);
     }
-
 }

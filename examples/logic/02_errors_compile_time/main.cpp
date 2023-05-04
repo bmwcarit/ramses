@@ -16,13 +16,13 @@
 
 int main()
 {
-    rlogic::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
 
     /**
      * Try to compile a script which has invalid Lua syntax
      * Giving a name to the script helps identify the source of the issue
      */
-    rlogic::LuaScript* faultyScript = logicEngine.createLuaScript(R"(
+    ramses::LuaScript* faultyScript = logicEngine.createLuaScript(R"(
         function interface(IN,OUT)
             this.does.not.compile
         end

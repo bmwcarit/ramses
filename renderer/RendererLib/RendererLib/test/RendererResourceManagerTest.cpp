@@ -584,7 +584,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -608,7 +608,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthBuffers)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -632,7 +632,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -656,7 +656,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -689,7 +689,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer_WithDoubl
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle1));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -697,7 +697,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer_WithDoubl
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle2));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
@@ -734,7 +734,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilB
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle1));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -742,7 +742,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilB
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle2));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
@@ -770,7 +770,7 @@ TEST_F(ARendererResourceManager, UploadsDmaOffscreenBuffer)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -797,7 +797,7 @@ TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer_WithColorBuffer)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -818,7 +818,7 @@ TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer_WithColorAndDepthStenc
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -839,7 +839,7 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer_WithColo
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true)).Times(2u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled)).Times(2u);
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(2u);
@@ -862,7 +862,7 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer_WithColo
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(3u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true)).Times(2u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled)).Times(2u);
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(2u);
@@ -890,7 +890,7 @@ TEST_F(ARendererResourceManager, CanUnloadDmaOffscreenBuffer)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f }));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
@@ -1419,7 +1419,7 @@ TEST_F(ARendererResourceManager, UnloadsAllRemainingOffscreenBuffersAndStreamBuf
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(4u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true)).Times(2u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(glm::vec4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, RenderState::ScissorRegion{})).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_)).Times(2u);

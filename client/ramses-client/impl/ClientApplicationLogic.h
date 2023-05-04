@@ -49,7 +49,7 @@ namespace ramses_internal
         void createScene(ClientScene& scene, bool enableLocalOnlyOptimization);
         void publishScene(SceneId sceneId, EScenePublicationMode publicationMode);
         void unpublishScene(SceneId sceneId);
-        [[nodiscard]] Bool isScenePublished(SceneId sceneId) const;
+        [[nodiscard]] bool isScenePublished(SceneId sceneId) const;
 
         bool flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);

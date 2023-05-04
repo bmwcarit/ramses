@@ -25,8 +25,8 @@ TEST_F(ASceneFactory, createsAndDeletesScene)
 {
     IScene* scene = factory.createScene(SceneInfo());
     ASSERT_TRUE(nullptr != scene);
-    EXPECT_EQ(scene, factory.releaseScene(scene->getSceneId()));
-    delete scene;
+    auto sceneOwnPtr = factory.releaseScene(scene->getSceneId());
+    EXPECT_EQ(scene, sceneOwnPtr.get());
 }
 
 TEST_F(ASceneFactory, cannotCreateTwoScenesWithTheSameId)

@@ -24,7 +24,7 @@ namespace ramses_internal
         [[nodiscard]] std::string_view getWaylandDisplayForSystemCompositorController() const;
 
         void enableSystemCompositorControl();
-        [[nodiscard]] Bool getSystemCompositorControlEnabled() const;
+        [[nodiscard]] bool getSystemCompositorControlEnabled() const;
 
         [[nodiscard]] std::chrono::microseconds getFrameCallbackMaxPollTime() const;
         void setFrameCallbackMaxPollTime(std::chrono::microseconds pollTime);
@@ -33,7 +33,7 @@ namespace ramses_internal
 
     private:
         String m_waylandDisplayForSystemCompositorController;
-        Bool m_systemCompositorEnabled = false;
+        bool m_systemCompositorEnabled = false;
         std::chrono::microseconds m_frameCallbackMaxPollTime{10000u};
         std::chrono::milliseconds m_renderThreadLoopTimingReportingPeriod { 0 }; // zero deactivates reporting
     };

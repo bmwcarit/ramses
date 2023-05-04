@@ -21,6 +21,7 @@ namespace ramses
     class TextCacheImpl;
 
     /**
+    * @ingroup TextAPI
     * @brief Stores text data - texture atlas, meshes, glyph bitmap data. It is a cache because the
     * content can be re-generated when necessary, e.g. when cached glyphs take up too much memory.
     *

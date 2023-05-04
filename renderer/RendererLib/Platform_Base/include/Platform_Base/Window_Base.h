@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
 
-        [[nodiscard]] Bool canRenderNewFrame() const override;
+        [[nodiscard]] bool canRenderNewFrame() const override;
         void frameRendered() override;
         [[nodiscard]] Int32 getPosX() const final override;
         [[nodiscard]] Int32 getPosY() const final override;
@@ -42,8 +42,8 @@ namespace ramses_internal
     protected:
         String m_windowName;
         IWindowEventHandler& m_eventHandler;
-        const Bool m_fullscreen;
-        const Bool m_borderless;
+        const bool m_fullscreen;
+        const bool m_borderless;
         UInt32 m_msaaSampleCount;
 
         UInt32 m_width;
@@ -52,7 +52,7 @@ namespace ramses_internal
         Int32 m_posY;
 
         const WaylandIviSurfaceId m_waylandIviSurfaceID;
-        const Bool m_resizable;
+        const bool m_resizable;
     };
 }
 

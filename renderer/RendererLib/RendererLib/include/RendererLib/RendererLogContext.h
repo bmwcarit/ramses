@@ -33,10 +33,10 @@ namespace ramses_internal
 
         void indent();
         void unindent();
-        [[nodiscard]] Bool isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const;
+        [[nodiscard]] bool isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const;
 
         void setNodeHandleFilter(NodeHandle nodeHandleFilter);
-        [[nodiscard]] Bool isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const;
+        [[nodiscard]] bool isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const;
 
         template <typename T>
         RendererLogContext& operator<<(const T& value);
@@ -51,7 +51,7 @@ namespace ramses_internal
         const UInt32          m_activeLogLevelFlags;
         NodeHandle            m_nodeHandleFilter;
         String                m_indent;
-        Bool                  m_lineActive;
+        bool                  m_lineActive;
 
         struct NewLineType
         {

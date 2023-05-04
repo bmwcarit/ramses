@@ -12,7 +12,7 @@
 #include "ramses-framework-api/EDataType.h"
 #include <optional>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     static constexpr std::optional<EPropertyType> ConvertRamsesUniformTypeToPropertyType(ramses::EDataType type)
     {

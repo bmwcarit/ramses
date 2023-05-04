@@ -97,15 +97,10 @@ namespace ramses
 
         // delete async loaded  scenes that were never collected via calling dispatchEvents
         ramses_internal::PlatformGuard g(m_clientLock);
-        for (auto& loadStatus : m_asyncSceneLoadStatusVec)
-        {
-            delete loadStatus.scene;
-        }
+        m_asyncSceneLoadStatusVec.clear();
+
         LOG_INFO(CONTEXT_CLIENT, "RamsesClientImpl::~RamsesClientImpl deleting scenes");
-        for (auto& scene : m_scenes)
-        {
-            delete scene;
-        }
+        m_scenes.clear();
 
         m_framework.getPeriodicLogger().removePeriodicLogSupplier(&m_framework.getScenegraphComponent());
     }
@@ -150,41 +145,41 @@ namespace ramses
             return nullptr;
         }
 
-        SceneImpl& pimpl = *new SceneImpl(*internalScene, sceneConfig, *m_hlClient);
-        pimpl.initializeFrameworkData();
-        Scene* scene = new Scene(pimpl);
-        m_scenes.push_back(scene);
+        auto impl = std::make_unique<SceneImpl>(*internalScene, sceneConfig, *m_hlClient);
+        impl->initializeFrameworkData();
+        m_scenes.push_back(SceneOwningPtr{ new Scene{ std::move(impl) }, [](Scene* s) { delete s; } });
 
-        return scene;
+        return m_scenes.back().get();
     }
 
-    RamsesClientImpl::DeleteSceneRunnable::DeleteSceneRunnable(Scene* scene, ramses_internal::ClientScene* llscene)
-        : m_scene(scene)
-        , m_lowLevelScene(llscene)
+    RamsesClientImpl::DeleteSceneRunnable::DeleteSceneRunnable(SceneOwningPtr scene, InternalSceneOwningPtr llscene)
+        : m_scene{ std::move(scene) }
+        , m_lowLevelScene{ std::move(llscene) }
     {
     }
 
     void RamsesClientImpl::DeleteSceneRunnable::execute()
     {
-        delete m_scene;
-        delete m_lowLevelScene;
+        m_scene.reset();
+        m_lowLevelScene.reset();
     }
 
     status_t RamsesClientImpl::destroy(Scene& scene)
     {
         ramses_internal::PlatformGuard g(m_clientLock);
-        SceneVector::iterator iter = ramses_internal::find_c(m_scenes, &scene);
+        auto iter = std::find_if(m_scenes.begin(), m_scenes.end(), [&scene](auto& s) { return s.get() == &scene; });
         if (iter != m_scenes.end())
         {
+            auto sceneOwnPtr = std::move(*iter);
             m_scenes.erase(iter);
 
-            const ramses_internal::SceneId sceneID(scene.impl.getSceneId().getValue());
+            const ramses_internal::SceneId sceneID(scene.getSceneId().getValue());
             auto llscene = m_sceneFactory.releaseScene(sceneID);
 
             getClientApplication().removeScene(sceneID);
 
-            scene.impl.closeSceneFile();
-            auto task = new DeleteSceneRunnable(&scene, llscene);
+            scene.m_impl.closeSceneFile();
+            auto task = new DeleteSceneRunnable(std::move(sceneOwnPtr), std::move(llscene));
             m_deleteSceneQueue.enqueue(*task);
             task->release();
 
@@ -202,7 +197,7 @@ namespace ramses
         for (const auto res : resources)
         {
             assert(res != nullptr);
-            const ramses_internal::ResourceContentHash& hash = res->impl.getLowlevelResourceHash();
+            const ramses_internal::ResourceContentHash& hash = res->m_impl.getLowlevelResourceHash();
             const ramses_internal::ManagedResource managedRes = getClientApplication().getResource(hash);
             if (managedRes)
             {
@@ -229,7 +224,7 @@ namespace ramses
         return m_appLogic.getResource(hash);
     }
 
-    Scene* RamsesClientImpl::loadSceneObjectFromStream(const std::string& caller,
+    SceneOwningPtr RamsesClientImpl::loadSceneObjectFromStream(const std::string& caller,
                                                        std::string const& filename,
                                                        ramses_internal::IInputStream& inputStream,
                                                        bool localOnly,
@@ -269,7 +264,7 @@ namespace ramses
             sceneConfig.setPublicationMode(EScenePublicationMode_LocalOnly);
         }
 
-        SceneImpl& pimpl = *new SceneImpl(*internalScene, sceneConfig, *m_hlClient);
+        auto impl = std::make_unique<SceneImpl>(*internalScene, sceneConfig, *m_hlClient);
 
         // now the scene is registered, so it's possible to load the low level content into the scene
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Reading low level scene from stream");
@@ -278,21 +273,20 @@ namespace ramses
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Deserializing high level scene objects from stream");
         DeserializationContext deserializationContext;
         SerializationHelper::DeserializeObjectID(inputStream);
-        const auto stat = pimpl.deserialize(inputStream, deserializationContext);
+        const auto stat = impl->deserialize(inputStream, deserializationContext);
         if (stat != StatusOK)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "    Failed to deserialize high level scene:");
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, getStatusMessage(stat));
-            delete &pimpl;
             return nullptr;
         }
 
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "    Done with preparing scene from input stream.");
 
-        return new Scene(pimpl);
+        return SceneOwningPtr{ new Scene{ std::move(impl) }, [](Scene* s) { delete s; } };
     }
 
-    Scene* RamsesClientImpl::loadSceneFromCreationConfig(const SceneCreationConfig& cconfig)
+    SceneOwningPtr RamsesClientImpl::loadSceneFromCreationConfig(const SceneCreationConfig& cconfig)
     {
         // this stream contains scene data AND resource data and will be handed over to and held open by resource component as resource stream
         ramses_internal::IInputStream& inputStream = cconfig.streamContainer->getStream();
@@ -313,7 +307,7 @@ namespace ramses
         inputStream >> sceneObjectStart;
         inputStream >> llResourceStart;
 
-        Scene* scene = nullptr;
+        SceneOwningPtr scene;
         if (cconfig.prefetchData)
         {
             std::vector<ramses_internal::Byte> sceneData(static_cast<size_t>(llResourceStart - sceneObjectStart));
@@ -344,7 +338,7 @@ namespace ramses
         ramses_internal::ResourceTableOfContents loadedTOC;
         loadedTOC.readTOCPosAndTOCFromStream(inputStream);
         const ramses_internal::SceneFileHandle fileHandle = m_appLogic.addResourceFile(cconfig.streamContainer, loadedTOC);
-        scene->impl.setSceneFileHandle(fileHandle);
+        scene->m_impl.setSceneFileHandle(fileHandle);
 
         LOG_INFO_P(CONTEXT_CLIENT, "RamsesClient::{}: Source '{}' has handle {}", cconfig.caller, cconfig.dataSource, fileHandle);
 
@@ -370,6 +364,7 @@ namespace ramses
             });
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     Scene* RamsesClientImpl::loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly)
     {
         if (!data)
@@ -447,24 +442,24 @@ namespace ramses
     Scene* RamsesClientImpl::loadSceneSynchonousCommon(const SceneCreationConfig& cconfig)
     {
         const ramses_internal::UInt64 start = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
-        Scene* scene = loadSceneFromCreationConfig(cconfig);
+        auto scene = loadSceneFromCreationConfig(cconfig);
         if (!scene)
-        {
             return nullptr;
-        }
-        finalizeLoadedScene(scene);
+
+        auto* scenePtr = scene.get();
+        finalizeLoadedScene(std::move(scene));
 
         const ramses_internal::UInt64 end = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
         LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << " Scene loaded from '" << cconfig.dataSource << "' in " << (end - start) << " ms");
 
-        return scene;
+        return scenePtr;
     }
 
-    void RamsesClientImpl::finalizeLoadedScene(Scene* scene)
+    void RamsesClientImpl::finalizeLoadedScene(SceneOwningPtr scene)
     {
         // add to the known list of scenes
         ramses_internal::PlatformGuard g(m_clientLock);
-        m_scenes.push_back(scene);
+        m_scenes.push_back(std::move(scene));
     }
 
     void RamsesClientImpl::WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream, EFeatureLevel featureLevel)
@@ -561,7 +556,7 @@ namespace ramses
         for (auto const& scene : getListOfScenes())
         {
             if (masterSceneId == scene->getSceneId())
-                return scene->impl.getSceneReference(referencedSceneId);
+                return scene->m_impl.getSceneReference(referencedSceneId);
         }
 
         return nullptr;
@@ -575,14 +570,14 @@ namespace ramses
             localAsyncSceneLoadStatus.swap(m_asyncSceneLoadStatusVec);
         }
 
-        for (const auto& sceneStatus : localAsyncSceneLoadStatus)
+        for (auto& sceneStatus : localAsyncSceneLoadStatus)
         {
             if (sceneStatus.scene)
             {
                 // finalize scene
-                Scene* scene = sceneStatus.scene;
+                Scene* scene = sceneStatus.scene.get();
                 const ramses_internal::UInt64 start = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
-                finalizeLoadedScene(scene);
+                finalizeLoadedScene(std::move(sceneStatus.scene));
                 const ramses_internal::UInt64 end = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
                 LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadSucceeded): Synchronous postprocessing of scene loaded from '" <<
                          sceneStatus.sceneFilename << "' (sceneName: " << scene->getName() << ", sceneId " << scene->getSceneId() << ") in " << (end - start) << " ms");
@@ -609,7 +604,7 @@ namespace ramses
                     LOG_INFO(CONTEXT_CLIENT, "RamsesClient::dispatchEvents master:reference scene state changed: "
                         << rendererEvent.masterSceneId << ":" << rendererEvent.referencedScene << " " << EnumToString(rendererEvent.sceneState));
 
-                    sr->impl.setReportedState(SceneReferenceImpl::GetSceneReferenceState(rendererEvent.sceneState));
+                    sr->m_impl.setReportedState(SceneReferenceImpl::GetSceneReferenceState(rendererEvent.sceneState));
                     clientEventHandler.sceneReferenceStateChanged(*sr, SceneReferenceImpl::GetSceneReferenceState(rendererEvent.sceneState));
                 }
                 else
@@ -649,7 +644,7 @@ namespace ramses
     void RamsesClientImpl::LoadSceneRunnable::execute()
     {
         const ramses_internal::UInt64 start = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
-        Scene* scene = m_client.loadSceneFromCreationConfig(m_cconfig);
+        auto scene = m_client.loadSceneFromCreationConfig(m_cconfig);
         const ramses_internal::UInt64 end = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
 
         if (scene)
@@ -661,10 +656,10 @@ namespace ramses
         ramses_internal::PlatformGuard g(m_client.m_clientLock);
         // NOTE: only used for real files by name for now, not sure how to report other cases to user.
         // therefore can assume dataSource is the filename
-        m_client.m_asyncSceneLoadStatusVec.push_back({scene, m_cconfig.dataSource});
+        m_client.m_asyncSceneLoadStatusVec.push_back({std::move(scene), m_cconfig.dataSource});
     }
 
-    SceneVector RamsesClientImpl::getListOfScenes() const
+    const SceneVector& RamsesClientImpl::getListOfScenes() const
     {
         ramses_internal::PlatformGuard g(m_clientLock);
         return m_scenes;
@@ -689,8 +684,8 @@ namespace ramses
     {
         ramses_internal::PlatformGuard g(m_clientLock);
         for (const auto& scene : m_scenes)
-            if (scene->impl.getName() == name)
-                return scene;
+            if (ramses_internal::String(scene->getName()) == name)
+                return scene.get();
 
         return nullptr;
     }
@@ -706,7 +701,7 @@ namespace ramses
         ramses_internal::PlatformGuard g(m_clientLock);
         for (const auto& scene : m_scenes)
             if (scene->getSceneId() == sceneId)
-                return scene;
+                return scene.get();
 
         return nullptr;
     }
@@ -754,7 +749,7 @@ namespace ramses
         status_t status = StatusOK;
         for(const auto& scene : m_scenes)
         {
-            const status_t sceneStatus = addValidationOfDependentObject(scene->impl);
+            const status_t sceneStatus = addValidationOfDependentObject(scene->m_impl);
             if (StatusOK != sceneStatus)
                 status = sceneStatus;
         }
@@ -785,7 +780,7 @@ namespace ramses
     ramses_internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses_internal::EResourceType textureType,
                                                                             uint32_t width, uint32_t height, uint32_t depth,
                                                                             ETextureFormat format,
-                                                                            uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain,
+                                                                            uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, // NOLINT(modernize-avoid-c-arrays)
                                                                             const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
     {
         if (!TextureUtils::TextureParametersValid(width, height, depth, mipMapCount) || !TextureUtils::MipDataValid(width, height, depth, mipMapCount, mipLevelData, format))
@@ -829,8 +824,8 @@ namespace ramses
     {
         //create effect using vertex and fragment shaders
         ramses_internal::String effectName(name);
-        ramses_internal::GlslEffect effectBlock(effectDesc.getVertexShader(), effectDesc.getFragmentShader(), effectDesc.getGeometryShader(), effectDesc.impl.getCompilerDefines(),
-            effectDesc.impl.getSemanticsMap(), effectName);
+        ramses_internal::GlslEffect effectBlock(effectDesc.getVertexShader(), effectDesc.getFragmentShader(), effectDesc.getGeometryShader(), effectDesc.m_impl.get().getCompilerDefines(),
+            effectDesc.m_impl.get().getSemanticsMap(), effectName);
         errorMessages.clear();
         ramses_internal::EffectResource* effectResource = effectBlock.createEffectResource(ramses_internal::ResourceCacheFlag(cacheFlag.getValue()));
         if (!effectResource)

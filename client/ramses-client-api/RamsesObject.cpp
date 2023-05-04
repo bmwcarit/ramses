@@ -14,36 +14,32 @@
 
 namespace ramses
 {
-    RamsesObject::RamsesObject(RamsesObjectImpl& pimpl)
-        : StatusObject(pimpl)
-        , impl(pimpl)
+    RamsesObject::RamsesObject(std::unique_ptr<RamsesObjectImpl> impl)
+        : StatusObject{ std::move(impl) }
+        , m_impl{ static_cast<RamsesObjectImpl&>(*StatusObject::m_impl) }
     {
-        impl.setRamsesObject(*this);
-    }
-
-    RamsesObject::~RamsesObject()
-    {
+        m_impl.setRamsesObject(*this);
     }
 
     const char* RamsesObject::getName() const
     {
-        return impl.getName().c_str();
+        return m_impl.getName().c_str();
     }
 
     status_t RamsesObject::setName(const char* name)
     {
-        const status_t status =impl.setName(*this, name);
+        const status_t status =m_impl.setName(*this, name);
         LOG_HL_CLIENT_API1(status, name);
         return status;
     }
 
     ramses::ERamsesObjectType RamsesObject::getType() const
     {
-        return impl.getType();
+        return m_impl.getType();
     }
 
     bool RamsesObject::isOfType(ERamsesObjectType type) const
     {
-        return impl.isOfType(type);
+        return m_impl.isOfType(type);
     }
 }

@@ -12,7 +12,7 @@ struct ImGuiSettingsHandler;
 struct ImGuiContext;
 struct ImGuiTextBuffer;
 
-namespace rlogic
+namespace ramses
 {
     struct LogicViewerSettings
     {

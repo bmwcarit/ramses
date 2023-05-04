@@ -34,14 +34,14 @@ namespace ramses_internal
     public:
         WglExtensions();
 
-        Bool areLoaded() const;
-        Bool isExtensionAvailable(const String& extensionName);
+        bool areLoaded() const;
+        bool isExtensionAvailable(const String& extensionName);
 
         Procs procs;
 
     private:
         StringSet m_extensionNames;
-        Bool m_loaded;
+        bool m_loaded;
     };
 }
 

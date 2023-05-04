@@ -13,8 +13,6 @@
 #include "RenderingTestCase.h"
 #include "Collections/Pair.h"
 #include "Utils/StringUtils.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
 #include "RendererTestUtils.h"
 
 class IRendererTest;
@@ -64,7 +62,7 @@ public:
     void createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerTag, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void setClearFlags(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, uint32_t clearFlags);
-    void setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor);
+    void setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const glm::vec4& clearColor);
     void publishAndFlushScene(ramses::sceneId_t sceneId);
     void flushRendererAndDoOneLoop();
     bool renderAndCompareScreenshot(
@@ -90,7 +88,7 @@ public:
     template <typename INTEGRATION_SCENE>
     ramses::sceneId_t createAndShowScene(
         uint32_t sceneState,
-        const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+        const glm::vec3& cameraPosition = glm::vec3(0.0f),
         const ramses::SceneConfig& sceneConfig = {})
     {
         const ramses::sceneId_t sceneId = getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, cameraPosition, sceneConfig);

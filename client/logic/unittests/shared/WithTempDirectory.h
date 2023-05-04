@@ -10,7 +10,7 @@
 
 #include "internals/StdFilesystemWrapper.h"
 
-namespace rlogic
+namespace ramses
 {
     // Works like pushd/popd with temp directory
     class WithTempDirectory

@@ -24,7 +24,7 @@ namespace ramses_internal
 
         bool init() override;
 
-        [[nodiscard]] Bool canRenderNewFrame() const override;
+        [[nodiscard]] bool canRenderNewFrame() const override;
         void handleEvents() override;
         void frameRendered() override;
 
@@ -44,7 +44,7 @@ namespace ramses_internal
     private:
 
         void registerFrameRenderingDoneCallback();
-        Bool setFullscreen(Bool fullscreen) override;
+        bool setFullscreen(bool fullscreen) override;
         void dispatchWaylandDisplayEvents(std::chrono::milliseconds pollTime) const;
 
         static void RegistryGlobalCreated(void* data, wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version);

@@ -15,22 +15,54 @@
 namespace ramses
 {
     /**
+    * @ingroup CoreAPI
     * @brief The AttributeInput is a description of an attribute effect input
     */
-    class RAMSES_API AttributeInput : public EffectInput
+    class AttributeInput : public EffectInput
     {
     public:
         /**
         * @brief Constructor of AttributeInput.
         */
-        AttributeInput();
+        RAMSES_API AttributeInput();
+
+        /**
+        * @brief Destructor of AttributeInput.
+        */
+        RAMSES_API ~AttributeInput() override;
 
         /**
         * @brief Returns the effect input semantics.
         *
         * @return Effect input semantics
         */
-        [[nodiscard]] EEffectAttributeSemantic getSemantics() const;
+        [[nodiscard]] RAMSES_API EEffectAttributeSemantic getSemantics() const;
+
+        /**
+         * @brief Copy constructor
+         * @param other source to copy from
+         */
+        RAMSES_API AttributeInput(const AttributeInput& other);
+
+        /**
+         * @brief Move constructor
+         * @param other source to move from
+         */
+        RAMSES_API AttributeInput(AttributeInput&& other) noexcept;
+
+        /**
+         * @brief Copy assignment
+         * @param other source to copy from
+         * @return this instance
+         */
+        RAMSES_API AttributeInput& operator=(const AttributeInput& other);
+
+        /**
+         * @brief Move assignment
+         * @param other source to move from
+         * @return this instance
+         */
+        RAMSES_API AttributeInput& operator=(AttributeInput&& other) noexcept;
     };
 }
 

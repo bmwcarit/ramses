@@ -972,7 +972,7 @@ protected:
         renderer.doOneRenderLoop();
     }
 
-    void readPixels(OffscreenBufferHandle obHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool fullscreen, Bool sendViaDLT, const String& filename)
+    void readPixels(OffscreenBufferHandle obHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, bool fullscreen, bool sendViaDLT, const String& filename)
     {
         ScreenshotInfo screenshotInfo;
         screenshotInfo.rectangle.x = x;

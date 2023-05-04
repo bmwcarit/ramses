@@ -28,7 +28,7 @@ namespace sol_helper
         {
         case sol::type::none:
             return "none";
-        case sol::type::nil:
+        case sol::type::lua_nil:
             return "nil";
         case sol::type::string:
             return "string";

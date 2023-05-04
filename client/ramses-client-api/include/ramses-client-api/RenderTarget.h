@@ -14,9 +14,10 @@
 namespace ramses
 {
     /**
+     * @ingroup CoreAPI
      * @brief The RenderTarget can be used as an output for a RenderPass
      */
-    class RAMSES_API RenderTarget : public SceneObject
+    class RenderTarget : public SceneObject
     {
     public:
 
@@ -25,37 +26,32 @@ namespace ramses
         *
         * @returns width in pixels
         */
-        [[nodiscard]] uint32_t getWidth() const;
+        [[nodiscard]] RAMSES_API uint32_t getWidth() const;
 
         /**
         * @brief Returns the height of the RenderTarget in pixels
         *
         * @returns height in pixels
         */
-        [[nodiscard]] uint32_t getHeight() const;
+        [[nodiscard]] RAMSES_API uint32_t getHeight() const;
 
         /**
         * Stores internal data for implementation specifics of RenderTarget.
         */
-        class RenderTargetImpl& impl;
+        class RenderTargetImpl& m_impl;
 
     protected:
         /**
         * @brief Scene is the factory for creating RenderTarget instances.
         */
-        friend class SceneImpl;
+        friend class RamsesObjectRegistry;
 
         /**
         * @brief Constructor for RenderTarget.
         *
-        * @param[in] pimpl Internal data for implementation specifics of RenderTarget (sink - instance becomes owner)
+        * @param[in] impl Internal data for implementation specifics of RenderTarget (sink - instance becomes owner)
         */
-        explicit RenderTarget(RenderTargetImpl& pimpl);
-
-        /**
-        * @brief Destructor of the RenderTarget
-        */
-        ~RenderTarget() override;
+        explicit RenderTarget(std::unique_ptr<RenderTargetImpl> impl);
     };
 }
 

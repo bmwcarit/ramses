@@ -51,8 +51,8 @@ namespace ramses
         EXPECT_EQ(1u, sampler->getAnisotropyLevel());
         EXPECT_EQ(ERamsesObjectType_Texture2D, sampler->getTextureType());
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
-        const auto texHash = texture2D.impl.getLowlevelResourceHash();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
+        const auto texHash = texture2D.m_impl.getLowlevelResourceHash();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ClientTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
         EXPECT_EQ(texHash, m_internalScene.getTextureSampler(samplerHandle).textureResource);
@@ -128,8 +128,8 @@ namespace ramses
         EXPECT_EQ(16u, sampler->getAnisotropyLevel());
         EXPECT_EQ(ERamsesObjectType_RenderBuffer, sampler->getTextureType());
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
-        const ramses_internal::RenderBufferHandle renderBufferHandle = renderBuffer.impl.getRenderBufferHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
+        const ramses_internal::RenderBufferHandle renderBufferHandle = renderBuffer.m_impl.getRenderBufferHandle();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::RenderBuffer, m_internalScene.getTextureSampler(samplerHandle).contentType);
         EXPECT_EQ(renderBufferHandle.asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
@@ -142,8 +142,8 @@ namespace ramses
 
         ASSERT_NE(static_cast<TextureSamplerMS*>(nullptr), sampler);
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
-        const ramses_internal::RenderBufferHandle renderBufferHandle = renderBuffer.impl.getRenderBufferHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
+        const ramses_internal::RenderBufferHandle renderBufferHandle = renderBuffer.m_impl.getRenderBufferHandle();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::RenderBufferMS, m_internalScene.getTextureSampler(samplerHandle).contentType);
         EXPECT_EQ(renderBufferHandle.asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
@@ -154,7 +154,7 @@ namespace ramses
         const TextureSamplerExternal* sampler = this->m_scene.createTextureSamplerExternal(ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, "testSampler2DExternal");
 
         ASSERT_NE(static_cast<TextureSamplerExternal*>(nullptr), sampler);
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
 
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         const auto& samplerInternal = m_internalScene.getTextureSampler(samplerHandle);
@@ -310,11 +310,11 @@ namespace ramses
         EXPECT_EQ(1u, sampler->getAnisotropyLevel());
         EXPECT_EQ(ERamsesObjectType_Texture2D, sampler->getTextureType());
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ClientTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
-        EXPECT_EQ(texture2D.impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
+        EXPECT_EQ(texture2D.m_impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
     }
 
     TEST_F(TextureSamplerTest, setTextureDataFromTexture3DToAnotherTexture3D)
@@ -334,11 +334,11 @@ namespace ramses
         EXPECT_EQ(1u, sampler->getAnisotropyLevel());
         EXPECT_EQ(ERamsesObjectType_Texture3D, sampler->getTextureType());
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ClientTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
-        EXPECT_EQ(texture3D.impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
+        EXPECT_EQ(texture3D.m_impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
     }
 
     TEST_F(TextureSamplerTest, failsToSetTextureDataFromTexture2DToTexture3D)
@@ -368,11 +368,11 @@ namespace ramses
         EXPECT_EQ(1u, sampler->getAnisotropyLevel());
         EXPECT_EQ(ERamsesObjectType_TextureCube, sampler->getTextureType());
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::ClientTexture, m_internalScene.getTextureSampler(samplerHandle).contentType);
-        EXPECT_EQ(textureCube.impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
+        EXPECT_EQ(textureCube.m_impl.getLowlevelResourceHash(), m_internalScene.getTextureSampler(samplerHandle).textureResource);
     }
 
     TEST_F(TextureSamplerTest, setTextureDataToTexture2DBuffer)
@@ -391,11 +391,11 @@ namespace ramses
         EXPECT_EQ(1u, sampler->getAnisotropyLevel());
         EXPECT_EQ(ERamsesObjectType_Texture2DBuffer, sampler->getTextureType());
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::TextureBuffer, m_internalScene.getTextureSampler(samplerHandle).contentType);
-        EXPECT_EQ(textureBuffer.impl.getTextureBufferHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
+        EXPECT_EQ(textureBuffer.m_impl.getTextureBufferHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
     }
 
     TEST_F(TextureSamplerTest, setTextureDataToRenderBuffer)
@@ -414,11 +414,11 @@ namespace ramses
         EXPECT_EQ(1u, sampler->getAnisotropyLevel());
         EXPECT_EQ(ERamsesObjectType_RenderBuffer, sampler->getTextureType());
 
-        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->m_impl.getTextureSamplerHandle();
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(1u, m_internalScene.getTextureSamplerCount());
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::RenderBuffer, m_internalScene.getTextureSampler(samplerHandle).contentType);
-        EXPECT_EQ(buffer.impl.getRenderBufferHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
+        EXPECT_EQ(buffer.m_impl.getRenderBufferHandle().asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
     }
 
     TEST_F(TextureSamplerTest, failsToSetTextureDataToSamplerMarkedAsConsumer)

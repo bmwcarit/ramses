@@ -22,7 +22,7 @@
 
 namespace ramses_internal
 {
-    TextureBufferScene::TextureBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    TextureBufferScene::TextureBufferScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_quadMesh(*scene.createMeshNode())
         , m_effectSingleMip(*getTestEffect("ramses-test-client-texture-buffer"))
@@ -84,7 +84,7 @@ namespace ramses_internal
         setState(state);
     }
 
-    void TextureBufferScene::setOrthoCamera(const Vector3& cameraPosition)
+    void TextureBufferScene::setOrthoCamera(const glm::vec3& cameraPosition)
     {
         ramses::Node* cameraTranslate = m_scene.createNode();
         cameraTranslate->setTranslation({cameraPosition.x, cameraPosition.y, cameraPosition.z});

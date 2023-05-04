@@ -24,7 +24,7 @@ namespace ramses_internal
 
     bool OffscreenBuffersWithStreamTexturesTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
-        Bool testResultValue = true;
+        bool testResultValue = true;
 
         constexpr WaylandIviSurfaceId waylandSurfaceIviId1{409u};
         const auto streamBuffer = testFramework.createStreamBuffer(0u, ramses::waylandIviSurfaceId_t{ waylandSurfaceIviId1.getValue()});

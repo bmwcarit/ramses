@@ -15,12 +15,12 @@
 #include <string_view>
 #include <vector>
 
-namespace rlogic
+namespace ramses
 {
     class LuaModule;
 }
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     using ModuleMapping = std::unordered_map<std::string, const LuaModule*>;
     using StandardModules = std::vector<EStandardModule>;

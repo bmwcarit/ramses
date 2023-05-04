@@ -19,7 +19,6 @@
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyCode.h"
 #include "RendererLib/DisplayConfig.h"
-#include "Math3d/Vector2i.h"
 #include "Utils/LoggingUtils.h"
 #include <chrono>
 
@@ -91,7 +90,7 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS
     };
 
-    static const Char* RendererEventTypeNames[] =
+    const std::array RendererEventTypeNames =
     {
         "Invalid",
         "DisplayCreated",
@@ -156,7 +155,7 @@ namespace ramses_internal
     struct MouseEvent
     {
         EMouseEventType type = EMouseEventType_Invalid;
-        Vector2i        pos;
+        glm::ivec2        pos;
     };
 
     struct WindowMoveEvent

@@ -449,7 +449,7 @@ TEST_F(ARendererCommandExecutor, setClearColor)
 {
     constexpr DisplayHandle display{ 1 };
     constexpr OffscreenBufferHandle buffer{ 2 };
-    constexpr Vector4 clearColor(1.f, 0.f, 0.2f, 0.3f);
+    constexpr glm::vec4 clearColor(1.f, 0.f, 0.2f, 0.3f);
 
     m_commandBuffer.enqueueCommand(RendererCommand::SetClearColor{ display, buffer, clearColor });
     EXPECT_CALL(m_sceneUpdater, handleSetClearColor(buffer, clearColor));
@@ -483,7 +483,7 @@ TEST_F(ARendererCommandExecutor, setFrameTimerLimits)
 TEST_F(ARendererCommandExecutor, forwardsPickEventToSceneUpdater)
 {
     const SceneId sceneId{ 123u };
-    const Vector2 coords{ 0.1f, 0.2f };
+    const glm::vec2 coords{ 0.1f, 0.2f };
     m_commandBuffer.enqueueCommand(RendererCommand::PickEvent{ sceneId, coords });
     EXPECT_CALL(m_sceneUpdater, handlePickEvent(sceneId, coords));
     doCommandExecutorLoop();

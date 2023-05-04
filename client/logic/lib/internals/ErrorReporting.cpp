@@ -11,7 +11,7 @@
 #include "impl/LoggerImpl.h"
 #include "impl/LogicObjectImpl.h"
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     void ErrorReporting::add(std::string errorMessage, const LogicObject* logicObject, EErrorType type)
     {

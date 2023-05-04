@@ -32,7 +32,7 @@ namespace ramses_internal
     class RendererLogger
     {
     public:
-        static void LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter = NodeHandle::Invalid());
+        static void LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, bool verbose, NodeHandle nodeHandleFilter = NodeHandle::Invalid());
 
     private:
         RendererLogger();

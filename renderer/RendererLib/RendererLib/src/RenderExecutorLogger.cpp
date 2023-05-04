@@ -81,7 +81,7 @@ namespace ramses_internal
 
                 if (clearFlags & EClearFlags_Color)
                 {
-                    const Vector4& clearColor = rp.clearColor;
+                    const auto& clearColor = rp.clearColor;
                     m_logContext << "    Clear color: ["
                         << clearColor.r << " "
                         << clearColor.g << " "
@@ -116,8 +116,8 @@ namespace ramses_internal
 
             for (const auto renderable : orderedRenderables)
             {
-                const Bool filterMatches = m_logContext.isMatchingNodeHandeFilter(scene.getRenderable(renderable).node);
-                const Bool detailedLogging = m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details);
+                const bool filterMatches = m_logContext.isMatchingNodeHandeFilter(scene.getRenderable(renderable).node);
+                const bool detailedLogging = m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details);
 
                 // skip renderable name, unless it was both filtered out and logging is not detailed
                 if (filterMatches || detailedLogging)

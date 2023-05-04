@@ -93,7 +93,7 @@ namespace ramses
         }
 
         LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesRenderer");
-        m_ramsesRenderer = FrameworkFactoryRegistry::GetInstance().getRendererFactory()->createRenderer(this, config);
+        m_ramsesRenderer = FrameworkFactoryRegistry::GetInstance().getRendererFactory()->createRenderer(*this, config);
         return m_ramsesRenderer.get();
     }
 
@@ -111,7 +111,7 @@ namespace ramses
         }
 
         LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesClient");
-        ClientUniquePtr client = FrameworkFactoryRegistry::GetInstance().getClientFactory()->createClient(this, applicationName);
+        ClientUniquePtr client = FrameworkFactoryRegistry::GetInstance().getClientFactory()->createClient(*this, applicationName);
         auto clientPtr = client.get();
         m_ramsesClients.emplace(std::make_pair(clientPtr, std::move(client)));
         return clientPtr;
@@ -273,15 +273,15 @@ namespace ramses
         return StatusOK;
     }
 
-    RamsesFrameworkImpl& RamsesFrameworkImpl::createImpl(const RamsesFrameworkConfig& config)
+    std::unique_ptr<RamsesFrameworkImpl> RamsesFrameworkImpl::CreateImpl(const RamsesFrameworkConfig& config)
     {
-        ramses_internal::GetRamsesLogger().initialize(config.impl.loggerConfig, false, config.impl.getDltApplicationRegistrationEnabled());
+        ramses_internal::GetRamsesLogger().initialize(config.m_impl.get().loggerConfig, false, config.m_impl.get().getDltApplicationRegistrationEnabled());
 
-        ramses_internal::Guid myGuid = config.impl.getUserProvidedGuid();
+        ramses_internal::Guid myGuid = config.m_impl.get().getUserProvidedGuid();
         if (!myGuid.isValid())
         {
             // check if user provided one
-            myGuid = config.impl.getUserProvidedGuid();
+            myGuid = config.m_impl.get().getUserProvidedGuid();
 
             // generate randomly when invalid or overlappping with reserved values (make sure generated ids do not collide with explicit guids)
             if (myGuid.isInvalid() || myGuid.get() <= 0xFF)
@@ -292,10 +292,10 @@ namespace ramses
                 myGuid = Guid(dis(gen));
             }
         }
-        ramses_internal::ParticipantIdentifier participantAddress(myGuid, config.impl.getParticipantName());
+        ramses_internal::ParticipantIdentifier participantAddress(myGuid, config.m_impl.get().getParticipantName());
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: " << participantAddress.getParticipantName() << " guid:" << participantAddress.getParticipantId() <<
-                 " stack: " << config.impl.getUsedProtocol());
+                 " stack: " << config.m_impl.get().getUsedProtocol());
 
         LogEnvironmentVariableIfSet("XDG_RUNTIME_DIR");
         LogEnvironmentVariableIfSet("LIBGL_DRIVERS_PATH");
@@ -307,17 +307,18 @@ namespace ramses
         LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time is using " << synchronized_clock::source() <<
                      ". Currrent sync time " << asMicroseconds(currentSyncTime) << " us, system clock is " << systemClockTime << " us");
 
-        RamsesFrameworkImpl* impl = new RamsesFrameworkImpl(config.impl, participantAddress);
-        if (config.impl.m_periodicLogsEnabled)
+        std::unique_ptr<RamsesFrameworkImpl> impl{ new RamsesFrameworkImpl(config.m_impl, participantAddress) };
+        if (config.m_impl.get().m_periodicLogsEnabled)
         {
-            LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs enabled with period of {}s", config.impl.periodicLogTimeout);
-            impl->m_periodicLogger.startLogging(config.impl.periodicLogTimeout);
+            LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs enabled with period of {}s", config.m_impl.get().periodicLogTimeout);
+            impl->m_periodicLogger.startLogging(config.m_impl.get().periodicLogTimeout);
         }
         else
         {
             LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs disabled");
         }
-        return *impl;
+
+        return impl;
     }
 
     void RamsesFrameworkImpl::SetConsoleLogLevel(ELogLevel logLevel)

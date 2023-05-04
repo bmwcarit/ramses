@@ -11,7 +11,7 @@
 #include "ramses-logic/Property.h"
 #include <numeric>
 
-namespace rlogic
+namespace ramses
 {
     class ALogicEngine_UpdateReport : public ALogicEngine
     {

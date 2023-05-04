@@ -10,7 +10,7 @@
 
 #include "impl/SaveFileConfigImpl.h"
 
-namespace rlogic
+namespace ramses
 {
     SaveFileConfig::SaveFileConfig() noexcept
         : m_impl(std::make_unique<internal::SaveFileConfigImpl>())

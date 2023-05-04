@@ -14,12 +14,12 @@
 #include <string>
 #include <memory>
 
-namespace rlogic::internal
+namespace ramses::internal
 {
     class AnimationNodeImpl;
 }
 
-namespace rlogic
+namespace ramses
 {
     /**
     * Animation node can be used to animate properties in logic network.
@@ -32,18 +32,18 @@ namespace rlogic
     * - Fixed outputs:
     *     - duration (float)  - total duration of the animation, determined by the highest timestamp from all its channels
     *                         - is affected by modifications to timestamp data via properties
-    *                           (see #rlogic::AnimationNodeConfig::setExposingOfChannelDataAsProperties)
+    *                           (see #ramses::AnimationNodeConfig::setExposingOfChannelDataAsProperties)
     *
-    * - Channel outputs: Each animation channel provided at creation time (#rlogic::LogicEngine::createAnimationNode)
-    *                    will be represented as output property with name of the channel (#rlogic::AnimationChannel::name)
-    *                    and a value of type matching element in #rlogic::AnimationChannel::keyframes.
-    *                    If the data type of keyframes is #rlogic::EPropertyType::Array (i.e. each keyframe is represented
+    * - Channel outputs: Each animation channel provided at creation time (#ramses::LogicEngine::createAnimationNode)
+    *                    will be represented as output property with name of the channel (#ramses::AnimationChannel::name)
+    *                    and a value of type matching element in #ramses::AnimationChannel::keyframes.
+    *                    If the data type of keyframes is #ramses::EPropertyType::Array (i.e. each keyframe is represented
     *                    by an array of floats), the output property is also of array type and contains a corresponding
-    *                    number of children properties of type #rlogic::EPropertyType::Float.
+    *                    number of children properties of type #ramses::EPropertyType::Float.
     *                    Channel value output is a result of keyframes interpolation based on the 'progress' input above,
     *                    it can be linked to another logic node input to use the animation result.
     *
-    * - Channel data inputs (only if created with #rlogic::AnimationNodeConfig::setExposingOfChannelDataAsProperties enabled):
+    * - Channel data inputs (only if created with #ramses::AnimationNodeConfig::setExposingOfChannelDataAsProperties enabled):
     *     - channelsData (struct) - contains all channels and their data in a hierarchy. For each channel:
     *         - [channelName] (struct)
     *             - timestamps (array of float) - each element represents a timestamp value
@@ -69,22 +69,10 @@ namespace rlogic
     {
     public:
         /**
-        * Constructor of AnimationNode. User is not supposed to call this - AnimationNodes are created by other factory classes
-        *
-        * @param impl implementation details of the AnimationNode
-        */
-        explicit AnimationNode(std::unique_ptr<internal::AnimationNodeImpl> impl) noexcept;
-
-        /**
-        * Destructor of AnimationNode.
-        */
-        ~AnimationNode() noexcept override;
-
-        /**
-        * Returns channel data used in this animation (as provided at creation time #rlogic::LogicEngine::createAnimationNode).
+        * Returns channel data used in this animation (as provided at creation time #ramses::LogicEngine::createAnimationNode).
         *
         * Note that the retrieved data is not affected by any modifications via channel data input properties
-        * (see #rlogic::AnimationNodeConfig::setExposingOfChannelDataAsProperties). If modifications were made, only corresponding
+        * (see #ramses::AnimationNodeConfig::setExposingOfChannelDataAsProperties). If modifications were made, only corresponding
         * properties hold the actual values used during animation.
         *
         * @return animation channels used in this animation.
@@ -92,36 +80,18 @@ namespace rlogic
         [[nodiscard]] RAMSES_API const AnimationChannels& getChannels() const;
 
         /**
-        * Copy Constructor of AnimationNode is deleted because AnimationNodes are not supposed to be copied
-        *
-        * @param other AnimationNodes to copy from
-        */
-        AnimationNode(const AnimationNode& other) = delete;
-
-        /**
-        * Move Constructor of AnimationNode is deleted because AnimationNodes are not supposed to be moved
-        *
-        * @param other AnimationNodes to move from
-        */
-        AnimationNode(AnimationNode&& other) = delete;
-
-        /**
-        * Assignment operator of AnimationNode is deleted because AnimationNodes are not supposed to be copied
-        *
-        * @param other AnimationNodes to assign from
-        */
-        AnimationNode& operator=(const AnimationNode& other) = delete;
-
-        /**
-        * Move assignment operator of AnimationNode is deleted because AnimationNodes are not supposed to be moved
-        *
-        * @param other AnimationNodes to assign from
-        */
-        AnimationNode& operator=(AnimationNode&& other) = delete;
-
-        /**
         * Implementation of AnimationNode
         */
         internal::AnimationNodeImpl& m_animationNodeImpl;
+
+    protected:
+        /**
+        * Constructor of AnimationNode. User is not supposed to call this - AnimationNodes are created by other factory classes
+        *
+        * @param impl implementation details of the AnimationNode
+        */
+        explicit AnimationNode(std::unique_ptr<internal::AnimationNodeImpl> impl) noexcept;
+
+        friend class internal::ApiObjects;
     };
 }

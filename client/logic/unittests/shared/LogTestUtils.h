@@ -8,21 +8,21 @@
 
 #pragma once
 
-#include "ramses-logic/ELogMessageType.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-logic/Logger.h"
 
-namespace rlogic
+namespace ramses
 {
     class ScopedLogContextLevel
     {
     public:
-        explicit ScopedLogContextLevel(ELogMessageType verbosityLimit)
+        explicit ScopedLogContextLevel(ELogLevel verbosityLimit)
             : m_savedLogVerbosityLimit(Logger::GetLogVerbosityLimit())
         {
             Logger::SetLogVerbosityLimit(verbosityLimit);
         }
 
-        ScopedLogContextLevel(ELogMessageType logPriority, const rlogic::Logger::LogHandlerFunc& handler)
+        ScopedLogContextLevel(ELogLevel logPriority, const ramses::Logger::LogHandlerFunc& handler)
             : ScopedLogContextLevel(logPriority)
         {
             Logger::SetLogHandler(handler);
@@ -36,7 +36,7 @@ namespace rlogic
             if (m_unsetCustomHandler)
             {
                 // Set an empty lambda to avoid side effects
-                Logger::SetLogHandler([](ELogMessageType type, std::string_view message){
+                Logger::SetLogHandler([](ELogLevel type, std::string_view message){
                     (void)type;
                     (void)message;
                 });
@@ -47,21 +47,21 @@ namespace rlogic
         ScopedLogContextLevel& operator=(const ScopedLogContextLevel&) = default;
 
     private:
-        ELogMessageType m_savedLogVerbosityLimit;
+        ELogLevel m_savedLogVerbosityLimit;
         bool m_unsetCustomHandler = false;
     };
 
     struct TestLog
     {
-        ELogMessageType type;
+        ELogLevel type;
         std::string message;
     };
 
     class TestLogCollector
     {
     public:
-        explicit TestLogCollector(ELogMessageType verbosityLimit)
-            : m_logCollector(verbosityLimit, [this](ELogMessageType type, std::string_view message)
+        explicit TestLogCollector(ELogLevel verbosityLimit)
+            : m_logCollector(verbosityLimit, [this](ELogLevel type, std::string_view message)
                 {
                     logs.emplace_back(TestLog{type, std::string{message}});
                 })

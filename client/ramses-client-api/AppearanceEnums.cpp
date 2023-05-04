@@ -11,7 +11,7 @@
 
 namespace ramses
 {
-    static const char* const BlendOperationNames[] =
+    const std::array BlendOperationNames =
     {
         "Disabled",
         "Add",
@@ -21,7 +21,7 @@ namespace ramses
         "Max",
     };
 
-    static const char* const BlendFactorNames[] =
+    const std::array BlendFactorNames =
     {
         "Zero",
         "One",
@@ -40,7 +40,7 @@ namespace ramses
         "AlphaSaturate",
     };
 
-    static const char* const CullModeNames[] =
+    const std::array CullModeNames =
     {
         "Disabled",
         "FrontFacing",
@@ -48,19 +48,19 @@ namespace ramses
         "FrontAndBackFacing",
     };
 
-    static const char* const DepthWriteNames[] =
+    const std::array DepthWriteNames =
     {
         "Disabled",
         "Enabled",
     };
 
-    static const char* const ScissorTestNames[] =
+    const std::array ScissorTestNames =
     {
         "Disabled",
         "Enabled",
     };
 
-    static const char* const DepthFuncNames[] =
+    const std::array DepthFuncNames =
     {
         "Disabled",
         "Greater",
@@ -73,7 +73,7 @@ namespace ramses
         "Never",
     };
 
-    static const char* const StencilFuncNames[] =
+    const std::array StencilFuncNames =
     {
         "Disabled",
         "Never",
@@ -86,7 +86,7 @@ namespace ramses
         "GreaterEqual",
     };
 
-    static const char* const StencilOperationNames[] =
+    const std::array StencilOperationNames =
     {
         "Keep",
         "Zero",
@@ -98,7 +98,7 @@ namespace ramses
         "Invert",
     };
 
-    const char* const DrawModeNames[] =
+    const std::array DrawModeNames =
     {
         "Points",
         "Lines",

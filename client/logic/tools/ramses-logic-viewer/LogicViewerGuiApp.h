@@ -18,7 +18,7 @@ namespace ramses
     class RendererConfig;
 }
 
-namespace rlogic
+namespace ramses
 {
     class ImguiClientHelper;
     class LogicViewerGui;
@@ -49,15 +49,15 @@ namespace rlogic
 
         [[nodiscard]] bool doOneLoop() override;
 
-        [[nodiscard]] rlogic::ImguiClientHelper* getImguiClientHelper();
+        [[nodiscard]] ramses::ImguiClientHelper* getImguiClientHelper();
 
     private:
         [[nodiscard]] int init(int argc, char const* const* argv);
         [[nodiscard]] ramses::displayId_t initDisplay(const Arguments& args, ramses::RamsesRenderer& renderer, const ramses::DisplayConfig& displayConfig);
 
 
-        std::unique_ptr<rlogic::ImguiClientHelper>   m_imguiHelper;
-        std::unique_ptr<rlogic::LogicViewerGui>      m_gui;
+        std::unique_ptr<ramses::ImguiClientHelper>   m_imguiHelper;
+        std::unique_ptr<ramses::LogicViewerGui>      m_gui;
         std::unique_ptr<ISceneSetup>                 m_sceneSetup;
 
         uint32_t m_width  = 0u;
@@ -66,7 +66,7 @@ namespace rlogic
         bool                 m_headless = false;
     };
 
-    inline rlogic::ImguiClientHelper* LogicViewerGuiApp::getImguiClientHelper()
+    inline ramses::ImguiClientHelper* LogicViewerGuiApp::getImguiClientHelper()
     {
         return m_imguiHelper.get();
     }

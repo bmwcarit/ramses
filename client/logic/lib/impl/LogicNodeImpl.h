@@ -10,17 +10,13 @@
 #pragma once
 
 #include "impl/LogicObjectImpl.h"
+#include "impl/PropertyImpl.h"
 #include <memory>
 #include <string>
 #include <vector>
 #include <optional>
 
-namespace rlogic
-{
-    class Property;
-}
-
-namespace rlogic::internal
+namespace ramses::internal
 {
     struct LogicNodeRuntimeError { std::string message; };
 
@@ -46,12 +42,13 @@ namespace rlogic::internal
         [[nodiscard]] bool isDirty() const;
 
     protected:
-        void setRootProperties(std::unique_ptr<Property> rootInput, std::unique_ptr<Property> rootOutput);
+        void setRootProperties(std::unique_ptr<PropertyImpl> rootInput, std::unique_ptr<PropertyImpl> rootOutput);
 
     private:
-        std::unique_ptr<Property> m_inputs;
-        std::unique_ptr<Property> m_outputs;
+        PropertyUniquePtr m_inputs;
+        PropertyUniquePtr m_outputs;
+
         // Dirty after creation (every node gets executed at least once after creation)
-        bool                      m_dirty = true;
+        bool m_dirty = true;
     };
 }
