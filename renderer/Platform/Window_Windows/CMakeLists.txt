@@ -6,47 +6,30 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    ACME_MODULE(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
+    createModule(
         NAME                    Window_Windows
         TYPE                    STATIC_LIBRARY
         ENABLE_INSTALL          OFF
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
-        FILES_PRIVATE_HEADER    include/Window_Windows/*.h
-        FILES_SOURCE            src/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
+        INCLUDE_PATHS           include
+        SRC_FILES               include/Window_Windows/*.h
+                                src/*.cpp
         DEPENDENCIES            ramses-renderer-lib
     )
 
-    ACME_MODULE(
+    if (${ramses-sdk_BUILD_TESTS})
+        createModule(
+            NAME                    Window_Windows_Test
+            TYPE                    BINARY
+            SRC_FILES            test/*.cpp
+                                    test/*.h
+            DEPENDENCIES            Window_Windows
+                                    RendererTestCommon
+                                    ramses-gmock-main
+        )
 
-        #==========================================================================
-        # general module information
-        #==========================================================================
-        NAME                    Window_Windows_Test
-        TYPE                    TEST
-        TEST_SUFFIX             RNDSANDWICHTEST
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
-        FILES_SOURCE            test/*.cpp
-                                test/*.h
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
-        DEPENDENCIES            Window_Windows
-                                RendererTestUtils
-                                ramses-gmock-main
-    )
+        makeTestFromTarget(
+            TARGET Window_Windows_Test
+            SUFFIX RNDSANDWICHTEST
+            SKIPPABLE)
+    endif()
 ENDIF()

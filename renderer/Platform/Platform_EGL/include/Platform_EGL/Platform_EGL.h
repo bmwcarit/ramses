@@ -14,6 +14,7 @@
 #include "RendererLib/DisplayConfig.h"
 #include "Context_EGL/Context_EGL.h"
 #include "Device_GL/Device_GL.h"
+#include "Utils/LogMacros.h"
 
 #ifdef DEVICE_EGL_EXTENSION_SUPPORTED
 #include "Device_EGL_Extension/Device_EGL_Extension.h"
@@ -32,27 +33,27 @@ namespace ramses_internal
         {
         }
 
-        virtual bool createContext(const DisplayConfig& displayConfig) override
+        bool createContext(const DisplayConfig& displayConfig) override
         {
             m_context = createContextInternal(displayConfig, nullptr);
             return m_context != nullptr;
         }
 
-        virtual bool createContextUploading() override
+        bool createContextUploading() override
         {
             assert(m_context);
             m_contextUploading = createContextInternal(DisplayConfig{}, static_cast<Context_EGL*>(m_context.get()));
             return m_contextUploading != nullptr;
         }
 
-        virtual bool createDevice() override
+        bool createDevice() override
         {
             assert(m_context);
             m_device = createDeviceInternal(*m_context, m_deviceExtension.get());
             return m_device != nullptr;
         }
 
-        virtual bool createDeviceUploading() override
+        bool createDeviceUploading() override
         {
             assert(m_contextUploading);
             m_deviceUploading = createDeviceInternal(*m_contextUploading, nullptr);
@@ -61,8 +62,8 @@ namespace ramses_internal
 
         bool createDeviceExtension(const DisplayConfig& displayConfig) override
         {
-            const auto& platformRenderNode = displayConfig.getPlatformRenderNode();
-            if(platformRenderNode == "")
+            const auto platformRenderNode = displayConfig.getPlatformRenderNode();
+            if (platformRenderNode.empty())
                 return true;
 
 #ifdef DEVICE_EGL_EXTENSION_SUPPORTED
@@ -78,11 +79,17 @@ namespace ramses_internal
         /**
          * gets the platform specific default swap interval
          */
-        virtual uint32_t getSwapInterval() const = 0;
+        [[nodiscard]] virtual uint32_t getSwapInterval() const = 0;
 
     private:
         std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, Context_EGL* sharedContext)
         {
+            if(displayConfig.getDeviceType() != EDeviceType::GLES_3_0)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Platform_EGL::createContext: Unsupported device type!");
+                return {};
+            }
+
             assert(m_window);
             WindowT* platformWindow = static_cast<WindowT*>(m_window.get());
 
@@ -111,7 +118,7 @@ namespace ramses_internal
 
         std::unique_ptr<Device_GL> createDeviceInternal(IContext& context, IDeviceExtension* deviceExtension)
         {
-            auto device = std::make_unique<Device_GL>(context, uint8_t{ 3 }, uint8_t{ 0 }, true, deviceExtension);
+            auto device = std::make_unique<Device_GL>(context, deviceExtension);
             if (device->init())
                 return device;
 

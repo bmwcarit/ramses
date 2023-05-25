@@ -22,16 +22,9 @@
 // should always include that file as well, since gl3ext doesn't define ANY extensions, see http://www.khronos.org/registry/gles/#headers
 #include <GLES2/gl2ext.h>
 
-#elif defined(__ghs__)
-#include <GLES3/gl3.h>
-#include <GLES3/gl31.h>
-// deprecated
-#include <GLES3/gl3ext_REL.h>
-// should always include that file as well, since gl3ext doesn't define ANY extensions, see http://www.khronos.org/registry/gles/#headers
-#include <GLES2/gl2ext.h>
 #endif
 
-#if defined(__linux__) || defined (__ghs__)
+#if defined(__linux__)
     #include "Device_GL/Device_GL_platform_linux.h"
 #endif // LINUX
 

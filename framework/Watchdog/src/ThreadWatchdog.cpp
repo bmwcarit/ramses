@@ -7,7 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "Watchdog/ThreadWatchdog.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -48,7 +49,7 @@ namespace ramses_internal
 
     void ThreadWatchdog::checkNotifyPlatform()
     {
-        if (m_watchedThreads.empty() || absl::c_any_of(m_watchedThreads, [](auto const& v) { return !v.second; }))
+        if (m_watchedThreads.empty() || std::any_of(std::cbegin(m_watchedThreads), std::cend(m_watchedThreads), [](auto const& v) { return !v.second; }))
             return;
 
         m_watchdogNotifier.notifyWatchdog();

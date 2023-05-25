@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Wayland_IVI_EGL/Platform_Wayland_IVI_EGL_ES_3_0.h"
-
 #include "Window_Wayland_IVI/Window_Wayland_IVI.h"
 #include "SystemCompositorController_Wayland_IVI/SystemCompositorController_Wayland_IVI.h"
 #include "RendererLib/RendererConfig.h"
@@ -16,11 +15,6 @@
 
 namespace ramses_internal
 {
-
-    IPlatform* Platform_Base::CreatePlatform(const RendererConfig& rendererConfig)
-    {
-        return new Platform_Wayland_IVI_EGL_ES_3_0(rendererConfig);
-    }
 
     Platform_Wayland_IVI_EGL_ES_3_0::Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfig& rendererConfig)
         : Platform_Wayland_EGL(rendererConfig)

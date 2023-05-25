@@ -16,8 +16,8 @@ namespace ramses_internal
     class StreamTextureRendererEventTests : public IEmbeddedCompositingTest
     {
     public:
-        virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) override final;
-        virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) override final;
+        void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
+        bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
     private:
         enum

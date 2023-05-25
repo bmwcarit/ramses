@@ -16,8 +16,8 @@
 
 namespace ramses
 {
-    SceneReferenceImpl::SceneReferenceImpl(SceneImpl& scene, const char* name)
-        : SceneObjectImpl(scene, ERamsesObjectType_SceneReference, name)
+    SceneReferenceImpl::SceneReferenceImpl(SceneImpl& scene, std::string_view name)
+        : SceneObjectImpl(scene, ERamsesObjectType::SceneReference, name)
     {
     }
 

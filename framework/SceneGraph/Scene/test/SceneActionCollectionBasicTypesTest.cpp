@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneVersionTag.h"
-#include "Animation/AnimationCommon.h"
 
 namespace ramses_internal
 {
@@ -31,8 +30,8 @@ namespace ramses_internal
     template<> const UInt32                    ASceneActionCollectionBasicTypes<UInt32>::m_value = 3u;
     template<> const Int64                     ASceneActionCollectionBasicTypes<Int64>::m_value = -4;
     template<> const UInt64                    ASceneActionCollectionBasicTypes<UInt64>::m_value = 4u;
-    template<> const Float                     ASceneActionCollectionBasicTypes<Float>::m_value = 5.0f;
-    template<> const Double                    ASceneActionCollectionBasicTypes<Double>::m_value = 6.0f;
+    template<> const float                     ASceneActionCollectionBasicTypes<float>::m_value = 5.0f;
+    template<> const double                    ASceneActionCollectionBasicTypes<double>::m_value = 6.0f;
     template<> const NodeHandle                ASceneActionCollectionBasicTypes<NodeHandle>::m_value = NodeHandle();
     template<> const RenderableHandle          ASceneActionCollectionBasicTypes<RenderableHandle>::m_value = RenderableHandle();
     template<> const TransformHandle           ASceneActionCollectionBasicTypes<TransformHandle>::m_value = TransformHandle();
@@ -40,10 +39,6 @@ namespace ramses_internal
     template<> const DataInstanceHandle        ASceneActionCollectionBasicTypes<DataInstanceHandle>::m_value = DataInstanceHandle();
     template<> const CameraHandle              ASceneActionCollectionBasicTypes<CameraHandle>::m_value = CameraHandle();
     template<> const RenderStateHandle         ASceneActionCollectionBasicTypes<RenderStateHandle>::m_value = RenderStateHandle();
-    template<> const SplineHandle              ASceneActionCollectionBasicTypes<SplineHandle>::m_value = SplineHandle();
-    template<> const AnimationHandle           ASceneActionCollectionBasicTypes<AnimationHandle>::m_value = AnimationHandle();
-    template<> const AnimationInstanceHandle   ASceneActionCollectionBasicTypes<AnimationInstanceHandle>::m_value = AnimationInstanceHandle();
-    template<> const DataBindHandle            ASceneActionCollectionBasicTypes<DataBindHandle>::m_value = DataBindHandle();
     template<> const RenderPassHandle          ASceneActionCollectionBasicTypes<RenderPassHandle>::m_value = RenderPassHandle();
     template<> const TextureSamplerHandle      ASceneActionCollectionBasicTypes<TextureSamplerHandle>::m_value = TextureSamplerHandle();
     template<> const RenderTargetHandle        ASceneActionCollectionBasicTypes<RenderTargetHandle>::m_value = RenderTargetHandle();
@@ -61,8 +56,8 @@ namespace ramses_internal
         UInt32,
         Int64,
         UInt64,
-        Float,
-        Double,
+        float,
+        double,
         NodeHandle,
         RenderableHandle,
         TransformHandle,
@@ -70,10 +65,6 @@ namespace ramses_internal
         DataInstanceHandle,
         CameraHandle,
         RenderStateHandle,
-        SplineHandle,
-        AnimationHandle,
-        AnimationInstanceHandle,
-        DataBindHandle,
         RenderPassHandle,
         TextureSamplerHandle,
         RenderTargetHandle,

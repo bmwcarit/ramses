@@ -9,16 +9,11 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
-#include "RendererTestUtils.h"
 #include "PlatformAbstraction/PlatformConsole.h"
 #include "Utils/ThreadLocalLog.h"
 
 int main(int argc, char* argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
     testing::InitGoogleMock(&argc, argv);
 
     // set log prefix for all tests

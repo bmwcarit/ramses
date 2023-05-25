@@ -13,13 +13,13 @@ namespace ramses_internal
 {
     TEST(EnvironmentVariables, getTest)
     {
-        String tmp;
+        std::string tmp;
         EXPECT_TRUE(PlatformEnvironmentVariables::get("PATH", tmp));
     }
 
     TEST(EnvironmentVariables, hasTest)
     {
-        String tmp;
+        std::string tmp;
         EXPECT_TRUE(PlatformEnvironmentVariables::HasEnvVar("PATH"));
         EXPECT_FALSE(PlatformEnvironmentVariables::HasEnvVar("RAMSES_THIS_VAR_WILL_NOT_EXIST"));
     }
@@ -27,7 +27,7 @@ namespace ramses_internal
     TEST(EnvironmentVariables, setTest)
     {
         PlatformEnvironmentVariables::SetEnvVar("RAMSES_SOME_ENVVAR", "foo");
-        String tmp;
+        std::string tmp;
         EXPECT_TRUE(PlatformEnvironmentVariables::get("RAMSES_SOME_ENVVAR", tmp));
         EXPECT_EQ("foo", tmp);
     }
@@ -36,7 +36,7 @@ namespace ramses_internal
     {
         PlatformEnvironmentVariables::SetEnvVar("RAMSES_SOME_OTHER_ENVVAR", "foo");
         PlatformEnvironmentVariables::UnsetEnvVar("RAMSES_SOME_OTHER_ENVVAR");
-        String tmp;
+        std::string tmp;
         EXPECT_FALSE(PlatformEnvironmentVariables::get("RAMSES_SOME_OTHER_ENVVAR", tmp));
     }
 

@@ -12,7 +12,6 @@
 #include "Utils/BinaryFileInputStream.h"
 #include "lodepng.h"
 #include "Utils/LogMacros.h"
-#include "Collections/String.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include <numeric>
 
@@ -26,16 +25,16 @@ namespace ramses_internal
         assert(m_width * m_height * 4u == m_data.size());
     }
 
-    void Image::loadFromFilePNG(const String& filename)
+    void Image::loadFromFilePNG(const std::string& filename)
     {
-        const unsigned int ret = lodepng::decode(m_data, m_width, m_height, filename.c_str());
+        const unsigned int ret = lodepng::decode(m_data, m_width, m_height, filename);
         if (ret != 0)
             LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
     }
 
-    void Image::saveToFilePNG(const String& filename) const
+    void Image::saveToFilePNG(const std::string& filename) const
     {
-        const unsigned int ret = lodepng::encode(filename.c_str(), m_data, m_width, m_height);
+        const unsigned int ret = lodepng::encode(filename, m_data, m_width, m_height);
         if (ret != 0)
             LOG_ERROR(CONTEXT_FRAMEWORK, "Error while saving PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
     }
@@ -144,7 +143,7 @@ namespace ramses_internal
         return m_width * m_height;
     }
 
-    Vector4i Image::getSumOfPixelValues() const
+    glm::ivec4 Image::getSumOfPixelValues() const
     {
         auto addWithoutOverflow = [](int32_t& dest, uint8_t value) {
             constexpr int32_t maximumValueBeforeOverflow = std::numeric_limits<int32_t>::max() - std::numeric_limits<uint8_t>::max() - 1;
@@ -159,7 +158,7 @@ namespace ramses_internal
         };
 
         bool overflow = false;
-        Vector4i result{0};
+        glm::ivec4 result{0};
         for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
             const UInt8* pxData = &m_data[4 * px];

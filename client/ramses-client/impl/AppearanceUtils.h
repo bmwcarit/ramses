@@ -21,22 +21,22 @@ namespace ramses
         {
             switch (blendOp)
             {
-            case EBlendOperation_Disabled:
+            case EBlendOperation::Disabled:
                 return ramses_internal::EBlendOperation::Disabled;
-            case EBlendOperation_Add:
+            case EBlendOperation::Add:
                 return ramses_internal::EBlendOperation::Add;
-            case EBlendOperation_Subtract:
+            case EBlendOperation::Subtract:
                 return ramses_internal::EBlendOperation::Subtract;
-            case EBlendOperation_ReverseSubtract:
+            case EBlendOperation::ReverseSubtract:
                 return ramses_internal::EBlendOperation::ReverseSubtract;
-            case EBlendOperation_Min:
+            case EBlendOperation::Min:
                 return ramses_internal::EBlendOperation::Min;
-            case EBlendOperation_Max:
+            case EBlendOperation::Max:
                 return ramses_internal::EBlendOperation::Max;
-            default:
-                assert(false);
-                return ramses_internal::EBlendOperation::Disabled;
             }
+
+            assert(false);
+            return ramses_internal::EBlendOperation::Disabled;
         }
 
         static EBlendOperation GetBlendOperationFromInternal(ramses_internal::EBlendOperation blendOp)
@@ -44,61 +44,63 @@ namespace ramses
             switch (blendOp)
             {
             case ramses_internal::EBlendOperation::Disabled:
-                return EBlendOperation_Disabled;
+                return EBlendOperation::Disabled;
             case ramses_internal::EBlendOperation::Add:
-                return EBlendOperation_Add;
+                return EBlendOperation::Add;
             case ramses_internal::EBlendOperation::Subtract:
-                return EBlendOperation_Subtract;
+                return EBlendOperation::Subtract;
             case ramses_internal::EBlendOperation::ReverseSubtract:
-                return EBlendOperation_ReverseSubtract;
+                return EBlendOperation::ReverseSubtract;
             case ramses_internal::EBlendOperation::Min:
-                return EBlendOperation_Min;
+                return EBlendOperation::Min;
             case ramses_internal::EBlendOperation::Max:
-                return EBlendOperation_Max;
-            default:
-                assert(false);
-                return EBlendOperation_Disabled;
+                return EBlendOperation::Max;
+            case ramses_internal::EBlendOperation::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EBlendOperation::Disabled;
         }
 
         static ramses_internal::EBlendFactor GetBlendFactorInternal(EBlendFactor blendFactor)
         {
             switch (blendFactor)
             {
-            case EBlendFactor_Zero:
+            case EBlendFactor::Zero:
                 return ramses_internal::EBlendFactor::Zero;
-            case EBlendFactor_One:
+            case EBlendFactor::One:
                 return ramses_internal::EBlendFactor::One;
-            case EBlendFactor_SrcAlpha:
+            case EBlendFactor::SrcAlpha:
                 return ramses_internal::EBlendFactor::SrcAlpha;
-            case EBlendFactor_OneMinusSrcAlpha:
+            case EBlendFactor::OneMinusSrcAlpha:
                 return ramses_internal::EBlendFactor::OneMinusSrcAlpha;
-            case EBlendFactor_DstAlpha:
+            case EBlendFactor::DstAlpha:
                 return ramses_internal::EBlendFactor::DstAlpha;
-            case EBlendFactor_OneMinusDstAlpha:
+            case EBlendFactor::OneMinusDstAlpha:
                 return ramses_internal::EBlendFactor::OneMinusDstAlpha;
-            case EBlendFactor_SrcColor:
+            case EBlendFactor::SrcColor:
                 return ramses_internal::EBlendFactor::SrcColor;
-            case EBlendFactor_OneMinusSrcColor:
+            case EBlendFactor::OneMinusSrcColor:
                 return ramses_internal::EBlendFactor::OneMinusSrcColor;
-            case EBlendFactor_DstColor:
+            case EBlendFactor::DstColor:
                 return ramses_internal::EBlendFactor::DstColor;
-            case EBlendFactor_OneMinusDstColor:
+            case EBlendFactor::OneMinusDstColor:
                 return ramses_internal::EBlendFactor::OneMinusDstColor;
-            case EBlendFactor_ConstColor:
+            case EBlendFactor::ConstColor:
                 return ramses_internal::EBlendFactor::ConstColor;
-            case EBlendFactor_OneMinusConstColor:
+            case EBlendFactor::OneMinusConstColor:
                 return ramses_internal::EBlendFactor::OneMinusConstColor;
-            case EBlendFactor_ConstAlpha:
+            case EBlendFactor::ConstAlpha:
                 return ramses_internal::EBlendFactor::ConstAlpha;
-            case EBlendFactor_OneMinusConstAlpha:
+            case EBlendFactor::OneMinusConstAlpha:
                 return ramses_internal::EBlendFactor::OneMinusConstAlpha;
-            case EBlendFactor_AlphaSaturate:
+            case EBlendFactor::AlphaSaturate:
                 return ramses_internal::EBlendFactor::AlphaSaturate;
-            default:
-                assert(false);
-                return ramses_internal::EBlendFactor::One;
             }
+
+            assert(false);
+            return ramses_internal::EBlendFactor::One;
         }
 
         static EBlendFactor GetBlendFactorFromInternal(ramses_internal::EBlendFactor blendFactor)
@@ -106,58 +108,60 @@ namespace ramses
             switch (blendFactor)
             {
             case ramses_internal::EBlendFactor::Zero:
-                return EBlendFactor_Zero;
+                return EBlendFactor::Zero;
             case ramses_internal::EBlendFactor::One:
-                return EBlendFactor_One;
+                return EBlendFactor::One;
             case ramses_internal::EBlendFactor::SrcAlpha:
-                return EBlendFactor_SrcAlpha;
+                return EBlendFactor::SrcAlpha;
             case ramses_internal::EBlendFactor::OneMinusSrcAlpha:
-                return EBlendFactor_OneMinusSrcAlpha;
+                return EBlendFactor::OneMinusSrcAlpha;
             case ramses_internal::EBlendFactor::DstAlpha:
-                return EBlendFactor_DstAlpha;
+                return EBlendFactor::DstAlpha;
             case ramses_internal::EBlendFactor::OneMinusDstAlpha:
-                return EBlendFactor_OneMinusDstAlpha;
+                return EBlendFactor::OneMinusDstAlpha;
 
             case ramses_internal::EBlendFactor::SrcColor:
-                return EBlendFactor_SrcColor;
+                return EBlendFactor::SrcColor;
             case ramses_internal::EBlendFactor::OneMinusSrcColor:
-                return EBlendFactor_OneMinusSrcColor;
+                return EBlendFactor::OneMinusSrcColor;
             case ramses_internal::EBlendFactor::DstColor:
-                return EBlendFactor_DstColor;
+                return EBlendFactor::DstColor;
             case ramses_internal::EBlendFactor::OneMinusDstColor:
-                return EBlendFactor_OneMinusDstColor;
+                return EBlendFactor::OneMinusDstColor;
             case ramses_internal::EBlendFactor::ConstColor:
-                return EBlendFactor_ConstColor;
+                return EBlendFactor::ConstColor;
             case ramses_internal::EBlendFactor::OneMinusConstColor:
-                return EBlendFactor_OneMinusConstColor;
+                return EBlendFactor::OneMinusConstColor;
             case ramses_internal::EBlendFactor::ConstAlpha:
-                return EBlendFactor_ConstAlpha;
+                return EBlendFactor::ConstAlpha;
             case ramses_internal::EBlendFactor::OneMinusConstAlpha:
-                return EBlendFactor_OneMinusConstAlpha;
+                return EBlendFactor::OneMinusConstAlpha;
             case ramses_internal::EBlendFactor::AlphaSaturate:
-                return EBlendFactor_AlphaSaturate;
-            default:
-                assert(false);
-                return EBlendFactor_One;
+                return EBlendFactor::AlphaSaturate;
+            case ramses_internal::EBlendFactor::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EBlendFactor::One;
         }
 
         static ramses_internal::ECullMode GetCullModeInternal(ECullMode cullMode)
         {
             switch (cullMode)
             {
-            case ECullMode_Disabled:
+            case ECullMode::Disabled:
                 return ramses_internal::ECullMode::Disabled;
-            case ECullMode_FrontFacing:
+            case ECullMode::FrontFacing:
                 return ramses_internal::ECullMode::FrontFacing;
-            case ECullMode_BackFacing:
+            case ECullMode::BackFacing:
                 return ramses_internal::ECullMode::BackFacing;
-            case ECullMode_FrontAndBackFacing:
+            case ECullMode::FrontAndBackFacing:
                 return ramses_internal::ECullMode::FrontAndBackFacing;
-            default:
-                assert(false);
-                return ramses_internal::ECullMode::Invalid;
             }
+
+            assert(false);
+            return ramses_internal::ECullMode::Disabled;
         }
 
         static ECullMode GetCullModeFromInternal(ramses_internal::ECullMode cullMode)
@@ -165,31 +169,33 @@ namespace ramses
             switch (cullMode)
             {
             case ramses_internal::ECullMode::Disabled:
-                return ECullMode_Disabled;
+                return ECullMode::Disabled;
             case ramses_internal::ECullMode::FrontFacing:
-                return ECullMode_FrontFacing;
+                return ECullMode::FrontFacing;
             case ramses_internal::ECullMode::BackFacing:
-                return ECullMode_BackFacing;
+                return ECullMode::BackFacing;
             case ramses_internal::ECullMode::FrontAndBackFacing:
-                return ECullMode_FrontAndBackFacing;
-            default:
-                assert(false);
-                return ECullMode_Disabled;
+                return ECullMode::FrontAndBackFacing;
+            case ramses_internal::ECullMode::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return ECullMode::Disabled;
         }
 
         static ramses_internal::EDepthWrite GetDepthWriteInternal(EDepthWrite depthWrite)
         {
             switch (depthWrite)
             {
-            case EDepthWrite_Disabled:
+            case EDepthWrite::Disabled:
                 return ramses_internal::EDepthWrite::Disabled;
-            case EDepthWrite_Enabled:
-                return ramses_internal::EDepthWrite::Enabled;
-            default:
-                assert(false);
+            case EDepthWrite::Enabled:
                 return ramses_internal::EDepthWrite::Enabled;
             }
+
+            assert(false);
+            return ramses_internal::EDepthWrite::Enabled;
         }
 
         static EDepthWrite GetDepthWriteFromInternal(ramses_internal::EDepthWrite depthWrite)
@@ -197,27 +203,29 @@ namespace ramses
             switch (depthWrite)
             {
             case ramses_internal::EDepthWrite::Disabled:
-                return EDepthWrite_Disabled;
+                return EDepthWrite::Disabled;
             case ramses_internal::EDepthWrite::Enabled:
-                return EDepthWrite_Enabled;
-            default:
-                assert(false);
-                return EDepthWrite_Enabled;
+                return EDepthWrite::Enabled;
+            case ramses_internal::EDepthWrite::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EDepthWrite::Enabled;
         }
 
         static ramses_internal::EScissorTest GetScissorTestInternal(EScissorTest scissorTest)
         {
             switch (scissorTest)
             {
-            case EScissorTest_Disabled:
+            case EScissorTest::Disabled:
                 return ramses_internal::EScissorTest::Disabled;
-            case EScissorTest_Enabled:
+            case EScissorTest::Enabled:
                 return ramses_internal::EScissorTest::Enabled;
-            default:
-                assert(false);
-                return ramses_internal::EScissorTest::Disabled;
             }
+
+            assert(false);
+            return ramses_internal::EScissorTest::Disabled;
         }
 
         static EScissorTest GetScissorTestFromInternal(ramses_internal::EScissorTest scissorTest)
@@ -225,41 +233,43 @@ namespace ramses
             switch (scissorTest)
             {
             case ramses_internal::EScissorTest::Disabled:
-                return EScissorTest_Disabled;
+                return EScissorTest::Disabled;
             case ramses_internal::EScissorTest::Enabled:
-                return EScissorTest_Enabled;
-            default:
-                assert(false);
-                return EScissorTest_Disabled;
+                return EScissorTest::Enabled;
+            case ramses_internal::EScissorTest::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EScissorTest::Disabled;
         }
 
         static ramses_internal::EDepthFunc GetDepthFuncInternal(EDepthFunc depthFunc)
         {
             switch (depthFunc)
             {
-            case EDepthFunc_Disabled:
+            case EDepthFunc::Disabled:
                 return ramses_internal::EDepthFunc::Disabled;
-            case EDepthFunc_Greater:
+            case EDepthFunc::Greater:
                 return ramses_internal::EDepthFunc::Greater;
-            case EDepthFunc_GreaterEqual:
+            case EDepthFunc::GreaterEqual:
                 return ramses_internal::EDepthFunc::GreaterEqual;
-            case EDepthFunc_Less:
+            case EDepthFunc::Less:
                 return ramses_internal::EDepthFunc::Smaller;
-            case EDepthFunc_LessEqual:
+            case EDepthFunc::LessEqual:
                 return ramses_internal::EDepthFunc::SmallerEqual;
-            case EDepthFunc_Always:
+            case EDepthFunc::Always:
                 return ramses_internal::EDepthFunc::AlwaysPass;
-            case EDepthFunc_Never:
+            case EDepthFunc::Never:
                 return ramses_internal::EDepthFunc::NeverPass;
-            case EDepthFunc_Equal:
+            case EDepthFunc::Equal:
                 return ramses_internal::EDepthFunc::Equal;
-            case EDepthFunc_NotEqual:
+            case EDepthFunc::NotEqual:
                 return ramses_internal::EDepthFunc::NotEqual;
-            default:
-                assert(false);
-                return ramses_internal::EDepthFunc::Invalid;
             }
+
+            assert(false);
+            return ramses_internal::EDepthFunc::Disabled;
         }
 
         static EDepthFunc GetDepthFuncFromInternal(ramses_internal::EDepthFunc depthFunc)
@@ -267,55 +277,57 @@ namespace ramses
             switch (depthFunc)
             {
             case ramses_internal::EDepthFunc::Disabled:
-                return EDepthFunc_Disabled;
+                return EDepthFunc::Disabled;
             case ramses_internal::EDepthFunc::Greater:
-                return EDepthFunc_Greater;
+                return EDepthFunc::Greater;
             case ramses_internal::EDepthFunc::GreaterEqual:
-                return EDepthFunc_GreaterEqual;
+                return EDepthFunc::GreaterEqual;
             case ramses_internal::EDepthFunc::Smaller:
-                return EDepthFunc_Less;
+                return EDepthFunc::Less;
             case ramses_internal::EDepthFunc::SmallerEqual:
-                return EDepthFunc_LessEqual;
+                return EDepthFunc::LessEqual;
             case ramses_internal::EDepthFunc::AlwaysPass:
-                return EDepthFunc_Always;
+                return EDepthFunc::Always;
             case ramses_internal::EDepthFunc::NeverPass:
-                return EDepthFunc_Never;
+                return EDepthFunc::Never;
             case ramses_internal::EDepthFunc::Equal:
-                return EDepthFunc_Equal;
+                return EDepthFunc::Equal;
             case ramses_internal::EDepthFunc::NotEqual:
-                return EDepthFunc_NotEqual;
-            default:
-                assert(false);
-                return EDepthFunc_LessEqual;
+                return EDepthFunc::NotEqual;
+            case ramses_internal::EDepthFunc::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EDepthFunc::LessEqual;
         }
 
         static ramses_internal::EStencilFunc GetStencilFuncInternal(EStencilFunc stencilFunc)
         {
             switch (stencilFunc)
             {
-            case EStencilFunc_Disabled:
+            case EStencilFunc::Disabled:
                 return ramses_internal::EStencilFunc::Disabled;
-            case EStencilFunc_Never:
+            case EStencilFunc::Never:
                 return ramses_internal::EStencilFunc::NeverPass;
-            case EStencilFunc_Always:
+            case EStencilFunc::Always:
                 return ramses_internal::EStencilFunc::AlwaysPass;
-            case EStencilFunc_Equal:
+            case EStencilFunc::Equal:
                 return ramses_internal::EStencilFunc::Equal;
-            case EStencilFunc_NotEqual:
+            case EStencilFunc::NotEqual:
                 return ramses_internal::EStencilFunc::NotEqual;
-            case EStencilFunc_Less:
+            case EStencilFunc::Less:
                 return ramses_internal::EStencilFunc::Less;
-            case EStencilFunc_LessEqual:
+            case EStencilFunc::LessEqual:
                 return ramses_internal::EStencilFunc::LessEqual;
-            case EStencilFunc_Greater:
+            case EStencilFunc::Greater:
                 return ramses_internal::EStencilFunc::Greater;
-            case EStencilFunc_GreaterEqual:
+            case EStencilFunc::GreaterEqual:
                 return ramses_internal::EStencilFunc::GreaterEqual;
-            default:
-                assert(false);
-                return ramses_internal::EStencilFunc::Disabled;
             }
+
+            assert(false);
+            return ramses_internal::EStencilFunc::Disabled;
         }
 
         static EStencilFunc GetStencilFuncFromInternal(ramses_internal::EStencilFunc stencilFunc)
@@ -323,53 +335,55 @@ namespace ramses
             switch (stencilFunc)
             {
             case ramses_internal::EStencilFunc::Disabled:
-                return EStencilFunc_Disabled;
+                return EStencilFunc::Disabled;
             case ramses_internal::EStencilFunc::NeverPass:
-                return EStencilFunc_Never;
+                return EStencilFunc::Never;
             case ramses_internal::EStencilFunc::AlwaysPass:
-                return EStencilFunc_Always;
+                return EStencilFunc::Always;
             case ramses_internal::EStencilFunc::Equal:
-                return EStencilFunc_Equal;
+                return EStencilFunc::Equal;
             case ramses_internal::EStencilFunc::NotEqual:
-                return EStencilFunc_NotEqual;
+                return EStencilFunc::NotEqual;
             case ramses_internal::EStencilFunc::Less:
-                return EStencilFunc_Less;
+                return EStencilFunc::Less;
             case ramses_internal::EStencilFunc::LessEqual:
-                return EStencilFunc_LessEqual;
+                return EStencilFunc::LessEqual;
             case ramses_internal::EStencilFunc::Greater:
-                return EStencilFunc_Greater;
+                return EStencilFunc::Greater;
             case ramses_internal::EStencilFunc::GreaterEqual:
-                return EStencilFunc_GreaterEqual;
-            default:
-                assert(false);
-                return EStencilFunc_Disabled;
+                return EStencilFunc::GreaterEqual;
+            case ramses_internal::EStencilFunc::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EStencilFunc::Disabled;
         }
 
         static ramses_internal::EStencilOp GetStencilOperationInternal(EStencilOperation stencilOp)
         {
             switch (stencilOp)
             {
-            case EStencilOperation_Keep:
+            case EStencilOperation::Keep:
                 return ramses_internal::EStencilOp::Keep;
-            case EStencilOperation_Zero:
+            case EStencilOperation::Zero:
                 return ramses_internal::EStencilOp::Zero;
-            case EStencilOperation_Replace:
+            case EStencilOperation::Replace:
                 return ramses_internal::EStencilOp::Replace;
-            case EStencilOperation_Increment:
+            case EStencilOperation::Increment:
                 return ramses_internal::EStencilOp::Increment;
-            case EStencilOperation_IncrementWrap:
+            case EStencilOperation::IncrementWrap:
                 return ramses_internal::EStencilOp::IncrementWrap;
-            case EStencilOperation_Decrement:
+            case EStencilOperation::Decrement:
                 return ramses_internal::EStencilOp::Decrement;
-            case EStencilOperation_DecrementWrap:
+            case EStencilOperation::DecrementWrap:
                 return ramses_internal::EStencilOp::DecrementWrap;
-            case EStencilOperation_Invert:
+            case EStencilOperation::Invert:
                 return ramses_internal::EStencilOp::Invert;
-            default:
-                assert(false);
-                return ramses_internal::EStencilOp::Keep;
             }
+
+            assert(false);
+            return ramses_internal::EStencilOp::Keep;
         }
 
         static EStencilOperation GetStencilOperationFromInternal(ramses_internal::EStencilOp stencilOp)
@@ -377,68 +391,74 @@ namespace ramses
             switch (stencilOp)
             {
             case ramses_internal::EStencilOp::Keep:
-                return EStencilOperation_Keep;
+                return EStencilOperation::Keep;
             case ramses_internal::EStencilOp::Zero:
-                return EStencilOperation_Zero;
+                return EStencilOperation::Zero;
             case ramses_internal::EStencilOp::Replace:
-                return EStencilOperation_Replace;
+                return EStencilOperation::Replace;
             case ramses_internal::EStencilOp::Increment:
-                return EStencilOperation_Increment;
+                return EStencilOperation::Increment;
             case ramses_internal::EStencilOp::IncrementWrap:
-                return EStencilOperation_IncrementWrap;
+                return EStencilOperation::IncrementWrap;
             case ramses_internal::EStencilOp::Decrement:
-                return EStencilOperation_Decrement;
+                return EStencilOperation::Decrement;
             case ramses_internal::EStencilOp::DecrementWrap:
-                return EStencilOperation_DecrementWrap;
+                return EStencilOperation::DecrementWrap;
             case ramses_internal::EStencilOp::Invert:
-                return EStencilOperation_Invert;
-            default:
-                assert(false);
-                return EStencilOperation_Keep;
+                return EStencilOperation::Invert;
+            case ramses_internal::EStencilOp::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EStencilOperation::Keep;
         }
 
         static ramses_internal::EDrawMode GetDrawModeInternal(EDrawMode mode)
         {
             switch (mode)
             {
-            case EDrawMode_Points:
+            case EDrawMode::Points:
                 return ramses_internal::EDrawMode::Points;
-            case EDrawMode_Lines:
+            case EDrawMode::Lines:
                 return ramses_internal::EDrawMode::Lines;
-            case EDrawMode_LineLoop:
+            case EDrawMode::LineLoop:
                 return ramses_internal::EDrawMode::LineLoop;
-            case EDrawMode_Triangles:
+            case EDrawMode::Triangles:
                 return ramses_internal::EDrawMode::Triangles;
-            case EDrawMode_TriangleStrip:
+            case EDrawMode::TriangleStrip:
                 return ramses_internal::EDrawMode::TriangleStrip;
-            case EDrawMode_TriangleFan:
+            case EDrawMode::TriangleFan:
                 return ramses_internal::EDrawMode::TriangleFan;
-            case EDrawMode_LineStrip:
+            case EDrawMode::LineStrip:
                 return ramses_internal::EDrawMode::LineStrip;
-            default:
-                assert(false);
-                return ramses_internal::EDrawMode::Triangles;
             }
+
+            assert(false);
+            return ramses_internal::EDrawMode::Triangles;
         }
 
         static bool GeometryShaderCompatibleWithDrawMode(EDrawMode geometryShaderInputType, EDrawMode drawMode)
         {
+            // only basic 'variant' (i.e. no strip/fan) of a primitive is allowed as GS input declaration
+            assert(geometryShaderInputType == EDrawMode::Points || geometryShaderInputType == EDrawMode::Lines || geometryShaderInputType == EDrawMode::Triangles);
+
             switch (drawMode)
             {
-            case EDrawMode_Points:
-                return geometryShaderInputType == EDrawMode_Points;
-            case EDrawMode_Lines:
-            case EDrawMode_LineStrip:
-            case EDrawMode_LineLoop:
-                return geometryShaderInputType == EDrawMode_Lines;
-            case EDrawMode_Triangles:
-            case EDrawMode_TriangleStrip:
-            case EDrawMode_TriangleFan:
-                return geometryShaderInputType == EDrawMode_Triangles;
-            default:
-                return false;
+            case EDrawMode::Points:
+                return geometryShaderInputType == EDrawMode::Points;
+            case EDrawMode::Lines:
+            case EDrawMode::LineStrip:
+            case EDrawMode::LineLoop:
+                return geometryShaderInputType == EDrawMode::Lines;
+            case EDrawMode::Triangles:
+            case EDrawMode::TriangleStrip:
+            case EDrawMode::TriangleFan:
+                return geometryShaderInputType == EDrawMode::Triangles;
             }
+
+            assert(false);
+            return false;
         }
 
         static EDrawMode GetDrawModeFromInternal(ramses_internal::EDrawMode drawMode)
@@ -446,23 +466,25 @@ namespace ramses
             switch (drawMode)
             {
             case ramses_internal::EDrawMode::Points:
-                return EDrawMode_Points;
+                return EDrawMode::Points;
             case ramses_internal::EDrawMode::Lines:
-                return EDrawMode_Lines;
+                return EDrawMode::Lines;
             case ramses_internal::EDrawMode::LineLoop:
-                return EDrawMode_LineLoop;
+                return EDrawMode::LineLoop;
             case ramses_internal::EDrawMode::Triangles:
-                return EDrawMode_Triangles;
+                return EDrawMode::Triangles;
             case ramses_internal::EDrawMode::TriangleStrip:
-                return EDrawMode_TriangleStrip;
+                return EDrawMode::TriangleStrip;
             case ramses_internal::EDrawMode::TriangleFan:
-                return EDrawMode_TriangleFan;
+                return EDrawMode::TriangleFan;
             case ramses_internal::EDrawMode::LineStrip:
-                return EDrawMode_LineStrip;
-            default:
-                assert(false);
-                return EDrawMode_Triangles;
+                return EDrawMode::LineStrip;
+            case ramses_internal::EDrawMode::NUMBER_OF_ELEMENTS:
+                break;
             }
+
+            assert(false);
+            return EDrawMode::Triangles;
         }
     };
 }

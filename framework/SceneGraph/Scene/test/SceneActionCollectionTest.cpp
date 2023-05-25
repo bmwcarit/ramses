@@ -546,7 +546,7 @@ namespace ramses_internal
     {
         UInt32 bufferSize = 102;
         std::vector<Byte> buffer(bufferSize, 0xFA);
-        String str("hello world");
+        std::string str{"hello world"};
 
         SceneActionCollection c;
         c.beginWriteSceneAction(ESceneActionId::TestAction);

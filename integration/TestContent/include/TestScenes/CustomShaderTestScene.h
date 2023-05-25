@@ -23,7 +23,7 @@ namespace ramses_internal
     class CustomShaderTestScene : public IntegrationScene
     {
     public:
-        CustomShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        CustomShaderTestScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -32,7 +32,7 @@ namespace ramses_internal
         };
 
     private:
-        String getEffectNameFromState(UInt32 state) const;
+        [[nodiscard]] String getEffectNameFromState(UInt32 state) const;
         void createGeometry();
         void initInputs();
 

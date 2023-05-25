@@ -15,7 +15,7 @@ namespace ramses_internal
     namespace
     {
         // path may not have trailing backslash on windows but remove it on all platforms for consistency
-        String RemoveTrailingBackslash(String path)
+        std::string RemoveTrailingBackslash(std::string path)
         {
             const auto len = path.size();
             if (len > 0 && (path[len-1] == '\\' || path[len-1] == '/'))
@@ -29,9 +29,9 @@ namespace ramses_internal
         }
     }
 
-    File::File(String path)
+    File::File(std::string_view path)
         : m_isOpen(false)
-        , m_path(RemoveTrailingBackslash(std::move(path)))
+        , m_path(RemoveTrailingBackslash(std::string{path}))
         , m_handle(nullptr)
     {
     }
@@ -116,11 +116,6 @@ namespace ramses_internal
             return false;
         }
 
-#if defined(__INTEGRITY)
-        // optimize fs access (default buffer size is 512)
-        setvbuf(handle, NULL, _IOFBF, 8192);
-#endif
-
         m_handle = handle;
         m_isOpen = true;
         return true;
@@ -153,7 +148,7 @@ namespace ramses_internal
         return true;
     }
 
-    String File::getPath() const
+    std::string File::getPath() const
     {
         return m_path;
     }
@@ -230,25 +225,25 @@ namespace ramses_internal
         return true;
     }
 
-    String File::getExtension() const
+    std::string File::getExtension() const
     {
         const size_t position = m_path.rfind('.');
-        if (position == String::npos)
+        if (position == std::string::npos)
         {
             // index not found
-            return String();
+            return {};
         }
-        return String(std::string(m_path.stdRef(), position + 1));
+        return m_path.substr(position + 1);
     }
 
-    String File::getFileName() const
+    std::string File::getFileName() const
     {
         size_t lastSeparator = m_path.rfind('/');
-        if (lastSeparator == String::npos)
+        if (lastSeparator == std::string::npos)
             lastSeparator = m_path.rfind('\\');
 
-        if (lastSeparator != String::npos)
-            return String(std::string(m_path.stdRef(), lastSeparator + 1));
+        if (lastSeparator != std::string::npos)
+            return m_path.substr(lastSeparator + 1);
 
         return m_path;
     }
@@ -362,6 +357,7 @@ namespace ramses_internal
 
     bool File::createDirectory()
     {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (mkdir(m_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO ) != 0) // mode 0777
             return false;
         return true;

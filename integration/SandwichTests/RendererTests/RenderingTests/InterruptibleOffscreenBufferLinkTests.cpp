@@ -16,23 +16,23 @@ using namespace ramses_internal;
 void InterruptibleOffscreenBufferLinkTests::setUpTestCases(RendererTestsFramework& testFramework)
 {
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithOneScene, *this, "InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithOneScene")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithTwoScenes, *this, "InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithTwoScenes")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_InterruptionDoesNotAffectFrameBufferScene, *this, "InterruptibleOffscreenBufferLinkTest_InterruptionDoesNotAffectFrameBufferScene")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_TwoInterruptibleOBsEachWithOneScene, *this, "InterruptibleOffscreenBufferLinkTest_TwoInterruptibleOBsEachWithOneScene")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileInterrupted, *this, "InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileInterrupted")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted, *this, "InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered, *this, "InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted_SameBuffer, *this, "InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted_SameBuffer")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
     testFramework.createTestCaseWithDefaultDisplay(InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered_SameBuffer, *this, "InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered_SameBuffer")
-        .m_displayConfigs.front().setClearColor(1.f, 0.f, 0.f, 1.f);
+        .m_displayConfigs.front().setClearColor({1.f, 0.f, 0.f, 1.f});
 }
 
 bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -61,8 +61,8 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
     }
     case InterruptibleOffscreenBufferLinkTest_OneInterruptibleOBWithTwoScenes:
     {
-        const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER, m_cameraMid - Vector3{ 1.f, 0.f, 0.f }, OBWidth, OBHeight);
-        const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER, m_cameraMid + Vector3{ 1.f, 0.f, 0.f }, OBWidth, OBHeight);
+        const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER, m_cameraMid - glm::vec3{ 1.f, 0.f, 0.f }, OBWidth, OBHeight);
+        const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER, m_cameraMid + glm::vec3{ 1.f, 0.f, 0.f }, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid);
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, true);
@@ -80,7 +80,7 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
     {
         const ramses::sceneId_t trianglesSceneId = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::THREE_TRIANGLES);
         const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid, OBWidth, OBHeight);
-        const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + Vector3{ 0.f, 2.f, 0.f });
+        const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + glm::vec3{ 0.f, 2.f, 0.f });
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, true);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
@@ -106,7 +106,7 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
         const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid);
-        const ramses::sceneId_t m_sceneIdConsumer2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + Vector3{ 0.f, 2.f, 0.f });
+        const ramses::sceneId_t m_sceneIdConsumer2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + glm::vec3{ 0.f, 2.f, 0.f });
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, true);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
@@ -159,7 +159,7 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
         const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::THREE_TRIANGLES, {0,0,0}, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid);
-        const ramses::sceneId_t m_sceneIdConsumer2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + Vector3{ 0.f, 2.f, 0.f });
+        const ramses::sceneId_t m_sceneIdConsumer2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + glm::vec3{ 0.f, 2.f, 0.f });
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, true);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
@@ -191,7 +191,7 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
         const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::THREE_TRIANGLES, {0,0,0}, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid);
-        const ramses::sceneId_t m_sceneIdConsumer2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + Vector3{ 0.f, 2.f, 0.f });
+        const ramses::sceneId_t m_sceneIdConsumer2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid + glm::vec3{ 0.f, 2.f, 0.f });
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, true);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
@@ -219,7 +219,7 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
     case InterruptibleOffscreenBufferLinkTest_RerendersInterruptedSceneIfItGetsModifiedWhileInterrupted_SameBuffer:
     {
         const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::THREE_TRIANGLES, {0,0,0}, OBWidth, OBHeight);
-        const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid + Vector3{5.0f, 0.0f, 0.0f}, OBWidth, OBHeight);
+        const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid + glm::vec3{5.0f, 0.0f, 0.0f}, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid);
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, true);
@@ -243,7 +243,7 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
     case InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered_SameBuffer:
     {
         const ramses::sceneId_t m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::THREE_TRIANGLES, {0,0,0}, OBWidth, OBHeight);
-        const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid + Vector3{ 5.0f, 0.0f, 0.0f }, OBWidth, OBHeight);
+        const ramses::sceneId_t m_sceneIdProvider2 = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_PROVIDER_LARGE, m_cameraMid + glm::vec3{ 5.0f, 0.0f, 0.0f }, OBWidth, OBHeight);
         const ramses::sceneId_t m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, m_cameraMid);
 
         const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, true);
@@ -276,7 +276,7 @@ bool InterruptibleOffscreenBufferLinkTests::run(RendererTestsFramework& testFram
 }
 
 template <typename INTEGRATION_SCENE>
-ramses::sceneId_t InterruptibleOffscreenBufferLinkTests::createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const Vector3& camPos, uint32_t vpWidth, uint32_t vpHeight)
+ramses::sceneId_t InterruptibleOffscreenBufferLinkTests::createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const glm::vec3& camPos, uint32_t vpWidth, uint32_t vpHeight)
 {
     const auto sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, camPos, vpWidth, vpHeight);
     testFramework.publishAndFlushScene(sceneId);
@@ -285,7 +285,7 @@ ramses::sceneId_t InterruptibleOffscreenBufferLinkTests::createAndShowScene(Rend
     return sceneId;
 }
 
-bool InterruptibleOffscreenBufferLinkTests::renderAndCompareScreenshot(RendererTestsFramework& testFramework, const ramses_internal::String& expectedImage, uint32_t numFramesToRender)
+bool InterruptibleOffscreenBufferLinkTests::renderAndCompareScreenshot(RendererTestsFramework& testFramework, const std::string& expectedImage, uint32_t numFramesToRender)
 {
     bool result = true;
 

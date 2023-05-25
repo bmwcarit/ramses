@@ -77,7 +77,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Float>
+    struct TypeName<float>
     {
         inline explicit operator std::string() const
         {
@@ -86,7 +86,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Double>
+    struct TypeName<double>
     {
         inline explicit operator std::string() const
         {
@@ -167,7 +167,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Char>
+    struct TypeName<char>
     {
         inline explicit operator std::string() const
         {

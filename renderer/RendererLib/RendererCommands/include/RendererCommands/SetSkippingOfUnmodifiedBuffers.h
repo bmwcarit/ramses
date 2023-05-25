@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SetSkippingOfUnmodifiedBuffers(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt32& enableSkipping) const override;
+        bool execute(UInt32& enableSkipping) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

@@ -10,8 +10,6 @@
 #define RAMSES_INTERSECTIONUTILS_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector2.h"
 #include "TransformationLinkCachedScene.h"
 
 namespace ramses_internal
@@ -21,23 +19,23 @@ namespace ramses_internal
     public:
         struct Triangle
         {
-            Vector3 v0;
-            Vector3 v1;
-            Vector3 v2;
+            glm::vec3 v0;
+            glm::vec3 v1;
+            glm::vec3 v2;
         };
 
-        static Vector3 CalculatePlaneNormal(const Triangle& triangle);
-        static bool IntersectRayVsTriangle(const Triangle& triangle, const Vector3& rayOrigin, const Vector3& rayDir, Vector3& intersectionPointInModelSpace, float& distanceRayOriginToIntersection);
-        static bool TestGeometryPicked(const Vector2& pickCoordsNDS, const float* geometry, const size_t geometrySize, const Matrix44f& modelMatrix, const Matrix44f& viewMatrix, const Matrix44f& projectionMatrix, Vector3& intersectionPointInModelSpace);
-        static void CheckSceneForIntersectedPickableObjects(const TransformationLinkCachedScene& scene, const Vector2i coordsInBufferSpace, PickableObjectIds& pickedObjects);
+        static glm::vec3 CalculatePlaneNormal(const Triangle& triangle);
+        static bool IntersectRayVsTriangle(const Triangle& triangle, const glm::vec3& rayOrigin, const glm::vec3& rayDir, glm::vec3& intersectionPointInModelSpace, float& distanceRayOriginToIntersection);
+        static bool TestGeometryPicked(const glm::vec2& pickCoordsNDS, const float* geometry, const size_t geometrySize, const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, glm::vec3& intersectionPointInModelSpace);
+        static void CheckSceneForIntersectedPickableObjects(const TransformationLinkCachedScene& scene, const glm::ivec2 coordsInBufferSpace, PickableObjectIds& pickedObjects);
 
     private:
-        static bool TestPointInTriangle(const Triangle& triangle, const Vector3& planeNormal, const Vector3& testPoint);
-        static bool CalculateRayVsPlaneIntersection(const Vector3& triangleVertex,
-            const Vector3& triangleNormal,
-            const Vector3& rayOrigin,
-            const Vector3& rayDir,
-            Vector3& intersection,
+        static bool TestPointInTriangle(const Triangle& triangle, const glm::vec3& planeNormal, const glm::vec3& testPoint);
+        static bool CalculateRayVsPlaneIntersection(const glm::vec3& triangleVertex,
+            const glm::vec3& triangleNormal,
+            const glm::vec3& rayOrigin,
+            const glm::vec3& rayDir,
+            glm::vec3& intersection,
             float& distanceRayOriginToIntersection);
     };
 }

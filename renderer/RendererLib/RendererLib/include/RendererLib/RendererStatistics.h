@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERSTATISTICS_H
 
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererAPI/Types.h"
 #include "Utils/StatisticCollection.h"
 #include "PlatformAbstraction/PlatformTime.h"
@@ -24,8 +23,8 @@ namespace ramses_internal
     class RendererStatistics
     {
     public:
-        Float  getFps() const;
-        UInt32 getDrawCallsPerFrame() const;
+        [[nodiscard]] float  getFps() const;
+        [[nodiscard]] UInt32 getDrawCallsPerFrame() const;
 
         void sceneRendered(SceneId sceneId);
         void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency);

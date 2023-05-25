@@ -48,7 +48,7 @@ namespace ramses_internal
             m_sectionBudgets[static_cast<size_t>(section)] = Duration(timeBudgetInMicrosecs);
         }
 
-        Bool isTimeBudgetExceededForSection(EFrameTimerSectionBudget section, std::chrono::milliseconds* duration = nullptr) const
+        bool isTimeBudgetExceededForSection(EFrameTimerSectionBudget section, std::chrono::milliseconds* duration = nullptr) const
         {
             const auto sectionDuration = Clock::now() - m_frameStartTimeStamp;
             if (duration)
@@ -56,12 +56,12 @@ namespace ramses_internal
             return sectionDuration >= m_sectionBudgets[static_cast<size_t>(section)];
         }
 
-        std::chrono::microseconds getTimeBudgetForSection(EFrameTimerSectionBudget section) const
+        [[nodiscard]] std::chrono::microseconds getTimeBudgetForSection(EFrameTimerSectionBudget section) const
         {
             return m_sectionBudgets[static_cast<size_t>(section)];
         }
 
-        Clock::time_point getFrameStartTime() const
+        [[nodiscard]] Clock::time_point getFrameStartTime() const
         {
             return m_frameStartTimeStamp;
         }

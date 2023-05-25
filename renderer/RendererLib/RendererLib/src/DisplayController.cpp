@@ -20,13 +20,12 @@
 
 namespace ramses_internal
 {
-    DisplayController::DisplayController(IRenderBackend& renderer, UInt32 /*samples*/, UInt32 postProcessingEffectIds)
+    DisplayController::DisplayController(IRenderBackend& renderer, UInt32 /*samples*/)
         : m_renderBackend(renderer)
         , m_device(m_renderBackend.getDevice())
         , m_embeddedCompositingManager(m_device, m_renderBackend.getEmbeddedCompositor(), m_renderBackend.getTextureUploadingAdapter())
         , m_displayWidth(m_renderBackend.getWindow().getWidth())
         , m_displayHeight(m_renderBackend.getWindow().getHeight())
-        , m_postProcessing(new Postprocessing(postProcessingEffectIds, m_displayWidth, m_displayHeight, m_device))
     {
     }
 
@@ -35,7 +34,7 @@ namespace ramses_internal
         m_renderBackend.getWindow().handleEvents();
     }
 
-    Bool DisplayController::canRenderNewFrame() const
+    bool DisplayController::canRenderNewFrame() const
     {
         return m_renderBackend.getWindow().canRenderNewFrame();
     }
@@ -60,12 +59,7 @@ namespace ramses_internal
         return executor.executeScene(scene);
     }
 
-    void DisplayController::executePostProcessing()
-    {
-        m_postProcessing->execute();
-    }
-
-    void DisplayController::clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor)
+    void DisplayController::clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const glm::vec4& clearColor)
     {
         if (clearFlags != EClearFlags_None)
         {
@@ -86,13 +80,7 @@ namespace ramses_internal
 
     void DisplayController::readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut)
     {
-        // if readPixels requested from display buffer we need to query actual framebuffer's device handle
-        if(renderTargetHandle == getDisplayBuffer())
-            // read from actual framebuffer where content is rendered after post-processing (not from the temporary render target on which post processing is applied)
-            m_device.activateRenderTarget(m_postProcessing->getFramebuffer());
-        else
-            m_device.activateRenderTarget(renderTargetHandle);
-
+        m_device.activateRenderTarget(renderTargetHandle);
         dataOut.resize(width * height * 4u); // Assuming RGBA8 non multisampled
         m_device.readPixels(&dataOut[0], x, y, width, height);
     }
@@ -109,18 +97,7 @@ namespace ramses_internal
 
     DeviceResourceHandle DisplayController::getDisplayBuffer() const
     {
-        assert(nullptr != m_postProcessing);
-        return m_postProcessing->getScenesRenderTarget();
-    }
-
-    Bool DisplayController::isWarpingEnabled() const
-    {
-        return (m_postProcessing->getPostEffectsMask() & EPostProcessingEffect_Warping) != 0u;
-    }
-
-    void DisplayController::setWarpingMeshData(const WarpingMeshData& warpingMeshData)
-    {
-        m_postProcessing->setWarpingMeshData(warpingMeshData);
+        return m_device.getFramebufferRenderTarget();
     }
 
     IRenderBackend& DisplayController::getRenderBackend() const

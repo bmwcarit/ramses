@@ -26,7 +26,7 @@ namespace ramses_internal
         EDataSlotType_NUMBER_OF_ELEMENTS
     };
 
-    static const char* DataSlotTypeNames[] =
+    const std::array DataSlotTypeNames =
     {
         "EDataSlotType_TransformationProvider",
         "EDataSlotType_TransformationConsumer",

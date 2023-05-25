@@ -19,47 +19,50 @@
 // ramses framework
 #include "Collections/HashMap.h"
 #include "SceneAPI/EFixedSemantics.h"
-#include "Utils/StringUtils.h"
+
+#include <string_view>
+#include <string>
+#include <vector>
 
 namespace ramses
 {
     class EffectDescriptionImpl : public StatusObjectImpl
     {
     public:
-        using SemanticsMap = ramses_internal::HashMap<ramses_internal::String, ramses_internal::EFixedSemantics>;
+        using SemanticsMap = ramses_internal::HashMap<std::string, ramses_internal::EFixedSemantics>;
 
         EffectDescriptionImpl();
-        virtual ~EffectDescriptionImpl();
+        ~EffectDescriptionImpl() override;
 
-        status_t setVertexShader(const char* shaderSource);
-        status_t setFragmentShader(const char* shaderSource);
-        status_t setGeometryShader(const char* shaderSource);
-        status_t setVertexShaderFromFile(const char* shaderSourceFileName);
-        status_t setFragmentShaderFromFile(const char* shaderSourceFileName);
-        status_t setGeometryShaderFromFile(const char* shaderSourceFileName);
-        status_t addCompilerDefine(const char* define);
-        status_t setUniformSemantic(const char* semanticName, EEffectUniformSemantic semanticType);
-        status_t setAttributeSemantic(const char* semanticName, EEffectAttributeSemantic semanticType);
+        status_t setVertexShader(std::string_view shaderSource);
+        status_t setFragmentShader(std::string_view shaderSource);
+        status_t setGeometryShader(std::string_view shaderSource);
+        status_t setVertexShaderFromFile(std::string_view shaderSourceFileName);
+        status_t setFragmentShaderFromFile(std::string_view shaderSourceFileName);
+        status_t setGeometryShaderFromFile(std::string_view shaderSourceFileName);
+        status_t addCompilerDefine(std::string_view define);
+        status_t setUniformSemantic(std::string_view semanticName, EEffectUniformSemantic semanticType);
+        status_t setAttributeSemantic(std::string_view semanticName, EEffectAttributeSemantic semanticType);
 
         const char*                          getVertexShader() const;
         const char*                          getFragmentShader() const;
         const char*                          getGeometryShader() const;
         uint32_t                             getNumberOfCompilerDefines() const;
-        const ramses_internal::StringVector& getCompilerDefines() const;
+        const std::vector<std::string>&      getCompilerDefines() const;
         const char*                          getCompilerDefine(uint32_t index) const;
         const SemanticsMap&                  getSemanticsMap() const;
 
-        static bool ReadFileContentsToString(const char* fileName, ramses_internal::String& fileContents);
+        static bool ReadFileContentsToString(std::string_view fileName, std::string& fileContents);
 
     private:
-        status_t setSemantic(const char* semanticName, ramses_internal::EFixedSemantics semanticType);
+        status_t setSemantic(std::string_view semanticName, ramses_internal::EFixedSemantics semanticType);
 
-        ramses_internal::String m_vertexShaderSource;
-        ramses_internal::String m_fragmentShaderSource;
-        ramses_internal::String m_geometryShaderSource;
+        std::string m_vertexShaderSource;
+        std::string m_fragmentShaderSource;
+        std::string m_geometryShaderSource;
 
-        ramses_internal::StringVector m_compilerDefines;
-        SemanticsMap                  m_inputSemantics;
+        std::vector<std::string> m_compilerDefines;
+        SemanticsMap             m_inputSemantics;
     };
 }
 

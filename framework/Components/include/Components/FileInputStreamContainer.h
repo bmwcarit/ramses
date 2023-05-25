@@ -13,12 +13,14 @@
 #include "Utils/BinaryFileInputStream.h"
 #include "Utils/File.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class FileInputStreamContainer : public IInputStreamContainer
     {
     public:
-        explicit FileInputStreamContainer(const String& filename)
+        explicit FileInputStreamContainer(std::string_view filename)
             : m_file(filename)
             , m_stream(m_file)
         {}

@@ -103,7 +103,7 @@ namespace ramses_internal
             return readExactBytesFromPipe(destinationPointer, totalBytesToRead);
         }
 
-        const String& getName() const
+        [[nodiscard]] const String& getName() const
         {
             return m_pipeName;
         }
@@ -127,7 +127,7 @@ namespace ramses_internal
         EReadFromPipeStatus readExactBytesFromPipe(void *writingLocation, ssize_t totalBytesToRead) const
         {
             ssize_t bytesRemaining = totalBytesToRead;
-            uint8_t* currentWritingLocation = reinterpret_cast<uint8_t*>(writingLocation);
+            uint8_t* currentWritingLocation = static_cast<uint8_t*>(writingLocation);
 
             while (true)
             {
@@ -157,8 +157,8 @@ namespace ramses_internal
                     // 1. pipe is empty (happens only iff pipe is non-blocking)
                     // 2. there is (a real) error
                     const int readErrorStatus = getSystemErrorStatus();
-                    const Bool isPipeEmpty = (readErrorStatus == EAGAIN || readErrorStatus == EWOULDBLOCK);
-                    const Bool isInTheMiddleOfReadingOperation = totalBytesToRead != bytesRemaining;
+                    const bool isPipeEmpty = (readErrorStatus == EAGAIN || readErrorStatus == EWOULDBLOCK);
+                    const bool isInTheMiddleOfReadingOperation = totalBytesToRead != bytesRemaining;
 
                     if(isPipeEmpty)
                     {
@@ -187,7 +187,7 @@ namespace ramses_internal
         }
 
         const String m_pipeName;
-        const Bool m_createPipe;
+        const bool m_createPipe;
         int m_pipeFileDescriptor;
     };
 

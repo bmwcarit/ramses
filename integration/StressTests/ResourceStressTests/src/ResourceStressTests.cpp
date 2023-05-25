@@ -10,13 +10,12 @@
 
 #include "ramses-renderer-api/RendererConfig.h"
 
-#include "Utils/Argument.h"
 #include "ResourceStressTestSceneArray.h"
 #include "RenderExecutor.h"
 
 namespace ramses_internal
 {
-    const char* StressTestCaseNames[] = {
+    const std::array StressTestCaseNames = {
         "EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush",
         "EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_LowRendererFPS",
         "EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_ExtremelyLowRendererFPS",
@@ -29,9 +28,9 @@ namespace ramses_internal
 
     ResourceStressTests::ResourceStressTests(const StressTestConfig& config)
         : m_testConfig(config)
-        , m_framework(config.argc, config.argv)
+        , m_framework{config.frameworkConfig}
         , m_client(*m_framework.createClient("resource-stress-tests"))
-        , m_testRenderer(m_framework, ramses::RendererConfig(config.argc, config.argv))
+        , m_testRenderer(m_framework, config.rendererConfig)
         , m_displays(config.displayCount)
         , m_sceneSetsPerDisplay(config.sceneSetsPerDisplay)
     {
@@ -50,7 +49,7 @@ namespace ramses_internal
         {
             const auto displayWidth = FirstDisplayWidth >> i;
             const auto displayHeight = FirstDisplayHeight >> i;
-            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, uint32_t(i), config.argc, config.argv);
+            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, uint32_t(i), config.displayConfig);
 
             // Offscreen buffers can be smaller, to make the tests run faster
             const auto obWidth = displayWidth / 10;
@@ -71,7 +70,7 @@ namespace ramses_internal
 
     Int32 ResourceStressTests::runTest(EStressTestCaseId testToRun)
     {
-        static const UInt32 MinDurationPerTestSeconds[] =
+        const std::array<uint32_t, 7> MinDurationPerTestSeconds =
         {
             1, //"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush",
             1, //"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_LowRendererFPS",
@@ -81,7 +80,7 @@ namespace ramses_internal
             5, //"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_MapSceneAfterAWhile_ExtremelyLowRendererFPS",
             15,//"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_RemapSceneAllTheTime",
         };
-        static_assert(static_cast<std::size_t>(EStressTestCaseId_NUMBER_OF_ELEMENTS) == sizeof(MinDurationPerTestSeconds)/sizeof(MinDurationPerTestSeconds[0]), "Size mismatch");
+        static_assert(static_cast<std::size_t>(EStressTestCaseId_NUMBER_OF_ELEMENTS) == MinDurationPerTestSeconds.size(), "Size mismatch");
 
         if (m_testConfig.durationEachTestSeconds < MinDurationPerTestSeconds[testToRun])
         {
@@ -204,7 +203,8 @@ namespace ramses_internal
 
     void ResourceStressTests::setRendererFPS(uint32_t rendererFPS)
     {
-        m_testRenderer.setFPS(rendererFPS);
+        for (const auto& display : m_displays)
+            m_testRenderer.setFPS(display.displayId, rendererFPS);
     }
 
     Int32 ResourceStressTests::recreateResourcesEveryFrame(uint32_t sceneFpsLimit)
@@ -325,7 +325,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_INFO(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished successfully.");
+            LOG_DEBUG(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished successfully.");
         }
         return testResult;
     }
@@ -334,11 +334,11 @@ namespace ramses_internal
     {
         StringOutputStream verboseTestResults;
         Int32 testResult = 0;
-        for (Int32 currentTest = 0; currentTest < static_cast<Int32>(EStressTestCaseId_NUMBER_OF_ELEMENTS); ++currentTest)
+        for (uint32_t currentTest = 0; currentTest < static_cast<uint32_t>(EStressTestCaseId_NUMBER_OF_ELEMENTS); ++currentTest)
         {
             if (RunTest(static_cast<EStressTestCaseId>(currentTest), config) != 0)
             {
-                testResult -= (1 << currentTest);
+                testResult -= static_cast<int32_t>(1u << currentTest);
                 verboseTestResults << "Test " << currentTest << " [" << EnumToString(static_cast<EStressTestCaseId>(currentTest)) << "] failed!\n";
             }
             else

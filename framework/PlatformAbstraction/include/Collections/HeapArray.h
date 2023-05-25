@@ -42,6 +42,7 @@ namespace ramses_internal
 
     private:
         UInt m_size;
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         std::unique_ptr<T[]> m_data;
     };
 

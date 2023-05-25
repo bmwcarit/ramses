@@ -32,7 +32,7 @@ namespace ramses_internal
     class RendererLogger
     {
     public:
-        static void LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter = NodeHandle::Invalid());
+        static void LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, bool verbose, NodeHandle nodeHandleFilter = NodeHandle::Invalid());
 
     private:
         RendererLogger();
@@ -49,7 +49,6 @@ namespace ramses_internal
         static void LogEmbeddedCompositor(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogEventQueue(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogPeriodicInfo(const RendererSceneUpdater& updater);
-        static void LogStreamTextures(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogReferencedScenes(const RendererSceneUpdater& updater, RendererLogContext& context);
 
         static void LogProvider(const RendererScenes& scenes, RendererLogContext& context, const RendererCachedScene& scene, const DataSlotHandle slotHandle, bool asLinked = false);

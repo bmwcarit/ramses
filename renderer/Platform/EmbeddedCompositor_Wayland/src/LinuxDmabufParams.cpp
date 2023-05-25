@@ -18,6 +18,7 @@
 #include "EmbeddedCompositor_Wayland/LinuxDmabufParams.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
+#include "Collections/String.h"
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 #include <cassert>

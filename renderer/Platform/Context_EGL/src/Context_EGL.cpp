@@ -8,6 +8,7 @@
 
 #include "Context_EGL/Context_EGL.h"
 #include "Utils/ThreadLocalLogForced.h"
+#include <array>
 
 namespace
 {
@@ -82,7 +83,7 @@ namespace ramses_internal
         }
     }
 
-    Bool Context_EGL::init()
+    bool Context_EGL::init()
     {
         if(!getEglDisplayFromNativeHandle())
             return false;
@@ -174,14 +175,14 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL done.");
     }
 
-    Bool Context_EGL::swapBuffers()
+    bool Context_EGL::swapBuffers()
     {
         LOG_TRACE(CONTEXT_RENDERER, "Context_EGL swapping buffers");
         eglSwapBuffers(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface);
         return true;
     }
 
-    Bool Context_EGL::enable()
+    bool Context_EGL::enable()
     {
         assert(isInitialized());
         LOG_TRACE(CONTEXT_RENDERER, "Context_EGL enable");
@@ -196,7 +197,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool Context_EGL::disable()
+    bool Context_EGL::disable()
     {
         if (m_eglSurfaceData.eglDisplay)
         {
@@ -264,7 +265,7 @@ namespace ramses_internal
 
     bool Context_EGL::queryEglExtensions()
     {
-        const Char* contextExtensionsNativeString = eglQueryString(m_eglSurfaceData.eglDisplay, EGL_EXTENSIONS);
+        const char* contextExtensionsNativeString = eglQueryString(m_eglSurfaceData.eglDisplay, EGL_EXTENSIONS);
 
         if (nullptr != contextExtensionsNativeString)
         {
@@ -292,12 +293,11 @@ namespace ramses_internal
 
     void Context_EGL::logAllFoundEglConfigs() const
     {
-        constexpr std::size_t maxConfigCount = 32u;
-        EGLConfig configsResult[maxConfigCount];
+        std::array<EGLConfig, 32u> configsResult{};
 
         EGLint configCountResult = 0;
 
-        if(EGL_TRUE != eglChooseConfig(m_eglSurfaceData.eglDisplay, nullptr, configsResult, maxConfigCount, &configCountResult))
+        if(EGL_TRUE != eglChooseConfig(m_eglSurfaceData.eglDisplay, nullptr, configsResult.data(), configsResult.size(), &configCountResult))
         {
             LOG_ERROR(CONTEXT_RENDERER, "Context_EGL: eglChooseConfig() failed. Could not retrieve available EGL configurations");
             return;
@@ -344,12 +344,11 @@ namespace ramses_internal
 
     void Context_EGL::logErrorHints(const EGLint *surfaceAttributes) const
     {
-        constexpr std::size_t maxConfigCount = 32u;
-        EGLConfig configsResult[maxConfigCount];
+        std::array<EGLConfig, 32> configsResult{};
 
         EGLint configCountResult = 0;
 
-        if (EGL_TRUE != eglChooseConfig(m_eglSurfaceData.eglDisplay, nullptr, configsResult, maxConfigCount, &configCountResult))
+        if (EGL_TRUE != eglChooseConfig(m_eglSurfaceData.eglDisplay, nullptr, configsResult.data(), configsResult.size(), &configCountResult))
         {
             return;
         }
@@ -360,6 +359,7 @@ namespace ramses_internal
         {
             EGLint renderableType = 0;
             eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_RENDERABLE_TYPE, &renderableType);
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             allRenderableTypes |= renderableType;
         }
 
@@ -370,6 +370,7 @@ namespace ramses_internal
             if (*iter == EGL_RENDERABLE_TYPE)
             {
                 // explicit message for common problem in VM: no support for GLES3.1
+                // NOLINTNEXTLINE(hicpp-signed-bitwise)
                 if ((allRenderableTypes & value) == 0)
                 {
                     const auto name = renderableTypeName(value);
@@ -476,6 +477,7 @@ namespace ramses_internal
             {
             case EGL_SURFACE_TYPE:
             case EGL_RENDERABLE_TYPE:
+                // NOLINTNEXTLINE(hicpp-signed-bitwise)
                 logOnFailure((configParamRequestedValue & configParamActualValue) != 0, surfaceAttributeName(*configParamToQuery));
                 break;
             case EGL_SAMPLES:

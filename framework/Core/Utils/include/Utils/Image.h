@@ -11,16 +11,16 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/Macros.h"
-#include "Math3d/Vector4i.h"
 #include "Utils/AssertMovable.h"
+#include "DataTypesImpl.h"
+
 #include <vector>
 #include <array>
 #include <cassert>
+#include <string>
 
 namespace ramses_internal
 {
-    class String;
-
     class Image
     {
     public:
@@ -35,20 +35,20 @@ namespace ramses_internal
         Image& operator=(const Image& other) = default;
         Image& operator=(Image&& other) noexcept = default;
 
-        void loadFromFilePNG(const String& filename);
-        void saveToFilePNG(const String& filename) const;
+        void loadFromFilePNG(const std::string& filename);
+        void saveToFilePNG(const std::string& filename) const;
 
-        UInt32 getWidth() const;
-        UInt32 getHeight() const;
-        UInt32 getNumberOfPixels() const;
-        Vector4i getSumOfPixelValues() const;
-        UInt32 getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel = 1) const;
+        [[nodiscard]] UInt32 getWidth() const;
+        [[nodiscard]] UInt32 getHeight() const;
+        [[nodiscard]] UInt32 getNumberOfPixels() const;
+        [[nodiscard]] glm::ivec4 getSumOfPixelValues() const;
+        [[nodiscard]] UInt32 getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel = 1) const;
 
-        Image createDiffTo(const Image& other) const;
-        std::pair<Image, Image> createSeparateColorAndAlphaImages() const;
-        Image createEnlarged(UInt32 width, UInt32 height, std::array<UInt8, 4> fillValue = {0x0, 0x0, 0x0, 0xff}) const;
+        [[nodiscard]] Image createDiffTo(const Image& other) const;
+        [[nodiscard]] std::pair<Image, Image> createSeparateColorAndAlphaImages() const;
+        [[nodiscard]] Image createEnlarged(UInt32 width, UInt32 height, std::array<UInt8, 4> fillValue = {0x0, 0x0, 0x0, 0xff}) const;
 
-        const std::vector<UInt8>& getData() const;
+        [[nodiscard]] const std::vector<UInt8>& getData() const;
 
         bool operator==(const Image& other) const;
         bool operator!=(const Image& other) const;

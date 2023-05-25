@@ -10,7 +10,6 @@
 #define RAMSES_MULTIPLERENDERTARGETSCENE_H
 
 #include "CommonRenderBufferTestScene.h"
-#include "Math3d/Vector4.h"
 
 namespace ramses
 {
@@ -26,7 +25,7 @@ namespace ramses_internal
     class MultipleRenderTargetScene : public CommonRenderBufferTestScene
     {
     public:
-        MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {
@@ -44,7 +43,7 @@ namespace ramses_internal
         const ramses::Effect& getMRTEffect(UInt32 state);
         ramses::RenderTarget& createMRTRenderTarget(UInt32 state);
         ramses::RenderBuffer& initRenderBuffer(ramses::Scene& scene, UInt32 state);
-        const ramses::MeshNode& createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const Vector3& translation, const Vector4& modulateColor = Vector4(1.f, 1.f, 1.f, 1.f));
+        const ramses::MeshNode& createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const glm::vec3& translation, const glm::vec4& modulateColor = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
         void initClearPass();
         void initMRTPass(UInt32 state);

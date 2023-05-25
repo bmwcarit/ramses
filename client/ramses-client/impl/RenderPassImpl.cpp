@@ -19,10 +19,12 @@
 
 #include "Scene/ClientScene.h"
 
+#include <string>
+
 namespace ramses
 {
-    RenderPassImpl::RenderPassImpl(SceneImpl& scene, const char* renderpassName)
-        : SceneObjectImpl(scene, ERamsesObjectType_RenderPass, renderpassName)
+    RenderPassImpl::RenderPassImpl(SceneImpl& scene, std::string_view renderpassName)
+        : SceneObjectImpl(scene, ERamsesObjectType::RenderPass, renderpassName)
         , m_cameraImpl(nullptr)
         , m_renderTargetImpl(nullptr)
     {
@@ -114,10 +116,10 @@ namespace ramses
         status_t status = SceneObjectImpl::validate();
 
         if (nullptr == m_cameraImpl)
-            status = addValidationMessage(EValidationSeverity_Warning, "renderpass does not have a camera set");
+            status = addValidationMessage(EValidationSeverity::Warning, "renderpass does not have a camera set");
 
         if (0 == m_renderGroups.size())
-            status = addValidationMessage(EValidationSeverity_Warning, "renderpass does not contain any rendergroups");
+            status = addValidationMessage(EValidationSeverity::Warning, "renderpass does not contain any rendergroups");
         else
         {
             for (const auto& renderGroup : m_renderGroups)
@@ -127,7 +129,7 @@ namespace ramses
         if (nullptr != m_renderTargetImpl)
             status = std::max(status, addValidationOfDependentObject(*m_renderTargetImpl));
         else if (getClearFlags() != ramses_internal::EClearFlags_None)
-            status = std::max(status, addValidationMessage(EValidationSeverity_Warning, "renderpass has clear flags enabled whithout any rendertarget, clear flags will have no effect"));
+            status = std::max(status, addValidationMessage(EValidationSeverity::Warning, "renderpass has clear flags enabled whithout any rendertarget, clear flags will have no effect"));
 
         return status;
     }
@@ -157,9 +159,9 @@ namespace ramses
         }
         else
         {
-            ramses_internal::String str = "RenderPass::setCamera failed - camera is not valid, maybe camera was not initialized:\n";
-            str += cameraImpl.getValidationReport(EValidationSeverity_Warning);
-            return addErrorEntry(str.c_str());
+            std::string str = "RenderPass::setCamera failed - camera is not valid, maybe camera was not initialized:\n";
+            str += cameraImpl.getValidationReport(EValidationSeverity::Warning);
+            return addErrorEntry(str);
         }
 
         return cameraValidity;
@@ -181,13 +183,13 @@ namespace ramses
         return const_cast<Camera*>((const_cast<const RenderPassImpl&>(*this)).getCamera());
     }
 
-    status_t RenderPassImpl::setClearColor(const ramses_internal::Vector4& clearColor)
+    status_t RenderPassImpl::setClearColor(const glm::vec4& clearColor)
     {
         getIScene().setRenderPassClearColor(m_renderPassHandle, clearColor);
         return StatusOK;
     }
 
-    const ramses_internal::Vector4& RenderPassImpl::getClearColor() const
+    const glm::vec4& RenderPassImpl::getClearColor() const
     {
         return getIScene().getRenderPass(m_renderPassHandle).clearColor;
     }

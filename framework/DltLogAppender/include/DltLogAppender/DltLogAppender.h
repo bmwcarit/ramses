@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         DltLogAppender();
-        virtual void log(const LogMessage& message) override;
+        void log(const LogMessage& message) override;
 
     private:
         DltAdapter* m_dltAdapter;

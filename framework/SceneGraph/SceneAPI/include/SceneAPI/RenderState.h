@@ -12,7 +12,7 @@
 #include "Common/BitForgeMacro.h"
 #include "Utils/LoggingUtils.h"
 #include "Math3d/Quad.h"
-#include "Math3d/Vector4.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -44,7 +44,6 @@ namespace ramses_internal
         ConstAlpha,
         OneMinusConstAlpha,
         AlphaSaturate,
-        Invalid,
         NUMBER_OF_ELEMENTS
     };
 
@@ -54,7 +53,6 @@ namespace ramses_internal
         FrontFacing,
         BackFacing,
         FrontAndBackFacing,
-        Invalid,
         NUMBER_OF_ELEMENTS
     };
 
@@ -76,7 +74,6 @@ namespace ramses_internal
         NotEqual,
         AlwaysPass,
         NeverPass,
-        Invalid,
         NUMBER_OF_ELEMENTS
     };
 
@@ -150,7 +147,7 @@ namespace ramses_internal
         return (clearFlags & clearFlagToCheckIfSet) == clearFlagToCheckIfSet;
     }
 
-    static const char* BlendOperationNames[] =
+    const std::array BlendOperationNames =
     {
         "Disabled",
         "Add",
@@ -160,7 +157,7 @@ namespace ramses_internal
         "Max",
     };
 
-    static const char* BlendFactorNames[] =
+    const std::array BlendFactorNames =
     {
         "Zero",
         "One",
@@ -177,25 +174,23 @@ namespace ramses_internal
         "ConstAlpha",
         "OneMinusConstAlpha",
         "AlphaSaturate",
-        "Invalid",
     };
 
-    static const char* CullModeNames[] =
+    const std::array CullModeNames =
     {
         "Disabled",
         "FrontFacing",
         "BackFacing",
         "FrontAndBackFacing",
-        "Invalid",
     };
 
-    static const char* DepthWriteNames[] =
+    const std::array DepthWriteNames =
     {
         "Disabled",
         "Enabled",
     };
 
-    static const char* DepthFuncNames[] =
+    const std::array DepthFuncNames =
     {
         "Disabled",
         "Greater",
@@ -206,16 +201,15 @@ namespace ramses_internal
         "NotEqual",
         "Always",
         "Never",
-        "Invalid",
     };
 
-    static const char* ScissorTestNames[] =
+    const std::array ScissorTestNames =
     {
         "Disabled",
         "Enabled",
     };
 
-    static const char* StencilFuncNames[] =
+    const std::array StencilFuncNames =
     {
         "Disabled",
         "Never",
@@ -228,7 +222,7 @@ namespace ramses_internal
         "GreaterEqual",
     };
 
-    static const char* StencilOperationNames[] =
+    const std::array StencilOperationNames =
     {
         "Keep",
         "Zero",
@@ -240,7 +234,7 @@ namespace ramses_internal
         "Invert",
     };
 
-    static const char* DrawModeNames[] =
+    const std::array DrawModeNames =
     {
         "Points",
         "Lines",
@@ -277,7 +271,7 @@ namespace ramses_internal
         };
 
         ScissorRegion   scissorRegion;
-        Vector4         blendColor{ 0.f, 0.f, 0.f, 0.f };
+        glm::vec4       blendColor{ 0.f, 0.f, 0.f, 0.f };
         EBlendFactor    blendFactorSrcColor = EBlendFactor::SrcAlpha;
         EBlendFactor    blendFactorDstColor = EBlendFactor::OneMinusSrcAlpha;
         EBlendFactor    blendFactorSrcAlpha = EBlendFactor::One;
@@ -297,10 +291,10 @@ namespace ramses_internal
         uint8_t         stencilRefValue = 0;
         uint8_t         stencilMask = 0xFF;
         // explicit padding, consume when adding members
-        uint8_t padding[2] = { 0 };
+        uint8_t padding[2] = { 0 };  // NOLINT(modernize-avoid-c-arrays)
     };
 
-    static constexpr size_t ExpectedSize = sizeof(RenderState::ScissorRegion) + sizeof(Vector4) + 4 * sizeof(EBlendFactor) + 2 * sizeof(EBlendOperation) + sizeof(ColorWriteMask)
+    static constexpr size_t ExpectedSize = sizeof(RenderState::ScissorRegion) + sizeof(glm::vec4) + 4 * sizeof(EBlendFactor) + 2 * sizeof(EBlendOperation) + sizeof(ColorWriteMask)
         + sizeof(ECullMode) + sizeof(EDrawMode) + sizeof(EDepthFunc) + sizeof(EDepthWrite) + sizeof(EScissorTest) + sizeof(EStencilFunc)
         + 3 * sizeof(EStencilOp) + sizeof(RenderState::stencilRefValue) + sizeof(RenderState::stencilMask) + sizeof(RenderState::padding);
     static_assert(sizeof(RenderState) == ExpectedSize, "Avoid padding in this struct, add padding explicitly as member");

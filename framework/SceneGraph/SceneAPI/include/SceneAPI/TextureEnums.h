@@ -26,7 +26,7 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS
     };
 
-    static const char* SamplingMethodNames[] =
+    const std::array SamplingMethodNames =
     {
         "ESamplingMethod_Nearest",
         "ESamplingMethod_Linear",
@@ -45,7 +45,7 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS
     };
 
-    static const char* WrapMethodNames[] =
+    const std::array WrapMethodNames =
     {
         "EWrapMethod_Clamp",
         "EWrapMethod_Repeat",
@@ -63,7 +63,7 @@ namespace ramses_internal
         ERenderBufferType_NUMBER_OF_ELEMENTS
     };
 
-    static const char* RenderBufferTypeNames[] =
+    const std::array RenderBufferTypeNames =
     {
         "ERenderBufferType_InvalidBuffer",
         "ERenderBufferType_DepthBuffer",
@@ -81,7 +81,7 @@ namespace ramses_internal
         ERenderBufferAccessMode_NUMBER_OF_ELEMENTS
     };
 
-    static const char* RenderBufferAccessModeNames[] =
+    const std::array RenderBufferAccessModeNames =
     {
         "ERenderBufferAccessMode_Invalid",
         "ERenderBufferAccessMode_WriteOnly",
@@ -187,7 +187,7 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS,
     };
 
-    static const char* TextureChannelColorNames[] =
+    const std::array TextureChannelColorNames =
     {
         "Red",
         "Green",
@@ -284,7 +284,7 @@ namespace ramses_internal
         }
     }
 
-    static const char* TextureFormatNames[] = {
+    const std::array TextureFormatNames = {
         "ETextureFormat_Invalid",
         "ETextureFormat_R8",
         "ETextureFormat_R16",

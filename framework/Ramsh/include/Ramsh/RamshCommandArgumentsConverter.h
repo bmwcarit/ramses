@@ -10,11 +10,11 @@
 #define RAMSES_RAMSHCOMMANDARGUMENTSCONVERTER_H
 
 #include "Collections/Vector.h"
-#include "Collections/String.h"
 #include "Collections/Pair.h"
 #include "Collections/StringOutputStream.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 
+#include <string>
 namespace ramses_internal
 {
     using RamshArgumentData = std::string;
@@ -57,7 +57,7 @@ namespace ramses_internal
     {
         static inline bool tryConvert(const RamshArgumentData& data, std::vector<T>& value)
         {
-            String curr;
+            std::string curr;
 
             bool result = true;
 
@@ -95,7 +95,7 @@ namespace ramses_internal
 
             bool result = false;
 
-            String curr;
+            std::string curr;
             for(UInt i = 0; i < data.size(); i++)
             {
                 if(';' == data.at(i))
@@ -121,7 +121,7 @@ namespace ramses_internal
     {
         static inline bool tryConvert(const RamshArgumentData& data, Int64& value)
         {
-            Char* endptr;
+            char* endptr;
             value = static_cast<Int64>(strtol(data.c_str(),&endptr,10));
             // conversion is only successful if anything was converted
             return endptr != data.c_str();
@@ -136,35 +136,35 @@ namespace ramses_internal
     DEFINE_INT_CONVERTER(Int16)
 
     template<>
-    struct ArgumentConverter<Double>
+    struct ArgumentConverter<double>
     {
-        static inline bool tryConvert(const RamshArgumentData& data, Double& value)
+        static inline bool tryConvert(const RamshArgumentData& data, double& value)
         {
-            Char* endptr;
-            value = static_cast<Double>(strtod(data.c_str(),&endptr));
+            char* endptr;
+            value = static_cast<double>(strtod(data.c_str(),&endptr));
             // conversion is only successful if anything was converted
             return endptr != data.c_str();
         }
     };
 
     template<>
-    struct ArgumentConverter<Float>
+    struct ArgumentConverter<float>
     {
-        static inline bool tryConvert(const RamshArgumentData& data, Float& value)
+        static inline bool tryConvert(const RamshArgumentData& data, float& value)
         {
-            Double val = 0.0;
-            // reuse the Double converter
-            bool result = ArgumentConverter<Double>::tryConvert(data,val);
-            value = static_cast<Float>(val);
+            double val = 0.0;
+            // reuse the double converter
+            bool result = ArgumentConverter<double>::tryConvert(data,val);
+            value = static_cast<float>(val);
             return result;
         }
     };
 
-    // initializes a String with the raw data
+    // initializes a std::string with the raw data
     template<>
-    struct ArgumentConverter<String>
+    struct ArgumentConverter<std::string>
     {
-        static inline bool tryConvert(const RamshArgumentData& data, String& value)
+        static inline bool tryConvert(const RamshArgumentData& data, std::string& value)
         {
             value = data;
             return true;

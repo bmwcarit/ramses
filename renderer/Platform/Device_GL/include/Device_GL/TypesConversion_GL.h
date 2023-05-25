@@ -21,7 +21,7 @@ namespace ramses_internal
         GLenum sizedInternalFormat = GL_ZERO;
         GLenum baseInternalFormat = GL_ZERO;
         GLenum type = GL_ZERO;
-        Bool compressed = false;
+        bool compressed = false;
         UInt32 byteAlignment = 0u;
         TextureSwizzleArray swizzle = {};
     };

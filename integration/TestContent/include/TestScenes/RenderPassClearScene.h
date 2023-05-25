@@ -18,7 +18,7 @@ namespace ramses_internal
     class RenderPassClearScene : public IntegrationScene
     {
     public:
-        RenderPassClearScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        RenderPassClearScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
     private:
         void addTriangleMesh(ramses::Triangle& triangle, ramses::RenderGroup& targetGroup, float x, float y, float z);

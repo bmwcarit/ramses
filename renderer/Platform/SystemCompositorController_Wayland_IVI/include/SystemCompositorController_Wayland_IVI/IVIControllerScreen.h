@@ -23,7 +23,7 @@ namespace ramses_internal
         ~IVIControllerScreen();
 
         void takeScreenshot(const String& fileName);
-        uint32_t getScreenId() const;
+        [[nodiscard]] uint32_t getScreenId() const;
 
     private:
         ivi_controller_screen& m_controllerScreen;

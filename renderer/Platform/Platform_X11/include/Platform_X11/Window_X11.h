@@ -20,7 +20,6 @@
 
 #include "X11/Xlib.h"
 #include "X11/Xutil.h"
-#undef Bool // Xlib.h defines Bool as int - this collides with ramses_internal::Bool
 #undef Status
 #undef None
 
@@ -50,15 +49,15 @@ namespace ramses_internal
         Window_X11(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
         ~Window_X11() override;
 
-        virtual bool init() override;
+        bool init() override;
 
         void handleEvents() override;
         bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
-        ::Display* getNativeDisplayHandle() const;
-        ::Window getNativeWindowHandle() const;
+        [[nodiscard]] ::Display* getNativeDisplayHandle() const;
+        [[nodiscard]] ::Window getNativeWindowHandle() const;
 
-        bool hasTitle() const override
+        [[nodiscard]] bool hasTitle() const override
         {
             return !m_fullscreen;
         }
@@ -66,16 +65,16 @@ namespace ramses_internal
         // public as it is used by tests
         static EKeyCode convertKeySymbolIntoRamsesKeyCode(UInt32 virtualKeyCode);
     private:
-        Bool setFullscreen(Bool fullscreen) override;
+        bool setFullscreen(bool fullscreen) override;
         void setTitle(const String& title) override;
 
         X11WindowData m_X11WindowData;
 
         UInt32 m_keyModifiers;
 
-        Bool m_bLButtonDown;
-        Bool m_bRButtonDown;
-        Bool m_bMButtonDown;
+        bool m_bLButtonDown;
+        bool m_bRButtonDown;
+        bool m_bMButtonDown;
         X11WindowHandle m_userProvidedWindowHandle;
     };
 }

@@ -20,14 +20,14 @@ namespace ramses_internal
     {
     public:
         SceneRendererHandlerMock();
-        virtual ~SceneRendererHandlerMock() override;
+        ~SceneRendererHandlerMock() override;
 
         MOCK_METHOD(void, handleInitializeScene, (const SceneInfo& sceneInfo, const Guid& providerID), (override));
         MOCK_METHOD(void, handleNewSceneAvailable, (const SceneInfo& newScene, const Guid& providerID), (override));
         MOCK_METHOD(void, handleSceneBecameUnavailable, (const SceneId& unavailableScene, const Guid& providerID), (override));
         MOCK_METHOD(void, handleSceneUpdate_rvr, (const SceneId& sceneId, const SceneUpdate&& sceneUpdate, const Guid& providerID), ());
 
-        virtual void handleSceneUpdate(const SceneId& sceneId, SceneUpdate&& sceneUpdate, const Guid& providerID) override
+        void handleSceneUpdate(const SceneId& sceneId, SceneUpdate&& sceneUpdate, const Guid& providerID) override
         {
             handleSceneUpdate_rvr(sceneId, std::move(sceneUpdate), providerID);
         }

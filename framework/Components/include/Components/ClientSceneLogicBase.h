@@ -11,7 +11,6 @@
 
 #include "Scene/EScenePublicationMode.h"
 #include "Scene/ClientScene.h"
-#include "Animation/AnimationSystemFactory.h"
 #include "Scene/Scene.h"
 
 namespace ramses_internal
@@ -30,15 +29,15 @@ namespace ramses_internal
 
         void publish(EScenePublicationMode publicationMode);
         void unpublish();
-        bool isPublished() const;
+        [[nodiscard]] bool isPublished() const;
         void addSubscriber(const Guid& newSubscriber);
         void removeSubscriber(const Guid& subscriber);
 
-        std::vector<Guid> getWaitingAndActiveSubscribers() const;
+        [[nodiscard]] std::vector<Guid> getWaitingAndActiveSubscribers() const;
 
         virtual bool flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
 
-        const char* getSceneStateString() const;
+        [[nodiscard]] const char* getSceneStateString() const;
 
     protected:
         enum class ResourceChangeState {
@@ -70,7 +69,6 @@ namespace ramses_internal
 
         ResourceChanges m_resourceChangesSinceLastFlush; // keep container memory allocated
         ResourceContentHashVector m_currentFlushResourcesInUse; // keep container memory allocated
-        AnimationSystemFactory m_animationSystemFactory;
 
         // resource statistics gathered while flushing the last time
         std::array<uint64_t, EResourceStatisticIndex_NumIndices> m_resourceCount;

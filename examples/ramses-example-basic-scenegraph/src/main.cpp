@@ -29,10 +29,10 @@
  * @brief Basic Scene Graph Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-scenegraph"));
     framework.connect();
 
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -51,10 +51,10 @@ int main(int argc, char* argv[])
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsData[] = { -0.1f, 0.f, -0.1f, 0.1f, 0.f, -0.1f, 0.f, 0.1f, -0.1f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
-    uint16_t indexData[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indexData);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-0.1f, 0.f, -0.1f}, ramses::vec3f{0.1f, 0.f, -0.1f}, ramses::vec3f{0.f, 0.1f, -0.1f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = scene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     // get input data of appearance and bind required data
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearance->setInputValueVector4f(colorInput, 0.5f, 1.0f, 0.3f, 1.0f);
+    appearance->setInputValue(colorInput, ramses::vec4f{ 0.5f, 1.0f, 0.3f, 1.0f });
 
     /// [Basic Scene Graph Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
             ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
             meshNode->setAppearance(*appearance);
             meshNode->setGeometryBinding(*geometry);
-            meshNode->setTranslation(column * 0.2f, row * 0.2f, 0.0f);
+            meshNode->setTranslation({column * 0.2f, row * 0.2f, 0.0f});
             meshNode->setParent(*group);
             // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
             renderGroup->addMeshNode(*meshNode);
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
     scene->publish();
 
     //example: how to traverse scene graph
-    ramses::SceneGraphIterator graphIterator(*group, ramses::ETreeTraversalStyle_DepthFirst);
+    ramses::SceneGraphIterator graphIterator(*group, ramses::ETreeTraversalStyle::DepthFirst);
     ramses::Node* nextNode;
     printf("Scene graph traversed in depth first order: \n");
     while ((nextNode = graphIterator.getNext()) != nullptr)
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
     }
 
     //example: how to iterate through objects of scene
-    ramses::SceneObjectIterator iter(*scene, ramses::ERamsesObjectType_MeshNode);
+    ramses::SceneObjectIterator iter(*scene, ramses::ERamsesObjectType::MeshNode);
     int numberOfMeshes = 0;
     while (iter.getNext() != nullptr)
     {

@@ -20,7 +20,7 @@ namespace ramses_internal
         EConnectionStatus_Connected
     };
 
-    inline const Char* EnumToString(EConnectionStatus connectionStatus)
+    inline const char* EnumToString(EConnectionStatus connectionStatus)
     {
         switch (connectionStatus)
         {

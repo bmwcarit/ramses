@@ -17,10 +17,6 @@
 #elif defined(__GNUC__)
     #define RAMSES_API_EXPORT __attribute((visibility ("default")))
     #define RAMSES_API_IMPORT
-#elif defined(__ghs__)
-    // not needed, does not use shared library
-    #define RAMSES_API_EXPORT
-    #define RAMSES_API_IMPORT
 #else
     #error "Compiler unknown/not supported"
 #endif

@@ -23,7 +23,7 @@
 
 namespace ramses_internal
 {
-    CubeTextureScene::CubeTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    CubeTextureScene::CubeTextureScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-cubeSphere"))
         , m_sphereMesh(nullptr)
@@ -32,12 +32,12 @@ namespace ramses_internal
         init(static_cast<EState>(state));
     }
 
-    void CubeTextureScene::divideUnitSphereTriangle(Vector3 p1, Vector3 p2, Vector3 p3, long depth)
+    void CubeTextureScene::divideUnitSphereTriangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, long depth)
     {
         // make sure points are on unit sphere surface
-        p1 = p1.normalize();
-        p2 = p2.normalize();
-        p3 = p3.normalize();
+        p1 = glm::normalize(p1);
+        p2 = glm::normalize(p2);
+        p3 = glm::normalize(p3);
 
         if (depth == 0)
         {
@@ -57,9 +57,9 @@ namespace ramses_internal
         else
         {
             // calculate points halfway between the given points. can use simple addition because of normalization
-            Vector3 v12 = p1 + p2;
-            Vector3 v23 = p2 + p3;
-            Vector3 v31 = p3 + p1;
+            glm::vec3 v12 = p1 + p2;
+            glm::vec3 v23 = p2 + p3;
+            glm::vec3 v31 = p3 + p1;
 
             // subdivide given triangle into 4 smaller ones
             divideUnitSphereTriangle(p1, v12, v31, depth - 1);
@@ -73,7 +73,7 @@ namespace ramses_internal
     {
         // create sphere by recursively subdividing a tetrahedron (pyramid with triangle base) into smaller triangles and project
         // them on unit sphere
-        Vector3 tetrahedron[] = { Vector3(1.f, 1.f, 1.f), Vector3(1.f, -1.f, -1.f), Vector3(-1.f, 1.f, -1.f), Vector3(-1.f, -1.f, 1.f) };
+        glm::vec3 tetrahedron[] = { glm::vec3(1.f, 1.f, 1.f), glm::vec3(1.f, -1.f, -1.f), glm::vec3(-1.f, 1.f, -1.f), glm::vec3(-1.f, -1.f, 1.f) };
         divideUnitSphereTriangle(tetrahedron[1], tetrahedron[2], tetrahedron[0], 5);
         divideUnitSphereTriangle(tetrahedron[2], tetrahedron[3], tetrahedron[0], 5);
         divideUnitSphereTriangle(tetrahedron[3], tetrahedron[1], tetrahedron[0], 5);
@@ -83,7 +83,7 @@ namespace ramses_internal
     void CubeTextureScene::init(EState state)
     {
         m_transformNode = m_scene.createNode("cubeTransform");
-        m_transformNode->setTranslation(0.0f, 0.0f, -8.0f);
+        m_transformNode->setTranslation({0.0f, 0.0f, -8.0f});
         m_sphereMesh = m_scene.createMeshNode("Sphere");
         addMeshNodeToDefaultRenderGroup(*m_sphereMesh);
         m_sphereMesh->setParent(*m_transformNode);
@@ -93,10 +93,10 @@ namespace ramses_internal
         ramses::TextureCube* cubeTexture = createTextureCube(state);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Clamp,
-            ramses::ETextureAddressMode_Clamp,
-            ramses::ETextureSamplingMethod_Linear,
-            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureAddressMode::Clamp,
+            ramses::ETextureAddressMode::Clamp,
+            ramses::ETextureSamplingMethod::Linear,
+            ramses::ETextureSamplingMethod::Linear,
             *cubeTexture);
 
         ramses::UniformInput cubeTextureinput;
@@ -105,9 +105,9 @@ namespace ramses_internal
 
         initializeUnitSphere();
 
-        const ramses::ArrayResource* pVertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(m_spherePositions.size()), &m_spherePositions[0].x);
-        const ramses::ArrayResource* pVertexNormals = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(m_sphereNormals.size()), &m_sphereNormals[0].x);
-        const ramses::ArrayResource* pIndices = m_scene.createArrayResource(ramses::EDataType::UInt16, static_cast<uint32_t>(m_sphereIndices.size()), &m_sphereIndices[0]);
+        const ramses::ArrayResource* pVertexPositions = m_scene.createArrayResource(static_cast<uint32_t>(m_spherePositions.size()), m_spherePositions.data());
+        const ramses::ArrayResource* pVertexNormals = m_scene.createArrayResource(static_cast<uint32_t>(m_sphereNormals.size()), m_sphereNormals.data());
+        const ramses::ArrayResource* pIndices = m_scene.createArrayResource(static_cast<uint32_t>(m_sphereIndices.size()), m_sphereIndices.data());
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput normalsInput;

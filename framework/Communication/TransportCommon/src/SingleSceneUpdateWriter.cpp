@@ -89,8 +89,8 @@ namespace ramses_internal
         const auto descSpan = SceneActionSerialization::SerializeDescription(m_update.actions, m_temporaryMemToSerializeDescription);
         const auto dataSpan = SceneActionSerialization::SerializeData(m_update.actions);
 
-        Byte header[sizeof(uint32_t)*2];
-        RawBinaryOutputStream os(header, sizeof(header));
+        std::array<Byte, sizeof(uint32_t)*2> header;
+        RawBinaryOutputStream os(header.data(), header.size());
         os << static_cast<uint32_t>(descSpan.size())
            << static_cast<uint32_t>(dataSpan.size());
         return writeBlock(BlockType::SceneActionCollection, {{os.getData(), os.getSize()}, descSpan, dataSpan});
@@ -102,8 +102,8 @@ namespace ramses_internal
         const auto descSpan = ResourceSerialization::SerializeDescription(res, m_temporaryMemToSerializeDescription);
         const auto dataSpan = ResourceSerialization::SerializeData(res);
 
-        Byte header[sizeof(uint32_t)*2];
-        RawBinaryOutputStream os(header, sizeof(header));
+        std::array<Byte, sizeof(uint32_t)*2> header;
+        RawBinaryOutputStream os(header.data(), header.size());
         os << static_cast<uint32_t>(descSpan.size())
            << static_cast<uint32_t>(dataSpan.size());
         return writeBlock(BlockType::Resource, {{os.getData(), os.getSize()}, descSpan, dataSpan});
@@ -114,8 +114,8 @@ namespace ramses_internal
         m_temporaryMemToSerializeDescription.clear();
         const auto descSpan = FlushInformationSerialization::SerializeInfos(infos, m_temporaryMemToSerializeDescription);
 
-        Byte header[sizeof(uint32_t)];
-        RawBinaryOutputStream os(header, sizeof(header));
+        std::array<Byte, sizeof(uint32_t)> header;
+        RawBinaryOutputStream os(header.data(), header.size());
         os << static_cast<uint32_t>(descSpan.size());
         return writeBlock(BlockType::FlushInfos, { {os.getData(), os.getSize()}, descSpan });
     }
@@ -133,8 +133,8 @@ namespace ramses_internal
         size_t blockSize = 0;
         for (const auto s : spans)
             blockSize += s.size();
-        Byte header[sizeof(uint32_t)*2];
-        RawBinaryOutputStream os(header, sizeof(header));
+        std::array<Byte, sizeof(uint32_t)*2> header;
+        RawBinaryOutputStream os(header.data(), header.size());
         os << static_cast<uint32_t>(type)
            << static_cast<uint32_t>(blockSize);
         if (!writeDataToPackets({os.getData(), os.getSize()}, true))

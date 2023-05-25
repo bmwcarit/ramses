@@ -28,32 +28,32 @@ namespace ramses_internal
         {
         }
 
-        ERenderBufferType getType() const
+        [[nodiscard]] ERenderBufferType getType() const
         {
             return m_type;
         }
 
-        ETextureFormat getStorageFormat() const
+        [[nodiscard]] ETextureFormat getStorageFormat() const
         {
             return m_format;
         }
 
-        UInt32 getWidth() const
+        [[nodiscard]] UInt32 getWidth() const
         {
             return m_width;
         }
 
-        UInt32 getHeight() const
+        [[nodiscard]] UInt32 getHeight() const
         {
             return m_height;
         }
 
-        UInt32 getSampleCount() const
+        [[nodiscard]] UInt32 getSampleCount() const
         {
             return m_sampleCount;
         }
 
-        ERenderBufferAccessMode getAccessMode() const
+        [[nodiscard]] ERenderBufferAccessMode getAccessMode() const
         {
             return m_accessMode;
         }

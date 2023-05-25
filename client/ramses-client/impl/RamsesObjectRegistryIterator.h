@@ -19,7 +19,7 @@ namespace ramses
     {
     public:
         RamsesObjectRegistryIterator(const RamsesObjectRegistry& registry, ERamsesObjectType type)
-            : m_objects(registry.m_objects[type])
+            : m_objects(registry.m_objects[static_cast<int>(type)])
             , m_objectsTotalCount(m_objects.getTotalCount())
             , m_current(0u)
         {

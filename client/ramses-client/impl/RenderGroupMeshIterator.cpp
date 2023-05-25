@@ -17,22 +17,17 @@
 namespace ramses
 {
     RenderGroupMeshIterator::RenderGroupMeshIterator(const RenderGroup& renderGroup)
-        : impl(new IteratorImpl<const MeshNodeImpl*>(renderGroup.impl.getAllMeshes()))
+        : m_impl{ std::make_unique<IteratorImpl<const MeshNodeImpl*>>(renderGroup.m_impl.getAllMeshes()) }
     {
     }
 
-    RenderGroupMeshIterator::~RenderGroupMeshIterator()
-    {
-        delete impl;
-    }
+    RenderGroupMeshIterator::~RenderGroupMeshIterator() = default;
 
     const MeshNode* RenderGroupMeshIterator::getNext()
     {
-        const MeshNodeImpl* meshNode = impl->getNext();
+        const MeshNodeImpl* meshNode = m_impl->getNext();
         if (meshNode == nullptr)
-        {
             return nullptr;
-        }
 
         return &RamsesObjectTypeUtils::ConvertTo<MeshNode>(meshNode->getRamsesObject());
     }

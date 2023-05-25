@@ -20,37 +20,32 @@ namespace ramses_internal
     {
     }
 
-    EDeviceTypeId LoggingDevice::getDeviceTypeId() const
-    {
-        return EDeviceTypeId_INVALID;
-    }
-
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Matrix22f* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::mat2* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Matrix33f* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::mat3* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Matrix44f* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::mat4* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector4i* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::ivec4* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector3i* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::ivec3* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector2i* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::ivec2* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
@@ -60,27 +55,27 @@ namespace ramses_internal
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector4* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::vec4* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector3* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::vec3* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector2* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const glm::vec2* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Float* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const float* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::colorMask(Bool r, Bool g, Bool b, Bool a)
+    void LoggingDevice::colorMask(bool r, bool g, bool b, bool a)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
@@ -88,7 +83,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::clearColor(const Vector4& clearColor)
+    void LoggingDevice::clearColor(const glm::vec4& clearColor)
     {
         m_logContext << "clear color to [" << clearColor.x << "; " << clearColor.y << "; " << clearColor.z << "; " << clearColor.w << "]" << RendererLogContext::NewLine;
     }
@@ -113,7 +108,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::blendColor(const Vector4& color)
+    void LoggingDevice::blendColor(const glm::vec4& color)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
@@ -247,7 +242,7 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    Bool LoggingDevice::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
+    bool LoggingDevice::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
     {
         UNUSED(binaryShader);
         UNUSED(binaryShaderFormat);
@@ -403,7 +398,7 @@ namespace ramses_internal
         m_logContext << "discard depthstencil buffer" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& /*srcRect*/, const PixelRectangle& /*dstRect*/, Bool /*colorOnly*/)
+    void LoggingDevice::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& /*srcRect*/, const PixelRectangle& /*dstRect*/, bool /*colorOnly*/)
     {
         m_logContext << "blit render pass [RT src device handle:  " << rtSrc << ", RT dst device handle: " << rtDst << "]" << RendererLogContext::NewLine;
     }
@@ -423,7 +418,7 @@ namespace ramses_internal
         m_logContext << "clear buffer [flags: " << clearFlags << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::pairRenderTargetsForDoubleBuffering(DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2])
+    void LoggingDevice::pairRenderTargetsForDoubleBuffering(const std::array<DeviceResourceHandle, 2>& renderTargets, const std::array<DeviceResourceHandle, 2>& colorBuffers)
     {
         m_logContext << "pair render targets [render targets: (" << renderTargets[0] << ", " << renderTargets[1] << "), render buffers: (" << colorBuffers[0] << ", " << colorBuffers[1] << ")]" << RendererLogContext::NewLine;
     }
@@ -462,7 +457,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::clearDepth(Float d)
+    void LoggingDevice::clearDepth(float d)
     {
         m_logContext << "clear depth to [ " << d << "]" << RendererLogContext::NewLine;
     }
@@ -481,7 +476,7 @@ namespace ramses_internal
     {
     }
 
-    Bool LoggingDevice::isDeviceStatusHealthy() const
+    bool LoggingDevice::isDeviceStatusHealthy() const
     {
         return true;
     }

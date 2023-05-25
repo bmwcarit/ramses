@@ -31,7 +31,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             ASSERT_TRUE(window.init());
             proceseAllEvents();
@@ -98,7 +98,7 @@ namespace ramses_internal
             XSync(display, static_cast<int>(false));
         }
 
-        void sendCrossingEvent(Bool enterEvent, int posX, int posY)
+        void sendCrossingEvent(bool enterEvent, int posX, int posY)
         {
             Display* display = window.getNativeDisplayHandle();
             assert(display);
@@ -126,7 +126,7 @@ namespace ramses_internal
             XSync(display, static_cast<int>(false));
         }
 
-        void sendMouseButtonEvent(int posX, int posY, int buttonType, Bool pressed)
+        void sendMouseButtonEvent(int posX, int posY, int buttonType, bool pressed)
         {
             Display* display = window.getNativeDisplayHandle();
             assert(display);

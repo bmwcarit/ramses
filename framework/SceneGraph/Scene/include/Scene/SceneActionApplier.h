@@ -18,7 +18,6 @@
 namespace ramses_internal
 {
     class IScene;
-    class AnimationSystemFactory;
     struct ResourceChanges;
     struct SceneSizeInformation;
     class IResource;
@@ -29,11 +28,11 @@ namespace ramses_internal
     public:
         using ResourceVector = std::vector<std::unique_ptr<IResource>>;
 
-        static void ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory = nullptr);
+        static void ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions);
 
     private:
         static void GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo);
-        static void ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action, AnimationSystemFactory* animSystemFactory);
+        static void ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action);
     };
 }
 

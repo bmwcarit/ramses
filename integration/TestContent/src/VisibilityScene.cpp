@@ -15,13 +15,13 @@
 
 namespace ramses_internal
 {
-    VisibilityScene::VisibilityScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    VisibilityScene::VisibilityScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Triangle triangle1(m_scene, *effect, ramses::TriangleAppearance::EColor_Red, 1.f, ramses::TriangleGeometry::EVerticesOrder_CCW);
         ramses::Triangle triangle2(m_scene, *effect, ramses::TriangleAppearance::EColor_Blue, 1.f, ramses::TriangleGeometry::EVerticesOrder_CW); // different vertices order forces different indices resource used
-        triangle2.GetAppearance().setCullingMode(ramses::ECullMode_Disabled);
+        triangle2.GetAppearance().setCullingMode(ramses::ECullMode::Disabled);
 
         auto triangle1mesh = m_scene.createMeshNode("triangle1");
         auto triangle2mesh = m_scene.createMeshNode("triangle2");
@@ -31,8 +31,8 @@ namespace ramses_internal
         triangle2mesh->setGeometryBinding(triangle2.GetGeometry());
         addMeshNodeToDefaultRenderGroup(*triangle1mesh);
         addMeshNodeToDefaultRenderGroup(*triangle2mesh);
-        triangle1mesh->setTranslation(-1.f, 0.f, -1.f);
-        triangle2mesh->setTranslation(1.f, 0.f, -1.f);
+        triangle1mesh->setTranslation({-1.f, 0.f, -1.f});
+        triangle2mesh->setTranslation({1.f, 0.f, -1.f});
 
         setState(state);
     }

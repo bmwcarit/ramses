@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         explicit PrintSceneList(const ramses::RamsesClientImpl& client);
-        virtual bool executeInput(const std::vector<std::string>& input) override;
+        bool executeInput(const std::vector<std::string>& input) override;
     private:
         const ramses::RamsesClientImpl& m_client;
     };

@@ -6,9 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(ramses-renderer
-    TYPE           BINARY
-    ENABLE_INSTALL ON
-    FILES_SOURCE   src/main.cpp
-    DEPENDENCIES   ramses-renderer-lib
+expandModuleByPlatform(
+    NAME            ramses-renderer
+    TYPE            BINARY
+    LINKED_TYPE     STATIC
+    ENABLE_INSTALL  ON
+    SRC_FILES   src/main.cpp
+    DEPENDENCIES   ramses-cli
 )

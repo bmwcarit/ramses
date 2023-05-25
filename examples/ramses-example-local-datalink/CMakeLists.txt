@@ -6,9 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_DYNAMIC(ramses-example-local-datalink
+expandModuleByPlatform(
+    NAME                ramses-example-local-datalink
     TYPE                BINARY
+    LINKED_TYPE         DYNAMIC
     ENABLE_INSTALL      ON
-    FILES_SOURCE        src/*
-    RESOURCE_FOLDER     res
+    SRC_FILES           src/*
+    RESOURCE_FOLDERS    res
 )

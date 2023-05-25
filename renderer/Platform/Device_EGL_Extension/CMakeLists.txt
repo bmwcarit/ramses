@@ -6,33 +6,20 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-FIND_PACKAGE(OpenGL)
+find_package(OpenGL)
 
-ACME_MODULE(
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    Device_EGL_Extension
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Device_EGL_Extension/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Device_EGL_Extension/*.h
+                            src/*.cpp
     DEPENDENCIES            Context_EGL
                             WaylandEGLExtensionProcs
                             libdrm
                             gbm
+    INTERFACE_DEFINES       DEVICE_EGL_EXTENSION_SUPPORTED
+    # TODO this should not be needed
+    PUBLIC_DEFINES          ${OpenGL_DEFINITIONS}
 )
-
-# ACME doesn't pass on definitions, so forced to do it this way
-if (TARGET Device_EGL_Extension)
-    target_compile_definitions(Device_EGL_Extension PUBLIC ${OpenGL_DEFINITIONS})
-    target_compile_definitions(Device_EGL_Extension INTERFACE DEVICE_EGL_EXTENSION_SUPPORTED)
-endif()

@@ -53,16 +53,16 @@ namespace ramses_internal
     TYPED_TEST(AScene, UpdatesTextureBufferDataPartially)
     {
         const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4} });
-        const Byte data[] = {1u, 2u, 3u, 4u};
-        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 0u, 0u, 2u, 2u, data);
+        const std::array<Byte, 4> data = {1u, 2u, 3u, 4u};
+        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 0u, 0u, 2u, 2u, data.data());
         const TextureBuffer& texBuffer = this->m_scene.getTextureBuffer(textureBuffer);
         EXPECT_EQ(1u, texBuffer.mipMaps[0].data[0 * 4 + 0]);
         EXPECT_EQ(2u, texBuffer.mipMaps[0].data[0 * 4 + 1]);
         EXPECT_EQ(3u, texBuffer.mipMaps[0].data[1 * 4 + 0]);
         EXPECT_EQ(4u, texBuffer.mipMaps[0].data[1 * 4 + 1]);
 
-        const Byte data2[] = { 10u, 20u, 30u, 40u };
-        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 1u, 1u, 2u, 2u, data2);
+        const std::array<Byte, 4> data2 = { 10u, 20u, 30u, 40u };
+        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 1u, 1u, 2u, 2u, data2.data());
         EXPECT_EQ(1u,  texBuffer.mipMaps[0].data[0 * 4 + 0]); //stays same
         EXPECT_EQ(2u,  texBuffer.mipMaps[0].data[0 * 4 + 1]); //stays same
         EXPECT_EQ(3u,  texBuffer.mipMaps[0].data[1 * 4 + 0]); //stays same
@@ -87,19 +87,19 @@ namespace ramses_internal
     TYPED_TEST(AScene, UpdatesUsedRegionsWhenTextureBufferDataGetsUpdated)
     {
         const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4}, {2, 2} });
-        const Byte data[16] = { 0u };
+        const std::array<Byte, 16> data = { 0u };
 
         const TextureBuffer& texBuffer = this->m_scene.getTextureBuffer(textureBuffer);
 
-        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 0u, 0u, 2u, 2u, data);
+        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 0u, 0u, 2u, 2u, data.data());
         EXPECT_EQ(Quad(0, 0, 2, 2), texBuffer.mipMaps[0].usedRegion);
         EXPECT_EQ(Quad(), texBuffer.mipMaps[1].usedRegion); //stays same
 
-        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 0u, 1u, 2u, 2u, data);
+        this->m_scene.updateTextureBuffer(textureBuffer, 0u, 0u, 1u, 2u, 2u, data.data());
         EXPECT_EQ(Quad(0, 0, 2, 3), texBuffer.mipMaps[0].usedRegion);
         EXPECT_EQ(Quad(), texBuffer.mipMaps[1].usedRegion); //stays same
 
-        this->m_scene.updateTextureBuffer(textureBuffer, 1u, 0u, 1u, 1u, 1u, data);
+        this->m_scene.updateTextureBuffer(textureBuffer, 1u, 0u, 1u, 1u, 1u, data.data());
         EXPECT_EQ(Quad(0, 0, 2, 3), texBuffer.mipMaps[0].usedRegion); //stays same
         EXPECT_EQ(Quad(0, 1, 1, 1), texBuffer.mipMaps[1].usedRegion);
     }

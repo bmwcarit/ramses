@@ -14,60 +14,41 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
+#include "ramses-framework-api/DataTypes.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include <vector>
 
 
 namespace ramses_internal
 {
-    AntiAliasingScene::AntiAliasingScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    AntiAliasingScene::AntiAliasingScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
-        std::vector<Float> pos;
+        std::vector<ramses::vec3f> pos;
         std::vector<uint16_t> id;
-        std::vector<Float> colors;
+        std::vector<ramses::vec3f> colors;
 
-        Float zValue = -6.5f;
+        float zValue = -6.5f;
 
-        pos.push_back(0.f);
-        pos.push_back(0.f);
-        pos.push_back(zValue);
+        pos.push_back(ramses::vec3f{ 0.f, 0.f, zValue });
+        colors.push_back(ramses::vec3f{ 1.f, 0.f, 0.f });
 
-        colors.push_back(1.f);
-        colors.push_back(0.f);
-        colors.push_back(0.f);
-
-        pos.push_back(0.f);
-        pos.push_back(0.f);
-        pos.push_back(zValue);
-
-        colors.push_back(1.f);
-        colors.push_back(1.f);
-        colors.push_back(1.f);
+        pos.push_back(ramses::vec3f{ 0.f, 0.f, zValue });
+        colors.push_back(ramses::vec3f{ 1.f, 1.f, 1.f });
 
         const UInt32 slices = 28;
-        const Float sliceAngle = 2.f * PlatformMath::PI_f / slices;
+        const float sliceAngle = 2.f * PlatformMath::PI_f / slices;
         for (UInt16 i = 0; i <= slices; i++)
         {
-            Float angle = sliceAngle * i;
-            Float x = cosf(angle);
-            Float y = sinf(angle);
+            float angle = sliceAngle * i;
+            float x = cosf(angle);
+            float y = sinf(angle);
 
-            pos.push_back(x);
-            pos.push_back(y);
-            pos.push_back(zValue);
+            pos.push_back(ramses::vec3f{ x, y, zValue });
+            colors.push_back(ramses::vec3f{ 1.f, 0.f, 0.f });
 
-            colors.push_back(1.f);
-            colors.push_back(0.f);
-            colors.push_back(0.f);
-
-            pos.push_back(x);
-            pos.push_back(y);
-            pos.push_back(zValue);
-
-            colors.push_back(1.f);
-            colors.push_back(1.f);
-            colors.push_back(1.f);
+            pos.push_back(ramses::vec3f{ x, y, zValue });
+            colors.push_back(ramses::vec3f{ 1.f, 1.f, 1.f });
 
             if (i > 0)
             {
@@ -77,9 +58,9 @@ namespace ramses_internal
             }
         }
 
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, uint32_t(pos.size() / 3), &pos[0]);
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, uint32_t(id.size()), &id[0]);
-        const ramses::ArrayResource* vertexColors = m_scene.createArrayResource(ramses::EDataType::Vector3F, uint32_t(colors.size() / 3), &colors[0]);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(uint32_t(pos.size()), pos.data());
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(uint32_t(id.size()), id.data());
+        const ramses::ArrayResource* vertexColors = m_scene.createArrayResource(uint32_t(colors.size()), colors.data());
 
         ramses::Effect* effectTex = getTestEffect("ramses-test-client-simple-color");
         ramses::Appearance* appearance = m_scene.createAppearance(*effectTex, "disk appearance");

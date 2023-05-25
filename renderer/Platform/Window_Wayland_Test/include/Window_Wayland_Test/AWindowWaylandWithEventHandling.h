@@ -34,7 +34,7 @@ namespace ramses_internal
     public:
         AWindowWaylandWithEventHandling() {}
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             openInputDevices();
             setupWaylandWindow();
@@ -52,7 +52,7 @@ namespace ramses_internal
             processAllEvents();
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             closeOpenGLContext();
             this->destroyWaylandWindow();
@@ -93,11 +93,11 @@ namespace ramses_internal
             ASSERT_TRUE(eglInitialize(eglDisplay, &iMajorVersion, &iMinorVersion));
             ASSERT_TRUE(eglBindAPI(EGL_OPENGL_ES_API) != EGL_FALSE);
 
-            EGLint surfaceAttributes[] = {EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE};
+            std::array<EGLint, 3> surfaceAttributes = {EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE};
 
             EGLConfig eglConfig;
             EGLint    num_config;
-            ASSERT_TRUE(eglChooseConfig(eglDisplay, surfaceAttributes, &eglConfig, 1, &num_config));
+            ASSERT_TRUE(eglChooseConfig(eglDisplay, surfaceAttributes.data(), &eglConfig, 1, &num_config));
 
             ASSERT_TRUE(num_config == 1);
 
@@ -136,7 +136,7 @@ namespace ramses_internal
             }
         }
 
-        Bool openInputDevice(const char* deviceName, int& deviceFd)
+        bool openInputDevice(const char* deviceName, int& deviceFd)
         {
             deviceFd = open(deviceName, O_WRONLY);
             return (deviceFd >= 0);
@@ -148,7 +148,7 @@ namespace ramses_internal
             deviceFd = -1;
         }
 
-        Bool sendInputEvent(int inputFd, UInt16 type, UInt16 key, Int32 value)
+        bool sendInputEvent(int inputFd, UInt16 type, UInt16 key, Int32 value)
         {
             struct input_event event;
             memset(&event, 0, sizeof(event));
@@ -173,7 +173,7 @@ namespace ramses_internal
             sendSyncEvent(keyboardFd);
         }
 
-        void sendMouseButtonEvent(UInt32 key, Bool pressed)
+        void sendMouseButtonEvent(UInt32 key, bool pressed)
         {
             sendInputEvent(mouseFd, EV_KEY, key, pressed ? EV_PRESSED : EV_RELEASED);
             sendSyncEvent(mouseFd);

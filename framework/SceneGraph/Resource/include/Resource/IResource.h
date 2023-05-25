@@ -10,8 +10,9 @@
 #define RAMSES_IRESOURCE_H
 
 #include "SceneAPI/ResourceContentHash.h"
-#include "Collections/String.h"
 #include "Resource/ResourceTypes.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -37,32 +38,32 @@ namespace ramses_internal
         IResource& operator=(IResource&&) = delete;
 
         virtual ~IResource(){};
-        virtual const ResourceBlob& getResourceData() const = 0;
-        virtual const CompressedResourceBlob& getCompressedResourceData() const = 0;
-        virtual UInt32 getDecompressedDataSize() const = 0;
-        virtual UInt32 getCompressedDataSize() const = 0;
+        [[nodiscard]] virtual const ResourceBlob& getResourceData() const = 0;
+        [[nodiscard]] virtual const CompressedResourceBlob& getCompressedResourceData() const = 0;
+        [[nodiscard]] virtual UInt32 getDecompressedDataSize() const = 0;
+        [[nodiscard]] virtual UInt32 getCompressedDataSize() const = 0;
         virtual void setResourceData(ResourceBlob data) = 0;
         virtual void setResourceData(ResourceBlob data, const ResourceContentHash& hash) = 0;
         virtual void setCompressedResourceData(CompressedResourceBlob compressedData, CompressionLevel compressionLevel, uint32_t uncompressedSize, const ResourceContentHash& hash) = 0;
-        virtual EResourceType getTypeID() const = 0;
-        virtual const ResourceContentHash& getHash() const = 0;
+        [[nodiscard]] virtual EResourceType getTypeID() const = 0;
+        [[nodiscard]] virtual const ResourceContentHash& getHash() const = 0;
         virtual void compress(CompressionLevel level) const = 0;
         virtual void decompress() const = 0;
-        virtual bool isCompressedAvailable() const = 0;
-        virtual bool isDeCompressedAvailable() const = 0;
-        virtual ResourceCacheFlag getCacheFlag() const = 0;
-        virtual const String& getName() const = 0;
+        [[nodiscard]] virtual bool isCompressedAvailable() const = 0;
+        [[nodiscard]] virtual bool isDeCompressedAvailable() const = 0;
+        [[nodiscard]] virtual ResourceCacheFlag getCacheFlag() const = 0;
+        [[nodiscard]] virtual const std::string& getName() const = 0;
 
         virtual void serializeResourceMetadataToStream(IOutputStream& output) const = 0;
 
         template<typename T>
-        T* convertTo()
+        [[nodiscard]] T* convertTo()
         {
             return static_cast<T*>(this);
         }
 
         template<typename T>
-        const T* convertTo() const
+        [[nodiscard]] const T* convertTo() const
         {
             return static_cast<const T*>(this);
         }

@@ -7,18 +7,10 @@
 #  -------------------------------------------------------------------------
 
 MODULE_WITH_SHARED_LIBRARY(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    ramses-example-basic-rendergroups
     TYPE                    BINARY
     ENABLE_INSTALL          ON
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/*.h
-    FILES_SOURCE            src/*.cpp
-    RESOURCE_FOLDER         res
+    SRC_FILES               include/*.h
+                            src/*.cpp
+    RESOURCE_FOLDERS        res
 )

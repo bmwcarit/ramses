@@ -10,6 +10,9 @@
 #define RAMSES_RESOURCESTRESSTESTS_RESOURCESTRESSTESTS_H
 
 #include "ramses-client-api/RamsesClient.h"
+#include "ramses-framework-api/RamsesFrameworkConfig.h"
+#include "ramses-renderer-api/RendererConfig.h"
+#include "ramses-renderer-api/DisplayConfig.h"
 
 #include "StressTestRenderer.h"
 #include "ResourceStressTestScene.h"
@@ -21,8 +24,9 @@ namespace ramses_internal
 {
     struct StressTestConfig
     {
-        int32_t argc;
-        const char** argv;
+        ramses::RamsesFrameworkConfig frameworkConfig;
+        ramses::RendererConfig        rendererConfig;
+        ramses::DisplayConfig         displayConfig;
         uint32_t durationEachTestSeconds;
         uint32_t displayCount;
         uint32_t sceneSetsPerDisplay;
@@ -84,7 +88,7 @@ namespace ramses_internal
         void setRendererFPS(uint32_t rendererFPS);
         void throttleSceneUpdatesAndConsumeRendererEvents(uint32_t sceneFpsLimit);
 
-        const StressTestConfig  m_testConfig;
+        const StressTestConfig& m_testConfig;
         ramses::RamsesFramework m_framework;
         ramses::RamsesClient&   m_client;
         StressTestRenderer      m_testRenderer;

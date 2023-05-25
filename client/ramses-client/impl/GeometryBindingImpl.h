@@ -16,6 +16,8 @@
 // ramses framework
 #include "SceneAPI/EDataType.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class IScene;
@@ -32,15 +34,15 @@ namespace ramses
     class GeometryBindingImpl final : public SceneObjectImpl
     {
     public:
-        GeometryBindingImpl(SceneImpl& scene, const char* name);
-        virtual ~GeometryBindingImpl() override;
+        GeometryBindingImpl(SceneImpl& scene, std::string_view name);
+        ~GeometryBindingImpl() override;
 
         void             initializeFrameworkData(const EffectImpl& effect);
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
-        virtual status_t validate() const override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
+        status_t validate() const override;
 
         status_t setInputBuffer(const EffectInputImpl& input, const ArrayResourceImpl& bufferResource, uint32_t instancingDivisor, uint16_t offset, uint16_t stride);
         status_t setInputBuffer(const EffectInputImpl& input, const ArrayBufferImpl& dataBuffer, uint32_t instancingDivisor, uint16_t offset, uint16_t stride);

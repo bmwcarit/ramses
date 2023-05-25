@@ -13,7 +13,7 @@
 #include "RendererLib/SceneReferenceOwnership.h"
 #include "RendererFramework/IRendererSceneEventSender.h"
 #include "Utils/ThreadLocalLogForced.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 
 namespace ramses_internal
 {
@@ -382,7 +382,7 @@ namespace ramses_internal
 
         // #1 check disabled -> enabled
         if (masterInfo.consolidatedExpirationState == ExpirationState::MonitoringDisabled
-            && !absl::c_all_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
+            && !std::all_of(std::cbegin(masterInfo.expirationStates), std::cend(masterInfo.expirationStates), [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
         {
             events.push_back({ ERendererEventType::SceneExpirationMonitoringEnabled, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::MonitoringEnabled;
@@ -391,7 +391,7 @@ namespace ramses_internal
 
         // #2 check enabled/expired -> disabled
         if (masterInfo.consolidatedExpirationState != ExpirationState::MonitoringDisabled
-            && absl::c_all_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
+            && std::all_of(std::cbegin(masterInfo.expirationStates), std::cend(masterInfo.expirationStates), [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
         {
             events.push_back({ ERendererEventType::SceneExpirationMonitoringDisabled, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::MonitoringDisabled;
@@ -400,7 +400,7 @@ namespace ramses_internal
 
         // #3 check enabled -> expired
         if (masterInfo.consolidatedExpirationState == ExpirationState::MonitoringEnabled
-            && absl::c_any_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::Expired; }))
+            && std::any_of(std::cbegin(masterInfo.expirationStates), std::cend(masterInfo.expirationStates), [](const auto& s) { return s.second == ExpirationState::Expired; }))
         {
             events.push_back({ ERendererEventType::SceneExpired, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::Expired;
@@ -409,7 +409,7 @@ namespace ramses_internal
 
         // #4 check expired -> recovered
         if (masterInfo.consolidatedExpirationState == ExpirationState::Expired
-            && absl::c_none_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::Expired; }))
+            && std::none_of(std::cbegin(masterInfo.expirationStates), std::cend(masterInfo.expirationStates), [](const auto& s) { return s.second == ExpirationState::Expired; }))
         {
             events.push_back({ ERendererEventType::SceneRecoveredFromExpiration, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::MonitoringEnabled;

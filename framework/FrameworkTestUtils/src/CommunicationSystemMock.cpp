@@ -22,12 +22,4 @@ namespace ramses_internal
     void CommunicationSystemMock::setSceneRendererServiceHandler(ISceneRendererServiceHandler*)
     {
     }
-
-    void CommunicationSystemMock::setDcsmProviderServiceHandler(IDcsmProviderServiceHandler*)
-    {
-    }
-
-    void CommunicationSystemMock::setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler*)
-    {
-    }
 }

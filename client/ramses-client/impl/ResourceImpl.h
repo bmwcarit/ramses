@@ -17,6 +17,8 @@
 #include "Components/ManagedResource.h"
 #include "Components/ResourceHashUsage.h"
 
+#include <string_view>
+#include <string>
 
 namespace ramses_internal
 {
@@ -31,20 +33,20 @@ namespace ramses
         ResourceImpl(ERamsesObjectType type,
             ramses_internal::ResourceHashUsage hashUsage,
             SceneImpl& scene,
-            const char* name);
-        virtual ~ResourceImpl() override;
+            std::string_view name);
+        ~ResourceImpl() override;
 
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         resourceId_t     getResourceId() const;
         ramses_internal::ResourceContentHash getLowlevelResourceHash() const;
 
-        virtual status_t validate() const override;
-        virtual status_t setName(RamsesObject& object, const char* name) override;
+        status_t validate() const override;
+        status_t setName(RamsesObject& object, std::string_view name) override;
 
-        static resourceId_t CreateResourceHash(ramses_internal::ResourceContentHash llhash, ramses_internal::String const& name, ERamsesObjectType type);
+        static resourceId_t CreateResourceHash(ramses_internal::ResourceContentHash llhash, const std::string& name, ERamsesObjectType type);
 
     private:
         void updateResourceHash();

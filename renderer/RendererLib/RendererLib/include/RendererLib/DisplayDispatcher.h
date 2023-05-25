@@ -14,7 +14,7 @@
 #include "RendererLib/SceneDisplayTracker.h"
 #include "RendererLib/DisplayThread.h"
 #include "RendererAPI/ELoopMode.h"
-#include "RendererAPI/IPlatform.h"
+#include "RendererAPI/IPlatformFactory.h"
 #include "Watchdog/IThreadAliveNotifier.h"
 #include <memory>
 
@@ -25,11 +25,13 @@ namespace ramses_internal
     class Ramsh;
     class IEmbeddedCompositingManager;
     class IEmbeddedCompositor;
+    class DisplayConfig;
 
     class DisplayDispatcher
     {
     public:
         DisplayDispatcher(
+            std::unique_ptr<IPlatformFactory> platformFactory,
             const RendererConfig& config,
             IRendererSceneEventSender& rendererSceneSender,
             IThreadAliveNotifier& notifier);
@@ -43,26 +45,27 @@ namespace ramses_internal
         void dispatchSceneControlEvents(RendererEventVector& events);
         void injectRendererEvent(RendererEvent&& event);
         void injectSceneControlEvent(RendererEvent&& event);
+        void injectPlatformFactory(std::unique_ptr<IPlatformFactory> platformFactory);
 
         void startDisplayThreadsUpdating();
         void stopDisplayThreadsUpdating();
         void setLoopMode(ELoopMode loopMode);
-        void setMinFrameDuration(std::chrono::microseconds minFrameDuration);
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration, DisplayHandle display);
+        [[nodiscard]] std::chrono::microseconds getMinFrameDuration(DisplayHandle display) const;
 
-        const RendererConfig& getRendererConfig() const;
+        [[nodiscard]] const RendererConfig& getRendererConfig() const;
 
         // needed for EC tests...
         IEmbeddedCompositingManager& getECManager(DisplayHandle display);
         IEmbeddedCompositor& getEC(DisplayHandle display);
 
         // needed for Renderer lifecycle tests...
-        bool hasSystemCompositorController() const;
+        [[nodiscard]] bool hasSystemCompositorController() const;
 
     protected:
         void preprocessCommand(const RendererCommand::Variant& cmd);
         void dispatchCommand(RendererCommand::Variant&& cmd);
-        bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
+        [[nodiscard]] bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
 
         struct Display
         {
@@ -74,8 +77,9 @@ namespace ramses_internal
             uint32_t lastFrameCounter = 0;
         };
         // virtual to allow mock of display thread
-        virtual Display createDisplayBundle(DisplayHandle displayHandle);
+        virtual Display createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig);
 
+        std::unique_ptr<IPlatformFactory> m_platformFactory;
         const RendererConfig m_rendererConfig;
         IRendererSceneEventSender& m_rendererSceneSender;
 
@@ -98,10 +102,12 @@ namespace ramses_internal
         bool m_threadedDisplays = false;
         bool m_displayThreadsUpdating = true;
         ELoopMode m_loopMode = ELoopMode::UpdateAndRender;
-        std::chrono::microseconds m_generalMinFrameDuration {DefaultMinFrameDuration};
         std::unordered_map<DisplayHandle, std::chrono::microseconds> m_minFrameDurationsPerDisplay;
 
         IThreadAliveNotifier& m_notifier;
+
+        // flag to force context enable for next doOneLoop (relevant only for non-threaded mode)
+        bool m_forceContextEnableNextLoop = false;
 
         // to avoid re-allocs
         RendererCommands m_tmpCommands;

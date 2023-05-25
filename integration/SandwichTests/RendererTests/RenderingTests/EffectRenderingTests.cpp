@@ -55,7 +55,7 @@ bool EffectRenderingTests::run(RendererTestsFramework& testFramework, const Rend
 }
 
 template <typename INTEGRATION_SCENE>
-bool EffectRenderingTests::runBasicTest(RendererTestsFramework& testFramework, UInt32 sceneState, const String& expectedImageName)
+bool EffectRenderingTests::runBasicTest(RendererTestsFramework& testFramework, UInt32 sceneState, const std::string& expectedImageName)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState);
     testFramework.publishAndFlushScene(sceneId);

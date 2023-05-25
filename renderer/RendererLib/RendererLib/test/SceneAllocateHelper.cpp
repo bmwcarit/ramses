@@ -75,10 +75,6 @@ namespace ramses_internal
     {
         return sizeInfo.textureSamplerCount;
     }
-    template <> UInt32& getObjectCount<StreamTextureHandle> (SceneSizeInformation& sizeInfo)
-    {
-        return sizeInfo.streamTextureCount;
-    }
     template <> UInt32& getObjectCount<DataSlotHandle>      (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.dataSlotCount;
@@ -86,10 +82,6 @@ namespace ramses_internal
     template <> UInt32& getObjectCount<DataBufferHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.dataBufferCount;
-    }
-    template <> UInt32& getObjectCount<AnimationSystemHandle>(SceneSizeInformation& sizeInfo)
-    {
-        return sizeInfo.animationSystemCount;
     }
     template <> UInt32& getObjectCount<TextureBufferHandle>(SceneSizeInformation& sizeInfo)
     {
@@ -188,11 +180,6 @@ namespace ramses_internal
     RenderBufferHandle SceneAllocateHelper::allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle)
     {
         return m_scene.allocateRenderBuffer(renderBuffer, preallocateHandle(handle));
-    }
-
-    StreamTextureHandle SceneAllocateHelper::allocateStreamTexture(WaylandIviSurfaceId streamSource, ResourceContentHash fallbackTextureHash, StreamTextureHandle handle)
-    {
-        return m_scene.allocateStreamTexture(streamSource, fallbackTextureHash, preallocateHandle(handle));
     }
 
     DataSlotHandle SceneAllocateHelper::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle)

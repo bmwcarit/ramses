@@ -7,11 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "DisplayDispatcherMock.h"
+#include "PlatformFactoryMock.h"
 
 namespace ramses_internal
 {
     DisplayDispatcherMock::DisplayDispatcherMock(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier)
-        : DisplayDispatcher(config, rendererSceneSender, notifier)
+        : DisplayDispatcher(std::make_unique<PlatformFactoryNiceMock>(), config, rendererSceneSender, notifier)
     {
     }
     DisplayDispatcherMock::~DisplayDispatcherMock() = default;
@@ -51,9 +52,9 @@ namespace ramses_internal
                 const auto& expCmd = m_expectedBroadcastCommandsForNewDisplays[i];
                 const auto& cmd = cmds[i];
                 EXPECT_EQ(expCmd.index(), cmd.index());
-                if (absl::holds_alternative<RendererCommand::ScenePublished>(expCmd))
+                if (std::holds_alternative<RendererCommand::ScenePublished>(expCmd))
                 {
-                    EXPECT_EQ(absl::get<RendererCommand::ScenePublished>(expCmd).scene, absl::get<RendererCommand::ScenePublished>(cmd).scene);
+                    EXPECT_EQ(std::get<RendererCommand::ScenePublished>(expCmd).scene, std::get<RendererCommand::ScenePublished>(cmd).scene);
                 }
             }
             cmds.clear();
@@ -70,7 +71,7 @@ namespace ramses_internal
         EXPECT_CALL(*displayBundle, pushAndConsumeCommands(_)).WillOnce(Invoke([](auto& cmds)
         {
             ASSERT_EQ(1u, cmds.size());
-            EXPECT_TRUE(absl::holds_alternative<RendererCommand::CreateDisplay>(cmds.front()));
+            EXPECT_TRUE(std::holds_alternative<RendererCommand::CreateDisplay>(cmds.front()));
             cmds.clear();
         }));
 
@@ -99,9 +100,9 @@ namespace ramses_internal
         return bundle;
     }
 
-    DisplayDispatcher::Display DisplayDispatcherFacade::createDisplayBundle(DisplayHandle displayHandle)
+    DisplayDispatcher::Display DisplayDispatcherFacade::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig)
     {
-        DisplayDispatcherMock::createDisplayBundle(displayHandle);
+        DisplayDispatcherMock::createDisplayBundle(displayHandle, dispConfig);
         return m_useNiceMock ? createDisplayBundleMocks<::testing::NiceMock>() : createDisplayBundleMocks<::testing::StrictMock>();
     }
 

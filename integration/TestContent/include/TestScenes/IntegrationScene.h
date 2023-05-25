@@ -11,6 +11,7 @@
 
 #include "Collections/Vector.h"
 #include "Collections/String.h"
+#include "DataTypesImpl.h"
 
 namespace ramses
 {
@@ -27,12 +28,10 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class Vector3;
-
     class IntegrationScene
     {
     public:
-        IntegrationScene(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth = DefaultViewportWidth, uint32_t vpHeight = DefaultViewportHeight);
+        IntegrationScene(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth = DefaultViewportWidth, uint32_t vpHeight = DefaultViewportHeight);
         virtual ~IntegrationScene();
         virtual void dispatchHandler(){};
 

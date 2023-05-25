@@ -12,8 +12,6 @@
 #include "WindowEventHandlerMock.h"
 #include "TestWithWaylandEnvironment.h"
 #include "RendererLib/DisplayConfig.h"
-#include "RendererTestUtils.h"
-#include "DisplayConfigImpl.h"
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "Utils/StringUtils.h"
 #include "Utils/ThreadLocalLog.h"
@@ -25,13 +23,13 @@ namespace ramses_internal
     class AWindowWayland : public TestWithWaylandEnvironment
     {
     public:
-        virtual void SetUp() override
+        void SetUp() override
         {
             ThreadLocalLog::SetPrefix(1);
             createWaylandWindow();
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             destroyWaylandWindow();
         }
@@ -41,7 +39,7 @@ namespace ramses_internal
         {
             WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
 
-            m_window = new WINDOWTYPE(m_config.impl.getInternalDisplayConfig(), m_eventHandlerMock, 0, std::chrono::microseconds{100000u});
+            m_window = new WINDOWTYPE(m_config, m_eventHandlerMock, 0, std::chrono::microseconds{100000u});
         }
 
         void destroyWaylandWindow()
@@ -50,9 +48,9 @@ namespace ramses_internal
             m_window = nullptr;
         }
 
-        ::testing::StrictMock<WindowEventHandlerMock> m_eventHandlerMock;
-        ramses::DisplayConfig              m_config = RendererTestUtils::CreateTestDisplayConfig(0);
-        WINDOWTYPE*                        m_window = nullptr;
+        ::testing::StrictMock<WindowEventHandlerMock>   m_eventHandlerMock;
+        ramses_internal::DisplayConfig                  m_config;
+        WINDOWTYPE*                                     m_window = nullptr;
     };
 }
 

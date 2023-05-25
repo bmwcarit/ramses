@@ -37,7 +37,7 @@ namespace ramses_internal
         assert(false && "tried to remove non-existent scene link");
     }
 
-    Bool SceneLinks::hasAnyLinksToProvider(SceneId consumerSceneId) const
+    bool SceneLinks::hasAnyLinksToProvider(SceneId consumerSceneId) const
     {
         for(const auto& link : m_links)
         {
@@ -50,7 +50,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneLinks::hasAnyLinksToConsumer(SceneId providerSceneId) const
+    bool SceneLinks::hasAnyLinksToConsumer(SceneId providerSceneId) const
     {
         for(const auto& link : m_links)
         {
@@ -63,7 +63,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneLinks::hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
+    bool SceneLinks::hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
     {
         for(const auto& link : m_links)
         {
@@ -102,7 +102,7 @@ namespace ramses_internal
         return m_links.front();
     }
 
-    Bool SceneLinks::hasLinkedConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle) const
+    bool SceneLinks::hasLinkedConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle) const
     {
         for(const auto& link : m_links)
         {

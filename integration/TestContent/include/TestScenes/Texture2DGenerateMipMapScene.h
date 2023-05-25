@@ -27,7 +27,7 @@ namespace ramses_internal
     class Texture2DGenerateMipMapScene : public IntegrationScene
     {
     public:
-        Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
+        Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum EState
         {

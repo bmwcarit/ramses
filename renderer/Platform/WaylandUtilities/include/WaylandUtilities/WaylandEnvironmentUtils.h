@@ -11,6 +11,8 @@
 
 #include "Collections/String.h"
 
+#include <string>
+
 namespace ramses_internal
 {
     enum class WaylandEnvironmentVariable : UInt8
@@ -27,7 +29,7 @@ namespace ramses_internal
         void    SetVariable(WaylandEnvironmentVariable variableName, const String& value);
         void    UnsetVariable(WaylandEnvironmentVariable variableName);
         String  GetVariable(WaylandEnvironmentVariable variableName);
-        void    LogEnvironmentState(const String& waylandDisplayName);
+        void    LogEnvironmentState(const std::string& waylandDisplayName);
     };
 }
 

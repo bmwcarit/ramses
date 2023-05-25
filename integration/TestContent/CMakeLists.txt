@@ -6,28 +6,18 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    TestContent
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/TestEffects/*.h
+    INCLUDE_PATHS           include
+    SRC_FILES               include/TestEffects/*.h
                             include/TestScenes/*.h
                             include/TestScenes/TextFake/*.h
                             include/*.h
-    FILES_SOURCE            src/*.cpp
+                            src/*.cpp
                             src/TextFake/*.cpp
-    RESOURCE_FOLDER         res
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    RESOURCE_FOLDERS        res
     DEPENDENCIES            ramses-client
                             ramses-framework
                             ramses-renderer-lib

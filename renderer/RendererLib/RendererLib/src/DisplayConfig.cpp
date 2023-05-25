@@ -7,9 +7,30 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplayConfig.h"
+#include <array>
 
 namespace ramses_internal
 {
+    EDeviceType DisplayConfig::getDeviceType() const
+    {
+        return m_deviceType;
+    }
+
+    void DisplayConfig::setDeviceType(EDeviceType deviceType)
+    {
+        m_deviceType = deviceType;
+    }
+
+    EWindowType DisplayConfig::getWindowType() const
+    {
+        return m_windowType;
+    }
+
+    void DisplayConfig::setWindowType(EWindowType windowType)
+    {
+        m_windowType = windowType;
+    }
+
     void DisplayConfig::setAntialiasingSampleCount(UInt32 samples)
     {
         assert(ramses_internal::contains_c<uint32_t>({ 1u, 2u, 4u, 8u }, samples));
@@ -36,16 +57,6 @@ namespace ramses_internal
         m_waylandIviSurfaceID = waylandIviSurfaceID;
     }
 
-    IntegrityRGLDeviceUnit DisplayConfig::getIntegrityRGLDeviceUnit() const
-    {
-        return m_integrityRGLDeviceUnit;
-    }
-
-    void DisplayConfig::setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit)
-    {
-        m_integrityRGLDeviceUnit = rglDeviceUnit;
-    }
-
     AndroidNativeWindowPtr DisplayConfig::getAndroidNativeWindow() const
     {
         return m_androidNativeWindowPtr;
@@ -56,7 +67,7 @@ namespace ramses_internal
         m_androidNativeWindowPtr = nativeWindowPtr;
     }
 
-    Bool DisplayConfig::getStartVisibleIvi() const
+    bool DisplayConfig::getStartVisibleIvi() const
     {
         return m_startVisibleIvi;
     }
@@ -66,22 +77,22 @@ namespace ramses_internal
         m_startVisibleIvi = startVisible;
     }
 
-    Bool DisplayConfig::getFullscreenState() const
+    bool DisplayConfig::getFullscreenState() const
     {
         return m_fullscreen;
     }
 
-    void DisplayConfig::setFullscreenState(Bool state)
+    void DisplayConfig::setFullscreenState(bool state)
     {
         m_fullscreen = state;
     }
 
-    Bool DisplayConfig::getBorderlessState() const
+    bool DisplayConfig::getBorderlessState() const
     {
         return m_borderless;
     }
 
-    void DisplayConfig::setBorderlessState(Bool state)
+    void DisplayConfig::setBorderlessState(bool state)
     {
         m_borderless = state;
     }
@@ -133,32 +144,22 @@ namespace ramses_internal
         m_windowPositionY = posy;
     }
 
-    void DisplayConfig::setWarpingEnabled(Bool enabled)
-    {
-        m_warpingEnabled = enabled;
-    }
-
-    Bool DisplayConfig::isWarpingEnabled() const
-    {
-        return m_warpingEnabled;
-    }
-
-    void DisplayConfig::setKeepEffectsUploaded(Bool enabled)
+    void DisplayConfig::setKeepEffectsUploaded(bool enabled)
     {
         m_keepEffectsUploaded = enabled;
     }
 
-    Bool DisplayConfig::getKeepEffectsUploaded() const
+    bool DisplayConfig::getKeepEffectsUploaded() const
     {
         return m_keepEffectsUploaded;
     }
 
-    Bool DisplayConfig::isResizable() const
+    bool DisplayConfig::isResizable() const
     {
         return m_resizable;
     }
 
-    void DisplayConfig::setResizable(Bool resizable)
+    void DisplayConfig::setResizable(bool resizable)
     {
         m_resizable = resizable;
     }
@@ -173,12 +174,12 @@ namespace ramses_internal
         m_gpuMemoryCacheSize = size;
     }
 
-    void DisplayConfig::setClearColor(const Vector4& clearColor)
+    void DisplayConfig::setClearColor(const glm::vec4& clearColor)
     {
         m_clearColor = clearColor;
     }
 
-    const Vector4& DisplayConfig::getClearColor() const
+    const glm::vec4& DisplayConfig::getClearColor() const
     {
         return m_clearColor;
     }
@@ -193,12 +194,12 @@ namespace ramses_internal
         return m_depthStencilBufferType;
     }
 
-    void DisplayConfig::setWaylandDisplay(const String& waylandDisplay)
+    void DisplayConfig::setWaylandDisplay(std::string_view waylandDisplay)
     {
-        m_waylandDisplay = waylandDisplay;
+        m_waylandDisplay.assign(waylandDisplay);
     }
 
-    const String& DisplayConfig::getWaylandDisplay() const
+    std::string_view DisplayConfig::getWaylandDisplay() const
     {
         return m_waylandDisplay;
     }
@@ -232,9 +233,9 @@ namespace ramses_internal
     {
         return m_asyncEffectUploadEnabled;
     }
-    void DisplayConfig::setWaylandEmbeddedCompositingSocketName(const String& socket)
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketName(std::string_view socket)
     {
-        m_waylandSocketEmbedded = socket;
+        m_waylandSocketEmbedded = String(socket);
     }
 
     void DisplayConfig::setWaylandEmbeddedCompositingSocketFD(int fd)
@@ -242,12 +243,12 @@ namespace ramses_internal
         m_waylandSocketEmbeddedFD = fd;
     }
 
-    const String& DisplayConfig::getWaylandSocketEmbedded() const
+    std::string_view DisplayConfig::getWaylandSocketEmbedded() const
     {
         return m_waylandSocketEmbedded;
     }
 
-    const String& DisplayConfig::getWaylandSocketEmbeddedGroup() const
+    std::string_view DisplayConfig::getWaylandSocketEmbeddedGroup() const
     {
         return m_waylandSocketEmbeddedGroupName;
     }
@@ -257,9 +258,9 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedFD;
     }
 
-    void DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions)
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(std::string_view groupNameForSocketPermissions)
     {
-        m_waylandSocketEmbeddedGroupName = groupNameForSocketPermissions;
+        m_waylandSocketEmbeddedGroupName = String(groupNameForSocketPermissions);
     }
 
     bool DisplayConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
@@ -275,12 +276,12 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedPermissions;
     }
 
-    void DisplayConfig::setPlatformRenderNode(const String& renderNode)
+    void DisplayConfig::setPlatformRenderNode(std::string_view renderNode)
     {
-        m_platformRenderNode = renderNode;
+        m_platformRenderNode = String(renderNode);
     }
 
-    const String& DisplayConfig::getPlatformRenderNode() const
+    std::string_view DisplayConfig::getPlatformRenderNode() const
     {
         return m_platformRenderNode;
     }
@@ -325,12 +326,13 @@ namespace ramses_internal
         return m_resourceUploadBatchSize;
     }
 
-    Bool DisplayConfig::operator == (const DisplayConfig& other) const
+    bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
         return
+            m_deviceType                 == other.m_deviceType &&
+            m_windowType                 == other.m_windowType &&
             m_fullscreen                 == other.m_fullscreen &&
             m_borderless                 == other.m_borderless &&
-            m_warpingEnabled             == other.m_warpingEnabled &&
             m_antiAliasingSamples        == other.m_antiAliasingSamples &&
             m_desiredWindowWidth         == other.m_desiredWindowWidth &&
             m_desiredWindowHeight        == other.m_desiredWindowHeight &&
@@ -338,7 +340,6 @@ namespace ramses_internal
             m_windowPositionY            == other.m_windowPositionY &&
             m_waylandIviLayerID          == other.m_waylandIviLayerID &&
             m_waylandIviSurfaceID        == other.m_waylandIviSurfaceID &&
-            m_integrityRGLDeviceUnit     == other.m_integrityRGLDeviceUnit &&
             m_startVisibleIvi            == other.m_startVisibleIvi &&
             m_resizable                  == other.m_resizable &&
             m_gpuMemoryCacheSize         == other.m_gpuMemoryCacheSize &&
@@ -357,7 +358,7 @@ namespace ramses_internal
             m_resourceUploadBatchSize    == other.m_resourceUploadBatchSize;
     }
 
-    Bool DisplayConfig::operator != (const DisplayConfig& other) const
+    bool DisplayConfig::operator != (const DisplayConfig& other) const
     {
         return !operator==(other);
     }

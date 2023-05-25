@@ -17,7 +17,7 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 
 namespace ramses
 {
@@ -41,19 +41,19 @@ namespace ramses
         switch (color)
         {
         case EColor_Red:
-            status = m_appearance.setInputValueVector4f(m_colorInput, 1.f, 0.f, 0.f, alpha);
+            status = m_appearance.setInputValue(m_colorInput, vec4f{ 1.f, 0.f, 0.f, alpha });
             break;
         case EColor_Blue:
-            status = m_appearance.setInputValueVector4f(m_colorInput, 0.f, 0.f, 1.f, alpha);
+            status = m_appearance.setInputValue(m_colorInput, vec4f{ 0.f, 0.f, 1.f, alpha });
             break;
         case EColor_Green:
-            status = m_appearance.setInputValueVector4f(m_colorInput, 0.f, 1.0, 0.f, alpha);
+            status = m_appearance.setInputValue(m_colorInput, vec4f{ 0.f, 1.f, 0.f, alpha });
             break;
         case EColor_White:
-            status = m_appearance.setInputValueVector4f(m_colorInput, 1.f, 1.0, 1.f, alpha);
+            status = m_appearance.setInputValue(m_colorInput, vec4f{ 1.f, 1.f, 1.f, alpha });
             break;
         case EColor_Grey:
-            status = m_appearance.setInputValueVector4f(m_colorInput, 0.5f, 0.5, 0.5f, alpha);
+            status = m_appearance.setInputValue(m_colorInput, vec4f{ 0.5f, 0.5f, 0.5f, alpha });
             break;
         default:
             assert(false && "Chosen color for triangle is not available!");
@@ -64,7 +64,7 @@ namespace ramses
         UNUSED(status);
     }
 
-    void TriangleAppearance::bindColor(const DataVector4f& colorDataObject)
+    void TriangleAppearance::bindColor(const DataObject& colorDataObject)
     {
         const status_t status = m_appearance.bindInput(m_colorInput, colorDataObject);
         assert(status == StatusOK);

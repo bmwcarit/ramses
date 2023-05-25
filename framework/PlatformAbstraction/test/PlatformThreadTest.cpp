@@ -22,7 +22,7 @@ namespace ramses_internal
             {
             }
 
-            virtual void run() override
+            void run() override
             {
                 runValue = m_ctorValue;
                 id = std::this_thread::get_id();

@@ -13,6 +13,8 @@
 #include "Resource/EffectResource.h"
 #include "Utils/LogMacros.h"
 
+#include <string>
+
 namespace ramses_internal
 {
     namespace ResourceSerializationHelper
@@ -41,7 +43,7 @@ namespace ramses_internal
         DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input)
         {
             UInt32 resourceTypeValue = 0;
-            String name;
+            std::string name;
             UInt32 compressionStatusValue = 0;
             UInt32 compressedSize = 0;
             UInt32 decompressedSize = 0;

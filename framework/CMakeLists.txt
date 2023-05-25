@@ -16,199 +16,148 @@ file(GLOB
 add_library(ramses-framework-api INTERFACE)
 target_include_directories(ramses-framework-api INTERFACE ${RAMSES_FRAMEWORK_API_INCLUDE_BASE})
 
-IF (ramses-sdk_ENABLE_TCP_SUPPORT)
-    SET(ramses-framework-TCP_MIXIN
+if (ramses-sdk_ENABLE_TCP_SUPPORT)
+    set(ramses-framework-TCP_MIXIN
         DEPENDENCIES            asio
 
-        INCLUDE_BASE            Communication/TransportTCP/include
-        FILES_PRIVATE_HEADER    Communication/TransportTCP/include/TransportTCP/*.h
-        FILES_SOURCE            Communication/TransportTCP/src/*.cpp)
+        INCLUDE_PATHS           Communication/TransportTCP/include
+        SRC_FILES               Communication/TransportTCP/include/TransportTCP/*.h
+                                Communication/TransportTCP/src/*.cpp)
 
-    SET(ramses-framework-test-TCP_MIXIN
-        INCLUDE_BASE            Communication/TransportTCP/test
-        FILES_PRIVATE_HEADER    Communication/TransportTCP/test/*.h
-        FILES_SOURCE            Communication/TransportTCP/test/*.cpp)
-ENDIF()
+    set(ramses-framework-test-TCP_MIXIN
+        INCLUDE_PATHS           Communication/TransportTCP/test
+        SRC_FILES               Communication/TransportTCP/test/*.h
+                                Communication/TransportTCP/test/*.cpp)
+endif()
 
-IF(ramses-sdk_HAS_DLT)
-    SET(ramses-framework-DLT_MIXIN
+if(ramses-sdk_HAS_DLT)
+    set(ramses-framework-DLT_MIXIN
         DEPENDENCIES            automotive-dlt
 
-        FILES_PRIVATE_HEADER    DltLogAppender/include/DltLogAppender/DltAdapterImpl/*.h
-        FILES_SOURCE            DltLogAppender/src/DltAdapterImpl/*.cpp)
-ENDIF()
+        SRC_FILES               DltLogAppender/include/DltLogAppender/DltAdapterImpl/*.h
+                                DltLogAppender/src/DltAdapterImpl/*.cpp)
+endif()
 
-FIND_PACKAGE(AndroidSDK)
-IF (AndroidSDK_FOUND)
-  SET(ramses-framework-AndroidLogger_MIXIN
+find_package(AndroidSDK)
+if (AndroidSDK_FOUND)
+  set(ramses-framework-AndroidLogger_MIXIN
     DEPENDENCIES            AndroidSDK
 
-    INCLUDE_BASE            Core/Utils/AndroidLogger/include
-    FILES_PRIVATE_HEADER    Core/Utils/AndroidLogger/include/*.h
-    FILES_SOURCE            Core/Utils/AndroidLogger/src/*.cpp
+    INCLUDE_PATHS           Core/Utils/AndroidLogger/include
+    SRC_FILES               Core/Utils/AndroidLogger/include/*.h
+                            Core/Utils/AndroidLogger/src/*.cpp
     )
-ENDIF()
+endif()
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    ramses-framework
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-
     # public api
-    FILES_PRIVATE_HEADER    ramses-framework-api/include/*.h
+    SRC_FILES               ramses-framework-api/include/*.h
                             ramses-framework-api/include/ramses-framework-api/*.h
-    DEPENDENCIES            ramses-framework-api
 
-    # FrameworkAPI
-    INCLUDE_BASE            Watchdog/include
-    FILES_PRIVATE_HEADER    Watchdog/include/Watchdog/*.h
-    FILES_SOURCE            Watchdog/src/*.cpp
-
-    INCLUDE_BASE            PlatformAbstraction/include
-    FILES_PRIVATE_HEADER    PlatformAbstraction/include/*.h
+    # Internals
+    INCLUDE_PATHS           ramses-framework/include
+    SRC_FILES               ramses-framework/include/*.h
+                            ramses-framework/include/ramses-framework/*.h
+                            ${RAMSES_FRAMEWORK_FILES_SOURCE}
+    INCLUDE_PATHS           Watchdog/include
+    SRC_FILES               Watchdog/include/Watchdog/*.h
+                            Watchdog/src/*.cpp
+    INCLUDE_PATHS           PlatformAbstraction/include
+    SRC_FILES               PlatformAbstraction/include/*.h
                             PlatformAbstraction/include/Collections/*.h
                             PlatformAbstraction/include/PlatformAbstraction/*.h
                             PlatformAbstraction/include/PlatformAbstraction/internal/*.h
-    FILES_SOURCE            PlatformAbstraction/src/*.cpp
-    DEPENDENCIES            ramses-common-base
+                            PlatformAbstraction/src/*.cpp
+    INCLUDE_PATHS           Core/Math3d/include
+    SRC_FILES               Core/Math3d/include/Math3d/*.h
+                            Core/Math3d/src/*.cpp
+    INCLUDE_PATHS           Core/Utils/include
+    SRC_FILES               Core/Utils/include/Utils/*.h
+                            Core/Utils/src/*.cpp
+    INCLUDE_PATHS           Core/Common/include
+    SRC_FILES               Core/Common/include/Common/*.h
+                            Core/Common/src/*.cpp
+    INCLUDE_PATHS           Core/TaskFramework/include
+    SRC_FILES               Core/TaskFramework/include/*.h
+                            Core/TaskFramework/include/TaskFramework/*.h
+                            Core/TaskFramework/src/*.cpp
+    INCLUDE_PATHS           SceneGraph/SceneAPI/include
+    SRC_FILES               SceneGraph/SceneAPI/include/SceneAPI/*.h
+                            SceneGraph/SceneAPI/src/*.cpp
+    INCLUDE_PATHS           SceneGraph/Scene/include
+    SRC_FILES               SceneGraph/Scene/include/Scene/*.h
+                            SceneGraph/Scene/include/Scene/*/*.h
+                            SceneGraph/Scene/src/*.cpp
+                            SceneGraph/Scene/src/*/*.cpp
+    INCLUDE_PATHS           SceneGraph/Resource/include
+    SRC_FILES               SceneGraph/Resource/include/Resource/*.h
+                            SceneGraph/Resource/src/*.cpp
+    INCLUDE_PATHS           SceneGraph/SceneUtils/include
+    SRC_FILES               SceneGraph/SceneUtils/include/SceneUtils/*.h
+                            SceneGraph/SceneUtils/src/*.cpp
+    INCLUDE_PATHS           Communication/TransportCommon/include
+    SRC_FILES               Communication/TransportCommon/include/TransportCommon/*.h
+                            Communication/TransportCommon/src/*.cpp
+    INCLUDE_PATHS           Ramsh/include
+    SRC_FILES               Ramsh/include/Ramsh/*.h
+                            Ramsh/src/*.cpp
+    INCLUDE_PATHS           Components/include
+    SRC_FILES               Components/include/*.h
+                            Components/include/Components/*.h
+                            Components/src/*.cpp
+    INCLUDE_PATHS           DltLogAppender/include
+    SRC_FILES               DltLogAppender/include/DltLogAppender/*.h
+                            DltLogAppender/include/DltLogAppender/DltAdapterDummy/*.h
+                            DltLogAppender/src/DltAdapterDummy/*.cpp
+                            DltLogAppender/src/*.cpp
+    INCLUDE_PATHS           SceneReferencing/include
+    SRC_FILES               SceneReferencing/include/SceneReferencing/*.h
+                            SceneReferencing/src/*.cpp
+
+    # TODO create targets for these...
+    # cityhash from external
+    INCLUDE_PATHS           ../external/cityhash/src
+    SRC_FILES               ../external/cityhash/src/*.h
+                            ../external/cityhash/src/city.cc
+    # lodepng from external
+    INCLUDE_PATHS           ../external/lodepng
+    SRC_FILES               ../external/lodepng/*.h
+                            ../external/lodepng/lodepng.cpp
+
+    DEPENDENCIES            ramses-framework-api
+                            ramses-common-base
                             lz4
                             fmt::fmt
+                            glm::glm
                             ramses-abseil
-
-    INCLUDE_BASE            Core/Math3d/include
-    FILES_PRIVATE_HEADER    Core/Math3d/include/Math3d/*.h
-    FILES_SOURCE            Core/Math3d/src/*.cpp
-
-    INCLUDE_BASE            Core/Utils/include
-    FILES_PRIVATE_HEADER    Core/Utils/include/Utils/*.h
-    FILES_SOURCE            Core/Utils/src/*.cpp
-
-    INCLUDE_BASE            Core/Transfer/include
-    FILES_PRIVATE_HEADER    Core/Transfer/include/Transfer/*.h
-    FILES_SOURCE            Core/Transfer/src/*.cpp
-
-    INCLUDE_BASE            Core/Common/include
-    FILES_PRIVATE_HEADER    Core/Common/include/Common/*.h
-    FILES_SOURCE            Core/Common/src/*.cpp
-
-    INCLUDE_BASE            Core/TaskFramework/include
-    FILES_PRIVATE_HEADER    Core/TaskFramework/include/*.h
-                            Core/TaskFramework/include/TaskFramework/*.h
-    FILES_SOURCE            Core/TaskFramework/src/*.cpp
-
-    # Scenegraph
-
-    INCLUDE_BASE            SceneGraph/SceneAPI/include
-    FILES_PRIVATE_HEADER    SceneGraph/SceneAPI/include/SceneAPI/*.h
-    FILES_SOURCE            SceneGraph/SceneAPI/src/*.cpp
-
-    INCLUDE_BASE            SceneGraph/Scene/include
-    FILES_PRIVATE_HEADER    SceneGraph/Scene/include/Scene/*.h
-                            SceneGraph/Scene/include/Scene/*/*.h
-    FILES_SOURCE            SceneGraph/Scene/src/*.cpp
-                            SceneGraph/Scene/src/*/*.cpp
-
-    INCLUDE_BASE            SceneGraph/Resource/include
-    FILES_PRIVATE_HEADER    SceneGraph/Resource/include/Resource/*.h
-    FILES_SOURCE            SceneGraph/Resource/src/*.cpp
-
-    INCLUDE_BASE            SceneGraph/SceneUtils/include
-    FILES_PRIVATE_HEADER    SceneGraph/SceneUtils/include/SceneUtils/*.h
-    FILES_SOURCE            SceneGraph/SceneUtils/src/*.cpp
-
-    INCLUDE_BASE            Collision/include
-    FILES_PRIVATE_HEADER    Collision/include/Collision/*.h
-    FILES_SOURCE            Collision/src/*.cpp
-
-    INCLUDE_BASE            Animation/Animation/include
-    FILES_PRIVATE_HEADER    Animation/Animation/include/Animation/*.h
-    FILES_SOURCE            Animation/Animation/src/*.cpp
-
-    INCLUDE_BASE            Animation/AnimationAPI/include
-    FILES_PRIVATE_HEADER    Animation/AnimationAPI/include/AnimationAPI/*.h
-
-    INCLUDE_BASE            Communication/TransportCommon/include
-    FILES_PRIVATE_HEADER    Communication/TransportCommon/include/TransportCommon/*.h
-    FILES_SOURCE            Communication/TransportCommon/src/*.cpp
-
-    INCLUDE_BASE            Ramsh/include
-    FILES_PRIVATE_HEADER    Ramsh/include/Ramsh/*.h
-    FILES_SOURCE            Ramsh/src/*.cpp
-
-    INCLUDE_BASE            Components/include
-    FILES_PRIVATE_HEADER    Components/include/*.h
-                            Components/include/Components/*.h
-    FILES_SOURCE            Components/src/*.cpp
-
-    INCLUDE_BASE            ramses-framework/include
-    FILES_PRIVATE_HEADER    ramses-framework/include/*.h
-                            ramses-framework/include/ramses-framework/*.h
-    FILES_SOURCE            ${RAMSES_FRAMEWORK_FILES_SOURCE}
-
-    INCLUDE_BASE            DltLogAppender/include
-    FILES_PRIVATE_HEADER    DltLogAppender/include/DltLogAppender/*.h
-                            DltLogAppender/include/DltLogAppender/DltAdapterDummy/*.h
-    FILES_SOURCE            DltLogAppender/src/DltAdapterDummy/*.cpp
-
-    FILES_SOURCE            DltLogAppender/src/*.cpp
-
-    INCLUDE_BASE            Monitoring/include
-    FILES_PRIVATE_HEADER    Monitoring/include/Monitoring/*.h
-    FILES_SOURCE            Monitoring/src/*.cpp
-
-    INCLUDE_BASE            SceneReferencing/include
-    FILES_PRIVATE_HEADER    SceneReferencing/include/SceneReferencing/*.h
-    FILES_SOURCE            SceneReferencing/src/*.cpp
-
-    # cityhash from external
-    INCLUDE_BASE            ../external/cityhash/src
-    FILES_PRIVATE_HEADER    ../external/cityhash/src/*.h
-    FILES_SOURCE            ../external/cityhash/src/city.cc
-
-    # lodepng from external
-    INCLUDE_BASE            ../external/lodepng
-    FILES_PRIVATE_HEADER    ../external/lodepng/*.h
-    FILES_SOURCE            ../external/lodepng/lodepng.cpp
-
     # conditional values
     ${ramses-framework-TCP_MIXIN}
     ${ramses-framework-DLT_MIXIN}
     ${ramses-framework-AndroidLogger_MIXIN}
     )
 
-IF (ramses-sdk_ENABLE_TCP_SUPPORT)
-  ACME_INFO("+ TCP communication system support enabled")
-  TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_TCP_COMM=1")
+if (ramses-sdk_ENABLE_TCP_SUPPORT)
+  message(STATUS "+ TCP communication system support enabled")
+  target_compile_definitions(ramses-framework PUBLIC "-DHAS_TCP_COMM=1")
 else()
-  ACME_INFO("- TCP communication system support disabled")
-ENDIF()
+  message(STATUS "- TCP communication system support disabled")
+endif()
 
-IF (ramses-sdk_ENABLE_FALLBACK_FAKE_COMMUNICATION_SYSTEM)
-  ACME_INFO("+ Fallback fake communication system enabled")
-  TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DHAS_FALLBACK_FAKE_COMMUNICATION_SYSTEM=1")
-else()
-  ACME_INFO("- Fallback fake communication system disabled")
-ENDIF()
+if (ramses-sdk_HAS_DLT)
+    target_compile_definitions(ramses-framework PUBLIC "-DDLT_ENABLED")
 
-IF (ramses-sdk_HAS_DLT)
-    TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DDLT_ENABLED")
+    if (automotive-dlt_HAS_FILETRANSFER)
+        target_compile_definitions(ramses-framework PUBLIC "-DDLT_HAS_FILETRANSFER")
+    endif()
+endif()
 
-    IF (automotive-dlt_HAS_FILETRANSFER)
-        TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DDLT_HAS_FILETRANSFER")
-    ENDIF()
-ENDIF()
-
-IF(ramses-sdk_USE_LINUX_DEV_PTP)
-    TARGET_COMPILE_DEFINITIONS(ramses-framework PUBLIC "-DRAMSES_LINUX_USE_DEV_PTP=1")
-ENDIF()
+if(ramses-sdk_USE_LINUX_DEV_PTP)
+    target_compile_definitions(ramses-framework PUBLIC "-DRAMSES_LINUX_USE_DEV_PTP=1")
+endif()
 
 if (DEFINED ramses-sdk_CONSOLE_LOGLEVEL AND NOT ramses-sdk_CONSOLE_LOGLEVEL STREQUAL "")
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONSOLE_LOGLEVEL_DEFAULT=${ramses-sdk_CONSOLE_LOGLEVEL}")
@@ -224,11 +173,6 @@ if (DEFINED ramses-sdk_WORKER_THREAD_CORE_BINDING AND NOT ramses-sdk_WORKER_THRE
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_WORKER_THREAD_CORE_BINDING=${ramses-sdk_WORKER_THREAD_CORE_BINDING}")
 endif()
 
-# Thread priority and binding for someip connection keepalive threads
-if (DEFINED ramses-sdk_CONN_KEEPALIVE_THREAD_PRIORITY AND NOT ramses-sdk_CONN_KEEPALIVE_THREAD_PRIORITY STREQUAL "")
-    target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONN_KEEPALIVE_THREAD_PRIORITY=${ramses-sdk_CONN_KEEPALIVE_THREAD_PRIORITY}")
-endif()
-
 if (DEFINED ramses-sdk_CONN_KEEPALIVE_THREAD_CORE_BINDING AND NOT ramses-sdk_CONN_KEEPALIVE_THREAD_CORE_BINDING STREQUAL "")
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONN_KEEPALIVE_THREAD_CORE_BINDING=${ramses-sdk_CONN_KEEPALIVE_THREAD_CORE_BINDING}")
 endif()
@@ -238,142 +182,94 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-framework PRIVATE "-Wsuggest-override")
 endif()
 
-INSTALL(DIRECTORY ramses-framework-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)
+if(ramses-sdk_ENABLE_INSTALL)
+    install(DIRECTORY ramses-framework-api/include/ DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}" COMPONENT ramses-sdk-devel)
+endif()
 
 set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}
-    INCLUDE_BASE ${RAMSES_FRAMEWORK_API_INCLUDE_BASE}
-    FILES_SOURCE ${RAMSES_FRAMEWORK_FILES_SOURCE}
+    INCLUDE_PATHS ${RAMSES_FRAMEWORK_API_INCLUDE_BASE}
+    SRC_FILES ${RAMSES_FRAMEWORK_FILES_SOURCE}
     DEPENDENCIES  ramses-framework
     CACHE INTERNAL "")
 
-IF (${ramses-sdk_BUILD_TESTS})
-    ACME_MODULE(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
+if (${ramses-sdk_BUILD_TESTS})
+    createModule(
         NAME                    FrameworkTestUtils
         TYPE                    STATIC_LIBRARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
-
-        INCLUDE_BASE            FrameworkTestUtils/include
-        FILES_PRIVATE_HEADER    FrameworkTestUtils/include/*.h
-        FILES_SOURCE            FrameworkTestUtils/src/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
+        INCLUDE_PATHS           FrameworkTestUtils/include
+        SRC_FILES               FrameworkTestUtils/include/*.h
+                                FrameworkTestUtils/src/*.cpp
         DEPENDENCIES            ramses-framework
                                 ramses-gmock
     )
-ENDIF()
 
-# all tests in one binary
-ACME_MODULE(
-    NAME                    ramses-framework-test
-    TYPE                    TEST
+    # all tests in one binary
+    createModule(
+        NAME                    ramses-framework-test
+        TYPE                    BINARY
 
-    INCLUDE_BASE            PlatformAbstraction/test
-    FILES_PRIVATE_HEADER    PlatformAbstraction/test/*.h
-    FILES_SOURCE            PlatformAbstraction/test/*.cpp
+        INCLUDE_PATHS           PlatformAbstraction/test
+        SRC_FILES               PlatformAbstraction/test/*.h
+                                PlatformAbstraction/test/*.cpp
+        INCLUDE_PATHS           ramses-framework/test
+        SRC_FILES               ramses-framework/test/*.h
+                                ramses-framework/test/*.cpp
+        INCLUDE_PATHS           Core/Math3d/test
+        SRC_FILES               Core/Math3d/test/*.h
+                                Core/Math3d/test/*.cpp
+        INCLUDE_PATHS           Core/Utils/test
+        SRC_FILES               Core/Utils/test/*.h
+                                Core/Utils/test/*.cpp
+        SRC_FILES               Core/Common/test/*.h
+                                Core/Common/test/*.cpp
+        INCLUDE_PATHS           Core/TaskFramework/test
+        SRC_FILES               Core/TaskFramework/test/*.h
+                                Core/TaskFramework/test/*.cpp
+        INCLUDE_PATHS           SceneGraph/Scene/test
+        SRC_FILES               SceneGraph/Scene/test/*.h
+                                SceneGraph/Scene/test/*.cpp
+        INCLUDE_PATHS           SceneGraph/Resource/test
+        SRC_FILES               SceneGraph/Resource/test/*.h
+                                SceneGraph/Resource/test/*.cpp
+        INCLUDE_PATHS           SceneGraph/SceneAPI/test
+        SRC_FILES               SceneGraph/SceneAPI/test/*.h
+                                SceneGraph/SceneAPI/test/*.cpp
+        INCLUDE_PATHS           Communication/TransportCommon/test
+        SRC_FILES               Communication/TransportCommon/test/*.h
+                                Communication/TransportCommon/test/*.cpp
+        INCLUDE_PATHS           Ramsh/test
+        SRC_FILES               Ramsh/test/*.h
+                                Ramsh/test/*.cpp
+        INCLUDE_PATHS           Components/test
+        SRC_FILES               Components/test/*.h
+                                Components/test/*.cpp
+        INCLUDE_PATHS           DltLogAppender/test
+        SRC_FILES               DltLogAppender/test/*.h
+                                DltLogAppender/test/*.cpp
+        INCLUDE_PATHS           Watchdog/test
+        SRC_FILES               Watchdog/test/*.h
+                                Watchdog/test/*.cpp
+        INCLUDE_PATHS           SceneReferencing/test
+        SRC_FILES               SceneReferencing/test/*.h
+                                SceneReferencing/test/*.cpp
 
-    INCLUDE_BASE            ramses-framework/test
-    FILES_PRIVATE_HEADER    ramses-framework/test/*.h
-    FILES_SOURCE            ramses-framework/test/*.cpp
+        ${ramses-framework-test-TCP_MIXIN}
 
-    INCLUDE_BASE            Core/Math3d/test
-    FILES_PRIVATE_HEADER    Core/Math3d/test/*.h
-    FILES_SOURCE            Core/Math3d/test/*.cpp
+        SRC_FILES               test/main.cpp
+        RESOURCE_FOLDERS        test/res
 
-    INCLUDE_BASE            Core/Utils/test
-    FILES_PRIVATE_HEADER    Core/Utils/test/*.h
-    FILES_SOURCE            Core/Utils/test/*.cpp
-
-    INCLUDE_BASE            Core/Transfer/test
-    FILES_PRIVATE_HEADER    Core/Transfer/test/*.h
-    FILES_SOURCE            Core/Transfer/test/*.cpp
-
-    INCLUDE_BASE            Core/Common/test/*.h
-    FILES_PRIVATE_HEADER    Core/Common/test
-    FILES_SOURCE            Core/Common/test/*.cpp
-
-    INCLUDE_BASE            Core/TaskFramework/test
-    FILES_PRIVATE_HEADER    Core/TaskFramework/test/*.h
-    FILES_SOURCE            Core/TaskFramework/test/*.cpp
-
-    INCLUDE_BASE            SceneGraph/Scene/test
-    FILES_PRIVATE_HEADER    SceneGraph/Scene/test/*.h
-    FILES_SOURCE            SceneGraph/Scene/test/*.cpp
-
-    INCLUDE_BASE            SceneGraph/Resource/test
-    FILES_PRIVATE_HEADER    SceneGraph/Resource/test/*.h
-    FILES_SOURCE            SceneGraph/Resource/test/*.cpp
-
-    INCLUDE_BASE            SceneGraph/SceneAPI/test
-    FILES_PRIVATE_HEADER    SceneGraph/SceneAPI/test/*.h
-    FILES_SOURCE            SceneGraph/SceneAPI/test/*.cpp
-
-    INCLUDE_BASE            Effect/test
-    FILES_PRIVATE_HEADER    Effect/test/*.h
-    FILES_SOURCE            Effect/test/*.cpp
-
-    INCLUDE_BASE            Animation/Animation/test
-    FILES_PRIVATE_HEADER    Animation/Animation/test/*.h
-    FILES_SOURCE            Animation/Animation/test/*.cpp
-
-    INCLUDE_BASE            Communication/TransportCommon/test
-    FILES_PRIVATE_HEADER    Communication/TransportCommon/test/*.h
-    FILES_SOURCE            Communication/TransportCommon/test/*.cpp
-
-    INCLUDE_BASE            Ramsh/test
-    FILES_PRIVATE_HEADER    Ramsh/test/*.h
-    FILES_SOURCE            Ramsh/test/*.cpp
-
-    INCLUDE_BASE            Components/test
-    FILES_PRIVATE_HEADER    Components/test/*.h
-    FILES_SOURCE            Components/test/*.cpp
-
-    INCLUDE_BASE            Monitoring/test
-    FILES_PRIVATE_HEADER    Monitoring/test/*.h
-    FILES_SOURCE            Monitoring/test/*.cpp
-
-    INCLUDE_BASE            Collision/test
-    FILES_PRIVATE_HEADER    Collision/test/*.h
-    FILES_SOURCE            Collision/test/*.cpp
-
-    INCLUDE_BASE            DltLogAppender/test
-    FILES_PRIVATE_HEADER    DltLogAppender/test/*.h
-    FILES_SOURCE            DltLogAppender/test/*.cpp
-
-    INCLUDE_BASE            Watchdog/test
-    FILES_PRIVATE_HEADER    Watchdog/test/*.h
-    FILES_SOURCE            Watchdog/test/*.cpp
-
-    INCLUDE_BASE            SceneReferencing/test
-    FILES_PRIVATE_HEADER    SceneReferencing/test/*.h
-    FILES_SOURCE            SceneReferencing/test/*.cpp
-
-    ${ramses-framework-test-DLT_MIXIN}
-    ${ramses-framework-test-TCP_MIXIN}
-
-    FILES_SOURCE            test/main.cpp
-    RESOURCE_FOLDER         test/res
-
-    DEPENDENCIES            ramses-framework
-                            FrameworkTestUtils
-                            ramses-gmock-main
-)
-
-if (TARGET ramses-framework-test)
+        DEPENDENCIES            ramses-framework
+                                FrameworkTestUtils
+                                ramses-gmock-main
+    )
 
     # disable maybe uninitialized
-    IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
             target_compile_options(ramses-framework-test PRIVATE -Wno-maybe-uninitialized)
-        ENDIF()
-    ENDIF()
-ENDIF()
+        endif()
+    endif()
+
+    makeTestFromTarget(TARGET ramses-framework-test SUFFIX UNITTEST)
+endif()

@@ -20,7 +20,9 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/EDataType.h"
 #include "Collections/HashMap.h"
+
 #include <memory>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -38,15 +40,15 @@ namespace ramses
     class AppearanceImpl final : public SceneObjectImpl
     {
     public:
-        AppearanceImpl(SceneImpl& scene, const char* appearancename);
-        virtual ~AppearanceImpl() override;
+        AppearanceImpl(SceneImpl& scene, std::string_view appearancename);
+        ~AppearanceImpl() override;
 
         void             initializeFrameworkData(const EffectImpl& effect);
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
-        virtual status_t validate() const override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
+        status_t validate() const override;
 
         const EffectImpl* getEffectImpl() const;
         const Effect& getEffect() const;
@@ -55,8 +57,8 @@ namespace ramses
         status_t getBlendingFactors(EBlendFactor& srcColor, EBlendFactor& destColor, EBlendFactor& srcAlpha, EBlendFactor& destAlpha) const;
         status_t setBlendingOperations(EBlendOperation operationColor, EBlendOperation operationAlpha);
         status_t getBlendingOperations(EBlendOperation& operationColor, EBlendOperation& operationAlpha) const;
-        status_t setBlendingColor(float red, float green, float blue, float alpha);
-        status_t getBlendingColor(float& red, float& green, float& blue, float& alpha) const;
+        status_t setBlendingColor(const vec4f& color);
+        status_t getBlendingColor(vec4f& color) const;
         status_t setDepthFunction(EDepthFunc func);
         status_t getDepthFunction(EDepthFunc& func) const;
         status_t setDepthWrite(EDepthWrite flag);
@@ -79,10 +81,6 @@ namespace ramses
         status_t setInputValue(const EffectInputImpl& input, uint32_t elementCount, const T* valuesIn);
         template <typename T>
         status_t getInputValue(const EffectInputImpl& input, uint32_t elementCount, T* valuesOut) const;
-        template <typename ContainerT, typename ElementT>
-        status_t setInputValueWithElementTypeCast(const EffectInputImpl& input, uint32_t elementCount, const ElementT* valuesIn);
-        template <typename ContainerT, typename ElementT>
-        status_t getInputValueWithElementTypeCast(const EffectInputImpl& input, uint32_t elementCount, ElementT* valuesOut) const;
 
         status_t setInputTexture(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler);
         status_t getInputTexture(const EffectInputImpl& input, const TextureSampler*& textureSampler);

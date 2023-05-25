@@ -12,7 +12,7 @@
 
 namespace ramses_internal
 {
-    Float RendererStatistics::getFps() const
+    float RendererStatistics::getFps() const
     {
         const UInt64 reportTimeInterval = PlatformTime::GetMillisecondsMonotonic() - m_timeBase;
         if (reportTimeInterval > 0u)

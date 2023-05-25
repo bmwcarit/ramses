@@ -7,18 +7,10 @@
 #  -------------------------------------------------------------------------
 
 MODULE_WITH_SHARED_LIBRARY(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
     NAME                    ramses-example-text-basic
     TYPE                    BINARY
     ENABLE_INSTALL          ON
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            src/*.cpp
+    SRC_FILES               src/*.cpp
                             src/*.h
-    RESOURCE_FOLDER         res
+    RESOURCE_FOLDERS        res
 )

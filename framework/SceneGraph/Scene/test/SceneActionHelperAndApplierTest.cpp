@@ -36,7 +36,7 @@ namespace ramses_internal
         MOCK_METHOD(RenderStateHandle, allocateRenderState, (RenderStateHandle), (override));
         MOCK_METHOD(void , setRenderStateBlendFactors, (RenderStateHandle, EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
         MOCK_METHOD(void , setRenderStateBlendOperations, (RenderStateHandle, EBlendOperation, EBlendOperation), (override));
-        MOCK_METHOD(void , setRenderStateBlendColor, (RenderStateHandle, const Vector4&), (override));
+        MOCK_METHOD(void , setRenderStateBlendColor, (RenderStateHandle, const glm::vec4&), (override));
         MOCK_METHOD(void , setRenderStateCullMode, (RenderStateHandle, ECullMode), (override));
         MOCK_METHOD(void , setRenderStateDrawMode, (RenderStateHandle, EDrawMode), (override));
         MOCK_METHOD(void , setRenderStateDepthWrite, (RenderStateHandle, EDepthWrite), (override));
@@ -201,7 +201,7 @@ namespace ramses_internal
         EXPECT_CALL(scene, allocateRenderState(state)).WillOnce(Return(state));
         EXPECT_CALL(scene, setRenderStateBlendFactors(state, rs.blendFactorSrcColor, rs.blendFactorDstColor, rs.blendFactorSrcAlpha, rs.blendFactorDstAlpha));
         EXPECT_CALL(scene, setRenderStateBlendOperations(state, rs.blendOperationColor, rs.blendOperationAlpha));
-        EXPECT_CALL(scene, setRenderStateBlendColor(state, Vector4(0.1f, 0.2f, 0.3f, 0.4f)));
+        EXPECT_CALL(scene, setRenderStateBlendColor(state, glm::vec4(0.1f, 0.2f, 0.3f, 0.4f)));
         EXPECT_CALL(scene, setRenderStateCullMode(state, rs.cullMode));
         EXPECT_CALL(scene, setRenderStateDrawMode(state, rs.drawMode));
         EXPECT_CALL(scene, setRenderStateDepthWrite(state, rs.depthWrite));

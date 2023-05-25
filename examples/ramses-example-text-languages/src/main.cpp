@@ -16,7 +16,7 @@
 * @brief Text Languages Example
 */
 
-int main(int argc, char* argv[])
+int main()
 {
     // Text is rendered in a screen-space pixel precise coordinate system
     // To achieve a texel-to-pixel ratio of 1 when rendering the text, it has to be
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     const uint32_t displayWidth(1280);
     const uint32_t displayHeight(480);
 
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& client(*framework.createClient("ExampleTextDirections"));
 
     ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u));
@@ -91,15 +91,15 @@ int main(int argc, char* argv[])
 
     for (auto textLine : { textLine1, textLine2, textLine3, textLine4, textLine5 })
     {
-        textLine->meshNode->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-        textLine->meshNode->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
+        textLine->meshNode->getAppearance()->setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+        textLine->meshNode->getAppearance()->setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha);
     }
 
-    textLine1->meshNode->setTranslation(20.0f, 220.0f, -0.5f);
-    textLine2->meshNode->setTranslation(20.0f, 170.0f, -0.5f);
-    textLine3->meshNode->setTranslation(20.0f, 120.0f, -0.5f);
-    textLine4->meshNode->setTranslation(20.0f, 70.0f , -0.5f);
-    textLine5->meshNode->setTranslation(20.0f, 20.0f , -0.5f);
+    textLine1->meshNode->setTranslation({20.0f, 220.0f, -0.5f});
+    textLine2->meshNode->setTranslation({20.0f, 170.0f, -0.5f});
+    textLine3->meshNode->setTranslation({20.0f, 120.0f, -0.5f});
+    textLine4->meshNode->setTranslation({20.0f, 70.0f , -0.5f});
+    textLine5->meshNode->setTranslation({20.0f, 20.0f , -0.5f});
 
     renderGroup->addMeshNode(*textLine1->meshNode);
     renderGroup->addMeshNode(*textLine2->meshNode);

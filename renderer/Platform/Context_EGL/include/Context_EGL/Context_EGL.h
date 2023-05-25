@@ -11,7 +11,6 @@
 
 #include <EGL/egl.h>
 
-#undef Bool // Xlib.h (included from EGL/egl.h) defines Bool as int - this collides with ramses_internal::Bool
 #undef Status
 #undef None
 
@@ -46,17 +45,13 @@ namespace ramses_internal
         //    format and we only treat it as an opque value.
         //    Try to remove this workaround in the future by e.g. refactoring Context usage or making Context templated.
         //    Additionally everone uses pointer types except rgl
-#ifdef __ghs__
-        using Generic_EGLNativeDisplayType = int;
-#else
         using Generic_EGLNativeDisplayType = void*;
-#endif
         using Generic_EGLNativeWindowType = void*;
 
         Context_EGL(Generic_EGLNativeDisplayType eglDisplay, Generic_EGLNativeWindowType eglWindow, const EGLint* contextAttributes, const EGLint* surfaceAttributes, const EGLint* windowSurfaceAttributes, EGLint swapInterval, Context_EGL* sharedContext = nullptr);
         ~Context_EGL() override;
 
-        Bool init();
+        bool init();
 
         bool swapBuffers() override;
         bool enable() override;
@@ -64,7 +59,7 @@ namespace ramses_internal
 
         void* getProcAddress(const char* name) const override;
 
-        EGLDisplay getEglDisplay() const;
+        [[nodiscard]] EGLDisplay getEglDisplay() const;
 
     private:
         bool getEglDisplayFromNativeHandle();
@@ -78,7 +73,7 @@ namespace ramses_internal
         bool createEglSurface();
         bool createEglContext();
 
-        bool isInitialized() const;
+        [[nodiscard]] bool isInitialized() const;
 
         EglSurfaceData m_eglSurfaceData;
         Generic_EGLNativeDisplayType m_nativeDisplay;

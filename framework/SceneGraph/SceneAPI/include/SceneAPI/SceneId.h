@@ -9,12 +9,14 @@
 #ifndef RAMSES_SCENEAPI_SCENEID_H
 #define RAMSES_SCENEAPI_SCENEID_H
 
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Common/StronglyTypedValue.h"
 #include "Collections/Vector.h"
-#include "Collections/String.h"
 #include "Scene/EScenePublicationMode.h"
-#include "Utils/StringOutputSpecialWrapper.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -26,7 +28,7 @@ namespace ramses_internal
     struct SceneInfo
     {
         SceneInfo() {}
-        explicit SceneInfo(const SceneId& sceneID_, const String& friendlyName_ = String(), EScenePublicationMode mode = EScenePublicationMode_LocalAndRemote)
+        explicit SceneInfo(const SceneId& sceneID_, std::string_view friendlyName_ = {}, EScenePublicationMode mode = EScenePublicationMode_LocalAndRemote)
             : sceneID(sceneID_)
             , friendlyName(friendlyName_)
             , publicationMode(mode)
@@ -43,12 +45,12 @@ namespace ramses_internal
         }
 
         SceneId sceneID;
-        String friendlyName;
+        std::string friendlyName;
         EScenePublicationMode publicationMode = EScenePublicationMode_Unpublished;
     };
     using SceneInfoVector = std::vector<SceneInfo>;
 }
 
-MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::SceneId, ramses::sceneId_t)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::SceneId)
 
 #endif

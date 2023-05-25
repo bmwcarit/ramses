@@ -10,7 +10,6 @@
 #define RAMSES_PLATFORM_WINDOWS_WGL_4_5_H
 
 #include "Platform_Windows_WGL/Platform_Windows_WGL.h"
-#include "RendererAPI/IWindowEventHandler.h"
 
 namespace ramses_internal
 {
@@ -18,11 +17,6 @@ namespace ramses_internal
     {
     public:
         Platform_Windows_WGL_4_5(const RendererConfig& rendererConfig);
-
-        virtual bool createDevice();
-        virtual bool createDeviceUploading();
-
-        virtual const Int32*  getContextAttributes();
     };
 }
 

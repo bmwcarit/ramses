@@ -10,15 +10,19 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/OrthographicCamera.h"
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 namespace ramses_internal
 {
-    TextScene_Base::TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    TextScene_Base::TextScene_Base(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_textCache(scene, m_fontRegistry, 1024u, 1024u)
         , m_textOrthoCamera(m_scene.createOrthographicCamera("text camera"))
     {
-        m_textOrthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        m_textOrthoCamera->setFrustum(0.0f, static_cast<float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
         m_textOrthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(m_textOrthoCamera);
     }
 }
+
+#endif

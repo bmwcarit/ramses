@@ -10,6 +10,8 @@
 #ifndef RAMSES_SCENECOMMANDVISITOR_H
 #define RAMSES_SCENECOMMANDVISITOR_H
 
+#include <string>
+
 namespace ramses
 {
     class SceneImpl;
@@ -18,12 +20,10 @@ namespace ramses
 
 namespace ramses_internal
 {
-    struct SceneCommandForceFallback;
     struct SceneCommandFlushSceneVersion;
     struct SceneCommandValidationRequest;
     struct SceneCommandDumpSceneToFile;
     struct SceneCommandLogResourceMemoryUsage;
-    class String;
 
     class SceneCommandVisitor
     {
@@ -32,14 +32,13 @@ namespace ramses_internal
             : m_scene(scene)
         {}
 
-        void operator()(const SceneCommandForceFallback& cmd);
         void operator()(const SceneCommandFlushSceneVersion& cmd);
         void operator()(const SceneCommandValidationRequest& cmd);
         void operator()(const SceneCommandDumpSceneToFile& cmd) const;
         void operator()(const SceneCommandLogResourceMemoryUsage& cmd) const;
 
     private:
-        static void SendSceneViaDLT(const String& sceneDumpFileName);
+        static void SendSceneViaDLT(const std::string& sceneDumpFileName);
 
         ramses::SceneImpl& m_scene;
     };

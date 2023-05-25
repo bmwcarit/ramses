@@ -8,22 +8,21 @@
 
 #pragma once
 
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
+#include "Utils/Warnings.h"
+
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wold-style-cast)
 
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
-#endif
+WARNINGS_POP
 
 #include "absl/types/span.h"
 #include "SceneAPI/TextureEnums.h"
 #include "Resource/TextureMetaInfo.h"
 #include <string>
+#include "SceneAPI/Handles.h"
 
 
 namespace ramses
@@ -35,6 +34,7 @@ namespace ramses
 namespace ramses_internal
 {
     class TextureResource;
+    class IScene;
 
     namespace imgui
     {
@@ -57,6 +57,8 @@ namespace ramses_internal
         };
 
         void PreviewImage(const Image& img, const ImVec2& size);
+
+        void RenderState(IScene& scene, RenderStateHandle hnd);
 
         std::string SaveToPng(const Byte*                data,
                               UInt                       size,

@@ -11,7 +11,7 @@
 
 #include "RendererLib/LinkManagerBase.h"
 #include "Scene/ETransformMatrixType.h"
-#include "Math3d/Matrix44f.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -24,19 +24,19 @@ namespace ramses_internal
 
         void                      removeSceneLinks(SceneId sceneId);
 
-        Bool                      createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
-        Bool                      removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
+        bool                      createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+        bool                      removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
 
-        Bool                      nodeHasDataLinkToProvider(SceneId consumerSceneID, NodeHandle consumerNodeHandle) const;
+        [[nodiscard]] bool                      nodeHasDataLinkToProvider(SceneId consumerSceneID, NodeHandle consumerNodeHandle) const;
 
-        Matrix44f                 getLinkedTransformationFromDataProvider(ETransformationMatrixType matrixType, SceneId consumerSceneId, NodeHandle consumerNodeHandle) const;
+        [[nodiscard]] glm::mat4                 getLinkedTransformationFromDataProvider(ETransformationMatrixType matrixType, SceneId consumerSceneId, NodeHandle consumerNodeHandle) const;
         void                      propagateTransformationDirtinessToConsumers(SceneId providerSceneId, NodeHandle providerNodeHandle) const;
 
         using LinkManagerBase::getDependencyChecker;
         using LinkManagerBase::getSceneLinks;
 
     private:
-        DataSlotHandle getDataSlotForNode(SceneId sceneId, NodeHandle node) const;
+        [[nodiscard]] DataSlotHandle getDataSlotForNode(SceneId sceneId, NodeHandle node) const;
 
         using NodeToSlotMap = HashMap<NodeHandle, DataSlotHandle>;
         using SceneToNodeSlotMap = HashMap<SceneId, NodeToSlotMap>;

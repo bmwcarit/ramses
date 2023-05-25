@@ -37,9 +37,9 @@ namespace ramses_internal
     class DynamicQuad_Base
     {
     public:
-        ramses::RenderGroup& getRenderGroup();
-        const ramses::RenderGroup& getRenderGroup() const;
-        const ramses::MeshNode& getMeshNode() const;
+        [[nodiscard]] ramses::RenderGroup& getRenderGroup();
+        [[nodiscard]] const ramses::RenderGroup& getRenderGroup() const;
+        [[nodiscard]] const ramses::MeshNode& getMeshNode() const;
 
     protected:
         DynamicQuad_Base(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);

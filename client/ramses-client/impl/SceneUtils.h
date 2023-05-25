@@ -23,14 +23,13 @@ namespace ramses
         {
             switch (publicationMode)
             {
-            case ramses::EScenePublicationMode_LocalAndRemote:
+            case ramses::EScenePublicationMode::LocalAndRemote:
                 return ramses_internal::EScenePublicationMode_LocalAndRemote;
-            case ramses::EScenePublicationMode_LocalOnly:
+            case ramses::EScenePublicationMode::LocalOnly:
                 return ramses_internal::EScenePublicationMode_LocalOnly;
-            default:
-                assert(false);
-                return ramses_internal::EScenePublicationMode_LocalAndRemote;
             }
+            assert(false);
+            return ramses_internal::EScenePublicationMode_LocalAndRemote;
         }
     };
 }

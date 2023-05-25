@@ -24,7 +24,7 @@ namespace ramses_internal
 
     UInt32 SceneActionCollectionUtils::CountNumberOfActionsOfType(const SceneActionCollection& actions, const SceneActionIdVector& types)
     {
-        auto p = [&types](const SceneActionCollection::SceneActionReader& action)-> Bool
+        auto p = [&types](const SceneActionCollection::SceneActionReader& action)-> bool
             {
                 return contains_c(types, action.type());
             };

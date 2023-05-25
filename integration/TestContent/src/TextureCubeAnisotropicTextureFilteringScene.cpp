@@ -113,7 +113,7 @@ namespace ramses_internal
         }
     }
 
-    TextureCubeAnisotropicTextureFilteringScene::TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    TextureCubeAnisotropicTextureFilteringScene::TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
@@ -143,8 +143,8 @@ namespace ramses_internal
 
         ramses::Effect* effect(getTestEffect("ramses-test-client-textured-cube"));
 
-        uint16_t indicesArray[] = { 0, 1, 2, 0, 2, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const uint16_t indicesArray[] = { 0, 1, 2, 0, 2, 3 };
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
         const float x = 0.0f;
         const float y = 0.0f;
@@ -152,24 +152,24 @@ namespace ramses_internal
         const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight) * 0.5f;
         const float z = -1.0f;
 
-        float vertexPositionsArray[] = {
-            x, y, z,
-            x + w, y, z,
-            x + w, y + h, z,
-            x, y + h, z,
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ x, y, z },
+            ramses::vec3f{ x + w, y, z },
+            ramses::vec3f{ x + w, y + h, z },
+            ramses::vec3f{ x, y + h, z }
         };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
         const float s = w / static_cast<float>(textureResolution) * 4.0f; // 2 texel maps to one pixel
         const float t = h / static_cast<float>(textureResolution) * 2.0f; // 1 texel maps to one pixel
 
-        float normalsArray[] = {
-            -1.0f, -1.0f, 1.0f,
-            -1.0f + s, -1.0f, 1.0f,
-            -1.0f + s, -1.0f + t, 1.0f,
-            -1.0f, -1.0f + t, 1.0f
+        const std::array<ramses::vec3f, 4u> normalsArray{
+            ramses::vec3f{ -1.0f, -1.0f, 1.0f },
+            ramses::vec3f{ -1.0f + s, -1.0f, 1.0f },
+            ramses::vec3f{ -1.0f + s, -1.0f + t, 1.0f },
+            ramses::vec3f{ -1.0f, -1.0f + t, 1.0f }
         };
-        const ramses::ArrayResource* normals = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, normalsArray);
+        const ramses::ArrayResource* normals = m_scene.createArrayResource(4u, normalsArray.data());
 
         ramses::TextureCube* texture = m_scene.createTextureCube(
             ramses::ETextureFormat::RGB8,
@@ -189,20 +189,20 @@ namespace ramses_internal
 
         ramses::Appearance* appearance = createQuad(effect, vertexPositions, normals, indices, 0.0f, 0.0f);
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Linear_MipMapLinear,
-            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Linear_MipMapLinear,
+            ramses::ETextureSamplingMethod::Linear,
             *texture,
             16u);
         appearance->setInputTexture(textureInput, *sampler);
 
         ramses::Appearance* appearance1 = createQuad(effect, vertexPositions, normals, indices, 0.0f, h);
         ramses::TextureSampler* sampler1 = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Linear_MipMapLinear,
-            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Linear_MipMapLinear,
+            ramses::ETextureSamplingMethod::Linear,
             *texture);
         appearance1->setInputTexture(textureInput, *sampler1);
     }
@@ -220,7 +220,7 @@ namespace ramses_internal
     void TextureCubeAnisotropicTextureFilteringScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setFrustum(0.0f, static_cast<float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
         orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
@@ -251,7 +251,7 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
 
         ramses::Node* translateNode = m_scene.createNode();
-        translateNode->setTranslation(x, y, 0.0f);
+        translateNode->setTranslation({x, y, 0.0f});
 
         mesh->setParent(*translateNode);
 

@@ -24,7 +24,7 @@ namespace ramses_internal
             ON_CALL(*this, registerThread()).WillByDefault(testing::Return(dummyThreadId));
             ON_CALL(*this, calculateTimeout()).WillByDefault(testing::Return(std::chrono::milliseconds{ 10 }));
         }
-        virtual ~ThreadAliveNotifierMock() override {}
+        ~ThreadAliveNotifierMock() override {}
 
         MOCK_METHOD(uint64_t, registerThread, (), (override));
         MOCK_METHOD(void, unregisterThread, (uint64_t identifier), (override));

@@ -59,10 +59,10 @@ namespace ramses_internal
             image.width  = res->getWidth();
             image.height = res->getHeight();
 
-            image.sampler = m_scene->createTextureSampler(ramses::ETextureAddressMode_Clamp,
-                                                          ramses::ETextureAddressMode_Clamp,
-                                                          ramses::ETextureSamplingMethod_Linear_MipMapLinear,
-                                                          ramses::ETextureSamplingMethod_Linear,
+            image.sampler = m_scene->createTextureSampler(ramses::ETextureAddressMode::Clamp,
+                                                          ramses::ETextureAddressMode::Clamp,
+                                                          ramses::ETextureSamplingMethod::Linear_MipMapLinear,
+                                                          ramses::ETextureSamplingMethod::Linear,
                                                           *texture);
             m_images[res] = image;
         }

@@ -24,12 +24,12 @@ namespace ramses_internal
 
         virtual ~GPUResource() {}
 
-        inline UInt32 getGPUAddress() const
+        [[nodiscard]] inline UInt32 getGPUAddress() const
         {
             return m_GPUAddress;
         }
 
-        inline UInt32 getTotalSizeInBytes() const
+        [[nodiscard]] inline UInt32 getTotalSizeInBytes() const
         {
             return m_sizeInBytes;
         }

@@ -10,11 +10,6 @@
 
 namespace ramses_internal
 {
-    IPlatform* Platform_Base::CreatePlatform(const RendererConfig& rendererConfig)
-    {
-        return new Platform_Android_EGL_ES_3_0(rendererConfig);
-    }
-
     Platform_Android_EGL_ES_3_0::Platform_Android_EGL_ES_3_0(const RendererConfig& rendererConfig)
         : Platform_Android_EGL(rendererConfig)
     {

@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <type_traits>
+#include <string>
 
 namespace ramses_internal
 {
@@ -83,6 +84,13 @@ namespace ramses_internal
 
         stream << static_cast<std::underlying_type_t<E> >(value);
         return stream;
+    }
+
+    inline IOutputStream& operator<<(IOutputStream& stream, const std::string& value)
+    {
+        const uint32_t len = static_cast<uint32_t>(value.size());
+        stream << len;
+        return stream.write(value.c_str(), len);
     }
 }
 

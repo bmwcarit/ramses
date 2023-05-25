@@ -9,6 +9,8 @@
 #ifndef RAMSES_MULTILANGUAGETEXTSCENE_H
 #define RAMSES_MULTILANGUAGETEXTSCENE_H
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 #include "TextScene_Base.h"
 
 namespace ramses_internal
@@ -21,8 +23,9 @@ namespace ramses_internal
             EState_INITIAL = 0
         };
 
-        MultiLanguageTextScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultiLanguageTextScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
     };
 }
 
+#endif
 #endif

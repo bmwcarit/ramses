@@ -14,8 +14,8 @@
 
 namespace ramses
 {
-    Texture2DBufferImpl::Texture2DBufferImpl(SceneImpl& scene, const char* textureBufferName)
-        : SceneObjectImpl(scene, ERamsesObjectType_Texture2DBuffer, textureBufferName)
+    Texture2DBufferImpl::Texture2DBufferImpl(SceneImpl& scene, std::string_view textureBufferName)
+        : SceneObjectImpl(scene, ERamsesObjectType::Texture2DBuffer, textureBufferName)
     {
     }
 
@@ -145,10 +145,10 @@ namespace ramses
         });
 
         if (usedAsInput && !isInitialized)
-            return addValidationMessage(EValidationSeverity_Warning, "TextureBuffer is used in a sampler but there is no data set, this could lead to graphical glitches if actually rendered.");
+            return addValidationMessage(EValidationSeverity::Warning, "TextureBuffer is used in a sampler but there is no data set, this could lead to graphical glitches if actually rendered.");
 
         if (!usedAsInput)
-            return addValidationMessage(EValidationSeverity_Warning, "TextureBuffer is not used anywhere, destroy it if not needed.");
+            return addValidationMessage(EValidationSeverity::Warning, "TextureBuffer is not used anywhere, destroy it if not needed.");
 
         return status;
     }

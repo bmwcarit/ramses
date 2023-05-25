@@ -42,7 +42,7 @@ namespace ramses_internal
     void WaylandEGLExtensionProcs::Init()
     {
         ramses_internal::String eglExtensionsString(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
-        ramses_internal::String glExtensionsString(reinterpret_cast<const ramses_internal::Char*>(glGetString(GL_EXTENSIONS)));
+        ramses_internal::String glExtensionsString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
         const StringSet eglExtensions = StringUtils::TokenizeToSet(eglExtensionsString);
         const StringSet glExtensions = StringUtils::TokenizeToSet(glExtensionsString);

@@ -25,19 +25,11 @@ WARNING_DISABLE_LINUX(-Wnon-virtual-dtor)
 WARNING_DISABLE_GCC(-Wsuggest-override)
 WARNING_DISABLE_GCC9(-Wdeprecated-copy)
 
-#ifdef __ghs__
-#define __inline inline
-#endif
-
 // INCLUDE PROBLEMATIC HEADERS
 #include "Include/intermediate.h"
 #include "Include/InitializeGlobals.h"
 #include "MachineIndependent/localintermediate.h"
 #include "OGLCompilersDLL/InitializeDll.h"
-
-#ifdef __ghs__
-#undef __inline
-#endif
 
 WARNINGS_POP
 

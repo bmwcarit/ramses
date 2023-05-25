@@ -15,10 +15,12 @@
 #include "RendererAPI/IContext.h"
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
-#include "Platform_Base/Platform_Base.h"
+#include "PlatformFactory/PlatformFactory.h"
 #include "RendererAPI/IPlatform.h"
 #include "Resource/EffectResource.h"
 #include "Utils/ThreadLocalLog.h"
+#include "DisplayConfigImpl.h"
+#include "RendererTestUtils.h"
 #include <future>
 #include <thread>
 
@@ -40,16 +42,13 @@ namespace ramses_internal
     public:
         APlatform()
         {
-            platform = Platform_Base::CreatePlatform(rendererConfig);
-            assert(nullptr != platform);
+            PlatformFactory platformFactory;
+            auto dispConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
+            platform = platformFactory.createPlatform(rendererConfig, dispConfig.m_impl.get().getInternalDisplayConfig());
+            assert(platform);
 
             // caller is expected to have a display prefix for logs
             ThreadLocalLog::SetPrefix(1);
-        }
-
-        ~APlatform()
-        {
-            delete platform;
         }
 
     protected:
@@ -94,7 +93,7 @@ namespace ramses_internal
                     }
             )SHADER";
 
-            EffectResource effect(vertexShader, fragmentShader, "", absl::nullopt, {}, {}, "", ResourceCacheFlag_DoNotCache);
+            EffectResource effect(vertexShader, fragmentShader, "", EDrawMode::NUMBER_OF_ELEMENTS, {}, {}, "", ResourceCacheFlag_DoNotCache);
             EXPECT_TRUE(device.isDeviceStatusHealthy());
             auto resource = device.uploadShader(effect);
             EXPECT_NE(nullptr, resource);
@@ -110,7 +109,7 @@ namespace ramses_internal
         }
 
         RendererConfig rendererConfig;
-        IPlatform* platform = nullptr;
+        std::unique_ptr<IPlatform> platform;
         StrictMock<WindowEventHandlerMock>  eventHandlerMock;
     };
 

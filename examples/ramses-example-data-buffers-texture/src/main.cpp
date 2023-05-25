@@ -41,10 +41,10 @@ private:
 };
 /** \endcond */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFramework framework;
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-data-buffers-texture"));
     framework.connect();
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 8.0f);
+    camera->setTranslation({0.0f, 0.0f, 8.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -65,17 +65,17 @@ int main(int argc, char* argv[])
     // prepare quad geometry: vertex position array and index array
     // Two different vertex arrays, to show two different mipmap levels of the texture
     // The ...Near quad will show mipmap level 0, the ...Far quad will show mipmap level 1
-    float vertexPositionsNearArray[] = { -1.f, -1.f, -1.f,  1.f, -1.f, -1.f,  -1.f, 1.f, -1.f,  1.f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositionsNear = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsNearArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsNearArray{ ramses::vec3f{-1.f, -1.f, -1.f}, ramses::vec3f{1.f, -1.f, -1.f}, ramses::vec3f{-1.f, 1.f, -1.f}, ramses::vec3f{1.f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositionsNear = scene->createArrayResource(4u, vertexPositionsNearArray.data());
 
-    float vertexPositionsFarArray[] = { -5.f, -1.f, -5.f,   -3.f, -1.f, -5.f,   -5.f,  1.f, -5.f,   -3.f,  1.f, -5.f };
-    ramses::ArrayResource* vertexPositionsFar = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsFarArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsFarArray{ ramses::vec3f{-5.f, -1.f, -5.f}, ramses::vec3f{-3.f, -1.f, -5.f}, ramses::vec3f{-5.f,  1.f, -5.f}, ramses::vec3f{-3.f,  1.f, -5.f} };
+    ramses::ArrayResource* vertexPositionsFar = scene->createArrayResource(4u, vertexPositionsFarArray.data());
 
-    float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};
-    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+    const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f} };
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(4u, textureCoordsArray.data());
 
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indices = scene->createArrayResource(6u, indicesArray.data());
 
 
     // The texture will show different color gradients in the different mipmap levels
@@ -152,10 +152,10 @@ int main(int argc, char* argv[])
 
     // Just like resources or render buffers you add it via createTextureSampler
     ramses::TextureSampler* sampler = scene->createTextureSampler(
-        ramses::ETextureAddressMode_Clamp,
-        ramses::ETextureAddressMode_Clamp,
-        ramses::ETextureSamplingMethod_Nearest,
-        ramses::ETextureSamplingMethod_Nearest,
+        ramses::ETextureAddressMode::Clamp,
+        ramses::ETextureAddressMode::Clamp,
+        ramses::ETextureSamplingMethod::Nearest,
+        ramses::ETextureSamplingMethod::Nearest,
         *texture);
     /// [Data Buffer Texture Example create buffer]
 
@@ -193,8 +193,8 @@ int main(int argc, char* argv[])
     appearanceNear->setInputTexture(textureInput, *sampler);
     appearanceFar->setInputTexture(textureInput, *sampler);
 
-    appearanceNear->setInputValueInt32(mipmapLevelInput, 0);
-    appearanceFar->setInputValueInt32(mipmapLevelInput, 1);
+    appearanceNear->setInputValue(mipmapLevelInput, 0);
+    appearanceFar->setInputValue(mipmapLevelInput, 1);
     // create a mesh node to define the quad with chosen appearance
     ramses::MeshNode* meshNodeNear = scene->createMeshNode("textured quad mesh node (near)");
     meshNodeNear->setAppearance(*appearanceNear);

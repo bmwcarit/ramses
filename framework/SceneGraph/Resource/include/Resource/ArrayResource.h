@@ -12,12 +12,14 @@
 #include "BufferResource.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class ArrayResource : public BufferResource
     {
     public:
-        ArrayResource(EResourceType arrayType, UInt32 elementCount, EDataType elementType, const void* arrayData, ResourceCacheFlag cacheFlag, const String& name)
+        ArrayResource(EResourceType arrayType, UInt32 elementCount, EDataType elementType, const void* arrayData, ResourceCacheFlag cacheFlag, std::string_view name)
             : BufferResource(arrayType, elementCount * EnumToSize(elementType), arrayData, cacheFlag, name)
             , m_elementCount(elementCount)
             , m_elementType(elementType)
@@ -34,13 +36,13 @@ namespace ramses_internal
             return m_elementType;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override
+        void serializeResourceMetadataToStream(IOutputStream& output) const override
         {
             output << static_cast<UInt32>(getElementCount());
             output << static_cast<UInt32>(getElementType());
         }
 
-        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, EResourceType arrayType, const String& name)
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, EResourceType arrayType, std::string_view name)
         {
             UInt32 elementCount = 0;
             UInt32 elementTypeAsUInt = 0;

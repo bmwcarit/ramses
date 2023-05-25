@@ -33,7 +33,7 @@ namespace ramses_internal
     {
     public:
         AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, int logPrefixID);
-        virtual ~AsyncEffectUploader() override;
+        ~AsyncEffectUploader() override;
 
         bool createResourceUploadRenderBackendAndStartThread();
         void destroyResourceUploadRenderBackendAndStopThread();
@@ -41,7 +41,7 @@ namespace ramses_internal
         void sync(const EffectsRawResources& effectsToUpload, EffectsGpuResources& uploadedResourcesOut);
 
     private:
-        virtual void run() override;
+        void run() override;
         void uploadEffectsOrWait(IResourceUploadRenderBackend& resourceUploadRenderBackend);
 
         IPlatform& m_platform;

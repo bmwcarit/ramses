@@ -10,6 +10,8 @@
 #include "Utils/LogMacros.h"
 #include "Collections/StringOutputStream.h"
 
+#include <cassert>
+
 namespace ramses
 {
     StatusObjectImpl::StatusCache StatusObjectImpl::m_statusCache;
@@ -55,18 +57,18 @@ namespace ramses
         return m_validationReport.c_str();
     }
 
-    status_t StatusObjectImpl::addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const
+    status_t StatusObjectImpl::addValidationMessage(EValidationSeverity severity, std::string message) const
     {
         m_validationMessages.push_back({ severity, std::move(message) });
         std::lock_guard<std::recursive_mutex> g(m_statusCacheLock);
         switch (severity)
         {
         default:
-        case ramses::EValidationSeverity_Info:
+        case ramses::EValidationSeverity::Info:
             return StatusOK;
-        case ramses::EValidationSeverity_Warning:
+        case ramses::EValidationSeverity::Warning:
             return m_statusCache.addMessage("Validation warning");
-        case ramses::EValidationSeverity_Error:
+        case ramses::EValidationSeverity::Error:
             return m_statusCache.addMessage("Validation error");
         }
     }
@@ -81,7 +83,7 @@ namespace ramses
 
     EValidationSeverity StatusObjectImpl::getMaxValidationSeverity() const
     {
-        EValidationSeverity maxSeverity = EValidationSeverity_Info;
+        EValidationSeverity maxSeverity = EValidationSeverity::Info;
         for (const auto& msg : m_validationMessages)
             maxSeverity = std::max(maxSeverity, msg.severity);
 
@@ -90,12 +92,12 @@ namespace ramses
 
     void StatusObjectImpl::writeMessagesToStream(EValidationSeverity minSeverity, ramses_internal::StringOutputStream& stream, size_t indent, std::unordered_set<const StatusObjectImpl*>& visitedObjs) const
     {
-        if (minSeverity > EValidationSeverity_Info && visitedObjs.count(this) != 0)
+        if (minSeverity > EValidationSeverity::Info && visitedObjs.count(this) != 0)
             return;
         visitedObjs.insert(this);
 
         std::string indentStr;
-        if (minSeverity == EValidationSeverity_Info)
+        if (minSeverity == EValidationSeverity::Info)
             indentStr.assign(indent * 2u, ' ');
 
         // write this object's messages
@@ -107,12 +109,12 @@ namespace ramses
                 switch (message.severity)
                 {
                 default:
-                case EValidationSeverity_Info:
+                case EValidationSeverity::Info:
                     break;
-                case EValidationSeverity_Warning:
+                case EValidationSeverity::Warning:
                     stream << "WARNING: ";
                     break;
-                case EValidationSeverity_Error:
+                case EValidationSeverity::Error:
                     stream << "ERROR: ";
                     break;
                 }
@@ -123,7 +125,7 @@ namespace ramses
         // write all dependent objects' messages (recursively)
         if (!m_dependentObjects.empty())
         {
-            if (minSeverity == EValidationSeverity_Info)
+            if (minSeverity == EValidationSeverity::Info)
                 stream << indentStr << "- " << m_dependentObjects.size() << " dependent objects:\n";
             for (const auto& dep : m_dependentObjects)
                 dep->writeMessagesToStream(minSeverity, stream, indent + 1, visitedObjs);

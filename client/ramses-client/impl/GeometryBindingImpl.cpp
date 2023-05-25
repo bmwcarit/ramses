@@ -28,8 +28,8 @@
 
 namespace ramses
 {
-    GeometryBindingImpl::GeometryBindingImpl(SceneImpl& scene, const char* name)
-        : SceneObjectImpl(scene, ERamsesObjectType_GeometryBinding, name)
+    GeometryBindingImpl::GeometryBindingImpl(SceneImpl& scene, std::string_view name)
+        : SceneObjectImpl(scene, ERamsesObjectType::GeometryBinding, name)
         , m_effectImpl(nullptr)
         , m_indicesCount(0u)
     {
@@ -114,18 +114,18 @@ namespace ramses
 
     status_t GeometryBindingImpl::validateEffect() const
     {
-        ObjectIteratorImpl iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_Effect);
+        ObjectIteratorImpl iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType::Effect);
         RamsesObject* ramsesObject = iter.getNext();
         while (nullptr != ramsesObject)
         {
             const Effect& effect = RamsesObjectTypeUtils::ConvertTo<Effect>(*ramsesObject);
-            if (&effect.impl == m_effectImpl)
+            if (&effect.m_impl == m_effectImpl)
                 return addValidationOfDependentObject(*m_effectImpl);
 
             ramsesObject = iter.getNext();
         }
 
-        return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to an invalid Effect");
+        return addValidationMessage(EValidationSeverity::Error, "GeometryBinding is referring to an invalid Effect");
     }
 
     status_t GeometryBindingImpl::validateAttribute() const
@@ -164,19 +164,19 @@ namespace ramses
     {
         const Resource* resource = getSceneImpl().scanForResourceWithHash(resourceHash);
         if (nullptr == resource)
-            return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to resource that does not exist");
+            return addValidationMessage(EValidationSeverity::Error, "GeometryBinding is referring to resource that does not exist");
 
-        return addValidationOfDependentObject(resource->impl);
+        return addValidationOfDependentObject(resource->m_impl);
     }
 
     status_t GeometryBindingImpl::validateDataBuffer(ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType) const
     {
         if (!getIScene().isDataBufferAllocated(dataBuffer))
-            return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to data buffer that does not exist");
+            return addValidationMessage(EValidationSeverity::Error, "GeometryBinding is referring to data buffer that does not exist");
 
         const auto dataBufferType = getIScene().getDataBuffer(dataBuffer).dataType;
         if (!dataTypeMatchesInputType(dataBufferType, fieldDataType))
-            return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to data buffer with type that does not match data layout field type");
+            return addValidationMessage(EValidationSeverity::Error, "GeometryBinding is referring to data buffer with type that does not match data layout field type");
 
         const ArrayBufferImpl* dataBufferImpl = findDataBuffer(dataBuffer);
         assert(nullptr != dataBufferImpl);
@@ -186,12 +186,12 @@ namespace ramses
 
     ramses::ArrayBufferImpl* GeometryBindingImpl::findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const
     {
-        RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_DataBufferObject);
+        RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType::ArrayBufferObject);
         while (const ArrayBuffer* dataBuffer = arrayBufferIter.getNext<ArrayBuffer>())
         {
-            if (dataBuffer->impl.getDataBufferHandle() == dataBufferHandle)
+            if (dataBuffer->m_impl.getDataBufferHandle() == dataBufferHandle)
             {
-                return &dataBuffer->impl;
+                return &dataBuffer->m_impl;
             }
         }
 
@@ -326,7 +326,7 @@ namespace ramses
         if ((offset > 0 || stride > 0) && bufferResource.getElementType() != EDataType::ByteBlob)
             return addErrorEntry("GeometryBinding::setInputBuffer failed, custom stride/offset can be used only with array resources of type byte blob");
 
-        if (!dataTypeMatchesInputType(DataTypeUtils::ConvertDataTypeToInternal(bufferResource.getElementType()), input.getDataType()))
+        if (!dataTypeMatchesInputType(DataTypeUtils::ConvertDataTypeToInternal(bufferResource.getElementType()), input.getInternalDataType()))
             return addErrorEntry("GeometryBinding::setInputBuffer failed, array resource type does not match input data type");
 
         // data field index on low level scene is indexed starting after reserved slot for indices
@@ -359,7 +359,7 @@ namespace ramses
         if ((offset > 0 || stride > 0) && dataBuffer.getDataType() != EDataType::ByteBlob)
             return addErrorEntry("GeometryBinding::setInputBuffer failed, custom stride/offset can be used only with data buffers of type byte blob");
 
-        if (!dataTypeMatchesInputType(dataBufferDataType, input.getDataType()))
+        if (!dataTypeMatchesInputType(dataBufferDataType, input.getInternalDataType()))
             return addErrorEntry("GeometryBinding::setInputBuffer failed, vertex data buffer type does not match input data type");
 
         // data field index on low level scene is indexed starting after reserved slot for indices

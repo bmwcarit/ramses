@@ -10,7 +10,6 @@
 #define RAMSES_RENDERINGTESTCASE_H
 
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "Collections/Vector.h"
 #include "Collections/String.h"
 

@@ -17,22 +17,17 @@
 namespace ramses
 {
     RenderPassGroupIterator::RenderPassGroupIterator(const RenderPass& renderPass)
-        : impl(new IteratorImpl<const RenderGroupImpl*>(renderPass.impl.getAllRenderGroups()))
+        : m_impl{ std::make_unique<IteratorImpl<const RenderGroupImpl*>>(renderPass.m_impl.getAllRenderGroups()) }
     {
     }
 
-    RenderPassGroupIterator::~RenderPassGroupIterator()
-    {
-        delete impl;
-    }
+    RenderPassGroupIterator::~RenderPassGroupIterator() = default;
 
     const RenderGroup* RenderPassGroupIterator::getNext()
     {
-        const RenderGroupImpl* renderGroup = impl->getNext();
+        const RenderGroupImpl* renderGroup = m_impl->getNext();
         if (renderGroup == nullptr)
-        {
             return nullptr;
-        }
 
         return &RamsesObjectTypeUtils::ConvertTo<RenderGroup>(renderGroup->getRamsesObject());
     }

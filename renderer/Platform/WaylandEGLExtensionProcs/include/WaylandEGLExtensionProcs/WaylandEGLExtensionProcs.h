@@ -40,8 +40,8 @@ namespace ramses_internal
         EGLBoolean eglBindWaylandDisplayWL(wl_display* waylandDisplay) const;
         EGLBoolean eglUnbindWaylandDisplayWL(wl_display* waylandDisplay) const;
 
-        bool areExtensionsSupported()const;
-        bool areDmabufExtensionsSupported()const;
+        [[nodiscard]] bool areExtensionsSupported()const;
+        [[nodiscard]] bool areDmabufExtensionsSupported()const;
 
     private:
 

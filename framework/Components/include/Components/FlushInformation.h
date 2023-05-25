@@ -27,7 +27,7 @@ namespace ramses_internal
         FlushInformation(FlushInformation const&) = delete;
         FlushInformation& operator=(FlushInformation const&) = delete;
 
-        FlushInformation copy() const
+        [[nodiscard]] FlushInformation copy() const
         {
             FlushInformation ret;
             ret.flushCounter = flushCounter;

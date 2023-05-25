@@ -13,9 +13,9 @@
 #include "RenderingTestCase.h"
 #include "Collections/Pair.h"
 #include "Utils/StringUtils.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
 #include "RendererTestUtils.h"
+
+#include <string>
 
 class IRendererTest;
 
@@ -23,7 +23,6 @@ using RenderingTestCases = std::vector<RenderingTestCase *>;
 
 namespace ramses
 {
-    class WarpingMeshData;
     class IRendererEventHandler;
     class IRendererSceneControlEventHandler;
 }
@@ -38,7 +37,7 @@ public:
     void initializeRenderer(const ramses::RendererConfig& rendererConfig);
     void destroyRenderer();
     ramses::displayId_t createDisplay(const ramses::DisplayConfig& displayConfig);
-    ramses::displayBufferId_t getDisplayFramebufferId(uint32_t testDisplayIdx) const;
+    [[nodiscard]] ramses::displayBufferId_t getDisplayFramebufferId(uint32_t testDisplayIdx) const;
     void destroyDisplays();
     ramses_internal::TestRenderer& getTestRenderer();
     TestScenes& getScenesRegistry();
@@ -53,7 +52,7 @@ public:
     bool getSceneToRendered(ramses::sceneId_t sceneId, uint32_t testDisplayIdx = 0);
 
     void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler);
-    ramses::displayBufferId_t   createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u, ramses::EDepthBufferType depthBufferType = ramses::EDepthBufferType_DepthStencil);
+    ramses::displayBufferId_t   createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u, ramses::EDepthBufferType depthBufferType = ramses::EDepthBufferType::DepthStencil);
     ramses::displayBufferId_t   createDmaOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t bufferUsageFlags, uint64_t modifier);
     bool                        getDmaOffscreenBufferFDAndStride(uint32_t testDisplayIdx, ramses::displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
     void                        destroyOffscreenBuffer(uint32_t testDisplayIdx, ramses::displayBufferId_t buffer);
@@ -64,35 +63,34 @@ public:
     void createBufferDataLink(ramses::streamBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerTag, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
-    void setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx = 0u);
     void setClearFlags(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, uint32_t clearFlags);
-    void setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor);
+    void setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const glm::vec4& clearColor);
     void publishAndFlushScene(ramses::sceneId_t sceneId);
     void flushRendererAndDoOneLoop();
     bool renderAndCompareScreenshot(
-        const ramses_internal::String& expectedImageName,
+        const std::string& expectedImageName,
         uint32_t testDisplayIdx = 0u,
         float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel,
         bool readPixelsTwice = false,
         bool saveDiffOnError = true);
-    bool renderAndCompareScreenshotOffscreenBuffer(const ramses_internal::String& expectedImageName,
+    bool renderAndCompareScreenshotOffscreenBuffer(const std::string& expectedImageName,
                                                    uint32_t testDisplayIdx, ramses::displayBufferId_t displayBuffer, uint32_t width, uint32_t height,
                                                    float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
-    bool renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName,
+    bool renderAndCompareScreenshotSubimage(const std::string& expectedImageName,
                                             ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight,
                                             float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
     void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
     void filterTestCases(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut);
 
     bool runAllTests();
-    std::string generateReport() const;
+    [[nodiscard]] std::string generateReport() const;
 
     static bool NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filter);
 
     template <typename INTEGRATION_SCENE>
     ramses::sceneId_t createAndShowScene(
         uint32_t sceneState,
-        const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+        const glm::vec3& cameraPosition = glm::vec3(0.0f),
         const ramses::SceneConfig& sceneConfig = {})
     {
         const ramses::sceneId_t sceneId = getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, cameraPosition, sceneConfig);
@@ -120,11 +118,11 @@ protected:
     };
 
     using TestDisplays = std::vector<TestDisplayInfo>;
-    const TestDisplays& getDisplays() const;
+    [[nodiscard]] const TestDisplays& getDisplays() const;
 
 private:
     bool compareScreenshotInternal(
-        const ramses_internal::String& expectedImageName,
+        const std::string& expectedImageName,
         ramses::displayId_t displayId,
         ramses::displayBufferId_t bufferId,
         float maxAveragePercentErrorPerPixel,
@@ -136,7 +134,7 @@ private:
         bool saveDiffOnError);
 
     void sortTestCases();
-    bool currentDisplaySetupMatchesTestCase(const RenderingTestCase& testCase) const;
+    [[nodiscard]] bool currentDisplaySetupMatchesTestCase(const RenderingTestCase& testCase) const;
     bool applyRendererAndDisplaysConfigurationForTest(const RenderingTestCase& testCase);
     void destroyScenes();
     void destroyBuffers();

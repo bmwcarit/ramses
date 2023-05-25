@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/BinaryInputStream.h"
-#include "Math3d/Matrix44f.h"
 #include "Collections/Guid.h"
 #include "UnsafeTestMemoryHelpers.h"
 
@@ -156,7 +155,7 @@ namespace ramses_internal
     TEST(BinaryOutputStreamTest, InsertMultipleData)
     {
         BinaryOutputStream outStream;
-        const String testString = "abcdefgh";
+        const std::string testString = "abcdefgh";
         outStream << 5 << testString << 7.0f;
 
         const Byte* data = outStream.getData();
@@ -174,7 +173,7 @@ namespace ramses_internal
     {
         BinaryOutputStream outStream;
 
-        outStream << String("Hello World with a lot of characters");
+        outStream << std::string("Hello World with a lot of characters");
 
         const uint32_t strlen = UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(outStream.getData());
 

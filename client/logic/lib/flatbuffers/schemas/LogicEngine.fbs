@@ -1,0 +1,46 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2020 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+include "ApiObjects.fbs";
+
+namespace rlogic_serialization;
+
+table Version
+{
+    // Uses v_ prefix because major/minor collides with system header symbols
+    v_major:uint32;
+    v_minor:uint32;
+    v_patch:uint32;
+    v_string:string;
+}
+
+table Metadata
+{
+    metadataString:string;
+    exporterVersion:Version;
+    exporterFileVersion:uint32;
+}
+
+table LogicEngine
+{
+    // Meta info
+    ramsesVersion:Version (required);
+    rlogicVersion:Version (required);
+    // Data objects
+    apiObjects:ApiObjects;
+    assetMetadata:Metadata;
+    featureLevel:uint32 = 1;
+}
+
+root_type LogicEngine;
+
+// The identifier ensures a binary file/buffer can be identified as a ramses logic
+// binary file; also, it is versioned so that breaking changes
+// can be handled gracefully by a runtime.
+// If we ever reach 99, can use the letters too (e.g. rl99 -> r100)
+file_identifier "rl28";

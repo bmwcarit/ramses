@@ -25,25 +25,25 @@ namespace ramses
     {
     }
 
-    status_t EffectDescriptionImpl::setVertexShader(const char* shaderSource)
+    status_t EffectDescriptionImpl::setVertexShader(std::string_view shaderSource)
     {
         m_vertexShaderSource = shaderSource;
         return StatusOK;
     }
 
-    status_t EffectDescriptionImpl::setFragmentShader(const char* shaderSource)
+    status_t EffectDescriptionImpl::setFragmentShader(std::string_view shaderSource)
     {
         m_fragmentShaderSource = shaderSource;
         return StatusOK;
     }
 
-    status_t EffectDescriptionImpl::setGeometryShader(const char* shaderSource)
+    status_t EffectDescriptionImpl::setGeometryShader(std::string_view shaderSource)
     {
         m_geometryShaderSource = shaderSource;
         return StatusOK;
     }
 
-    status_t EffectDescriptionImpl::setVertexShaderFromFile(const char* shaderSourceFileName)
+    status_t EffectDescriptionImpl::setVertexShaderFromFile(std::string_view shaderSourceFileName)
     {
         if (!ReadFileContentsToString(shaderSourceFileName, m_vertexShaderSource))
         {
@@ -53,7 +53,7 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t EffectDescriptionImpl::setFragmentShaderFromFile(const char* shaderSourceFileName)
+    status_t EffectDescriptionImpl::setFragmentShaderFromFile(std::string_view shaderSourceFileName)
     {
         if (!ReadFileContentsToString(shaderSourceFileName, m_fragmentShaderSource))
         {
@@ -63,7 +63,7 @@ namespace ramses
         return StatusOK;
     }
 
-    ramses::status_t EffectDescriptionImpl::setGeometryShaderFromFile(const char* shaderSourceFileName)
+    ramses::status_t EffectDescriptionImpl::setGeometryShaderFromFile(std::string_view shaderSourceFileName)
     {
         if (!ReadFileContentsToString(shaderSourceFileName, m_geometryShaderSource))
         {
@@ -73,37 +73,35 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t EffectDescriptionImpl::addCompilerDefine(const char* define)
+    status_t EffectDescriptionImpl::addCompilerDefine(std::string_view define)
     {
-        const ramses_internal::String defineStr(define);
-        if (defineStr.size() == 0u)
+        if (define.empty())
         {
             return addErrorEntry("EffectDescription::addCompilerDefine cannot add empty define!");
         }
 
-        m_compilerDefines.push_back(defineStr);
+        m_compilerDefines.emplace_back(define);
         return StatusOK;
     }
 
-    status_t EffectDescriptionImpl::setSemantic(const char* semanticName, ramses_internal::EFixedSemantics semanticType)
+    status_t EffectDescriptionImpl::setSemantic(std::string_view semanticName, ramses_internal::EFixedSemantics semanticType)
     {
-        const ramses_internal::String semanticNameStr(semanticName);
-        if (semanticNameStr.size() == 0u)
+        if (semanticName.empty())
         {
             return addErrorEntry("EffectDescription::setSemantic cannot set empty semantic name!");
         }
 
-        m_inputSemantics.put(semanticNameStr, semanticType);
+        m_inputSemantics.put(std::string{semanticName}, semanticType);
         return StatusOK;
     }
 
-    status_t EffectDescriptionImpl::setUniformSemantic(const char* semanticName, EEffectUniformSemantic semanticType)
+    status_t EffectDescriptionImpl::setUniformSemantic(std::string_view semanticName, EEffectUniformSemantic semanticType)
     {
         const ramses_internal::EFixedSemantics semanticTypeInternal = EffectInputSemanticUtils::GetEffectInputSemanticInternal(semanticType);
         return setSemantic(semanticName, semanticTypeInternal);
     }
 
-    status_t EffectDescriptionImpl::setAttributeSemantic(const char* semanticName, EEffectAttributeSemantic semanticType)
+    status_t EffectDescriptionImpl::setAttributeSemantic(std::string_view semanticName, EEffectAttributeSemantic semanticType)
     {
         const ramses_internal::EFixedSemantics semanticTypeInternal = EffectInputSemanticUtils::GetEffectInputSemanticInternal(semanticType);
         return setSemantic(semanticName, semanticTypeInternal);
@@ -129,7 +127,7 @@ namespace ramses
         return static_cast<uint32_t>(m_compilerDefines.size());
     }
 
-    const ramses_internal::StringVector& EffectDescriptionImpl::getCompilerDefines() const
+    const std::vector<std::string>& EffectDescriptionImpl::getCompilerDefines() const
     {
         return m_compilerDefines;
     }
@@ -149,7 +147,7 @@ namespace ramses
         return m_inputSemantics;
     }
 
-    bool EffectDescriptionImpl::ReadFileContentsToString(const char* fileName, ramses_internal::String& fileContents)
+    bool EffectDescriptionImpl::ReadFileContentsToString(std::string_view fileName, std::string& fileContents)
     {
         ramses_internal::File inFile(fileName);
         if (!inFile.exists())

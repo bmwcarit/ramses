@@ -16,7 +16,7 @@
 #include "PlatformAbstraction/Hash.h"
 #include "PlatformAbstraction/FmtBase.h"
 #include "Utils/AssertMovable.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include <string>
 #include <cctype>
 
@@ -26,19 +26,19 @@ namespace ramses_internal
     {
     public:
         String() = default;
-        String(const Char* data);   // NOLINT(google-explicit-constructor) we want implicit conversion compatible to std::string
-        String(UInt initialSize, Char character);
-        String(const Char* data, UInt start, UInt end);
+        String(const char* data);   // NOLINT(google-explicit-constructor) we want implicit conversion compatible to std::string
+        String(UInt initialSize, char character);
+        String(const char* data, UInt start, UInt end);
 
         explicit String(const std::string& other);
         explicit String(std::string&& other);
-        explicit String(absl::string_view sv);
+        explicit String(std::string_view sv);
 
         String(const String& other) = default;
         String(String&& other) noexcept = default;
         ~String() = default;
-        RNODISCARD const Char* c_str() const;
-        RNODISCARD Char at(UInt position) const;
+        RNODISCARD const char* c_str() const;
+        RNODISCARD char at(UInt position) const;
         RNODISCARD size_t find(const String& substring, size_t pos = 0) const;
         RNODISCARD size_t find(char ch, size_t pos = 0) const;
         RNODISCARD size_t rfind(char ch) const;
@@ -47,31 +47,35 @@ namespace ramses_internal
         String& operator=(String&& other) noexcept = default;
         String& operator=(const std::string& other);
         String& operator=(std::string&& other);
-        String& operator=(Char character);
-        String& operator=(const Char* other);
+        String& operator=(char character);
+        String& operator=(const char* other);
+        String& operator=(std::string_view other);
 
         RNODISCARD String operator+(const String& rOperand) const;
         RNODISCARD String operator+(const std::string& rOperand) const;
-        RNODISCARD String operator+(const Char* rOperand) const;
-        void operator+=(Char character);
-        void operator+=(const Char* other);
+        RNODISCARD String operator+(const char* rOperand) const;
+        RNODISCARD String operator+(std::string_view rOperand) const;
+        void operator+=(char character);
+        void operator+=(const char* other);
         void operator+=(const String& other);
+        void operator+=(std::string_view other);
 
-        RNODISCARD Char& operator[](UInt index);
-        RNODISCARD Char operator[](UInt index) const;
+        RNODISCARD char& operator[](UInt index);
+        RNODISCARD char operator[](UInt index) const;
 
         RNODISCARD bool operator==(const String& other) const;
         RNODISCARD bool operator==(const std::string& other) const;
         RNODISCARD bool operator==(const char* other) const;
-        RNODISCARD bool operator==(absl::string_view other) const;
+        RNODISCARD bool operator==(std::string_view other) const;
         RNODISCARD bool operator!=(const String& other) const;
         RNODISCARD bool operator!=(const std::string& other) const;
         RNODISCARD bool operator!=(const char* other) const;
-        RNODISCARD bool operator!=(absl::string_view other) const;
+        RNODISCARD bool operator!=(std::string_view other) const;
 
         String& append(const String& other);
         String& append(const std::string& other);
-        String& append(const Char* other);
+        String& append(const char* other);
+        String& append(std::string_view other);
 
         RNODISCARD String substr(size_t start, size_t length) const;
         RNODISCARD UInt size() const;
@@ -85,7 +89,7 @@ namespace ramses_internal
         RNODISCARD bool operator<(const String& other) const;
         RNODISCARD bool operator>(const String& other) const;
 
-        operator absl::string_view() const noexcept;  // NOLINT(google-explicit-constructor) implicit conversion as in std::string
+        operator std::string_view() const noexcept;  // NOLINT(google-explicit-constructor) implicit conversion as in std::string
 
         /**
          * Swaps this string with another
@@ -97,18 +101,11 @@ namespace ramses_internal
         RNODISCARD const std::string& stdRef() const;
         RNODISCARD std::string& stdRef();
 
-        static constexpr const size_t npos = std::string::npos;
+        static constexpr auto npos = std::string::npos;
 
     private:
         std::string m_string;
     };
-
-    inline IOutputStream& operator<<(IOutputStream& stream, const std::string& value)
-    {
-        const uint32_t len = static_cast<uint32_t>(value.size());
-        stream << len;
-        return stream.write(value.c_str(), len);
-    }
 
     inline IOutputStream& operator<<(IOutputStream& stream, const String& value)
     {
@@ -126,14 +123,6 @@ namespace ramses_internal
             stream.read(retValue.data(), length);
         }
         value.swap(retValue);
-        return stream;
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, std::string& value)
-    {
-        String str;
-        stream >> str;
-        value.swap(str.stdRef());
         return stream;
     }
 
@@ -160,12 +149,12 @@ namespace ramses_internal
         return b != a;
     }
 
-    inline bool operator==(absl::string_view a, const String& b)
+    inline bool operator==(std::string_view a, const String& b)
     {
         return b == a;
     }
 
-    inline bool operator!=(absl::string_view a, const String& b)
+    inline bool operator!=(std::string_view a, const String& b)
     {
         return b != a;
     }
@@ -174,13 +163,13 @@ namespace ramses_internal
      * Implementation String
      */
 
-    inline String::String(const Char* data)
+    inline String::String(const char* data)
     {
         if (data != nullptr && *data != 0)
             m_string = data;
     }
 
-    inline String::String(const Char* data, UInt start, UInt end)
+    inline String::String(const char* data, UInt start, UInt end)
     {
         // no data
         if (!data)
@@ -214,7 +203,7 @@ namespace ramses_internal
         m_string.assign(startdata, startdata + endPos);
     }
 
-    inline String::String(UInt initialSize, Char character)
+    inline String::String(UInt initialSize, char character)
         : m_string(initialSize, character)
     {
     }
@@ -229,7 +218,7 @@ namespace ramses_internal
     {
     }
 
-    inline String::String(absl::string_view sv)
+    inline String::String(std::string_view sv)
         : m_string(sv)
     {
     }
@@ -261,24 +250,36 @@ namespace ramses_internal
         return result.append(rOperand);
     }
 
-    inline String String::operator+(const Char* rOperand) const
+    inline String String::operator+(const char* rOperand) const
     {
         String result(c_str());
         return result.append(rOperand);
     }
 
-    inline String operator+(const Char* lOperand, const String& rOperand)
+    inline String String::operator+(std::string_view rOperand) const
+    {
+        String result(*this);
+        return result.append(rOperand);
+    }
+
+    inline String operator+(const char* lOperand, const String& rOperand)
     {
         String result(lOperand);
         return result.append(rOperand.c_str());
     }
 
-    inline String& String::operator=(const Char* other)
+    inline String& String::operator=(const char* other)
     {
         if (other)
             m_string = other;
         else
             m_string.clear();
+        return *this;
+    }
+
+    inline String& String::operator=(std::string_view other)
+    {
+        m_string = other;
         return *this;
     }
 
@@ -297,7 +298,7 @@ namespace ramses_internal
         return m_string == other;
     }
 
-    inline bool String::operator==(absl::string_view other) const
+    inline bool String::operator==(std::string_view other) const
     {
         return m_string == other;
     }
@@ -317,18 +318,19 @@ namespace ramses_internal
         return !operator==(other);
     }
 
-    inline bool String::operator!=(absl::string_view other) const
+    inline bool String::operator!=(std::string_view other) const
     {
         return m_string != other;
     }
 
-    inline void String::operator+=(Char character)
+    inline void String::operator+=(char character)
     {
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         char tmp[2] = {character, '\0'};
         operator+=(tmp);
     }
 
-    inline void String::operator+=(const Char* other)
+    inline void String::operator+=(const char* other)
     {
         append(other);
     }
@@ -338,12 +340,17 @@ namespace ramses_internal
         m_string += other.m_string;
     }
 
-    inline Char& String::operator[](UInt index)
+    inline void String::operator+=(std::string_view other)
+    {
+        m_string += other;
+    }
+
+    inline char& String::operator[](UInt index)
     {
         return m_string[index];
     }
 
-    inline Char String::operator[](UInt index) const
+    inline char String::operator[](UInt index) const
     {
         return m_string[index];
     }
@@ -360,8 +367,9 @@ namespace ramses_internal
         return *this;
     }
 
-    inline String& String::operator=(Char character)
+    inline String& String::operator=(char character)
     {
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         char tmp[2] = {character, '\0'};
         operator=(tmp);
         return *this;
@@ -379,10 +387,16 @@ namespace ramses_internal
         return *this;
     }
 
-    inline String& String::append(const Char* other)
+    inline String& String::append(const char* other)
     {
         if (other)
             m_string += other;
+        return *this;
+    }
+
+    inline String& String::append(std::string_view other)
+    {
+        m_string.append(other);
         return *this;
     }
 
@@ -394,7 +408,7 @@ namespace ramses_internal
                                       std::min(length, curSize - start)));
     }
 
-    inline const Char* String::c_str() const
+    inline const char* String::c_str() const
     {
         return m_string.c_str();
     }
@@ -420,7 +434,7 @@ namespace ramses_internal
         return m_string.find(ch, startPos);
     }
 
-    inline Char String::at(UInt position) const
+    inline char String::at(UInt position) const
     {
         if (position < size())
             return m_string[position];
@@ -473,7 +487,7 @@ namespace ramses_internal
         return m_string;
     }
 
-    inline String::operator absl::string_view() const noexcept
+    inline String::operator std::string_view() const noexcept
     {
         return m_string;
     }

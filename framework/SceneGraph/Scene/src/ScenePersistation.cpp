@@ -15,9 +15,9 @@
 #include "Utils/BinaryFileOutputStream.h"
 #include "Utils/BinaryFileInputStream.h"
 #include "Utils/LogMacros.h"
-#include "Collections/String.h"
-#include <array>
 #include "Scene/ClientScene.h"
+
+#include <array>
 
 namespace ramses_internal
 {
@@ -43,7 +43,6 @@ namespace ramses_internal
         inStream >> sizeInfo.renderBufferCount;
         inStream >> sizeInfo.textureSamplerCount;
         inStream >> sizeInfo.dataBufferCount;
-        inStream >> sizeInfo.animationSystemCount;
         inStream >> sizeInfo.textureBufferCount;
         createInfo.m_sizeInfo = sizeInfo;
 
@@ -68,7 +67,6 @@ namespace ramses_internal
         outStream << sizeInfo.renderBufferCount;
         outStream << sizeInfo.textureSamplerCount;
         outStream << sizeInfo.dataBufferCount;
-        outStream << sizeInfo.animationSystemCount;
         outStream << sizeInfo.textureBufferCount;
 
         outStream << scene.getName();
@@ -98,7 +96,7 @@ namespace ramses_internal
         }
     }
 
-    void ScenePersistation::WriteSceneToFile(const String& filename, const ClientScene& scene)
+    void ScenePersistation::WriteSceneToFile(std::string_view filename, const ClientScene& scene)
     {
         File f(filename);
         BinaryFileOutputStream stream(f);
@@ -113,7 +111,7 @@ namespace ramses_internal
         }
     }
 
-    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene, AnimationSystemFactory* animSystemFactory)
+    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene)
     {
         UInt32 sceneMarker = 0;
         inStream >> sceneMarker;
@@ -159,10 +157,10 @@ namespace ramses_internal
                     }
                 }));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, actions, animSystemFactory);
+        SceneActionApplier::ApplyActionsOnScene(scene, actions);
     }
 
-    void ScenePersistation::ReadSceneFromFile(const String& filename, IScene& scene, AnimationSystemFactory* animSystemFactory)
+    void ScenePersistation::ReadSceneFromFile(std::string_view filename, IScene& scene)
     {
         File f(filename);
         if (!f.exists())
@@ -175,7 +173,7 @@ namespace ramses_internal
         const EStatus state = stream.getState();
         if (EStatus::Ok == state)
         {
-            ScenePersistation::ReadSceneFromStream(stream, scene, animSystemFactory);
+            ScenePersistation::ReadSceneFromStream(stream, scene);
         }
         else
         {

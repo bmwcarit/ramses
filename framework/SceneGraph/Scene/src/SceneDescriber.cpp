@@ -13,13 +13,8 @@
 #include "SceneAPI/RenderGroup.h"
 #include "SceneAPI/PixelRectangle.h"
 #include "SceneAPI/TextureSamplerStates.h"
-#include "SceneAPI/StreamTexture.h"
-#include "Animation/AnimationSystemDescriber.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {
@@ -41,7 +36,6 @@ namespace ramses_internal
         RecreateDataLayouts(             source, collector);
         RecreateDataInstances(           source, collector);
         RecreateCameras(                 source, collector);
-        RecreateAnimationSystems(        source, collector);
         RecreateRenderGroups(            source, collector);
         RecreateRenderPasses(            source, collector);
         RecreateBlitPasses(              source, collector);
@@ -50,7 +44,6 @@ namespace ramses_internal
         RecreateTextureBuffers(          source, collector);
         RecreateTextureSamplers(         source, collector);
         RecreateRenderBuffersAndTargets( source, collector);
-        RecreateStreamTextures(          source, collector);
         RecreateDataSlots(               source, collector);
         RecreateSceneReferences(         source, collector);
     }
@@ -111,21 +104,21 @@ namespace ramses_internal
         {
             if (source.isTransformAllocated(t))
             {
-                const Vector3& translation = source.getTranslation(t);
-                if (translation != Vector3(0.f))
+                const auto& translation = source.getTranslation(t);
+                if (translation != IScene::IdentityTranslation)
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Translation, t, translation, {});
+                    collector.setTranslation(t, translation);
                 }
-                const Vector3& rotation = source.getRotation(t);
-                if (rotation != Vector3(0.f))
+                const auto& rotation = source.getRotation(t);
+                if (rotation != IScene::IdentityRotation)
                 {
-                    const auto rotationConvention = source.getRotationConvention(t);
-                    collector.setTransformComponent(ETransformPropertyType_Rotation, t, rotation, rotationConvention);
+                    const auto rotationType = source.getRotationType(t);
+                    collector.setRotation(t, rotation, rotationType);
                 }
-                const Vector3& scaling = source.getScaling(t);
-                if (scaling != Vector3(1.0f))
+                const auto& scaling = source.getScaling(t);
+                if (scaling != IScene::IdentityScaling)
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Scaling, t, scaling, {});
+                    collector.setScaling(t, scaling);
                 }
             }
         }
@@ -209,7 +202,7 @@ namespace ramses_internal
                     {
                     case EDataType::Float:
                     {
-                        const Float* value = source.getDataFloatArray(i, f);
+                        const float* value = source.getDataFloatArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataFloatArray(i, f, elementCount, value);
@@ -218,7 +211,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector2F:
                     {
-                        const Vector2* value = source.getDataVector2fArray(i, f);
+                        const auto* value = source.getDataVector2fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector2fArray(i, f, elementCount, value);
@@ -227,7 +220,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector3F:
                     {
-                        const Vector3* value = source.getDataVector3fArray(i, f);
+                        const auto* value = source.getDataVector3fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector3fArray(i, f, elementCount, value);
@@ -236,7 +229,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector4F:
                     {
-                        const Vector4* value = source.getDataVector4fArray(i, f);
+                        const auto* value = source.getDataVector4fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector4fArray(i, f, elementCount, value);
@@ -245,7 +238,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix22F:
                     {
-                        const Matrix22f* value = source.getDataMatrix22fArray(i, f);
+                        const glm::mat2* value = source.getDataMatrix22fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix22fArray(i, f, elementCount, value);
@@ -254,7 +247,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix33F:
                     {
-                        const Matrix33f* value = source.getDataMatrix33fArray(i, f);
+                        const auto* value = source.getDataMatrix33fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix33fArray(i, f, elementCount, value);
@@ -263,7 +256,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix44F:
                     {
-                        const Matrix44f* value = source.getDataMatrix44fArray(i, f);
+                        const auto* value = source.getDataMatrix44fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix44fArray(i, f, elementCount, value);
@@ -281,7 +274,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector2I:
                     {
-                        const Vector2i* value = source.getDataVector2iArray(i, f);
+                        const auto* value = source.getDataVector2iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector2iArray(i, f, elementCount, value);
@@ -290,7 +283,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector3I:
                     {
-                        const Vector3i* value = source.getDataVector3iArray(i, f);
+                        const auto* value = source.getDataVector3iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector3iArray(i, f, elementCount, value);
@@ -299,7 +292,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector4I:
                     {
-                        const Vector4i* value = source.getDataVector4iArray(i, f);
+                        const auto* value = source.getDataVector4iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector4iArray(i, f, elementCount, value);
@@ -341,22 +334,6 @@ namespace ramses_internal
                         break;
                     }
                 }
-            }
-        }
-    }
-
-    void SceneDescriber::RecreateAnimationSystems(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        // send all animation systems
-        for (auto animId = AnimationSystemHandle(0); animId < source.getAnimationSystemCount(); ++animId)
-        {
-            if (source.isAnimationSystemAllocated(animId))
-            {
-                // animation system
-                const IAnimationSystem* animSystem = source.getAnimationSystem(animId);
-                assert(animSystem != nullptr);
-                collector.addAnimationSystem(animId, animSystem->getFlags(), animSystem->getTotalSizeInformation());
-                AnimationSystemDescriber::DescribeAnimationSystem(*animSystem, collector, animId);
             }
         }
     }
@@ -556,20 +533,6 @@ namespace ramses_internal
                     const RenderBufferHandle buffer = source.getRenderTargetRenderBuffer(renderTargetHandle, bufferIdx);
                     collector.addRenderTargetRenderBuffer(renderTargetHandle, buffer);
                 }
-            }
-        }
-    }
-
-    void SceneDescriber::RecreateStreamTextures(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        const UInt32 streamTextureCount = source.getStreamTextureCount();
-        for (StreamTextureHandle streamTextureHandle(0u); streamTextureHandle < streamTextureCount; ++streamTextureHandle)
-        {
-            if (source.isStreamTextureAllocated(streamTextureHandle))
-            {
-                const StreamTexture& streamTexture = source.getStreamTexture(streamTextureHandle);
-                collector.allocateStreamTexture(streamTexture.source, streamTexture.fallbackTexture, streamTextureHandle);
-                collector.setStreamTextureForceFallback(streamTextureHandle, streamTexture.forceFallbackTexture);
             }
         }
     }

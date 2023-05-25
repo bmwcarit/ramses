@@ -11,19 +11,21 @@
 
 // internal
 #include "ResourceImpl.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
+
+#include <string_view>
 
 namespace ramses
 {
     class ArrayResourceImpl final : public ResourceImpl
     {
     public:
-        ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, SceneImpl& scene, const char* name);
-        virtual ~ArrayResourceImpl() override;
+        ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, SceneImpl& scene, std::string_view name);
+        ~ArrayResourceImpl() override;
 
         void initializeFromFrameworkData(uint32_t elementCount, EDataType elementType);
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t  getElementCount() const;
         EDataType getElementType() const;

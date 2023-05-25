@@ -33,7 +33,6 @@ namespace ramses_internal
     using NodeHandleVector           =  std::vector<NodeHandle>;
     using TransformHandleVector      =  std::vector<TransformHandle>;
     using RenderBufferHandleVector   =  std::vector<RenderBufferHandle>;
-    using StreamTextureHandleVector  =  std::vector<StreamTextureHandle>;
     using RenderGroupOrderVector     =  std::vector<RenderGroupOrderEntry>;
     using BlitPassHandleVector       =  std::vector<BlitPassHandle>;
     using PickableObjectHandleVector =  std::vector<PickableObjectHandle>;

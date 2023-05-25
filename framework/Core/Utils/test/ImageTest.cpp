@@ -55,7 +55,7 @@ TEST(AnImage, ReportsTheSumOfAllItsPixels)
 
     Image bitmap(10, 10, data, data + sizeof(data));
 
-    const Vector4i expectedSumOfPixelData{ 100u, 200u, 300u, 400u };
+    const glm::ivec4 expectedSumOfPixelData{ 100u, 200u, 300u, 400u };
     EXPECT_EQ(expectedSumOfPixelData, bitmap.getSumOfPixelValues());
 }
 
@@ -68,7 +68,7 @@ TEST(AnImage, ReportsTheSumOfAllItsPixels_4K_Image)
     std::vector<uint8_t> data(width * height * 4, maxPixelValue);
     const Image bitmap(width, height, std::move(data));
 
-    const Vector4i resultSumOfPixelValues = bitmap.getSumOfPixelValues();
+    const glm::ivec4 resultSumOfPixelValues = bitmap.getSumOfPixelValues();
     ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.y);
     ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.z);
     ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.w);
@@ -143,7 +143,7 @@ TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
     const Image bitmapDiff2 = bitmap2.createDiffTo(bitmap1);
 
     // W*H pixels, times a difference of 2 (because of shifted mosaic pattern)
-    const Vector4i expectedDiff(2u * Width * Height);
+    const glm::ivec4 expectedDiff(2u * Width * Height);
 
     EXPECT_EQ(expectedDiff, bitmapDiff1.getSumOfPixelValues());
     EXPECT_EQ(expectedDiff, bitmapDiff2.getSumOfPixelValues());
@@ -168,7 +168,7 @@ TEST(AnImage, YieldsBlackImageWhenSubtractedFromItself)
     const Image bitmap(Width, Height, data, data + sizeof(data));
     const Image bitmapDiff = bitmap.createDiffTo(bitmap);
 
-    EXPECT_EQ(Vector4i(0u), bitmapDiff.getSumOfPixelValues());
+    EXPECT_EQ(glm::ivec4(0u), bitmapDiff.getSumOfPixelValues());
 }
 
 TEST(AnImage, GivesEmptyImageIfEnlargingToSmallerSize)

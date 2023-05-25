@@ -9,9 +9,11 @@
 #ifndef RAMSES_PLATFORMTHREAD_H
 #define RAMSES_PLATFORMTHREAD_H
 
-#include "Collections/String.h"
 #include "PlatformAbstraction/Runnable.h"
+
 #include <cassert>
+#include <string>
+#include <string_view>
 
 #ifdef _WIN32
 #include "PlatformAbstraction/internal/Thread_std.h"
@@ -24,7 +26,7 @@ namespace ramses_internal
     class PlatformThread final
     {
     public:
-        explicit PlatformThread(const String& threadName);
+        explicit PlatformThread(std::string_view threadName);
         ~PlatformThread();
 
         PlatformThread(const PlatformThread&) = delete;
@@ -36,8 +38,8 @@ namespace ramses_internal
         void join();
 
         void cancel();
-        bool isRunning() const;
-        bool joinable() const;
+        [[nodiscard]] bool isRunning() const;
+        [[nodiscard]] bool joinable() const;
 
         static void Sleep(uint32_t msec);
 
@@ -49,11 +51,11 @@ namespace ramses_internal
     };
 
     inline
-    PlatformThread::PlatformThread(const String& threadName)
-        : m_name(threadName.stdRef())
+    PlatformThread::PlatformThread(std::string_view threadName)
+        : m_name(threadName)
     {
-        assert(threadName.find(' ') == String::npos && "PlatformThread name may not contain spaces");
-        assert(threadName.size() < 16u);
+        assert(m_name.find(' ') == std::string::npos && "PlatformThread name may not contain spaces");
+        assert(m_name.size() < 16u);
     }
 
     inline PlatformThread::~PlatformThread()

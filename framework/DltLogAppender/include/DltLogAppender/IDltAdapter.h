@@ -13,13 +13,13 @@
 #include "Utils/LogLevel.h"
 #include "Utils/LogMessage.h"
 #include "Utils/LogContext.h"
+
 #include <functional>
 #include <vector>
+#include <string>
 
 namespace ramses_internal
 {
-    class String;
-
     /**
      * Interface for DltAdapter
      */
@@ -38,8 +38,8 @@ namespace ramses_internal
          */
         virtual bool logMessage(const LogMessage& msg) = 0;
 
-        virtual bool initialize(const String& id, const String& description, bool registerApplication,
-                                const std::function<void(const String&, int)>& logLevelChangeCallback,
+        virtual bool initialize(const std::string& id, const std::string& description, bool registerApplication,
+                                const std::function<void(const std::string&, int)>& logLevelChangeCallback,
                                 const std::vector<LogContext*>& contexts, bool pushLogLevelsToDaemon) = 0;
         virtual void uninitialize() = 0;
 
@@ -57,7 +57,7 @@ namespace ramses_internal
          * @param uri the path to the file
          * @param deleteFile delete file afterwards
          */
-        virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) = 0;
+        virtual bool transmitFile(LogContext& ctx, const std::string& uri, bool deleteFile) = 0;
 
         /**
          * Return the state if dlt was found at runtime

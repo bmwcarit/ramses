@@ -331,16 +331,16 @@ public:
 
 using ItemTypes = ::testing::Types <
     Int32,
-    Float,
-    Vector2,
-    Vector3,
-    Vector4,
-    Vector2i,
-    Vector3i,
-    Vector4i,
-    Matrix22f,
-    Matrix33f,
-    Matrix44f
+    float,
+    glm::vec2,
+    glm::vec3,
+    glm::vec4,
+    glm::ivec2,
+    glm::ivec3,
+    glm::ivec4,
+    glm::mat2,
+    glm::mat3,
+    glm::mat4
 >;
 
 TYPED_TEST_SUITE(ADataReferenceLinkManagerTyped, ItemTypes);
@@ -352,21 +352,21 @@ T GetSomeValue()
 }
 
 template <>
-Matrix22f GetSomeValue<Matrix22f>()
+glm::mat2 GetSomeValue<glm::mat2>()
 {
-    return Matrix22f(1,2,3,4);
+    return glm::mat2(1,2,3,4);
 }
 
 template <>
-Matrix33f GetSomeValue<Matrix33f>()
+glm::mat3 GetSomeValue<glm::mat3>()
 {
-    return Matrix33f(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    return glm::mat3(1, 2, 3, 4, 5, 6, 7, 8, 9);
 }
 
 template <>
-Matrix44f GetSomeValue<Matrix44f>()
+glm::mat4 GetSomeValue<glm::mat4>()
 {
-    return Matrix44f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+    return glm::mat4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
 }
 
 template <typename T>
@@ -376,21 +376,21 @@ T GetSomeValue2()
 }
 
 template <>
-Matrix22f GetSomeValue2<Matrix22f>()
+glm::mat2 GetSomeValue2<glm::mat2>()
 {
-    return Matrix22f(-1, -2, -3, -4);
+    return glm::mat2(-1, -2, -3, -4);
 }
 
 template <>
-Matrix33f GetSomeValue2<Matrix33f>()
+glm::mat3 GetSomeValue2<glm::mat3>()
 {
-    return Matrix33f(-1, -2, -3, -4, -5, -6, -7, -8, -9);
+    return glm::mat3(-1, -2, -3, -4, -5, -6, -7, -8, -9);
 }
 
 template <>
-Matrix44f GetSomeValue2<Matrix44f>()
+glm::mat4 GetSomeValue2<glm::mat4>()
 {
-    return Matrix44f(-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16);
+    return glm::mat4(-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16);
 }
 
 template <typename T>
@@ -400,21 +400,21 @@ T GetSomeValue3()
 }
 
 template <>
-Matrix22f GetSomeValue3<Matrix22f>()
+glm::mat2 GetSomeValue3<glm::mat2>()
 {
-    return Matrix22f(-11, -22, -33, -44);
+    return glm::mat2(-11, -22, -33, -44);
 }
 
 template <>
-Matrix33f GetSomeValue3<Matrix33f>()
+glm::mat3 GetSomeValue3<glm::mat3>()
 {
-    return Matrix33f(-11, -21, -31, -41, -51, -61, -71, -81, -91);
+    return glm::mat3(-11, -21, -31, -41, -51, -61, -71, -81, -91);
 }
 
 template <>
-Matrix44f GetSomeValue3<Matrix44f>()
+glm::mat4 GetSomeValue3<glm::mat4>()
 {
-    return Matrix44f(-12, -22, -32, -42, -52, -62, -72, -82, -92, -102, -112, -122, -132, -142, -152, -162);
+    return glm::mat4(-12, -22, -32, -42, -52, -62, -72, -82, -92, -102, -112, -122, -132, -142, -152, -162);
 }
 
 TYPED_TEST(ADataReferenceLinkManagerTyped, confidenceTest_linkAndChangeAndUnlink)

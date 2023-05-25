@@ -12,7 +12,7 @@
 
 namespace ramses_internal
 {
-    RamshStandardSetup::RamshStandardSetup(ramses::ERamsesShellType type, String prompt)
+    RamshStandardSetup::RamshStandardSetup(ramses::ERamsesShellType type, std::string prompt)
         : m_type(type)
         , m_prompt(std::move(prompt))
     {
@@ -26,9 +26,9 @@ namespace ramses_internal
             return false;
         m_started = true;
 
-        if (m_type == ramses::ERamsesShellType_Console)
+        if (m_type == ramses::ERamsesShellType::Console)
             m_consoleChannel = RamshCommunicationChannelConsole::Construct(*this, m_prompt);
-        if (m_type == ramses::ERamsesShellType_Console || m_type == ramses::ERamsesShellType_Default)
+        if (m_type == ramses::ERamsesShellType::Console || m_type == ramses::ERamsesShellType::Default)
             m_dltChannel = std::make_unique<RamshCommunicationChannelDLT>(*this);
         return true;
     }

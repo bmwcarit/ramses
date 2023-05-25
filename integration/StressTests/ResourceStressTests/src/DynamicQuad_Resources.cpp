@@ -34,7 +34,7 @@ namespace ramses_internal
 
         m_meshNode.setAppearance(m_appearance);
         m_meshNode.setIndexCount(4);
-        m_appearance.setDrawMode(ramses::EDrawMode_TriangleStrip);
+        m_appearance.setDrawMode(ramses::EDrawMode::TriangleStrip);
         m_meshNode.setGeometryBinding(m_geometryBinding);
 
     }
@@ -78,7 +78,7 @@ namespace ramses_internal
 
         const uint32_t textureWidth = 64;
         const uint32_t textureHeight = 32;
-        std::unique_ptr<uint8_t[]> rawData(new uint8_t[textureWidth * textureHeight * 3]);
+        std::unique_ptr<uint8_t[]> rawData(new uint8_t[textureWidth * textureHeight * 3]); // NOLINT(modernize-avoid-c-arrays)
 
         for (uint32_t x = 0; x < textureWidth; ++x)
         {
@@ -94,10 +94,10 @@ namespace ramses_internal
         resources.texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, textureWidth, textureHeight, 1, &textureData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
 
         resources.textureSampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Linear_MipMapLinear,
-            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Linear_MipMapLinear,
+            ramses::ETextureSamplingMethod::Linear,
             *resources.texture);
 
         return resources;

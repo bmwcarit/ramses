@@ -554,19 +554,19 @@ TEST(String, GetSubstring)
 TEST(String, convertToStringView)
 {
     String s1("asd");
-    absl::string_view sv1 = s1;
+    std::string_view sv1 = s1;
     EXPECT_EQ(s1, sv1);
 
     const String s2("asd");
-    absl::string_view sv2 = s2;
+    std::string_view sv2 = s2;
     EXPECT_EQ(s2, sv2);
 }
 
 TEST(String, compareWithStringView)
 {
     String s("asd");
-    absl::string_view sv1("asd");
-    absl::string_view sv2("def");
+    std::string_view sv1("asd");
+    std::string_view sv2("def");
 
     EXPECT_TRUE(s == sv1);
     EXPECT_TRUE(sv1 == s);
@@ -720,7 +720,7 @@ TEST(String, HashMapWithStdString)
 
 TEST(String, constructFromStringView)
 {
-    absl::string_view sv("asd");
+    std::string_view sv("asd");
     String s(sv);
     EXPECT_EQ(s, "asd");
 }

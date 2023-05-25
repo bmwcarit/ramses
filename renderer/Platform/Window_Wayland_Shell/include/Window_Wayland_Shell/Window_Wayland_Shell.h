@@ -21,11 +21,8 @@ namespace ramses_internal
         void setTitle(const String& title) override;
 
     private:
-        virtual void registryGlobalCreated(wl_registry* wl_registry,
-                                           uint32_t     name,
-                                           const char*  interface,
-                                           uint32_t     version) override;
-        virtual bool createSurface() override;
+        void registryGlobalCreated(wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version) override;
+        bool createSurface() override;
         void registerSurfaceListener();
 
         static void configureCallback(void* userData, wl_shell_surface* surface, uint32_t edges, int32_t width, int32_t height);

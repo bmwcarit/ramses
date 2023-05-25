@@ -25,7 +25,7 @@ namespace ramses_internal
     public:
         RenderExecutor(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
 
-        SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene) const;
+        [[nodiscard]] SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene) const;
 
         // This is exposed and can be modified but acts as a global parameter
         static constexpr const UInt32 DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks = 10u;
@@ -51,9 +51,9 @@ namespace ramses_internal
         void executeCamera(CameraHandle camera) const;
 
     private:
-        Bool executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const;
+        [[nodiscard]] bool executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const;
         void executeBlitPass(const RendererCachedScene& scene, const BlitPassHandle pass) const;
-        bool canDiscardDepthBuffer() const;
+        [[nodiscard]] bool canDiscardDepthBuffer() const;
 
         static RenderBufferHandle FindDepthRenderBufferInRenderTarget(const IScene& scene, RenderTargetHandle renderTarget);
     };

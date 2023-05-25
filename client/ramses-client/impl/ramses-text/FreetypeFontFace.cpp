@@ -71,11 +71,11 @@ namespace ramses_internal
 
     // =============================================================
 
-    FreetypeFontFaceFilePath::FreetypeFontFaceFilePath(const char* fontPath, FT_Library freetypeLib)
+    FreetypeFontFaceFilePath::FreetypeFontFaceFilePath(std::string_view fontPath, FT_Library freetypeLib)
         : FreetypeFontFace(freetypeLib)
         , m_fontPath(fontPath)
     {
-        assert(fontPath);
+        assert(!fontPath.empty());
     }
 
     bool FreetypeFontFaceFilePath::init()

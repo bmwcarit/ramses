@@ -27,7 +27,7 @@ namespace ramses_internal
         virtual ~IInputStream() = default;
 
         virtual IInputStream& read(void* data, size_t size) = 0;
-        virtual EStatus getState() const = 0;
+        [[nodiscard]] virtual EStatus getState() const = 0;
 
         virtual EStatus seek(Int numberOfBytesToSeek, Seek origin) = 0;
         virtual EStatus getPos(size_t& position) const = 0;
@@ -58,7 +58,7 @@ namespace ramses_internal
         return stream.read(&value, sizeof(value));
     }
 
-    inline IInputStream& operator>>(IInputStream& stream, Float& value)
+    inline IInputStream& operator>>(IInputStream& stream, float& value)
     {
         return stream.read(&value, sizeof(value));
     }
@@ -90,6 +90,19 @@ namespace ramses_internal
         std::underlying_type_t<E> valueInUnderlyingType;
         stream >> valueInUnderlyingType;
         value = static_cast<E>(valueInUnderlyingType);
+
+        return stream;
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, std::string& value)
+    {
+        uint32_t length{0};
+        stream >> length; // first read the length of the string
+        value.resize(length);
+        if (length > 0)
+        {
+            stream.read(value.data(), length);
+        }
 
         return stream;
     }

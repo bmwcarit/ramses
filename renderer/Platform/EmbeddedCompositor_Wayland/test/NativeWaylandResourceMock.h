@@ -30,7 +30,7 @@ namespace ramses_internal
     {
     public:
         MOCK_METHOD(void, Die, (), ());
-        virtual ~NativeWaylandResourceMockWithDestructor()
+        ~NativeWaylandResourceMockWithDestructor() override
         {
             Die();
         }

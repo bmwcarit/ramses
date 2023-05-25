@@ -9,6 +9,11 @@
 #ifndef RAMSES_GLSLLIMITS_H
 #define RAMSES_GLSLLIMITS_H
 
+#include "PlatformAbstraction/PlatformTypes.h"
+
+#include <cstdlib>
+#include <cctype>
+
 struct TBuiltInResource;
 
 namespace ramses_internal
@@ -17,12 +22,12 @@ namespace ramses_internal
     {
     public:
 
-        static void InitCompilationResources(TBuiltInResource& glslCompilationResources, const String& glslVersion)
+        static void InitCompilationResources(TBuiltInResource& glslCompilationResources, std::string_view glslVersion)
         {
             SetDefaults(glslCompilationResources);
 
             const UInt32 version = GetVersionFromString(glslVersion);
-            const Bool isES = IsESVersion(glslVersion);
+            const bool isES = IsESVersion(glslVersion);
 
             if (isES)
             {
@@ -49,21 +54,21 @@ namespace ramses_internal
             }
         }
 
-        static UInt32 GetVersionFromString(const String& glslVersion)
+        static UInt32 GetVersionFromString(std::string_view glslVersion)
         {
-            Char buffer[16];
+            std::array<char, 16> buffer;
             UInt32 n = 0;
 
             for (size_t i = 0; i < glslVersion.size(); i++)
             {
-                const Char& c = glslVersion[i];
+                const char& c = glslVersion[i];
 
                 if (isdigit(c))
                 {
                     buffer[n++] = c;
                 }
 
-                if (n >= sizeof(buffer))
+                if (n >= buffer.size())
                 {
                     // Avoid out of bounds access, in case the shader contains some crazy version number
                     return 0;
@@ -71,14 +76,14 @@ namespace ramses_internal
             }
 
             buffer[n] = 0;
-            return atoi(buffer);
+            return std::atoi(buffer.data());
         }
 
-        static Bool IsESVersion(const String& glslVersion)
+        static bool IsESVersion(std::string_view glslVersion)
         {
             // The input parameter can contain newlines characters, so checking for endsWith() can fail.
-            static String esIdentifier(" es");
-            return glslVersion.find(esIdentifier, 0u) != String::npos;
+            static constexpr auto esIdentifier{" es"};
+            return glslVersion.find(esIdentifier, 0u) != std::string_view::npos;
         }
 
     private:

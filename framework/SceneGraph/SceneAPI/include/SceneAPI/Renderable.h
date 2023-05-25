@@ -12,6 +12,7 @@
 #include "SceneAPI/ResourceContentHash.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ERenderableDataSlotType.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -32,7 +33,7 @@ namespace ramses_internal
         UInt32 instanceCount = 1u;
         UInt32 startVertex = 0u;
 
-        DataInstanceHandle dataInstances[ERenderableDataSlotType_MAX_SLOTS];
+        std::array<DataInstanceHandle, ERenderableDataSlotType_MAX_SLOTS> dataInstances;
         RenderStateHandle renderState;
     };
 }

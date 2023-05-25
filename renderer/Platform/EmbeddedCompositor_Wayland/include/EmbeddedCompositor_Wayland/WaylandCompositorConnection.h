@@ -20,12 +20,12 @@ namespace ramses_internal
     {
     public:
         WaylandCompositorConnection(IWaylandClient& client, uint32_t version, uint32_t id, IEmbeddedCompositor_Wayland& embeddedCompositor);
-        virtual ~WaylandCompositorConnection() override;
-        bool wasSuccessfullyInitialized() const;
+        ~WaylandCompositorConnection() override;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
 
-        virtual void resourceDestroyed() override;
-        virtual void compositorCreateSurface(IWaylandClient& client, uint32_t id) override;
-        virtual void compositorCreateRegion(IWaylandClient& client, uint32_t id) override;
+        void resourceDestroyed() override;
+        void compositorCreateSurface(IWaylandClient& client, uint32_t id) override;
+        void compositorCreateRegion(IWaylandClient& client, uint32_t id) override;
 
     private:
         static void ResourceDestroyedCallback(wl_resource* clientResource);

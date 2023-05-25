@@ -11,18 +11,20 @@
 
 #include "IRendererTest.h"
 
+#include <string>
+
 class TextureRenderingTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
 private:
     template <typename INTEGRATION_SCENE>
     ramses::sceneId_t createAndShowScene(RendererTestsFramework& testFramework, ramses_internal::UInt32 sceneState);
 
     template <typename INTEGRATION_SCENE>
-    bool runBasicTest(RendererTestsFramework& testFramework, ramses_internal::UInt32 sceneState, const ramses_internal::String& expectedImageName, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
+    bool runBasicTest(RendererTestsFramework& testFramework, ramses_internal::UInt32 sceneState, const std::string& expectedImageName, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
 
     enum
     {
@@ -86,7 +88,6 @@ private:
         SamplerTest_ChangeData_TextureBufferToClientTexture,
         SamplerTest_ChangeData_ClientTextureToTextureBuffer,
         SamplerTest_ChangeData_ClientTextureToRenderBuffer,
-        SamplerTest_ChangeData_ClientTextureToStreamTexture
     };
 };
 

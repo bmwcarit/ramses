@@ -10,7 +10,6 @@
 #define RAMSES_TEXTUREBUFFERSCENE_H
 
 #include "IntegrationScene.h"
-#include "Math3d/Vector3.h"
 
 namespace ramses
 {
@@ -26,7 +25,7 @@ namespace ramses_internal
     class TextureBufferScene : public IntegrationScene
     {
     public:
-        TextureBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        TextureBufferScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum EState
         {
@@ -44,7 +43,7 @@ namespace ramses_internal
         void setState(UInt32 state);
 
     private:
-        void setOrthoCamera(const Vector3& cameraPosition);
+        void setOrthoCamera(const glm::vec3& cameraPosition);
 
         ramses::MeshNode& m_quadMesh;
         ramses::Effect& m_effectSingleMip;

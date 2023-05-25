@@ -99,7 +99,7 @@ namespace ramses_internal
 
     GLInputLocation ShaderGPUResource_GL::loadAttributeLocation(const EffectResource& effect, const EffectInputInformation& input) const
     {
-        const Char* varName = input.inputName.c_str();
+        const char* varName = input.inputName.c_str();
         const GLint address = glGetAttribLocation(m_shaderProgramInfo.shaderProgramHandle, varName);
         const GLInputLocation inputLocation(address);
         if (inputLocation == GLInputLocationInvalid)
@@ -112,7 +112,7 @@ namespace ramses_internal
 
     GLInputLocation ShaderGPUResource_GL::loadUniformLocation(const EffectResource& effect, const EffectInputInformation& input) const
     {
-        const Char* varName = input.inputName.c_str();
+        const char* varName = input.inputName.c_str();
         const GLint address = glGetUniformLocation(m_shaderProgramInfo.shaderProgramHandle, varName);
         const GLInputLocation inputLocation(address);
         if (inputLocation == GLInputLocationInvalid)

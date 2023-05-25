@@ -28,11 +28,11 @@ namespace ramses_internal
         // TODO Violin this is not beautiful, but is needed because windows parses
         // extensions non-conform to EGL standard (read up about WGL on the net,
         // search terms "WGL extensions")
-        static void ParseContextExtensionsHelper(const Char* extensionNativeString, StringSet& extensionsOut);
+        static void ParseContextExtensionsHelper(const char* extensionNativeString, StringSet& extensionsOut);
 
     protected:
-        void parseContextExtensions(const Char* extensionNativeString);
-        Bool isContextExtensionAvailable(const String& extensionName) const;
+        void parseContextExtensions(const char* extensionNativeString);
+        [[nodiscard]] bool isContextExtensionAvailable(const String& extensionName) const;
 
     protected:
         DeviceResourceMapper m_resources;

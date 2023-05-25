@@ -25,31 +25,33 @@
 
 namespace ramses_internal
 {
-    GeometryShaderScene::GeometryShaderScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    GeometryShaderScene::GeometryShaderScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(createTestEffect(state))
     {
         ramses::Appearance* appearance = m_scene.createAppearance(m_effect);
-        appearance->setCullingMode(ramses::ECullMode_Disabled);
+        appearance->setCullingMode(ramses::ECullMode::Disabled);
         ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(m_effect);
         appearance->setDrawMode(getDrawMode(state));
 
-        float vertexPositionsArray[] = { .3f, -.3f,
-                                        .3f,  .3f,
-                                        -.3f, -.3f,
-                                        -.3f,  .3f };
+        const std::array<ramses::vec2f, 4u> vertexPositionsArray{
+            ramses::vec2f{.3f, -.3f},
+            ramses::vec2f{.3f,  .3f},
+            ramses::vec2f{-.3f, -.3f},
+            ramses::vec2f{-.3f,  .3f} };
 
-        float vertexColorsArray[] = { 1.f, 0.f, 0.f,
-                                    0.f, 1.f, 0.f,
-                                    0.f, 0.f, 1.f,
-                                    1.f, 1.f, 1.f };
+        const std::array<ramses::vec3f, 4u> vertexColorsArray{
+            ramses::vec3f{1.f, 0.f, 0.f},
+            ramses::vec3f{0.f, 1.f, 0.f},
+            ramses::vec3f{0.f, 0.f, 1.f},
+            ramses::vec3f{1.f, 1.f, 1.f} };
 
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
         ramses::AttributeInput positionsInput;
         m_effect.findAttributeInput("a_pos", positionsInput);
         geometry->setInputBuffer(positionsInput, *vertexPositions);
 
-        const ramses::ArrayResource* vertexColors = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexColorsArray);
+        const ramses::ArrayResource* vertexColors = m_scene.createArrayResource(4u, vertexColorsArray.data());
         ramses::AttributeInput colorsInput;
         m_effect.findAttributeInput("a_color", colorsInput);
         geometry->setInputBuffer(colorsInput, *vertexColors);
@@ -283,17 +285,17 @@ namespace ramses_internal
         case GLSL310_POINTS_IN_TRIANGLE_STRIP_OUT:
         case GLSL310_POINTS_IN_LINE_STRIP_OUT:
         case GLSL310_POINTS_IN_POINTS_OUT:
-            return ramses::EDrawMode_Points;
+            return ramses::EDrawMode::Points;
 
         case GLSL320_TRIANGLES_IN_TRIANGLE_STRIP_OUT:
         case GLSL320_TRIANGLES_IN_POINTS_OUT:
         case GLSL310_TRIANGLES_IN_TRIANGLE_STRIP_OUT:
         case GLSL310_TRIANGLES_IN_POINTS_OUT:
-            return ramses::EDrawMode_TriangleStrip;
+            return ramses::EDrawMode::TriangleStrip;
         }
 
         assert(false);
-        return ramses::EDrawMode::EDrawMode_NUMBER_OF_ELEMENTS;
+        return ramses::EDrawMode::Points;
     }
 
 }

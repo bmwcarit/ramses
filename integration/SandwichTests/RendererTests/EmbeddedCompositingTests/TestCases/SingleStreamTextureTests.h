@@ -17,8 +17,8 @@ namespace ramses_internal
     {
     public:
         SingleStreamTextureTests();
-        virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
-        virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+        void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
+        bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
     private:
         enum
@@ -55,9 +55,9 @@ namespace ramses_internal
             CompositorLogsInfo,
         };
 
-        bool recreateSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId& testSurfaceIdOut, UInt32 surfaceWidth, UInt32 surfaceHeight, WaylandIviSurfaceId streamTextureSourceId, const String& expectedImageName);
-        bool resizeSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, UInt32 surfaceWidth, UInt32 surfaceHeight, WaylandIviSurfaceId streamTextureSourceId, UInt32 frameCount, const String& expectedImageName);
-        bool renderFramesOnTestApplicationAndTakeScreenshots(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, WaylandIviSurfaceId streamTextureSourceId, const UInt32 frameCountToRender, const ETriangleColor triangleColors[], const String screenshotFiles[], const UInt32 triangleColorCount);
+        bool recreateSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId& testSurfaceIdOut, UInt32 surfaceWidth, UInt32 surfaceHeight, WaylandIviSurfaceId waylandSurfaceIviId, const std::string& expectedImageName);
+        bool resizeSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, UInt32 surfaceWidth, UInt32 surfaceHeight, WaylandIviSurfaceId waylandSurfaceIviId, UInt32 frameCount, const std::string& expectedImageName);
+        bool renderFramesOnTestApplicationAndTakeScreenshots(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, WaylandIviSurfaceId waylandSurfaceIviId, const UInt32 frameCountToRender, const ETriangleColor triangleColors[], const String screenshotFiles[], const UInt32 triangleColorCount);
     };
 }
 

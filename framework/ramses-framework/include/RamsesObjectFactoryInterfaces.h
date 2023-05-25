@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <functional>
+#include <string_view>
 
 namespace ramses
 {
@@ -29,7 +30,7 @@ namespace ramses
     public:
         virtual ~IClientFactory() = default;
 
-        virtual ClientUniquePtr createClient(RamsesFrameworkImpl* impl, const char* applicationName) const = 0;
+        virtual ClientUniquePtr createClient(RamsesFrameworkImpl& framework, std::string_view applicationName) const = 0;
     };
 
     class IRendererFactory
@@ -37,7 +38,7 @@ namespace ramses
     public:
         virtual ~IRendererFactory() = default;
 
-        virtual RendererUniquePtr createRenderer(RamsesFrameworkImpl* impl, const RendererConfig& config) const = 0;
+        virtual RendererUniquePtr createRenderer(RamsesFrameworkImpl& framework, const RendererConfig& config) const = 0;
     };
 }
 #endif

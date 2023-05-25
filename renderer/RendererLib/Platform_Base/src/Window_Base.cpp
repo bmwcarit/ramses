@@ -8,7 +8,7 @@
 
 #include "Platform_Base/Window_Base.h"
 #include "Collections/StringOutputStream.h"
-
+#include "Collections/String.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererAPI/IWindowEventHandler.h"
 #include "Utils/LogMacros.h"
@@ -26,14 +26,13 @@ namespace ramses_internal
         , m_height(displayConfig.getDesiredWindowHeight())
         , m_posX(displayConfig.getWindowPositionX())
         , m_posY(displayConfig.getWindowPositionY())
-        , m_integrityRGLDeviceUnit(displayConfig.getIntegrityRGLDeviceUnit())
         , m_waylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID())
         , m_resizable(displayConfig.isResizable())
     {
         m_msaaSampleCount = displayConfig.getAntialiasingSampleCount();
     }
 
-    Bool Window_Base::canRenderNewFrame() const
+    bool Window_Base::canRenderNewFrame() const
     {
         return true;
     }
@@ -57,11 +56,6 @@ namespace ramses_internal
         return m_msaaSampleCount;
     }
 
-    IntegrityRGLDeviceUnit Window_Base::getIntegrityRGLDeviceUnit() const
-    {
-        return m_integrityRGLDeviceUnit;
-    }
-
     WaylandIviSurfaceId Window_Base::getWaylandIviSurfaceID() const
     {
         return m_waylandIviSurfaceID;
@@ -83,9 +77,9 @@ namespace ramses_internal
         return m_height;
     }
 
-    Float Window_Base::getAspectRatio() const
+    float Window_Base::getAspectRatio() const
     {
-        return static_cast<Float>(m_width) / m_height;
+        return static_cast<float>(m_width) / m_height;
     }
 
     Int32 Window_Base::getPosX() const

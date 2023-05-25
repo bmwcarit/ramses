@@ -28,7 +28,7 @@ namespace ramses_internal
             return false;
 
         ELogLevel level;
-        if (!LogHelper::StringToLogLevel(String(input[1]), level))
+        if (!LogHelper::StringToLogLevel(input[1], level))
             return false;
 
 

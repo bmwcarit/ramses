@@ -18,7 +18,7 @@ namespace ramses_internal
         , m_device(device)
         , m_scene(nullptr)
         , m_renderContext(renderContext)
-        , m_projectionMatrix(Matrix44f::Identity)
+        , m_projectionMatrix(1.f)
         , m_cameraWorldPosition(0.0f)
         , m_frameTimer(frameTimer)
     {
@@ -42,8 +42,8 @@ namespace ramses_internal
 
             m_viewMatrix = m_scene->updateMatrixCacheWithLinks(ETransformationMatrixType_Object, cameraData.node);
 
-            const Vector4 position = m_viewMatrix.inverse() * Vector4(0.0f, 0.0f, 0.0f, 1.0f);
-            m_cameraWorldPosition = Vector3(position.x, position.y, position.z);
+            const auto position = glm::inverse(m_viewMatrix) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            m_cameraWorldPosition = position;
 
             Viewport newViewport;
             const auto vpOffsetRef = m_scene->getDataReference(cameraData.dataInstance, Camera::ViewportOffsetField);

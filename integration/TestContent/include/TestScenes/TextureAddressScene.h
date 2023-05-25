@@ -24,7 +24,7 @@ namespace ramses_internal
     class TextureAddressScene : public IntegrationScene
     {
     public:
-        TextureAddressScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextureAddressScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -33,8 +33,8 @@ namespace ramses_internal
 
     private:
         void createQuad(
-            Float x,
-            Float y,
+            float x,
+            float y,
             ramses::ETextureAddressMode addressMethodU,
             ramses::ETextureAddressMode addressMethodV);
 

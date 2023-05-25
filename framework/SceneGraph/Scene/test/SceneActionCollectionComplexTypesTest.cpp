@@ -24,7 +24,6 @@ namespace ramses_internal
                 to effect, but *actually* from a non-linear, non-subjective \
                 viewpoint - it's more like a big ball of wibbly wobbly... \
                 time-y wimey... stuff.")
-            , strEmpty("")
             , strLong(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing \
                 elit. Aliquam augue tortor, vehicula quis massa eget, viverra \
@@ -46,16 +45,16 @@ namespace ramses_internal
         SceneActionCollection collection;
         SceneActionCollection otherCollection;
 
-        const String str;
-        const String strEmpty;
-        const String strLong;
+        const std::string str;
+        const std::string strEmpty;
+        const std::string strLong;
         const Guid guid;
 
         const UInt32 bufferSize;
         const std::vector<Byte> buffer;
         const float staticBuffer[5] = { 1.f, 2.f, 3.f, 4.f, 5.f };
 
-        const Float fval;
+        const float fval;
         const UInt32 uival;
     };
 
@@ -126,7 +125,7 @@ namespace ramses_internal
         collection.write(str);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        String readString;
+        std::string readString;
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
@@ -144,7 +143,7 @@ namespace ramses_internal
         collection.write(strEmpty);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        String readString;
+        std::string readString;
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
@@ -162,7 +161,7 @@ namespace ramses_internal
         collection.write(strLong);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        String readString;
+        std::string readString;
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
@@ -258,11 +257,11 @@ namespace ramses_internal
         ASSERT_EQ(1u, collection.numberOfActions());
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        Float readFval;
+        float readFval;
         reader.read(readFval);
         EXPECT_EQ(fval, readFval);
 
-        String readStr1;
+        std::string readStr1;
         reader.read(readStr1);
         EXPECT_EQ(str, readStr1);
 
@@ -272,7 +271,7 @@ namespace ramses_internal
 
         EXPECT_EQ(buffer, absl::MakeSpan(data, size));
 
-        String readStr2;
+        std::string readStr2;
         reader.read(readStr2);
         EXPECT_EQ(strLong.substr(0, SceneActionCollection::MaxStringLength), readStr2);
 
@@ -280,7 +279,7 @@ namespace ramses_internal
         reader.read(readGuid);
         EXPECT_EQ(guid, readGuid);
 
-        String readStr3;
+        std::string readStr3;
         reader.read(readStr3);
         EXPECT_EQ(strEmpty, readStr3);
 

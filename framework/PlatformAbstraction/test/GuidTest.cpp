@@ -56,8 +56,8 @@ namespace ramses_internal
     {
         Guid id1("D92BB305-D8B2-4B60-A3A3-A3CFDA57678F");
         Guid id2("A3A3-A3CFDA57678F");
-        EXPECT_EQ(String("A3A3-A3CFDA57678F"), id1.toString());
-        EXPECT_EQ(String("A3A3-A3CFDA57678F"), id2.toString());
+        EXPECT_EQ(std::string("A3A3-A3CFDA57678F"), id1.toString());
+        EXPECT_EQ(std::string("A3A3-A3CFDA57678F"), id2.toString());
 
         EXPECT_EQ(0xA3A3A3CFDA57678F, id1.get());
         EXPECT_EQ(0xA3A3A3CFDA57678F, id2.get());
@@ -67,8 +67,8 @@ namespace ramses_internal
     {
         Guid id1("BA28BA67-E777-4014-B8DD-6B928BDF57B1");
         Guid id2("B8DD-6B928BDF57B1");
-        EXPECT_EQ(String("B8DD-6B928BDF57B1"), id1.toString());
-        EXPECT_EQ(String("B8DD-6B928BDF57B1"), id2.toString());
+        EXPECT_EQ(std::string("B8DD-6B928BDF57B1"), id1.toString());
+        EXPECT_EQ(std::string("B8DD-6B928BDF57B1"), id2.toString());
     }
 
     TEST(GuidTest, TestParseToString3)
@@ -101,7 +101,7 @@ namespace ramses_internal
         EXPECT_FALSE(id1 == id2);
         id2 = id1;
         EXPECT_TRUE(id1 == id2);
-        EXPECT_EQ(String("B8DD-6B928BDF57B1"), id2.toString());
+        EXPECT_EQ(std::string("B8DD-6B928BDF57B1"), id2.toString());
     }
 
     TEST(GuidTest, TestParse1)
@@ -111,7 +111,7 @@ namespace ramses_internal
         EXPECT_FALSE(id1 == id2);
         id2 = Guid(id1.toString());
         EXPECT_TRUE(id1 == id2);
-        EXPECT_EQ(String("B8DD-6B928BDF57B1"), id2.toString());
+        EXPECT_EQ(std::string("B8DD-6B928BDF57B1"), id2.toString());
     }
 
     TEST(GuidTest, TestParse2)
@@ -120,7 +120,7 @@ namespace ramses_internal
         EXPECT_FALSE(id1.isInvalid());
         id1 = Guid("some strange guid string");
         EXPECT_TRUE(id1.isInvalid());
-        EXPECT_EQ(String("0000"), id1.toString());
+        EXPECT_EQ(std::string("0000"), id1.toString());
     }
 
     TEST(GuidTest, CopyConstructor)
@@ -134,7 +134,7 @@ namespace ramses_internal
     TEST(GuidTest, HashGuid)
     {
         Guid guid(54321);
-        guid.toString();
+        EXPECT_EQ("0000-00000000D431", guid.toString());
         Guid guid2(guid);
 
         EXPECT_EQ(HashValue(guid), HashValue(guid2));
@@ -150,7 +150,7 @@ namespace ramses_internal
 
     TEST(GuidTest, createFromString)
     {
-        Guid g1(String("A20AEFB2-7F63-49C6-A6CE-06905B0B1D28"));
+        Guid g1(std::string("A20AEFB2-7F63-49C6-A6CE-06905B0B1D28"));
         EXPECT_EQ("A6CE-06905B0B1D28", g1.toString());
     }
 

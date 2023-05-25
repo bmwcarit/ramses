@@ -10,7 +10,6 @@
 #define RAMSES_EMBEDDEDCOMPOSITOR_DUMMY_H
 
 #include "RendererAPI/IEmbeddedCompositor.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
@@ -19,25 +18,25 @@ namespace ramses_internal
     public:
         EmbeddedCompositor_Dummy();
 
-        Bool init();
+        bool init();
 
-        virtual void handleRequestsFromClients() override;
-        virtual Bool hasUpdatedStreamTextureSources() const override;
-        virtual WaylandIviSurfaceIdSet dispatchUpdatedStreamTextureSourceIds() override;
-        virtual WaylandIviSurfaceIdSet dispatchNewStreamTextureSourceIds() override;
-        virtual WaylandIviSurfaceIdSet dispatchObsoleteStreamTextureSourceIds() override;
-        virtual void endFrame(Bool notifyClients) override;
-        virtual UInt32 uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) override;
+        void handleRequestsFromClients() override;
+        [[nodiscard]] bool hasUpdatedStreamTextureSources() const override;
+        WaylandIviSurfaceIdSet dispatchUpdatedStreamTextureSourceIds() override;
+        WaylandIviSurfaceIdSet dispatchNewStreamTextureSourceIds() override;
+        WaylandIviSurfaceIdSet dispatchObsoleteStreamTextureSourceIds() override;
+        void endFrame(bool notifyClients) override;
+        UInt32 uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) override;
 
-        virtual Bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
-        virtual UInt64 getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const override;
-        virtual Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
-        virtual UInt32 getNumberOfCompositorConnections() const override;
-        virtual Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
-        virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
-        virtual void logInfos(RendererLogContext& context) const override;
+        [[nodiscard]] bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
+        [[nodiscard]] UInt64 getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const override;
+        [[nodiscard]] bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
+        [[nodiscard]] UInt32 getNumberOfCompositorConnections() const override;
+        [[nodiscard]] bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
+        [[nodiscard]] String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
+        void logInfos(RendererLogContext& context) const override;
 
-        virtual Bool isRealCompositor() const override;
+        [[nodiscard]] bool isRealCompositor() const override;
     };
 }
 

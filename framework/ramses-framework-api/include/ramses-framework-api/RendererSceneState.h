@@ -9,7 +9,7 @@
 #ifndef RAMSES_RENDERERSCENESTATE_H
 #define RAMSES_RENDERERSCENESTATE_H
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace ramses
 {

@@ -12,7 +12,7 @@
 namespace ramses_internal
 {
     ThreadedTaskExecutor::ThreadedTaskExecutor(UInt16 threadCount, const ThreadWatchdogConfig& watchdogConfig)
-        : ThreadWatchdog(watchdogConfig, ramses::ERamsesThreadIdentifier_Workers)
+        : ThreadWatchdog(watchdogConfig, ramses::ERamsesThreadIdentifier::Workers)
         , m_taskQueue()
         , m_threadPool()
         , m_acceptingNewTasks(true)

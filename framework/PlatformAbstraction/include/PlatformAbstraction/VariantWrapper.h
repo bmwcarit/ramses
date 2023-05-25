@@ -11,11 +11,6 @@
 
 #include "Utils/Warnings.h"
 
-// TODO (Violin/Tobias) Remove this warning suppression after fixed in Abseil upstream
-// Warning occurs in the absl variant macro which assigns -1 to a size_t
-WARNINGS_PUSH
-WARNING_DISABLE_VC(4245)
-#include "absl/types/variant.h"
-WARNINGS_POP
+#include <variant>
 
 #endif

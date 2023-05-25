@@ -16,7 +16,7 @@ namespace ramses_internal
     class BufferResource : public ResourceBase
     {
     public:
-        BufferResource(EResourceType typeID, UInt32 dataSize, const void* data, ResourceCacheFlag cacheFlag, const String& name)
+        BufferResource(EResourceType typeID, UInt32 dataSize, const void* data, ResourceCacheFlag cacheFlag, std::string_view name)
             : ResourceBase(typeID, cacheFlag, name)
         {
             // TODO(tobias) this might create an empty resource blob that will be thrown away later.

@@ -49,7 +49,7 @@ namespace ramses_internal
         m_rendererSceneInfos.remove(sceneID);
     }
 
-    Bool RendererScenes::hasScene(SceneId sceneID) const
+    bool RendererScenes::hasScene(SceneId sceneID) const
     {
         return m_rendererSceneInfos.contains(sceneID);
     }

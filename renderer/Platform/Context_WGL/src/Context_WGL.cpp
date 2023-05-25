@@ -13,30 +13,30 @@
 
 namespace ramses_internal
 {
-    Context_WGL::Context_WGL(ERenderBufferType depthStencilBufferType, HDC displayHandle, WglExtensions wglExtensions, const Int32* contextAttributes, UInt32 msaaSampleCount)
+    Context_WGL::Context_WGL(ERenderBufferType depthStencilBufferType, HDC displayHandle, WglExtensions wglExtensions, EDeviceType deviceType, UInt32 msaaSampleCount)
         : m_displayHandle(displayHandle)
         , m_ext(wglExtensions)
-        , m_contextAttributes(contextAttributes)
+        , m_contextAttributes(createContextAttributes(deviceType))
         , m_msaaSampleCount(msaaSampleCount)
         , m_depthStencilBufferType(depthStencilBufferType)
     {
     }
 
-    Context_WGL::Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions wglExtensions, const Int32* contextAttributes, UInt32 msaaSampleCount)
+    Context_WGL::Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions wglExtensions, UInt32 msaaSampleCount)
         : m_displayHandle(displayHandle)
         , m_ext(wglExtensions)
-        , m_contextAttributes(contextAttributes)
+        , m_contextAttributes(sharedContext.m_contextAttributes)
         , m_msaaSampleCount(msaaSampleCount)
         , m_wglSharedContextHandle(sharedContext.getNativeContextHandle())
         , m_depthStencilBufferType(sharedContext.m_depthStencilBufferType)
     {
     }
 
-    Bool Context_WGL::init()
+    bool Context_WGL::init()
     {
         LOG_DEBUG(CONTEXT_RENDERER, " Context_WGL::init:  initializing Context_WGL");
 
-        if (!m_ext.areLoaded() || 0 == m_contextAttributes)
+        if (!m_ext.areLoaded() || m_contextAttributes.empty())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Context extension procs not loaded, can not initialize WGL context!");
             return false;
@@ -50,7 +50,7 @@ namespace ramses_internal
             }
         }
 
-        m_wglContextHandle = m_ext.procs.wglCreateContextAttribsARB(m_displayHandle, m_wglSharedContextHandle, m_contextAttributes);
+        m_wglContextHandle = m_ext.procs.wglCreateContextAttribsARB(m_displayHandle, m_wglSharedContextHandle, m_contextAttributes.data());
 
         if (0 == m_wglContextHandle)
         {
@@ -84,7 +84,7 @@ namespace ramses_internal
         wglDeleteContext(m_wglContextHandle);
     }
 
-    Bool Context_WGL::swapBuffers()
+    bool Context_WGL::swapBuffers()
     {
         return SwapBuffers(m_displayHandle) == TRUE;
     }
@@ -96,14 +96,14 @@ namespace ramses_internal
         return true;
     }
 
-    Bool Context_WGL::disable()
+    bool Context_WGL::disable()
     {
         if (!wglMakeCurrent(NULL, NULL))
             return false;
         return true;
     }
 
-    Bool Context_WGL::initCustomPixelFormat()
+    bool Context_WGL::initCustomPixelFormat()
     {
         if (!m_ext.procs.wglChoosePixelFormatARB)
         {
@@ -246,7 +246,48 @@ namespace ramses_internal
         return true;
     }
 
-    void* Context_WGL::getProcAddress(const Char* name) const
+    std::vector<int32_t> Context_WGL::createContextAttributes(EDeviceType deviceType)
+    {
+        if (m_ext.isExtensionAvailable("create_context_profile"))
+        {
+            switch (deviceType)
+            {
+            case EDeviceType::GLES_3_0:
+                return std::vector<int32_t>{
+                    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+                        WGL_CONTEXT_MINOR_VERSION_ARB, 0,
+                        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_ES_PROFILE_BIT_EXT, 0,
+                        0
+                };
+            case EDeviceType::GL_4_2:
+                return std::vector<int32_t>{
+                    WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+                        WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+                        //TODO: fix profile. Tracked in seprate subtask
+                        //WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+                        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+                        0
+                };
+            case EDeviceType::GL_4_5:
+                return std::vector<int32_t>{
+                    WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+                        WGL_CONTEXT_MINOR_VERSION_ARB, 5,
+                        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+                        0
+                };
+            }
+
+            assert(false && "Unhandled device type");
+        }
+        else
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "Context_WGL::createContextAttributes:  could not load WGL context attributes");
+        }
+
+        return {};
+    }
+
+    void* Context_WGL::getProcAddress(const char* name) const
     {
         return reinterpret_cast<void*>(wglGetProcAddress(name));
     }

@@ -20,7 +20,7 @@ namespace ramses_internal
         Orthographic
     };
 
-    static constexpr const char* const ECameraProjectionTypeNames[] = {
+    const std::array ECameraProjectionTypeNames = {
         "Perspective",
         "Orthographic"
     };

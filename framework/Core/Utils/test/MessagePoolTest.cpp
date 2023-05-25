@@ -9,7 +9,6 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/MessagePool.h"
-#include "Collections/String.h"
 
 using namespace testing;
 
@@ -39,11 +38,11 @@ namespace ramses_internal
 
     TEST_F(MessagePoolTest, fillCache)
     {
-        const ramses_internal::String msgBase("msg ");
+        const std::string msgBase("msg ");
         for (UInt32 i = 0u; i < m_messagePool.MaxMessageEntries; ++i)
         {
-            ramses_internal::String msg = msgBase;
-            msg += ('0' + static_cast<Char>(i));
+            std::string msg = msgBase;
+            msg += ('0' + static_cast<char>(i));
             m_messagePool.addMessage(msg.c_str());
         }
 
@@ -51,8 +50,8 @@ namespace ramses_internal
 
         for (UInt32 i = 0u; i < m_messagePool.MaxMessageEntries; ++i)
         {
-            ramses_internal::String msg = msgBase;
-            msg += ('0' + static_cast<Char>(i));
+            std::string msg = msgBase;
+            msg += ('0' + static_cast<char>(i));
             EXPECT_STREQ(msg.c_str(), m_messagePool.getMessage(m_messagePool.SuccessMessageID + 1u + i));
         }
     }
@@ -85,7 +84,7 @@ namespace ramses_internal
 
     TEST_F(MessagePoolTest, willNotReturnSuccessMessageIdIfFilled)
     {
-        const String msg("msg");
+        const std::string msg("msg");
         for (UInt32 i = 0u; i < 2 * m_messagePool.MaxMessageEntries; ++i)
         {
             const auto id = m_messagePool.addMessage(msg.c_str());

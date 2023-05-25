@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EffectInputImpl.h"
-#include "EffectInputUtils.h"
+#include "DataTypeUtils.h"
 #include "EffectInputSemanticUtils.h"
 #include "SceneAPI/IScene.h"
 
@@ -29,7 +29,7 @@ namespace ramses
 
     void EffectInputImpl::initialize(
         const ramses_internal::ResourceContentHash& effectHash,
-        const ramses_internal::String&              name,
+        std::string_view                            name,
         ramses_internal::EDataType                  dataType,
         ramses_internal::EFixedSemantics            semantics,
         uint32_t                                    elementCount,
@@ -53,22 +53,20 @@ namespace ramses
         return m_effectHash;
     }
 
-    const ramses_internal::String& EffectInputImpl::getName() const
+    const std::string& EffectInputImpl::getName() const
     {
         return m_name;
     }
 
-    EEffectInputDataType EffectInputImpl::getUniformInputDataType() const
+    std::optional<EDataType> EffectInputImpl::getDataType() const
     {
-        return EffectInputUtils::GetEffectInputDataType(m_dataType);
+        if (!isValid())
+            return std::nullopt;
+
+        return DataTypeUtils::ConvertDataTypeFromInternal(m_dataType);
     }
 
-    EEffectInputDataType EffectInputImpl::getAttributeInputDataType() const
-    {
-        return EffectInputUtils::GetEffectInputDataTypeFromBuffer(m_dataType);
-    }
-
-    ramses_internal::EDataType EffectInputImpl::getDataType() const
+    ramses_internal::EDataType EffectInputImpl::getInternalDataType() const
     {
         return m_dataType;
     }

@@ -28,8 +28,8 @@
 
 namespace ramses
 {
-    MeshNodeImpl::MeshNodeImpl(SceneImpl& scene, const char* nodeName)
-        : NodeImpl(scene, ERamsesObjectType_MeshNode, nodeName)
+    MeshNodeImpl::MeshNodeImpl(SceneImpl& scene, std::string_view nodeName)
+        : NodeImpl(scene, ERamsesObjectType::MeshNode, nodeName)
         , m_appearanceImpl(nullptr)
         , m_geometryImpl(nullptr)
     {
@@ -91,22 +91,22 @@ namespace ramses
     {
         status_t status = NodeImpl::validate();
         if (nullptr == m_appearanceImpl)
-            status = addValidationMessage(EValidationSeverity_Error, "meshnode does not have an appearance set");
+            status = addValidationMessage(EValidationSeverity::Error, "meshnode does not have an appearance set");
         else
             status = std::max(status, addValidationOfDependentObject(*m_appearanceImpl));
 
         if (nullptr == m_geometryImpl)
-            status = addValidationMessage(EValidationSeverity_Error, "meshnode does not have a geometryBinding set");
+            status = addValidationMessage(EValidationSeverity::Error, "meshnode does not have a geometryBinding set");
         else
         {
             status = std::max(status, addValidationOfDependentObject(*m_geometryImpl));
 
             const bool hasIndexArray = m_geometryImpl->getIndicesCount() > 0;
             if (hasIndexArray && (m_geometryImpl->getIndicesCount() < getStartIndex() + getIndexCount()))
-                status = addValidationMessage(EValidationSeverity_Error, "startIndex + indexCount exceeds indices of indexarray");
+                status = addValidationMessage(EValidationSeverity::Error, "startIndex + indexCount exceeds indices of indexarray");
 
             if (getIndexCount() == 0)
-                status = addValidationMessage(EValidationSeverity_Error, "indexCount must be greater 0");
+                status = addValidationMessage(EValidationSeverity::Error, "indexCount must be greater 0");
         }
         return status;
     }
