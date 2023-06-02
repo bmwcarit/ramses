@@ -80,7 +80,7 @@ jobs:
             cmake_args+=" -DCMAKE_CONFIGURATION_TYPES=${{ matrix.type }}"
         fi
 
-        if [[ "${{matrix.target-platform}}" == "iphone"* ]]; then
+        if [[ "${{matrix.os}}" == "macos"* ]]; then
             cmake_args+=" -GXcode"
             cmake_args+=" -DCMAKE_OSX_SYSROOT=${{ matrix.target-platform }}"
             cmake_args+=" -DCMAKE_SYSTEM_NAME=iOS"
