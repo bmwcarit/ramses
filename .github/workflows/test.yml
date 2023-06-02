@@ -86,6 +86,9 @@ jobs:
             cmake_args+=" -DCMAKE_SYSTEM_NAME=iOS"
             cmake_args+=" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO"
             cmake_args+=" -Dramses-sdk_ENABLE_FLATBUFFERS_GENERATION=OFF"
+            cmake_args+=" -Dramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF"
+            cmake_args+=" -Dramses-sdk_BUILD_FULL_SHARED_LIB=OFF"
+            cmake_args+=" -Dramses-sdk_BUILD_HEADLESS_SHARED_LIB=ON"
         fi
 
         cmake $GITHUB_WORKSPACE ${cmake_args}
