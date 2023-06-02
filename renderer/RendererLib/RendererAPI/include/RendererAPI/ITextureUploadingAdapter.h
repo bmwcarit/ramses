@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         virtual ~ITextureUploadingAdapter() {}
-        virtual void uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data,  const TextureSwizzleArray& swizzle) = 0;
+        virtual void uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const uint8_t* data,  const TextureSwizzleArray& swizzle) = 0;
     };
 }
 

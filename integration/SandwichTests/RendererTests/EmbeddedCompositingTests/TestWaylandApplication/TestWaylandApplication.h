@@ -17,25 +17,28 @@
 #include "OpenGLTriangleDrawer.h"
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "Utils/LogMacros.h"
+
 #include <vector>
+#include <string_view>
+#include <string>
 
 namespace ramses_internal
 {
     class TestWaylandApplication
     {
     public:
-        TestWaylandApplication(const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName);
+        TestWaylandApplication(std::string_view testToWaylandClientPipeName, std::string_view waylandClientToTestPipeName);
         ~TestWaylandApplication();
-        Bool run();
+        bool run();
 
     private:
         bool readFromTestFramework(void* data, UInt32 numberOfBytes);
         template <typename T>
         bool readFromTestFramework(T& value);
         bool readBufferFromTestFramework();
-        Bool dispatchIncomingMessage();
+        bool dispatchIncomingMessage();
 
-        bool initializeWayland(const String& displayName, bool connectUsingFD);
+        bool initializeWayland(const std::string& displayName, bool connectUsingFD);
         void stopWayland();
         void renderFrameToEGLBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);
         void renderFrameToSharedMemoryBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);

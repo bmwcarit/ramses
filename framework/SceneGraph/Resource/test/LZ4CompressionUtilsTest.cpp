@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    void checkCompressionDecompression(const std::vector<UInt8>& input)
+    void checkCompressionDecompression(const std::vector<uint8_t>& input)
     {
         for (auto level : { LZ4CompressionUtils::CompressionLevel::Fast,
                             LZ4CompressionUtils::CompressionLevel::High })
@@ -59,13 +59,13 @@ namespace ramses_internal
 
     TEST(LZ4CompressionUtilsTest, TestSmallData)
     {
-        std::vector<UInt8> small = {10, 20, 30, 40, 50, 60};
+        std::vector<uint8_t> small = {10, 20, 30, 40, 50, 60};
         checkCompressionDecompression(small);
     }
 
     TEST(LZ4CompressionUtilsTest, TestBigData)
     {
-        std::vector<UInt8> big(1024 * 128);
+        std::vector<uint8_t> big(1024 * 128);
         std::iota(big.begin(), big.end(), static_cast<uint8_t>(5));
         checkCompressionDecompression(big);
     }

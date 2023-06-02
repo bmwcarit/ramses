@@ -13,10 +13,13 @@
 #include "DmaOffscreenBufferTests.h"
 #include "Utils/LogMacros.h"
 
+#include <vector>
+#include <string>
+
 class DmaOffscreenBufferRenderingTests
 {
 public:
-    DmaOffscreenBufferRenderingTests(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
+    DmaOffscreenBufferRenderingTests(const std::vector<std::string>& filterIn, const std::vector<std::string>& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
         : m_testFramework(generateScreenshots, config)
     {
         m_dmaOffscreenBufferTests.setUpTestCases(m_testFramework);

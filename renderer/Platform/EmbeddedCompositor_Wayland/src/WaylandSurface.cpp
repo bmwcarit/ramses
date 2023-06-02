@@ -109,7 +109,7 @@ namespace ramses_internal
         return m_shellSurface != nullptr;
     }
 
-    const String& WaylandSurface::getSurfaceTitle() const
+    const std::string& WaylandSurface::getSurfaceTitle() const
     {
         if (m_shellSurface)
         {
@@ -117,7 +117,7 @@ namespace ramses_internal
         }
         else
         {
-            static String emptyString;
+            static std::string emptyString;
             return emptyString;
         }
     }

@@ -54,9 +54,9 @@ void RendererTestsFramework::destroyRenderer()
 
 ramses::displayId_t RendererTestsFramework::createDisplay(const ramses::DisplayConfig& displayConfig)
 {
-    m_testRenderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
+    m_testRenderer.setLoopMode(ramses::ELoopMode::UpdateOnly);
     const ramses::displayId_t displayId = m_testRenderer.createDisplay(displayConfig);
-    m_testRenderer.setLoopMode(ramses::ELoopMode_UpdateAndRender);
+    m_testRenderer.setLoopMode(ramses::ELoopMode::UpdateAndRender);
     if (displayId != ramses::displayId_t::Invalid())
     {
         m_displays.push_back({ displayId, displayConfig, {}, {} });
@@ -77,7 +77,7 @@ ramses_internal::TestRenderer& RendererTestsFramework::getTestRenderer()
     return m_testRenderer;
 }
 
-RenderingTestCase& RendererTestsFramework::createTestCase(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name)
+RenderingTestCase& RendererTestsFramework::createTestCase(ramses_internal::UInt32 id, IRendererTest& rendererTest, const std::string& name)
 {
     RenderingTestCase* testCase = new RenderingTestCase(id, rendererTest, name, true);
     m_testCases.push_back(testCase);
@@ -85,7 +85,7 @@ RenderingTestCase& RendererTestsFramework::createTestCase(ramses_internal::UInt3
     return *testCase;
 }
 
-RenderingTestCase& RendererTestsFramework::createTestCaseWithDefaultDisplay(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name, bool iviWindowStartVisible)
+RenderingTestCase& RendererTestsFramework::createTestCaseWithDefaultDisplay(ramses_internal::UInt32 id, IRendererTest& rendererTest, const std::string& name, bool iviWindowStartVisible)
 {
     RenderingTestCase& testCase = createTestCase(id, rendererTest, name);
     ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, iviWindowStartVisible);
@@ -95,7 +95,7 @@ RenderingTestCase& RendererTestsFramework::createTestCaseWithDefaultDisplay(rams
     return testCase;
 }
 
-RenderingTestCase& RendererTestsFramework::createTestCaseWithoutRenderer(ramses_internal::UInt32 id, IRendererTest &rendererTest, const ramses_internal::String &name)
+RenderingTestCase& RendererTestsFramework::createTestCaseWithoutRenderer(ramses_internal::UInt32 id, IRendererTest &rendererTest, const std::string &name)
 {
     RenderingTestCase* testCase = new RenderingTestCase(id, rendererTest, name, false);
     m_testCases.push_back(testCase);
@@ -219,12 +219,6 @@ void RendererTestsFramework::removeDataLink(ramses::sceneId_t consumerScene, ram
     m_testRenderer.removeDataLink(consumerScene, consumerTag);
 }
 
-void RendererTestsFramework::setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx)
-{
-    assert(testDisplayIdx < m_displays.size());
-    m_testRenderer.updateWarpingMeshData(m_displays[testDisplayIdx].displayId, meshData);
-}
-
 void RendererTestsFramework::setClearFlags(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, uint32_t clearFlags)
 {
     assert(testDisplayIdx < m_displays.size());
@@ -233,7 +227,7 @@ void RendererTestsFramework::setClearFlags(uint32_t testDisplayIdx, ramses::disp
     m_forceDisplaysReinitForNextTestCase = true;
 }
 
-void RendererTestsFramework::setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor)
+void RendererTestsFramework::setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const glm::vec4& clearColor)
 {
     assert(testDisplayIdx < m_displays.size());
     m_testRenderer.setClearColor(m_displays[testDisplayIdx].displayId, ob, clearColor);
@@ -253,7 +247,7 @@ void RendererTestsFramework::flushRendererAndDoOneLoop()
     m_testRenderer.doOneLoop();
 }
 
-bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, float maxAveragePercentErrorPerPixel, bool readPixelsTwice, bool saveDiffOnError)
+bool RendererTestsFramework::renderAndCompareScreenshot(const std::string& expectedImageName, uint32_t testDisplayIdx, float maxAveragePercentErrorPerPixel, bool readPixelsTwice, bool saveDiffOnError)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
@@ -266,13 +260,13 @@ bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::S
         maxAveragePercentErrorPerPixel,
         0u,
         0u,
-        displayConfig.impl.getInternalDisplayConfig().getDesiredWindowWidth(),
-        displayConfig.impl.getInternalDisplayConfig().getDesiredWindowHeight(),
+        displayConfig.m_impl.get().getInternalDisplayConfig().getDesiredWindowWidth(),
+        displayConfig.m_impl.get().getInternalDisplayConfig().getDesiredWindowHeight(),
         readPixelsTwice,
         saveDiffOnError);
 }
 
-bool RendererTestsFramework::renderAndCompareScreenshotOffscreenBuffer(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, ramses::displayBufferId_t displayBuffer, uint32_t width, uint32_t height, float maxAveragePercentErrorPerPixel)
+bool RendererTestsFramework::renderAndCompareScreenshotOffscreenBuffer(const std::string& expectedImageName, uint32_t testDisplayIdx, ramses::displayBufferId_t displayBuffer, uint32_t width, uint32_t height, float maxAveragePercentErrorPerPixel)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
@@ -290,7 +284,7 @@ bool RendererTestsFramework::renderAndCompareScreenshotOffscreenBuffer(const ram
         true);
 }
 
-bool RendererTestsFramework::renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
+bool RendererTestsFramework::renderAndCompareScreenshotSubimage(const std::string& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
 {
     return compareScreenshotInternal(expectedImageName, m_displays[0].displayId, {}, maxAveragePercentErrorPerPixel, subimageX, subimageY, subimageWidth, subimageHeight, readPixelsTwice, true);
 }
@@ -302,7 +296,7 @@ void RendererTestsFramework::setFrameTimerLimits(uint64_t limitForClientResource
 }
 
 bool RendererTestsFramework::compareScreenshotInternal(
-    const ramses_internal::String& expectedImageName,
+    const std::string& expectedImageName,
     ramses::displayId_t displayId,
     ramses::displayBufferId_t bufferId,
     float maxAveragePercentErrorPerPixel,
@@ -330,16 +324,16 @@ bool RendererTestsFramework::compareScreenshotInternal(
     return comparisonResult;
 }
 
-bool RendererTestsFramework::NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filters)
+bool RendererTestsFramework::NameMatchesFilter(const std::string& name, const std::vector<std::string>& filters)
 {
-    if (contains_c(filters, "*"))
+    if (ramses_internal::contains_c(filters, "*"))
     {
         return true;
     }
 
     for(const auto& filter : filters)
     {
-        if (name.find(filter) != ramses_internal::String::npos)
+        if (name.find(filter) != std::string::npos)
         {
             return true;
         }
@@ -348,7 +342,7 @@ bool RendererTestsFramework::NameMatchesFilter(const ramses_internal::String& na
     return false;
 }
 
-void RendererTestsFramework::filterTestCases(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut)
+void RendererTestsFramework::filterTestCases(const std::vector<std::string>& filterIn, const std::vector<std::string>& filterOut)
 {
     const bool processFilterIn = !filterIn.empty();
     const bool processFilterOut = !filterOut.empty();
@@ -363,7 +357,7 @@ void RendererTestsFramework::filterTestCases(const ramses_internal::StringVector
 
     for(const auto& testCase : testCases)
     {
-        const ramses_internal::String testCaseName = testCase->m_name;
+        const auto& testCaseName = testCase->m_name;
         const bool excludedByFilterIn = processFilterIn && !NameMatchesFilter(testCaseName, filterIn);
         const bool excludedByFilterOut = processFilterOut && NameMatchesFilter(testCaseName, filterOut);
 
@@ -387,8 +381,8 @@ bool areEqual(const DisplayConfigVector& a, const DisplayConfigVector& b)
 
     for (size_t i = 0; i < a.size(); ++i)
     {
-        const ramses_internal::DisplayConfig& displayConfigA = a[i].impl.getInternalDisplayConfig();
-        const ramses_internal::DisplayConfig& displayConfigB = b[i].impl.getInternalDisplayConfig();
+        const ramses_internal::DisplayConfig& displayConfigA = a[i].m_impl.get().getInternalDisplayConfig();
+        const ramses_internal::DisplayConfig& displayConfigB = b[i].m_impl.get().getInternalDisplayConfig();
 
         if (displayConfigA != displayConfigB)
         {
@@ -447,8 +441,8 @@ bool RendererTestsFramework::currentDisplaySetupMatchesTestCase(const RenderingT
     {
         assert(i < m_displays.size());
 
-        ramses_internal::DisplayConfig currentDisplayConfig = m_displays[i].config.impl.getInternalDisplayConfig();
-        ramses_internal::DisplayConfig requestedDisplayConfig = testCase.m_displayConfigs[i].impl.getInternalDisplayConfig();
+        ramses_internal::DisplayConfig currentDisplayConfig = m_displays[i].config.m_impl.get().getInternalDisplayConfig();
+        ramses_internal::DisplayConfig requestedDisplayConfig = testCase.m_displayConfigs[i].m_impl.get().getInternalDisplayConfig();
 
         // ignore wayland ID in comparison as this is different for every test display config
         requestedDisplayConfig.setWaylandIviSurfaceID(currentDisplayConfig.getWaylandIviSurfaceID());
@@ -493,12 +487,6 @@ bool RendererTestsFramework::applyRendererAndDisplaysConfigurationForTest(const 
 
         if (displayId == ramses::displayId_t::Invalid())
             return false;
-
-        if (displayConfig.impl.getInternalDisplayConfig().isWarpingEnabled())
-        {
-            // Use default test warping mesh for render tests using warped display
-            m_testRenderer.updateWarpingMeshData(displayId, RendererTestUtils::CreateTestWarpingMesh());
-        }
     }
     m_forceDisplaysReinitForNextTestCase = false;
 
@@ -536,7 +524,7 @@ bool RendererTestsFramework::runAllTests()
 {
     bool testResult = true;
 
-    const ramses_internal::UInt64 startTime = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
+    const uint64_t startTime = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
 
     assert(m_activeTestCase == nullptr);
     m_passedTestCases.clear();
@@ -564,7 +552,7 @@ bool RendererTestsFramework::runAllTests()
         destroyBuffers();
     }
 
-    const ramses_internal::UInt64 endTime = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
+    const uint64_t endTime = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
     m_elapsedTime = endTime - startTime;
 
     return testResult;

@@ -6,31 +6,15 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-FIND_PACKAGE(OpenGL)
-
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    Device_GL
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Device_GL/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Device_GL/*.h
+                            src/*.cpp
     DEPENDENCIES            ramses-renderer-lib
                             OpenGL
+    # TODO move this to the OpenGL target where it belongs
+    PUBLIC_DEFINES          ${OpenGL_DEFINITIONS}
 )
-
-# ACME doesn't pass on definitions, so forced to do it this way
-IF(TARGET Device_GL)
-    target_compile_definitions(Device_GL PUBLIC ${OpenGL_DEFINITIONS})
-ENDIF()

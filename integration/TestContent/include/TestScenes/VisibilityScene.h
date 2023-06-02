@@ -16,7 +16,7 @@ namespace ramses_internal
     class VisibilityScene : public IntegrationScene
     {
     public:
-        VisibilityScene(ramses::Scene& scene, UInt32 state, const Vector3& position, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        VisibilityScene(ramses::Scene& scene, UInt32 state, const glm::vec3& position, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         void setState(UInt32 state);
 

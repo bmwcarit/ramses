@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         explicit RamshCommandSetContextLogLevelFilter(const Ramsh& ramsh);
-        virtual bool executeInput(const std::vector<std::string>& input) override;
+        bool executeInput(const std::vector<std::string>& input) override;
 
     protected:
         const Ramsh& m_ramsh;

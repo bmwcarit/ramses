@@ -10,8 +10,9 @@
 #define RAMSES_MATRIXCACHEENTRY_H
 
 #include "ETransformMatrixType.h"
-#include "Math3d/Matrix44f.h"
+#include "DataTypesImpl.h"
 #include "SceneAPI/Handles.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -29,8 +30,8 @@ namespace ramses_internal
             m_matrixDirty[ETransformationMatrixType_Object] = true;
         }
 
-        Matrix44f       m_matrix     [ETransformationMatrixType_COUNT];
-        bool            m_matrixDirty[ETransformationMatrixType_COUNT];
+        std::array<glm::mat4, ETransformationMatrixType_COUNT> m_matrix;
+        std::array<bool, ETransformationMatrixType_COUNT>      m_matrixDirty;
         bool            m_isIdentity;
     };
 }

@@ -10,7 +10,7 @@
 
 namespace ramses_internal
 {
-    ParticipantIdentifier::ParticipantIdentifier(const Guid& participantId, const String& participantName)
+    ParticipantIdentifier::ParticipantIdentifier(const Guid& participantId, std::string_view participantName)
         : m_participantId(participantId)
         , m_participantName(participantName)
     {

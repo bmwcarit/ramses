@@ -546,7 +546,7 @@ namespace ramses_internal
     {
         UInt32 bufferSize = 102;
         std::vector<Byte> buffer(bufferSize, 0xFA);
-        String str("hello world");
+        std::string str{"hello world"};
 
         SceneActionCollection c;
         c.beginWriteSceneAction(ESceneActionId::TestAction);
@@ -555,13 +555,13 @@ namespace ramses_internal
 
         c.beginWriteSceneAction(ESceneActionId::AllocateNode);
         c.write(buffer.data(), bufferSize);
-        c.write(static_cast<UInt8>(10));
-        UInt32 size_2 = sizeof(UInt32) + bufferSize + sizeof(UInt8);
+        c.write(static_cast<uint8_t>(10));
+        UInt32 size_2 = sizeof(UInt32) + bufferSize + sizeof(uint8_t);
 
         c.beginWriteSceneAction(ESceneActionId::AllocateRenderable);
         c.write(Guid());
         c.write(str);
-        UInt32 size_3 = sizeof(Guid::value_type) + sizeof(UInt8) + static_cast<UInt32>(str.size());
+        UInt32 size_3 = sizeof(Guid::value_type) + sizeof(uint8_t) + static_cast<UInt32>(str.size());
 
         ASSERT_EQ(3u, c.numberOfActions());
         EXPECT_EQ(size_1 + size_2 + size_3, c.collectionData().size());

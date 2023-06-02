@@ -31,7 +31,7 @@ namespace ramses_internal
             return false;
         }
 
-        GetRamsesLogger().applyContextFilterCommand(String(input[1]));
+        GetRamsesLogger().applyContextFilterCommand(input[1]);
         return true;
     }
 }

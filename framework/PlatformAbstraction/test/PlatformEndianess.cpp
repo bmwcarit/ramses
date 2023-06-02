@@ -24,6 +24,7 @@ namespace ramses_internal
 
         // Test using bytes of one integer
         const uint32_t anInt = 0x01000000;
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         char anIntBuffer[sizeof(anInt)];
         std::memcpy(anIntBuffer, &anInt, sizeof(anInt));
 

@@ -27,10 +27,10 @@ namespace ramses_internal
         // Creation/Deletion
         HANDLE                          acquire(HANDLE handle = InvalidMemoryHandle());
         void                            release(HANDLE handle);
-        bool                            isAcquired(HANDLE handle) const;
-        UInt32                          getNumberOfAcquired() const;
+        [[nodiscard]] bool                            isAcquired(HANDLE handle) const;
+        [[nodiscard]] UInt32                          getNumberOfAcquired() const;
 
-        UInt32                          size() const;
+        [[nodiscard]] UInt32                          size() const;
         void                            resize(UInt32 size);
 
         static HANDLE                   InvalidMemoryHandle();
@@ -38,7 +38,7 @@ namespace ramses_internal
     protected:
         HANDLE acquireInternal(MemoryHandle handle);
 
-        std::vector<UInt8> m_handlePool;
+        std::vector<uint8_t> m_handlePool;
         MemoryHandle  m_nextAvailableHint;
         UInt32        m_numberOfAcquired;
     };
@@ -97,7 +97,7 @@ namespace ramses_internal
         assert(handle < m_handlePool.size());
         assert(m_handlePool[handle] == 0);
         m_nextAvailableHint = handle + 1u;
-        m_handlePool[handle] = std::numeric_limits<UInt8>::max();
+        m_handlePool[handle] = std::numeric_limits<uint8_t>::max();
         ++m_numberOfAcquired;
         return HANDLE(handle);
     }

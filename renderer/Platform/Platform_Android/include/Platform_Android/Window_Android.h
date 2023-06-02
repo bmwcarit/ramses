@@ -34,7 +34,7 @@ namespace ramses_internal
             return false;
         }
 
-        Bool setFullscreen(Bool fullscreen) override;
+        bool setFullscreen(bool fullscreen) override;
         bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
     private:

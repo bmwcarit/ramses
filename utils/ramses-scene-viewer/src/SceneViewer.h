@@ -9,14 +9,13 @@
 #ifndef RAMSES_SCENE_VIEWER_SCENEVIEWER_H
 #define RAMSES_SCENE_VIEWER_SCENEVIEWER_H
 
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
-#include "Collections/String.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
+
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace ramses
 {
@@ -25,12 +24,20 @@ namespace ramses
     class RamsesRenderer;
 }
 
+namespace CLI
+{
+    class App;
+    class Option;
+}
+
 namespace ramses_internal
 {
     class SceneViewer
     {
     public:
-        SceneViewer(int argc, char* argv[]);
+        SceneViewer();
+
+        void registerOptions(CLI::App& cli);
 
         int run();
 
@@ -41,28 +48,24 @@ namespace ramses_internal
             On,       ///< Loaded scene rendered to offscreen buffer (configurable size and position)
             Overlay,  ///< Debugging gui overlaps the rendered scene (no offscreen buffer)
             Only,     ///< Only shows the gui, not the scene itself
-            Invalid
         };
 
-        GuiMode getGuiMode() const;
-        void printUsage() const;
-        int loadAndRenderScene(const String& sceneFile);
+        int loadAndRenderScene(const std::string& sceneFile);
         void validateContent(const ramses::Scene& scene) const;
 
         std::string m_sceneName;
-        CommandLineParser m_parser;
-        ArgumentBool   m_helpArgument;
-        ArgumentString m_scenePathAndFileArgument;
-        ArgumentBool   m_noValidation;
-        ArgumentString m_validationUnrequiredObjectsDirectoryArgument;
-        ArgumentString m_screenshotFile;
-        ArgumentBool   m_noSkub;
-        ArgumentString m_guiModeArgument;
+        GuiMode     m_guiMode = GuiMode::On;
+        bool        m_noValidation = false;
+        bool        m_noSkub = false;
+        std::string m_validationOutput;
+        std::string m_screenshotFile;
 
         ramses::RamsesFrameworkConfig  m_frameworkConfig;
         ramses::RendererConfig         m_rendererConfig;
         ramses::DisplayConfig          m_displayConfig;
-        const std::vector<const char*> m_args;
+
+        CLI::Option* m_width = nullptr;
+        CLI::Option* m_height = nullptr;
     };
 }
 

@@ -21,7 +21,7 @@ SetSkippingOfUnmodifiedBuffers::SetSkippingOfUnmodifiedBuffers(RendererCommandBu
     getArgument<0>().setDescription("enable skipping (0: off, 1: enable)");
 }
 
-Bool SetSkippingOfUnmodifiedBuffers::execute(UInt32& enableSkipping) const
+bool SetSkippingOfUnmodifiedBuffers::execute(UInt32& enableSkipping) const
 {
     m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SetSkippingOfUnmodifiedBuffers{ enableSkipping > 0u });
     return true;

@@ -20,23 +20,15 @@ using namespace testing;
 TEST(ARamsesFramework, canDefaultConstruct)
 {
     RamsesFramework fw;
-    EXPECT_GT(fw.impl.getParticipantAddress().getParticipantId().get(), 0xFF);
+    EXPECT_GT(fw.m_impl.getParticipantAddress().getParticipantId().get(), 0xFF);
 }
 
 TEST(ARamsesFramework, canConstructFromConfig)
 {
-    const char* argv[] = {"", "-guid", "0000-000000000123"};
-    RamsesFrameworkConfig config(3, argv);
+    RamsesFrameworkConfig config;
+    config.setParticipantGuid(0x123);
     RamsesFramework fw(config);
-    EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x123);
-}
-
-
-TEST(ARamsesFramework, canConstructWithArgcArgv)
-{
-    const char* argv[] = {"", "-guid", "0000-000000000124"};
-    RamsesFramework fw(3, argv);
-    EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x124);
+    EXPECT_EQ(fw.m_impl.getParticipantAddress().getParticipantId().get(), 0x123);
 }
 
 TEST(ARamsesFramework, isNotConnectedInitially)
@@ -77,8 +69,8 @@ namespace
         explicit PartialApiRamshCommandMock(const std::string& kw_)
             : kw(kw_)
         {}
-        const std::string& keyword() const override { return kw; }
-        const std::string& help() const override { return helpText; }
+        [[nodiscard]] const std::string& keyword() const override { return kw; }
+        [[nodiscard]] const std::string& help() const override { return helpText; }
         std::string kw;
         std::string helpText{"text"};
     };
@@ -158,4 +150,19 @@ TEST(ARamsesFramework, CanSetAndResetLogHandlerMultipleTimes)
     RamsesFramework::SetLogHandler([](auto /*level*/, auto& /*context*/, auto& /*message*/) {});
     RamsesFramework::SetLogHandler(nullptr);
     RamsesFramework::SetLogHandler(nullptr);
+}
+
+TEST(ARamsesFramework, multipleInstancesCanBeCreatedInParallel)
+{
+    // check stability of sensitive framework components (e.g. logger singleton) when used in multiple instances in parallel
+    std::vector<std::thread> threads;
+    threads.reserve(100);
+    for (size_t t = 0u; t < threads.capacity(); ++t)
+        threads.emplace_back([]() {
+            RamsesFramework fw;
+            std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+        });
+
+    for (auto& t : threads)
+        t.join();
 }

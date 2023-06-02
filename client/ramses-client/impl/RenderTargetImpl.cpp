@@ -12,8 +12,8 @@
 
 namespace ramses
 {
-    RenderTargetImpl::RenderTargetImpl(SceneImpl& scene, const char* name)
-        : SceneObjectImpl(scene, ERamsesObjectType_RenderTarget, name)
+    RenderTargetImpl::RenderTargetImpl(SceneImpl& scene, std::string_view name)
+        : SceneObjectImpl(scene, ERamsesObjectType::RenderTarget, name)
         , m_renderTargetHandle( ramses_internal::RenderTargetHandle::Invalid() )
     {
     }

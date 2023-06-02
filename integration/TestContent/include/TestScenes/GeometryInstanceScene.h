@@ -19,7 +19,7 @@ namespace ramses_internal
     class GeometryInstanceScene : public IntegrationScene
     {
     public:
-        GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -33,7 +33,7 @@ namespace ramses_internal
         void setInstancedAttributes(const ramses::Effect& effect, ramses::GeometryBinding* geometry, UInt32 instancingDivisor);
         ramses::GeometryBinding* createGeometry(const ramses::Effect& effect);
 
-        static const UInt32 NumInstances = 3u;
+        static constexpr UInt32 NumInstances = 3u;
     };
 }
 

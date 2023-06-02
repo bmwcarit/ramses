@@ -38,7 +38,7 @@ namespace ramses_internal
                 m_fd = fd;
             }
 
-            virtual void run() override
+            void run() override
             {
                 m_startBarrier.wait();
                 wl_display*  display  = wl_display_connect_to_fd(m_fd);
@@ -58,7 +58,7 @@ namespace ramses_internal
                 const uint32_t stride = width * 4;
                 const uint32_t size   = stride * height;
 
-                String fileName;
+                std::string fileName;
                 int fd = CreateAnonymousFile(size, fileName);
                 uint8_t* bufferData = static_cast<uint8_t*>(mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
 
@@ -93,7 +93,7 @@ namespace ramses_internal
 
         private:
 
-            int CreateAnonymousFile(off_t size, String& fileName)
+            int CreateAnonymousFile(off_t size, std::string& fileName)
             {
                 int ret;
 
@@ -159,7 +159,7 @@ namespace ramses_internal
     class AWaylandBufferResource : public Test
     {
     public:
-        virtual void SetUp() override
+        void SetUp() override
         {
             const int serverFD = m_socket.createBoundFileDescriptor();
             m_waylandDisplay.init("", "", 0, serverFD);
@@ -169,7 +169,7 @@ namespace ramses_internal
             wl_display_init_shm(m_display);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             if (m_client != nullptr)
                 wl_client_destroy(m_client);

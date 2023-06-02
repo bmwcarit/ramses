@@ -9,26 +9,23 @@
 #ifndef RAMSES_SCENEFACTORY_H
 #define RAMSES_SCENEFACTORY_H
 
-#include "Collections/HashSet.h"
 #include "SceneAPI/IScene.h"
+#include <unordered_map>
 
 namespace ramses_internal
 {
     class ClientScene;
+    using InternalSceneOwningPtr = std::unique_ptr<ClientScene>;
 
     class SceneFactory
     {
     public:
-        explicit SceneFactory();
-        ~SceneFactory();
-
         ClientScene* createScene(const SceneInfo& sceneInfo);
-        ClientScene* releaseScene(SceneId id);
+        InternalSceneOwningPtr releaseScene(SceneId id);
 
     private:
-        using SceneMap = HashMap<SceneId, ClientScene *>;
+        using SceneMap = std::unordered_map<SceneId, InternalSceneOwningPtr>;
         SceneMap m_scenes;
-
     };
 }
 

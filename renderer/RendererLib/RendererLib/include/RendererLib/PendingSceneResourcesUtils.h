@@ -24,8 +24,8 @@ namespace ramses_internal
         static bool ApplySceneResourceActions(const SceneResourceActionVector& actions, const IScene& scene, IRendererResourceManager& resourceManager, const FrameTimer* frameTimer = nullptr);
 
     private:
-        static Bool RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action);
-        static Bool ContainsSceneResourceAction(const SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action);
+        static bool RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action);
+        static bool ContainsSceneResourceAction(const SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action);
     };
 }
 

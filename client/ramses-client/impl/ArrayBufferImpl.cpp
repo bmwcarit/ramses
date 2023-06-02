@@ -14,8 +14,8 @@
 
 namespace ramses
 {
-    ArrayBufferImpl::ArrayBufferImpl(SceneImpl& scene, const char* databufferName)
-        : SceneObjectImpl(scene, ERamsesObjectType_DataBufferObject, databufferName)
+    ArrayBufferImpl::ArrayBufferImpl(SceneImpl& scene, std::string_view databufferName)
+        : SceneObjectImpl(scene, ERamsesObjectType::ArrayBufferObject, databufferName)
     {
     }
 
@@ -60,7 +60,7 @@ namespace ramses
     EDataType ArrayBufferImpl::getDataType() const
     {
         const ramses_internal::GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
-        return  DataTypeUtils::ConvertDataTypeFromInternal(dataBuffer.dataType);
+        return DataTypeUtils::ConvertDataTypeFromInternal(dataBuffer.dataType);
     }
 
     status_t ArrayBufferImpl::getData(ramses_internal::Byte* buffer, uint32_t numElements) const
@@ -135,15 +135,15 @@ namespace ramses
         }
 
         if (usedAsInput && !isInitialized)
-            return addValidationMessage(EValidationSeverity_Warning, "DataBuffer is used as geometry input but there is no data set, this could lead to graphical glitches if actually rendered.");
+            return addValidationMessage(EValidationSeverity::Warning, "DataBuffer is used as geometry input but there is no data set, this could lead to graphical glitches if actually rendered.");
 
         if (!usedAsInput)
-            return addValidationMessage(EValidationSeverity_Warning, "DataBuffer is not used anywhere, destroy it if not needed.");
+            return addValidationMessage(EValidationSeverity::Warning, "DataBuffer is not used anywhere, destroy it if not needed.");
 
         return status;
     }
 
-    status_t ArrayBufferImpl::updateData(uint32_t firstElement, uint32_t numElements, const void* bufferData)
+    status_t ArrayBufferImpl::updateData(uint32_t firstElement, uint32_t numElements, const ramses_internal::Byte* bufferData)
     {
         const ramses_internal::GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
         const size_t maximumSizeInBytes = dataBuffer.data.size();
@@ -154,7 +154,7 @@ namespace ramses
             return addErrorEntry("DataBuffer::update failed - trying to write data beyond maximum size");
         }
 
-        getIScene().updateDataBuffer(m_dataBufferHandle, offsetInBytes, dataSizeInBytes, static_cast<const ramses_internal::Byte*>(bufferData));
+        getIScene().updateDataBuffer(m_dataBufferHandle, offsetInBytes, dataSizeInBytes, bufferData);
 
         return StatusOK;
     }

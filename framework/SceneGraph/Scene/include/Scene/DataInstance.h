@@ -33,7 +33,7 @@ namespace ramses_internal
         DataInstance& operator=(DataInstance&&) noexcept = default;
 
         template <typename DATATYPE>
-        const DATATYPE* getTypedDataPointer(UInt32 fieldOffset) const
+        [[nodiscard]] const DATATYPE* getTypedDataPointer(UInt32 fieldOffset) const
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(tobias) questionable if correct because because objects have no lifetime
             return reinterpret_cast<const DATATYPE*>(&m_data[fieldOffset]);
@@ -51,7 +51,7 @@ namespace ramses_internal
             }
         }
 
-        DataLayoutHandle getLayoutHandle() const
+        [[nodiscard]] DataLayoutHandle getLayoutHandle() const
         {
             return m_dataLayoutHandle;
         }

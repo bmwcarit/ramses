@@ -10,15 +10,16 @@
 #define RAMSES_LOGMEMORYUTILS_H
 
 #include "SceneImpl.h"
-#include "Collections/String.h"
 #include "Collections/Vector.h"
+
+#include <string>
 
 namespace ramses_internal
 {
     struct MemoryInfo
     {
-        uint32_t memoryUsage = 0;
-        String   logInfoMesage = "";
+        uint32_t memoryUsage{0};
+        std::string logInfoMesage{};
     };
     using MemoryInfoVector = std::vector<MemoryInfo>;
 

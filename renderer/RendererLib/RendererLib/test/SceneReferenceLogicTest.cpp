@@ -33,7 +33,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             SceneAllocateHelper masterScene1{ m_scenes.createScene(SceneInfo{ MasterSceneId1 }) };
             masterScene1.allocateSceneReference(RefSceneId11, RefSceneHandle11);
@@ -94,17 +94,6 @@ namespace ramses_internal
         static constexpr SceneReferenceHandle RefSceneHandle21{ 3 };
         static constexpr SceneReferenceHandle RefSceneHandle22{ 4 };
     };
-
-    constexpr SceneId ASceneReferenceLogic::MasterSceneId1;
-    constexpr SceneId ASceneReferenceLogic::MasterSceneId2;
-    constexpr SceneId ASceneReferenceLogic::RefSceneId11;
-    constexpr SceneId ASceneReferenceLogic::RefSceneId12;
-    constexpr SceneId ASceneReferenceLogic::RefSceneId21;
-    constexpr SceneId ASceneReferenceLogic::RefSceneId22;
-    constexpr SceneReferenceHandle ASceneReferenceLogic::RefSceneHandle11;
-    constexpr SceneReferenceHandle ASceneReferenceLogic::RefSceneHandle12;
-    constexpr SceneReferenceHandle ASceneReferenceLogic::RefSceneHandle21;
-    constexpr SceneReferenceHandle ASceneReferenceLogic::RefSceneHandle22;
 
     TEST_F(ASceneReferenceLogic, updatesScansScenesForReferencesToUpdate)
     {

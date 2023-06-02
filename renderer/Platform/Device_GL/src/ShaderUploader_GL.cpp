@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    Bool ShaderUploader_GL::UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
+    bool ShaderUploader_GL::UploadShaderProgramFromBinary(const uint8_t* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, std::string& debugErrorLog)
     {
         LOG_TRACE(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromBinary:  uploading binary data");
 
@@ -41,7 +41,7 @@ namespace ramses_internal
     }
 
 
-    Bool ShaderUploader_GL::UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
+    bool ShaderUploader_GL::UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, std::string& debugErrorLog)
     {
         LOG_DEBUG(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  compiling shaders for effect " << effect.getName());
 
@@ -49,7 +49,7 @@ namespace ramses_internal
 
         if (InvalidGLHandle == vertexShaderHandle)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  vertex shader failed to compile " << debugErrorLog.c_str());
+            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  vertex shader failed to compile " << debugErrorLog);
             return false;
         }
 
@@ -57,7 +57,7 @@ namespace ramses_internal
 
         if (InvalidGLHandle == fragmentShaderHandle)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  fragment shader failed to compile " << debugErrorLog.c_str());
+            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  fragment shader failed to compile " << debugErrorLog);
             glDeleteShader(vertexShaderHandle);
             return false;
         }
@@ -70,7 +70,7 @@ namespace ramses_internal
 
             if (InvalidGLHandle == geometryShaderHandle)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  geometry shader failed to compile " << debugErrorLog.c_str());
+                LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  geometry shader failed to compile " << debugErrorLog);
                 glDeleteShader(vertexShaderHandle);
                 glDeleteShader(fragmentShaderHandle);
                 return false;
@@ -122,7 +122,7 @@ namespace ramses_internal
         }
     }
 
-    Bool ShaderUploader_GL::CheckShaderProgramLinkStatus(GLHandle shaderProgram, String& errorLogOut)
+    bool ShaderUploader_GL::CheckShaderProgramLinkStatus(GLHandle shaderProgram, std::string& errorLogOut)
     {
         GLint linkStatus;
         glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
@@ -133,7 +133,7 @@ namespace ramses_internal
             glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLength);
             if (infoLength > 0)
             {
-                String str;
+                std::string str;
                 str.resize(infoLength);
 
                 Int32 numChars;
@@ -155,7 +155,7 @@ namespace ramses_internal
         }
     }
 
-    GLHandle ShaderUploader_GL::CompileShaderStage(const char* stageSource, GLenum shaderType, String& errorLogOut)
+    GLHandle ShaderUploader_GL::CompileShaderStage(const char* stageSource, GLenum shaderType, std::string& errorLogOut)
     {
         GLHandle shaderHandle = glCreateShader(shaderType);
 
@@ -174,9 +174,9 @@ namespace ramses_internal
                 glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH, &infoLength);
 
                 // Allocate Log Space
-                Char* info = new Char[infoLength];
+                char* info = new char[infoLength];
                 glGetShaderInfoLog(shaderHandle, infoLength, &numberChars, info);
-                errorLogOut = String("Unable to compile shader stage: ") + String(info);
+                errorLogOut = std::string("Unable to compile shader stage: ") + info;
                 delete[] info;
 
                 PrintShaderSourceWithLineNumbers(stageSource);
@@ -188,18 +188,18 @@ namespace ramses_internal
         return shaderHandle;
     }
 
-    void ShaderUploader_GL::PrintShaderSourceWithLineNumbers(const String& source)
+    void ShaderUploader_GL::PrintShaderSourceWithLineNumbers(std::string_view source)
     {
         UInt32 lineNumber = 1;
         Int prevNewLine = 0;
-        size_t nextNewLine = source.find("\n");
+        auto nextNewLine = source.find('\n');
 
-        while (nextNewLine != String::npos)
+        while (nextNewLine != std::string_view::npos)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Device_Base::PrintShaderSourceWithLineNumbers:  L" << lineNumber << ": " << source.substr(prevNewLine, nextNewLine - prevNewLine));
 
             prevNewLine = nextNewLine + 1;
-            nextNewLine = source.find("\n", prevNewLine);
+            nextNewLine = source.find('\n', prevNewLine);
             ++lineNumber;
         }
     }

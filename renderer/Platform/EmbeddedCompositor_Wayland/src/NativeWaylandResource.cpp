@@ -7,8 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
-#include "Collections/String.h"
+
 #include <cassert>
+#include <string>
 
 namespace ramses_internal
 {
@@ -27,7 +28,7 @@ namespace ramses_internal
         return wl_resource_get_version(m_resource);
     }
 
-    void NativeWaylandResource::postError(uint32_t code, const String& message)
+    void NativeWaylandResource::postError(uint32_t code, const std::string& message)
     {
         wl_resource_post_error(m_resource, code, "%s", message.c_str());
     }

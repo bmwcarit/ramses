@@ -23,11 +23,11 @@ namespace ramses_internal
         {
         }
 
-        virtual void registerForConnectionUpdates(IConnectionStatusListener*) override
+        void registerForConnectionUpdates(IConnectionStatusListener*) override
         {
         }
 
-        virtual void unregisterForConnectionUpdates(IConnectionStatusListener*) override
+        void unregisterForConnectionUpdates(IConnectionStatusListener*) override
         {
         }
     };

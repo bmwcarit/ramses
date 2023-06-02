@@ -1,0 +1,14 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2020 BMW AG
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+skip_list:
+  - '106'  # Role name ramses-windows-build does not match ``^[a-z][a-z0-9_]+$`` pattern
+  - '204'  # TODO(tobias)  Lines should be no longer than 160 chars
+  - '301'  # Commands should not change things if nothing needs doing
+  - experimental  # all rules tagged as experimental
+use_default_rules: true

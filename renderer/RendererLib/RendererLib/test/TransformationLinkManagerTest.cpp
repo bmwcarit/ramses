@@ -14,6 +14,8 @@
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
 #include "Utils/ThreadLocalLog.h"
+#include "TestEqualHelper.h"
+#include "glm/gtx/transform.hpp"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -166,38 +168,30 @@ TEST_F(ATransformationLinkManager, reportsNoLinkToProviderForProviderNode)
     EXPECT_FALSE(transformationLinkManager.nodeHasDataLinkToProvider(providerSceneId, providerNode));
 }
 
-void expectMatricesEqual(const Matrix44f mat1, const Matrix44f mat2)
-{
-    for (uint32_t i = 0u; i < 16u; ++i)
-    {
-        EXPECT_FLOAT_EQ(mat1.data[i], mat2.data[i]);
-    }
-}
-
 TEST_F(ATransformationLinkManager, retrievesWorldTransformationFromLinkedProviderNode)
 {
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, consumerSlotHandle));
     providerSceneAllocator.allocateTransform(providerNode, providerTransform);
-    const Vector3 transVec(1.f, 2.f, 3.f);
+    const glm::vec3 transVec(1.f, 2.f, 3.f);
     providerScene.setTranslation(providerTransform, transVec);
 
-    const Matrix44f expectedMat = Matrix44f::Translation(transVec);
-    const Matrix44f transMat = transformationLinkManager.getLinkedTransformationFromDataProvider(ETransformationMatrixType_World, consumerSceneId, consumerNode);
+    const auto expectedMat = glm::translate(transVec);
+    const auto transMat = transformationLinkManager.getLinkedTransformationFromDataProvider(ETransformationMatrixType_World, consumerSceneId, consumerNode);
 
-    expectMatricesEqual(expectedMat, transMat);
+    expectMatrixFloatEqual(expectedMat, transMat);
 }
 
 TEST_F(ATransformationLinkManager, retrievesObjectTransformationFromLinkedProviderNode)
 {
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, consumerSlotHandle));
     providerSceneAllocator.allocateTransform(providerNode, providerTransform);
-    const Vector3 transVec(1.f, 2.f, 3.f);
+    const glm::vec3 transVec(1.f, 2.f, 3.f);
     providerScene.setTranslation(providerTransform, transVec);
 
-    const Matrix44f expectedMat = Matrix44f::Translation(-transVec);
-    const Matrix44f transMat = transformationLinkManager.getLinkedTransformationFromDataProvider(ETransformationMatrixType_Object, consumerSceneId, consumerNode);
+    const auto expectedMat = glm::translate(-transVec);
+    const auto transMat = transformationLinkManager.getLinkedTransformationFromDataProvider(ETransformationMatrixType_Object, consumerSceneId, consumerNode);
 
-    expectMatricesEqual(expectedMat, transMat);
+    expectMatrixFloatEqual(expectedMat, transMat);
 }
 
 TEST_F(ATransformationLinkManager, reportsNoLinksForSceneWithRemovedLink)
@@ -356,7 +350,7 @@ TEST_F(ATransformationLinkManager, propagatesTransformationDirtinessToConsumerWh
     markNodeTransformationClean(consumerScene, consumerNode);
 
     providerSceneAllocator.allocateTransform(providerNode, providerTransform);
-    providerScene.setTranslation(providerTransform, Vector3(1.f));
+    providerScene.setTranslation(providerTransform, glm::vec3(1.f));
     EXPECT_TRUE(consumerScene.isMatrixCacheDirty(ETransformationMatrixType_World, consumerNode));
 }
 

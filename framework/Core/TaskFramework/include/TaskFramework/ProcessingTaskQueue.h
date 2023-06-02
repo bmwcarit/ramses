@@ -23,7 +23,7 @@ namespace ramses_internal
     public:
         void addTask(ITask* taskToAdd);
         ITask* popTask(std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
-        bool isEmpty() const;
+        [[nodiscard]] bool isEmpty() const;
 
     private:
         BlockingQueue<ITask*> m_taskQueue;

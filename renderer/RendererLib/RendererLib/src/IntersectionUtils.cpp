@@ -7,45 +7,43 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/IntersectionUtils.h"
-#include "Math3d/Matrix44f.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector4.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "RendererAPI/IDisplayController.h"
 #include "RendererAPI/Types.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace ramses_internal
 {
-    Vector3 IntersectionUtils::CalculatePlaneNormal(const Triangle& triangle)
+    glm::vec3 IntersectionUtils::CalculatePlaneNormal(const Triangle& triangle)
     {
-        const Vector3 edge0 = triangle.v1 - triangle.v0;
-        const Vector3 edge1 = triangle.v2 - triangle.v0;
-        return edge0.cross(edge1);
+        const glm::vec3 edge0 = triangle.v1 - triangle.v0;
+        const glm::vec3 edge1 = triangle.v2 - triangle.v0;
+        return glm::cross(edge0, edge1);
     }
 
-    bool IntersectionUtils::TestPointInTriangle(const Triangle& triangle, const Vector3& planeNormal, const Vector3& testPoint)
+    bool IntersectionUtils::TestPointInTriangle(const Triangle& triangle, const glm::vec3& planeNormal, const glm::vec3& testPoint)
     {
-        Vector3 VecPerpToPlane;
-        const Vector3 edge0     = triangle.v1 - triangle.v0;
-        const Vector3 v0Inters0 = testPoint - triangle.v0;
-        VecPerpToPlane          = edge0.cross(v0Inters0);
-        if (planeNormal.dot(VecPerpToPlane) < 0)
+        glm::vec3 VecPerpToPlane;
+        const glm::vec3 edge0     = triangle.v1 - triangle.v0;
+        const glm::vec3 v0Inters0 = testPoint - triangle.v0;
+        VecPerpToPlane          = glm::cross(edge0, v0Inters0);
+        if (glm::dot(planeNormal, VecPerpToPlane) < 0)
         {
             return false;
         }
 
-        const Vector3 edge1     = triangle.v2 - triangle.v1;
-        const Vector3 v1inters1 = testPoint - triangle.v1;
-        VecPerpToPlane          = edge1.cross(v1inters1);
-        if (planeNormal.dot(VecPerpToPlane) < 0)
+        const glm::vec3 edge1     = triangle.v2 - triangle.v1;
+        const glm::vec3 v1inters1 = testPoint - triangle.v1;
+        VecPerpToPlane          = glm::cross(edge1, v1inters1);
+        if (glm::dot(planeNormal, VecPerpToPlane) < 0)
         {
             return false;
         }
 
-        const Vector3 edge2     = triangle.v0 - triangle.v2;
-        const Vector3 v2inters2 = testPoint - triangle.v2;
-        VecPerpToPlane          = edge2.cross(v2inters2);
-        if (planeNormal.dot(VecPerpToPlane) < 0)
+        const glm::vec3 edge2     = triangle.v0 - triangle.v2;
+        const glm::vec3 v2inters2 = testPoint - triangle.v2;
+        VecPerpToPlane          = glm::cross(edge2, v2inters2);
+        if (glm::dot(planeNormal, VecPerpToPlane) < 0)
         {
             return false;
         }
@@ -53,23 +51,23 @@ namespace ramses_internal
         return true;
     }
 
-    bool IntersectionUtils::CalculateRayVsPlaneIntersection(const Vector3& triangleVertex,
-                                                const Vector3& triangleNormal,
-                                                const Vector3& rayOrigin,
-                                                const Vector3& rayDir,
-                                                Vector3&       intersection,
+    bool IntersectionUtils::CalculateRayVsPlaneIntersection(const glm::vec3& triangleVertex,
+                                                const glm::vec3& triangleNormal,
+                                                const glm::vec3& rayOrigin,
+                                                const glm::vec3& rayDir,
+                                                glm::vec3&       intersection,
                                                 float& distanceRayOriginToIntersection)
     {
         // make sure rayDir is normalized
-        assert(std::abs(rayDir.length() - 1) < std::numeric_limits<float>::epsilon() * 10);
+        assert(std::abs(glm::length(rayDir) - 1) < std::numeric_limits<float>::epsilon() * 10);
 
-        const float nDotRay = triangleNormal.dot(rayDir);
+        const float nDotRay = glm::dot(triangleNormal, rayDir);
         if (std::abs(nDotRay) <= std::numeric_limits<float>::epsilon() * 10) // some epsilon that could still produce valid numbers later on
         {
             return false; // ray and triangle parallel
         }
 
-        distanceRayOriginToIntersection = (triangleVertex - rayOrigin).dot(triangleNormal) / nDotRay;
+        distanceRayOriginToIntersection = glm::dot(triangleVertex - rayOrigin, triangleNormal) / nDotRay;
         if (distanceRayOriginToIntersection < 0)
         {
             return false; // triangle behind ray
@@ -80,9 +78,9 @@ namespace ramses_internal
         return true;
     }
 
-    bool IntersectionUtils::IntersectRayVsTriangle(const Triangle& triangle, const Vector3& rayOrigin, const Vector3& rayDir, Vector3& intersectionPointInModelSpace, float& distanceRayOriginToIntersection)
+    bool IntersectionUtils::IntersectRayVsTriangle(const Triangle& triangle, const glm::vec3& rayOrigin, const glm::vec3& rayDir, glm::vec3& intersectionPointInModelSpace, float& distanceRayOriginToIntersection)
     {
-        const Vector3 planeNormal = CalculatePlaneNormal(triangle);
+        const glm::vec3 planeNormal = CalculatePlaneNormal(triangle);
 
         if (!CalculateRayVsPlaneIntersection(triangle.v0, planeNormal, rayOrigin, rayDir, intersectionPointInModelSpace, distanceRayOriginToIntersection))
         {
@@ -92,31 +90,31 @@ namespace ramses_internal
         return TestPointInTriangle(triangle, planeNormal, intersectionPointInModelSpace);
     }
 
-    bool IntersectionUtils::TestGeometryPicked(const Vector2& pickCoordsNDS, const float* geometry, const size_t geometrySize, const Matrix44f& modelMatrix, const Matrix44f& viewMatrix, const Matrix44f& projectionMatrix, Vector3& intersectionPointInModelSpace)
+    bool IntersectionUtils::TestGeometryPicked(const glm::vec2& pickCoordsNDS, const float* geometry, const size_t geometrySize, const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, glm::vec3& intersectionPointInModelSpace)
     {
         assert(geometrySize % 9 == 0);
         // 4D homogeneous Clip Coordinates
-        const Vector4 ray_orig_clip(pickCoordsNDS.x, pickCoordsNDS.y, -1.0f, 1.0f);
-        const Vector4 ray_target_clip(pickCoordsNDS.x, pickCoordsNDS.y, 1.0f, 1.0f);
+        const glm::vec4 ray_orig_clip(pickCoordsNDS.x, pickCoordsNDS.y, -1.0f, 1.0f);
+        const glm::vec4 ray_target_clip(pickCoordsNDS.x, pickCoordsNDS.y, 1.0f, 1.0f);
 
         // 4D Camera Coordinates
-        Vector4 ray_orig_camera(projectionMatrix.inverse() * ray_orig_clip);
-        Vector4 ray_target_camera(projectionMatrix.inverse() * ray_target_clip);
+        glm::vec4 ray_orig_camera(glm::inverse(projectionMatrix) * ray_orig_clip);
+        glm::vec4 ray_target_camera(glm::inverse(projectionMatrix) * ray_target_clip);
         ray_orig_camera /=  ray_orig_camera.w;
         ray_target_camera /= ray_target_camera.w;
         ray_orig_camera.w = 1.f;
         ray_target_camera.w = 1.f;
 
         // 4D World Coordinates --> for ray and camera
-        const Matrix44f inverseViewMatrix = viewMatrix.inverse();
-        const Vector4 ray_orig_world(inverseViewMatrix * ray_orig_camera);
-        const Vector4 ray_target_world(inverseViewMatrix * ray_target_camera);
+        const auto inverseViewMatrix = glm::inverse(viewMatrix);
+        const glm::vec4 ray_orig_world(inverseViewMatrix * ray_orig_camera);
+        const glm::vec4 ray_target_world(inverseViewMatrix * ray_target_camera);
 
         // 3D Model Coordinates
-        const Matrix44f inverseModelMatrix = modelMatrix.inverse();
-        Vector3 ray_orig_model(inverseModelMatrix * ray_orig_world);
-        Vector3 ray_target_model(inverseModelMatrix * ray_target_world);
-        const auto ray_dir_model = (ray_target_model - ray_orig_model).normalize();
+        const auto inverseModelMatrix = glm::inverse(modelMatrix);
+        glm::vec3 ray_orig_model(inverseModelMatrix * ray_orig_world);
+        glm::vec3 ray_target_model(inverseModelMatrix * ray_target_world);
+        const auto ray_dir_model = glm::normalize(ray_target_model - ray_orig_model);
 
         bool intersectionResult = false;
         float distanceInModelSpace = std::numeric_limits<float>::max();
@@ -125,12 +123,12 @@ namespace ramses_internal
         {
             const float* triData = &geometry[fltIdx];
             Triangle triangle;
-            std::copy(triData + 0, triData + 3, triangle.v0.data);
-            std::copy(triData + 3, triData + 6, triangle.v1.data);
-            std::copy(triData + 6, triData + 9, triangle.v2.data);
+            std::copy(triData + 0, triData + 3, glm::value_ptr(triangle.v0));
+            std::copy(triData + 3, triData + 6, glm::value_ptr(triangle.v1));
+            std::copy(triData + 6, triData + 9, glm::value_ptr(triangle.v2));
 
             float distanceResult = 0.f;
-            Vector3 intersectionPoint;
+            glm::vec3 intersectionPoint;
             if (IntersectRayVsTriangle(triangle, ray_orig_model, ray_dir_model, intersectionPoint, distanceResult))
             {
                 intersectionResult = true;
@@ -144,7 +142,7 @@ namespace ramses_internal
         return intersectionResult;
     }
 
-    void IntersectionUtils::CheckSceneForIntersectedPickableObjects(const TransformationLinkCachedScene& scene, const Vector2i coordsInBufferSpace, PickableObjectIds& pickedObjects)
+    void IntersectionUtils::CheckSceneForIntersectedPickableObjects(const TransformationLinkCachedScene& scene, const glm::ivec2 coordsInBufferSpace, PickableObjectIds& pickedObjects)
     {
         assert(pickedObjects.empty());
 
@@ -171,16 +169,16 @@ namespace ramses_internal
                 const auto& vpOffset = scene.getDataSingleVector2i(vpOffsetRef, DataFieldHandle{ 0 });
                 const auto& vpSize = scene.getDataSingleVector2i(vpSizeRef, DataFieldHandle{ 0 });
 
-                const Vector2i coordsInViewportSpace = coordsInBufferSpace - vpOffset;
+                const glm::ivec2 coordsInViewportSpace = coordsInBufferSpace - vpOffset;
                 //if pick event happened outside of viewport: ignore it
                 if (coordsInViewportSpace.x < 0 || coordsInViewportSpace.y < 0 || coordsInViewportSpace.x > vpSize.x || coordsInViewportSpace.y > vpSize.y)
                     continue;
 
-                const Vector2 coordsNDS = { 2.f * coordsInViewportSpace.x / vpSize.x - 1.f, 2.f * coordsInViewportSpace.y / vpSize.y - 1.f };
+                const glm::vec2 coordsNDS = { 2.f * coordsInViewportSpace.x / vpSize.x - 1.f, 2.f * coordsInViewportSpace.y / vpSize.y - 1.f };
 
-                const Matrix44f cameraViewMatrix = scene.updateMatrixCacheWithLinks(
+                const auto cameraViewMatrix = scene.updateMatrixCacheWithLinks(
                     ETransformationMatrixType_Object, pickableCamera.node);
-                const Matrix44f modelMatrix = scene.updateMatrixCacheWithLinks(
+                const auto modelMatrix = scene.updateMatrixCacheWithLinks(
                     ETransformationMatrixType_World, pickableObject.nodeHandle);
 
                 const auto frustumPlanesRef = scene.getDataReference(pickableCamera.dataInstance, Camera::FrustumPlanesField);
@@ -188,7 +186,7 @@ namespace ramses_internal
                 const auto& frustumPlanes = scene.getDataSingleVector4f(frustumPlanesRef, DataFieldHandle{ 0 });
                 const auto& frustumNearFar = scene.getDataSingleVector2f(frustumNearFarRef, DataFieldHandle{ 0 });
 
-                const Matrix44f projectionMatrix = CameraMatrixHelper::ProjectionMatrix(
+                const auto projectionMatrix = CameraMatrixHelper::ProjectionMatrix(
                     ProjectionParams::Frustum(pickableCamera.projectionType, frustumPlanes.x, frustumPlanes.y, frustumPlanes.z, frustumPlanes.w, frustumNearFar.x, frustumNearFar.y));
 
                 const GeometryDataBuffer& geometryBuffer =
@@ -200,7 +198,7 @@ namespace ramses_internal
                 const UInt32 geometrySize = geometryBuffer.usedSize / sizeof(float);
                 assert(0 == geometrySize % 9);
 
-                Vector3 intersectionPointInModelSpace;
+                glm::vec3 intersectionPointInModelSpace;
                 if (IntersectionUtils::TestGeometryPicked(coordsNDS,
                                                             geometryBufferFloat,
                                                             geometrySize,
@@ -209,8 +207,8 @@ namespace ramses_internal
                                                             projectionMatrix,
                                                             intersectionPointInModelSpace))
                 {
-                    const Vector4 intersectionPointInClipSpace = projectionMatrix * cameraViewMatrix * modelMatrix * Vector4(intersectionPointInModelSpace);
-                    const Vector4 intersectionPointInNDS = intersectionPointInClipSpace / intersectionPointInClipSpace.w;
+                    const glm::vec4 intersectionPointInClipSpace = projectionMatrix * cameraViewMatrix * modelMatrix * glm::vec4(intersectionPointInModelSpace, 1.f);
+                    const glm::vec4 intersectionPointInNDS = intersectionPointInClipSpace / intersectionPointInClipSpace.w;
 
                     assert(std::abs(intersectionPointInNDS.x - coordsNDS.x) <= std::numeric_limits<float>::epsilon() * 10);
                     assert(std::abs(intersectionPointInNDS.y - coordsNDS.y) <= std::numeric_limits<float>::epsilon() * 10);

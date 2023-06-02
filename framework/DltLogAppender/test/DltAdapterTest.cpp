@@ -10,7 +10,8 @@
 #include "DltLogAppender/DltAdapter.h"
 #include "Utils/LogContext.h"
 #include "Utils/LogMessage.h"
-#include "Collections/String.h"
+
+#include <string>
 
 using namespace ramses_internal;
 
@@ -20,7 +21,7 @@ public:
     ADltAdapter()
         : adapter(DltAdapter::getDltAdapter())
         , context(new LogContext("RXXX", "Test context"))
-        , logLevelChangeCallback([](const String&, int){})
+        , logLevelChangeCallback([](const std::string&, int){})
     {
     }
 
@@ -41,7 +42,7 @@ public:
 
     DltAdapter* adapter;
     std::unique_ptr<LogContext> context;
-    std::function<void(const String&, int)> logLevelChangeCallback;
+    std::function<void(const std::string&, int)> logLevelChangeCallback;
 };
 
 // run always

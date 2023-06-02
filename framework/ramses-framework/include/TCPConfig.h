@@ -10,7 +10,8 @@
 #define RAMSES_TCPCONFIG_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "Collections/String.h"
+
+#include <string>
 #include <chrono>
 
 namespace ramses
@@ -20,18 +21,18 @@ namespace ramses
     public:
         TCPConfig();
 
-        uint16_t getPort(bool isDaemon = false) const;
-        const ramses_internal::String& getIPAddress() const;
-        uint16_t getDaemonPort() const;
-        const ramses_internal::String& getDaemonIPAddress() const;
+        [[nodiscard]] uint16_t getPort(bool isDaemon = false) const;
+        [[nodiscard]] const std::string& getIPAddress() const;
+        [[nodiscard]] uint16_t getDaemonPort() const;
+        [[nodiscard]] const std::string& getDaemonIPAddress() const;
 
         void setPort(uint16_t port);
-        void setIPAddress(const ramses_internal::String& ipAddress);
+        void setIPAddress(std::string_view ipAddress);
         void setDaemonPort(uint16_t port);
-        void setDaemonIPAddress(const ramses_internal::String& ipAddress);
+        void setDaemonIPAddress(std::string_view ipAddress);
 
-        std::chrono::milliseconds getAliveInterval() const;
-        std::chrono::milliseconds getAliveTimeout() const;
+        [[nodiscard]] std::chrono::milliseconds getAliveInterval() const;
+        [[nodiscard]] std::chrono::milliseconds getAliveTimeout() const;
         void setAliveInterval(std::chrono::milliseconds interval);
         void setAliveTimeout(std::chrono::milliseconds timeout);
 
@@ -41,9 +42,9 @@ namespace ramses
 
         bool m_portHasBeenSet;
         uint16_t m_port;
-        ramses_internal::String m_ipAddress;
+        std::string m_ipAddress;
         uint16_t m_daemonPort;
-        ramses_internal::String m_daemonIP;
+        std::string m_daemonIP;
         std::chrono::milliseconds m_aliveInterval;
         std::chrono::milliseconds m_aliveTimeout;
     };

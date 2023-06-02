@@ -208,7 +208,7 @@ namespace ramses_internal
         return EScenePublicationMode_Unpublished;
     }
 
-    Bool SceneStateExecutor::checkIfCanBePublished(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBePublished(SceneId sceneId) const
     {
         if (!m_scenesStateInfo.hasScene(sceneId))
         {
@@ -219,7 +219,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeUnpublished(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeUnpublished(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId))
         {
@@ -239,7 +239,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeSubscriptionRequested(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeSubscriptionRequested(SceneId sceneId) const
     {
         if (!canBeSubscriptionRequested(sceneId))
         {
@@ -251,7 +251,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeUnsubscribed(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeUnsubscribed(SceneId sceneId) const
     {
         if (!canBeUnsubscribed(sceneId))
         {
@@ -263,7 +263,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeMapRequested(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeMapRequested(SceneId sceneId) const
     {
         if (!canBeMapRequested(sceneId))
         {
@@ -282,7 +282,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeMapped(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeMapped(SceneId sceneId) const
     {
         if (!canBeMapped(sceneId))
         {
@@ -294,7 +294,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeUnmapped(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeUnmapped(SceneId sceneId) const
     {
         if (!canBeUnmapped(sceneId))
         {
@@ -306,7 +306,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeRenderedRequested(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeRenderedRequested(SceneId sceneId) const
     {
         if (!canBeRenderedRequested(sceneId))
         {
@@ -318,7 +318,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeShown(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeShown(SceneId sceneId) const
     {
         if (!canBeShown(sceneId))
         {
@@ -330,7 +330,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeHidden(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeHidden(SceneId sceneId) const
     {
         if (!canBeHidden(sceneId))
         {
@@ -342,7 +342,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeSubscriptionPending(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeSubscriptionPending(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId))
         {
@@ -363,7 +363,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeSubscribed(SceneId sceneId) const
+    bool SceneStateExecutor::checkIfCanBeSubscribed(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId))
         {
@@ -384,9 +384,9 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeSubscriptionRequested(SceneId sceneId) const
+    bool SceneStateExecutor::canBeSubscriptionRequested(SceneId sceneId) const
     {
-        const Bool sceneIsPublished = (m_scenesStateInfo.hasScene(sceneId) && ESceneState::Published == m_scenesStateInfo.getSceneState(sceneId));
+        const bool sceneIsPublished = (m_scenesStateInfo.hasScene(sceneId) && ESceneState::Published == m_scenesStateInfo.getSceneState(sceneId));
         if (sceneIsPublished)
         {
             return true;
@@ -396,7 +396,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeUnsubscribed(SceneId sceneId) const
+    bool SceneStateExecutor::canBeUnsubscribed(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId))
         {
@@ -420,7 +420,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeMapRequested(SceneId sceneId) const
+    bool SceneStateExecutor::canBeMapRequested(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId) && ESceneState::Subscribed == m_scenesStateInfo.getSceneState(sceneId))
         {
@@ -439,17 +439,17 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeMappingAndUploading(SceneId sceneId) const
+    bool SceneStateExecutor::canBeMappingAndUploading(SceneId sceneId) const
     {
         return (m_scenesStateInfo.hasScene(sceneId) && ESceneState::MapRequested == m_scenesStateInfo.getSceneState(sceneId));
     }
 
-    Bool SceneStateExecutor::canBeMapped(SceneId sceneId) const
+    bool SceneStateExecutor::canBeMapped(SceneId sceneId) const
     {
         return (m_scenesStateInfo.hasScene(sceneId) && ESceneState::MappingAndUploading == m_scenesStateInfo.getSceneState(sceneId));
     }
 
-    Bool SceneStateExecutor::canBeUnmapped(SceneId sceneId) const
+    bool SceneStateExecutor::canBeUnmapped(SceneId sceneId) const
     {
         const auto sceneState = m_scenesStateInfo.hasScene(sceneId) ? m_scenesStateInfo.getSceneState(sceneId) : ESceneState::Unknown;
         if (sceneState == ESceneState::Mapped ||
@@ -463,7 +463,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeRenderedRequested(SceneId sceneId) const
+    bool SceneStateExecutor::canBeRenderedRequested(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId) && ESceneState::Mapped == m_scenesStateInfo.getSceneState(sceneId))
         {
@@ -474,7 +474,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeShown(SceneId sceneId) const
+    bool SceneStateExecutor::canBeShown(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId) && ESceneState::RenderRequested == m_scenesStateInfo.getSceneState(sceneId))
         {
@@ -485,7 +485,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeHidden(SceneId sceneId) const
+    bool SceneStateExecutor::canBeHidden(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId)
             && (m_scenesStateInfo.getSceneState(sceneId) == ESceneState::Rendered || m_scenesStateInfo.getSceneState(sceneId) == ESceneState::RenderRequested))

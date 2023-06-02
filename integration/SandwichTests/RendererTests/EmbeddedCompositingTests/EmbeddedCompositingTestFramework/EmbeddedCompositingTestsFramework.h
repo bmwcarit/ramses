@@ -15,7 +15,9 @@
 #include "TestApplicationSurfaceId.h"
 #include "TestApplicationShellSurfaceId.h"
 #include "WaylandOutputTestParams.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -34,7 +36,7 @@ namespace ramses_internal
     class EmbeddedCompositingTestsFramework: public RendererTestsFramework
     {
     public:
-        EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName);
+        EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config);
 
         //control test app lifecycle
         void                            startTestApplication(uint32_t testAppIdx = 0u);
@@ -49,7 +51,7 @@ namespace ramses_internal
         void                            waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId sourceId);
         void                            waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId sourceId);
         bool                            waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId streamSource, bool available);
-        Bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
+        bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, uint64_t numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
         void                            waitForBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            waitUntilNumberOfCompositorConnections(UInt32 numberOfConnections, bool doResourceUpdate = false, uint32_t displayIdx = 0u);
@@ -57,7 +59,7 @@ namespace ramses_internal
         //send message to test app
         TestApplicationSurfaceId        sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, uint32_t testAppIdx = 0u);
         TestApplicationShellSurfaceId   sendCreateShellSurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx = 0u);
-        void                            sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId, const String& title, uint32_t testAppIdx = 0u);
+        void                            sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId, std::string_view title, uint32_t testAppIdx = 0u);
         void                            sendSetShellSurfaceDummyValuesToTestApplication(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId, uint32_t testAppIdx = 0u);
         void                            sendDestroyShellSurfaceToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, uint32_t testAppIdx = 0u);
         TestApplicationSurfaceId        sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height, uint32_t testAppIdx = 0u);
@@ -78,24 +80,20 @@ namespace ramses_internal
 
         //get message from test app
         UInt32                          getNumberOfAllocatedSHMBufferFromTestApplication(uint32_t testAppIdx = 0u);
-        Bool                            getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx = 0u);
-        Bool                            getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx = 0u);
+        bool                            getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx = 0u);
+        bool                            getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx = 0u);
 
         //local renderer
         void                            renderOneFrame();
         void                            setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility);
-        String                          getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId);
+        std::string                     getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            logEmbeddedCompositor(RendererLogContext& logContext);
 
-        // This is needed due to the conflict resulting from mandating the possibility to set EC config on both RendererConfig
-        // and DisplayConfig, as well as parsing EC config from cmd line to RendererConfig
-        const String&                   getEmbeddedCompositingSocketGroupName() const;
-
-        const static String             TestEmbeddedCompositingDisplayName;
-        const static String             TestAlternateEmbeddedCompositingDisplayName;
+        const static std::string             TestEmbeddedCompositingDisplayName;
+        const static std::string             TestAlternateEmbeddedCompositingDisplayName;
 
     protected:
-        TestApplicationSurfaceId sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL, uint32_t testAppIdx);
+        TestApplicationSurfaceId sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, bool useEGL, uint32_t testAppIdx);
         void sendStopToTestApplication(uint32_t testAppIdx);
 
         IEmbeddedCompositingManager& getEmbeddedCompositorManager(uint32_t displayIdx = 0u);
@@ -104,7 +102,6 @@ namespace ramses_internal
         TestForkingController& m_testForkingController;
         TestApplicationSurfaceId m_nextSurfaceId = TestApplicationSurfaceId(0);
         TestApplicationShellSurfaceId m_nextShellSurfaceId = TestApplicationShellSurfaceId(0);
-        const String m_embeddedCompositingSocketGroupName;
     };
 }
 

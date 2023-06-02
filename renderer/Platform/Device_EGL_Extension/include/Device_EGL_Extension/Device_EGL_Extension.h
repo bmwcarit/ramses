@@ -14,6 +14,8 @@
 #include "Platform_Base/RenderBufferGPUResource.h"
 #include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 
+#include <string>
+
 struct gbm_device;
 struct gbm_bo;
 
@@ -31,22 +33,22 @@ namespace ramses_internal
         {
         }
 
-        EGLImage getEGLImage() const
+        [[nodiscard]] EGLImage getEGLImage() const
         {
             return m_eglImage;
         }
 
-        gbm_bo* getGBMBufferObject() const
+        [[nodiscard]] gbm_bo* getGBMBufferObject() const
         {
             return m_gbmBufferObject;
         }
 
-        int getFD() const
+        [[nodiscard]] int getFD() const
         {
             return m_fd;
         }
 
-        UInt32 getStride() const
+        [[nodiscard]] UInt32 getStride() const
         {
             return m_stride;
         }
@@ -61,20 +63,20 @@ namespace ramses_internal
     class Device_EGL_Extension: public IDeviceExtension
     {
     public:
-        explicit Device_EGL_Extension(Context_EGL& context, const String& renderNode);
-        virtual ~Device_EGL_Extension() override;
+        explicit Device_EGL_Extension(Context_EGL& context, std::string_view renderNode);
+        ~Device_EGL_Extension() override;
 
         bool init();
 
-        virtual DeviceResourceHandle    createDmaRenderBuffer       (uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
-        virtual int                     getDmaRenderBufferFD        (DeviceResourceHandle handle) override;
-        virtual uint32_t                getDmaRenderBufferStride    (DeviceResourceHandle handle) override;
-        virtual void                    destroyDmaRenderBuffer      (DeviceResourceHandle handle) override;
+        DeviceResourceHandle    createDmaRenderBuffer       (uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
+        int                     getDmaRenderBufferFD        (DeviceResourceHandle handle) override;
+        uint32_t                getDmaRenderBufferStride    (DeviceResourceHandle handle) override;
+        void                    destroyDmaRenderBuffer      (DeviceResourceHandle handle) override;
 
     private:
         DeviceResourceMapper& m_resourceMapper;
         WaylandEGLExtensionProcs m_eglExtensionProcs;
-        const String m_renderNode;
+        const std::string m_renderNode;
 
         // GBM (Generic Buffer Manager) lib provides an API for platform abstracted creation of buffers
         // that could be used by EGL and GL for rendering.

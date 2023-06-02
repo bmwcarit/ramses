@@ -6,11 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     # Attention: extra care is needed in case of renaming this module
     # The name of this module (and all CONCRETE platform modules) must align with
     # the postfix of generated RAMSES libs' names. The platform name is used in
@@ -19,39 +15,26 @@ ACME_MODULE(
     NAME                    platform-x11-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Platform_X11/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Platform_X11/*.h
+                            src/*.cpp
     DEPENDENCIES            X11
                             Platform_EGL
 )
 
-ACME_MODULE(
+if (${ramses-sdk_BUILD_TESTS})
+    createModule(
+        NAME                    platform-x11-test
+        TYPE                    BINARY
+        SRC_FILES            test/*.cpp
+                                test/*.h
+        DEPENDENCIES            platform-x11-egl-es-3-0
+                                ramses-gmock-main
+                                RendererTestCommon
+    )
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    platform-x11-test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            test/*.cpp
-                            test/*.h
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            platform-x11-egl-es-3-0
-                            ramses-gmock-main
-                            RendererTestUtils
-)
+    makeTestFromTarget(
+        TARGET platform-x11-test
+        SUFFIX RNDSANDWICHTEST_SWRAST
+        SKIPPABLE)
+endif()

@@ -11,18 +11,17 @@
 
 #include "SceneAPI/SceneId.h"
 #include "RendererAPI/Types.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "RendererLib/RendererStatistics.h"
 #include "RendererLib/FrameProfilerStatistics.h"
 #include "RendererLib/RendererInterruptState.h"
 #include "RendererLib/DisplaySetup.h"
 #include "RendererLib/DisplayEventHandler.h"
-#include "FrameProfileRenderer.h"
-#include "MemoryStatistics.h"
 #include "Collections/Vector.h"
 #include "Collections/HashMap.h"
+
 #include <map>
 #include <unordered_map>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -35,7 +34,6 @@ namespace ramses_internal
     class RendererEventCollector;
     class FrameTimer;
     class SceneExpirationMonitor;
-    class WarpingMeshData;
 
     class Renderer
     {
@@ -52,59 +50,55 @@ namespace ramses_internal
             RendererStatistics& rendererStatistics);
         virtual ~Renderer();
 
-        void                        registerOffscreenBuffer    (DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible);
+        void                        registerOffscreenBuffer    (DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, bool isInterruptible);
         void                        unregisterOffscreenBuffer  (DeviceResourceHandle bufferDeviceHandle);
 
         void                        doOneRenderLoop();
 
         void                        assignSceneToDisplayBuffer  (SceneId sceneId, DeviceResourceHandle buffer, Int32 globalSceneOrder);
         void                        unassignScene               (SceneId sceneId);
-        DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId) const;
-        Bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
-        Int32                       getSceneGlobalOrder         (SceneId sceneId) const;
-        void                        setSceneShown               (SceneId sceneId, Bool show);
+        [[nodiscard]] DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId) const;
+        [[nodiscard]] bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
+        [[nodiscard]] Int32                       getSceneGlobalOrder         (SceneId sceneId) const;
+        void                        setSceneShown               (SceneId sceneId, bool show);
 
         virtual void                markBufferWithSceneForRerender(SceneId sceneId);
 
-        const IDisplayController&   getDisplayController() const;
+        [[nodiscard]] const IDisplayController&   getDisplayController() const;
         IDisplayController&         getDisplayController();
-        bool                        hasDisplayController() const;
-        const DisplaySetup&         getDisplaySetup() const;
+        [[nodiscard]] bool                        hasDisplayController() const;
+        [[nodiscard]] const DisplaySetup&         getDisplaySetup() const;
         void                        createDisplayContext(const DisplayConfig& displayConfig);
         void                        destroyDisplayContext();
 
         DisplayEventHandler&        getDisplayEventHandler();
-        void                        setWarpingMeshData(const WarpingMeshData& meshData);
 
         virtual void                setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
-        virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
+        virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const glm::vec4& clearColor);
         virtual bool                setExternallyOwnedWindowSize(uint32_t width, uint32_t height);
         void                        scheduleScreenshot(DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
         std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots();
 
-        Bool                        hasAnyBufferWithInterruptedRendering() const;
+        [[nodiscard]] bool                        hasAnyBufferWithInterruptedRendering() const;
         void                        resetRenderInterruptState();
 
-        FrameProfileRenderer&       getFrameProfileRenderer();
-
-        Bool hasSystemCompositorController() const;
+        [[nodiscard]] bool hasSystemCompositorController() const;
         void updateSystemCompositorController() const;
         void systemCompositorListIviSurfaces() const;
-        void systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) const;
-        void systemCompositorSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) const;
+        void systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility) const;
+        void systemCompositorSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, float opacity) const;
         void systemCompositorSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) const;
-        void systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const;
-        void systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const;
-        Bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
+        void systemCompositorScreenshot(std::string_view fileName, int32_t screenIviId) const;
+        void systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, bool visibility) const;
+        [[nodiscard]] bool systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const;
         void systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const;
 
         //TODO: remove/refactor those functions
         RendererStatistics&         getStatistics();
         FrameProfilerStatistics&    getProfilerStatistics();
-        MemoryStatistics&           getMemoryStatistics();
 
-        static const Vector4 DefaultClearColor;
+        static const glm::vec4 DefaultClearColor;
 
         // TODO vaclav remove, for debugging only
         std::atomic_int m_traceId{ 0 };
@@ -134,13 +128,10 @@ namespace ramses_internal
 
         RendererStatistics&                    m_statistics;
         FrameProfilerStatistics                m_profilerStatistics;
-        MemoryStatistics                       m_memoryStatistics;
 
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;
         SceneExpirationMonitor&                m_expirationMonitor;
-
-        std::unique_ptr<FrameProfileRenderer> m_frameProfileRenderer;
 
         // temporary containers kept to avoid re-allocations
         std::vector<SceneId> m_tempScenesToRender;

@@ -20,7 +20,7 @@ namespace ramses_internal
     class AWaylandResource : public Test
     {
     public:
-        virtual void SetUp() override
+        void SetUp() override
         {
             m_display = wl_display_create();
             ASSERT_TRUE(m_display != nullptr);
@@ -29,7 +29,7 @@ namespace ramses_internal
             ASSERT_TRUE(m_client != nullptr);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             wl_client_destroy(m_client);
             wl_display_destroy(m_display);

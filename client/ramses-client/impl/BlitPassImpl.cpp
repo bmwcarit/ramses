@@ -16,8 +16,8 @@
 
 namespace ramses
 {
-    BlitPassImpl::BlitPassImpl(SceneImpl& scene, const char* blitpassName)
-        : SceneObjectImpl(scene, ERamsesObjectType_BlitPass, blitpassName)
+    BlitPassImpl::BlitPassImpl(SceneImpl& scene, std::string_view blitpassName)
+        : SceneObjectImpl(scene, ERamsesObjectType::BlitPass, blitpassName)
     {
     }
 
@@ -145,10 +145,10 @@ namespace ramses
         const ramses_internal::BlitPass& blitPass = getIScene().getBlitPass(m_blitPassHandle);
 
         if (!getIScene().isRenderBufferAllocated(blitPass.sourceRenderBuffer))
-            status = addValidationMessage(EValidationSeverity_Error, "blitpass references a deleted source render buffer");
+            status = addValidationMessage(EValidationSeverity::Error, "blitpass references a deleted source render buffer");
 
         if (!getIScene().isRenderBufferAllocated(blitPass.destinationRenderBuffer))
-            status = addValidationMessage(EValidationSeverity_Error, "blitpass references a deleted destination render buffer");
+            status = addValidationMessage(EValidationSeverity::Error, "blitpass references a deleted destination render buffer");
 
         return status;
     }

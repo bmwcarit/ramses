@@ -6,11 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     # Attention: extra care is needed in case of renaming this module
     # The name of this module (and all CONCRETE platform modules) must align with
     # the postfix of generated RAMSES libs' names. The platform name is used in
@@ -19,16 +15,8 @@ ACME_MODULE(
     NAME                    platform-windows-wgl-4-2-core
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Platform_Windows_WGL_4_2_core/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Platform_Windows_WGL_4_2_core/*.h
+                            src/*.cpp
     DEPENDENCIES            Platform_Windows_WGL
-                            Device_GL
 )

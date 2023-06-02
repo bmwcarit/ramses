@@ -14,7 +14,7 @@ namespace ramses
     RamsesVersion GetRamsesVersion()
     {
         return RamsesVersion{
-            ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING,
+            ramses_sdk::RAMSES_SDK_RAMSES_VERSION,
             ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT,
             ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT,
             ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH_INT

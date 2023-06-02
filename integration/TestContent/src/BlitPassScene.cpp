@@ -20,14 +20,14 @@
 
 namespace ramses_internal
 {
-    BlitPassScene::BlitPassScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    BlitPassScene::BlitPassScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : CommonRenderBufferTestScene(scene, cameraPosition)
-        , m_colorBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
-        , m_depthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_WriteOnly))
-        , m_depthStencilBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_DepthStencil, ramses::ERenderBufferFormat_Depth24_Stencil8, ramses::ERenderBufferAccessMode_WriteOnly))
-        , m_blittingColorBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
-        , m_blittingDepthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_WriteOnly))
-        , m_blittingDepthStencilBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_DepthStencil, ramses::ERenderBufferFormat_Depth24_Stencil8, ramses::ERenderBufferAccessMode_WriteOnly))
+        , m_colorBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite))
+        , m_depthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Depth, ramses::ERenderBufferFormat::Depth24, ramses::ERenderBufferAccessMode::WriteOnly))
+        , m_depthStencilBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::DepthStencil, ramses::ERenderBufferFormat::Depth24_Stencil8, ramses::ERenderBufferAccessMode::WriteOnly))
+        , m_blittingColorBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite))
+        , m_blittingDepthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Depth, ramses::ERenderBufferFormat::Depth24, ramses::ERenderBufferAccessMode::WriteOnly))
+        , m_blittingDepthStencilBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::DepthStencil, ramses::ERenderBufferFormat::Depth24_Stencil8, ramses::ERenderBufferAccessMode::WriteOnly))
     {
         initClearPass(state);
         initClearPassForBlittingBuffers(state);
@@ -96,7 +96,7 @@ namespace ramses_internal
         ramses::RenderTarget& renderTarget = createRenderTarget(state);
 
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags_All);
     }
 
@@ -107,13 +107,13 @@ namespace ramses_internal
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
-        transNode.translate(0.0f, -0.5f, -5.0f);
+        transNode.translate({0.0f, -0.5f, -5.0f});
 
         ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();
         renderGroup.addMeshNode(meshNode);
 
-        meshNode.getAppearance()->setStencilFunction(ramses::EStencilFunc_Always, 1, 0xff);
-        meshNode.getAppearance()->setStencilOperation(ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace);
+        meshNode.getAppearance()->setStencilFunction(ramses::EStencilFunc::Always, 1, 0xff);
+        meshNode.getAppearance()->setStencilOperation(ramses::EStencilOperation::Replace, ramses::EStencilOperation::Replace, ramses::EStencilOperation::Replace);
 
         ramses::RenderPass& renderPass = *m_scene.createRenderPass();
         renderPass.setRenderOrder(0);
@@ -163,7 +163,7 @@ namespace ramses_internal
 
         ramses::RenderTarget& renderTarget = createBlittingRenderTarget(state);
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(0.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({0.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags_All);
     }
 
@@ -181,7 +181,7 @@ namespace ramses_internal
         if (BLITS_DEPTH_BUFFER == state ||
             BLITS_DEPTH_STENCIL_BUFFER == state)
         {
-            transNode.translate(0.0f, -0.0f, -5.1f);
+            transNode.translate({0.0f, -0.0f, -5.1f});
         }
         else
         {
@@ -195,11 +195,11 @@ namespace ramses_internal
         {
             //add another mesh that is filtered by stencil
             ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), ramses::TriangleAppearance::EColor_Green);
-            meshNode2.getAppearance()->setStencilFunction(ramses::EStencilFunc_NotEqual, 0u, 0xff);
+            meshNode2.getAppearance()->setStencilFunction(ramses::EStencilFunc::NotEqual, 0u, 0xff);
 
             ramses::Node& transNode2 = *m_scene.createNode();
             transNode2.addChild(meshNode2);
-            transNode2.translate(0.0f, -0.8f, -4.9f);
+            transNode2.translate({0.0f, -0.8f, -4.9f});
 
             renderGroup.addMeshNode(meshNode2);
         }

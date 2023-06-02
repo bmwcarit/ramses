@@ -43,7 +43,7 @@ namespace ramses_internal
                 window.handleEvents();
         }
 
-        void sendKeyEvent(UInt8 virtualKeyCode)
+        void sendKeyEvent(uint8_t virtualKeyCode)
         {
             ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_KEYDOWN, virtualKeyCode, 0));
             ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_KEYUP, virtualKeyCode, 0));
@@ -60,7 +60,7 @@ namespace ramses_internal
             ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_MOUSELEAVE, 0, 0));
         }
 
-        void testKeyCode(UInt8 virtualKeyCode, EKeyCode expectedRamesKeyCode, UInt32 expectedModifier = EKeyModifier_NoModifier)
+        void testKeyCode(uint8_t virtualKeyCode, EKeyCode expectedRamesKeyCode, UInt32 expectedModifier = EKeyModifier_NoModifier)
         {
             sendKeyEvent(virtualKeyCode);
 

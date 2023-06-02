@@ -12,12 +12,8 @@
 #include "Scene/ClientScene.h"
 #include "SceneActionUtils.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneActionApplierHelper.h"
+#include "Scene/SceneActionApplier.h"
 #include "TestEqualHelper.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
 #include "Utils/MemoryUtils.h"
 
 using namespace testing;
@@ -105,7 +101,7 @@ namespace ramses_internal
             , cullMode(ECullMode::BackFacing)
             , drawMode(EDrawMode::Lines)
             , depthWrite(EDepthWrite::Enabled)
-            , depthFunc(EDepthFunc::SmallerEqual)
+            , depthFunc(EDepthFunc::LessEqual)
             , scissorTest(EScissorTest::Enabled)
             , scissorRegion{
                 12, 14, 16, 18
@@ -125,7 +121,7 @@ namespace ramses_internal
             EBlendFactor    bfDstAlpha;
             EBlendOperation boColor;
             EBlendOperation boAlpha;
-            Vector4         blendColor;
+            glm::vec4       blendColor;
             ECullMode       cullMode;
             EDrawMode       drawMode;
             EDepthWrite     depthWrite;
@@ -133,8 +129,8 @@ namespace ramses_internal
             EScissorTest    scissorTest;
             RenderState::ScissorRegion scissorRegion;
             EStencilFunc    stencilFunc;
-            UInt8           stencilRefValue;
-            UInt8           stencilMask;
+            uint8_t         stencilRefValue;
+            uint8_t         stencilMask;
             EStencilOp      stencilOpFail;
             EStencilOp      stencilOpDepthFail;
             EStencilOp      stencilOpDepthPass;
@@ -218,8 +214,7 @@ namespace ramses_internal
         // no actions for setting the zeroed data types
 
         Scene newScene;
-        SceneActionApplierHelper sceneCreator(newScene);
-        sceneCreator.applyActionsOnScene(actions);
+        SceneActionApplier::ApplyActionsOnScene(newScene, actions);
 
         // validate skipped actions still result in nulled data
         EXPECT_TRUE(MemoryUtils::AreAllBytesZero(newScene.getDataIntegerArray(dataInstance, DataFieldHandle(0u)), dataFieldElementCount));

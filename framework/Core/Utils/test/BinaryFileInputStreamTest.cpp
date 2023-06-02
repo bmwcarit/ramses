@@ -9,7 +9,6 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/BinaryFileInputStream.h"
-#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {
@@ -23,7 +22,7 @@ namespace ramses_internal
 
             int32_t intVal = 10;
             float floatVal = 20.f;
-            String  stringVal = "Dies ist ein Text";
+            std::string  stringVal = "Dies ist ein Text";
             uint32_t strlen = static_cast<uint32_t>(stringVal.size());
 
             EXPECT_TRUE(m_file.write(&intVal, sizeof(int32_t)));
@@ -34,7 +33,7 @@ namespace ramses_internal
             m_file.close();
         }
 
-        ~BinaryFileInputStreamTest()
+        ~BinaryFileInputStreamTest() override
         {
             m_file.close();
             m_file.remove();
@@ -49,7 +48,7 @@ namespace ramses_internal
 
         int32_t intVal = 0;
         float floatVal = 0.f;
-        String  stringVal = "";
+        std::string stringVal;
 
         inputStream >> intVal;
 

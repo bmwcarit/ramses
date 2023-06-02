@@ -16,7 +16,7 @@ namespace ramses_internal
     {
     }
 
-    void TextureUploadingAdapter_Base::uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle)
+    void TextureUploadingAdapter_Base::uploadTexture2D(DeviceResourceHandle textureHandle, UInt32 width, UInt32 height, ETextureFormat format, const uint8_t* data, const TextureSwizzleArray& swizzle)
     {
         m_device.uploadStreamTexture2D(textureHandle, width, height, format, data, swizzle);
     }

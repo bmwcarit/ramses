@@ -12,29 +12,11 @@
 #include "SceneImpl.h"
 #include "RamsesClientImpl.h"
 #include "LogMemoryUtils.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "Utils/LogMacros.h"
 #include <numeric>
 
 namespace ramses_internal
 {
-    void SceneCommandVisitor::operator()(const SceneCommandForceFallback& cmd)
-    {
-        ramses::RamsesObject* object = m_scene.findObjectByName(cmd.streamTextureName.c_str());
-        if (object)
-        {
-            if (object->getType() == ramses::ERamsesObjectType_StreamTexture)
-            {
-                ramses::StreamTexture& streamtexture = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::StreamTexture>(*object);
-                LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::execute: " << (cmd.forceFallback?"Enable":"Disable") << " force fallback image for \"" << cmd.streamTextureName << "\"");
-                streamtexture.forceFallbackImage(cmd.forceFallback);
-            }
-            else
-                LOG_ERROR(CONTEXT_CLIENT, "SceneCommandVisitor::execute: Set force fallback setting but the object with name \"" << cmd.streamTextureName << "\" is not a StreamTexture");
-        }
-        else
-            LOG_ERROR(CONTEXT_CLIENT, "SceneCommandVisitor::execute: Set force fallback setting but couldn't find any object with name \"" << cmd.streamTextureName << "\"");
-    }
 
     void SceneCommandVisitor::operator()(const SceneCommandFlushSceneVersion& cmd)
     {
@@ -54,7 +36,7 @@ namespace ramses_internal
         {
             if (const ramses::RamsesObject* ro = m_scene.findObjectByName(cmd.optionalObjectName.c_str()))
             {
-                ro->validate();
+                std::ignore = ro->validate();
                 LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Validation:  " << ro->getValidationReport(cmd.severity));
             }
             else
@@ -64,7 +46,7 @@ namespace ramses_internal
 
     void SceneCommandVisitor::operator()(const SceneCommandDumpSceneToFile& cmd) const
     {
-        const String sceneDumpFileWithExtension = cmd.fileName + ".ramses";
+        const std::string sceneDumpFileWithExtension = cmd.fileName + ".ramses";
         const ramses::status_t status = m_scene.saveToFile(sceneDumpFileWithExtension.c_str(), false);
         if (status == ramses::StatusOK)
         {
@@ -94,7 +76,7 @@ namespace ramses_internal
         }));
     }
 
-    void SceneCommandVisitor::SendSceneViaDLT(const String& sceneDumpFileName)
+    void SceneCommandVisitor::SendSceneViaDLT(const std::string& sceneDumpFileName)
     {
         if (GetRamsesLogger().transmitFile(sceneDumpFileName, false))
         {

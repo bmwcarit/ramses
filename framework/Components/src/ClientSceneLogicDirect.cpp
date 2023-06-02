@@ -51,6 +51,7 @@ namespace ramses_internal
             LOG_INFO_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) {
                             sos << "ClientSceneLogicDirect::flushSceneActions: first flush, sceneId " << m_sceneId
                                 << ", numActions " << sceneUpdate.actions.numberOfActions() << ", published " << isPublished()
+                                << ", numResources " << sceneUpdate.resources.size()
                                 << ", subsActive [";
                             for (const auto& sub : m_subscribersActive)
                                 sos << sub << " ";

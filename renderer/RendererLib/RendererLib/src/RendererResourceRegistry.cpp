@@ -51,7 +51,7 @@ namespace ramses_internal
         updateListOfResourcesNotInUseByScenes(hash);
     }
 
-    Bool RendererResourceRegistry::containsResource(const ResourceContentHash& hash) const
+    bool RendererResourceRegistry::containsResource(const ResourceContentHash& hash) const
     {
         return m_resources.contains(hash);
     }
@@ -232,11 +232,11 @@ namespace ramses_internal
     void RendererResourceRegistry::updateListOfResourcesNotInUseByScenes(const ResourceContentHash& hash)
     {
         const ResourceDescriptor* rd = m_resources.get(hash);
-        const Bool isUnused = ((rd != nullptr) && rd->sceneUsage.empty());
+        const bool isUnused = ((rd != nullptr) && rd->sceneUsage.empty());
 
         {
             ResourceContentHashVector::iterator it = find_c(m_resourcesNotInUseByScenes, hash);
-            const Bool isContained = (it != m_resourcesNotInUseByScenes.end());
+            const bool isContained = (it != m_resourcesNotInUseByScenes.end());
             if (isUnused)
             {
                 // put to list if not already contained
@@ -252,7 +252,7 @@ namespace ramses_internal
         }
     }
 
-    Bool RendererResourceRegistry::ValidateStatusChange(EResourceStatus currentStatus, EResourceStatus newStatus)
+    bool RendererResourceRegistry::ValidateStatusChange(EResourceStatus currentStatus, EResourceStatus newStatus)
     {
         if (currentStatus == newStatus)
             return false;

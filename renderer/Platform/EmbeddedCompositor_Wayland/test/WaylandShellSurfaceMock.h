@@ -30,7 +30,7 @@ namespace ramses_internal
         MOCK_METHOD(void, shellSurfaceSetTitle, (IWaylandClient& client, const char* title), (override));
         MOCK_METHOD(void, shellSurfaceSetClass, (IWaylandClient& client, const char* className), (override));
         MOCK_METHOD(void, surfaceWasDeleted, (), (override));
-        MOCK_METHOD(String&, getTitle, (), (const, override));
+        MOCK_METHOD(std::string&, getTitle, (), (const, override));
     };
 }
 

@@ -32,7 +32,7 @@ namespace ramses_internal
 
     void TestScenesAndRenderer::publish(ramses::sceneId_t sceneId)
     {
-        m_scenes.getScene(sceneId).publish(ramses::EScenePublicationMode_LocalOnly);
+        m_scenes.getScene(sceneId).publish(ramses::EScenePublicationMode::LocalOnly);
     }
 
     void TestScenesAndRenderer::flush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag)

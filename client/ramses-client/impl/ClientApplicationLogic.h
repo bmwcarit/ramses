@@ -40,7 +40,7 @@ namespace ramses_internal
     {
     public:
         explicit ClientApplicationLogic(const Guid& myId, PlatformLock& frameworkLock);
-        virtual ~ClientApplicationLogic() override;
+        ~ClientApplicationLogic() override;
 
         void init(IResourceProviderComponent& resources, ISceneGraphProviderComponent& scenegraph);
         void deinit();
@@ -49,24 +49,24 @@ namespace ramses_internal
         void createScene(ClientScene& scene, bool enableLocalOnlyOptimization);
         void publishScene(SceneId sceneId, EScenePublicationMode publicationMode);
         void unpublishScene(SceneId sceneId);
-        Bool isScenePublished(SceneId sceneId) const;
+        [[nodiscard]] bool isScenePublished(SceneId sceneId) const;
 
         bool flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);
 
-        virtual void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) override;
-        virtual void handleResourceAvailabilityEvent(ResourceAvailabilityEvent const& event, const Guid& rendererId) override;
+        void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) override;
+        void handleResourceAvailabilityEvent(ResourceAvailabilityEvent const& event, const Guid& rendererId) override;
 
         // Resource handling
         ManagedResource         addResource(const IResource* resource);
-        ManagedResource         getResource(ResourceContentHash hash) const;
-        ManagedResource         loadResource(const ResourceContentHash& hash) const;
-        ResourceHashUsage       getHashUsage(const ResourceContentHash& hash) const;
+        [[nodiscard]] ManagedResource         getResource(ResourceContentHash hash) const;
+        [[nodiscard]] ManagedResource         loadResource(const ResourceContentHash& hash) const;
+        [[nodiscard]] ResourceHashUsage       getHashUsage(const ResourceContentHash& hash) const;
         SceneFileHandle         addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ResourceTableOfContents& toc);
         void                    removeResourceFile(SceneFileHandle handle);
         void                    loadResourceFromFile(SceneFileHandle handle);
         void                    reserveResourceCount(uint32_t totalCount);
-        bool                    hasResourceFile(SceneFileHandle handle) const;
+        [[nodiscard]] bool                    hasResourceFile(SceneFileHandle handle) const;
 
         std::vector<ramses_internal::SceneReferenceEvent> popSceneReferenceEvents();
 

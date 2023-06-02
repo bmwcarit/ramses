@@ -33,14 +33,14 @@ namespace ramses_internal
         return !(*this == other);
     }
 
-    ProjectionParams ProjectionParams::Perspective(Float fieldOfViewY, Float aspectRatio, Float nearPlane, Float farPlane)
+    ProjectionParams ProjectionParams::Perspective(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane)
     {
         ProjectionParams params;
         params.m_projectionType = ECameraProjectionType::Perspective;
         params.nearPlane = nearPlane;
         params.farPlane = farPlane;
 
-        const Float tangent = std::tan(PlatformMath::Deg2Rad(fieldOfViewY / 2.0f));
+        const float tangent = std::tan(PlatformMath::Deg2Rad(fieldOfViewY / 2.0f));
         params.topPlane = nearPlane * tangent;
         params.bottomPlane = -params.topPlane;
         params.rightPlane = params.topPlane * aspectRatio;
@@ -49,8 +49,8 @@ namespace ramses_internal
         return params;
     }
 
-    ProjectionParams ProjectionParams::Frustum(ECameraProjectionType projectionType, Float leftPlane, Float rightPlane,
-        Float bottomPlane, Float topPlane, Float nearPlane, Float farPlane)
+    ProjectionParams ProjectionParams::Frustum(ECameraProjectionType projectionType, float leftPlane, float rightPlane,
+        float bottomPlane, float topPlane, float nearPlane, float farPlane)
     {
         ProjectionParams params;
         params.m_projectionType = projectionType;
@@ -64,14 +64,14 @@ namespace ramses_internal
         return params;
     }
 
-    Float ProjectionParams::GetPerspectiveFovY(const ProjectionParams& projectionParams)
+    float ProjectionParams::GetPerspectiveFovY(const ProjectionParams& projectionParams)
     {
         assert(projectionParams.m_projectionType == ECameraProjectionType::Perspective);
         return PlatformMath::Rad2Deg(std::atan2(std::abs(projectionParams.topPlane), projectionParams.nearPlane) +
                                      std::atan2(std::abs(projectionParams.bottomPlane), projectionParams.nearPlane));
     }
 
-    Float ProjectionParams::GetAspectRatio(const ProjectionParams& projectionParams)
+    float ProjectionParams::GetAspectRatio(const ProjectionParams& projectionParams)
     {
         return (projectionParams.rightPlane - projectionParams.leftPlane) / (projectionParams.topPlane - projectionParams.bottomPlane);
     }

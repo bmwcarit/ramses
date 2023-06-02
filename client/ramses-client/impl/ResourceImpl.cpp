@@ -18,18 +18,19 @@
 #include "Components/ManagedResource.h"
 
 #include "Collections/StringOutputStream.h"
-#include "Utils/StringUtils.h"
 #include "Utils/BinaryOutputStream.h"
 #include "RamsesObjectTypeUtils.h"
 #include "city.h"
 #include "Utils/LogMacros.h"
+
+#include <string_view>
 
 namespace ramses
 {
     ResourceImpl::ResourceImpl(ERamsesObjectType type,
         ramses_internal::ResourceHashUsage hashUsage,
         SceneImpl& scene,
-        const char* name)
+        std::string_view name)
         : SceneObjectImpl(scene, type, name)
         , m_hashUsage(std::move(hashUsage))
     {
@@ -50,7 +51,7 @@ namespace ramses
         return m_resourceId;
     }
 
-    resourceId_t ResourceImpl::CreateResourceHash(ramses_internal::ResourceContentHash llhash, ramses_internal::String const& name, ERamsesObjectType type)
+    resourceId_t ResourceImpl::CreateResourceHash(ramses_internal::ResourceContentHash llhash, const std::string& name, ERamsesObjectType type)
     {
         resourceId_t hash;
 
@@ -114,11 +115,11 @@ namespace ramses
         ramses_internal::StringOutputStream stringStream;
         stringStream << "Resource ID: " << m_resourceId;
         stringStream << "  Resource Hash: " << m_hashUsage.getHash();
-        addValidationMessage(EValidationSeverity_Info, ramses_internal::String{ stringStream.release() });
+        addValidationMessage(EValidationSeverity::Info, stringStream.release());
         return status;
     }
 
-    status_t ResourceImpl::setName(RamsesObject& object, const char* name)
+    status_t ResourceImpl::setName(RamsesObject& object, std::string_view name)
     {
         const status_t status = SceneObjectImpl::setName(object, name);
 

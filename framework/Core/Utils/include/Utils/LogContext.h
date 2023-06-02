@@ -19,22 +19,19 @@ namespace ramses_internal
     public:
         LogContext(const char* name, const char* id);
 
-        const char* getContextName() const;
-        const char* getContextId() const;
+        [[nodiscard]] const char* getContextName() const;
+        [[nodiscard]] const char* getContextId() const;
 
         void setLogLevel(const ELogLevel logLevel);
-        ELogLevel getLogLevel() const;
+        [[nodiscard]] ELogLevel getLogLevel() const;
 
         void setUserData(void* dataPtr);
-        void* getUserData() const;
-
-        void disableSetLogLevel();
+        [[nodiscard]] void* getUserData() const;
     private:
         const char* m_contextName;
         const char* m_contextId;
 
         std::atomic<ELogLevel> m_logLevel{ELogLevel::Info};
-        bool m_setLogLevelEnabled = true;
 
         void* m_data = nullptr;
     };
@@ -47,8 +44,7 @@ namespace ramses_internal
 
     inline void LogContext::setLogLevel(ELogLevel logLevel)
     {
-        if (m_setLogLevelEnabled)
-            m_logLevel = logLevel;
+        m_logLevel = logLevel;
     }
 
     inline ELogLevel LogContext::getLogLevel() const
@@ -74,11 +70,6 @@ namespace ramses_internal
     inline void* LogContext::getUserData() const
     {
         return m_data;
-    }
-
-    inline void LogContext::disableSetLogLevel()
-    {
-        m_setLogLevelEnabled = false;
     }
 }
 

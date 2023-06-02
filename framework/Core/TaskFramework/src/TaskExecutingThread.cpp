@@ -87,14 +87,6 @@ namespace ramses_internal
 
     void TaskExecutingThread::run()
     {
-#ifdef __ghs__
-#   ifdef RAMSES_WORKER_THREAD_PRIORITY
-        setThreadPriorityIntegrity(RAMSES_WORKER_THREAD_PRIORITY, "worker thread");
-#   endif
-#   ifdef RAMSES_WORKER_THREAD_CORE_BINDING
-        setThreadCoreBindingIntegrity(RAMSES_WORKER_THREAD_CORE_BINDING, "worker thread");
-#   endif
-#endif
         if (nullptr != m_pBlockingTaskQueue)
         {
             m_aliveHandler.notifyAlive(m_aliveIdentifier);

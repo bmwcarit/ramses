@@ -14,21 +14,22 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "SceneAPI/Handles.h"
 
+#include <string>
+
 namespace ramses_internal
 {
-    class String;
     class RendererCommandBuffer;
 
-    class LogRendererInfo : public RamshCommandArgs<String, Bool, MemoryHandle>
+    class LogRendererInfo : public RamshCommandArgs<std::string, bool, MemoryHandle>
     {
     public:
         explicit LogRendererInfo(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(String& topic, Bool& verbose, MemoryHandle& nodeHandleFilter) const override;
+        bool execute(std::string& topic, bool& verbose, MemoryHandle& nodeHandleFilter) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;
 
-        static ERendererLogTopic GetRendererTopic(const String& topicName);
+        static ERendererLogTopic GetRendererTopic(const std::string& topicName);
     };
 }
 

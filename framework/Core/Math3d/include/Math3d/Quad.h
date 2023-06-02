@@ -9,8 +9,8 @@
 #ifndef RAMSES_QUAD_H
 #define RAMSES_QUAD_H
 
-#include "Vector4i.h"
 #include <algorithm>
+#include "PlatformAbstraction/PlatformTypes.h"
 
 namespace ramses_internal
 {
@@ -23,8 +23,8 @@ namespace ramses_internal
         bool operator==(const Quad& q) const;
         bool operator!=(const Quad& q) const;
 
-        Quad getBoundingQuad(const Quad& other) const;
-        Int32 getArea() const;
+        [[nodiscard]] Quad getBoundingQuad(const Quad& other) const;
+        [[nodiscard]] Int32 getArea() const;
 
         Int32 x = 0;
         Int32 y = 0;

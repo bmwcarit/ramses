@@ -36,7 +36,7 @@ namespace ramses_internal
         {
         }
 
-        uint64_t hash() const
+        [[nodiscard]] uint64_t hash() const
         {
             static_assert(sizeof(EWrapMethod) == 1u, "Unexpected size for enum used for shift operations");
             static_assert(sizeof(ESamplingMethod) == 1u, "Unexpected size for enum used for shift operations");

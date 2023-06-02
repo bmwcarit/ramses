@@ -8,7 +8,6 @@
 
 #include "PrintSceneList.h"
 #include "ramses-client-api/Scene.h"
-#include "SceneImpl.h"
 #include "RamsesClientImpl.h"
 #include "Utils/LogMacros.h"
 
@@ -21,18 +20,16 @@ namespace ramses_internal
         registerKeyword("printSceneList");
     }
 
-    Bool PrintSceneList::executeInput(const std::vector<std::string>& input)
+    bool PrintSceneList::executeInput(const std::vector<std::string>& input)
     {
         UNUSED(input);
 
         LOG_INFO_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) {
                     sos << "PrintSceneList::executeInput:  ";
                     sos << "Scenes: \n\r";
-
-                    const ramses::SceneVector sceneList = m_client.getListOfScenes();
-                    for (auto scene : sceneList)
+                    for (const auto& scene : m_client.getListOfScenes())
                     {
-                        sos << "    Id: " << scene->impl.getSceneId() << " Name: \"" << scene->getName() << "\"\n\r";
+                        sos << "    Id: " << scene->getSceneId() << " Name: \"" << scene->getName() << "\"\n\r";
                     }
                 }));
 

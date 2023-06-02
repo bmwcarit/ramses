@@ -29,7 +29,7 @@ namespace ramses
         return (isDaemon && !m_portHasBeenSet) ? DefaultDaemonPort : m_port;
     }
 
-    const ramses_internal::String& TCPConfig::getIPAddress() const
+    const std::string& TCPConfig::getIPAddress() const
     {
         return m_ipAddress;
     }
@@ -39,7 +39,7 @@ namespace ramses
         return m_daemonPort;
     }
 
-    const ramses_internal::String& TCPConfig::getDaemonIPAddress() const
+    const std::string& TCPConfig::getDaemonIPAddress() const
     {
         return m_daemonIP;
     }
@@ -50,9 +50,9 @@ namespace ramses
         m_portHasBeenSet = true;
     }
 
-    void TCPConfig::setIPAddress(const ramses_internal::String& ipAddress)
+    void TCPConfig::setIPAddress(std::string_view ipAddress)
     {
-        m_ipAddress = ipAddress;
+        m_ipAddress = std::string(ipAddress);
     }
 
     void TCPConfig::setDaemonPort(uint16_t port)
@@ -60,9 +60,9 @@ namespace ramses
         m_daemonPort = port;
     }
 
-    void TCPConfig::setDaemonIPAddress(const ramses_internal::String& ipAddress)
+    void TCPConfig::setDaemonIPAddress(std::string_view ipAddress)
     {
-        m_daemonIP = ipAddress;
+        m_daemonIP = std::string(ipAddress);
     }
 
 

@@ -23,11 +23,11 @@ namespace ramses_internal
         class TestResource : public ResourceBase
         {
         public:
-            explicit TestResource(EResourceType typeID, ResourceCacheFlag cacheFlag, const String& name)
+            explicit TestResource(EResourceType typeID, ResourceCacheFlag cacheFlag, std::string_view name)
                 : ResourceBase(typeID, cacheFlag, name)
             {}
 
-            virtual void serializeResourceMetadataToStream(IOutputStream&) const override {}
+            void serializeResourceMetadataToStream(IOutputStream&) const override {}
         };
 
         class ResourceCompression : public ::testing::TestWithParam<IResource::CompressionLevel>
@@ -37,12 +37,12 @@ namespace ramses_internal
         class DummyResource : public ResourceBase
         {
         public:
-            explicit DummyResource(uint32_t metadata = 0, const String& name = String())
+            explicit DummyResource(uint32_t metadata = 0, std::string_view name = {})
                 : ResourceBase(EResourceType_Invalid, ResourceCacheFlag(15u), name)
                 , m_metadata(metadata)
             {}
 
-            virtual void serializeResourceMetadataToStream(IOutputStream& output) const override
+            void serializeResourceMetadataToStream(IOutputStream& output) const override
             {
                 output << m_metadata;
             }
@@ -63,16 +63,16 @@ namespace ramses_internal
         {
             SCOPED_TRACE(dataSize);
 
-            TestResource res(EResourceType_Invalid, ResourceCacheFlag(0), String());
+            TestResource res(EResourceType_Invalid, ResourceCacheFlag(0), {});
             ResourceBlob data(dataSize);
             for (UInt32 idx = 0; idx < dataSize; ++idx)
             {
-                data.data()[idx] = static_cast<UInt8>(idx+1);
+                data.data()[idx] = static_cast<uint8_t>(idx+1);
             }
             res.setResourceData(ResourceBlob(data.size(), data.data()));  // copy data
             res.compress(GetParam());
 
-            TestResource resFromCompressed(EResourceType_Invalid, ResourceCacheFlag(0), String());
+            TestResource resFromCompressed(EResourceType_Invalid, ResourceCacheFlag(0), {});
             resFromCompressed.setCompressedResourceData(CompressedResourceBlob(res.getCompressedResourceData().size(), res.getCompressedResourceData().data()),
                                                         IResource::CompressionLevel::Realtime, res.getDecompressedDataSize(), res.getHash());
             resFromCompressed.decompress();
@@ -86,7 +86,7 @@ namespace ramses_internal
         for (UInt32 dataSize = 1; dataSize < 1001; ++dataSize)
         {
             SCOPED_TRACE(dataSize);
-            TestResource res(EResourceType_Invalid, ResourceCacheFlag(0), String());
+            TestResource res(EResourceType_Invalid, ResourceCacheFlag(0), {});
             res.setResourceData(ResourceBlob(dataSize));
             res.compress(GetParam());
             EXPECT_FALSE(res.isCompressedAvailable());
@@ -113,7 +113,7 @@ namespace ramses_internal
 
     TEST_F(AResource, hasZeroSizesByDefault)
     {
-        TestResource emptyRes(EResourceType_Invalid, ResourceCacheFlag(0), String());
+        TestResource emptyRes(EResourceType_Invalid, ResourceCacheFlag(0), {});
         EXPECT_EQ(0u, emptyRes.getDecompressedDataSize());
         EXPECT_EQ(0u, emptyRes.getCompressedDataSize());
     }
@@ -123,7 +123,7 @@ namespace ramses_internal
         for (UInt32 dataSize = 1; dataSize < 2000; ++dataSize)
         {
             SCOPED_TRACE(dataSize);
-            TestResource res(EResourceType_Invalid, ResourceCacheFlag(0), String());
+            TestResource res(EResourceType_Invalid, ResourceCacheFlag(0), {});
             res.setResourceData(ResourceBlob(dataSize));
             res.compress(IResource::CompressionLevel::None);
             EXPECT_FALSE(res.isCompressedAvailable());
@@ -132,14 +132,14 @@ namespace ramses_internal
 
     TEST_F(AResource, canGetEmptyName)
     {
-        TestResource emptyNameRes(EResourceType_Invalid, ResourceCacheFlag(0), String());
-        EXPECT_EQ(String(), emptyNameRes.getName());
+        TestResource emptyNameRes(EResourceType_Invalid, ResourceCacheFlag(0), {});
+        EXPECT_EQ(std::string{}, emptyNameRes.getName());
     }
 
     TEST_F(AResource, canGetNonEmptyName)
     {
-        TestResource nonEmptyNameRes(EResourceType_Invalid, ResourceCacheFlag(0), String("foobar"));
-        EXPECT_EQ(String("foobar"), nonEmptyNameRes.getName());
+        TestResource nonEmptyNameRes(EResourceType_Invalid, ResourceCacheFlag(0), "foobar");
+        EXPECT_EQ(std::string{"foobar"}, nonEmptyNameRes.getName());
     }
 
     TEST_F(AResource, givesSameHashForDifferentNames)
@@ -154,13 +154,13 @@ namespace ramses_internal
 
     TEST_F(AResource, canGetType)
     {
-        TestResource res(EResourceType_Effect, ResourceCacheFlag(0), String());
+        TestResource res(EResourceType_Effect, ResourceCacheFlag(0), {});
         EXPECT_EQ(EResourceType_Effect, res.getTypeID());
     }
 
     TEST_F(AResource, canGetCacheFlag)
     {
-        TestResource res(EResourceType_Invalid, ResourceCacheFlag(11), String());
+        TestResource res(EResourceType_Invalid, ResourceCacheFlag(11), {});
         EXPECT_EQ(ResourceCacheFlag(11), res.getCacheFlag());
     }
 

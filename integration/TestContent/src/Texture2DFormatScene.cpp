@@ -226,7 +226,7 @@ const ramses::MipLevelData mipLevelData_null;
 
 namespace ramses_internal
 {
-    Texture2DFormatScene::Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    Texture2DFormatScene::Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         createOrthoCamera();
@@ -248,10 +248,10 @@ namespace ramses_internal
             swizzle);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Nearest,
-            ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Nearest,
+            ramses::ETextureSamplingMethod::Nearest,
             *texture);
 
         createQuad(*sampler);
@@ -267,25 +267,24 @@ namespace ramses_internal
 
     void Texture2DFormatScene::createQuad(const ramses::TextureSampler& sampler)
     {
-        uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
-        float vertexPositionsArray[] = {
-            -1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ -1.0f, -1.0f, -1.0f },
+            ramses::vec3f{ 1.0f, -1.0f, -1.0f },
+            ramses::vec3f{ -1.0f, 1.0f, -1.0f },
+            ramses::vec3f{ 1.0f, 1.0f, -1.0f }
         };
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
-
-        float textureCoordsArray[] = { 0.0f, 1.0f,
-            1.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 0.0f
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{
+            ramses::vec2f{ 0.0f, 1.0f },
+            ramses::vec2f{ 1.0f, 1.0f },
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ 1.0f, 0.0f }
         };
-
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
         assert(effect != nullptr);
@@ -299,8 +298,8 @@ namespace ramses_internal
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect);
         appearance->setInputTexture(textureInput, sampler);
-        appearance->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_OneMinusSrcAlpha);
-        appearance->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+        appearance->setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::OneMinusSrcAlpha);
+        appearance->setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
 
         ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(*effect);
         geometry->setIndices(*indices);

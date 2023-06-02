@@ -64,7 +64,7 @@ namespace ramses_internal
         return true;
     }
 
-    void Window_Wayland_Shell::setTitle(const String& title)
+    void Window_Wayland_Shell::setTitle(std::string_view title)
     {
         Window_Wayland::setTitle(title);
         if (nullptr != m_shellSurface)

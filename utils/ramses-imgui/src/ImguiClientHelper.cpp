@@ -115,8 +115,8 @@ namespace ramses_internal
 
         imguicamera->setFrustum(0.0f, float(width), -float(height), 0.0f, 0.1f, 1.0f);
         imguicamera->setViewport(0, 0, width, height);
-        imguicamera->translate(0.0f, 0.0f, 0.5f);
-        imguicamera->scale(1.0, -1.0f, 1.0f);
+        imguicamera->translate({0.0f, 0.0f, 0.5f});
+        imguicamera->scale({1.0, -1.0f, 1.0f});
 
         ramses::RenderPass* renderPass = m_imguiscene->createRenderPass("imgui render pass");
         renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -176,17 +176,17 @@ namespace ramses_internal
         ramses::MipLevelData mipLevelData(static_cast<uint32_t>(texturewidth * textureheight * 4), pixels);
         auto texture = m_imguiscene->createTexture2D(ramses::ETextureFormat::RGBA8, texturewidth, textureheight, 1, &mipLevelData);
         sampler = m_imguiscene->createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Linear,
-            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Linear,
+            ramses::ETextureSamplingMethod::Linear,
             *texture);
 
         // At this point you've got the texture data and you need to upload that your your graphic system:
         // After we have created the texture, store its pointer/identifier (_in whichever format your engine uses_) in 'io.Fonts->TexID'.
         // This will be passed back to your via the renderer. Basically ImTextureID == void*. Read FAQ below for details about ImTextureID.
         io.Fonts->TexID = sampler;
-        m_imguiscene->publish(ramses::EScenePublicationMode_LocalOnly);
+        m_imguiscene->publish(ramses::EScenePublicationMode::LocalOnly);
         m_imguiscene->flush();
     }
 
@@ -226,31 +226,31 @@ namespace ramses_internal
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic) C-style array in 3rd party code. Bounds are checked by loop condition
             const ImDrawList* cmd_list = draw_data->CmdLists[n];
             const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;
-            auto ramsesind = m_imguiscene->createArrayResource(ramses::EDataType::UInt16, cmd_list->IdxBuffer.Size, idx_buffer);
+            auto ramsesind = m_imguiscene->createArrayResource(cmd_list->IdxBuffer.Size, idx_buffer);
             todeleteRes.push_back(ramsesind);
             unsigned int idx = 0U;
-            std::vector <float> positions;
-            std::vector <float> uv;
-            std::vector <float> color;
+
+            std::vector <ramses::vec2f> positions;
+            std::vector <ramses::vec2f> uv;
+            std::vector <ramses::vec4f> color;
             for (auto& v : cmd_list->VtxBuffer)
             {
-                positions.push_back(v.pos.x);
-                positions.push_back(v.pos.y);
-                uv.push_back(v.uv.x);
-                uv.push_back(v.uv.y);
+                positions.emplace_back(v.pos.x, v.pos.y);
+                uv.emplace_back(v.uv.x, v.uv.y);
 
                 const auto alpha = (v.col >> 24U) & 0xFFU;
-                const auto blue  = (v.col >> 16U) & 0xFFU;
+                const auto blue = (v.col >> 16U) & 0xFFU;
                 const auto green = (v.col >> 8U) & 0xFFU;
-                const auto red   = v.col & 0xFFU;
-                color.push_back(static_cast<float>(red) / 255.0f);
-                color.push_back(static_cast<float>(green) / 255.0f);
-                color.push_back(static_cast<float>(blue) / 255.0f);
-                color.push_back(static_cast<float>(alpha) / 255.0f);
+                const auto red = v.col & 0xFFU;
+                color.emplace_back(
+                    static_cast<float>(red) / 255.0f,
+                    static_cast<float>(green) / 255.0f,
+                    static_cast<float>(blue) / 255.0f,
+                    static_cast<float>(alpha) / 255.0f);
             }
-            auto ramsespositions = m_imguiscene->createArrayResource(ramses::EDataType::Vector2F, cmd_list->VtxBuffer.Size, positions.data());
-            auto ramsesuv = m_imguiscene->createArrayResource(ramses::EDataType::Vector2F, cmd_list->VtxBuffer.Size, uv.data());
-            auto ramsescolor = m_imguiscene->createArrayResource(ramses::EDataType::Vector4F, cmd_list->VtxBuffer.Size, color.data());
+            auto ramsespositions = m_imguiscene->createArrayResource(cmd_list->VtxBuffer.Size, positions.data());
+            auto ramsesuv = m_imguiscene->createArrayResource(cmd_list->VtxBuffer.Size, uv.data());
+            auto ramsescolor = m_imguiscene->createArrayResource(cmd_list->VtxBuffer.Size, color.data());
             todeleteRes.push_back(ramsespositions);
             todeleteRes.push_back(ramsesuv);
             todeleteRes.push_back(ramsescolor);
@@ -266,11 +266,11 @@ namespace ramses_internal
                 const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
                 ramses::Appearance* appearance = m_imguiscene->createAppearance(*effect, "triangle appearance");
                 todeleteMeshes.push_back(appearance);
-                appearance->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-                appearance->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-                appearance->setDepthFunction(ramses::EDepthFunc_Disabled);
-                appearance->setDepthWrite(ramses::EDepthWrite_Disabled);
-                appearance->setCullingMode(ramses::ECullMode_Disabled);
+                appearance->setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+                appearance->setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+                appearance->setDepthFunction(ramses::EDepthFunc::Disabled);
+                appearance->setDepthWrite(ramses::EDepthWrite::Disabled);
+                appearance->setCullingMode(ramses::ECullMode::Disabled);
                 appearance->setInputTexture(textureInput, *static_cast<ramses::TextureSampler*>(pcmd->TextureId));
                 auto mesh = m_imguiscene->createMeshNode();
                 todeleteMeshes.push_back(mesh);
@@ -278,7 +278,7 @@ namespace ramses_internal
                 mesh->setAppearance(*appearance);
                 const ImVec2 pos = draw_data->DisplayPos;
                 const ImVec2 displaysize = draw_data->DisplaySize;
-                appearance->setScissorTest(ramses::EScissorTest_Enabled,
+                appearance->setScissorTest(ramses::EScissorTest::Enabled,
                                            static_cast<int16_t>(pcmd->ClipRect.x - pos.x),
                                            static_cast<int16_t>(displaysize.y - pcmd->ClipRect.w - pos.y),
                                            static_cast<uint16_t>(pcmd->ClipRect.z - pos.x - pcmd->ClipRect.x - pos.x),
@@ -308,7 +308,7 @@ namespace ramses_internal
 
     void ImguiClientHelper::offscreenBufferCreated(ramses::displayId_t /*displayId_t*/, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
     {
-        if (ramses::ERendererEventResult_FAIL != result)
+        if (ramses::ERendererEventResult::Failed != result)
         {
             m_offscreenBuffers.insert(offscreenBufferId);
         }
@@ -324,7 +324,7 @@ namespace ramses_internal
 
     void ImguiClientHelper::displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
     {
-        if (ramses::ERendererEventResult_FAIL != result)
+        if (ramses::ERendererEventResult::Failed != result)
         {
             m_displays.insert(displayId);
         }
@@ -336,7 +336,7 @@ namespace ramses_internal
 
     void ImguiClientHelper::displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result)
     {
-        if (ramses::ERendererEventResult_FAIL != result)
+        if (ramses::ERendererEventResult::Failed != result)
         {
             m_displays.erase(displayId);
         }
@@ -354,23 +354,23 @@ namespace ramses_internal
             io.MousePos = {static_cast<float>(mousePosX), static_cast<float>(mousePosY)};
             switch (eventType)
             {
-            case ramses::EMouseEvent_LeftButtonUp:
+            case ramses::EMouseEvent::LeftButtonUp:
                 io.MouseDown[0] = false;
                 m_clickEvent    = {mousePosX, mousePosY};
                 break;
-            case ramses::EMouseEvent_LeftButtonDown:
+            case ramses::EMouseEvent::LeftButtonDown:
                 io.MouseDown[0] = true;
                 break;
-            case ramses::EMouseEvent_WheelUp:
+            case ramses::EMouseEvent::WheelUp:
                 io.MouseWheel = 1;
                 break;
-            case ramses::EMouseEvent_WheelDown:
+            case ramses::EMouseEvent::WheelDown:
                 io.MouseWheel = -1;
                 break;
-            case ramses::EMouseEvent_RightButtonDown:
+            case ramses::EMouseEvent::RightButtonDown:
                 io.MouseDown[1] = true;
                 break;
-            case ramses::EMouseEvent_RightButtonUp:
+            case ramses::EMouseEvent::RightButtonUp:
                 io.MouseDown[1] = false;
                 break;
 
@@ -385,7 +385,7 @@ namespace ramses_internal
         if (!m_displayId.isValid() || displayId == m_displayId)
         {
             ImGuiIO&   io        = ImGui::GetIO();
-            const bool pressed   = (eventType == ramses::EKeyEvent_Pressed);
+            const bool pressed   = (eventType == ramses::EKeyEvent::Pressed);
             io.KeysDown[keyCode] = pressed;
 
             switch (keyCode)
@@ -447,7 +447,7 @@ namespace ramses_internal
         if (!m_screenshot.empty())
         {
             m_screenshotSaved = false;
-            if (result == ramses::ERendererEventResult_OK)
+            if (result == ramses::ERendererEventResult::Ok)
             {
                 std::vector<uint8_t> buffer;
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)

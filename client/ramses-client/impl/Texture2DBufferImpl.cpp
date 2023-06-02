@@ -14,8 +14,8 @@
 
 namespace ramses
 {
-    Texture2DBufferImpl::Texture2DBufferImpl(SceneImpl& scene, const char* textureBufferName)
-        : SceneObjectImpl(scene, ERamsesObjectType_Texture2DBuffer, textureBufferName)
+    Texture2DBufferImpl::Texture2DBufferImpl(SceneImpl& scene, std::string_view textureBufferName)
+        : SceneObjectImpl(scene, ERamsesObjectType::Texture2DBuffer, textureBufferName)
     {
     }
 
@@ -59,7 +59,7 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t Texture2DBufferImpl::setData(const ramses_internal::Byte* data, uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height)
+    status_t Texture2DBufferImpl::setData(const ramses_internal::Byte* data, size_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height)
     {
         if (width == 0 || height == 0)
         {
@@ -79,14 +79,14 @@ namespace ramses
             return addErrorEntry("Texture2DBuffer::setData failed, updated subregion exceeds the size of the target mipLevel.");
         }
 
-        getIScene().updateTextureBuffer(m_textureBufferHandle, mipLevel, offsetX, offsetY, width, height, data);
+        getIScene().updateTextureBuffer(m_textureBufferHandle, static_cast<uint32_t>(mipLevel), offsetX, offsetY, width, height, data);
 
         return StatusOK;
     }
 
-    uint32_t Texture2DBufferImpl::getMipLevelCount() const
+    size_t Texture2DBufferImpl::getMipLevelCount() const
     {
-        return static_cast<uint32_t>(getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps.size());
+        return getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps.size();
     }
 
     ETextureFormat Texture2DBufferImpl::getTexelFormat() const
@@ -94,7 +94,7 @@ namespace ramses
         return TextureUtils::GetTextureFormatFromInternal(getIScene().getTextureBuffer(m_textureBufferHandle).textureFormat);
     }
 
-    status_t Texture2DBufferImpl::getMipLevelData(uint32_t mipLevel, char* buffer, uint32_t bufferSize) const
+    status_t Texture2DBufferImpl::getMipLevelData(size_t mipLevel, char* buffer, size_t bufferSize) const
     {
         const auto& texBuffer = getIScene().getTextureBuffer(m_textureBufferHandle);
         if (mipLevel >= texBuffer.mipMaps.size())
@@ -103,13 +103,13 @@ namespace ramses
         }
 
         const auto& mipData = texBuffer.mipMaps[mipLevel].data;
-        const uint32_t dataSizeToCopy = std::min<uint32_t>(bufferSize, static_cast<uint32_t>(mipData.size()));
+        const size_t dataSizeToCopy = std::min<size_t>(bufferSize, mipData.size());
         ramses_internal::PlatformMemory::Copy(buffer, mipData.data(), dataSizeToCopy);
 
         return StatusOK;
     }
 
-    status_t Texture2DBufferImpl::getMipLevelSize(uint32_t mipLevel, uint32_t& widthOut, uint32_t& heightOut) const
+    status_t Texture2DBufferImpl::getMipLevelSize(size_t mipLevel, uint32_t& widthOut, uint32_t& heightOut) const
     {
         const auto& mipMaps = getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps;
         if (mipLevel >= mipMaps.size())
@@ -123,7 +123,7 @@ namespace ramses
         return StatusOK;
     }
 
-    uint32_t Texture2DBufferImpl::getMipLevelDataSizeInBytes(uint32_t mipLevel) const
+    size_t Texture2DBufferImpl::getMipLevelDataSizeInBytes(size_t mipLevel) const
     {
         const auto& mipMaps = getIScene().getTextureBuffer(m_textureBufferHandle).mipMaps;
         if (mipLevel >= mipMaps.size())
@@ -145,10 +145,10 @@ namespace ramses
         });
 
         if (usedAsInput && !isInitialized)
-            return addValidationMessage(EValidationSeverity_Warning, "TextureBuffer is used in a sampler but there is no data set, this could lead to graphical glitches if actually rendered.");
+            return addValidationMessage(EValidationSeverity::Warning, "TextureBuffer is used in a sampler but there is no data set, this could lead to graphical glitches if actually rendered.");
 
         if (!usedAsInput)
-            return addValidationMessage(EValidationSeverity_Warning, "TextureBuffer is not used anywhere, destroy it if not needed.");
+            return addValidationMessage(EValidationSeverity::Warning, "TextureBuffer is not used anywhere, destroy it if not needed.");
 
         return status;
     }

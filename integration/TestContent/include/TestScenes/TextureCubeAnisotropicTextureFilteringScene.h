@@ -27,7 +27,7 @@ namespace ramses_internal
     class TextureCubeAnisotropicTextureFilteringScene : public IntegrationScene
     {
     public:
-        TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum EState
         {

@@ -11,18 +11,9 @@
 #include "Window_Wayland_IVI/Window_Wayland_IVI.h"
 #include "SystemCompositorController_Wayland_IVI/SystemCompositorController_Wayland_IVI.h"
 #include "PlatformMock.h"
-#include "Platform_Base/Platform_Base.h"
 
 namespace ramses_internal
 {
-    NiceMock<PlatformNiceMock>* gPlatformMock = nullptr;
-
-    ramses_internal::IPlatform* ramses_internal::Platform_Base::CreatePlatform(const ramses_internal::RendererConfig&)
-    {
-        gPlatformMock = new ::testing::NiceMock<PlatformNiceMock>();
-        return gPlatformMock;
-    }
-
     template <> void AWindowWaylandWithEventHandling<Window_Wayland_IVI>::makeWindowVisible()
     {
         SystemCompositorController_Wayland_IVI waylandSystemCompositorController;

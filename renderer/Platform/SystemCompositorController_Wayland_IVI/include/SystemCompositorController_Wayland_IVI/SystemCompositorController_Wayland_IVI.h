@@ -15,6 +15,8 @@
 PUSH_DISABLE_C_STYLE_CAST_WARNING
 #include "ivi-controller-client-protocol.h"
 POP_DISABLE_C_STYLE_CAST_WARNING
+#include <string_view>
+#include <string>
 
 namespace ramses_internal
 {
@@ -25,26 +27,26 @@ namespace ramses_internal
     class SystemCompositorController_Wayland_IVI : public ISystemCompositorController
     {
     public:
-        explicit SystemCompositorController_Wayland_IVI(const String& waylandDisplay = "");
-        virtual ~SystemCompositorController_Wayland_IVI() override;
+        explicit SystemCompositorController_Wayland_IVI(std::string_view waylandDisplay = {});
+        ~SystemCompositorController_Wayland_IVI() override;
 
-        virtual Bool init();
-        virtual void update() override;
-        virtual void listIVISurfaces() const override;
-        virtual Bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) override;
-        virtual Bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) override;
-        virtual Bool setSurfaceDestinationRectangle(
+        virtual bool init();
+        void update() override;
+        void listIVISurfaces() const override;
+        bool setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility) override;
+        bool setSurfaceOpacity(WaylandIviSurfaceId surfaceId, float opacity) override;
+        bool setSurfaceDestinationRectangle(
             WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) override;
-        virtual Bool doScreenshot(const String& fileName, int32_t screenIviId) override;
-        virtual Bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
-        virtual Bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
-        virtual Bool destroySurface(WaylandIviSurfaceId surfaceId) override;
-        virtual Bool setLayerVisibility(WaylandIviLayerId layerId, Bool visibility) override;
+        bool doScreenshot(std::string_view fileName, int32_t screenIviId) override;
+        bool addSurfaceToLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
+        bool removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) override;
+        bool destroySurface(WaylandIviSurfaceId surfaceId) override;
+        bool setLayerVisibility(WaylandIviLayerId layerId, bool visibility) override;
         void         deleteControllerSurface(IVIControllerSurface& controllerSurface);
 
     private:
-        IVIControllerSurface* getControllerSurface(WaylandIviSurfaceId iviId) const;
-        IVIControllerScreen*  getControllerScreen(uint32_t screenId) const;
+        [[nodiscard]] IVIControllerSurface* getControllerSurface(WaylandIviSurfaceId iviId) const;
+        [[nodiscard]] IVIControllerScreen*  getControllerScreen(uint32_t screenId) const;
         IVIControllerSurface& getOrCreateControllerSurface(WaylandIviSurfaceId iviId);
         void                  commitAndFlushControllerChanges();
 
@@ -69,10 +71,10 @@ namespace ramses_internal
                                                      int32_t         errorCode,
                                                      const char*     errorText);
 
-        const String    m_waylandDisplay;
-        wl_display*     m_display    = nullptr;
-        wl_registry*    m_registry   = nullptr;
-        ivi_controller* m_controller = nullptr;
+        const std::string m_waylandDisplay;
+        wl_display*       m_display    = nullptr;
+        wl_registry*      m_registry   = nullptr;
+        ivi_controller*   m_controller = nullptr;
 
         std::vector<std::unique_ptr<IVIControllerScreen>>   m_controllerScreens;
         std::vector<std::unique_ptr<IVIControllerSurface>>  m_controllerSurfaces;

@@ -7,8 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererTestUtils.h"
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
 #include "Utils/StringUtils.h"
 #include "EmbeddedCompositingTests.h"
 #include "Utils/RamsesLogger.h"
@@ -16,39 +14,57 @@
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include <pwd.h>
 #include <grp.h>
+#include "ramses-cli.h"
 
 int main(int argc, const char *argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-    ramses_internal::ArgumentBool generateBitmaps(parser, "gb", "generate-bitmaps");
-    ramses_internal::ArgumentString filterInTest(parser, "fi", "filterIn", "*");
-    ramses_internal::ArgumentString filterOutTest(parser, "fo", "filterOut", "");
-    ramses_internal::ArgumentUInt32 repeatTestCount(parser, "rc", "repeatCount", 1);
+    CLI::App cli;
 
-    // This is needed due to the conflict resulting from mandating the possibility to set EC config on both RendererConfig
-    // and DisplayConfig, as well as parsing EC config from cmd line to RendererConfig
-    ramses_internal::ArgumentString embeddedCompositingSocketGroupName(parser, "ectsgn", "embedded-compositing-test-socket-group-name", "");
+    bool generateBitmaps = false;
+    std::string filterIn = "*";
+    std::string filterOut;
+    uint32_t    repeatCount = 1u;
+    ramses::RamsesFrameworkConfig config;
+    ramses::RendererConfig rendererConfig;
+    ramses::DisplayConfig displayConfig;
+
+    try
+    {
+        cli.add_flag("--gb,--generate-bitmaps", generateBitmaps);
+        cli.add_option("--fi,--filter-in", filterIn);
+        cli.add_option("--fo,--filter-out", filterOut);
+        cli.add_option("--rc,--repeat", repeatCount);
+        cli.add_option("--gtest_output"); // added by cmake/ctest
+        ramses::registerOptions(cli, config);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
+    }
+    catch (const CLI::Error& error)
+    {
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
 
     // It is not allowed to call fork after DLT_REGISTER_APP.
     // For the compositing tests, we don't need DLT at all, so just disable DLT.
-    ramses_internal::GetRamsesLogger().initialize(parser, ramses_internal::String(), ramses_internal::String(), true, true);
+    ramses_internal::RamsesLoggerConfig loggerConfig;
+    ramses_internal::GetRamsesLogger().initialize(loggerConfig, true, true);
 
     //The creation of the forking controller MUST happen before doing anything!!!
     //Do not move this from here, and do not do anything meaningful before it!!!
     ramses_internal::TestForkingController forkingController;
 
-    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
+    RendererTestUtils::SetDefaultConfigForAllTests(rendererConfig, displayConfig);
 
-    std::vector<ramses_internal::String> filterInTestStrings = ramses_internal::StringUtils::Tokenize(filterInTest, ':');
-    std::vector<ramses_internal::String> filterOutTestStrings = ramses_internal::StringUtils::Tokenize(filterOutTest, ':');
+    auto filterInTestStrings = ramses_internal::StringUtils::Tokenize(filterIn, ':');
+    auto filterOutTestStrings = ramses_internal::StringUtils::Tokenize(filterOut, ':');
 
     RendererTestUtils::SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::microseconds{10000000});
 
-    ramses::RamsesFrameworkConfig config(argc, argv);
+    ramses_internal::EmbeddedCompositingTests embeddedCompositingTests(forkingController, filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
 
-    ramses_internal::EmbeddedCompositingTests embeddedCompositingTests(forkingController, filterInTestStrings, filterOutTestStrings, generateBitmaps, config, embeddedCompositingSocketGroupName);
-
-    for (ramses_internal::UInt32 i = 0; i < repeatTestCount; ++i)
+    for (ramses_internal::UInt32 i = 0; i < repeatCount; ++i)
     {
         const auto success = embeddedCompositingTests.runTests();
         embeddedCompositingTests.logReport();

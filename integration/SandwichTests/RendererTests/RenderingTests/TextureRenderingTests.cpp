@@ -89,7 +89,6 @@ void TextureRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_TextureBufferToClientTexture, *this, "SamplerTest_ChangeData_TextureBufferToClientTexture");
     testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_ClientTextureToTextureBuffer, *this, "SamplerTest_ChangeData_ClientTextureToTextureBuffer");
     testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_ClientTextureToRenderBuffer, *this, "SamplerTest_ChangeData_ClientTextureToRenderBuffer");
-    testFramework.createTestCaseWithDefaultDisplay(SamplerTest_ChangeData_ClientTextureToStreamTexture, *this, "SamplerTest_ChangeData_ClientTextureToStreamTexture");
 }
 
 bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -195,50 +194,50 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
     case TextureBufferTest_SwitchSceneTextureToClientTexture:
     {
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_RGBA8_OneMip);
-        const Bool sceneTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
+        const bool sceneTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
         testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_ClientTextureResource_RGBA8);
-        const Bool switchToClientTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
+        const bool switchToClientTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
         return sceneTextureCorrect && switchToClientTexture;
     }
     case TextureBufferTest_SwitchClientTextureToSceneTexture:
     {
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_ClientTextureResource_RGBA8);
-        const Bool clientTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
+        const bool clientTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
         testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_RGBA8_OneMip);
-        const Bool switchToSceneTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
+        const bool switchToSceneTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
         return clientTextureCorrect && switchToSceneTextureCorrect;
     }
     case TextureBufferTest_SwitchClientTextureToSceneTextureAndBack:
     {
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_ClientTextureResource_RGBA8);
-        const Bool clientTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
+        const bool clientTextureCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
         testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_RGBA8_OneMip);
-        const Bool switchToSceneTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
+        const bool switchToSceneTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
         testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_SwitchBackToClientTexture);
-        const Bool switchBackToClientTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
+        const bool switchBackToClientTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
         return clientTextureCorrect && switchToSceneTexture && switchBackToClientTexture;
     }
     case TextureBufferTest_SwitchClientTextureToSceneTextureAndUpdate:
     {
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_RGBA8_OneMip);
-        const Bool textureBufferCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
+        const bool textureBufferCorrect = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
         testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_ClientTextureResource_RGBA8);
-        const Bool switchToClientTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
+        const bool switchToClientTexture = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipGreen", 0u);
         testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_SwitchBackToExistingTextureBufferAndUpdate);
-        const Bool switchBackToTextureBuffer = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipRed", 0u);
+        const bool switchBackToTextureBuffer = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMipRed", 0u);
         return textureBufferCorrect && switchToClientTexture && switchBackToTextureBuffer;
     }
     case TextureBufferTest_ReMapScene:
     {
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_RGBA8_OneMip);
-        const Bool beforeRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
+        const bool beforeRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
 
         testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
         // just for confidence (reuse existing black image)
-        const Bool blackAfterUnmap = testFramework.renderAndCompareScreenshot("DistributedScene_UnpublishedScene", 0u);
+        const bool blackAfterUnmap = testFramework.renderAndCompareScreenshot("DistributedScene_UnpublishedScene", 0u);
 
         testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
-        const Bool afterRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
+        const bool afterRemapping = testFramework.renderAndCompareScreenshot("TextureBuffer_RGBA8_OneMip", 0u);
 
         return beforeRemapping && blackAfterUnmap && afterRemapping;
     }
@@ -274,14 +273,6 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         testFramework.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetRenderBuffer);
         return testFramework.renderAndCompareScreenshot("TextureSamplerScene_ChangedBlue");
     }
-    case SamplerTest_ChangeData_ClientTextureToStreamTexture:
-    {
-        const ramses::sceneId_t sceneId = createAndShowScene<TextureSamplerScene>(testFramework, TextureSamplerScene::EState_ClientTexture);
-        if (!testFramework.renderAndCompareScreenshot("TextureSamplerScene_Initial"))
-            return false;
-        testFramework.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetStreamTexture);
-        return testFramework.renderAndCompareScreenshot("TextureSamplerScene_Changed");
-    }
     default:
         assert(!"Invalid texture rendering test ID!");
         return false;
@@ -289,7 +280,7 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
 }
 
 template <typename INTEGRATION_SCENE>
-bool TextureRenderingTests::runBasicTest(RendererTestsFramework& testFramework, UInt32 sceneState, const String& expectedImageName, float maxAveragePercentErrorPerPixel)
+bool TextureRenderingTests::runBasicTest(RendererTestsFramework& testFramework, UInt32 sceneState, const std::string& expectedImageName, float maxAveragePercentErrorPerPixel)
 {
     createAndShowScene<INTEGRATION_SCENE>(testFramework, sceneState);
     return testFramework.renderAndCompareScreenshot(expectedImageName, 0u, maxAveragePercentErrorPerPixel);

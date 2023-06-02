@@ -21,7 +21,7 @@ namespace ramses_internal
         getArgument<1>().setDescription("layer ivi id");
     }
 
-    Bool SystemCompositorControllerRemoveSurfaceFromLayer::execute(UInt32& surfaceId, UInt32& layerId) const
+    bool SystemCompositorControllerRemoveSurfaceFromLayer::execute(UInt32& surfaceId, UInt32& layerId) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCRemoveIviSurfaceFromIviLayer{ WaylandIviSurfaceId(surfaceId), WaylandIviLayerId(layerId) });
         return true;

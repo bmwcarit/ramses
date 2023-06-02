@@ -21,10 +21,10 @@ namespace ramses_internal
         void registerKeyword(const std::string& keyword);
         virtual bool executeInput(const std::vector<std::string>& input) = 0;
 
-        std::string keywordString() const;
-        const std::vector<std::string>& keywords() const;
+        [[nodiscard]] std::string keywordString() const;
+        [[nodiscard]] const std::vector<std::string>& keywords() const;
 
-        virtual std::string descriptionString() const;
+        [[nodiscard]] virtual std::string descriptionString() const;
 
     protected:
         std::vector<std::string> m_keywords;

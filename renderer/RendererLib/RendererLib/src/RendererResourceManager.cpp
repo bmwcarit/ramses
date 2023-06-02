@@ -22,7 +22,6 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
 #include "Utils/LogMacros.h"
-#include "Math3d/Vector4.h"
 #include <memory>
 
 namespace ramses_internal
@@ -132,11 +131,6 @@ namespace ramses_internal
             for(const auto& rb : renderBuffers)
                 unloadRenderTargetBuffer(rb, sceneId);
 
-            StreamTextureHandleVector streamTextures;
-            sceneResources.getAllStreamTextures(streamTextures);
-            for (const auto& st : streamTextures)
-                unloadStreamTexture(st, sceneId);
-
             RenderableVector vertexArrayRenderables;
             sceneResources.getAllVertexArrayRenderables(vertexArrayRenderables);
             for (const auto r : vertexArrayRenderables)
@@ -184,7 +178,7 @@ namespace ramses_internal
             m_resourceRegistry.setResourceData(resHash, mr);
     }
 
-    Bool RendererResourceManager::hasResourcesToBeUploaded() const
+    bool RendererResourceManager::hasResourcesToBeUploaded() const
     {
         return m_resourceUploadingManager.hasAnythingToUpload();
     }
@@ -325,7 +319,7 @@ namespace ramses_internal
         if (!deviceHandle.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadRenderTargetBuffer failed to create render buffer, this is fatal...");
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addRenderBuffer(renderBufferHandle, deviceHandle, memSize, ERenderBufferAccessMode_WriteOnly == renderBuffer.accessMode);
@@ -403,7 +397,7 @@ namespace ramses_internal
         clearRenderTarget(offscreenBufferDesc.m_renderTargetHandle[0]);
     }
 
-    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
+    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
         assert(!m_offscreenBuffers.isAllocated(bufferHandle));
         IDevice& device = m_renderBackend.getDevice();
@@ -505,8 +499,8 @@ namespace ramses_internal
 
         m_embeddedCompositingManager.refStream(source);
 
-        assert(!contains_c(m_streamUsages[source].streamBufferUsages, bufferHandle));
-        m_streamUsages[source].streamBufferUsages.push_back(bufferHandle);
+        assert(!contains_c(m_streamUsages[source], bufferHandle));
+        m_streamUsages[source].push_back(bufferHandle);
     }
 
     void RendererResourceManager::unloadStreamBuffer(StreamBufferHandle bufferHandle)
@@ -519,7 +513,7 @@ namespace ramses_internal
 
         m_embeddedCompositingManager.unrefStream(source);
 
-        auto& streamUsage = m_streamUsages[source].streamBufferUsages;
+        auto& streamUsage = m_streamUsages[source];
         assert(contains_c(streamUsage, bufferHandle));
         streamUsage.erase(find_c(streamUsage, bufferHandle));
     }
@@ -554,38 +548,6 @@ namespace ramses_internal
         m_renderBackend.getDevice().deleteTexture(deviceHandle);
     }
 
-    void RendererResourceManager::uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)
-    {
-        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadStreamTexture sceneId={} handle={} source={}", sceneId, handle, source);
-
-        assert(handle.isValid());
-        RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
-        sceneResources.addStreamTexture(handle, source);
-
-        m_embeddedCompositingManager.refStream(source);
-
-        assert(!contains_c(m_streamUsages[source].sceneUsages[sceneId], handle));
-        m_streamUsages[source].sceneUsages[sceneId].push_back(handle);
-    }
-
-    void RendererResourceManager::unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId)
-    {
-        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadStreamTexture sceneId={} handle={}", sceneId, handle);
-
-        assert(m_sceneResourceRegistryMap.contains(sceneId));
-        RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        const WaylandIviSurfaceId source = sceneResources.getStreamTextureSourceId(handle);
-        sceneResources.removeStreamTexture(handle);
-
-        m_embeddedCompositingManager.unrefStream(source);
-
-        auto& streamUsage = m_streamUsages[source].sceneUsages[sceneId];
-        assert(contains_c(streamUsage, handle));
-        streamUsage.erase(find_c(streamUsage, handle));
-        if (streamUsage.empty())
-            m_streamUsages[source].sceneUsages.erase(sceneId);
-    }
-
     void RendererResourceManager::uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId)
     {
         LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadBlitPassRenderTargets sceneId={} handle={} srcBufferHandle={} dstBufferHandle={}", sceneId, blitPass, sourceRenderBuffer, destinationRenderBuffer);
@@ -610,7 +572,7 @@ namespace ramses_internal
         if (!blitRtSource.isValid() || !blitRtDest.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadBlitPassRenderTargets failed to create blit render target(s), this is fatal...");
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addBlitPass(blitPass, blitRtSource, blitRtDest);
@@ -660,7 +622,7 @@ namespace ramses_internal
         {
             LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadDataBuffer sceneId={} handle={} dataType={} size={} failed to allocate data buffer, this is fatal...",
                 sceneId, dataBufferHandle, EnumToString(dataType), dataSizeInBytes);
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addDataBuffer(dataBufferHandle, deviceHandle, dataBufferType, dataSizeInBytes);
@@ -742,7 +704,7 @@ namespace ramses_internal
         if (!deviceHandle.isValid())
         {
             LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadTextureBuffer failed to allocate texture buffer, this is fatal...");
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         sceneResources.addTextureBuffer(textureBufferHandle, deviceHandle, textureFormat, totalSizeInBytes);
@@ -794,7 +756,7 @@ namespace ramses_internal
         {
             LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadVertexArray sceneId={} renderableHandle={} failed to allocate vertex array, this is fatal...",
                 sceneId, renderableHandle);
-            device.isDeviceStatusHealthy();
+            std::ignore = device.isDeviceStatusHealthy();
         }
 
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);

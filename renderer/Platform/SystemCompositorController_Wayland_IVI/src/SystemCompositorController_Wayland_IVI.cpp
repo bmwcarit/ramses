@@ -13,10 +13,9 @@
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Collections/StringOutputStream.h"
-#include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
 
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "poll.h"
 
 #include <algorithm>
@@ -24,7 +23,7 @@
 
 namespace ramses_internal
 {
-    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI(const String& waylandDisplay)
+    SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI(std::string_view waylandDisplay)
         : m_waylandDisplay(waylandDisplay)
     {
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::SystemCompositorController_Wayland_IVI (" << waylandDisplay << ")");
@@ -53,7 +52,7 @@ namespace ramses_internal
         }
     }
 
-    Bool SystemCompositorController_Wayland_IVI::init()
+    bool SystemCompositorController_Wayland_IVI::init()
     {
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::init");
 
@@ -99,6 +98,7 @@ namespace ramses_internal
             return;
         }
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (pfd.revents & POLLIN)
         {
             wl_display_dispatch(m_display);
@@ -133,7 +133,7 @@ namespace ramses_internal
         wl_display_roundtrip(m_display);
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility)
+    bool SystemCompositorController_Wayland_IVI::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::setSurfaceVisibility surfaceId: "
@@ -146,7 +146,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity)
+    bool SystemCompositorController_Wayland_IVI::setSurfaceOpacity(WaylandIviSurfaceId surfaceId, float opacity)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::setOpacity surfaceId: " << surfaceId.getValue()
@@ -162,7 +162,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setSurfaceDestinationRectangle(
+    bool SystemCompositorController_Wayland_IVI::setSurfaceDestinationRectangle(
         WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height)
     {
         LOG_INFO(CONTEXT_RENDERER,
@@ -178,7 +178,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::doScreenshot(const String& fileName, int32_t screenIviId)
+    bool SystemCompositorController_Wayland_IVI::doScreenshot(std::string_view fileName, int32_t screenIviId)
     {
         // find screen with id
         IVIControllerScreen* screen = nullptr;
@@ -210,7 +210,7 @@ namespace ramses_internal
         }
 
         // trigger screenshot
-        screen->takeScreenshot(fileName);
+        screen->takeScreenshot(std::string{fileName});
 
         // ensure that all compositor operations have finished
         wl_display_roundtrip(m_display);
@@ -221,7 +221,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::addSurfaceToLayer(WaylandIviSurfaceId surfaceId,
+    bool SystemCompositorController_Wayland_IVI::addSurfaceToLayer(WaylandIviSurfaceId surfaceId,
                                                                    WaylandIviLayerId   layerId)
     {
         LOG_INFO(CONTEXT_RENDERER,
@@ -260,7 +260,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId,
+    bool SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer(WaylandIviSurfaceId surfaceId,
                                                                         WaylandIviLayerId   layerId)
     {
         LOG_INFO(CONTEXT_RENDERER,
@@ -306,7 +306,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::destroySurface(WaylandIviSurfaceId surfaceId)
+    bool SystemCompositorController_Wayland_IVI::destroySurface(WaylandIviSurfaceId surfaceId)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::destroySurface surfaceId: " << surfaceId.getValue());
@@ -327,7 +327,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SystemCompositorController_Wayland_IVI::setLayerVisibility(WaylandIviLayerId layerId, Bool visibility)
+    bool SystemCompositorController_Wayland_IVI::setLayerVisibility(WaylandIviLayerId layerId, bool visibility)
     {
         LOG_INFO(CONTEXT_RENDERER,
                  "SystemCompositorController_Wayland_IVI::setLayerVisibility layerId: "
@@ -355,7 +355,7 @@ namespace ramses_internal
 
     void SystemCompositorController_Wayland_IVI::deleteControllerSurface(IVIControllerSurface& controllerSurface)
     {
-        auto it = absl::c_find_if(m_controllerSurfaces, [&](const auto& s){ return s.get() == & controllerSurface; });
+        auto it = std::find_if(std::begin(m_controllerSurfaces), std::end(m_controllerSurfaces), [&](const auto& s){ return s.get() == & controllerSurface; });
 
         if (it == m_controllerSurfaces.end())
         {
@@ -369,7 +369,7 @@ namespace ramses_internal
 
     IVIControllerSurface* SystemCompositorController_Wayland_IVI::getControllerSurface(WaylandIviSurfaceId iviId) const
     {
-        auto it = absl::c_find_if(m_controllerSurfaces, [&](const auto& s){ return s->getIVIId() == iviId; });
+        auto it = std::find_if(std::begin(m_controllerSurfaces), std::end(m_controllerSurfaces), [&](const auto& s){ return s->getIVIId() == iviId; });
 
         if (it == m_controllerSurfaces.end())
             return nullptr;
@@ -379,7 +379,7 @@ namespace ramses_internal
 
     IVIControllerScreen*  SystemCompositorController_Wayland_IVI::getControllerScreen(uint32_t screenId) const
     {
-        auto it = absl::c_find_if(m_controllerScreens, [&](const auto& s){ return s->getScreenId() == screenId; });
+        auto it = std::find_if(std::begin(m_controllerScreens), std::end(m_controllerScreens), [&](const auto& s){ return s->getScreenId() == screenId; });
 
         if (it == m_controllerScreens.end())
             return nullptr;
@@ -420,12 +420,12 @@ namespace ramses_internal
         UNUSED(version);
 
         // Binding the wl_output is needed, otherwise the controller screens don't come in.
-        if (String("wl_output") == interface)
+        if (std::string_view("wl_output") == interface)
         {
             m_waylandOutputs.emplace_back(std::make_unique<WaylandOutput>(registry, name));
         }
 
-        if (String("ivi_controller") == interface)
+        if (std::string_view("ivi_controller") == interface)
         {
             assert(nullptr == m_controller);
             m_controller = static_cast<ivi_controller*>(wl_registry_bind(registry, name, &ivi_controller_interface, 1));

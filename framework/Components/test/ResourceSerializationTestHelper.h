@@ -62,7 +62,7 @@ namespace ramses_internal
     {
         if (!blobSize)
             return;
-        const uint8_t seed = static_cast<UInt8>(TestRandom::Get(0, 256));
+        const uint8_t seed = static_cast<uint8_t>(TestRandom::Get(0, 256));
         ResourceBlob data(blobSize);
         for (size_t i = 0; i < data.size(); ++i)
         {
@@ -112,9 +112,9 @@ namespace ramses_internal
     template <>
     inline IResource* ResourceSerializationTestHelper::CreateTestResource<EffectResource>(UInt32 blobSize)
     {
-        String vert;
-        String frag;
-        String geom;
+        std::string vert;
+        std::string frag;
+        std::string geom;
         vert.resize(blobSize / 3);
         frag.resize(blobSize / 3);
         geom.resize(blobSize / 3);
@@ -124,7 +124,7 @@ namespace ramses_internal
             frag[i] = 'b';
             geom[i] = 'c';
         }
-        EffectResource* resource = new EffectResource(vert, frag, geom, absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
+        EffectResource* resource = new EffectResource(vert, frag, geom, EDrawMode::Points, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
         return resource;
     }
 
@@ -134,6 +134,7 @@ namespace ramses_internal
         EXPECT_STREQ(a.getVertexShader(), b.getVertexShader());
         EXPECT_STREQ(a.getFragmentShader(), b.getFragmentShader());
         EXPECT_STREQ(a.getGeometryShader(), b.getGeometryShader());
+        EXPECT_EQ(a.getGeometryShaderInputType(), b.getGeometryShaderInputType());
     }
 }
 

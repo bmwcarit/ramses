@@ -15,6 +15,8 @@
 // ramses framework
 #include "SceneAPI/Handles.h"
 
+#include <string_view>
+
 namespace ramses
 {
     class RenderTargetDescriptionImpl;
@@ -22,13 +24,13 @@ namespace ramses
     class RenderTargetImpl final : public SceneObjectImpl
     {
     public:
-        RenderTargetImpl(SceneImpl& scene, const char* name);
-        virtual ~RenderTargetImpl() override;
+        RenderTargetImpl(SceneImpl& scene, std::string_view name);
+        ~RenderTargetImpl() override;
 
         void             initializeFrameworkData(const RenderTargetDescriptionImpl& rtDesc);
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t getWidth() const;
         uint32_t getHeight() const;

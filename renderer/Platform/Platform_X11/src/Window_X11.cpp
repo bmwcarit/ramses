@@ -12,6 +12,7 @@
 #include "RendererAPI/IWindowEventHandler.h"
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -207,7 +208,7 @@ namespace ramses_internal
         }
     }
 
-    Bool Window_X11::init()
+    bool Window_X11::init()
     {
         if(m_userProvidedWindowHandle.isValid())
         {
@@ -286,7 +287,7 @@ namespace ramses_internal
             XSendEvent(m_X11WindowData.display,
                 rootWindow,
                 False,
-                SubstructureRedirectMask | SubstructureNotifyMask,
+                SubstructureRedirectMask | SubstructureNotifyMask, // NOLINT(hicpp-signed-bitwise)
                 &x11_event);
         }
 
@@ -309,6 +310,7 @@ namespace ramses_internal
         windowAttributes.colormap = m_X11WindowData.colormap;
 
         // Add to these for handling other events
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         windowAttributes.event_mask = StructureNotifyMask
             | ExposureMask
             | ButtonPressMask
@@ -322,6 +324,7 @@ namespace ramses_internal
         windowAttributes.backing_store = Always;
 
         // Set the window mask attributes
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         windowMask = CWBackPixel
             | CWBorderPixel
             | CWEventMask
@@ -351,6 +354,7 @@ namespace ramses_internal
         sizeHints->flags = USPosition;
         if(!m_resizable)
         {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             sizeHints->flags |= PMinSize | PMaxSize;
             sizeHints->min_width = m_width;
             sizeHints->max_width = m_width;
@@ -404,7 +408,7 @@ namespace ramses_internal
         return m_X11WindowData.window;
     }
 
-    Bool Window_X11::setFullscreen(Bool fullscreen)
+    bool Window_X11::setFullscreen(bool fullscreen)
     {
         if (fullscreen)
         {
@@ -421,7 +425,7 @@ namespace ramses_internal
         while (XPending(m_X11WindowData.display))
         {
             XEvent event;
-            char text[100];
+            std::array<char, 100> text;
 
             XNextEvent(m_X11WindowData.display, &event);
             if (m_X11WindowData.window != event.xany.window)
@@ -540,7 +544,7 @@ namespace ramses_internal
                 }
 
                 KeySym keySym = NoSymbol;
-                if (XLookupString(&event.xkey, text, sizeof(text), &keySym, nullptr) != -1)
+                if (XLookupString(&event.xkey, text.data(), text.size(), &keySym, nullptr) != -1)
                 {
                     const EKeyCode keyCode = convertKeySymbolIntoRamsesKeyCode(keySym);
                     m_eventHandler.onKeyEvent(EKeyEventType_Pressed, m_keyModifiers, keyCode);
@@ -583,7 +587,7 @@ namespace ramses_internal
                 }
 
                 KeySym keySym = NoSymbol;
-                if (XLookupString(&event.xkey, text, sizeof(text), &keySym, nullptr) != -1)
+                if (XLookupString(&event.xkey, text.data(), text.size(), &keySym, nullptr) != -1)
                 {
                     const EKeyCode keyCode = convertKeySymbolIntoRamsesKeyCode(keySym);
                     m_eventHandler.onKeyEvent(EKeyEventType_Released, m_keyModifiers, keyCode);
@@ -621,9 +625,9 @@ namespace ramses_internal
         return false;
     }
 
-    void Window_X11::setTitle(const String& title)
+    void Window_X11::setTitle(std::string_view title)
     {
         Window_Base::setTitle(title);
-        XStoreName(m_X11WindowData.display, m_X11WindowData.window, title.c_str());
+        XStoreName(m_X11WindowData.display, m_X11WindowData.window, m_windowName.c_str());
     }
 }

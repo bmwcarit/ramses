@@ -12,119 +12,20 @@
 #include "Common/BitForgeMacro.h"
 #include "Utils/LoggingUtils.h"
 #include "Math3d/Quad.h"
-#include "Math3d/Vector4.h"
+#include "DataTypesImpl.h"
+#include "ramses-framework-api/AppearanceEnums.h"
 
 namespace ramses_internal
 {
-    enum class EBlendOperation : uint8_t
-    {
-        Disabled = 0,
-        Add,
-        Subtract,
-        ReverseSubtract,
-        Min,
-        Max,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class EBlendFactor : uint8_t
-    {
-        Zero = 0,
-        One,
-        SrcAlpha,
-        OneMinusSrcAlpha,
-        DstAlpha,
-        OneMinusDstAlpha,
-        SrcColor,
-        OneMinusSrcColor,
-        DstColor,
-        OneMinusDstColor,
-        ConstColor,
-        OneMinusConstColor,
-        ConstAlpha,
-        OneMinusConstAlpha,
-        AlphaSaturate,
-        Invalid,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class ECullMode : uint8_t
-    {
-        Disabled = 0,
-        FrontFacing,
-        BackFacing,
-        FrontAndBackFacing,
-        Invalid,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class EDepthWrite : uint8_t
-    {
-        Disabled = 0,
-        Enabled,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class EDepthFunc : uint8_t
-    {
-        Disabled = 0,
-        Greater,
-        GreaterEqual,
-        Smaller,
-        SmallerEqual,
-        Equal,
-        NotEqual,
-        AlwaysPass,
-        NeverPass,
-        Invalid,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class EScissorTest : uint8_t
-    {
-        Disabled = 0,
-        Enabled,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class EStencilFunc : uint8_t
-    {
-        Disabled = 0,
-        NeverPass,
-        AlwaysPass,
-        Equal,
-        NotEqual,
-        Less,
-        LessEqual,
-        Greater,
-        GreaterEqual,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class EStencilOp : uint8_t
-    {
-        Keep = 0,
-        Zero,
-        Replace,
-        Increment,
-        IncrementWrap,
-        Decrement,
-        DecrementWrap,
-        Invert,
-        NUMBER_OF_ELEMENTS
-    };
-
-    enum class EDrawMode : uint8_t
-    {
-        Points = 0,
-        Lines,
-        LineLoop,
-        Triangles,
-        TriangleStrip,
-        TriangleFan,
-        LineStrip,
-        NUMBER_OF_ELEMENTS
-    };
+    using ramses::EBlendOperation;
+    using ramses::EBlendFactor;
+    using ramses::ECullMode;
+    using ramses::EDepthWrite;
+    using ramses::EDepthFunc;
+    using ramses::EScissorTest;
+    using ramses::EStencilFunc;
+    using EStencilOp = ramses::EStencilOperation;
+    using ramses::EDrawMode;
 
     enum EColorWriteFlag : uint32_t
     {
@@ -150,123 +51,12 @@ namespace ramses_internal
         return (clearFlags & clearFlagToCheckIfSet) == clearFlagToCheckIfSet;
     }
 
-    static const char* BlendOperationNames[] =
-    {
-        "Disabled",
-        "Add",
-        "Subtract",
-        "ReverseSubtract",
-        "Min",
-        "Max",
-    };
-
-    static const char* BlendFactorNames[] =
-    {
-        "Zero",
-        "One",
-        "SrcAlpha",
-        "OneMinusSrcAlpha",
-        "DstAlpha",
-        "OneMinusDstAlpha",
-        "SrcColor",
-        "OneMinusSrcColor",
-        "DstColor",
-        "OneMinusDstColor",
-        "ConstColor",
-        "OneMinusConstColor",
-        "ConstAlpha",
-        "OneMinusConstAlpha",
-        "AlphaSaturate",
-        "Invalid",
-    };
-
-    static const char* CullModeNames[] =
-    {
-        "Disabled",
-        "FrontFacing",
-        "BackFacing",
-        "FrontAndBackFacing",
-        "Invalid",
-    };
-
-    static const char* DepthWriteNames[] =
-    {
-        "Disabled",
-        "Enabled",
-    };
-
-    static const char* DepthFuncNames[] =
-    {
-        "Disabled",
-        "Greater",
-        "GreaterEqual",
-        "Less",
-        "LessEqual",
-        "Equal",
-        "NotEqual",
-        "Always",
-        "Never",
-        "Invalid",
-    };
-
-    static const char* ScissorTestNames[] =
-    {
-        "Disabled",
-        "Enabled",
-    };
-
-    static const char* StencilFuncNames[] =
-    {
-        "Disabled",
-        "Never",
-        "Always",
-        "Equal",
-        "NotEqual",
-        "Less",
-        "LessEqual",
-        "Greater",
-        "GreaterEqual",
-    };
-
-    static const char* StencilOperationNames[] =
-    {
-        "Keep",
-        "Zero",
-        "Replace",
-        "Increment",
-        "IncrementWrap",
-        "Decrement",
-        "DecrementWrap",
-        "Invert",
-    };
-
-    static const char* DrawModeNames[] =
-    {
-        "Points",
-        "Lines",
-        "LineLoop",
-        "Triangles",
-        "TriangleStrip",
-        "TriangleFan",
-        "LineStrip",
-    };
-
-    ENUM_TO_STRING(EBlendOperation, BlendOperationNames, EBlendOperation::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(EBlendFactor, BlendFactorNames, EBlendFactor::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(ECullMode, CullModeNames, ECullMode::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(EDepthWrite, DepthWriteNames, EDepthWrite::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(EDepthFunc, DepthFuncNames, EDepthFunc::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(EStencilFunc, StencilFuncNames, EStencilFunc::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(EScissorTest, ScissorTestNames, EScissorTest::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(EStencilOp, StencilOperationNames, EStencilOp::NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(EDrawMode, DrawModeNames, EDrawMode::NUMBER_OF_ELEMENTS);
-
     struct RenderState
     {
         struct ScissorRegion
         {
-            Int16 x = 0;
-            Int16 y = 0;
+            int16_t x = 0;
+            int16_t y = 0;
             UInt16 width = 0u;
             UInt16 height = 0u;
 
@@ -277,7 +67,7 @@ namespace ramses_internal
         };
 
         ScissorRegion   scissorRegion;
-        Vector4         blendColor{ 0.f, 0.f, 0.f, 0.f };
+        glm::vec4       blendColor{ 0.f, 0.f, 0.f, 0.f };
         EBlendFactor    blendFactorSrcColor = EBlendFactor::SrcAlpha;
         EBlendFactor    blendFactorDstColor = EBlendFactor::OneMinusSrcAlpha;
         EBlendFactor    blendFactorSrcAlpha = EBlendFactor::One;
@@ -287,7 +77,7 @@ namespace ramses_internal
         ColorWriteMask  colorWriteMask = EColorWriteFlag_All;
         ECullMode       cullMode = ECullMode::BackFacing;
         EDrawMode       drawMode = EDrawMode::Triangles;
-        EDepthFunc      depthFunc = EDepthFunc::SmallerEqual;
+        EDepthFunc      depthFunc = EDepthFunc::LessEqual;
         EDepthWrite     depthWrite = EDepthWrite::Enabled;
         EScissorTest    scissorTest = EScissorTest::Disabled;
         EStencilFunc    stencilFunc = EStencilFunc::Disabled;
@@ -297,10 +87,10 @@ namespace ramses_internal
         uint8_t         stencilRefValue = 0;
         uint8_t         stencilMask = 0xFF;
         // explicit padding, consume when adding members
-        uint8_t padding[2] = { 0 };
+        uint8_t padding[2] = { 0 };  // NOLINT(modernize-avoid-c-arrays)
     };
 
-    static constexpr size_t ExpectedSize = sizeof(RenderState::ScissorRegion) + sizeof(Vector4) + 4 * sizeof(EBlendFactor) + 2 * sizeof(EBlendOperation) + sizeof(ColorWriteMask)
+    static constexpr size_t ExpectedSize = sizeof(RenderState::ScissorRegion) + sizeof(glm::vec4) + 4 * sizeof(EBlendFactor) + 2 * sizeof(EBlendOperation) + sizeof(ColorWriteMask)
         + sizeof(ECullMode) + sizeof(EDrawMode) + sizeof(EDepthFunc) + sizeof(EDepthWrite) + sizeof(EScissorTest) + sizeof(EStencilFunc)
         + 3 * sizeof(EStencilOp) + sizeof(RenderState::stencilRefValue) + sizeof(RenderState::stencilMask) + sizeof(RenderState::padding);
     static_assert(sizeof(RenderState) == ExpectedSize, "Avoid padding in this struct, add padding explicitly as member");

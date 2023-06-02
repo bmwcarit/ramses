@@ -10,7 +10,9 @@
 #define RAMSES_PARTICIPANTIDENTIFIER_H
 
 #include "Collections/Guid.h"
-#include "Collections/String.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -18,18 +20,18 @@ namespace ramses_internal
     {
     public:
         ParticipantIdentifier();
-        ParticipantIdentifier(const Guid& participantId, const String& participantName);
+        ParticipantIdentifier(const Guid& participantId, std::string_view participantName);
 
         virtual ~ParticipantIdentifier();
 
-        const Guid& getParticipantId() const;
-        const String& getParticipantName() const;
+        [[nodiscard]] const Guid& getParticipantId() const;
+        [[nodiscard]] const std::string& getParticipantName() const;
 
         bool operator==(const ParticipantIdentifier& other) const;
 
     private:
         Guid m_participantId;
-        String m_participantName;
+        std::string m_participantName;
     };
 
     inline const Guid& ParticipantIdentifier::getParticipantId() const
@@ -37,7 +39,7 @@ namespace ramses_internal
         return m_participantId;
     }
 
-    inline const String& ParticipantIdentifier::getParticipantName() const
+    inline const std::string& ParticipantIdentifier::getParticipantName() const
     {
         return m_participantName;
     }

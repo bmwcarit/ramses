@@ -49,7 +49,7 @@ namespace ramses_internal
         EXPECT_EQ(EBlendOperation::Disabled  , rs.blendOperationAlpha);
         EXPECT_EQ(ECullMode::BackFacing      , rs.cullMode);
         EXPECT_EQ(EDrawMode::Triangles       , rs.drawMode);
-        EXPECT_EQ(EDepthFunc::SmallerEqual   , rs.depthFunc);
+        EXPECT_EQ(EDepthFunc::LessEqual      , rs.depthFunc);
         EXPECT_EQ(EDepthWrite::Enabled       , rs.depthWrite);
         EXPECT_EQ(EScissorTest::Disabled     , rs.scissorTest);
         EXPECT_EQ(EStencilFunc::Disabled     , rs.stencilFunc);

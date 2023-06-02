@@ -18,7 +18,7 @@ namespace ramses_internal
     class MockTask : public ITask
     {
     public:
-        virtual void execute() override {};
+        void execute() override {};
     };
 
     TEST(ProcessingTaskQueueTest, addAndPopTask)

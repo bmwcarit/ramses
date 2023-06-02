@@ -23,7 +23,7 @@ namespace ramses_internal
     class Texture3DScene : public IntegrationScene
     {
     public:
-        Texture3DScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        Texture3DScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -31,7 +31,7 @@ namespace ramses_internal
         };
 
     protected:
-        void createQuad(Float x, Float y, Float depth, Float texCoordMagnifier = 1.f);
+        void createQuad(float x, float y, float depth, float texCoordMagnifier = 1.f);
 
         ramses::Effect* m_effect;
         ramses::Node* m_groupNode;

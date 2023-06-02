@@ -14,6 +14,7 @@
 
 namespace ramses
 {
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     void TextureUtils::FillMipDataSizes(ramses_internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const MipLevelData mipLevelData[])
     {
         assert(mipDataSizes.empty());
@@ -25,6 +26,7 @@ namespace ramses
         }
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     void TextureUtils::FillMipDataSizes(ramses_internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[])
     {
         assert(mipDataSizes.empty());
@@ -36,6 +38,7 @@ namespace ramses
         }
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     void TextureUtils::FillMipData(uint8_t* dest, uint32_t mipMapCount, const MipLevelData mipLevelData[])
     {
         for (uint32_t i = 0u; i < mipMapCount; ++i)
@@ -46,6 +49,7 @@ namespace ramses
         }
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     void TextureUtils::FillMipData(uint8_t* dest, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[])
     {
         for (uint32_t i = 0u; i < mipMapCount; ++i)
@@ -86,6 +90,7 @@ namespace ramses
         }
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     bool TextureUtils::MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const MipLevelData mipLevelData[], ETextureFormat format)
     {
         if (mipMapCount == 0u || mipLevelData == nullptr)
@@ -120,13 +125,14 @@ namespace ramses
             if (!TextureUtils::IsTextureSizeSupportedByFormat(mipWidth, mipHeight, format))
             {
                 LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip " << i << " might fail to be uploaded due to its size "
-                    << mipWidth << "x" << mipHeight << " not supported by used format " << getTextureFormatString(format));
+                    << mipWidth << "x" << mipHeight << " not supported by used format " << toString(format));
             }
         }
 
         return true;
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     bool TextureUtils::MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format)
     {
         // wrapper so that this function can be called from template following 2D/3D texture function signature
@@ -135,6 +141,7 @@ namespace ramses
         return MipDataValid(width, mipMapCount, mipLevelData, format);
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     bool TextureUtils::MipDataValid(uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format)
     {
         if (mipMapCount == 0u || mipLevelData == nullptr)
@@ -173,7 +180,7 @@ namespace ramses
             if (!TextureUtils::IsTextureSizeSupportedByFormat(mipSize, mipSize, format))
             {
                 LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip " << i << " might fail to be uploaded due to its size "
-                    << mipSize << "x" << mipSize << " not supported by used format " << getTextureFormatString(format));
+                    << mipSize << "x" << mipSize << " not supported by used format " << toString(format));
             }
         }
 

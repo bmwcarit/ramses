@@ -21,10 +21,13 @@
 #include "Utils/LogMacros.h"
 #include "InterruptibleOffscreenBufferLinkTests.h"
 
+#include <vector>
+#include <string>
+
 class RenderingTests
 {
 public:
-    RenderingTests(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
+    RenderingTests(const std::vector<std::string>& filterIn, const std::vector<std::string>& filterOut, bool generateScreenshots, const ramses::RamsesFrameworkConfig& config)
         : m_testFramework(generateScreenshots, config)
         , m_offscreenBufferLinkTests(false)
         , m_offscreenBufferLinkTestsUsingInterruptible(true)

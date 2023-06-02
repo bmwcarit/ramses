@@ -148,8 +148,8 @@ IF (Boost_FOUND)
         message(FATAL_ERROR "boost version could not be extracted from ${Boost_INCLUDE_DIR}/boost/version.hpp (found: ${BOOST_version})")
     endif()
 
-    ACME_INFO("+ Boost (${Boost_SOURCE_TYPE}, ${Boost_LIBRARY_TYPE}, ${BOOST_version})")
+    message(STATUS "+ Boost (${Boost_SOURCE_TYPE}, ${Boost_LIBRARY_TYPE}, ${BOOST_version})")
 ELSE()
-    ACME_INFO("- Boost")
+    message(STATUS "- Boost")
 ENDIF()
 

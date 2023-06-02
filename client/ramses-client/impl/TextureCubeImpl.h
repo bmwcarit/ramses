@@ -13,6 +13,8 @@
 #include "ResourceImpl.h"
 #include "ramses-client-api/TextureSwizzle.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class TextureCubeResource;
@@ -26,12 +28,12 @@ namespace ramses
         /**
          * @brief This creates a Cube Texture. All texels are pre-allocated and initialized to 0.
          */
-        TextureCubeImpl(ramses_internal::ResourceHashUsage texture, SceneImpl& scene, const char* name);
-        virtual ~TextureCubeImpl() override;
+        TextureCubeImpl(ramses_internal::ResourceHashUsage texture, SceneImpl& scene, std::string_view name);
+        ~TextureCubeImpl() override;
 
         void initializeFromFrameworkData(uint32_t size, ETextureFormat textureFormat, const TextureSwizzle& swizzle);
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t       getSize() const;
         ETextureFormat getTextureFormat() const;

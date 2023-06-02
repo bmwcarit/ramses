@@ -42,16 +42,16 @@ namespace ramses_internal
     // Initialize data to pseudorandom values.
     static void setupTestData()
     {
-        const UInt64 k0 = 0xc3a5c85c97cb3127ULL;
-        UInt64 a = 9;
-        UInt64 b = 777;
+        const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
+        uint64_t a = 9;
+        uint64_t b = 777;
         for (UInt32 i = 0; i < dataSize; i++)
         {
             a += b;
             b += a;
-            a = (a ^ (a >> 41)) * k0;
-            b = (b ^ (b >> 41)) * k0 + i;
-            UInt8 u = (b >> 37) & 0xff;
+            a = (a ^ (a >> 41u)) * k0;
+            b = (b ^ (b >> 41u)) * k0 + i;
+            const auto u = static_cast<uint8_t>((b >> 37u) & 0xffu);
             memcpy(testData + i, &u, 1);
         }
     }

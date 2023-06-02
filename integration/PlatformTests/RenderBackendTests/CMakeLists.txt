@@ -6,39 +6,38 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(RenderBackendTests
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
-
-    FILES_PRIVATE_HEADER    src/*.h
-    FILES_SOURCE            src/*.cpp
-
-    DEPENDENCIES            RendererTestUtils
+expandModuleByPlatform(
+    NAME            RenderBackendTests
+    TYPE            BINARY
+    LINKED_TYPE     STATIC
+    ENABLE_INSTALL  ON
+    SRC_FILES       src/*.h
+                    src/*.cpp
+    DEPENDENCIES    RendererTestUtils ramses-cli
 )
 
 # Tests which are supposed to be run in the gate build job
-SET(GATE_PLATFORMS
-    "x11-egl-es-3-0"
-    "wayland-ivi-egl-es-3-0"
+SET(GATE_WINDOW_PLATFORMS
+    "x11"
+    "wayland-ivi"
 )
 
 IF (ramses-sdk_BUILD_TESTS)
-    FOREACH(TEST_PLATFORM ${RENDERER_CONFIG_LIST})
-        IF(TARGET platform-${TEST_PLATFORM})
-            ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
-                RNDSANDWICHTEST
-                -lid 3
-            )
-            # These tests don't work specifically on the build slaves, because binary shaders are not supported there
-            SET(GATE_FILTER "-ADeviceSupportingBinaryShaders*:ADeviceSupportingGeometryShaders*")
+    makeTestPerWindowTypeFromTarget(
+        TARGET RenderBackendTests
+        SUFFIX RNDSANDWICHTEST
+        EXTRA_ARGS --ivi-layer 3
+        SKIPPABLE
+    )
 
-            LIST(FIND GATE_PLATFORMS ${TEST_PLATFORM} _INDEX)
-            IF(NOT ${_INDEX} LESS 0)
-                ACME_ADD_TEST(RenderBackendTests-${TEST_PLATFORM}
-                    RNDSANDWICHTEST_SWRAST
-                    --gtest_filter=${GATE_FILTER} -lid 3
-                )
-            ENDIF()
-        ENDIF()
-    ENDFOREACH()
+    # These tests don't work specifically on the build slaves, because binary shaders are not supported there
+    SET(GATE_FILTER "-ADeviceSupportingBinaryShaders*:ADeviceSupportingGeometryShaders*")
+
+    makeTestPerWindowTypeFromTarget(
+        TARGET RenderBackendTests
+        SUFFIX RNDSANDWICHTEST_SWRAST
+        EXTRA_ARGS --gtest_filter=${GATE_FILTER} --ivi-layer 3
+        WINDOW_TYPE_FILTER ${GATE_WINDOW_PLATFORMS}
+        SKIPPABLE
+    )
 ENDIF()

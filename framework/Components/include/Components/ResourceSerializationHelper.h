@@ -18,7 +18,6 @@ namespace ramses_internal
 {
     class IOutputStream;
     class IInputStream;
-    class String;
 
     // TODO(tobias) must add standalone tests for these functions
     namespace ResourceSerializationHelper

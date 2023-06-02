@@ -21,7 +21,7 @@ namespace ramses_internal
             m_display = wl_display_create();
         }
 
-        ~AWaylandGlobal()
+        ~AWaylandGlobal() override
         {
             if (m_display != nullptr)
             {

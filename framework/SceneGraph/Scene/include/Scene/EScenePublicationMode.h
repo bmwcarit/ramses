@@ -24,7 +24,7 @@ namespace ramses_internal
         EScenePublicationMode_LocalOnly
     };
 
-    inline const Char* EnumToString(EScenePublicationMode publicationMode)
+    inline const char* EnumToString(EScenePublicationMode publicationMode)
     {
         switch (publicationMode)
         {

@@ -12,7 +12,7 @@
 
 namespace ramses_internal
 {
-    GlslToEffectConverter::GlslToEffectConverter(const HashMap<String, EFixedSemantics>& semanticInputs)
+    GlslToEffectConverter::GlslToEffectConverter(const HashMap<std::string, EFixedSemantics>& semanticInputs)
         : m_semanticInputs(semanticInputs)
     {
     }
@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     }
 
-    Bool GlslToEffectConverter::parseShaderProgram(glslang::TProgram* program)
+    bool GlslToEffectConverter::parseShaderProgram(glslang::TProgram* program)
     {
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangVertex)->getTreeRoot(), EShaderStage::Vertex)); // Parse data for vertex stage
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangFragment)->getTreeRoot(), EShaderStage::Fragment)); // Parse data for fragment stage
@@ -35,6 +35,7 @@ namespace ramses_internal
         {
             const glslang::TLayoutGeometry prim = geomShader->getInputPrimitive();
 
+            // only basic 'variant' (i.e. no strip/fan) of a primitive is allowed as GS input declaration
             switch (prim)
             {
             case glslang::ElgPoints:
@@ -61,14 +62,13 @@ namespace ramses_internal
         return true;
     }
 
-    ramses_internal::String GlslToEffectConverter::getStatusMessage() const
+    std::string GlslToEffectConverter::getStatusMessage() const
     {
-        String msg = m_message.c_str();
-        if (msg.size() == 0)
+        if (m_message.size() == 0)
         {
-            return String("Ok");
+            return "Ok";
         }
-        return msg;
+        return m_message.data();
     }
 
     const EffectInputInformationVector& GlslToEffectConverter::getUniformInputs() const
@@ -81,7 +81,7 @@ namespace ramses_internal
         return m_attributeInputs;
     }
 
-    absl::optional<EDrawMode> GlslToEffectConverter::getGeometryShaderInputType() const
+    std::optional<EDrawMode> GlslToEffectConverter::getGeometryShaderInputType() const
     {
         return m_geometryShaderInputType;
     }
@@ -130,11 +130,11 @@ namespace ramses_internal
 
         if (storageQualifier == glslang::EvqVaryingIn && stage == EShaderStage::Vertex) // 'VaryingIn' means vertex attribute
         {
-            return setInputTypeFromType(symbol->getType(), String(symbol->getName().c_str()), m_attributeInputs);
+            return setInputTypeFromType(symbol->getType(), symbol->getName(), m_attributeInputs);
         }
         else if (storageQualifier == glslang::EvqUniform)
         {
-            return setInputTypeFromType(symbol->getType(), String(symbol->getName().c_str()), m_uniformInputs);
+            return setInputTypeFromType(symbol->getType(), symbol->getName(), m_uniformInputs);
         }
 
         return true;
@@ -179,7 +179,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool GlslToEffectConverter::setInputTypeFromType(const glslang::TType& type, const String& inputName, EffectInputInformationVector& outputVector) const
+    bool GlslToEffectConverter::setInputTypeFromType(const glslang::TType& type, std::string_view inputName, EffectInputInformationVector& outputVector) const
     {
         uint32_t elementCount;
         CHECK_RETURN_ERR(getElementCountFromType(type, inputName, elementCount));
@@ -200,8 +200,7 @@ namespace ramses_internal
                 for(const auto& structField : *structFields)
                 {
                     const glslang::TType& fieldType = *structField.type;
-                    const String fieldName = String(fieldType.getFieldName().c_str());
-                    const String subName = getStructFieldIdentifier(inputName, fieldName, type.isArray() ? static_cast<int32_t>(i) : -1);
+                    const auto subName = getStructFieldIdentifier(inputName, fieldType.getFieldName(), type.isArray() ? static_cast<int32_t>(i) : -1);
 
                     // Get the element count for the field
                     uint32_t newElementCount;
@@ -223,7 +222,7 @@ namespace ramses_internal
         return true;
     }
 
-    const String GlslToEffectConverter::getStructFieldIdentifier(const String& baseName, const String& fieldName, const int32_t arrayIndex) const
+    std::string GlslToEffectConverter::getStructFieldIdentifier(std::string_view baseName, std::string_view fieldName, const int32_t arrayIndex) const
     {
         StringOutputStream stream;
         stream << baseName;
@@ -238,10 +237,10 @@ namespace ramses_internal
         stream << '.';
         stream << fieldName;
 
-        return String(stream.release());
+        return stream.release();
     }
 
-    bool GlslToEffectConverter::createEffectInputType(const glslang::TType& type, const String& inputName, uint32_t elementCount, EffectInputInformationVector& outputVector) const
+    bool GlslToEffectConverter::createEffectInputType(const glslang::TType& type, std::string_view inputName, uint32_t elementCount, EffectInputInformationVector& outputVector) const
     {
         EffectInputInformation input;
         input.inputName = inputName;
@@ -424,7 +423,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool GlslToEffectConverter::getElementCountFromType(const glslang::TType& type, const String& inputName, uint32_t& elementCount) const
+    bool GlslToEffectConverter::getElementCountFromType(const glslang::TType& type, std::string_view inputName, uint32_t& elementCount) const
     {
         if (type.isArray())
         {

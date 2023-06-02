@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         RendererSceneUpdaterMock();
-        virtual ~RendererSceneUpdaterMock() override;
+        ~RendererSceneUpdaterMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& sceneUpdate), (override));
         MOCK_METHOD(void, createDisplayContext, (const DisplayConfig& displayConfig, IBinaryShaderCache*), (override));
@@ -29,19 +29,18 @@ namespace ramses_internal
         MOCK_METHOD(void, handleScenePublished, (SceneId sceneId, EScenePublicationMode mode), (override));
         MOCK_METHOD(void, handleSceneUnpublished, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneReceived, (const SceneInfo& sceneInfo), (override));
-        MOCK_METHOD(bool, handleBufferCreateRequest, (OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
+        MOCK_METHOD(bool, handleBufferCreateRequest, (OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
         MOCK_METHOD(bool, handleDmaBufferCreateRequest, (OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat format, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers), (override));
         MOCK_METHOD(bool, handleBufferDestroyRequest, (OffscreenBufferHandle buffer), (override));
         MOCK_METHOD(bool, handleBufferCreateRequest, (StreamBufferHandle buffer, WaylandIviSurfaceId source), (override));
         MOCK_METHOD(bool, handleBufferDestroyRequest, (StreamBufferHandle buffer), (override));
-        MOCK_METHOD(bool, setStreamBufferState, (StreamBufferHandle buffer, bool newState), (override));
         MOCK_METHOD(bool, handleExternalBufferCreateRequest, (ExternalBufferHandle), (override));
         MOCK_METHOD(bool, handleExternalBufferDestroyRequest, (ExternalBufferHandle), (override));
         MOCK_METHOD(void, handleSetClearFlags, (OffscreenBufferHandle buffer, uint32_t), (override));
-        MOCK_METHOD(void, handleSetClearColor, (OffscreenBufferHandle buffer, const Vector4& clearColor), (override));
+        MOCK_METHOD(void, handleSetClearColor, (OffscreenBufferHandle buffer, const glm::vec4& clearColor), (override));
         MOCK_METHOD(void, handleSetExternallyOwnedWindowSize, (uint32_t, uint32_t), (override));
         MOCK_METHOD(void, handleReadPixels, (OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo), (override));
-        MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coordsNormalizedToBufferSize), (override));
+        MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, glm::vec2 coordsNormalizedToBufferSize), (override));
         MOCK_METHOD(void, handleSceneDataLinkRequest, (SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId), (override));

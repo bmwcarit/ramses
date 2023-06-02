@@ -13,12 +13,11 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureEnums.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
 {
-    enum class EDataBufferType : UInt8;
+    enum class EDataBufferType : uint8_t;
 
     enum ESceneResourceType
     {
@@ -26,7 +25,6 @@ namespace ramses_internal
         ESceneResourceType_RenderBuffer_ReadWrite,
         ESceneResourceType_DataBuffer,
         ESceneResourceType_TextureBuffer,
-        ESceneResourceType_StreamTexture,
         ESceneResourceType_NUMBER_OF_ELEMENTS
     };
 
@@ -38,13 +36,13 @@ namespace ramses_internal
 
         void                            addRenderBuffer             (RenderBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size, bool writeOnly);
         void                            removeRenderBuffer          (RenderBufferHandle handle);
-        DeviceResourceHandle            getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
-        UInt32                          getRenderBufferByteSize     (RenderBufferHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
+        [[nodiscard]] UInt32                          getRenderBufferByteSize     (RenderBufferHandle handle) const;
         void                            getAllRenderBuffers         (RenderBufferHandleVector& renderBuffers) const;
 
         void                            addRenderTarget             (RenderTargetHandle handle, DeviceResourceHandle deviceHandle);
         void                            removeRenderTarget          (RenderTargetHandle handle);
-        DeviceResourceHandle            getRenderTargetDeviceHandle (RenderTargetHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getRenderTargetDeviceHandle (RenderTargetHandle handle) const;
         void                            getAllRenderTargets         (RenderTargetHandleVector& renderTargets) const;
 
         void                            addBlitPass                 (BlitPassHandle handle, DeviceResourceHandle srcRenderTargetDeviceHandle, DeviceResourceHandle dstRenderTargetDeviceHandle);
@@ -52,30 +50,25 @@ namespace ramses_internal
         void                            getBlitPassDeviceHandles    (BlitPassHandle handle, DeviceResourceHandle& srcRenderTargetDeviceHandle, DeviceResourceHandle& dstRenderTargetDeviceHandle) const;
         void                            getAllBlitPasses            (BlitPassHandleVector& blitPasses) const;
 
-        void                            addStreamTexture            (StreamTextureHandle handle, WaylandIviSurfaceId source);
-        void                            removeStreamTexture         (StreamTextureHandle handle);
-        WaylandIviSurfaceId             getStreamTextureSourceId    (StreamTextureHandle handle) const;
-        void                            getAllStreamTextures        (StreamTextureHandleVector& streamTextures) const;
-
         void                            addDataBuffer               (DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, UInt32 size);
         void                            removeDataBuffer            (DataBufferHandle handle);
-        DeviceResourceHandle            getDataBufferDeviceHandle   (DataBufferHandle handle) const;
-        EDataBufferType                 getDataBufferType           (DataBufferHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getDataBufferDeviceHandle   (DataBufferHandle handle) const;
+        [[nodiscard]] EDataBufferType                 getDataBufferType           (DataBufferHandle handle) const;
         void                            getAllDataBuffers           (DataBufferHandleVector& dataBuffers) const;
 
         void                            addTextureBuffer            (TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, UInt32 size);
         void                            removeTextureBuffer         (TextureBufferHandle handle);
-        DeviceResourceHandle            getTextureBufferDeviceHandle(TextureBufferHandle handle) const;
-        ETextureFormat                  getTextureBufferFormat      (TextureBufferHandle handle) const;
-        UInt32                          getTextureBufferByteSize    (TextureBufferHandle handle) const;
+        [[nodiscard]] DeviceResourceHandle            getTextureBufferDeviceHandle(TextureBufferHandle handle) const;
+        [[nodiscard]] ETextureFormat                  getTextureBufferFormat      (TextureBufferHandle handle) const;
+        [[nodiscard]] UInt32                          getTextureBufferByteSize    (TextureBufferHandle handle) const;
         void                            getAllTextureBuffers        (TextureBufferHandleVector& textureBuffers) const;
 
         void                            addVertexArray(RenderableHandle renderableHandle, DeviceResourceHandle deviceHandle);
         void                            removeVertexArray(RenderableHandle renderableHandle);
-        DeviceResourceHandle            getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
+        [[nodiscard]] DeviceResourceHandle            getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
         void                            getAllVertexArrayRenderables(RenderableVector& vertexArrayRenderables) const;
 
-        UInt32                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
+        [[nodiscard]] UInt32                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
 
     private:
         struct TextureBufferEntry
@@ -105,7 +98,6 @@ namespace ramses_internal
             EDataBufferType dataBufferType;
         };
 
-        using StreamTextureSourceMap = HashMap<StreamTextureHandle,  WaylandIviSurfaceId>;
         using RenderBufferMap        = HashMap<RenderBufferHandle,   RenderBufferEntry>;
         using RenderTargetMap        = HashMap<RenderTargetHandle,   DeviceResourceHandle>;
         using BlitPassMap            = HashMap<BlitPassHandle,       BlitPassEntry>;
@@ -117,7 +109,6 @@ namespace ramses_internal
         RenderBufferMap        m_renderBuffers;
         RenderTargetMap        m_renderTargets;
         BlitPassMap            m_blitPasses;
-        StreamTextureSourceMap m_streamTextures;
         DataBufferMap          m_dataBuffers;
         TextureBufferMap       m_textureBuffers;
         VertexArrayMap         m_vertexArrays;

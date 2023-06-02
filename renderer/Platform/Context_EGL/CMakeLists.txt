@@ -6,24 +6,13 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    Context_EGL
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Context_EGL/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/Context_EGL/*.h
+                            src/*.cpp
     DEPENDENCIES            EGL
                             ramses-renderer-lib
 )

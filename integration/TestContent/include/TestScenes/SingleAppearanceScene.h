@@ -17,12 +17,10 @@
 
 namespace ramses_internal
 {
-    class Vector4;
-
     class SingleAppearanceScene : public IntegrationScene
     {
     public:
-        SingleAppearanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        SingleAppearanceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -34,7 +32,7 @@ namespace ramses_internal
 
     private:
         void setAppearanceAndGeometryToAllMeshNodes(ramses::Appearance& appearance, ramses::GeometryBinding& geometry);
-        void setTriangleColor(ramses::Appearance& appearance, const ramses::Effect& effect, const Vector4& color);
+        void setTriangleColor(ramses::Appearance& appearance, const ramses::Effect& effect, const glm::vec4& color);
 
         std::vector<ramses::MeshNode*> m_meshNodes;
     };

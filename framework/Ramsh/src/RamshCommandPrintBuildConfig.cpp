@@ -22,7 +22,7 @@ namespace ramses_internal
     bool RamshCommandPrintBuildConfig::executeInput(const std::vector<std::string>&)
     {
         LOG_INFO(CONTEXT_RAMSH,
-            "VERSION_STRING = "     << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << "\n" <<
+            "VERSION_STRING = "     << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << "\n" <<
             "GIT_COMMIT_COUNT = "   << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << "\n" <<
             "GIT_COMMIT_HASH = "    << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << "\n" <<
             "BUILD_TYPE = "         << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE << "\n" <<
@@ -33,7 +33,6 @@ namespace ramses_internal
             "CXX_FLAGS_RELEASE = "  << ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS_RELEASE << "\n" <<
             "BUILD_SYSTEM_NAME = "  << ::ramses_sdk::RAMSES_SDK_CMAKE_SYSTEM_NAME << "\n" <<
             "CMAKE_VERSION = "      << ::ramses_sdk::RAMSES_SDK_CMAKE_VERSION << "\n" <<
-            "TARGET_OS = "          << ::ramses_sdk::RAMSES_SDK_TARGET_OS << "\n" <<
             "BUILD_ENV_INFO = "     << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL << "\n"
             );
         return true;

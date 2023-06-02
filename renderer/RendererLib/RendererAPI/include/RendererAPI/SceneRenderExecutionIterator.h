@@ -28,29 +28,29 @@ namespace ramses_internal
             m_flattenedRenderableIdx++;
         }
 
-        UInt32 getRenderPassIdx() const
+        [[nodiscard]] UInt32 getRenderPassIdx() const
         {
             return m_renderPassIdx;
         }
 
-        UInt32 getRenderableIdx() const
+        [[nodiscard]] UInt32 getRenderableIdx() const
         {
             return m_renderableIdx;
         }
 
-        UInt32 getFlattenedRenderableIdx() const
+        [[nodiscard]] UInt32 getFlattenedRenderableIdx() const
         {
             return m_flattenedRenderableIdx;
         }
 
-        Bool operator==(const SceneRenderExecutionIterator& other) const
+        bool operator==(const SceneRenderExecutionIterator& other) const
         {
             return m_renderPassIdx == other.m_renderPassIdx
                 && m_renderableIdx == other.m_renderableIdx
                 && m_flattenedRenderableIdx == other.m_flattenedRenderableIdx;
         }
 
-        Bool operator!=(const SceneRenderExecutionIterator& other) const
+        bool operator!=(const SceneRenderExecutionIterator& other) const
         {
             return !operator==(other);
         }

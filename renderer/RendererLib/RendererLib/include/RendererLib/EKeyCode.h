@@ -135,7 +135,7 @@ namespace ramses_internal
         EKeyCode_NUMBER_OF_ELEMENTS
     };
 
-    static const char* KeyCodeNames[] =
+    const std::array KeyCodeNames =
     {
         "EKeyCode_Unknown = 0",
 

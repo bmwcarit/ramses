@@ -20,7 +20,8 @@
 #include "SceneUtils/DataLayoutCreationHelper.h"
 #include "SceneAPI/RenderState.h"
 
-#include "absl/types/optional.h"
+#include <optional>
+#include <string_view>
 
 namespace ramses
 {
@@ -29,40 +30,40 @@ namespace ramses
     class EffectImpl final : public ResourceImpl
     {
     public:
-        EffectImpl(ramses_internal::ResourceHashUsage hashUsage, SceneImpl& scene, const char* effectname);
-        virtual ~EffectImpl() override;
+        EffectImpl(ramses_internal::ResourceHashUsage hashUsage, SceneImpl& scene, std::string_view effectname);
+        ~EffectImpl() override;
 
-        void initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, absl::optional<ramses_internal::EDrawMode> geometryShaderInputType);
+        void initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, std::optional<EDrawMode> geometryShaderInputType);
 
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        uint32_t getUniformInputCount() const;
-        uint32_t getAttributeInputCount() const;
+        size_t getUniformInputCount() const;
+        size_t getAttributeInputCount() const;
 
         bool hasGeometryShader() const;
         status_t getGeometryShaderInputType(EDrawMode& inputType) const;
 
-        status_t getUniformInput(uint32_t index, EffectInputImpl& inputImpl) const;
+        status_t getUniformInput(size_t index, EffectInputImpl& inputImpl) const;
         status_t findUniformInput(EEffectUniformSemantic uniformSemantic, EffectInputImpl& inputImpl) const;
-        status_t getAttributeInput(uint32_t index, EffectInputImpl& inputImpl) const;
+        status_t getAttributeInput(size_t index, EffectInputImpl& inputImpl) const;
         status_t findAttributeInput(EEffectAttributeSemantic attributeSemantic, EffectInputImpl& inputImpl) const;
-        status_t findUniformInput(const char* inputName, EffectInputImpl& inputImpl) const;
-        status_t findAttributeInput(const char* inputName, EffectInputImpl& inputImpl) const;
+        status_t findUniformInput(std::string_view inputName, EffectInputImpl& inputImpl) const;
+        status_t findAttributeInput(std::string_view inputName, EffectInputImpl& inputImpl) const;
 
         const ramses_internal::EffectInputInformationVector& getUniformInputInformation() const;
         const ramses_internal::EffectInputInformationVector& getAttributeInputInformation() const;
 
     private:
-        static const uint32_t InvalidInputIndex = 0xffff;
+        static const size_t InvalidInputIndex = 0xffff;
 
-        uint32_t getEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, const char* inputName) const;
-        uint32_t findEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, ramses_internal::EFixedSemantics inputSemantics) const;
-        void initializeEffectInputData(EffectInputImpl& effectInputImpl, const ramses_internal::EffectInputInformation& effectInputInfo, uint32_t index) const;
+        size_t getEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, std::string_view inputName) const;
+        size_t findEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, ramses_internal::EFixedSemantics inputSemantics) const;
+        void initializeEffectInputData(EffectInputImpl& effectInputImpl, const ramses_internal::EffectInputInformation& effectInputInfo, size_t index) const;
 
         ramses_internal::EffectInputInformationVector m_effectUniformInputs;
         ramses_internal::EffectInputInformationVector m_effectAttributeInputs;
-        absl::optional<ramses_internal::EDrawMode> m_geometryShaderInputType;
+        std::optional<EDrawMode> m_geometryShaderInputType;
     };
 }
 

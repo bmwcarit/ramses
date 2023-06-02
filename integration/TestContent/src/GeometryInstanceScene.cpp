@@ -19,7 +19,7 @@
 
 namespace ramses_internal
 {
-    GeometryInstanceScene::GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    GeometryInstanceScene::GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = nullptr;
@@ -68,7 +68,7 @@ namespace ramses_internal
             notInstancedMeshNode->setAppearance(*appearance);
 
             ramses::Node* translateNode = m_scene.createNode();
-            translateNode->setTranslation(0.f, -1.5f, 0.f);
+            translateNode->setTranslation({0.f, -1.5f, 0.f});
             notInstancedMeshNode->setParent(*translateNode);
 
             ramses::GeometryBinding* notInstancedGeometry = createGeometry(*effect);
@@ -87,22 +87,22 @@ namespace ramses_internal
         ramses::UniformInput colorInput;
         effect.findUniformInput("color", colorInput);
 
-        static const float translation[] =
+        static const std::array<ramses::vec3f, NumInstances> translation =
         {
-            -0.5f,  0.5f, 0.0f,
-            0.0f,   0.0f, 1.0f,
-            0.5f,  -0.5f, 2.0f
+            ramses::vec3f{ -0.5f,  0.5f, 0.0f },
+            ramses::vec3f{ 0.0f,   0.0f, 1.0f },
+            ramses::vec3f{ 0.5f,  -0.5f, 2.0f }
         };
 
-        static const float color[] =
+        static const std::array<ramses::vec4f, NumInstances> color =
         {
-            0.3f, 0.3f, 0.3f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            0.1f, 1.0f, 0.1f, 1.0f
+            ramses::vec4f{ 0.3f, 0.3f, 0.3f, 1.0f },
+            ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f },
+            ramses::vec4f{ 0.1f, 1.0f, 0.1f, 1.0f }
         };
 
-        appearance.setInputValueVector3f(translationInput, NumInstances, translation);
-        appearance.setInputValueVector4f(colorInput, NumInstances, color);
+        appearance.setInputValue(translationInput, NumInstances, translation.data());
+        appearance.setInputValue(colorInput, NumInstances, color.data());
     }
 
     void GeometryInstanceScene::setInstancedAttributes(const ramses::Effect& effect, ramses::GeometryBinding* geometry, UInt32 instancingDivisor)
@@ -113,33 +113,33 @@ namespace ramses_internal
         ramses::AttributeInput colorInput;
         effect.findAttributeInput("color", colorInput);
 
-        static const float translation[] =
+        static const std::array<ramses::vec3f, 3u> translation
         {
-            -0.5f,  0.5f, 0.0f,
-            0.0f,   0.0f, 1.0f,
-            0.5f,  -0.5f, 2.0f
+            ramses::vec3f{ -0.5f,  0.5f, 0.0f },
+            ramses::vec3f{ 0.0f,   0.0f, 1.0f },
+            ramses::vec3f{ 0.5f,  -0.5f, 2.0f }
         };
 
-        static const float color[] =
+        static const std::array<ramses::vec4f, 3u> color
         {
-            0.3f, 0.3f, 0.3f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            0.1f, 1.0f, 0.1f, 1.0f
+            ramses::vec4f{ 0.3f, 0.3f, 0.3f, 1.0f },
+            ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f },
+            ramses::vec4f{ 0.1f, 1.0f, 0.1f, 1.0f }
         };
 
-        const ramses::ArrayResource* translationsArray = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, translation);
+        const ramses::ArrayResource* translationsArray = m_scene.createArrayResource(3u, translation.data());
         geometry->setInputBuffer(translationInput, *translationsArray, instancingDivisor);
-        const ramses::ArrayResource* colorArray = m_scene.createArrayResource(ramses::EDataType::Vector4F, 3, color);
+        const ramses::ArrayResource* colorArray = m_scene.createArrayResource(3u, color.data());
         geometry->setInputBuffer(colorInput, *colorArray, instancingDivisor);
     }
 
     ramses::GeometryBinding* GeometryInstanceScene::createGeometry(const ramses::Effect& effect)
     {
-        static const float verticesData[] =
+        static const std::array<ramses::vec3f, 3u> verticesData
         {
-            -1.0f,  0.f,  -15.0f,
-            1.0f, 0.f,  -15.0f,
-            0.0f, 1.f,  -15.0f
+            ramses::vec3f{ -1.0f,  0.f,  -15.0f },
+            ramses::vec3f{ 1.0f, 0.f,  -15.0f },
+            ramses::vec3f{ 0.0f, 1.f,  -15.0f }
         };
 
         static const UInt16 indicesData[] =
@@ -147,9 +147,8 @@ namespace ramses_internal
             0, 1, 2
         };
 
-        const ramses::ArrayResource* indices  = m_scene.createArrayResource(ramses::EDataType::UInt16, NumInstances, indicesData);
-
-        const ramses::ArrayResource* vertices  = m_scene.createArrayResource(ramses::EDataType::Vector3F, NumInstances, verticesData);
+        const ramses::ArrayResource* indices  = m_scene.createArrayResource(NumInstances, indicesData);
+        const ramses::ArrayResource* vertices  = m_scene.createArrayResource(NumInstances, verticesData.data());
 
         ramses::AttributeInput positionsInput;
         effect.findAttributeInput("a_position", positionsInput);

@@ -10,7 +10,6 @@
 #define RAMSES_DATALAYOUTCREATIONHELPER_H
 
 #include "SceneAPI/Handles.h"
-#include "Collections/String.h"
 #include "SceneAPI/EDataType.h"
 #include "Collections/Vector.h"
 #include "Resource/EffectInputInformation.h"

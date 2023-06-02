@@ -23,12 +23,12 @@ namespace ramses_internal
     public:
         explicit TaskForwardingQueue(ITaskQueue& nextQueue);
         explicit TaskForwardingQueue(const TaskForwardingQueue&) = delete;
-        virtual ~TaskForwardingQueue() override;
+        ~TaskForwardingQueue() override;
 
-        virtual bool enqueue(ITask& task) override;
-        virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
+        bool enqueue(ITask& task) override;
+        void disableAcceptingTasksAfterExecutingCurrentQueue() override;
 
-        virtual void TaskFinished(ITask& Task) override;
+        void TaskFinished(ITask& Task) override;
 
     protected:
         // recursive mutex needed for direct task executor: calls TaskFinished from inside enqueue

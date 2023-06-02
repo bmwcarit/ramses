@@ -9,19 +9,19 @@
 #ifndef RAMSES_RENDERERCACHEDSCENE_H
 #define RAMSES_RENDERERCACHEDSCENE_H
 
-#include "RendererLib/TextureLinkCachedScene.h"
+#include "RendererLib/ResourceCachedScene.h"
 #include "RenderingPassInfo.h"
 
 namespace ramses_internal
 {
     class IResourceDeviceHandleAccessor;
 
-    class RendererCachedScene final : public TextureLinkCachedScene
+    class RendererCachedScene final : public ResourceCachedScene
     {
     public:
         explicit RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
-        void updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager);
+        void updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor);
         void updateRenderableWorldMatrices();
         void updateRenderableWorldMatricesWithLinks();
 
@@ -47,43 +47,43 @@ namespace ramses_internal
          */
         bool hasActiveShaderAnimation() const;
 
-        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visible) override;
+        void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visible) override;
 
-        virtual void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;
-        virtual void                        addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order) override;
-        virtual void                        removeRenderableFromRenderGroup (RenderGroupHandle groupHandle, RenderableHandle renderableHandle) override;
+        void                        releaseRenderGroup              (RenderGroupHandle groupHandle) override;
+        void                        addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order) override;
+        void                        removeRenderableFromRenderGroup (RenderGroupHandle groupHandle, RenderableHandle renderableHandle) override;
 
-        virtual void                        releaseRenderPass               (RenderPassHandle passHandle) override;
-        virtual void                        setRenderPassRenderOrder        (RenderPassHandle passHandle, Int32 renderOrder) override;
-        virtual void                        setRenderPassEnabled            (RenderPassHandle passHandle, Bool isEnabled) override;
-        virtual void                        setRenderPassRenderOnce         (RenderPassHandle passHandle, Bool enable) override;
-        virtual void                        retriggerRenderPassRenderOnce   (RenderPassHandle passHandle) override;
-        virtual void                        addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order) override;
-        virtual void                        removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
-        virtual void                        addRenderGroupToRenderGroup     (RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, Int32 order) override;
-        virtual void                        removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild) override;
+        void                        releaseRenderPass               (RenderPassHandle passHandle) override;
+        void                        setRenderPassRenderOrder        (RenderPassHandle passHandle, Int32 renderOrder) override;
+        void                        setRenderPassEnabled            (RenderPassHandle passHandle, bool isEnabled) override;
+        void                        setRenderPassRenderOnce         (RenderPassHandle passHandle, bool enable) override;
+        void                        retriggerRenderPassRenderOnce   (RenderPassHandle passHandle) override;
+        void                        addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order) override;
+        void                        removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
+        void                        addRenderGroupToRenderGroup     (RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, Int32 order) override;
+        void                        removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild) override;
 
-        virtual BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
-        virtual void                        releaseBlitPass(BlitPassHandle passHandle) override;
-        virtual void                        setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder) override;
-        virtual void                        setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled) override;
+        BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
+        void                        releaseBlitPass(BlitPassHandle passHandle) override;
+        void                        setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder) override;
+        void                        setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled) override;
 
         const RenderingPassInfoVector&      getSortedRenderingPasses        () const;
         const RenderableVector&             getOrderedRenderablesForPass    (RenderPassHandle pass) const;
-        const Matrix44f&                    getRenderableWorldMatrix        (RenderableHandle renderable) const;
+        const glm::mat4&                    getRenderableWorldMatrix        (RenderableHandle renderable) const;
 
     private:
         void updatePassRenderableSorting();
         void updateRenderablesInPass(RenderPassHandle passHandle);
         void addRenderablesFromRenderGroup(RenderableVector& orderedRenderables, RenderGroupHandle renderGroupHandle);
-        Bool shouldRenderPassBeRendered(RenderPassHandle handle) const;
+        bool shouldRenderPassBeRendered(RenderPassHandle handle) const;
 
         RenderingPassInfoVector m_sortedRenderingPasses;
         using PassRenderableOrder = std::vector<RenderableVector>;
         PassRenderableOrder     m_passRenderableOrder;
-        mutable Bool            m_renderableOrderingDirty;
+        mutable bool            m_renderableOrderingDirty;
 
-        using MatrixVector = std::vector<Matrix44f>;
+        using MatrixVector = std::vector<glm::mat4>;
         MatrixVector            m_renderableMatrices;
 
         using RenderPasses = HashSet<RenderPassHandle>;

@@ -27,7 +27,7 @@ namespace ramses_internal
 {
     Texture2DCompressedMipMapScene::Texture2DCompressedMipMapScene(ramses::Scene&        scene,
                                                                    uint32_t              state,
-                                                                   const Vector3&        cameraPosition)
+                                                                   const glm::vec3&        cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_textureWidth(8)
         , m_textureHeight(8)
@@ -50,10 +50,10 @@ namespace ramses_internal
             false);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Nearest_MipMapNearest,
-            ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Nearest_MipMapNearest,
+            ramses::ETextureSamplingMethod::Nearest,
             *texture);
 
         createMesh(*sampler);
@@ -62,7 +62,7 @@ namespace ramses_internal
     void Texture2DCompressedMipMapScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setFrustum(0.0f, static_cast<float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
         orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
@@ -103,8 +103,8 @@ namespace ramses_internal
         const float z = -1.0f;
 
         std::vector<uint16_t> indices;
-        std::vector<float> vertexPositions;
-        std::vector<float> textureCoords;
+        std::vector<ramses::vec3f> vertexPositions;
+        std::vector<ramses::vec2f> textureCoords;
 
         const float x = 0.0f;
         const float w = static_cast<float>(IntegrationScene::DefaultViewportWidth);
@@ -117,33 +117,15 @@ namespace ramses_internal
         {
             const float y = h * i;
 
-            vertexPositions.push_back(x);
-            vertexPositions.push_back(y);
-            vertexPositions.push_back(z);
+            vertexPositions.push_back(ramses::vec3f{ x,   y,   z });
+            vertexPositions.push_back(ramses::vec3f{ x+w, y,   z });
+            vertexPositions.push_back(ramses::vec3f{ x+w, y+h, z });
+            vertexPositions.push_back(ramses::vec3f{ x,   y+h, z });
 
-            vertexPositions.push_back(x + w);
-            vertexPositions.push_back(y);
-            vertexPositions.push_back(z);
-
-            vertexPositions.push_back(x + w);
-            vertexPositions.push_back(y + h);
-            vertexPositions.push_back(z);
-
-            vertexPositions.push_back(x);
-            vertexPositions.push_back(y + h);
-            vertexPositions.push_back(z);
-
-            textureCoords.push_back(0.0f);
-            textureCoords.push_back(0.0f);
-
-            textureCoords.push_back(s);
-            textureCoords.push_back(0.0f);
-
-            textureCoords.push_back(s);
-            textureCoords.push_back(t);
-
-            textureCoords.push_back(0.0f);
-            textureCoords.push_back(t);
+            textureCoords.push_back(ramses::vec2f{ 0.f, 0.f });
+            textureCoords.push_back(ramses::vec2f{ s,   0.f });
+            textureCoords.push_back(ramses::vec2f{ s,   t });
+            textureCoords.push_back(ramses::vec2f{ 0.f, t });
 
             indices.push_back(0 + i * 4);
             indices.push_back(1 + i * 4);
@@ -156,8 +138,8 @@ namespace ramses_internal
             t *= 2.0;
         }
 
-        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, static_cast<uint32_t>(indices.size()), &indices.front());
-        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(vertexPositions.size()) / 3, &vertexPositions.front());
-        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, static_cast<uint32_t>(textureCoords.size()) / 2, &textureCoords.front());
+        m_indexArray = m_scene.createArrayResource(static_cast<uint32_t>(indices.size()), indices.data());
+        m_vertexPositions = m_scene.createArrayResource(static_cast<uint32_t>(vertexPositions.size()), vertexPositions.data());
+        m_textureCoords = m_scene.createArrayResource(static_cast<uint32_t>(textureCoords.size()), textureCoords.data());
     }
 }

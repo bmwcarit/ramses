@@ -12,38 +12,40 @@
 #include "IResource.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "SceneAPI/IScene.h"
+
 #include <mutex>
+#include <string_view>
 
 namespace ramses_internal
 {
     class ResourceBase : public IResource
     {
     public:
-        explicit ResourceBase(EResourceType typeID, ResourceCacheFlag cacheFlag, const String& name)
+        explicit ResourceBase(EResourceType typeID, ResourceCacheFlag cacheFlag, std::string_view name)
             : m_typeID(typeID)
             , m_cacheFlag(cacheFlag)
             , m_name(name)
         {
         }
 
-        virtual EResourceType getTypeID() const final override
+        EResourceType getTypeID() const final override
         {
             return m_typeID;
         }
 
-        virtual const ResourceBlob& getResourceData() const final override
+        const ResourceBlob& getResourceData() const final override
         {
             assert(m_data.data());
             return m_data;
         }
 
-        virtual const CompressedResourceBlob& getCompressedResourceData() const final override
+        const CompressedResourceBlob& getCompressedResourceData() const final override
         {
             assert(m_compressedData.data());
             return m_compressedData;
         }
 
-        virtual void setResourceData(ResourceBlob data) final override
+        void setResourceData(ResourceBlob data) final override
         {
             assert(data.size() > 0);
             m_data = std::move(data);
@@ -53,7 +55,7 @@ namespace ramses_internal
             m_hash = ResourceContentHash::Invalid();
         }
 
-        virtual void setResourceData(ResourceBlob data, const ResourceContentHash& hash) final override
+        void setResourceData(ResourceBlob data, const ResourceContentHash& hash) final override
         {
             assert(data.size() > 0);
             m_data = std::move(data);
@@ -63,7 +65,7 @@ namespace ramses_internal
             m_hash = hash;
         }
 
-        virtual void setCompressedResourceData(CompressedResourceBlob compressedData, CompressionLevel compressionLevel, uint32_t uncompressedSize, const ResourceContentHash& hash) final override
+        void setCompressedResourceData(CompressedResourceBlob compressedData, CompressionLevel compressionLevel, uint32_t uncompressedSize, const ResourceContentHash& hash) final override
         {
             assert(compressedData.size() > 0);
             assert(uncompressedSize > 0);
@@ -74,12 +76,12 @@ namespace ramses_internal
             m_hash = hash;
         }
 
-        virtual UInt32 getDecompressedDataSize() const override
+        UInt32 getDecompressedDataSize() const override
         {
             return m_uncompressedSize;
         }
 
-        virtual UInt32 getCompressedDataSize() const override
+        UInt32 getCompressedDataSize() const override
         {
             std::unique_lock<std::mutex> l(m_compressionLock);
             if (m_compressedData.data())
@@ -88,7 +90,7 @@ namespace ramses_internal
             return 0;
         }
 
-        virtual const ResourceContentHash& getHash() const override
+        const ResourceContentHash& getHash() const override
         {
             if (!m_hash.isValid())
                 updateHash();
@@ -116,7 +118,7 @@ namespace ramses_internal
             return m_cacheFlag;
         }
 
-        const String& getName() const final override
+        const std::string& getName() const final override
         {
             return m_name;
         }
@@ -137,7 +139,7 @@ namespace ramses_internal
         mutable ResourceContentHash m_hash;
         uint32_t m_uncompressedSize = 0;
         ResourceCacheFlag m_cacheFlag;
-        String m_name;
+        std::string m_name;
         mutable std::mutex m_compressionLock;
     };
 }

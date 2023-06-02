@@ -32,54 +32,35 @@ namespace ramses_internal
         TCPConnectionSystem(const NetworkParticipantAddress& participantAddress, UInt32 protocolVersion, const NetworkParticipantAddress& daemonAddress, bool pureDaemon,
                             PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
                             std::chrono::milliseconds aliveInterval, std::chrono::milliseconds aliveTimeout);
-        virtual ~TCPConnectionSystem() override;
+        ~TCPConnectionSystem() override;
 
         static Guid GetDaemonId();
 
-        virtual bool connectServices() override;
-        virtual bool disconnectServices() override;
+        bool connectServices() override;
+        bool disconnectServices() override;
 
-        virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
-        virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() override;
+        IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
 
         // scene
-        virtual bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes) override;
-        virtual bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes) override;
-        virtual bool sendScenesAvailable(const Guid& to, const SceneInfoVector& availableScenes) override;
+        bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes, ramses::EFeatureLevel featureLevel) override;
+        bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes) override;
+        bool sendScenesAvailable(const Guid& to, const SceneInfoVector& availableScenes, ramses::EFeatureLevel featureLevel) override;
 
-        virtual bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) override;
-        virtual bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) override;
+        bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) override;
+        bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) override;
 
-        virtual bool sendInitializeScene(const Guid& to, const SceneId& sceneId) override;
-        virtual bool sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer) override;
+        bool sendInitializeScene(const Guid& to, const SceneId& sceneId) override;
+        bool sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer) override;
 
-        virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
-
-        // dcsm client -> renderer
-        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) override;
-        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) override;
-        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor) override;
-        virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
-        virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
-        virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
-        virtual bool sendDcsmBroadcastRequestStopOfferContent(ContentID contentID) override;
-        virtual bool sendDcsmBroadcastForceStopOfferContent(ContentID contentID) override;
-        virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) override;
-
-        // dcsm renderer -> client
-        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
-        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
-        virtual bool sendDcsmContentStatus(const Guid& to, ContentID contentID, uint64_t messageID, std::vector<Byte> const& message) override;
+        bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
 
         // set service handlers
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
-        void setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler) override;
-        void setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* handler) override;
 
         // log triggers
-        virtual void logConnectionInfo() override;
-        virtual void triggerLogMessageForPeriodicLog() override;
+        void logConnectionInfo() override;
+        void triggerLogMessageForPeriodicLog() override;
 
     private:
         enum class EParticipantState
@@ -159,7 +140,7 @@ namespace ramses_internal
             asio::ip::tcp::socket   m_acceptorSocket;
         };
 
-        virtual void run() override;
+        void run() override;
 
         void doConnect(const ParticipantPtr& pp);
         void sendConnectionDescriptionOnNewConnection(const ParticipantPtr& pp);
@@ -193,17 +174,6 @@ namespace ramses_internal
         void handleSceneNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleRendererEvent(const ParticipantPtr& pp, BinaryInputStream& stream);
 
-        void handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmContentStateChange(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmContentStatus(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream);
-
         static const char* EnumToString(EParticipantState e);
         static const char* EnumToString(EParticipantType e);
 
@@ -221,13 +191,10 @@ namespace ramses_internal
         StatisticCollectionFramework& m_statisticCollection;
 
         ConnectionStatusUpdateNotifier m_ramsesConnectionStatusUpdateNotifier;
-        ConnectionStatusUpdateNotifier m_dcsmConnectionStatusUpdateNotifier;
         std::vector<Guid> m_connectedParticipantsForBroadcasts;
 
         ISceneProviderServiceHandler* m_sceneProviderHandler;
         ISceneRendererServiceHandler* m_sceneRendererHandler;
-        IDcsmProviderServiceHandler* m_dcsmProviderHandler;
-        IDcsmConsumerServiceHandler* m_dcsmConsumerHandler;
 
         std::unique_ptr<RunState>     m_runState;
         HashSet<ParticipantPtr>       m_connectingParticipants;

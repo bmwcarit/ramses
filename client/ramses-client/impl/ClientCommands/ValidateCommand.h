@@ -10,8 +10,9 @@
 #define RAMSES_VALIDATECOMMAND_H
 
 #include "Ramsh/RamshCommandArguments.h"
-#include "Collections/String.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+
+#include <string>
 
 namespace ramses
 {
@@ -20,11 +21,11 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class ValidateCommand : public RamshCommandArgs<uint64_t, String, String>
+    class ValidateCommand : public RamshCommandArgs<uint64_t, std::string, std::string>
     {
     public:
         explicit ValidateCommand(ramses::RamsesClientImpl& client);
-        virtual Bool execute(uint64_t& sceneId, String& severity, String& objectName) const override;
+        bool execute(uint64_t& sceneId, std::string& severity, std::string& objectName) const override;
     private:
         ramses::RamsesClientImpl& m_client;
     };

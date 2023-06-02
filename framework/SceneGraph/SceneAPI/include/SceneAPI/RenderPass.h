@@ -10,8 +10,8 @@
 #define RAMSES_INTERNAL_RENDERPASS_H
 
 #include "SceneAPI/SceneTypes.h"
-#include "Math3d/Vector4.h"
 #include "Utils/AssertMovable.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -21,7 +21,7 @@ namespace ramses_internal
         CameraHandle           camera;
         RenderTargetHandle     renderTarget;
         Int32                  renderOrder = 0;
-        Vector4                clearColor{ 0.f, 0.f, 0.f, 1.f };
+        glm::vec4              clearColor{ 0.f, 0.f, 0.f, 1.f };
         UInt32                 clearFlags = EClearFlags_All;
         bool                   isRenderOnce = false;
 

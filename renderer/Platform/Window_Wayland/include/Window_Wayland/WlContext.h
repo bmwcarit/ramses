@@ -43,7 +43,7 @@ namespace ramses_internal
         wl_egl_window*    native_window = nullptr;
         wl_callback*      frameRenderingDoneWaylandCallbacObject = nullptr;
 
-        Bool              previousFrameRenderingDone = true;
+        bool              previousFrameRenderingDone = true;
     };
 }
 

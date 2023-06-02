@@ -163,8 +163,8 @@ namespace ramses_internal
 
         WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
-        const std::string fileDescriptor = fmt::to_string(socket.createConnectedFileDescriptor(true));
-        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
+        const auto fileDescriptor = fmt::to_string(socket.createConnectedFileDescriptor(true));
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor);
 
         EXPECT_TRUE(this->m_window->init());
     }
@@ -179,8 +179,8 @@ namespace ramses_internal
     {
         UnixDomainSocket socket = UnixDomainSocket("wayland-0", WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
-        const std::string fileDescriptor = fmt::to_string(socket.createConnectedFileDescriptor(true));
-        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor.c_str());
+        const auto fileDescriptor = fmt::to_string(socket.createConnectedFileDescriptor(true));
+        WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::WaylandSocket, fileDescriptor);
 
         EXPECT_TRUE(this->m_window->init());
     }

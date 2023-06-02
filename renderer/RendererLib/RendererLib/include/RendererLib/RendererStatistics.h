@@ -10,12 +10,15 @@
 #define RAMSES_RENDERERSTATISTICS_H
 
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererAPI/Types.h"
 #include "Utils/StatisticCollection.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "PlatformAbstraction/PlatformTypes.h"
 #include "Components/FlushTimeInformation.h"
+
 #include <map>
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -24,8 +27,8 @@ namespace ramses_internal
     class RendererStatistics
     {
     public:
-        Float  getFps() const;
-        UInt32 getDrawCallsPerFrame() const;
+        [[nodiscard]] float  getFps() const;
+        [[nodiscard]] UInt32 getDrawCallsPerFrame() const;
 
         void sceneRendered(SceneId sceneId);
         void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency);
@@ -39,7 +42,7 @@ namespace ramses_internal
         void resourceUploaded(UInt byteSize);
         void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
         void streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates);
-        void shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid);
+        void shaderCompiled(std::chrono::microseconds microsecondsUsed, std::string_view name, SceneId sceneid);
         void setVRAMUsage(uint64_t totalUploaded, uint64_t gpuCacheSize);
 
         void untrackScene(SceneId sceneId);
@@ -55,9 +58,9 @@ namespace ramses_internal
 
     private:
         Int32 m_frameNumber = 0;
-        UInt64 m_timeBase = PlatformTime::GetMillisecondsMonotonic();
+        uint64_t m_timeBase = PlatformTime::GetMillisecondsMonotonic();
         UInt32 m_drawCalls = 0u;
-        UInt64 m_lastFrameTick = 0u;
+        uint64_t m_lastFrameTick = 0u;
         UInt32 m_frameDurationMin = std::numeric_limits<UInt32>::max();
         UInt32 m_frameDurationMax = 0u;
         UInt m_resourcesUploaded = 0u;
@@ -65,8 +68,8 @@ namespace ramses_internal
         UInt m_shadersCompiled = 0u;
         uint64_t m_totalResourceUploadedSize = 0u;
         uint64_t m_gpuCacheSize = 0u;
-        UInt64 m_microsecondsForShaderCompilation = 0u;
-        String m_maximumDurationShaderName;
+        std::string m_maximumDurationShaderName;
+        uint64_t m_microsecondsForShaderCompilation = 0u;
         std::chrono::microseconds m_maximumDurationShaderTime = {};
         SceneId m_maximumDurationShaderScene;
 

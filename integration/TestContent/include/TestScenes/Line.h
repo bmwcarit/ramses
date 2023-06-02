@@ -10,7 +10,7 @@
 #define RAMSES_LINE_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "ramses-client-api/AppearanceEnums.h"
+#include "ramses-framework-api/AppearanceEnums.h"
 
 namespace ramses
 {

@@ -6,35 +6,32 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-SET( EGL_FOUND FALSE )
+set( EGL_FOUND FALSE )
 
-IF (TARGET_OS MATCHES "Windows")
-
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     # Windows does not suppot EGL natively
 
-ELSEIF(TARGET_OS MATCHES "Linux" OR TARGET_OS MATCHES "Android")
-    FIND_PATH(EGL_INCLUDE_DIRS EGL/egl.h
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "Android")
+    find_path(EGL_INCLUDE_DIRS EGL/egl.h
         /usr/include
     )
 
-    FIND_LIBRARY(EGL_LIBRARY
+    find_library(EGL_LIBRARY
         NAMES EGL
         PATHS
     )
 
-    SET( EGL_FOUND "NO" )
-    IF(EGL_LIBRARY)
-        SET( EGL_LIBRARIES ${EGL_LIBRARY} )
-        SET( EGL_FOUND TRUE )
-        #message(STATUS "Found EGL libs: ${EGL_LIBRARIES}")
-        #message(STATUS "Found EGL includes: ${EGL_INCLUDE_DIRS}")
-    ENDIF(EGL_LIBRARY)
+    set( EGL_FOUND "NO" )
+    if(EGL_LIBRARY)
+        set( EGL_LIBRARIES ${EGL_LIBRARY} )
+        set( EGL_FOUND TRUE )
+    endif()
 
-    MARK_AS_ADVANCED(
+    mark_as_advanced(
         EGL_INCLUDE_DIRS
         EGL_LIBRARIES
         EGL_LIBRARY
         EGL_FOUND
     )
 
-ENDIF()
+endif()

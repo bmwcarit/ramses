@@ -31,22 +31,22 @@ namespace ramses_internal
 
         bool removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut = nullptr);
 
-        bool                hasLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
-        ResourceContentHash getLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] bool                hasLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] ResourceContentHash getLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
 
-        bool                  hasLinkedOffscreenBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
-        OffscreenBufferHandle getLinkedOffscreenBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
-        bool                  hasLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
-        StreamBufferHandle    getLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
-        bool                  hasLinkedExternalBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
-        ExternalBufferHandle  getLinkedExternalBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] bool                  hasLinkedOffscreenBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] OffscreenBufferHandle getLinkedOffscreenBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] bool                  hasLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] StreamBufferHandle    getLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] bool                  hasLinkedExternalBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] ExternalBufferHandle  getLinkedExternalBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const;
 
         using LinkManagerBase::getDependencyChecker;
         using LinkManagerBase::getSceneLinks;
 
-        const OffscreenBufferLinks& getOffscreenBufferLinks() const;
-        const StreamBufferLinks& getStreamBufferLinks() const;
-        const ExternalBufferLinks& getExternalBufferLinks() const;
+        [[nodiscard]] const OffscreenBufferLinks& getOffscreenBufferLinks() const;
+        [[nodiscard]] const StreamBufferLinks& getStreamBufferLinks() const;
+        [[nodiscard]] const ExternalBufferLinks& getExternalBufferLinks() const;
 
         void setTextureToConsumers(SceneId providerSceneId, DataSlotHandle providerSlotHandle, ResourceContentHash texture) const;
 
@@ -54,7 +54,7 @@ namespace ramses_internal
         template <typename BUFFERHANDLE>
         void createBufferLinkInternal(BUFFERHANDLE providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, BufferLinks<BUFFERHANDLE>& links);
         TextureSamplerHandle storeConsumerSlot(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
-        DataSlotHandle getDataSlotForSampler(SceneId sceneId, TextureSamplerHandle sampler) const;
+        [[nodiscard]] DataSlotHandle getDataSlotForSampler(SceneId sceneId, TextureSamplerHandle sampler) const;
 
         using SamplerToSlotMap = HashMap<TextureSamplerHandle, DataSlotHandle>;
         using SceneToSamplerSlotMap = HashMap<SceneId, SamplerToSlotMap>;

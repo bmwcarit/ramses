@@ -131,7 +131,7 @@ protected:
 
     void updateConsumerSceneResourcesCache()
     {
-        consumerScene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+        consumerScene.updateRenderableResources(sceneHelper.resourceManager);
     }
 
     RenderableHandle createRenderableWithResourcesAndMakeClean(TextureSamplerHandle samplerHandle)

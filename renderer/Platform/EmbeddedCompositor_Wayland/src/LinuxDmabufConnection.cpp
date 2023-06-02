@@ -102,7 +102,7 @@ namespace ramses_internal
         // Send the minimum permitted set of fallback formats. A fancier implementation would
         // sniff these out using eglQueryDmaBufFormatsEXT() and eglQueryDmaBufModifiersEXT().
         PUSH_DISABLE_C_STYLE_CAST_WARNING
-        static const uint32_t fallbackFormats[] =
+        const std::array<uint32_t,2> fallbackFormats =
         {
             DRM_FORMAT_ARGB8888,
             DRM_FORMAT_XRGB8888,
@@ -110,6 +110,7 @@ namespace ramses_internal
 
         // Declare local aliases bracked around exemptions for the parser's use of old-style C casts
         constexpr uint64_t drmFormatModInvalid = DRM_FORMAT_MOD_INVALID;
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         constexpr uint32_t drmFormatModLinear = DRM_FORMAT_MOD_LINEAR;
         POP_DISABLE_C_STYLE_CAST_WARNING
 
@@ -119,6 +120,7 @@ namespace ramses_internal
         {
             // Send the minimum permitted set of modifiers for this format. In the future sniff
             // these out with eglQueryDmaBufModifiersExt().
+            // NOLINTNEXTLINE(modernize-avoid-c-arrays)
             static const uint64_t fallbackModifiers[] =
             {
             };

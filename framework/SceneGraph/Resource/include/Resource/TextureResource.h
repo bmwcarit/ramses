@@ -11,14 +11,16 @@
 
 #include "Resource/TextureMetaInfo.h"
 #include "Resource/BufferResource.h"
+
 #include <numeric>
+#include <string_view>
 
 namespace ramses_internal
 {
     class TextureResource : public BufferResource
     {
     public:
-        TextureResource(EResourceType typeID, const TextureMetaInfo& texDesc, ResourceCacheFlag cacheFlag, const String& name)
+        TextureResource(EResourceType typeID, const TextureMetaInfo& texDesc, ResourceCacheFlag cacheFlag, std::string_view name)
             : BufferResource(typeID, GetTotalDataSizeFromMipSizes(texDesc.m_dataSizes, typeID), nullptr, cacheFlag, name)
             , m_width(texDesc.m_width)
             , m_height(texDesc.m_height)
@@ -34,7 +36,7 @@ namespace ramses_internal
             assert((texDesc.m_dataSizes.size() == 1) || !texDesc.m_generateMipChain);
         };
 
-        virtual ~TextureResource() override
+        ~TextureResource() override
         {
         };
 
@@ -73,7 +75,7 @@ namespace ramses_internal
             return m_generateMipChain;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override final
+        void serializeResourceMetadataToStream(IOutputStream& output) const final override
         {
             switch (getTypeID())
             {
@@ -106,7 +108,7 @@ namespace ramses_internal
             output << m_generateMipChain;
         }
 
-        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, EResourceType typeID, ResourceCacheFlag cacheFlag, const String& name)
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, EResourceType typeID, ResourceCacheFlag cacheFlag, std::string_view name)
         {
             TextureMetaInfo texDesc(1u, 1u, 1u);
             UInt32 texelFormat = 0;

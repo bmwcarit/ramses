@@ -10,70 +10,76 @@
 #define RAMSES_RAMSESFRAMEWORKCONFIGIMPL_H
 
 #include "StatusObjectImpl.h"
-#include "SOMEIPICConfig.h"
 #include "TCPConfig.h"
-#include "Utils/CommandLineParser.h"
+#include "Utils/RamsesLogger.h"
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
+#include "ramses-framework-api/EFeatureLevel.h"
 #include "ThreadWatchdogConfig.h"
 #include "TransportCommon/EConnectionProtocol.h"
 #include "Collections/Guid.h"
+
+#include <string>
 
 namespace ramses
 {
     class RamsesFrameworkConfigImpl : public StatusObjectImpl
     {
     public:
-        RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv);
-        ~RamsesFrameworkConfigImpl();
-        const ramses_internal::CommandLineParser& getCommandLineParser() const;
+        RamsesFrameworkConfigImpl();
+        ~RamsesFrameworkConfigImpl() override;
+
+        status_t setFeatureLevel(EFeatureLevel featureLevel);
+        EFeatureLevel getFeatureLevel() const;
 
         status_t enableDLTApplicationRegistration(bool state);
         bool getDltApplicationRegistrationEnabled() const;
 
-        void setDLTApplicationID(const char* id);
-        const char* getDLTApplicationID() const;
+        void setDLTApplicationID(std::string_view id);
+        std::string_view getDLTApplicationID() const;
 
-        void setDLTApplicationDescription(const char* description);
-        const char* getDLTApplicationDescription() const;
+        void setDLTApplicationDescription(std::string_view description);
+        std::string_view getDLTApplicationDescription() const;
 
         uint32_t getProtocolVersion() const;
-        void enableProtocolVersionOffset();
 
-        status_t enableSomeIPCommunication(uint32_t ramsesCommunicationUserID);
         status_t setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread, uint32_t interval);
         status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
 
         status_t setRequestedRamsesShellType(ERamsesShellType shellType);
 
         ramses_internal::EConnectionProtocol getUsedProtocol() const;
-        uint32_t getSomeipCommunicationUserID() const;
         uint32_t getWatchdogNotificationInterval(ERamsesThreadIdentifier thread) const;
         IThreadWatchdogNotification* getWatchdogNotificationCallback() const;
 
-        void setPeriodicLogsEnabled(bool enabled);
+        void setLogLevel(ELogLevel logLevel);
+        status_t setLogLevel(std::string_view context, ELogLevel logLevel);
+        void setLogLevelConsole(ELogLevel logLevel);
+
+        void setPeriodicLogInterval(std::chrono::seconds interval);
+
+        status_t setParticipantGuid(uint64_t guid);
         ramses_internal::Guid getUserProvidedGuid() const;
 
-        SOMEIPICConfig   m_someipICConfig;
-        bool             m_enableSomeIPHUSafeLocalMode;
+        status_t setParticipantName(std::string_view name);
+        const std::string& getParticipantName() const;
+
+        status_t setConnectionSystem(EConnectionSystem connectionSystem);
+
         TCPConfig        m_tcpConfig;
         ERamsesShellType m_shellType;
         ramses_internal::ThreadWatchdogConfig m_watchdogConfig;
         bool m_periodicLogsEnabled;
-        std::chrono::milliseconds someipKeepAliveInterval{500};
-        std::chrono::milliseconds someipKeepAliveTimeout{2500};
+
+        ramses_internal::RamsesLoggerConfig loggerConfig;
+        uint32_t periodicLogTimeout = 2u;
+
+        void setFeatureLevelNoCheck(EFeatureLevel featureLevel);
 
     private:
-        RamsesFrameworkConfigImpl();
-
-        void parseCommandLine();
-
+        EFeatureLevel m_featureLevel = EFeatureLevel_01;
         ramses_internal::EConnectionProtocol m_usedProtocol;
-        uint32_t m_someipCommunicationUserID;
-        ramses_internal::CommandLineParser m_parser;
+        std::string m_participantName;
         bool m_enableDltApplicationRegistration = true;
-        ramses_internal::String m_dltAppID;
-        ramses_internal::String m_dltAppDescription;
-        bool m_enableProtocolVersionOffset;
         ramses_internal::Guid m_userProvidedGuid;
     };
 }

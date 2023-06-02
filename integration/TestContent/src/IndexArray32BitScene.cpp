@@ -18,16 +18,16 @@
 
 namespace ramses_internal
 {
-    IndexArray32BitScene::IndexArray32BitScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    IndexArray32BitScene::IndexArray32BitScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Appearance* appearance = m_scene.createAppearance(*effect);
         ramses::UniformInput colorInput;
         effect->findUniformInput("color", colorInput);
-        appearance->setInputValueVector4f(colorInput, 1.f, 0.f, 1.f, 1.f);
+        appearance->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 1.f, 1.f });
 
-        static const float translation[] =
+        const ramses::vec3f translation =
         {
             -2.0f,  1.0f, -18.0f
         };
@@ -36,7 +36,7 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*m_meshNode);
 
         ramses::Node* trafoNode = m_scene.createNode("transformation node");
-        trafoNode->setTranslation(translation[0], translation[1], translation[2]);
+        trafoNode->setTranslation({translation});
 
         m_meshNode->setParent(*trafoNode);
         m_meshNode->setAppearance(*appearance);
@@ -46,48 +46,48 @@ namespace ramses_internal
 
     void IndexArray32BitScene::create16BitIndexArray(ramses::GeometryBinding* geometry)
     {
-        static const UInt16 indicesData[] =
+        const std::array<UInt16, 7> indicesData =
         {
             10000, 10001, 10002, 10000, 10001, 10002, 10003
         };
 
-        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(ramses::EDataType::UInt16, 7u, indicesData);
+        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(7u, indicesData.data());
 
         geometry->setIndices(*indicesTri);
     }
 
     void IndexArray32BitScene::create32BitIndexArray(ramses::GeometryBinding* geometry)
     {
-        static const UInt32 indicesData[] =
+        const std::array<UInt32, 7> indicesData =
         {
             65536, 65537, 65538, 65536, 65537, 65538, 65539
         };
 
-        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(ramses::EDataType::UInt32, 7u, indicesData);
+        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(7u, indicesData.data());
 
         geometry->setIndices(*indicesTri);
     }
 
     void IndexArray32BitScene::createGeometry(ramses::Effect& effect, UInt32 state)
     {
-        static const float triangleVertices[] =
+        std::vector<ramses::vec3f> vertexPositionsArray;
+        vertexPositionsArray.resize(65540u, ramses::vec3f{ 0.f, 0.f, 0.f });
+
+        const std::array<ramses::vec3f, 4u> triangleVertices
         {
-            0.f,  0.f,  0.f,
-            0.f, -3.f,  0.f,
-            3.f, -3.f,  0.f,
-            3.f,  0.f,  0.f
+            ramses::vec3f{ 0.f,  0.f,  0.f },
+            ramses::vec3f{ 0.f, -3.f,  0.f },
+            ramses::vec3f{ 3.f, -3.f,  0.f },
+            ramses::vec3f{ 3.f,  0.f,  0.f }
         };
 
-        float vertexPositionsArray[65540 * 3];
-        PlatformMemory::Set(vertexPositionsArray, 0, 65540 * 3 * 4);
-
-        for(uint32_t i = 0; i < 12 ; i++)
+        for(uint32_t i = 0u; i < 4u; ++i)
         {
-            vertexPositionsArray[65536 * 3 + i] = triangleVertices[i];
-            vertexPositionsArray[10000 * 3 + i] = triangleVertices[i];
+            vertexPositionsArray[65536 + i] = triangleVertices[i];
+            vertexPositionsArray[10000 + i] = triangleVertices[i];
         }
 
-        const ramses::ArrayResource* verticesTri  = m_scene.createArrayResource(ramses::EDataType::Vector3F, 65540u, vertexPositionsArray);
+        const ramses::ArrayResource* verticesTri  = m_scene.createArrayResource(65540u, vertexPositionsArray.data());
 
         ramses::AttributeInput positionsInput;
         effect.findAttributeInput("a_position", positionsInput);

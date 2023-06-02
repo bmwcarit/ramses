@@ -17,14 +17,13 @@ namespace ramses_internal
 {
     struct TextureSampler
     {
-        enum class ContentType : UInt8
+        enum class ContentType : uint8_t
         {
             None = 0,
             ClientTexture,
             TextureBuffer,
             RenderBuffer,
             RenderBufferMS,
-            StreamTexture,
             OffscreenBuffer,
             StreamBuffer,
             ExternalTexture
@@ -55,17 +54,12 @@ namespace ramses_internal
         {
         }
 
-        TextureSampler(const TextureSamplerStates& states_, StreamTextureHandle handle)
-            : TextureSampler(states_, ContentType::StreamTexture, {}, handle.asMemoryHandle())
-        {
-        }
-
         TextureSamplerStates states;
         ContentType          contentType = ContentType::None;
         ResourceContentHash  textureResource;
         MemoryHandle         contentHandle = InvalidMemoryHandle;
 
-        bool isRenderBuffer() const
+        [[nodiscard]] bool isRenderBuffer() const
         {
             switch (contentType)
             {
@@ -75,7 +69,6 @@ namespace ramses_internal
             case ramses_internal::TextureSampler::ContentType::None:
             case ramses_internal::TextureSampler::ContentType::ClientTexture:
             case ramses_internal::TextureSampler::ContentType::TextureBuffer:
-            case ramses_internal::TextureSampler::ContentType::StreamTexture:
             case ramses_internal::TextureSampler::ContentType::OffscreenBuffer:
             case ramses_internal::TextureSampler::ContentType::StreamBuffer:
             case ramses_internal::TextureSampler::ContentType::ExternalTexture:

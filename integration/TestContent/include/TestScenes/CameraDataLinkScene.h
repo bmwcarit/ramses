@@ -18,7 +18,7 @@ namespace ramses_internal
     class CameraDataLinkScene : public IntegrationScene
     {
     public:
-        CameraDataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        CameraDataLinkScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -26,14 +26,14 @@ namespace ramses_internal
             CAMERADATA_CONSUMER,
         };
 
-        static constexpr const ramses::dataProviderId_t ViewportOffsetProviderId{151u};
-        static constexpr const ramses::dataProviderId_t ViewportSizeProviderId{152u};
-        static constexpr const ramses::dataProviderId_t FrustumPlanesProviderId{153u};
-        static constexpr const ramses::dataProviderId_t FrustumPlanesNearFarProviderId{154u};
-        static constexpr const ramses::dataConsumerId_t ViewportOffsetConsumerId{1051u};
-        static constexpr const ramses::dataConsumerId_t ViewportSizeConsumerId{1052u};
-        static constexpr const ramses::dataConsumerId_t FrustumPlanesConsumerId{1053u};
-        static constexpr const ramses::dataConsumerId_t FrustumPlanesNearFarConsumerId{1054u};
+        static constexpr ramses::dataProviderId_t ViewportOffsetProviderId{151u};
+        static constexpr ramses::dataProviderId_t ViewportSizeProviderId{152u};
+        static constexpr ramses::dataProviderId_t FrustumPlanesProviderId{153u};
+        static constexpr ramses::dataProviderId_t FrustumPlanesNearFarProviderId{154u};
+        static constexpr ramses::dataConsumerId_t ViewportOffsetConsumerId{1051u};
+        static constexpr ramses::dataConsumerId_t ViewportSizeConsumerId{1052u};
+        static constexpr ramses::dataConsumerId_t FrustumPlanesConsumerId{1053u};
+        static constexpr ramses::dataConsumerId_t FrustumPlanesNearFarConsumerId{1054u};
 
     private:
         void setUpConsumerScene();

@@ -9,10 +9,7 @@
 #ifndef RAMSES_PLATFORM_WINDOWS_WGL_ES_3_0_H
 #define RAMSES_PLATFORM_WINDOWS_WGL_ES_3_0_H
 
-#define DEVICE_TYPE_ID EDeviceTypeId_GL_ES_3_0
-
 #include "Platform_Windows_WGL/Platform_Windows_WGL.h"
-
 
 namespace ramses_internal
 {
@@ -20,11 +17,6 @@ namespace ramses_internal
     {
     public:
         Platform_Windows_WGL_ES_3_0(const RendererConfig& rendererConfig);
-
-        virtual bool createDevice();
-        virtual bool createDeviceUploading();
-
-        virtual const Int32* getContextAttributes();
     };
 }
 

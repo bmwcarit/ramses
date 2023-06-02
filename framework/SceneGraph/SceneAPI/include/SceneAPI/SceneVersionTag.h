@@ -15,7 +15,7 @@
 namespace ramses_internal
 {
     struct SceneVersionTagTag {};
-    using SceneVersionTag = StronglyTypedValue<UInt64, std::numeric_limits<uint64_t>::max(), SceneVersionTagTag>;
+    using SceneVersionTag = StronglyTypedValue<uint64_t, std::numeric_limits<uint64_t>::max(), SceneVersionTagTag>;
 }
 
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::SceneVersionTag)

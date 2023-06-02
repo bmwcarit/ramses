@@ -19,7 +19,7 @@ namespace ramses_internal
     class MultipleGeometryScene : public IntegrationScene
     {
     public:
-        MultipleGeometryScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultipleGeometryScene(ramses::Scene& scene, UInt32 state, const glm::vec3& cameraPosition);
 
         enum
         {

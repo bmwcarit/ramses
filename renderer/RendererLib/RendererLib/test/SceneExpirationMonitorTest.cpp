@@ -35,7 +35,7 @@ public:
         rendererScenes.createScene(SceneInfo{ scene5 });
     }
 
-    ~ASceneExpirationMonitor()
+    ~ASceneExpirationMonitor() override
     {
         rendererScenes.destroyScene(scene1);
         rendererScenes.destroyScene(scene2);
@@ -90,7 +90,7 @@ protected:
         eventCollector.appendAndConsumePendingEvents(dummy, dummy);
     }
 
-    std::string logOutput() const
+    [[nodiscard]] std::string logOutput() const
     {
         StringOutputStream strstr;
         statistics.writeStatsToStream(strstr);

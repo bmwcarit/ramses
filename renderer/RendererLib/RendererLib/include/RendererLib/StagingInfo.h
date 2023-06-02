@@ -24,7 +24,7 @@ namespace ramses_internal
     struct PendingFlush
     {
         SceneActionCollection     sceneActions;
-        UInt64                    flushIndex = 0u;
+        uint64_t                  flushIndex = 0u;
         FlushTimeInformation      timeInfo;
         SceneVersionTag           versionTag;
 

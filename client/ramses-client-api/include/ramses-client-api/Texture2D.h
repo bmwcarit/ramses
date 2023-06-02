@@ -1,0 +1,75 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2015 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#ifndef RAMSES_TEXTURE2D_H
+#define RAMSES_TEXTURE2D_H
+
+#include "ramses-client-api/Resource.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "TextureEnums.h"
+#include "MipLevelData.h"
+#include "TextureSwizzle.h"
+
+namespace ramses
+{
+    /**
+    * @ingroup CoreAPI
+    * @brief Texture represents a 2-D texture resource.
+    */
+    class Texture2D : public Resource
+    {
+    public:
+        /**
+        * @brief Gets texture width
+        *
+        * @return Texture width
+        */
+        [[nodiscard]] RAMSES_API uint32_t getWidth() const;
+
+        /**
+        * @brief Gets texture height
+        *
+        * @return Texture height
+        */
+        [[nodiscard]] RAMSES_API uint32_t getHeight() const;
+
+        /**
+        * @brief Gets texture format
+        *
+        * @return Texture format
+        */
+        [[nodiscard]] RAMSES_API ETextureFormat getTextureFormat() const;
+
+        /**
+        * @brief Gets swizzle description
+        *
+        * @return Swizzle Description
+        */
+        [[nodiscard]] RAMSES_API const TextureSwizzle& getTextureSwizzle() const;
+
+        /**
+        * Stores internal data for implementation specifics of Texture.
+        */
+        class Texture2DImpl& m_impl;
+
+    protected:
+        /**
+        * @brief Scene is the factory for creating Texture instances.
+        */
+        friend class RamsesObjectRegistry;
+
+        /**
+        * @brief Constructor of Texture
+        *
+        * @param[in] impl Internal data for implementation specifics of Texture (sink - instance becomes owner)
+        */
+        explicit Texture2D(std::unique_ptr<Texture2DImpl> impl);
+    };
+}
+
+#endif

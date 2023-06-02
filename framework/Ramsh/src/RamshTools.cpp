@@ -7,11 +7,11 @@
 //  -------------------------------------------------------------------------
 
 #include "Ramsh/RamshTools.h"
-#include "Collections/String.h"
+#include <PlatformAbstraction/PlatformTypes.h>
 
 namespace ramses_internal
 {
-    UInt RamshTools::delimiterPosition(const String& msg, const String& delimiter)
+    UInt RamshTools::delimiterPosition(const std::string& msg, const std::string& delimiter)
     {
         const UInt inputLength = msg.size();
 
@@ -31,7 +31,7 @@ namespace ramses_internal
         return delimPos;
     }
 
-    UInt RamshTools::trailingSpacesPosition(const String& msg, UInt offset)
+    UInt RamshTools::trailingSpacesPosition(const std::string& msg, UInt offset)
     {
         UInt pos = offset;
 
@@ -45,7 +45,7 @@ namespace ramses_internal
         return pos;
     }
 
-    UInt RamshTools::leadingSpacesPosition(const String& msg, UInt offset)
+    UInt RamshTools::leadingSpacesPosition(const std::string& msg, UInt offset)
     {
         UInt pos = offset;
 
@@ -59,52 +59,52 @@ namespace ramses_internal
         return pos;
     }
 
-    std::vector<std::string> RamshTools::parseCommandString(const String& msg)
+    std::vector<std::string> RamshTools::parseCommandString(const std::string& msg)
     {
         std::vector<std::string> result;
 
-        const String delim = "\r\n";
-        const UInt delimPos = msg.size() - delimiterPosition(msg, delim);
-        const UInt inputLength = delimPos > 0 ? trailingSpacesPosition(msg, delimPos - 1) + 1 : 0;
+        const std::string delim       = "\r\n";
+        const UInt        delimPos    = msg.size() - delimiterPosition(msg, delim);
+        const UInt        inputLength = delimPos > 0 ? trailingSpacesPosition(msg, delimPos - 1) + 1 : 0;
 
-        String message(msg.c_str(), 0, inputLength - 1);
+        std::string message{msg.substr(0, inputLength)};
 
-        for(UInt pos = 0; pos < inputLength;)
+        for (UInt pos = 0; pos < inputLength;)
         {
-            size_t endpos = String::npos;
-            pos = leadingSpacesPosition(msg, pos);
-            Char c = message.at(pos);
+            auto endpos  = std::string::npos;
+            pos          = leadingSpacesPosition(msg, pos);
+            const auto c = message.at(pos);
 
-            switch(c)
+            switch (c)
             {
             case '"':
             case '\'':
-                endpos = message.find(String(1,c).append(" "), pos+1); // look for next special separator inside the string
-                if(String::npos == endpos)
+                endpos = message.find(std::string{c}.append(" "), pos + 1); // look for next special separator inside the string
+                if (std::string::npos == endpos)
                 {
                     endpos = message.rfind(c); // if no separator found inside, look for special separator on message end
-                    if(inputLength - 1 != endpos)
+                    if (inputLength - 1 != endpos)
                     {
-                        endpos = message.find(String(1,' '), pos+1); // if no ending separator found, treat as normal
+                        endpos = message.find(' ', pos + 1); // if no ending separator found, treat as normal
                         pos--;
                     }
                 }
                 pos++;
                 break;
             default:
-                endpos = message.find(String(1,' '), pos+1); // look for next separator
+                endpos = message.find(' ', pos + 1); // look for next separator
             }
 
-            if(String::npos == endpos)
+            if (std::string::npos == endpos)
             {
                 endpos = inputLength; // if no separator found, take all the rest
             }
 
-            result.push_back(String(message.c_str(), pos, endpos-1).stdRef()); // append command part
+            result.push_back(message.substr(pos, endpos - pos)); // append command part
 
             pos = endpos + 1;
         }
 
         return result;
     }
-}// namespace ramses_internal
+} // namespace ramses_internal

@@ -57,14 +57,12 @@ namespace ramses
         return m_serializeSceneObjectIds;
     }
 
-    bool DeserializationContext::registerObjectImpl(RamsesObjectImpl* obj, ObjectIDType id)
+    void DeserializationContext::registerObjectImpl(RamsesObjectImpl* obj, ObjectIDType id)
     {
         if (m_objectImpls.size() <= id)
-        {
             m_objectImpls.resize(id + 1);
-        }
+
         m_objectImpls[id] = obj;
-        return true;
     }
 
     void DeserializationContext::addForDependencyResolve(RamsesObjectImpl* obj)

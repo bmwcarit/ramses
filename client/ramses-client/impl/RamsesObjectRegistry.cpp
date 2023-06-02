@@ -17,43 +17,45 @@
 
 namespace ramses
 {
-    RamsesObjectRegistry::~RamsesObjectRegistry()
-    {
-    }
+    RamsesObjectRegistry::~RamsesObjectRegistry() = default;
 
-    void RamsesObjectRegistry::addObject(RamsesObject& object)
+    void RamsesObjectRegistry::registerObjectInternal(RamsesObject& object)
     {
         assert(!containsObject(object));
 
-        const ERamsesObjectType type = object.impl.getType();
-        const RamsesObjectHandle handle = m_objects[type].allocate();
-        *m_objects[type].getMemory(handle) = &object;
-        object.impl.setObjectRegistry(*this);
-        object.impl.setObjectRegistryHandle(handle);
+        const ERamsesObjectType type = object.m_impl.getType();
+        const RamsesObjectHandle handle = m_objects[static_cast<int>(type)].allocate();
+        *m_objects[static_cast<int>(type)].getMemory(handle) = &object;
+        object.m_impl.setObjectRegistry(*this);
+        object.m_impl.setObjectRegistryHandle(handle);
 
-        updateName(object, object.impl.getName());
+        updateName(object, object.m_impl.getName());
         trackSceneObjectById(object);
     }
 
-    void RamsesObjectRegistry::removeObject(RamsesObject& object)
+    void RamsesObjectRegistry::destroyAndUnregisterObject(RamsesObject& object)
     {
         assert(containsObject(object));
 
-        if (object.isOfType(ERamsesObjectType_Node))
-            setNodeDirty(RamsesObjectTypeUtils::ConvertTo<Node>(object).impl, false);
+        if (object.isOfType(ERamsesObjectType::Node))
+            setNodeDirty(RamsesObjectTypeUtils::ConvertTo<Node>(object).m_impl, false);
 
-        if (object.isOfType(ERamsesObjectType_SceneObject))
+        if (object.isOfType(ERamsesObjectType::SceneObject))
         {
             const sceneObjectId_t sceneObjectId = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object).getSceneObjectId();
             assert(m_objectsById.contains(sceneObjectId));
             m_objectsById.remove(sceneObjectId);
         }
 
-        m_objectsByName.remove(object.impl.getName());
+        m_objectsByName.remove(object.m_impl.getName());
 
-        const RamsesObjectHandle handle = object.impl.getObjectRegistryHandle();
-        const ERamsesObjectType type = object.impl.getType();
+        const RamsesObjectHandle handle = object.m_impl.getObjectRegistryHandle();
+        const auto type = static_cast<int>(object.m_impl.getType());
         m_objects[type].release(handle);
+
+        auto it = std::find_if(m_objectsOwningContainer.begin(), m_objectsOwningContainer.end(), [&object](auto& ro) { return ro.get() == &object; });
+        assert(it != m_objectsOwningContainer.end());
+        m_objectsOwningContainer.erase(it);
     }
 
     void RamsesObjectRegistry::reserveAdditionalGeneralCapacity(uint32_t additionalCount)
@@ -61,32 +63,34 @@ namespace ramses
         // not every object has a name. this might reserve more than needed but never more than
         // num of current objects with name + additionalCapacity
         m_objectsByName.reserve(m_objectsByName.size() + additionalCount);
+        m_objectsOwningContainer.reserve(m_objectsOwningContainer.size() + additionalCount);
     }
 
     void RamsesObjectRegistry::reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount)
     {
         assert(RamsesObjectTypeUtils::IsConcreteType(type));
-        m_objects[type].preallocateSize(m_objects[type].getActualCount() + additionalCount);
+        const auto index = static_cast<int>(type);
+        m_objects[index].preallocateSize(m_objects[index].getActualCount() + additionalCount);
     }
 
     uint32_t RamsesObjectRegistry::getNumberOfObjects(ERamsesObjectType type) const
     {
         assert(RamsesObjectTypeUtils::IsConcreteType(type));
-        return m_objects[type].getActualCount();
+        return m_objects[static_cast<int>(type)].getActualCount();
     }
 
     bool RamsesObjectRegistry::containsObject(const RamsesObject& object) const
     {
-        const RamsesObjectHandle handle = object.impl.getObjectRegistryHandle();
-        const ERamsesObjectType type = object.impl.getType();
-        const RamsesObjectsPool& objectsPool = m_objects[type];
+        const RamsesObjectHandle handle = object.m_impl.getObjectRegistryHandle();
+        const ERamsesObjectType type = object.m_impl.getType();
+        const RamsesObjectsPool& objectsPool = m_objects[static_cast<int>(type)];
         return objectsPool.isAllocated(handle) && (*objectsPool.getMemory(handle) == &object);
     }
 
-    void RamsesObjectRegistry::updateName(RamsesObject& object, const ramses_internal::String& name)
+    void RamsesObjectRegistry::updateName(RamsesObject& object, const std::string& name)
     {
         assert(containsObject(object));
-        const ramses_internal::String& oldName = object.impl.getName();
+        const std::string& oldName = object.m_impl.getName();
         if (!oldName.empty())
         {
             m_objectsByName.remove(oldName);
@@ -99,7 +103,7 @@ namespace ramses
 
     void RamsesObjectRegistry::trackSceneObjectById(RamsesObject& object)
     {
-        if (object.isOfType(ERamsesObjectType_SceneObject))
+        if (object.isOfType(ERamsesObjectType::SceneObject))
         {
             SceneObject& sceneObject = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object);
             const sceneObjectId_t sceneObjectId = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object).getSceneObjectId();
@@ -108,14 +112,14 @@ namespace ramses
         }
     }
 
-    RamsesObject* RamsesObjectRegistry::findObjectByName(const char* name)
+    RamsesObject* RamsesObjectRegistry::findObjectByName(std::string_view name)
     {
         RamsesObject* object(nullptr);
-        m_objectsByName.get(name, object);
+        m_objectsByName.get(std::string{name}, object);
         return object;
     }
 
-    const RamsesObject* RamsesObjectRegistry::findObjectByName(const char* name) const
+    const RamsesObject* RamsesObjectRegistry::findObjectByName(std::string_view name) const
     {
         // const version of findObjectByName cast to its non-const version to avoid duplicating code
         return const_cast<RamsesObject*>((const_cast<RamsesObjectRegistry&>(*this)).findObjectByName(name));
@@ -141,22 +145,22 @@ namespace ramses
 
         // preallocate memory in container
         uint32_t objectCount = 0u;
-        for (uint32_t i = 0u; i < ERamsesObjectType_NUMBER_OF_TYPES; ++i)
+        for (uint32_t i = 0u; i < static_cast<uint32_t>(ERamsesObjectType::NUMBER_OF_TYPES); ++i)
         {
             const ERamsesObjectType type = ERamsesObjectType(i);
             if (RamsesObjectTypeUtils::IsConcreteType(type) && RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ofType))
             {
-                objectCount += m_objects[type].getActualCount();
+                objectCount += m_objects[i].getActualCount();
             }
         }
         objects.reserve(objectCount);
 
-        for (uint32_t i = 0u; i < ERamsesObjectType_NUMBER_OF_TYPES; ++i)
+        for (uint32_t i = 0u; i < static_cast<uint32_t>(ERamsesObjectType::NUMBER_OF_TYPES); ++i)
         {
             const ERamsesObjectType type = ERamsesObjectType(i);
             if (RamsesObjectTypeUtils::IsConcreteType(type) && RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ofType))
             {
-                const RamsesObjectsPool& objectsPool = m_objects[type];
+                const RamsesObjectsPool& objectsPool = m_objects[i];
                 for (RamsesObjectHandle handle(0u); handle < objectsPool.getTotalCount(); ++handle)
                 {
                     if (objectsPool.isAllocated(handle))

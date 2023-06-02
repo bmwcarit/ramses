@@ -25,7 +25,7 @@ namespace ramses_internal
     {
     }
 
-    Bool Window_Wayland::init()
+    bool Window_Wayland::init()
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Window_Wayland::init Opening Wayland window");
 
@@ -150,7 +150,7 @@ namespace ramses_internal
         m_wlContext.previousFrameRenderingDone = false;
     }
 
-    Bool Window_Wayland::canRenderNewFrame() const
+    bool Window_Wayland::canRenderNewFrame() const
     {
         const auto startTime = std::chrono::steady_clock::now();
         std::chrono::microseconds elapsedTime{ 0u };
@@ -215,7 +215,7 @@ namespace ramses_internal
         wl_callback_add_listener(m_wlContext.frameRenderingDoneWaylandCallbacObject, &m_frameRenderingDoneCallbackListener, this);
     }
 
-    Bool Window_Wayland::setFullscreen(Bool fullscreen)
+    bool Window_Wayland::setFullscreen(bool fullscreen)
     {
         UNUSED(fullscreen);
         return true;
@@ -237,6 +237,7 @@ namespace ramses_internal
 
         //calling poll() sets the .revents field of every pollfd struct to a bitmask of
         //the received events on that fd
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         const bool dispatchNewEventsFromDisplayFD = (pollFileDescriptor.revents & POLLIN) != 0;
         if(dispatchNewEventsFromDisplayFD)
             wl_display_dispatch(m_wlContext.display);

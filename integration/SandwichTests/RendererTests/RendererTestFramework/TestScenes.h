@@ -13,7 +13,6 @@
 #include "ramses-client-api/Scene.h"
 #include "TestScenes/IntegrationScene.h"
 #include "Collections/HashMap.h"
-#include "Math3d/Vector3.h"
 #include <cassert>
 
 class TestScenes
@@ -26,7 +25,7 @@ public:
     void createScene(
         uint32_t state,
         ramses::sceneId_t sceneId,
-        const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+        const glm::vec3& cameraPosition = glm::vec3(0.0f),
         const ramses::SceneConfig& sceneConfig = {})
     {
         SceneData data;
@@ -38,7 +37,7 @@ public:
     template <typename INTEGRATION_SCENE>
     ramses::sceneId_t createScene(
         uint32_t state,
-        const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+        const glm::vec3& cameraPosition = glm::vec3(0.0f),
         const ramses::SceneConfig& sceneConfig = {})
     {
         const ramses::sceneId_t sceneId = m_nextSceneId;
@@ -51,7 +50,7 @@ public:
     void createScene(
         uint32_t state,
         ramses::sceneId_t sceneId,
-        const ramses_internal::Vector3& cameraPosition,
+        const glm::vec3& cameraPosition,
         uint32_t vpWidth,
         uint32_t vpHeight)
     {
@@ -63,7 +62,7 @@ public:
     template <typename INTEGRATION_SCENE>
     ramses::sceneId_t createScene(
         uint32_t state,
-        const ramses_internal::Vector3& cameraPosition,
+        const glm::vec3& cameraPosition,
         uint32_t vpWidth,
         uint32_t vpHeight)
     {
@@ -73,9 +72,9 @@ public:
         return sceneId;
     }
 
-    void createFileLoadingScene(ramses::sceneId_t sceneId, const ramses_internal::Vector3& cameraPosition, const ramses::RamsesFrameworkConfig& config, uint32_t sceneState, uint32_t vpWidth, uint32_t vpHeight);
+    void createFileLoadingScene(ramses::sceneId_t sceneId, const glm::vec3& cameraPosition, const ramses::RamsesFrameworkConfig& config, uint32_t sceneState, uint32_t vpWidth, uint32_t vpHeight);
 
-    const ramses::Scene& getScene(ramses::sceneId_t sceneId) const;
+    [[nodiscard]] const ramses::Scene& getScene(ramses::sceneId_t sceneId) const;
     ramses::Scene& getScene(ramses::sceneId_t sceneId);
 
     template <typename INTEGRATION_SCENE>

@@ -19,7 +19,7 @@ namespace ramses_internal
     class MockTaskQueue : public ITaskQueue
     {
     public:
-        virtual ~MockTaskQueue() override = default;
+        ~MockTaskQueue() override = default;
         MOCK_METHOD(bool, enqueue, (ITask& Task), (override));
         MOCK_METHOD(void, disableAcceptingTasksAfterExecutingCurrentQueue, (), (override));
     };

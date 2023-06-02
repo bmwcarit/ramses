@@ -40,9 +40,9 @@ namespace ramses_internal
         MOCK_METHOD(IWaylandBuffer*, getWaylandBuffer, (), (const, override));
         MOCK_METHOD(UInt32, getNumberOfCommitedFrames, (), (const, override));
         MOCK_METHOD(void, resetNumberOfCommitedFrames, (), (override));
-        MOCK_METHOD(UInt64, getNumberOfCommitedFramesSinceBeginningOfTime, (), (const, override));
+        MOCK_METHOD(uint64_t, getNumberOfCommitedFramesSinceBeginningOfTime, (), (const, override));
         MOCK_METHOD(bool, hasPendingBuffer, (), (const, override));
-        MOCK_METHOD(const String&, getSurfaceTitle, (), (const, override));
+        MOCK_METHOD(const std::string&, getSurfaceTitle, (), (const, override));
         MOCK_METHOD(void, bufferDestroyed, (IWaylandBuffer& buffer), (override));
         MOCK_METHOD(void, setIviSurface, (IWaylandIVISurface* iviSurface), (override));
         MOCK_METHOD(bool, hasIviSurface, (), (const, override));

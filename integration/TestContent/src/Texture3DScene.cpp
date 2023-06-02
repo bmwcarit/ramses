@@ -19,22 +19,22 @@
 
 namespace ramses_internal
 {
-    Texture3DScene::Texture3DScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+    Texture3DScene::Texture3DScene(ramses::Scene& scene, UInt32 /*state*/, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-3d-textured"))
     {
 
-        uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        m_indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
+        m_indices = m_scene.createArrayResource(6u, indicesArray);
 
         m_groupNode = m_scene.createNode();
 
-        float vertexPositionsArray[] = {
-            -1.0f, -1.f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            -1.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f };
-        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ -1.0f, -1.f, 0.0f },
+            ramses::vec3f{ 1.0f, -1.0f, 0.0f },
+            ramses::vec3f{ -1.0f, 1.0f, 0.0f },
+            ramses::vec3f{ 1.0f, 1.0f, 0.0f }};
+        m_vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
         const uint8_t rgb8Data_0[] = {
             0xff, 0x00, 0x00,
@@ -82,16 +82,16 @@ namespace ramses_internal
         createQuad(1.05f, 1.05f, 0.875f);
     }
 
-    void Texture3DScene::createQuad(Float x, Float y, Float depth, Float texCoordMagnifier)
+    void Texture3DScene::createQuad(float x, float y, float depth, float texCoordMagnifier)
     {
         ramses::Appearance* appearance = m_scene.createAppearance(*m_effect, "appearance");
 
-        float textureCoordsArray[] = {
-            0.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier,
-            2.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier,
-            0.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier,
-            2.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, textureCoordsArray);
+        const std::array<ramses::vec3f, 4u> textureCoordsArray{
+            ramses::vec3f{ 0.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier },
+            ramses::vec3f{ 2.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier },
+            ramses::vec3f{ 0.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier },
+            ramses::vec3f{ 2.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier } };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
@@ -105,11 +105,11 @@ namespace ramses_internal
         geometry->setInputBuffer(texCoordsInput, *textureCoords);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Nearest_MipMapNearest,
-            ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Nearest_MipMapNearest,
+            ramses::ETextureSamplingMethod::Nearest,
             *m_texture);
 
         ramses::UniformInput textureInput;
@@ -122,7 +122,7 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(x, y, -12.5f);
+        transNode->setTranslation({x, y, -12.5f});
 
         mesh->setParent(*transNode);
         transNode->setParent(*m_groupNode);

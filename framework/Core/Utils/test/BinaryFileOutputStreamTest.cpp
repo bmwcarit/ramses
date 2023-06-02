@@ -9,7 +9,8 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/BinaryFileOutputStream.h"
-#include "Math3d/Matrix44f.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -17,10 +18,10 @@ namespace ramses_internal
     {
     public:
         BinaryFileOutputStreamTest();
-        ~BinaryFileOutputStreamTest();
+        ~BinaryFileOutputStreamTest() override;
 
         File m_file;
-        String m_testString;
+        std::string m_testString;
     };
 
     BinaryFileOutputStreamTest::BinaryFileOutputStreamTest()

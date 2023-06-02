@@ -11,9 +11,10 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/StringOutputStream.h"
-#include "Collections/String.h"
 #include "Common/BitForgeMacro.h"
 #include "SceneAPI/Handles.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -33,25 +34,25 @@ namespace ramses_internal
 
         void indent();
         void unindent();
-        Bool isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const;
+        [[nodiscard]] bool isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const;
 
         void setNodeHandleFilter(NodeHandle nodeHandleFilter);
-        Bool isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const;
+        [[nodiscard]] bool isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const;
 
         template <typename T>
         RendererLogContext& operator<<(const T& value);
 
-        const StringOutputStream& getStream() const;
+        [[nodiscard]] const StringOutputStream& getStream() const;
 
     private:
-        static String ExtractStringFromFilter(const String& filter);
+        static std::string ExtractStringFromFilter(const std::string& filter);
         static UInt32 GetActiveLogLevelFlags(const ERendererLogLevelFlag logLevel);
 
         StringOutputStream    m_stream;
         const UInt32          m_activeLogLevelFlags;
         NodeHandle            m_nodeHandleFilter;
-        String                m_indent;
-        Bool                  m_lineActive;
+        std::string           m_indent;
+        bool                  m_lineActive;
 
         struct NewLineType
         {

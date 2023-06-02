@@ -12,8 +12,10 @@
 #include "ramses-text-api/IFontInstance.h"
 #include "ramses-text/Freetype2Wrapper.h"
 #include "ramses-text/FreetypeFontFace.h"
+
 #include <unordered_map>
 #include <memory>
+#include <string_view>
 
 namespace ramses
 {
@@ -35,9 +37,9 @@ namespace ramses
     public:
         FontRegistryImpl() = default;
 
-        IFontInstance*          getFontInstance(FontInstanceId fontInstanceId) const;
+        [[nodiscard]] IFontInstance*          getFontInstance(FontInstanceId fontInstanceId) const;
 
-        FontId                  createFreetype2Font(const char* fontPath);
+        FontId                  createFreetype2Font(std::string_view fontPath);
         FontId                  createFreetype2FontFromFileDescriptor(int fd, size_t offset, size_t length);
 
         FontInstanceId          createFreetype2FontInstance(FontId fontId, uint32_t size, bool forceAutohinting);

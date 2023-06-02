@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    const UInt64 PeriodicLogger::m_processStartupTime = PlatformTime::GetMillisecondsMonotonic();
+    const uint64_t PeriodicLogger::m_processStartupTime = PlatformTime::GetMillisecondsMonotonic();
     std::atomic<UInt32> PeriodicLogger::m_numberOfRamsesInstancesStartedInProcess(0);
     std::atomic<UInt32> PeriodicLogger::m_numberOfRamsesInstancesCurrentlyActive(0);
 
@@ -128,7 +128,7 @@ namespace ramses_internal
         int64_t steadyDiff = std::chrono::duration_cast<std::chrono::milliseconds>(steadyNow - m_previousSteadyTime).count();
         int64_t syncDiff = std::chrono::duration_cast<std::chrono::milliseconds>(syncNow - m_previousSyncTime).count();
 
-        LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
+        LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
             << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << " Type:" << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE
             << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL
             << " SyncT:" << asMilliseconds(syncNow) << "ms (dtSteady:" << steadyDiff << " - dtSync:" << syncDiff << " -> " << (steadyDiff - syncDiff) << ")"

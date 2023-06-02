@@ -20,7 +20,6 @@ namespace ramses_internal
     extern LogContext& CONTEXT_CLIENT;
     extern LogContext& CONTEXT_RENDERER;
     extern LogContext& CONTEXT_PERIODIC;
-    extern LogContext& CONTEXT_DCSM;
     extern LogContext& CONTEXT_TEXT;
 
     extern LogContext& CONTEXT_COMMUNICATION;
@@ -39,7 +38,6 @@ namespace ramses
     using ::ramses_internal::CONTEXT_CLIENT;
     using ::ramses_internal::CONTEXT_RENDERER;
     using ::ramses_internal::CONTEXT_PERIODIC;
-    using ::ramses_internal::CONTEXT_DCSM;
     using ::ramses_internal::CONTEXT_TEXT;
     using ::ramses_internal::CONTEXT_COMMUNICATION;
     using ::ramses_internal::CONTEXT_PROFILING;

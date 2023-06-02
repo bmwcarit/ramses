@@ -11,8 +11,10 @@
 
 #include "RendererAPI/IContext.h"
 
-#include "Utils/StringUtils.h"
+#include "Collections/HashSet.h"
 #include "Platform_Base/DeviceResourceMapper.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -28,16 +30,16 @@ namespace ramses_internal
         // TODO Violin this is not beautiful, but is needed because windows parses
         // extensions non-conform to EGL standard (read up about WGL on the net,
         // search terms "WGL extensions")
-        static void ParseContextExtensionsHelper(const Char* extensionNativeString, StringSet& extensionsOut);
+        static void ParseContextExtensionsHelper(const char* extensionNativeString, HashSet<std::string>& extensionsOut);
 
     protected:
-        void parseContextExtensions(const Char* extensionNativeString);
-        Bool isContextExtensionAvailable(const String& extensionName) const;
+        void parseContextExtensions(const char* extensionNativeString);
+        [[nodiscard]] bool isContextExtensionAvailable(const std::string& extensionName) const;
 
     protected:
         DeviceResourceMapper m_resources;
-        StringSet m_contextExtensions;
-        StringSet m_apiExtensions;
+        HashSet<std::string> m_contextExtensions;
+        HashSet<std::string> m_apiExtensions;
     };
 }
 

@@ -21,22 +21,22 @@ namespace ramses_internal
     public:
         virtual ~IResourceDeviceHandleAccessor() {}
 
-        virtual DeviceResourceHandle getResourceDeviceHandle(const ResourceContentHash& resourceHash) const = 0;
-        virtual DeviceResourceHandle getRenderTargetDeviceHandle(RenderTargetHandle targetHandle, SceneId sceneId) const = 0;
-        virtual DeviceResourceHandle getRenderTargetBufferDeviceHandle(RenderBufferHandle bufferHandle, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getResourceDeviceHandle(const ResourceContentHash& resourceHash) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getRenderTargetDeviceHandle(RenderTargetHandle targetHandle, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getRenderTargetBufferDeviceHandle(RenderBufferHandle bufferHandle, SceneId sceneId) const = 0;
         virtual void                 getBlitPassRenderTargetsDeviceHandle(BlitPassHandle blitPassHandle, SceneId sceneId, DeviceResourceHandle& srcRT, DeviceResourceHandle& dstRT) const = 0;
-        virtual DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
-        virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
-        virtual int                  getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const = 0;
-        virtual UInt32               getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const = 0;
-        virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const = 0;
-        virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const = 0;
-        virtual DeviceResourceHandle getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const = 0;
-        virtual DeviceResourceHandle getEmptyExternalBufferDeviceHandle() const = 0;
-        virtual uint32_t             getExternalBufferGlId(ExternalBufferHandle externalTexHandle) const = 0;
-        virtual DeviceResourceHandle getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const = 0;
-        virtual DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const = 0;
-        virtual DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
+        [[nodiscard]] virtual int                  getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const = 0;
+        [[nodiscard]] virtual UInt32               getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const = 0;
+        [[nodiscard]] virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getEmptyExternalBufferDeviceHandle() const = 0;
+        [[nodiscard]] virtual uint32_t             getExternalBufferGlId(ExternalBufferHandle externalTexHandle) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const = 0;
     };
 }
 #endif

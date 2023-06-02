@@ -37,10 +37,10 @@ namespace ramses_internal
             RendererStatistics& stats);
         ~ResourceUploadingManager();
 
-        Bool hasAnythingToUpload() const;
+        [[nodiscard]] bool hasAnythingToUpload() const;
         void uploadAndUnloadPendingResources();
 
-        UInt32 getResourceUploadBatchSize() const
+        [[nodiscard]] UInt32 getResourceUploadBatchSize() const
         {
             return m_resourceUploadBatchSize;
         }
@@ -53,10 +53,10 @@ namespace ramses_internal
         void syncEffects();
         void uploadResource(const ResourceDescriptor& rd);
         void unloadResource(const ResourceDescriptor& rd);
-        void getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, Bool keepEffects, UInt64 sizeToBeFreed) const;
-        void getAndPrepareResourcesToUploadNext(ResourceContentHashVector& resourcesToUpload, UInt64& totalSize) const;
-        Int32 getScenePriority(const ResourceDescriptor& rd) const;
-        UInt64 getAmountOfMemoryToBeFreedForNewResources(UInt64 sizeToUpload) const;
+        void getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, bool keepEffects, uint64_t sizeToBeFreed) const;
+        void getAndPrepareResourcesToUploadNext(ResourceContentHashVector& resourcesToUpload, uint64_t& totalSize) const;
+        [[nodiscard]] Int32 getScenePriority(const ResourceDescriptor& rd) const;
+        [[nodiscard]] uint64_t getAmountOfMemoryToBeFreedForNewResources(uint64_t sizeToUpload) const;
 
         RendererResourceRegistry& m_resources;
         std::unique_ptr<IResourceUploader> m_uploader;
@@ -65,13 +65,13 @@ namespace ramses_internal
         EffectsRawResources             m_effectsToUpload;
         EffectsGpuResources             m_effectsUploadedTemp; //to avoid re-allocation each frame
 
-        const Bool   m_keepEffects;
+        const bool   m_keepEffects;
         const FrameTimer& m_frameTimer;
 
         using SizeMap = HashMap<ResourceContentHash, UInt32>;
         SizeMap       m_resourceSizes;
-        UInt64        m_resourceTotalUploadedSize = 0u;
-        const UInt64  m_resourceCacheSize = 0u;
+        uint64_t        m_resourceTotalUploadedSize = 0u;
+        const uint64_t  m_resourceCacheSize = 0u;
         const UInt32  m_resourceUploadBatchSize   = 10u;
 
         RendererStatistics& m_stats;

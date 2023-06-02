@@ -23,11 +23,11 @@ namespace ramses_internal
         getArgument<2>().setDefaultValue("");
     }
 
-    Bool DumpSceneToFile::execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const
+    bool DumpSceneToFile::execute(uint64_t& sceneId, std::string& fileName, std::string& sendViaDLT) const
     {
         SceneCommandDumpSceneToFile command;
         command.fileName = fileName;
-        command.sendViaDLT = sendViaDLT == String("-sendViaDLT");
+        command.sendViaDLT = sendViaDLT == "-sendViaDLT";
 
         m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
         return true;

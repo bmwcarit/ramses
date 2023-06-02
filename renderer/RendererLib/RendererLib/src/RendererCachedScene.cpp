@@ -14,51 +14,51 @@
 namespace ramses_internal
 {
     RendererCachedScene::RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
-        : TextureLinkCachedScene(sceneLinksManager, sceneInfo)
+        : ResourceCachedScene(sceneLinksManager, sceneInfo)
         , m_renderableOrderingDirty(true)
     {
     }
 
     void RendererCachedScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible)
     {
-        TextureLinkCachedScene::setRenderableVisibility(renderableHandle, visible);
+        ResourceCachedScene::setRenderableVisibility(renderableHandle, visible);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::releaseRenderGroup(RenderGroupHandle groupHandle)
     {
-        TextureLinkCachedScene::releaseRenderGroup(groupHandle);
+        ResourceCachedScene::releaseRenderGroup(groupHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::addRenderableToRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order)
     {
-        TextureLinkCachedScene::addRenderableToRenderGroup(groupHandle, renderableHandle, order);
+        ResourceCachedScene::addRenderableToRenderGroup(groupHandle, renderableHandle, order);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::removeRenderableFromRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle)
     {
-        TextureLinkCachedScene::removeRenderableFromRenderGroup(groupHandle, renderableHandle);
+        ResourceCachedScene::removeRenderableFromRenderGroup(groupHandle, renderableHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::releaseRenderPass(RenderPassHandle passHandle)
     {
         m_renderOncePassesToRender.remove(passHandle);
-        TextureLinkCachedScene::releaseRenderPass(passHandle);
+        ResourceCachedScene::releaseRenderPass(passHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::setRenderPassRenderOrder(RenderPassHandle passHandle, Int32 renderOrder)
     {
-        TextureLinkCachedScene::setRenderPassRenderOrder(passHandle, renderOrder);
+        ResourceCachedScene::setRenderPassRenderOrder(passHandle, renderOrder);
         m_renderableOrderingDirty = true;
     }
 
     BlitPassHandle RendererCachedScene::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle /*= BlitPassHandle::Invalid()*/)
     {
-        const BlitPassHandle blitPass = TextureLinkCachedScene::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
+        const BlitPassHandle blitPass = ResourceCachedScene::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
         m_renderableOrderingDirty = true;
 
         return blitPass;
@@ -66,26 +66,26 @@ namespace ramses_internal
 
     void RendererCachedScene::releaseBlitPass(BlitPassHandle passHandle)
     {
-        TextureLinkCachedScene::releaseBlitPass(passHandle);
+        ResourceCachedScene::releaseBlitPass(passHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder)
     {
-        TextureLinkCachedScene::setBlitPassRenderOrder(passHandle, renderOrder);
+        ResourceCachedScene::setBlitPassRenderOrder(passHandle, renderOrder);
         m_renderableOrderingDirty = true;
     }
 
-    void RendererCachedScene::setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled)
+    void RendererCachedScene::setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled)
     {
-        TextureLinkCachedScene::setBlitPassEnabled(passHandle, isEnabled);
+        ResourceCachedScene::setBlitPassEnabled(passHandle, isEnabled);
         m_renderableOrderingDirty = true;
     }
 
-    void RendererCachedScene::setRenderPassEnabled(RenderPassHandle passHandle, Bool isEnabled)
+    void RendererCachedScene::setRenderPassEnabled(RenderPassHandle passHandle, bool isEnabled)
     {
-        TextureLinkCachedScene::setRenderPassEnabled(passHandle, isEnabled);
-        if (isEnabled && TextureLinkCachedScene::getRenderPass(passHandle).isRenderOnce)
+        ResourceCachedScene::setRenderPassEnabled(passHandle, isEnabled);
+        if (isEnabled && ResourceCachedScene::getRenderPass(passHandle).isRenderOnce)
         {
             m_renderOncePassesToRender.put(passHandle);
         }
@@ -96,10 +96,10 @@ namespace ramses_internal
         m_renderableOrderingDirty = true;
     }
 
-    void RendererCachedScene::setRenderPassRenderOnce(RenderPassHandle passHandle, Bool enable)
+    void RendererCachedScene::setRenderPassRenderOnce(RenderPassHandle passHandle, bool enable)
     {
-        TextureLinkCachedScene::setRenderPassRenderOnce(passHandle, enable);
-        if (enable && TextureLinkCachedScene::getRenderPass(passHandle).isEnabled)
+        ResourceCachedScene::setRenderPassRenderOnce(passHandle, enable);
+        if (enable && ResourceCachedScene::getRenderPass(passHandle).isEnabled)
         {
             m_renderOncePassesToRender.put(passHandle);
         }
@@ -112,8 +112,8 @@ namespace ramses_internal
 
     void RendererCachedScene::retriggerRenderPassRenderOnce(RenderPassHandle passHandle)
     {
-        TextureLinkCachedScene::retriggerRenderPassRenderOnce(passHandle);
-        if (TextureLinkCachedScene::getRenderPass(passHandle).isEnabled)
+        ResourceCachedScene::retriggerRenderPassRenderOnce(passHandle);
+        if (ResourceCachedScene::getRenderPass(passHandle).isEnabled)
         {
             m_renderOncePassesToRender.put(passHandle);
             m_renderableOrderingDirty = true;
@@ -122,25 +122,25 @@ namespace ramses_internal
 
     void RendererCachedScene::addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order)
     {
-        TextureLinkCachedScene::addRenderGroupToRenderPass(passHandle, groupHandle, order);
+        ResourceCachedScene::addRenderGroupToRenderPass(passHandle, groupHandle, order);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::removeRenderGroupFromRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle)
     {
-        TextureLinkCachedScene::removeRenderGroupFromRenderPass(passHandle, groupHandle);
+        ResourceCachedScene::removeRenderGroupFromRenderPass(passHandle, groupHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::addRenderGroupToRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, Int32 order)
     {
-        TextureLinkCachedScene::addRenderGroupToRenderGroup(groupHandleParent, groupHandleChild, order);
+        ResourceCachedScene::addRenderGroupToRenderGroup(groupHandleParent, groupHandleChild, order);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild)
     {
-        TextureLinkCachedScene::removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
+        ResourceCachedScene::removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
         m_renderableOrderingDirty = true;
     }
 
@@ -155,9 +155,9 @@ namespace ramses_internal
         return m_passRenderableOrder[pass.asMemoryHandle()];
     }
 
-    void RendererCachedScene::updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager)
+    void RendererCachedScene::updateRenderablesAndResourceCache(const IResourceDeviceHandleAccessor& resourceAccessor)
     {
-        updateRenderableResources(resourceAccessor, embeddedCompositingManager);
+        updateRenderableResources(resourceAccessor);
         updatePassRenderableSorting();
     }
 
@@ -167,8 +167,8 @@ namespace ramses_internal
         {
             m_sortedRenderingPasses.clear();
 
-            const UInt32 totalNumberOfRenderPasses = TextureLinkCachedScene::getRenderPassCount();
-            const UInt32 totalNumberOfBlitPasses = TextureLinkCachedScene::getBlitPassCount();
+            const UInt32 totalNumberOfRenderPasses = ResourceCachedScene::getRenderPassCount();
+            const UInt32 totalNumberOfBlitPasses = ResourceCachedScene::getBlitPassCount();
 
             //add render passes
             m_passRenderableOrder.resize(totalNumberOfRenderPasses);
@@ -182,9 +182,9 @@ namespace ramses_internal
             //add blit passes
             for (BlitPassHandle passHandle(0); passHandle < totalNumberOfBlitPasses; ++passHandle)
             {
-                if (TextureLinkCachedScene::isBlitPassAllocated(passHandle))
+                if (ResourceCachedScene::isBlitPassAllocated(passHandle))
                 {
-                    const BlitPass& blitPass = TextureLinkCachedScene::getBlitPass(passHandle);
+                    const BlitPass& blitPass = ResourceCachedScene::getBlitPass(passHandle);
                     if (blitPass.isEnabled)
                     {
                         assert(blitPass.sourceRenderBuffer.isValid());
@@ -209,7 +209,7 @@ namespace ramses_internal
         }
     }
 
-    const Matrix44f& RendererCachedScene::getRenderableWorldMatrix(RenderableHandle renderable) const
+    const glm::mat4& RendererCachedScene::getRenderableWorldMatrix(RenderableHandle renderable) const
     {
         assert(renderable.asMemoryHandle() < m_renderableMatrices.size());
         return m_renderableMatrices[renderable.asMemoryHandle()];
@@ -284,7 +284,7 @@ namespace ramses_internal
 
     void RendererCachedScene::updateRenderableWorldMatrices()
     {
-        m_renderableMatrices.resize(TextureLinkCachedScene::getRenderableCount());
+        m_renderableMatrices.resize(ResourceCachedScene::getRenderableCount());
         for (const auto& renderables : m_passRenderableOrder)
         {
             for (const auto renderable : renderables)
@@ -299,27 +299,27 @@ namespace ramses_internal
 
     void RendererCachedScene::updateRenderableWorldMatricesWithLinks()
     {
-        m_renderableMatrices.resize(TextureLinkCachedScene::getRenderableCount());
+        m_renderableMatrices.resize(ResourceCachedScene::getRenderableCount());
         for (const auto& renderables : m_passRenderableOrder)
         {
             for (const auto renderable : renderables)
             {
                 assert(renderable.isValid());
-                const NodeHandle node = TextureLinkCachedScene::getRenderable(renderable).node;
+                const NodeHandle node = ResourceCachedScene::getRenderable(renderable).node;
                 assert(node.isValid());
                 m_renderableMatrices[renderable.asMemoryHandle()] = updateMatrixCacheWithLinks(ETransformationMatrixType_World, node);
             }
         }
     }
 
-    Bool RendererCachedScene::shouldRenderPassBeRendered(RenderPassHandle handle) const
+    bool RendererCachedScene::shouldRenderPassBeRendered(RenderPassHandle handle) const
     {
-        if (!TextureLinkCachedScene::isRenderPassAllocated(handle))
+        if (!ResourceCachedScene::isRenderPassAllocated(handle))
         {
             return false;
         }
 
-        const RenderPass& rp = TextureLinkCachedScene::getRenderPass(handle);
+        const RenderPass& rp = ResourceCachedScene::getRenderPass(handle);
         if (!rp.camera.isValid() || !rp.isEnabled)
         {
             return false;
@@ -330,10 +330,10 @@ namespace ramses_internal
 
     void RendererCachedScene::retriggerAllRenderOncePasses()
     {
-        const UInt32 numRPs = TextureLinkCachedScene::getRenderPassCount();
+        const UInt32 numRPs = ResourceCachedScene::getRenderPassCount();
         for (RenderPassHandle handle(0u); handle < numRPs; ++handle)
         {
-            if (TextureLinkCachedScene::isRenderPassAllocated(handle))
+            if (ResourceCachedScene::isRenderPassAllocated(handle))
             {
                 const auto& rp = getRenderPass(handle);
                 if (rp.isEnabled && rp.isRenderOnce)

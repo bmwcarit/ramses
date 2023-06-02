@@ -25,7 +25,7 @@
 namespace ramses_internal
 {
 
-    Texture2DGenerateMipMapScene::Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
+    Texture2DGenerateMipMapScene::Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
@@ -36,7 +36,7 @@ namespace ramses_internal
             createMesh(*createTexture2DSampler());
             break;
         case EState_GenerateMipMapMultiple:
-            for (UInt8 i = 0; i < 8; i++)
+            for (uint8_t i = 0; i < 8; i++)
             {
                 // Note: here we need different texture content, otherwise ramses uses
                 // the already known resource with the same content.
@@ -55,7 +55,7 @@ namespace ramses_internal
     void Texture2DGenerateMipMapScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setFrustum(0.0f, static_cast<float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
         orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
@@ -89,8 +89,8 @@ namespace ramses_internal
         mesh->setGeometryBinding(*geometry);
 
         ramses::Node* transform = m_scene.createNode();
-        transform->translate(translateXY, translateXY, 0.0f);
-        transform->scale(scale, scale, scale);
+        transform->translate({translateXY, translateXY, 0.0f});
+        transform->scale({scale, scale, scale});
         transform->addChild(*mesh);
     }
 
@@ -113,16 +113,16 @@ namespace ramses_internal
         const float w2 = w;
         const float h2 = h;
 
-        const float vertexPositionsArray[] = {
-            x, y, z,
-            x + w, y, z,
-            x + w, y + h, z,
-            x, y + h, z,
+        const std::array<ramses::vec3f, 8u> vertexPositionsArray{
+            ramses::vec3f{ x, y, z },
+            ramses::vec3f{ x + w, y, z },
+            ramses::vec3f{ x + w, y + h, z },
+            ramses::vec3f{ x, y + h, z },
 
-            x2, y2, z,
-            x2 + w2, y2, z,
-            x2 + w2, y2 + h2, z,
-            x2, y2 + h2, z,
+            ramses::vec3f{ x2, y2, z },
+            ramses::vec3f{ x2 + w2, y2, z },
+            ramses::vec3f{ x2 + w2, y2 + h2, z },
+            ramses::vec3f{ x2, y2 + h2, z }
         };
 
         const float s = w;
@@ -131,24 +131,24 @@ namespace ramses_internal
         const float s2 = w2 / 32.0f;
         const float t2 = h2 / 32.0f;
 
-        const float textureCoordsArray[] = {
-            0.0f, 0.0f,
-            s, 0.0f,
-            s, t,
-            0.0f, t,
+        const std::array<ramses::vec2f, 8u> textureCoordsArray{
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s, 0.0f },
+            ramses::vec2f{ s, t },
+            ramses::vec2f{ 0.0f, t },
 
-            0.0f, 0.0f,
-            s2, 0.0f,
-            s2, t2,
-            0.0f, t2
+            ramses::vec2f{ 0.0f, 0.0f },
+            ramses::vec2f{ s2, 0.0f },
+            ramses::vec2f{ s2, t2 },
+            ramses::vec2f{ 0.0f, t2 }
         };
 
-        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, 12, indicesArray);
-        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 8, vertexPositionsArray);
-        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 8, textureCoordsArray);
+        m_indexArray = m_scene.createArrayResource(12u, indicesArray);
+        m_vertexPositions = m_scene.createArrayResource(8u, vertexPositionsArray.data());
+        m_textureCoords = m_scene.createArrayResource(8u, textureCoordsArray.data());
     }
 
-    ramses::TextureSampler* Texture2DGenerateMipMapScene::createTexture2DSampler(UInt32 width, UInt32 height, UInt8 transparency)
+    ramses::TextureSampler* Texture2DGenerateMipMapScene::createTexture2DSampler(UInt32 width, UInt32 height, uint8_t transparency)
     {
         const UInt32 pixelCount = width * height;
 
@@ -156,7 +156,7 @@ namespace ramses_internal
         const UInt32 idx_blue = pixelCount * 2;
         const UInt32 idx_white = pixelCount * 3;
 
-        UInt8* rgba8_level0 = new UInt8[pixelCount * 4];
+        uint8_t* rgba8_level0 = new uint8_t[pixelCount * 4];
         for (UInt32 pixel = 0u; pixel < pixelCount; pixel++)
         {
             const UInt32 idx = pixel * 4;
@@ -193,7 +193,7 @@ namespace ramses_internal
         }
 
         const ramses::MipLevelData mipLevelData[] = {
-            ramses::MipLevelData(width*height*4u*sizeof(UInt8), rgba8_level0)
+            ramses::MipLevelData(width*height*4u*sizeof(uint8_t), rgba8_level0)
         };
 
         ramses::Texture2D* texture = m_scene.createTexture2D(
@@ -204,10 +204,10 @@ namespace ramses_internal
             true);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Nearest_MipMapNearest,
-            ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Nearest_MipMapNearest,
+            ramses::ETextureSamplingMethod::Nearest,
             *texture);
 
         delete[] rgba8_level0;

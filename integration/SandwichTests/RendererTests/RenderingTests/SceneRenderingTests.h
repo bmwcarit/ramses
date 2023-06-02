@@ -11,20 +11,22 @@
 
 #include "IRendererTest.h"
 
+#include <string>
+
 class SceneRenderingTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
 private:
     template <typename INTEGRATION_SCENE>
     bool runBasicTest(
         RendererTestsFramework& testFramework,
         ramses_internal::UInt32 sceneState,
-        const ramses_internal::String& expectedImageName,
+        const std::string& expectedImageName,
         float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel,
-        const ramses_internal::Vector3& cameraTranslation = ramses_internal::Vector3(0.0f),
+        const glm::vec3& cameraTranslation = glm::vec3(0.0f),
         bool saveDiffOnError = true);
 
     enum
@@ -88,6 +90,7 @@ private:
         RenderGroupTest_RenderOrder,
         RenderGroupTest_RenderOrderWithNestedGroups,
 
+#if defined(RAMSES_TEXT_ENABLED)
         TextTest_SimpleText,
         TextTest_DeletedTextsAndNode,
         TextTest_DifferentLanguages,
@@ -95,6 +98,7 @@ private:
         TextTest_FontCascade,
         TextTest_FontCascadeWithVerticalOffset,
         TextTest_Shaping,
+#endif
 
         AnimationTest_AnimatedScene,
 
@@ -147,9 +151,7 @@ private:
         GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut,
         GeometryShaderGlslV310Extension_TrianglesInPointsOut,
 
-        EulerRotationConventions,
-
-        FrameProfiler_Show
+        EulerRotationConventions
     };
 };
 

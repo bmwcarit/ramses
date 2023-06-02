@@ -12,6 +12,7 @@
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
 
+#include <string>
 
 namespace ramses_internal
 {
@@ -19,7 +20,7 @@ namespace ramses_internal
 
     int RamshCommunicationChannelDLT::dltInjectionCallbackF(uint32_t sid, void* data, uint32_t length)
     {
-        String incoming = String(static_cast<const char*>(data), 0, length - 1);//use length to avoid unterminated strings copied to target buffer
+        std::string incoming{static_cast<const char*>(data), 0, length - 1};//use length to avoid unterminated strings copied to target buffer
 
         LOG_DEBUG(CONTEXT_RAMSH, "Received dlt injection with service id " << sid << ", length is " << length);
         LOG_INFO(CONTEXT_RAMSH, "Calling command '" << incoming << "' received from dlt injection");
@@ -47,7 +48,7 @@ namespace ramses_internal
         }
     }
 
-    void RamshCommunicationChannelDLT::processInput(const String& s)
+    void RamshCommunicationChannelDLT::processInput(const std::string& s)
     {
         m_ramsh.execute(RamshTools::parseCommandString(s));
     }

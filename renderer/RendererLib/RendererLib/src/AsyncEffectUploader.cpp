@@ -16,14 +16,14 @@
 #include "Resource/EffectResource.h"
 #include "Watchdog/IThreadAliveNotifier.h"
 #include "Utils/ThreadLocalLogForced.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 
 namespace ramses_internal
 {
     AsyncEffectUploader::AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, int logPrefixID)
         : m_platform(platform)
         , m_renderBackend(renderBackend)
-        , m_thread{ String{ fmt::format("R_EffUpload{}", logPrefixID) } }
+        , m_thread{ fmt::format("R_EffUpload{}", logPrefixID) }
         , m_notifier(notifier)
         , m_aliveIdentifier(notifier.registerThread())
         , m_logPrefixID{ logPrefixID }
@@ -83,9 +83,11 @@ namespace ramses_internal
             m_effectsUploadedCache.clear();
 
             //assert none of the shaders to be uploaded next was already uploaded since last sync
-            assert(absl::c_all_of(m_effectsToUpload, [&](const auto& toUpload) {
-                return absl::c_find_if(m_effectsUploaded, [&](const auto& uploaded) {return uploaded.first == toUpload->getHash(); }) == m_effectsUploaded.cend();
-                }));
+            assert(std::all_of(std::begin(m_effectsToUpload), std::end(m_effectsToUpload), [this](const auto& toUpload) {
+                return std::find_if(std::cbegin(m_effectsUploaded), std::cend(m_effectsUploaded), [&toUpload](const auto& uploaded) {
+                            return uploaded.first == toUpload->getHash();
+                        }) == m_effectsUploaded.cend();
+            }));
 
             m_effectsToUpload.swap(effectsToUpload);
         }
@@ -107,7 +109,7 @@ namespace ramses_internal
             const auto& effectHash = effectRes->getHash();
             LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader uploading: " << effectHash);
 
-            assert(absl::c_find_if(m_effectsUploadedCache, [&effectHash](const auto& u) {return effectHash == u.first; }) == m_effectsUploadedCache.cend());
+            assert(std::find_if(std::cbegin(m_effectsUploadedCache), std::cend(m_effectsUploadedCache), [&effectHash](const auto& u) {return effectHash == u.first; }) == m_effectsUploadedCache.cend());
             m_notifier.notifyAlive(m_aliveIdentifier);
             const auto shaderUploadStart = std::chrono::steady_clock::now();
             auto shaderResource = resourceUploadRenderBackend.getDevice().uploadShader(*effectRes);
@@ -182,15 +184,6 @@ namespace ramses_internal
         }
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader resource upload render backend created successfully");
         m_creationSuccess.set_value(true);
-
-#ifdef __ghs__
-#   ifdef RAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY
-        setThreadPriorityIntegrity(RAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY, "async shader compiler thread");
-#   endif
-#   ifdef RAMSES_ASYNC_SHADERCOMPILE_THREAD_CORE_BINDING
-        setThreadCoreBindingIntegrity(RAMSES_ASYNC_SHADERCOMPILE_THREAD_CORE_BINDING, "async shader compiler thread");
-#   endif
-#endif
 
         while (!isCancelRequested())
             uploadEffectsOrWait(*resourceUploadRenderBackend);

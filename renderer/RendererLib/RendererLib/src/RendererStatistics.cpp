@@ -12,9 +12,9 @@
 
 namespace ramses_internal
 {
-    Float RendererStatistics::getFps() const
+    float RendererStatistics::getFps() const
     {
-        const UInt64 reportTimeInterval = PlatformTime::GetMillisecondsMonotonic() - m_timeBase;
+        const uint64_t reportTimeInterval = PlatformTime::GetMillisecondsMonotonic() - m_timeBase;
         if (reportTimeInterval > 0u)
             return (1000.f * m_frameNumber) / reportTimeInterval;
 
@@ -75,7 +75,7 @@ namespace ramses_internal
         strTexStat.maxUpdatesPerFrame = std::max(strTexStat.maxUpdatesPerFrame, numUpdates);
     }
 
-    void RendererStatistics::shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid)
+    void RendererStatistics::shaderCompiled(std::chrono::microseconds microsecondsUsed, std::string_view name, SceneId sceneid)
     {
         m_shadersCompiled++;
         m_microsecondsForShaderCompilation += microsecondsUsed.count();
@@ -153,7 +153,7 @@ namespace ramses_internal
 
     void RendererStatistics::frameFinished(UInt32 drawCalls)
     {
-        const UInt64 currTick = PlatformTime::GetMicrosecondsMonotonic();
+        const uint64_t currTick = PlatformTime::GetMicrosecondsMonotonic();
         const UInt32 frameDuration = static_cast<UInt32>(currTick - m_lastFrameTick);
         if (frameDuration < m_frameDurationMin)
             m_frameDurationMin = frameDuration;

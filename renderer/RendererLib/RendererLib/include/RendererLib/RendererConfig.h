@@ -10,8 +10,9 @@
 #define RAMSES_RENDERERCONFIG_H
 
 #include "RendererAPI/Types.h"
-#include "Collections/String.h"
+
 #include <chrono>
+#include <string>
 
 namespace ramses_internal
 {
@@ -20,35 +21,20 @@ namespace ramses_internal
     public:
         RendererConfig() {}
 
-        const String& getWaylandSocketEmbedded() const;
-        const String& getWaylandSocketEmbeddedGroup() const;
-        int getWaylandSocketEmbeddedFD() const;
-        void setWaylandEmbeddedCompositingSocketName(const String& socket);
-        void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
-        void setWaylandEmbeddedCompositingSocketFD(int fd);
-        void setWaylandDisplayForSystemCompositorController(const String& wd);
-        const String& getWaylandDisplayForSystemCompositorController() const;
-        bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
-        uint32_t getWaylandSocketEmbeddedPermissions() const;
+        void setWaylandDisplayForSystemCompositorController(std::string_view wd);
+        [[nodiscard]] std::string_view getWaylandDisplayForSystemCompositorController() const;
 
         void enableSystemCompositorControl();
-        Bool getSystemCompositorControlEnabled() const;
+        [[nodiscard]] bool getSystemCompositorControlEnabled() const;
 
-        const String& getKPIFileName() const;
-        void setKPIFileName(const String& filename);
-
-        std::chrono::microseconds getFrameCallbackMaxPollTime() const;
+        [[nodiscard]] std::chrono::microseconds getFrameCallbackMaxPollTime() const;
         void setFrameCallbackMaxPollTime(std::chrono::microseconds pollTime);
         void setRenderthreadLooptimingReportingPeriod(std::chrono::milliseconds period);
-        std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
+        [[nodiscard]] std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
+
     private:
-        String m_waylandSocketEmbedded;
-        String m_waylandSocketEmbeddedGroupName;
-        uint32_t m_waylandSocketEmbeddedPermissions = 0;
-        int m_waylandSocketEmbeddedFD = -1;
-        String m_waylandDisplayForSystemCompositorController;
-        Bool m_systemCompositorEnabled = false;
-        String m_kpiFilename;
+        std::string m_waylandDisplayForSystemCompositorController;
+        bool m_systemCompositorEnabled = false;
         std::chrono::microseconds m_frameCallbackMaxPollTime{10000u};
         std::chrono::milliseconds m_renderThreadLoopTimingReportingPeriod { 0 }; // zero deactivates reporting
     };

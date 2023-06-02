@@ -46,13 +46,7 @@ namespace ramses_internal
 
         PlatformSignal::SignalHandlerFunction InstallSignalHandler(ESignal sig, PlatformSignal::SignalHandlerFunction handler)
         {
-#ifdef __INTEGRITY
-            UNUSED(sig);
-            UNUSED(handler);
-            return PlatformSignal::SignalHandlerFunction(0);
-#else
             return ::signal(static_cast<int>(sig), (handler != nullptr) ? handler : SIG_DFL);
-#endif
         }
     }
 

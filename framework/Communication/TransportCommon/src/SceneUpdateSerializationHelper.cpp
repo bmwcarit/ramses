@@ -137,10 +137,8 @@ namespace ramses_internal
                 os << flushInfos.sizeInfo.renderTargetCount;
                 os << flushInfos.sizeInfo.renderBufferCount;
                 os << flushInfos.sizeInfo.textureSamplerCount;
-                os << flushInfos.sizeInfo.streamTextureCount;
                 os << flushInfos.sizeInfo.dataSlotCount;
                 os << flushInfos.sizeInfo.dataBufferCount;
-                os << flushInfos.sizeInfo.animationSystemCount;
                 os << flushInfos.sizeInfo.textureBufferCount;
                 os << flushInfos.sizeInfo.pickableObjectCount;
                 os << flushInfos.sizeInfo.sceneReferenceCount;
@@ -195,10 +193,8 @@ namespace ramses_internal
                 is >> infos.sizeInfo.renderTargetCount;
                 is >> infos.sizeInfo.renderBufferCount;
                 is >> infos.sizeInfo.textureSamplerCount;
-                is >> infos.sizeInfo.streamTextureCount;
                 is >> infos.sizeInfo.dataSlotCount;
                 is >> infos.sizeInfo.dataBufferCount;
-                is >> infos.sizeInfo.animationSystemCount;
                 is >> infos.sizeInfo.textureBufferCount;
                 is >> infos.sizeInfo.pickableObjectCount;
                 is >> infos.sizeInfo.sceneReferenceCount;
@@ -219,7 +215,7 @@ namespace ramses_internal
                 is >> infos.sceneReferences.back().providerId.getReference();
             }
 
-            UInt64 tsVal = 0;
+            uint64_t tsVal = 0;
             is >> tsVal;
             infos.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
             is >> tsVal;

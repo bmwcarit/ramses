@@ -9,14 +9,16 @@
 #ifndef RAMSES_UTILS_INPLACESTRINGTOKENIZER_H
 #define RAMSES_UTILS_INPLACESTRINGTOKENIZER_H
 
-#include "Collections/String.h"
+#include <PlatformAbstraction/PlatformTypes.h>
+
+#include <string>
 
 namespace ramses_internal
 {
     namespace InplaceStringTokenizer
     {
         template <typename F>
-        void TokenizeToCStrings(String& s, UInt maxStringLength, Char splitToken, F&& fun)
+        void TokenizeToCStrings(std::string& s, UInt maxStringLength, char splitToken, F&& fun)
         {
             const char* tokenStart = s.c_str();
             UInt curLen = 0;

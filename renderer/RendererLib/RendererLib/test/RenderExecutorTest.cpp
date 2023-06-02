@@ -9,7 +9,6 @@
 #include "renderer_common_gmock_header.h"
 #include "RendererResourceManagerMock.h"
 #include "RenderBackendMock.h"
-#include "EmbeddedCompositingManagerMock.h"
 #include "RenderExecutor.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/Renderer.h"
@@ -20,16 +19,18 @@
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Components/EffectUniformTime.h"
 #include "MockResourceHash.h"
+#include "glm/gtx/transform.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace ramses_internal {
 using namespace testing;
 
 namespace
 {
-    const Float fakeFieldOfView = 19.f;
-    const Float fakeAspectRatio = 0.5f;
-    const Float fakeNearPlane = 0.1f;
-    const Float fakeFarPlane = 1500.f;
+    const float fakeFieldOfView = 19.f;
+    const float fakeAspectRatio = 0.5f;
+    const float fakeNearPlane = 0.1f;
+    const float fakeFarPlane = 1500.f;
 
     const Int32 fakeViewportX = 15;
     const Int32 fakeViewportY = 16;
@@ -52,30 +53,33 @@ using DataInstances = std::pair<DataInstanceHandle, DataInstanceHandle>;
 MATCHER_P(PermissiveMatrixEq, other, "")
 {
     UNUSED(result_listener);
-    const UInt32 numElements = sizeof(arg_type) / sizeof(arg.m11);
-    for (UInt32 index = 0; index < numElements; index++)
+    for (glm::length_t i = 0; i < arg.length(); ++i)
     {
-        const Float a = arg.data[index];
-        const Float b = other.data[index];
-
-        const Float fDelta = std::abs(a - b);
-        if (fDelta > 1e-5f)
+        for (glm::length_t k = 0; k < arg[i].length(); ++k)
         {
-            Float relativeError = 0.f;
-            if (std::abs(b) > std::abs(a))
+            const auto a = arg[i][k];
+            const auto b = other[i][k];
+
+            const float fDelta = std::abs(a - b);
+            if (fDelta > 1e-5f)
             {
-                relativeError = std::abs((a - b) / b);
-            }
-            else
-            {
-                relativeError = std::abs((a - b) / a);
-            }
-            if (relativeError > 1.e-7f)
-            {
-                return false;
+                float relativeError = 0.f;
+                if (std::abs(b) > std::abs(a))
+                {
+                    relativeError = std::abs((a - b) / b);
+                }
+                else
+                {
+                    relativeError = std::abs((a - b) / a);
+                }
+                if (relativeError > 1.e-7f)
+                {
+                    return false;
+                }
             }
         }
     }
+
     return true;
 }
 
@@ -160,7 +164,7 @@ class ARenderExecutorBase: public ::testing::Test
 public:
     explicit ARenderExecutorBase(bool withTimeMs)
         : device(renderer.deviceMock)
-        , renderContext{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, fakeViewportWidth, fakeViewportHeight, {}, EClearFlags_All, Vector4{0.f}, false }
+        , renderContext{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, fakeViewportWidth, fakeViewportHeight, {}, EClearFlags_All, glm::vec4{0.f}, false }
         , rendererScenes(rendererEventCollector)
         , scene(rendererScenes.createScene(SceneInfo()))
         , sceneAllocator(scene)
@@ -176,7 +180,7 @@ public:
         , fieldProjMatrix         (fakeEffectInputs.fieldProjMatrix        )
     {
         InputIndexVector referencedInputs;
-        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
         uniformLayout = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(scene, fakeEffectInputs.uniformInputs, referencedInputs, MockResourceHash::EffectHash, DataLayoutHandle(0u));
 
         DataFieldInfoVector dataFields(3u);
@@ -195,7 +199,6 @@ protected:
     };
 
     StrictMock<RenderBackendStrictMock> renderer;
-    NiceMock<EmbeddedCompositingManagerMock> embeddedCompositingManager;
     StrictMock<DeviceMock>& device;
     NiceMock<RendererResourceManagerMock> resourceManager;
 
@@ -265,7 +268,7 @@ protected:
         return pass;
     }
 
-    TransformHandle findTransformForNode(NodeHandle node) const
+    [[nodiscard]] TransformHandle findTransformForNode(NodeHandle  node) const
     {
         for (TransformHandle transform(0u); transform < scene.getTransformCount(); ++transform)
         {
@@ -295,13 +298,13 @@ protected:
         // explicit preallocation needed because here we use DataLayoutCreationHelper which allocates inside,
         // we cannot use scene allocation helper
         MemoryHandle nextHandle = std::max(scene.getDataInstanceCount(), scene.getDataLayoutCount());
-        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 3u, nextHandle + 3u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+        scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 3u, nextHandle + 3u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
         dataRef1 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField1, EDataType::Float, DataLayoutHandle(nextHandle), DataInstanceHandle(nextHandle));
         dataRef2 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField2, EDataType::Float, DataLayoutHandle(nextHandle + 1u), DataInstanceHandle(nextHandle + 1u));
         dataRefMatrix22f = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefFieldMatrix22f, EDataType::Matrix22F, DataLayoutHandle(nextHandle + 2u), DataInstanceHandle(nextHandle + 2u));
         scene.setDataSingleFloat(dataRef1, DataFieldHandle(0u), 0.1f);
         scene.setDataSingleFloat(dataRef2, DataFieldHandle(0u), -666.f);
-        scene.setDataSingleMatrix22f(dataRefMatrix22f, DataFieldHandle(0u), Matrix22f(1, 2, 3, 4));
+        scene.setDataSingleMatrix22f(dataRefMatrix22f, DataFieldHandle(0u), glm::mat2(1, 2, 3, 4));
 
         if (setIndexArray)
         {
@@ -390,20 +393,20 @@ protected:
     void expectFrameWithSinglePass(
         RenderableHandle renderable,
         const ProjectionParams& projectionParams,
-        Matrix44f expectedModelMatrix = Matrix44f::Identity,
-        Matrix44f expectedViewMatrix = Matrix44f::Identity)
+        glm::mat4 expectedModelMatrix = glm::mat4(1.f),
+        glm::mat4 expectedViewMatrix = glm::mat4(1.f))
     {
         expectActivateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, true);
         if (renderContext.displayBufferClearPending != EClearFlags_None)
             expectClearRenderTarget(renderContext.displayBufferClearPending);
-        const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projectionParams);
+        const glm::mat4 projMatrix = CameraMatrixHelper::ProjectionMatrix(projectionParams);
         expectFrameRenderCommands(renderable, expectedModelMatrix, expectedViewMatrix, projMatrix);
     }
 
     void expectFrameRenderCommands(RenderableHandle /*renderable*/,
-        Matrix44f expectedModelMatrix = Matrix44f::Identity,
-        Matrix44f expectedViewMatrix = Matrix44f::Identity,
-        Matrix44f expectedProjMatrix = Matrix44f::Identity,
+        glm::mat4 expectedModelMatrix = glm::mat4(1.f),
+        glm::mat4 expectedViewMatrix = glm::mat4(1.f),
+        glm::mat4 expectedProjMatrix = glm::mat4(1.f),
         bool expectShaderActivation = true,
         EExpectedRenderStateChange expectRenderStateChanges = EExpectedRenderStateChange::All,
         UInt32 instanceCount = 1u,
@@ -445,17 +448,17 @@ protected:
             EXPECT_CALL(device, activateShader(FakeShaderDeviceHandle))                                                                           .InSequence(deviceSequence);
         }
         EXPECT_CALL(device, activateVertexArray(_))                                                                               .InSequence(deviceSequence);
-        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField1, 1, Matcher<const Float*>(Pointee(Eq(0.1f)))))                                       .InSequence(deviceSequence);
-        EXPECT_CALL(device, setConstant(fieldModelMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedModelMatrix)))))                  .InSequence(deviceSequence);
-        EXPECT_CALL(device, setConstant(fieldViewMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedViewMatrix)))))                    .InSequence(deviceSequence);
-        EXPECT_CALL(device, setConstant(fieldProjMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedProjMatrix)))))                    .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField1, 1, Matcher<const float*>(Pointee(Eq(0.1f)))))                                       .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fieldModelMatrix, 1, Matcher<const glm::mat4*>(Pointee(PermissiveMatrixEq(expectedModelMatrix)))))                  .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fieldViewMatrix, 1, Matcher<const glm::mat4*>(Pointee(PermissiveMatrixEq(expectedViewMatrix)))))                    .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fieldProjMatrix, 1, Matcher<const glm::mat4*>(Pointee(PermissiveMatrixEq(expectedProjMatrix)))))                    .InSequence(deviceSequence);
         EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureField))                                                                         .InSequence(deviceSequence);
         const TextureSamplerStates expectedSamplerStates(EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest_MipMapNearest, ESamplingMethod::Nearest, 2u);
         EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerStates.hash())), textureField)).InSequence(deviceSequence);
         EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureFieldMS))                                                                         .InSequence(deviceSequence);
 
-        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField2, 1, Matcher<const Float*>(Pointee(Eq(-666.f)))))                                     .InSequence(deviceSequence);
-        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldMatrix22f, 1, Matcher<const Matrix22f*>(Pointee(Eq(Matrix22f(1,2,3,4))))))             .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField2, 1, Matcher<const float*>(Pointee(Eq(-666.f)))))                                     .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldMatrix22f, 1, Matcher<const glm::mat2*>(Pointee(Eq(glm::mat2(1,2,3,4))))))             .InSequence(deviceSequence);
 
         EXPECT_CALL(device, activateTexture(fakeExternalTextureDeviceHandle, textureFieldExternal)).InSequence(deviceSequence);
         const TextureSamplerStates expectedSamplerExternalStates(EWrapMethod::Repeat, EWrapMethod::Clamp, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest_MipMapNearest, ESamplingMethod::Nearest, 1u);
@@ -516,19 +519,19 @@ protected:
 
     void updateScenes(const RenderableVector& renderablesWithUpdatedVAOs)
     {
-        scene.updateRenderablesAndResourceCache(resourceManager, embeddedCompositingManager);
+        scene.updateRenderablesAndResourceCache(resourceManager);
         scene.updateRenderableVertexArrays(resourceManager, renderablesWithUpdatedVAOs);
         scene.markVertexArraysClean();
         scene.updateRenderableWorldMatrices();
     }
 
-    void expectRenderingWithProjection(RenderableHandle renderable, const Matrix44f& projMatrix, const UInt32 instanceCount = 1u)
+    void expectRenderingWithProjection(RenderableHandle renderable, const glm::mat4& projMatrix, const UInt32 instanceCount = 1u)
     {
         updateScenes({renderable});
 
         expectActivateFramebufferRenderTarget();
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable, Matrix44f::Identity, Matrix44f::Identity, projMatrix, true, EExpectedRenderStateChange::All, instanceCount);
+        expectFrameRenderCommands(renderable, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), projMatrix, true, EExpectedRenderStateChange::All, instanceCount);
         executeScene();
 
         Mock::VerifyAndClearExpectations(&renderer);
@@ -562,7 +565,7 @@ public:
 TEST(CustomMatrixPrinter, PrintsMatrixValuesNotAByteString)
 {
     // see matrix_printer.h for more info if this test ever fails
-    Matrix44f mat = Matrix44f::Translation(Vector3(0.6f));
+    glm::mat4 mat = glm::translate(glm::vec3(0.6f));
     EXPECT_EQ(std::string("[1,0,0,0.6][0,1,0,0.6][0,0,1,0.6][0,0,0,1]"), ::testing::PrintToString(mat));
 }
 
@@ -580,7 +583,7 @@ TEST_F(ARenderExecutor, RenderRenderPassIntoRenderTarget)
     scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
     scene.setRenderPassRenderTarget(pass, targetHandle);
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
     updateScenes({ renderable });
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
@@ -588,7 +591,7 @@ TEST_F(ARenderExecutor, RenderRenderPassIntoRenderTarget)
         InSequence seq;
 
         expectActivateRenderTarget(renderTargetDeviceHandle);
-        expectFrameRenderCommands(renderable, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+        expectFrameRenderCommands(renderable, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     }
 
     executeScene();
@@ -600,7 +603,7 @@ TEST_F(ARenderExecutor, RenderRenderableWithoutIndexArray)
     const RenderPassHandle pass = createRenderPassWithCamera(projParams);
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(true, false), createRenderGroup(pass));
     scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     updateScenes({ renderable });
 
@@ -609,7 +612,7 @@ TEST_F(ARenderExecutor, RenderRenderableWithoutIndexArray)
 
         expectActivateFramebufferRenderTarget();
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, true, EExpectedRenderStateChange::All, 1, false);
+        expectFrameRenderCommands(renderable, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, true, EExpectedRenderStateChange::All, 1, false);
     }
 
     executeScene();
@@ -634,7 +637,7 @@ TEST_F(ARenderExecutor, RenderMultipleConsecutiveRenderPassesIntoOneRenderTarget
 
     updateScenes({ renderable1, renderable2 });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
@@ -643,8 +646,8 @@ TEST_F(ARenderExecutor, RenderMultipleConsecutiveRenderPassesIntoOneRenderTarget
 
         expectActivateRenderTarget(renderTargetDeviceHandle);
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
-        expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+        expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
+        expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
         expectDepthStencilDiscard();
     }
 
@@ -672,8 +675,8 @@ TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoMultipleRenderTargets)
 
     updateScenes({ renderable1, renderable2 });
 
-    const Matrix44f expectedProjectionMatrix1 = CameraMatrixHelper::ProjectionMatrix(projParams1);
-    const Matrix44f expectedProjectionMatrix2 = CameraMatrixHelper::ProjectionMatrix(projParams2);
+    const auto expectedProjectionMatrix1 = CameraMatrixHelper::ProjectionMatrix(projParams1);
+    const auto expectedProjectionMatrix2 = CameraMatrixHelper::ProjectionMatrix(projParams2);
 
     const DeviceResourceHandle renderTargetDeviceHandle1 = resourceManager.getRenderTargetDeviceHandle(targetHandle1, scene.getSceneId());
     const DeviceResourceHandle renderTargetDeviceHandle2 = resourceManager.getRenderTargetDeviceHandle(targetHandle2, scene.getSceneId());
@@ -683,11 +686,11 @@ TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoMultipleRenderTargets)
 
         expectActivateRenderTarget(renderTargetDeviceHandle1, true, fakeVp1);
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix1);
+        expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix1);
         expectDepthStencilDiscard();
         expectActivateRenderTarget(renderTargetDeviceHandle2, true, fakeVp2);
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix2, false, EExpectedRenderStateChange::CausedByClear);
+        expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix2, false, EExpectedRenderStateChange::CausedByClear);
         expectDepthStencilDiscard();
     }
 
@@ -711,18 +714,18 @@ TEST_F(ARenderExecutor, ResetsCachedRenderStatesAfterClearingRenderTargets)
     updateScenes({ renderable1, renderable2 });
 
     const DeviceResourceHandle renderTargetDeviceHandle2 = resourceManager.getRenderTargetDeviceHandle(targetHandle2, scene.getSceneId());
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     {
         InSequence seq;
 
         expectActivateFramebufferRenderTarget();
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, projMatrix);
+        expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), projMatrix);
         expectActivateRenderTarget(renderTargetDeviceHandle2, false);
         expectClearRenderTarget();
         //render states are set again but shader and index buffer do not have to be set again
-        expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::CausedByClear);
+        expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), projMatrix, false, EExpectedRenderStateChange::CausedByClear);
         expectDepthStencilDiscard();
     }
 
@@ -865,10 +868,10 @@ TEST_F(ARenderExecutor, SceneViewMatrixChangeViaCameraTransformation)
 
     const NodeHandle cameraNode = scene.getCamera(scene.getRenderPass(pass).camera).node;
     const TransformHandle cameraTransform = findTransformForNode(cameraNode);
-    scene.setTranslation(cameraTransform, Vector3(2.f, 3.f, 4.f));
+    scene.setTranslation(cameraTransform, glm::vec3(2.f, 3.f, 4.f));
 
     updateScenes({});
-    expectFrameWithSinglePass(renderable, projParams, Matrix44f::Identity, Matrix44f::Translation(Vector3(-2.f, -3.f, -4.f)));
+    expectFrameWithSinglePass(renderable, projParams, glm::identity<glm::mat4>(), glm::translate(glm::vec3(-2.f, -3.f, -4.f)));
     executeScene();
     Mock::VerifyAndClearExpectations(&device);
 }
@@ -879,7 +882,7 @@ TEST_F(ARenderExecutor, RendersRenderableWithRendererProjection)
     const RenderPassHandle renderPass = createRenderPassWithCamera(projParams);
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(), createRenderGroup(renderPass));
 
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     expectRenderingWithProjection(renderable, projMatrix);
 }
@@ -892,7 +895,7 @@ TEST_F(ARenderExecutor, RendersMultipleRenderableInstancesWithRendererProjection
     const UInt32 instanceCount = 23u;
     scene.setRenderableInstanceCount(renderable, instanceCount);
 
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     expectRenderingWithProjection(renderable, projMatrix, instanceCount);
 }
@@ -903,7 +906,7 @@ TEST_F(ARenderExecutor, RendersRenderableWithOrthographicProjection)
     const RenderPassHandle renderPass = createRenderPassWithCamera(projParams);
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(), createRenderGroup(renderPass));
 
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     expectRenderingWithProjection(renderable, projMatrix);
 }
@@ -925,16 +928,16 @@ TEST_F(ARenderExecutor, RendersRenderableInTwoPassesUsingTheSameCamera)
     scene.setRenderPassRenderOrder(renderPass1, 0);
     scene.setRenderPassRenderOrder(renderPass2, 1);
 
-    scene.setTranslation(cameraTransform1, Vector3(1.f, 2.f, 3.f));
-    scene.setTranslation(cameraTransform2, Vector3(4.f, 5.f, 6.f));
+    scene.setTranslation(cameraTransform1, glm::vec3(1.f, 2.f, 3.f));
+    scene.setTranslation(cameraTransform2, glm::vec3(4.f, 5.f, 6.f));
 
     updateScenes({ renderable1, renderable2 });
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget();
 
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Translation(Vector3(-1.f, -2.f, -3.f)), projMatrix);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Translation(Vector3(-4.f, -5.f, -6.f)), projMatrix, false, EExpectedRenderStateChange::None);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::translate(glm::vec3(-1.f, -2.f, -3.f)), projMatrix);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::translate(glm::vec3(-4.f, -5.f, -6.f)), projMatrix, false, EExpectedRenderStateChange::None);
     executeScene();
     Mock::VerifyAndClearExpectations(&device);
 }
@@ -949,12 +952,12 @@ TEST_F(ARenderExecutor, RenderStatesAppliedOnceIfSameForMultipleRenderables)
 
     updateScenes({ renderable1, renderable2 });
 
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget();
 
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, projMatrix);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), projMatrix);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), projMatrix, false, EExpectedRenderStateChange::None);
 
     executeScene();
     Mock::VerifyAndClearExpectations(&device);
@@ -975,16 +978,16 @@ TEST_F(ARenderExecutor, RenderStatesAppliedForEachRenderableIfDifferent)
     scene.setRenderStateScissorTest(state2, EScissorTest::Enabled, {});
     scene.setRenderStateDepthWrite(state1, EDepthWrite::Enabled);
     scene.setRenderStateDepthWrite(state2, EDepthWrite::Disabled);
-    scene.setRenderStateDepthFunc(state1, EDepthFunc::AlwaysPass);
+    scene.setRenderStateDepthFunc(state1, EDepthFunc::Always);
     scene.setRenderStateDepthFunc(state2, EDepthFunc::Disabled);
-    scene.setRenderStateStencilFunc(state1, EStencilFunc::AlwaysPass, 0u, 0u);
+    scene.setRenderStateStencilFunc(state1, EStencilFunc::Always, 0u, 0u);
     scene.setRenderStateStencilFunc(state2, EStencilFunc::Equal, 0u, 0u);
     scene.setRenderStateBlendFactors(state1, EBlendFactor::ConstColor, EBlendFactor::ConstColor, EBlendFactor::ConstColor, EBlendFactor::ConstColor);
     scene.setRenderStateBlendFactors(state2, EBlendFactor::DstColor, EBlendFactor::ConstColor, EBlendFactor::ConstColor, EBlendFactor::ConstColor);
     scene.setRenderStateBlendOperations(state1, EBlendOperation::Add, EBlendOperation::Add);
     scene.setRenderStateBlendOperations(state2, EBlendOperation::Subtract, EBlendOperation::Add);
-    scene.setRenderStateBlendColor(state1, Vector4(1.f));
-    scene.setRenderStateBlendColor(state2, Vector4(.5f));
+    scene.setRenderStateBlendColor(state1, glm::vec4(1.f));
+    scene.setRenderStateBlendColor(state2, glm::vec4(.5f));
     scene.setRenderStateColorWriteMask(state1, EColorWriteFlag_Red);
     scene.setRenderStateColorWriteMask(state2, EColorWriteFlag_Blue);
     scene.setRenderStateCullMode(state1, ECullMode::BackFacing);
@@ -992,12 +995,12 @@ TEST_F(ARenderExecutor, RenderStatesAppliedForEachRenderableIfDifferent)
 
     updateScenes({ renderable1, renderable2 });
 
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget();
 
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, projMatrix);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::All);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), projMatrix);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), projMatrix, false, EExpectedRenderStateChange::All);
 
     executeScene();
     Mock::VerifyAndClearExpectations(&device);
@@ -1010,19 +1013,20 @@ TEST_F(ARenderExecutor, UpdatesModelMatrixWhenChangingTranslationRotationOrScali
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(), createRenderGroup(pass));
     const TransformHandle transform = addTransformToRenderable(renderable);
 
-    scene.setTranslation(transform, Vector3(0.5f));
+    scene.setTranslation(transform, glm::vec3(0.5f));
     updateScenes({ renderable });
-    expectFrameWithSinglePass(renderable, projParams, Matrix44f::Translation(Vector3(0.5f)));
+    expectFrameWithSinglePass(renderable, projParams, glm::translate(glm::vec3(0.5f)));
     executeScene();
 
     Mock::VerifyAndClearExpectations(&device);
 
-    scene.setTranslation(transform, Vector3(0.15f));
-    scene.setScaling(transform, Vector3(0.25f));
-    scene.setRotation(transform, Vector3(0.35f), ERotationConvention::Legacy_ZYX);
+    scene.setTranslation(transform, glm::vec3(0.15f));
+    scene.setScaling(transform, glm::vec3(0.25f));
+    const auto rotation = glm::normalize(glm::quat(1.f, 2.f, 3.f, 4.f));
+    scene.setRotation(transform, glm::vec4(rotation.x, rotation.y, rotation.z, rotation.w), ERotationType::Quaternion);
     updateScenes({});
     expectFrameWithSinglePass(renderable, projParams,
-        Matrix44f::Translation(Vector3(0.15f)) * Matrix44f::Scaling(Vector3(0.25f)) * Matrix44f::RotationEuler(Vector3(0.35f), ERotationConvention::Legacy_ZYX));
+        glm::translate(glm::vec3(0.15f)) * glm::scale(glm::vec3(0.25f)) * glm::toMat4(rotation));
     executeScene();
 }
 
@@ -1042,27 +1046,27 @@ TEST_F(ARenderExecutor, AppliesParentTransformationToBothChildNodes)
     const TransformHandle transformChild2 = addTransformToNode(childNode2);
     const TransformHandle transformParent = addTransformToNode(parentNode);
 
-    scene.setTranslation(transformParent, Vector3(0.25f));
-    scene.setTranslation(transformChild1, Vector3(0.15f));
-    scene.setTranslation(transformChild2, Vector3(0.05f));
+    scene.setTranslation(transformParent, glm::vec3(0.25f));
+    scene.setTranslation(transformChild1, glm::vec3(0.15f));
+    scene.setTranslation(transformChild2, glm::vec3(0.05f));
     updateScenes({ renderable1, renderable2 });
 
-    const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget();
 
-    expectFrameRenderCommands(renderable1, Matrix44f::Translation(Vector3(0.40f)), Matrix44f::Identity, projMatrix);
-    expectFrameRenderCommands(renderable2, Matrix44f::Translation(Vector3(0.30f)), Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
+    expectFrameRenderCommands(renderable1, glm::translate(glm::vec3(0.40f)), glm::identity<glm::mat4>(), projMatrix);
+    expectFrameRenderCommands(renderable2, glm::translate(glm::vec3(0.30f)), glm::identity<glm::mat4>(), projMatrix, false, EExpectedRenderStateChange::None);
     executeScene();
 
     Mock::VerifyAndClearExpectations(&device);
 
-    scene.setTranslation(transformParent, Vector3(0.0f));
+    scene.setTranslation(transformParent, glm::vec3(0.0f));
     updateScenes({});
 
     expectActivateFramebufferRenderTarget();
-    expectFrameRenderCommands(renderable1, Matrix44f::Translation(Vector3(0.15f)), Matrix44f::Identity, projMatrix);
-    expectFrameRenderCommands(renderable2, Matrix44f::Translation(Vector3(0.05f)), Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
+    expectFrameRenderCommands(renderable1, glm::translate(glm::vec3(0.15f)), glm::identity<glm::mat4>(), projMatrix);
+    expectFrameRenderCommands(renderable2, glm::translate(glm::vec3(0.05f)), glm::identity<glm::mat4>(), projMatrix, false, EExpectedRenderStateChange::None);
     executeScene();
 
     Mock::VerifyAndClearExpectations(&device);
@@ -1135,25 +1139,25 @@ TEST_F(ARenderExecutor, willRenderAllRenderablesIfWithinTimeBudget)
 
     updateScenes({ renderable1 ,renderable2, renderable3, renderable4 });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
     {
         expectActivateRenderTarget(renderTargetDeviceHandle);
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
-        expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+        expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
+        expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
         expectDepthStencilDiscard();
 
         expectActivateFramebufferRenderTarget(false);
         expectClearRenderTarget();
-        expectFrameRenderCommands(renderable3, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::CausedByClear);
-        expectFrameRenderCommands(renderable4, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+        expectFrameRenderCommands(renderable3, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::CausedByClear);
+        expectFrameRenderCommands(renderable4, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
 
     FrameTimer frameTimer;
     frameTimer.startFrame();
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, std::numeric_limits<UInt64>::max());
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, std::numeric_limits<uint64_t>::max());
 
     const auto renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(SceneRenderExecutionIterator(), renderIterator); // finished
@@ -1172,7 +1176,7 @@ TEST_F(ARenderExecutor, willRenderAtLeastOneRenderableBatchIfExceededTimeBudget)
 
     updateScenes({ batchRenderables.cbegin(), batchRenderables.cend() });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
 
     {
         InSequence s;
@@ -1181,9 +1185,9 @@ TEST_F(ARenderExecutor, willRenderAtLeastOneRenderableBatchIfExceededTimeBudget)
         expectClearRenderTarget();
 
         // one batch of renderables is rendered, first sets states
-        expectFrameRenderCommands(batchRenderables.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+        expectFrameRenderCommands(batchRenderables.front(), glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
         for (auto it = batchRenderables.cbegin() + 1; it != batchRenderables.cend(); ++it)
-            expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+            expectFrameRenderCommands(*it, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
 
         // otherRenderable is not rendered
         UNUSED(renderableOutOfBudget);
@@ -1231,7 +1235,7 @@ TEST_F(ARenderExecutor, willContinueRenderingWhereLeftOffLastRenderWhenInterrupt
 
     updateScenes(allRenderables);
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
     FrameTimer frameTimer;
@@ -1241,9 +1245,9 @@ TEST_F(ARenderExecutor, willContinueRenderingWhereLeftOffLastRenderWhenInterrupt
     {
         expectActivateRenderTarget(renderTargetDeviceHandle);
         expectClearRenderTarget();
-        expectFrameRenderCommands(batchRenderables1.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+        expectFrameRenderCommands(batchRenderables1.front(), glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
         for (auto it = batchRenderables1.cbegin() + 1; it != batchRenderables1.cend(); ++it)
-            expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+            expectFrameRenderCommands(*it, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
     SceneRenderExecutionIterator renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(0u, renderIterator.getRenderPassIdx());
@@ -1252,9 +1256,9 @@ TEST_F(ARenderExecutor, willContinueRenderingWhereLeftOffLastRenderWhenInterrupt
 
     {
         expectActivateRenderTarget(renderTargetDeviceHandle); // no clear
-        expectFrameRenderCommands(batchRenderables2.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+        expectFrameRenderCommands(batchRenderables2.front(), glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
         for (auto it = batchRenderables2.cbegin() + 1; it != batchRenderables2.cend(); ++it)
-            expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+            expectFrameRenderCommands(*it, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
     renderContext.renderFrom = renderIterator;
     renderIterator = executeScene(&frameTimer);
@@ -1270,9 +1274,9 @@ TEST_F(ARenderExecutor, willContinueRenderingWhereLeftOffLastRenderWhenInterrupt
 
         expectActivateFramebufferRenderTarget(false);
         expectClearRenderTarget();
-        expectFrameRenderCommands(batchRenderables3.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+        expectFrameRenderCommands(batchRenderables3.front(), glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
         for (auto it = batchRenderables3.cbegin() + 1; it != batchRenderables3.cend(); ++it)
-            expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+            expectFrameRenderCommands(*it, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
     renderContext.renderFrom = renderIterator;
     renderIterator = executeScene(&frameTimer);
@@ -1282,9 +1286,9 @@ TEST_F(ARenderExecutor, willContinueRenderingWhereLeftOffLastRenderWhenInterrupt
 
     {
         expectActivateFramebufferRenderTarget();
-        expectFrameRenderCommands(batchRenderables4.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+        expectFrameRenderCommands(batchRenderables4.front(), glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
         for (auto it = batchRenderables4.cbegin() + 1; it != batchRenderables4.cend(); ++it)
-            expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+            expectFrameRenderCommands(*it, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
     renderContext.renderFrom = renderIterator;
     renderIterator = executeScene(&frameTimer);
@@ -1308,12 +1312,12 @@ TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_MainOnly)
     const RenderPassHandle passMain = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
     const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(passMain));
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
     updateScenes({ renderable1 });
 
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget(EClearFlags_All);
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
 
     executeScene();
 
@@ -1332,18 +1336,18 @@ TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_RenderTargetThenMa
     scene.setRenderPassRenderOrder(passRT, 1);
     scene.setRenderPassRenderOrder(passMain, 2);
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
     updateScenes({ renderable1, renderable2 });
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
 
     expectActivateRenderTarget(renderTargetDeviceHandle);
     expectClearRenderTarget(EClearFlags_All);
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     expectDepthStencilDiscard();
 
     expectActivateFramebufferRenderTarget(false);
     expectClearRenderTarget(EClearFlags_All);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, ARenderExecutor::EExpectedRenderStateChange::CausedByClear);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, ARenderExecutor::EExpectedRenderStateChange::CausedByClear);
 
     executeScene();
 
@@ -1362,16 +1366,16 @@ TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_MainThenRenderTarg
     scene.setRenderPassRenderOrder(passMain, 1);
     scene.setRenderPassRenderOrder(passRT, 2);
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
     updateScenes({ renderable1, renderable2 });
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
 
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget(EClearFlags_All);
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     expectActivateRenderTarget(renderTargetDeviceHandle, false);
     expectClearRenderTarget(EClearFlags_All);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, ARenderExecutor::EExpectedRenderStateChange::CausedByClear);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, ARenderExecutor::EExpectedRenderStateChange::CausedByClear);
     expectDepthStencilDiscard();
 
     executeScene();
@@ -1387,13 +1391,13 @@ TEST_F(ARenderExecutor, DoesNotClearDispBufferWhenNotRenderingIntoIt_RenderTarge
     const RenderTargetHandle rt = createRenderTarget(16, 20);
     scene.setRenderPassRenderTarget(passRT, rt);
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
     updateScenes({ renderable1 });
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
 
     expectActivateRenderTarget(renderTargetDeviceHandle);
     expectClearRenderTarget(EClearFlags_All);
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     expectDepthStencilDiscard();
 
     executeScene();
@@ -1425,16 +1429,16 @@ TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_InterruptedRenderT
     allRenderables.push_back(renderableMain);
     updateScenes(allRenderables);
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
 
     expectActivateRenderTarget(renderTargetDeviceHandle);
     expectClearRenderTarget(EClearFlags_All);
 
     // one batch of renderables is rendered, first sets states
-    expectFrameRenderCommands(batchRenderables.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(batchRenderables.front(), glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     for (auto it = batchRenderables.cbegin() + 1; it != batchRenderables.cend(); ++it)
-        expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+        expectFrameRenderCommands(*it, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
 
     FrameTimer frameTimer;
     frameTimer.startFrame();
@@ -1451,7 +1455,7 @@ TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_InterruptedRenderT
 
     expectActivateFramebufferRenderTarget(false);
     expectClearRenderTarget(EClearFlags_All);
-    expectFrameRenderCommands(renderableMain, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderableMain, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
 
     renderContext.renderFrom = renderIterator;
     executeScene();
@@ -1473,12 +1477,12 @@ TEST_F(ARenderExecutor, discardsDepthStencilAfterLastPassRenderingToFB_ifAllowed
 
     updateScenes({ renderable1, renderable2 });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget();
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     expectDepthStencilDiscard();
 
     renderContext.displayBufferDepthDiscard = true;
@@ -1498,12 +1502,12 @@ TEST_F(ARenderExecutor, doesNotDiscardDepthStencil_ifNotAllowedByRenderContext)
 
     updateScenes({ renderable1, renderable2 });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget();
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     // no discard
 
     renderContext.displayBufferDepthDiscard = false;
@@ -1530,24 +1534,24 @@ TEST_F(ARenderExecutor, discardsDepthStencilAfterLastPassRenderingToFB_withRTPas
 
     updateScenes({ renderable1, renderable2, renderable3 });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
     // pass1
     expectActivateFramebufferRenderTarget();
     expectClearRenderTarget();
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     // no discard
 
     // pass2
     expectActivateRenderTarget(renderTargetDeviceHandle, false);
     expectClearRenderTarget();
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::CausedByClear);
+    expectFrameRenderCommands(renderable2, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::CausedByClear);
     expectDepthStencilDiscard(); // discard for RT
 
     // pass3
     expectActivateFramebufferRenderTarget(false);
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     expectDepthStencilDiscard(); // discard for FB
 
     renderContext.displayBufferDepthDiscard = true;
@@ -1564,12 +1568,12 @@ TEST_F(ARenderExecutor, discardsDepthStencilWhenRenderToRTWithClear)
 
     updateScenes({ renderable1 });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
     expectActivateRenderTarget(renderTargetDeviceHandle);
     expectClearRenderTarget();
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     expectDepthStencilDiscard();
 
     executeScene();
@@ -1587,12 +1591,12 @@ TEST_F(ARenderExecutor, doesNotDiscardDepthStencilWhenRenderToRTWithNoDepthCompo
 
     updateScenes({ renderable1 });
 
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
     expectActivateRenderTarget(renderTargetDeviceHandle);
     expectClearRenderTarget();
-    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable1, glm::identity<glm::mat4>(), glm::identity<glm::mat4>(), expectedProjectionMatrix);
     // dicard would be here if there was a depth component to discard
 
     executeScene();
@@ -1710,7 +1714,7 @@ TEST_F(ARenderExecutorTimeMs, SetsActiveShaderAnimationFlagOnRenderedScene)
     const RenderPassHandle pass = createRenderPassWithCamera(projParams);
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(true, false), createRenderGroup(pass));
     scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     updateScenes({ renderable });
 
@@ -1720,8 +1724,8 @@ TEST_F(ARenderExecutorTimeMs, SetsActiveShaderAnimationFlagOnRenderedScene)
         expectActivateFramebufferRenderTarget();
         expectClearRenderTarget();
         expectFrameRenderCommands(renderable,
-                                  Matrix44f::Identity,
-                                  Matrix44f::Identity,
+                                  glm::identity<glm::mat4>(),
+                                  glm::identity<glm::mat4>(),
                                   expectedProjectionMatrix,
                                   true,
                                   EExpectedRenderStateChange::All,
@@ -1741,7 +1745,7 @@ TEST_F(ARenderExecutorTimeMs, UniformTimeMsStartsAtZeroAfterEffectTimeSync)
     const RenderPassHandle pass = createRenderPassWithCamera(projParams);
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(true, false), createRenderGroup(pass));
     scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
-    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const auto expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
 
     scene.setEffectTimeSync(FlushTime::Clock::now());
 
@@ -1753,8 +1757,8 @@ TEST_F(ARenderExecutorTimeMs, UniformTimeMsStartsAtZeroAfterEffectTimeSync)
         expectActivateFramebufferRenderTarget();
         expectClearRenderTarget();
         expectFrameRenderCommands(renderable,
-                                  Matrix44f::Identity,
-                                  Matrix44f::Identity,
+                                  glm::identity<glm::mat4>(),
+                                  glm::identity<glm::mat4>(),
                                   expectedProjectionMatrix,
                                   true,
                                   EExpectedRenderStateChange::All,

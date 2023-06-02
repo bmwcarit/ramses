@@ -25,7 +25,7 @@
 
 namespace ramses_internal
 {
-    TestWaylandApplication::TestWaylandApplication(const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName)
+    TestWaylandApplication::TestWaylandApplication(std::string_view testToWaylandClientPipeName, std::string_view waylandClientToTestPipeName)
         : m_testToWaylandClientPipe(testToWaylandClientPipeName, false)
         , m_waylandClientToTestPipe(waylandClientToTestPipeName, false)
         , m_triangleColor(ETriangleColor::Red)
@@ -42,7 +42,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication exiting");
     }
 
-    Bool TestWaylandApplication::run()
+    bool TestWaylandApplication::run()
     {
         while(dispatchIncomingMessage())
         {
@@ -95,7 +95,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool TestWaylandApplication::dispatchIncomingMessage()
+    bool TestWaylandApplication::dispatchIncomingMessage()
     {
         LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): waiting for message...");
 
@@ -110,12 +110,12 @@ namespace ramses_internal
         {
         case ETestWaylandApplicationMessage::InitializeTestApplication:
         {
-            String displayName;
+            std::string displayName;
             bool useSocketFD;
 
             bis >> displayName >> useSocketFD;
 
-            if (!initializeWayland(displayName.c_str(), useSocketFD))
+            if (!initializeWayland(displayName, useSocketFD))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication::dispatchIncomingMessage(): failed initializing wayland");
                 return false;
@@ -133,7 +133,7 @@ namespace ramses_internal
             UInt32 width;
             UInt32 height;
             UInt32 swapInterval;
-            Bool useEGL;
+            bool useEGL;
 
             bis >> surfaceId.getReference() >> width >> height >> swapInterval >> useEGL;
 
@@ -173,7 +173,7 @@ namespace ramses_internal
         case ETestWaylandApplicationMessage::SetShellSurfaceTitle:
         {
             TestApplicationShellSurfaceId shellSurfaceId;
-            String title;
+            std::string title;
 
             bis >> shellSurfaceId.getReference() >> title;
 
@@ -389,7 +389,7 @@ namespace ramses_internal
         return false;
     }
 
-    bool TestWaylandApplication::initializeWayland(const String& displayName, bool connectUsingFD)
+    bool TestWaylandApplication::initializeWayland(const std::string& displayName, bool connectUsingFD)
     {
         LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication started");
 
@@ -519,14 +519,16 @@ namespace ramses_internal
         testScenesAndRenderer.initializeRenderer();
 
         ramses::DisplayConfig displayConfig1 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset);
+        displayConfig1.setWindowType(ramses::EWindowType::Wayland_IVI);
         displayConfig1.setWindowRectangle(0, 0, windowWidth, windowHeight);
-        displayConfig1.impl.setWaylandDisplay(systemCompositorDisplay);
+        displayConfig1.m_impl.get().setWaylandDisplay(systemCompositorDisplay);
         displayConfig1.setWaylandIviLayerID(ramses::waylandIviLayerId_t(waylandIviLayerId.getValue()));
         displayConfig1.setWaylandEmbeddedCompositingSocketName("");
 
         ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset + 1);
+        displayConfig2.setWindowType(ramses::EWindowType::Wayland_IVI);
         displayConfig2.setWindowRectangle(windowWidth, 0, windowWidth, windowHeight);
-        displayConfig2.impl.setWaylandDisplay(systemCompositorDisplay);
+        displayConfig2.m_impl.get().setWaylandDisplay(systemCompositorDisplay);
         displayConfig2.setWaylandIviLayerID(ramses::waylandIviLayerId_t(waylandIviLayerId.getValue()));
         displayConfig2.setWaylandEmbeddedCompositingSocketName("");
 
@@ -534,14 +536,14 @@ namespace ramses_internal
         const auto displayHandle2 = testRenderer.createDisplay(displayConfig2);
 
         //create two scenes and map a scene to each display
-        const ramses::sceneId_t sceneId1 = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses_internal::Vector3(0.0f, 0.0f, 5.0f), windowWidth, windowHeight);
+        const ramses::sceneId_t sceneId1 = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, glm::vec3(0.0f, 0.0f, 5.0f), windowWidth, windowHeight);
 
         testScenesAndRenderer.publish(sceneId1);
         testScenesAndRenderer.flush(sceneId1);
         testRenderer.setSceneMapping(sceneId1, displayHandle1);
         testRenderer.getSceneToState(sceneId1, ramses::RendererSceneState::Rendered);
 
-        const ramses::sceneId_t sceneId2 = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, ramses_internal::Vector3(0.0f, 0.0f, 5.0f), windowWidth, windowHeight);
+        const ramses::sceneId_t sceneId2 = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED, glm::vec3(0.0f, 0.0f, 5.0f), windowWidth, windowHeight);
         testScenesAndRenderer.publish(sceneId2);
         testScenesAndRenderer.flush(sceneId2);
         testRenderer.setSceneMapping(sceneId2, displayHandle2);

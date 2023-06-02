@@ -49,19 +49,19 @@ namespace ramses_internal
         return {};
     }
 
-    Bool RenderExecutor::executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const
+    bool RenderExecutor::executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const
     {
         const RenderPass& renderPass = scene.getRenderPass(pass);
         executeRenderTarget(renderPass.renderTarget);
         executeCamera(renderPass.camera);
 
         // do not clear if render pass is not executed from beginning
-        const Bool renderPassIsExecutedFromBeginning = (m_state.m_currentRenderIterator.getRenderableIdx() == 0u);
+        const bool renderPassIsExecutedFromBeginning = (m_state.m_currentRenderIterator.getRenderableIdx() == 0u);
         m_state.renderPassState.setState(pass);
         if (m_state.renderPassState.hasChanged() && renderPassIsExecutedFromBeginning)
         {
             UInt32 clearFlags = EClearFlags_None;
-            Vector4 clearColor;
+            glm::vec4 clearColor;
 
             // clear only if rendering into render target or display buffer clear pending
             const RenderTargetHandle renderTarget = m_state.renderTargetState.getState();
@@ -194,10 +194,10 @@ namespace ramses_internal
         if (m_state.colorWriteMaskState.hasChanged())
         {
             const ColorWriteMask colorMask = m_state.colorWriteMaskState.getState();
-            const Bool writeR = (colorMask & EColorWriteFlag_Red) != 0u;
-            const Bool writeG = (colorMask & EColorWriteFlag_Green) != 0u;
-            const Bool writeB = (colorMask & EColorWriteFlag_Blue) != 0u;
-            const Bool writeA = (colorMask & EColorWriteFlag_Alpha) != 0u;
+            const bool writeR = (colorMask & EColorWriteFlag_Red) != 0u;
+            const bool writeG = (colorMask & EColorWriteFlag_Green) != 0u;
+            const bool writeB = (colorMask & EColorWriteFlag_Blue) != 0u;
+            const bool writeA = (colorMask & EColorWriteFlag_Alpha) != 0u;
             device.colorMask(writeR, writeG, writeB, writeA);
         }
 
@@ -252,49 +252,49 @@ namespace ramses_internal
         {
         case EDataType::Float:
         {
-            const Float* value = renderScene.getDataFloatArray(dataInstance, dataInstancefield);
+            const float* value = renderScene.getDataFloatArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Vector2F:
         {
-            const Vector2* value = renderScene.getDataVector2fArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataVector2fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Vector3F:
         {
-            const Vector3* value = renderScene.getDataVector3fArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataVector3fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Vector4F:
         {
-            const Vector4* value = renderScene.getDataVector4fArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataVector4fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Matrix22F:
         {
-            const Matrix22f* value = renderScene.getDataMatrix22fArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataMatrix22fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Matrix33F:
         {
-            const Matrix33f* value = renderScene.getDataMatrix33fArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataMatrix33fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Matrix44F:
         {
-            const Matrix44f* value = renderScene.getDataMatrix44fArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataMatrix44fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
@@ -308,21 +308,21 @@ namespace ramses_internal
 
         case EDataType::Vector2I:
         {
-            const Vector2i* value = renderScene.getDataVector2iArray(dataInstance, dataInstancefield);
+            const glm::ivec2* value = renderScene.getDataVector2iArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Vector3I:
         {
-            const Vector3i* value = renderScene.getDataVector3iArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataVector3iArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
         case EDataType::Vector4I:
         {
-            const Vector4i* value = renderScene.getDataVector4iArray(dataInstance, dataInstancefield);
+            const auto* value = renderScene.getDataVector4iArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
@@ -461,56 +461,56 @@ namespace ramses_internal
         {
         case EFixedSemantics::ViewMatrix:
         {
-            const Matrix44f& mat = m_state.getViewMatrix();
+            const auto& mat = m_state.getViewMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
         case EFixedSemantics::ProjectionMatrix:
         {
-            const Matrix44f& mat = m_state.getProjectionMatrix();
+            const auto& mat = m_state.getProjectionMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
         case EFixedSemantics::ModelMatrix:
         {
-            const Matrix44f& mat = m_state.getModelMatrix();
+            const auto& mat = m_state.getModelMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
         case EFixedSemantics::ModelViewMatrix:
         {
-            const Matrix44f& mat = m_state.getModelViewMatrix();
+            const auto& mat = m_state.getModelViewMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
         case EFixedSemantics::ModelViewMatrix33:
         {
-            const Matrix33f mat = Matrix33f(m_state.getModelViewMatrix());
+            const auto mat = glm::mat3(m_state.getModelViewMatrix());
             scene.setDataSingleMatrix33f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
         case EFixedSemantics::ModelViewProjectionMatrix:
         {
-            const Matrix44f& mat = m_state.getModelViewProjectionMatrix();
+            const auto& mat = m_state.getModelViewProjectionMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
         case EFixedSemantics::CameraWorldPosition:
         {
-            const Vector3& pos = m_state.getCameraWorldPosition();
+            const auto& pos = m_state.getCameraWorldPosition();
             scene.setDataSingleVector3f(dataInstHandle, dataFieldHandle, pos);
             break;
         }
         case EFixedSemantics::NormalMatrix:
         {
-            const Matrix44f& mat = m_state.getModelViewMatrix().inverse().transpose();
+            const auto& mat = glm::transpose(glm::inverse(m_state.getModelViewMatrix()));
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
         case EFixedSemantics::DisplayBufferResolution:
         {
             const RenderingContext& ctx = m_state.getRenderingContext();
-            const Vector2 bufferRes{ float(ctx.viewportWidth), float(ctx.viewportHeight) };
+            const glm::vec2 bufferRes{ float(ctx.viewportWidth), float(ctx.viewportHeight) };
             scene.setDataSingleVector2f(dataInstHandle, dataFieldHandle, bufferRes);
             break;
         }

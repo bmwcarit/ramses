@@ -6,50 +6,33 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    SystemCompositorController_Wayland_IVI
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/SystemCompositorController_Wayland_IVI/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/SystemCompositorController_Wayland_IVI/*.h
+                            src/*.cpp
     DEPENDENCIES            ramses-renderer-lib
                             WaylandUtilities
                             wayland-ivi-extension
                             wayland-client
 )
 
-ACME_MODULE(
+if (${ramses-sdk_BUILD_TESTS})
+    createModule(
+        NAME                    SystemCompositorController_Wayland_IVI_Test
+        TYPE                    BINARY
+        SRC_FILES            test/*.cpp
+                                test/*.h
+        DEPENDENCIES            SystemCompositorController_Wayland_IVI
+                                WaylandTestUtils
+                                RendererTestCommon
+                                WaylandUtilities
+    )
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    SystemCompositorController_Wayland_IVI_Test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            test/*.cpp
-                            test/*.h
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            SystemCompositorController_Wayland_IVI
-                            WaylandTestUtils
-                            RendererTestUtils
-                            WaylandUtilities
-)
+    makeTestFromTarget(
+        TARGET SystemCompositorController_Wayland_IVI_Test
+        SUFFIX RNDSANDWICHTEST_SWRAST
+        SKIPPABLE)
+endif()

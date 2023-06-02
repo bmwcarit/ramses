@@ -11,6 +11,8 @@
 
 #include "RamsesObjectImpl.h"
 
+#include <string_view>
+
 namespace ramses
 {
     class RamsesClientImpl;
@@ -18,8 +20,8 @@ namespace ramses
     class ClientObjectImpl : public RamsesObjectImpl
     {
     public:
-        explicit ClientObjectImpl(RamsesClientImpl& client, ERamsesObjectType type, const char* name);
-        virtual ~ClientObjectImpl();
+        explicit ClientObjectImpl(RamsesClientImpl& client, ERamsesObjectType type, std::string_view name);
+        ~ClientObjectImpl() override;
 
         // impl methods
         const RamsesClientImpl& getClientImpl() const;

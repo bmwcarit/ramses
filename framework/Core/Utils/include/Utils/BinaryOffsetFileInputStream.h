@@ -35,7 +35,7 @@ namespace ramses_internal
         EStatus seek(Int numberOfBytesToSeek, Seek origin) override;
         EStatus getPos(size_t& position) const override;
 
-        EStatus getState() const override;
+        [[nodiscard]] EStatus getState() const override;
 
     private:
         FILE* m_file;
