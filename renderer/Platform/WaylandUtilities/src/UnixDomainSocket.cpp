@@ -18,7 +18,7 @@
 
 namespace ramses_internal
 {
-    UnixDomainSocket::UnixDomainSocket(const String& _socketFilename, const String& xdgRuntimeDir)
+    UnixDomainSocket::UnixDomainSocket(const std::string& _socketFilename, const std::string& xdgRuntimeDir)
     : m_xdgRuntimeDir(xdgRuntimeDir)
     , m_socketFilename(m_xdgRuntimeDir + "/" + _socketFilename)
     , m_socketFileLock(m_socketFilename + ".lock")
@@ -125,6 +125,7 @@ namespace ramses_internal
             return false;
         }
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         return S_ISSOCK(buf.st_mode);
     }
 
@@ -144,6 +145,7 @@ namespace ramses_internal
     int UnixDomainSocket::createSocketLockFile() const
     {
         // create lock file, with close-on-exec and usr and grp RW rights
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         int lockFileFileDescriptor = open(m_socketFileLock.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 
         if (lockFileFileDescriptor < 0)
@@ -211,6 +213,7 @@ namespace ramses_internal
         }
 
         // now add the close-on-exec flag to the file descriptor's flags
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (fcntl(socketFileDescriptor, F_SETFD, flags | FD_CLOEXEC) == -1)
         {
             return -1;

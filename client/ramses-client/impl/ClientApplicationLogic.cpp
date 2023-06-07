@@ -63,7 +63,7 @@ namespace ramses_internal
         m_scenegraphProviderComponent->handleUnpublishScene(sceneId);
     }
 
-    Bool ClientApplicationLogic::isScenePublished(SceneId sceneId) const
+    bool ClientApplicationLogic::isScenePublished(SceneId sceneId) const
     {
         return m_publishedScenes.contains(sceneId);
     }

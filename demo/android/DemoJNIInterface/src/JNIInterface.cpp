@@ -111,28 +111,21 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bmwgroup_ramses_RamsesNode_setTranslationNative(JNIEnv* /*env*/, jobject /*instance*/, jlong handle,
                                                         jfloat x, jfloat y, jfloat z) {
-    reinterpret_cast<ramses::Node*>(handle)->setTranslation(x, y, z);
+    reinterpret_cast<ramses::Node*>(handle)->setTranslation({x, y, z});
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bmwgroup_ramses_RamsesNode_translateNative(JNIEnv* /*env*/, jobject /*instance*/, jlong handle,
                                                    jfloat x, jfloat y, jfloat z) {
-    reinterpret_cast<ramses::Node*>(handle)->translate(x, y, z);
+    reinterpret_cast<ramses::Node*>(handle)->translate({x, y, z});
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bmwgroup_ramses_RamsesNode_setRotationNative(JNIEnv* /*env*/, jobject /*instance*/, jlong handle,
                                                      jfloat x, jfloat y, jfloat z) {
-    reinterpret_cast<ramses::Node*>(handle)->setRotation(x, y, z);
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_bmwgroup_ramses_RamsesNode_rotateNative(JNIEnv* /*env*/, jobject /*instance*/, jlong handle,
-                                                jfloat x, jfloat y, jfloat z) {
-    reinterpret_cast<ramses::Node*>(handle)->rotate(x, y, z);
+    reinterpret_cast<ramses::Node*>(handle)->setRotation({x, y, z}, ramses::ERotationType::Euler_XYZ);
 }
 
 extern "C"

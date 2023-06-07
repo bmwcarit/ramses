@@ -10,11 +10,11 @@
 
 namespace ramses_internal
 {
-    Int32 EffectUniformTime::GetMilliseconds(FlushTime::Clock::time_point epochBeginning)
+    int32_t EffectUniformTime::GetMilliseconds(FlushTime::Clock::time_point epochBeginning)
     {
-        constexpr Int32 limit = std::numeric_limits<Int32>::max(); // wrap after ~24 days
+        constexpr int32_t limit = std::numeric_limits<int32_t>::max(); // wrap after ~24 days
         const auto nowMs        = std::chrono::duration_cast<std::chrono::milliseconds>(FlushTime::Clock::now() - epochBeginning);
         const auto nowMsWrapped = nowMs.count() % limit;
-        return static_cast<Int32>(nowMsWrapped);
+        return static_cast<int32_t>(nowMsWrapped);
     }
 }

@@ -11,7 +11,9 @@
 
 #include "SceneObjectImpl.h"
 #include "SceneAPI/Handles.h"
+
 #include <vector>
+#include <string_view>
 
 namespace ramses
 {
@@ -24,15 +26,15 @@ namespace ramses
     class RenderGroupImpl final : public SceneObjectImpl
     {
     public:
-        RenderGroupImpl(SceneImpl& scene, const char* name);
-        virtual ~RenderGroupImpl() override;
+        RenderGroupImpl(SceneImpl& scene, std::string_view name);
+        ~RenderGroupImpl() override;
 
         void             initializeFrameworkData();
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
-        virtual status_t validate() const override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
+        status_t validate() const override;
 
         status_t                  addMeshNode(const MeshNodeImpl& mesh, int32_t orderWithinGroup);
         status_t                  remove(const MeshNodeImpl& mesh);

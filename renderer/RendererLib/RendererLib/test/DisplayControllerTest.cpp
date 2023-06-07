@@ -50,7 +50,7 @@ namespace ramses_internal
 
     TEST_F(ADisplayController, activatesBufferAndClearsOnClearBuffer_clearAll)
     {
-        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        const glm::vec4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
         IDisplayController& displayController = createDisplayController();
 
         InSequence seq;
@@ -69,7 +69,7 @@ namespace ramses_internal
 
     TEST_F(ADisplayController, activatesBufferAndClearsOnClearBuffer_clearColor)
     {
-        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        const glm::vec4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
         IDisplayController& displayController = createDisplayController();
 
         InSequence seq;
@@ -87,7 +87,7 @@ namespace ramses_internal
 
     TEST_F(ADisplayController, doesNotActivatesBufferNorClearsOnClearBuffer_clearNone)
     {
-        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        const glm::vec4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
         IDisplayController& displayController = createDisplayController();
 
         displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, EClearFlags_None, clearColor);
@@ -125,20 +125,14 @@ namespace ramses_internal
         destroyDisplayController(displayController);
     }
 
-    TEST_F(ADisplayController, canBeCreatedAndDestroyedWithWarping)
-    {
-        IDisplayController& displayController = createDisplayControllerWithWarping();
-        destroyDisplayControllerWithWarping(displayController);
-    }
-
     TEST_F(ADisplayController, readsPixelsFromFramebuffer)
     {
         IDisplayController& displayController = createDisplayController();
 
-        const UInt32 x = 1u;
-        const UInt32 y = 2u;
-        const UInt32 width = WindowMock::FakeWidth - 2u;
-        const UInt32 height = WindowMock::FakeHeight - 3u;
+        const uint32_t x = 1u;
+        const uint32_t y = 2u;
+        const uint32_t width = WindowMock::FakeWidth - 2u;
+        const uint32_t height = WindowMock::FakeHeight - 3u;
 
         InSequence seq;
         EXPECT_CALL(m_renderBackend.deviceMock, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle));
@@ -155,10 +149,10 @@ namespace ramses_internal
     {
         IDisplayController& displayController = createDisplayController();
 
-        const UInt32 x = 1u;
-        const UInt32 y = 2u;
-        const UInt32 width = WindowMock::FakeWidth - 2u;
-        const UInt32 height = WindowMock::FakeHeight - 3u;
+        const uint32_t x = 1u;
+        const uint32_t y = 2u;
+        const uint32_t width = WindowMock::FakeWidth - 2u;
+        const uint32_t height = WindowMock::FakeHeight - 3u;
 
         const DeviceResourceHandle obRenderTargetDeviceHandle{ 7799u };
         ASSERT_NE(obRenderTargetDeviceHandle, DeviceMock::FakeFrameBufferRenderTargetDeviceHandle);

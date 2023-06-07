@@ -11,12 +11,14 @@
 #include "Components/ManagedResource.h"
 #include "ClientApplicationLogic.h"
 
+#include <string_view>
+
 namespace ramses
 {
     Texture3DImpl::Texture3DImpl(ramses_internal::ResourceHashUsage resource,
         SceneImpl& scene,
-        const char* name)
-        : ResourceImpl(ERamsesObjectType_Texture3D, std::move(resource), scene, name)
+        std::string_view name)
+        : ResourceImpl(ERamsesObjectType::Texture3D, std::move(resource), scene, name)
         , m_width(0)
         , m_height(0)
         , m_depth(0)

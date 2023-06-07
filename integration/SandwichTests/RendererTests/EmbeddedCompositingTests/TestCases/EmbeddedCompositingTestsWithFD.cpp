@@ -31,8 +31,8 @@ namespace ramses_internal
 
         ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
 
-        const UInt32 displayWidth = ramses_internal::IntegrationScene::DefaultViewportWidth;
-        const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultViewportHeight;
+        const uint32_t displayWidth = ramses_internal::IntegrationScene::DefaultViewportWidth;
+        const uint32_t displayHeight = ramses_internal::IntegrationScene::DefaultViewportHeight;
 
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, true);
         displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);

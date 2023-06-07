@@ -9,49 +9,53 @@
 #include "Utils/LogHelper.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StringUtils.h"
-#include "absl/strings/ascii.h"
+
+#include <string_view>
+#include <algorithm>
+#include <cctype>
 
 
 namespace ramses_internal
 {
     namespace LogHelper
     {
-        bool StringToLogLevel(String str, ELogLevel& logLevel)
+        bool StringToLogLevel(std::string_view str, ELogLevel& logLevel)
         {
-            str = absl::AsciiStrToLower(str);
             // Trim string because envvar on windows may have space(s) appended
-            str = StringUtils::Trim(str.c_str());
-            if (str == "trace" || str == "6")
+            std::string lowered{StringUtils::TrimView(str)};
+            std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char c) { return static_cast<std::string::value_type>(std::tolower(c)); });
+
+            if (lowered == "trace" || lowered == "6")
             {
                 logLevel = ELogLevel::Trace;
                 return true;
             }
-            else if (str == "debug" || str == "5")
+            else if (lowered == "debug" || lowered == "5")
             {
                 logLevel = ELogLevel::Debug;
                 return true;
             }
-            else if (str == "info" || str == "4")
+            else if (lowered == "info" || lowered == "4")
             {
                 logLevel = ELogLevel::Info;
                 return true;
             }
-            else if (str == "warn" || str == "3")
+            else if (lowered == "warn" || lowered == "3")
             {
                 logLevel = ELogLevel::Warn;
                 return true;
             }
-            else if (str == "error" || str == "2")
+            else if (lowered == "error" || lowered == "2")
             {
                 logLevel = ELogLevel::Error;
                 return true;
             }
-            else if (str == "fatal" || str == "1")
+            else if (lowered == "fatal" || lowered == "1")
             {
                 logLevel = ELogLevel::Fatal;
                 return true;
             }
-            else if (str == "off" || str == "0")
+            else if (lowered == "off" || lowered == "0")
             {
                 logLevel = ELogLevel::Off;
                 return true;
@@ -59,29 +63,29 @@ namespace ramses_internal
             return false;
         }
 
-        std::vector<ContextFilter> ParseContextFilters(const String& filterCommand)
+        std::vector<ContextFilter> ParseContextFilters(const std::string& filterCommand)
         {
             std::vector<ContextFilter> returnValue;
             // loop over commands separated by ','
-            UInt currentCommandStart = 0;
+            size_t currentCommandStart = 0;
             do
             {
                 size_t currentCommandEnd = filterCommand.find(',', currentCommandStart);
-                if (currentCommandEnd == 0 || currentCommandEnd == String::npos)
+                if (currentCommandEnd == 0 || currentCommandEnd == std::string::npos)
                 {
                     // no more ',', so command goes until end of string
                     currentCommandEnd = filterCommand.size();
                 }
                 const size_t positionOfColon = filterCommand.find(':', currentCommandStart);
-                if (positionOfColon != String::npos && currentCommandStart < positionOfColon)
+                if (positionOfColon != std::string::npos && currentCommandStart < positionOfColon)
                 {
                     const Int lengthOfLogLevelString = positionOfColon - currentCommandStart;
-                    const String logLevelStr = filterCommand.substr(currentCommandStart, lengthOfLogLevelString);
+                    const std::string logLevelStr = filterCommand.substr(currentCommandStart, lengthOfLogLevelString);
                     ELogLevel logLevel;
                     if (StringToLogLevel(logLevelStr, logLevel))
                     {
                         const Int offsetOfLogContextPattern = lengthOfLogLevelString + 1;
-                        const String contextPattern = filterCommand.substr(currentCommandStart + offsetOfLogContextPattern, currentCommandEnd - currentCommandStart - offsetOfLogContextPattern);
+                        const std::string contextPattern = filterCommand.substr(currentCommandStart + offsetOfLogContextPattern, currentCommandEnd - currentCommandStart - offsetOfLogContextPattern);
                         if (contextPattern.size() > 0)
                         {
                             returnValue.push_back(ContextFilter(logLevel, contextPattern));
@@ -97,17 +101,17 @@ namespace ramses_internal
             return returnValue;
         }
 
-        ELogLevel GetLoglevelFromInt(Int32 logLevelInt)
+        ELogLevel GetLoglevelFromInt(int32_t logLevelInt)
         {
             switch (logLevelInt)
             {
-            case static_cast<Int32>(ELogLevel::Off) : return ELogLevel::Off;
-            case static_cast<Int32>(ELogLevel::Fatal) : return ELogLevel::Fatal;
-            case static_cast<Int32>(ELogLevel::Error) : return ELogLevel::Error;
-            case static_cast<Int32>(ELogLevel::Warn) : return ELogLevel::Warn;
-            case static_cast<Int32>(ELogLevel::Info) : return ELogLevel::Info;
-            case static_cast<Int32>(ELogLevel::Debug) : return ELogLevel::Debug;
-            case static_cast<Int32>(ELogLevel::Trace) : return ELogLevel::Trace;
+            case static_cast<int32_t>(ELogLevel::Off) : return ELogLevel::Off;
+            case static_cast<int32_t>(ELogLevel::Fatal) : return ELogLevel::Fatal;
+            case static_cast<int32_t>(ELogLevel::Error) : return ELogLevel::Error;
+            case static_cast<int32_t>(ELogLevel::Warn) : return ELogLevel::Warn;
+            case static_cast<int32_t>(ELogLevel::Info) : return ELogLevel::Info;
+            case static_cast<int32_t>(ELogLevel::Debug) : return ELogLevel::Debug;
+            case static_cast<int32_t>(ELogLevel::Trace) : return ELogLevel::Trace;
             default:                                   return ELogLevel::Trace;
             }
         }

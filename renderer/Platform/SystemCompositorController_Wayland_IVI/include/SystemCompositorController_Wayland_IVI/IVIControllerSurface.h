@@ -11,7 +11,6 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "RendererAPI/Types.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Utils/Warnings.h"
 PUSH_DISABLE_C_STYLE_CAST_WARNING
 #include "ivi-controller-client-protocol.h"
@@ -35,7 +34,7 @@ namespace ramses_internal
         void                      sendStats();
         void                      destroy();
         ivi_controller_surface*   getNativeWaylandControllerSurface();
-        const WaylandIviSurfaceId getIVIId() const;
+        [[nodiscard]] const WaylandIviSurfaceId getIVIId() const;
 
     private:
         static void HandleVisibilityCallback(void*                   data,

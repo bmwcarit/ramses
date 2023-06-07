@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneVersionTag.h"
-#include "Animation/AnimationCommon.h"
 
 namespace ramses_internal
 {
@@ -23,16 +22,16 @@ namespace ramses_internal
     };
 
     // provide sensible default values for all tested types
-    template<> const Int8                      ASceneActionCollectionBasicTypes<Int8>::m_value = -1;
-    template<> const UInt8                     ASceneActionCollectionBasicTypes<UInt8>::m_value = 1u;
-    template<> const Int16                     ASceneActionCollectionBasicTypes<Int16>::m_value = -2;
-    template<> const UInt16                    ASceneActionCollectionBasicTypes<UInt16>::m_value = 2u;
-    template<> const Int32                     ASceneActionCollectionBasicTypes<Int32>::m_value = -3;
-    template<> const UInt32                    ASceneActionCollectionBasicTypes<UInt32>::m_value = 3u;
-    template<> const Int64                     ASceneActionCollectionBasicTypes<Int64>::m_value = -4;
-    template<> const UInt64                    ASceneActionCollectionBasicTypes<UInt64>::m_value = 4u;
-    template<> const Float                     ASceneActionCollectionBasicTypes<Float>::m_value = 5.0f;
-    template<> const Double                    ASceneActionCollectionBasicTypes<Double>::m_value = 6.0f;
+    template<> const int8_t                    ASceneActionCollectionBasicTypes<int8_t>::m_value = -1;
+    template<> const uint8_t                   ASceneActionCollectionBasicTypes<uint8_t>::m_value = 1u;
+    template<> const int16_t                   ASceneActionCollectionBasicTypes<int16_t>::m_value = -2;
+    template<> const uint16_t                  ASceneActionCollectionBasicTypes<uint16_t>::m_value = 2u;
+    template<> const int32_t                   ASceneActionCollectionBasicTypes<int32_t>::m_value = -3;
+    template<> const uint32_t                  ASceneActionCollectionBasicTypes<uint32_t>::m_value = 3u;
+    template<> const int64_t                   ASceneActionCollectionBasicTypes<int64_t>::m_value = -4;
+    template<> const uint64_t                  ASceneActionCollectionBasicTypes<uint64_t>::m_value = 4u;
+    template<> const float                     ASceneActionCollectionBasicTypes<float>::m_value = 5.0f;
+    template<> const double                    ASceneActionCollectionBasicTypes<double>::m_value = 6.0f;
     template<> const NodeHandle                ASceneActionCollectionBasicTypes<NodeHandle>::m_value = NodeHandle();
     template<> const RenderableHandle          ASceneActionCollectionBasicTypes<RenderableHandle>::m_value = RenderableHandle();
     template<> const TransformHandle           ASceneActionCollectionBasicTypes<TransformHandle>::m_value = TransformHandle();
@@ -40,10 +39,6 @@ namespace ramses_internal
     template<> const DataInstanceHandle        ASceneActionCollectionBasicTypes<DataInstanceHandle>::m_value = DataInstanceHandle();
     template<> const CameraHandle              ASceneActionCollectionBasicTypes<CameraHandle>::m_value = CameraHandle();
     template<> const RenderStateHandle         ASceneActionCollectionBasicTypes<RenderStateHandle>::m_value = RenderStateHandle();
-    template<> const SplineHandle              ASceneActionCollectionBasicTypes<SplineHandle>::m_value = SplineHandle();
-    template<> const AnimationHandle           ASceneActionCollectionBasicTypes<AnimationHandle>::m_value = AnimationHandle();
-    template<> const AnimationInstanceHandle   ASceneActionCollectionBasicTypes<AnimationInstanceHandle>::m_value = AnimationInstanceHandle();
-    template<> const DataBindHandle            ASceneActionCollectionBasicTypes<DataBindHandle>::m_value = DataBindHandle();
     template<> const RenderPassHandle          ASceneActionCollectionBasicTypes<RenderPassHandle>::m_value = RenderPassHandle();
     template<> const TextureSamplerHandle      ASceneActionCollectionBasicTypes<TextureSamplerHandle>::m_value = TextureSamplerHandle();
     template<> const RenderTargetHandle        ASceneActionCollectionBasicTypes<RenderTargetHandle>::m_value = RenderTargetHandle();
@@ -53,16 +48,16 @@ namespace ramses_internal
 
     // types to test
     using SceneActionCollectionBasicTypes = ::testing::Types <
-        Int8,
-        UInt8,
-        Int16,
-        UInt16,
-        Int32,
-        UInt32,
-        Int64,
-        UInt64,
-        Float,
-        Double,
+        int8_t,
+        uint8_t,
+        int16_t,
+        uint16_t,
+        int32_t,
+        uint32_t,
+        int64_t,
+        uint64_t,
+        float,
+        double,
         NodeHandle,
         RenderableHandle,
         TransformHandle,
@@ -70,10 +65,6 @@ namespace ramses_internal
         DataInstanceHandle,
         CameraHandle,
         RenderStateHandle,
-        SplineHandle,
-        AnimationHandle,
-        AnimationInstanceHandle,
-        DataBindHandle,
         RenderPassHandle,
         TextureSamplerHandle,
         RenderTargetHandle,
@@ -109,10 +100,10 @@ namespace ramses_internal
 
     TYPED_TEST(ASceneActionCollectionBasicTypes, WriteAndReadMultipleElements)
     {
-        const UInt32 numElements = 10;
+        const uint32_t numElements = 10;
 
         this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
-        for (UInt32 i = 0; i < numElements; ++i)
+        for (uint32_t i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);
         }
@@ -122,7 +113,7 @@ namespace ramses_internal
         EXPECT_EQ(0u, reader.offsetInCollection());
         EXPECT_EQ(sizeof(TypeParam)*numElements, reader.size());
 
-        for (UInt32 i = 0; i < numElements; ++i)
+        for (uint32_t i = 0; i < numElements; ++i)
         {
             ASSERT_FALSE(reader.isFullyRead());
 
@@ -135,23 +126,23 @@ namespace ramses_internal
 
     TYPED_TEST(ASceneActionCollectionBasicTypes, PutMultipleElementsGetThemMultipleTimes)
     {
-        const UInt32 numReadIterations = 2;
-        const UInt32 numElements = 10;
+        const uint32_t numReadIterations = 2;
+        const uint32_t numElements = 10;
 
         this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
-        for (UInt i = 0; i < numElements; ++i)
+        for (size_t i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);
         }
         EXPECT_EQ(sizeof(TypeParam)*numElements, this->m_collection.collectionData().size());
 
-        for (UInt32 i = 0; i < numReadIterations; ++i)
+        for (uint32_t i = 0; i < numReadIterations; ++i)
         {
             SceneActionCollection::SceneActionReader reader(this->m_collection[0]);
             EXPECT_EQ(0u, reader.offsetInCollection());
             EXPECT_EQ(sizeof(TypeParam)*numElements, reader.size());
 
-            for (UInt32 k = 0; k < numElements; ++k)
+            for (uint32_t k = 0; k < numElements; ++k)
             {
                 ASSERT_FALSE(reader.isFullyRead());
                 TypeParam value;
@@ -164,13 +155,13 @@ namespace ramses_internal
 
     TYPED_TEST(ASceneActionCollectionBasicTypes, PutMultipleActionsWithMultipleElementsGetThemOnce)
     {
-        const UInt32 numIterations = 4;
-        const UInt32 numElements = 10;
+        const uint32_t numIterations = 4;
+        const uint32_t numElements = 10;
 
-        for (UInt32 i = 0; i < numIterations; ++i)
+        for (uint32_t i = 0; i < numIterations; ++i)
         {
             this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
-            for (UInt32 j = 0; j < numElements; ++j)
+            for (uint32_t j = 0; j < numElements; ++j)
             {
                 this->m_collection.write(TestFixture::m_value);
             }
@@ -178,13 +169,13 @@ namespace ramses_internal
         EXPECT_EQ(numIterations, this->m_collection.numberOfActions());
         EXPECT_EQ(sizeof(TypeParam)*numElements*numIterations, this->m_collection.collectionData().size());
 
-        for (UInt32 i = 0; i < numIterations; ++i)
+        for (uint32_t i = 0; i < numIterations; ++i)
         {
             SceneActionCollection::SceneActionReader reader(this->m_collection[i]);
             EXPECT_EQ(i* sizeof(TypeParam)*numElements, reader.offsetInCollection());
             EXPECT_EQ(sizeof(TypeParam)*numElements, reader.size());
 
-            for (UInt32 k = 0; k < numElements; ++k)
+            for (uint32_t k = 0; k < numElements; ++k)
             {
                 ASSERT_FALSE(reader.isFullyRead());
                 TypeParam value;
@@ -197,12 +188,12 @@ namespace ramses_internal
 
     TYPED_TEST(ASceneActionCollectionBasicTypes, SameObjectsYieldEquality)
     {
-        const UInt32 numElements = 5;
+        const uint32_t numElements = 5;
         SceneActionCollection other;
 
         this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
         other.beginWriteSceneAction(ESceneActionId::TestAction);
-        for (UInt32 i = 0; i < numElements; ++i)
+        for (uint32_t i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);
             other.write(TestFixture::m_value);
@@ -214,12 +205,12 @@ namespace ramses_internal
 
     TYPED_TEST(ASceneActionCollectionBasicTypes, DifferentObjectsYieldNotEquality)
     {
-        const UInt32 numElements = 5;
+        const uint32_t numElements = 5;
         SceneActionCollection other;
 
         this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
         other.beginWriteSceneAction(ESceneActionId::TestAction);
-        for (UInt32 i = 0; i < numElements; ++i)
+        for (uint32_t i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);
             other.write(TestFixture::m_value);

@@ -17,7 +17,7 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-framework-api/DataTypes.h"
 
 namespace ramses
 {
@@ -35,8 +35,8 @@ namespace ramses
         GeometryBinding* geometry = scene.createGeometryBinding(effect, "triangle geometry");
 
         geometry->setIndices(indices);
-        const float vertexPositionsData[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-        const ArrayResource* vertexPositions = scene.createArrayResource(EDataType::Vector3F, 3, vertexPositionsData);
+        const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{0.f, 1.f, -1.f} };
+        const ArrayResource* vertexPositions = scene.createArrayResource(3u, vertexPositionsData.data());
         geometry->setInputBuffer(positionsInput, *vertexPositions);
 
         return *geometry;
@@ -44,9 +44,9 @@ namespace ramses
 
     const ArrayResource& TriangleGeometry::createIndices(Scene& scene, EVerticesOrder vertOrder)
     {
-        const uint16_t indiceData_ccw[] = { 0, 1, 2 };
-        const uint16_t indiceData_cw[] = { 0, 2, 1 };
-        const uint16_t* indiceData = (vertOrder == EVerticesOrder_CCW ? indiceData_ccw : indiceData_cw);
-        return *scene.createArrayResource(EDataType::UInt16, 3, indiceData);
+        const std::array<uint16_t, 3> indiceData_ccw = { 0, 1, 2 };
+        const std::array<uint16_t, 3> indiceData_cw = { 0, 2, 1 };
+        const uint16_t* indiceData = (vertOrder == EVerticesOrder_CCW ? indiceData_ccw.data() : indiceData_cw.data());
+        return *scene.createArrayResource(3u, indiceData);
     }
 }

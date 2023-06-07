@@ -20,7 +20,7 @@ namespace ramses_internal
         return m_fileContents.contains(hash);
     }
 
-    void ResourceTableOfContents::registerContents(const ResourceInfo& resourceInfo, UInt32 offsetInBytes, UInt32 sizeInBytes)
+    void ResourceTableOfContents::registerContents(const ResourceInfo& resourceInfo, uint32_t offsetInBytes, uint32_t sizeInBytes)
     {
         ResourceFileEntry fileEntry;
         fileEntry.offsetInBytes = offsetInBytes;
@@ -54,7 +54,7 @@ namespace ramses_internal
 
         for (const auto& it : vec)
         {
-            outstream << static_cast<UInt32>(it.resourceInfo.type);
+            outstream << static_cast<uint32_t>(it.resourceInfo.type);
             outstream << it.resourceInfo.hash;
             outstream << it.resourceInfo.decompressedSize;
             outstream << it.resourceInfo.compressedSize;
@@ -77,15 +77,15 @@ namespace ramses_internal
         for (uint32_t i = 0; i < numberOfEntries; ++i)
         {
             ResourceInfo info;
-            UInt32 typeValue = 0;
+            uint32_t typeValue = 0;
             instream >> typeValue;
             info.type = static_cast<EResourceType>(typeValue);
             instream >> info.hash;
             instream >> info.decompressedSize;
             instream >> info.compressedSize;
-            UInt32 offsetInBytes = 0;
+            uint32_t offsetInBytes = 0;
             instream >> offsetInBytes;
-            UInt32 sizeInBytes = 0;
+            uint32_t sizeInBytes = 0;
             instream >> sizeInBytes;
             registerContents(info, offsetInBytes, sizeInBytes);
             ++objectCounts[info.type];

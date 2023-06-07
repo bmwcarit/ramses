@@ -10,8 +10,9 @@
 #define RAMSES_DUMPSCENETOFILE_H
 
 #include "Ramsh/RamshCommandArguments.h"
-#include "Collections/String.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+
+#include <string>
 
 namespace ramses
 {
@@ -20,11 +21,11 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class DumpSceneToFile : public RamshCommandArgs<uint64_t, String, String>
+    class DumpSceneToFile : public RamshCommandArgs<uint64_t, std::string, std::string>
     {
     public:
         explicit DumpSceneToFile(ramses::RamsesClientImpl& client);
-        virtual Bool execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const override;
+        bool execute(uint64_t& sceneId, std::string& fileName, std::string& sendViaDLT) const override;
 
     private:
         ramses::RamsesClientImpl& m_client;

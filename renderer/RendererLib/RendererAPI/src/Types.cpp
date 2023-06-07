@@ -10,7 +10,6 @@
 #include "Utils/LoggingUtils.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "ramses-renderer-api/Types.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 static_assert(std::is_same<ramses::displayId_t::BaseType, ramses_internal::DisplayHandle::Type>::value, "DisplayHandle type mismatch");
 static_assert(ramses::displayId_t::Invalid().getValue() == ramses_internal::DisplayHandle::Invalid().asMemoryHandle(), "DisplayHandle default mismatch");

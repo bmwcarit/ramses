@@ -12,19 +12,21 @@
 #include "BufferResource.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class ArrayResource : public BufferResource
     {
     public:
-        ArrayResource(EResourceType arrayType, UInt32 elementCount, EDataType elementType, const void* arrayData, ResourceCacheFlag cacheFlag, const String& name)
+        ArrayResource(EResourceType arrayType, uint32_t elementCount, EDataType elementType, const void* arrayData, ResourceCacheFlag cacheFlag, std::string_view name)
             : BufferResource(arrayType, elementCount * EnumToSize(elementType), arrayData, cacheFlag, name)
             , m_elementCount(elementCount)
             , m_elementType(elementType)
         {
         }
 
-        UInt32 getElementCount() const
+        uint32_t getElementCount() const
         {
             return m_elementCount;
         }
@@ -34,16 +36,16 @@ namespace ramses_internal
             return m_elementType;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override
+        void serializeResourceMetadataToStream(IOutputStream& output) const override
         {
-            output << static_cast<UInt32>(getElementCount());
-            output << static_cast<UInt32>(getElementType());
+            output << static_cast<uint32_t>(getElementCount());
+            output << static_cast<uint32_t>(getElementType());
         }
 
-        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, EResourceType arrayType, const String& name)
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, EResourceType arrayType, std::string_view name)
         {
-            UInt32 elementCount = 0;
-            UInt32 elementTypeAsUInt = 0;
+            uint32_t elementCount = 0;
+            uint32_t elementTypeAsUInt = 0;
 
             input >> elementCount;
             input >> elementTypeAsUInt;
@@ -55,7 +57,7 @@ namespace ramses_internal
         }
 
     private:
-        UInt32    m_elementCount;
+        uint32_t    m_elementCount;
         EDataType m_elementType;
     };
 }

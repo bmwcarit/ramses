@@ -17,21 +17,21 @@ namespace ramses_internal
     namespace PlatformMemory
     {
         inline
-        void Set(void* dst, Int32 val, size_t size)
+        void Set(void* dst, int32_t val, size_t size)
         {
             if(size > 0)
                 std::memset(dst, val, size);
         }
 
         inline
-        void Copy(void* dst, const void* src, UInt size)
+        void Copy(void* dst, const void* src, size_t size)
         {
             if(size > 0)
                 std::memcpy(dst, src, size);
         }
 
         inline
-        Int32 Compare(const void* mem1, const void* mem2, UInt num)
+        int32_t Compare(const void* mem1, const void* mem2, size_t num)
         {
             if(num > 0)
                 return std::memcmp(mem1, mem2, num);

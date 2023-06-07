@@ -8,10 +8,10 @@
 
 #include "Utils/VoidOutputStream.h"
 #include "SceneAPI/ResourceContentHash.h"
-#include "Math3d/Matrix44f.h"
-#include "Collections/String.h"
 #include "Collections/Guid.h"
 #include "gmock/gmock.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -24,15 +24,15 @@ namespace ramses_internal
 
     TEST_F(VoidOutputStreamTest, Constructor)
     {
-        const UInt32 expectedSize = 0u;
+        const uint32_t expectedSize = 0u;
         EXPECT_EQ(expectedSize,  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertUInt16)
     {
-        const UInt16 value = 5u;
+        const uint16_t value = 5u;
         stream << value;
-        EXPECT_EQ( sizeof(UInt16),  stream.getSize());
+        EXPECT_EQ( sizeof(uint16_t),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertBool)
@@ -44,37 +44,37 @@ namespace ramses_internal
 
     TEST_F(VoidOutputStreamTest, InsertInt32)
     {
-        const Int32 value = -7;
+        const int32_t value = -7;
         stream << value;
-        EXPECT_EQ( sizeof(Int32),  stream.getSize());
+        EXPECT_EQ( sizeof(int32_t),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertUInt32)
     {
-        const UInt32 value = 25u;
+        const uint32_t value = 25u;
         stream << value;
-        EXPECT_EQ( sizeof(UInt32),  stream.getSize());
+        EXPECT_EQ( sizeof(uint32_t),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertInt64)
     {
-        const Int64 value = -333;
+        const int64_t value = -333;
         stream << value;
-        EXPECT_EQ( sizeof(Int64),  stream.getSize());
+        EXPECT_EQ( sizeof(int64_t),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertUInt64)
     {
-        const UInt64 value = 5432u;
+        const uint64_t value = 5432u;
         stream << value;
-        EXPECT_EQ( sizeof(UInt64),  stream.getSize());
+        EXPECT_EQ( sizeof(uint64_t),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertFloat)
     {
-        const Float value = 42.23f;
+        const float value = 42.23f;
         stream << value;
-        EXPECT_EQ( sizeof(Float),  stream.getSize());
+        EXPECT_EQ( sizeof(float),  stream.getSize());
     }
 
     TEST_F(VoidOutputStreamTest, InsertGuid)
@@ -86,8 +86,8 @@ namespace ramses_internal
 
     TEST_F(VoidOutputStreamTest, InsertString)
     {
-        const String value("Hello World with a lot of characters");
-        const UInt32 expectedSize = sizeof(UInt32) + static_cast<UInt32>(value.size()); // length info + string
+        const std::string value("Hello World with a lot of characters");
+        const uint32_t expectedSize = sizeof(uint32_t) + static_cast<uint32_t>(value.size()); // length info + string
         stream << value;
         EXPECT_EQ( expectedSize,  stream.getSize());
     }
@@ -101,7 +101,7 @@ namespace ramses_internal
 
     TEST_F(VoidOutputStreamTest, InsertRawData)
     {
-        const UInt32 sentSize = 37u;
+        const uint32_t sentSize = 37u;
         stream.write(nullptr, sentSize);
         EXPECT_EQ( sentSize,  stream.getSize());
     }
@@ -109,10 +109,10 @@ namespace ramses_internal
 
     TEST_F(VoidOutputStreamTest, InsertMultipleData)
     {
-        const UInt64 intValue   = 42u;
-        const String testString = "abcdefgh";
-        const Float  floatValue = 22.22f;
-        const UInt32 expectedSize = sizeof(UInt64) + sizeof(UInt32) + 8 + sizeof(Float);
+        const uint64_t intValue   = 42u;
+        const std::string testString = "abcdefgh";
+        const float  floatValue = 22.22f;
+        const uint32_t expectedSize = sizeof(uint64_t) + sizeof(uint32_t) + 8 + sizeof(float);
         stream << intValue << testString << floatValue;
         EXPECT_EQ( expectedSize, stream.getSize());
     }

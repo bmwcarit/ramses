@@ -17,79 +17,79 @@ namespace ramses_internal
     TEST(PlatformWatchDogTest, callsRegisterAndUnregister)
     {
         PlatformWatchdogMockCallback callback;
-        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(100ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
-        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
+        PlatformWatchdog watchdogNotifer(100ms, ramses::ERamsesThreadIdentifier::Workers, &callback);
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
     }
 
     TEST(PlatformWatchDogTest, callsThePlatformFunctionRightAway)
     {
         PlatformWatchdogMockCallback callback;
-        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(100ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
+        PlatformWatchdog watchdogNotifer(100ms, ramses::ERamsesThreadIdentifier::Workers, &callback);
 
-        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier::Workers));
         watchdogNotifer.notifyWatchdog();
 
-        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
     }
 
     TEST(PlatformWatchDogTest, debouncesCallsToPlatformWatchdog)
     {
         PlatformWatchdogMockCallback callback;
-        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(10000ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
+        PlatformWatchdog watchdogNotifer(10000ms, ramses::ERamsesThreadIdentifier::Workers, &callback);
 
-        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(1);
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier::Workers)).Times(1);
         watchdogNotifer.notifyWatchdog(); // this calls right away
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
 
-        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
     }
 
     TEST(PlatformWatchDogTest, againCallsPlatformAfterDebounceTime)
     {
         PlatformWatchdogMockCallback callback;
-        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(200ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
+        PlatformWatchdog watchdogNotifer(200ms, ramses::ERamsesThreadIdentifier::Workers, &callback);
 
-        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(1);
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier::Workers)).Times(1);
         watchdogNotifer.notifyWatchdog(); // this calls right away
 
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
         ::testing::Mock::VerifyAndClearExpectations(&watchdogNotifer);
 
-        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(1);
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier::Workers)).Times(1);
         PlatformThread::Sleep(500);
         watchdogNotifer.notifyWatchdog(); // this calls, because first after wait time
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
 
-        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
     }
 
     TEST(PlatformWatchDogTest, alwaysAllowsFirstNotification)
     {
         PlatformWatchdogMockCallback callback;
-        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(std::chrono::milliseconds::max(), ramses::ERamsesThreadIdentifier_Workers, &callback);
-        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
+        PlatformWatchdog watchdogNotifer(std::chrono::milliseconds::max(), ramses::ERamsesThreadIdentifier::Workers, &callback);
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
 
-        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(1);
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier::Workers)).Times(1);
         watchdogNotifer.notifyWatchdog();
     }
 
     TEST(PlatformWatchDogTest, alwaysNotifiesWithZeroInterval)
     {
         PlatformWatchdogMockCallback callback;
-        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(0ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
-        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
+        PlatformWatchdog watchdogNotifer(0ms, ramses::ERamsesThreadIdentifier::Workers, &callback);
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
 
-        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(6);
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier::Workers)).Times(6);
         EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
         watchdogNotifer.notifyWatchdog();
         EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());

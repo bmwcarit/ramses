@@ -26,7 +26,7 @@ namespace ramses_internal
         virtual DeviceResourceMapper& getResources() = 0;
 
         // TODO Violin this should be removed - provides access to platform-specific data
-        virtual void* getProcAddress(const Char* name) const = 0;
+        virtual void* getProcAddress(const char* name) const = 0;
     };
 }
 

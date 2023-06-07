@@ -26,7 +26,7 @@ namespace ramses_internal
                              EWrapMethod addressModeR,
                              ESamplingMethod minSamplingMode,
                              ESamplingMethod magSamplingMode,
-                             UInt32 anisotropyLevel = 1u)
+                             uint32_t anisotropyLevel = 1u)
             : m_addressModeU(addressModeU)
             , m_addressModeV(addressModeV)
             , m_addressModeR(addressModeR)
@@ -36,7 +36,7 @@ namespace ramses_internal
         {
         }
 
-        uint64_t hash() const
+        [[nodiscard]] uint64_t hash() const
         {
             static_assert(sizeof(EWrapMethod) == 1u, "Unexpected size for enum used for shift operations");
             static_assert(sizeof(ESamplingMethod) == 1u, "Unexpected size for enum used for shift operations");
@@ -55,7 +55,7 @@ namespace ramses_internal
         EWrapMethod     m_addressModeR;
         ESamplingMethod m_minSamplingMode;
         ESamplingMethod m_magSamplingMode;
-        UInt32          m_anisotropyLevel;
+        uint32_t          m_anisotropyLevel;
     };
 }
 

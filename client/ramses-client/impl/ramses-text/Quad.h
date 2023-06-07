@@ -48,7 +48,7 @@ namespace ramses
         {
         }
 
-        uint32_t getArea() const
+        [[nodiscard]] uint32_t getArea() const
         {
             return x * y;
         }
@@ -63,17 +63,17 @@ namespace ramses
         {
         }
 
-        const QuadSize& getSize() const
+        [[nodiscard]] const QuadSize& getSize() const
         {
             return m_size;
         }
 
-        const QuadOffset& getOrigin() const
+        [[nodiscard]] const QuadOffset& getOrigin() const
         {
             return m_offset;
         }
 
-        bool hasCommonEdge(const Quad& other) const
+        [[nodiscard]] bool hasCommonEdge(const Quad& other) const
         {
             const uint32_t min1x = m_offset.x;
             const uint32_t min1y = m_offset.y;
@@ -126,7 +126,7 @@ namespace ramses
             return true;
         }
 
-        bool intersects(Quad const& other) const
+        [[nodiscard]] bool intersects(Quad const& other) const
         {
             return !(m_offset.x >= other.m_offset.x + other.m_size.x ||
                      m_offset.y >= other.m_offset.y + other.m_size.y ||

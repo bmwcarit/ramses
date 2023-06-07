@@ -124,13 +124,14 @@ namespace ramses_internal
 
         // So far, the only value of the 'flags' parameter to zwp_linux_buffer_params_v1::create() that
         // we support is for inverting along the Y axis.
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (dmabuf->getFlags() & ~ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT)
         {
             LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf has unsupported flags=" << dmabuf->getFlags() << "! Creating EGL image failed!");
             return nullptr;
         }
 
-        EGLint attribs[50];
+        std::array<EGLint, 50> attribs;
         int atti = 0;
 
         attribs[atti++] = EGL_WIDTH;
@@ -222,7 +223,7 @@ namespace ramses_internal
 
         attribs[atti++] = EGL_NONE;
 
-        const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(nullptr, EGL_LINUX_DMA_BUF_EXT, nullptr, attribs);
+        const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(nullptr, EGL_LINUX_DMA_BUF_EXT, nullptr, attribs.data());
         if (EGL_NO_IMAGE == eglImage)
         {
             LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: Creating EGL image failed width egl error code : " << eglGetError());

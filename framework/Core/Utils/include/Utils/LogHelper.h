@@ -11,20 +11,20 @@
 
 #include "Utils/LogLevel.h"
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "Collections/String.h"
-#include "Collections/Pair.h"
-#include "Collections/Vector.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
     namespace LogHelper
     {
-        using ContextFilter = std::pair<ELogLevel, String>;
+        using ContextFilter = std::pair<ELogLevel, std::string>;
 
-        bool StringToLogLevel(String str, ELogLevel& logLevel);
-        ELogLevel GetLoglevelFromInt(Int32 logLevelInt);
+        bool StringToLogLevel(std::string_view str, ELogLevel& logLevel);
+        ELogLevel GetLoglevelFromInt(int32_t logLevelInt);
 
-        std::vector<ContextFilter> ParseContextFilters(const String& filterCommand);
+        std::vector<ContextFilter> ParseContextFilters(const std::string& filterCommand);
     }
 }
 

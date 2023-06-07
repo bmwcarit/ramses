@@ -39,7 +39,7 @@ namespace ramses_internal
         m_dependencyChecker.removeScene(sceneId);
     }
 
-    Bool LinkManagerBase::createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    bool LinkManagerBase::createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
     {
         assert(EDataSlotType_DataProvider == DataLinkUtils::GetDataSlot(providerSceneId, providerSlotHandle, m_scenes).type
             || EDataSlotType_TransformationProvider == DataLinkUtils::GetDataSlot(providerSceneId, providerSlotHandle, m_scenes).type
@@ -65,7 +65,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool LinkManagerBase::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    bool LinkManagerBase::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
     {
         assert(EDataSlotType_DataConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type
             || EDataSlotType_TransformationConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type

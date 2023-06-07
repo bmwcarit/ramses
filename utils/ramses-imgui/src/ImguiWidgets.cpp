@@ -12,12 +12,30 @@
 #include "ramses-utils.h"
 #include "Resource/TextureResource.h"
 #include "TextureUtils.h"
+#include "AppearanceEnumsImpl.h"
 
 #include "fmt/format.h"
 
-
 namespace ramses_internal
 {
+    // TODO Find a better solution to this. For now, needed to suppress cast warnings
+    WARNINGS_PUSH
+    WARNING_DISABLE_LINUX(-Wold-style-cast)
+    constexpr auto white{IM_COL32(255u, 255u, 255u, 255u)};
+    constexpr auto grey{IM_COL32(200u, 200u, 200u, 255u)};
+    constexpr auto green{IM_COL32(15u, 200u, 19u, 255u)};
+    WARNINGS_POP
+
+    using ramses::BlendFactorNames;
+    using ramses::DepthFuncNames;
+    using ramses::BlendOperationNames;
+    using ramses::DepthWriteNames;
+    using ramses::ScissorTestNames;
+    using ramses::StencilFuncNames;
+    using ramses::StencilOperationNames;
+    using ramses::CullModeNames;
+    using ramses::DrawModeNames;
+
     namespace imgui
     {
         namespace
@@ -165,9 +183,6 @@ namespace ramses_internal
                 valueHasChanged = true;
             }
 
-            constexpr auto white{IM_COL32(255, 255, 255, 255)};
-            constexpr auto grey{IM_COL32(200, 200, 200, 255)};
-            constexpr auto green{IM_COL32(15, 200, 19, 255)};
             ImU32          backgroundColor;
             float          offsetOnPosition = 0;
             if (value)
@@ -202,7 +217,131 @@ namespace ramses_internal
             }
         }
 
-        std::string SaveToPng(const Byte* data, UInt size, ETextureFormat fmt, uint32_t width, uint32_t height, const std::string& filename, const TextureSwizzleArray& swizzle)
+        void RenderState(IScene& scene, RenderStateHandle hnd)
+        {
+            assert(scene.isRenderStateAllocated(hnd));
+
+            auto& obj = scene.getRenderState(hnd);
+            if (ImGui::TreeNode("Blending"))
+            {
+                std::array rgba = {obj.blendColor.r, obj.blendColor.g, obj.blendColor.b, obj.blendColor.a};
+                if (ImGui::ColorEdit4("BlendingColor", rgba.data()))
+                    scene.setRenderStateBlendColor(hnd, {rgba[0], rgba[1], rgba[2], rgba[3]});
+
+                int srcColor  = static_cast<int>(obj.blendFactorSrcColor);
+                int destColor = static_cast<int>(obj.blendFactorDstColor);
+                int srcAlpha  = static_cast<int>(obj.blendFactorSrcAlpha);
+                int destAlpha = static_cast<int>(obj.blendFactorDstAlpha);
+                auto setBlendFactors = [&]() {
+                    scene.setRenderStateBlendFactors(hnd,
+                                                      static_cast<EBlendFactor>(srcColor),
+                                                      static_cast<EBlendFactor>(destColor),
+                                                      static_cast<EBlendFactor>(srcAlpha),
+                                                      static_cast<EBlendFactor>(destAlpha));
+                };
+                if (ImGui::Combo("srcColor", &srcColor, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
+                    setBlendFactors();
+                if (ImGui::Combo("destColor", &destColor, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
+                    setBlendFactors();
+                if (ImGui::Combo("srcAlpha", &srcAlpha, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
+                    setBlendFactors();
+                if (ImGui::Combo("destAlpha", &destAlpha, BlendFactorNames.data(), static_cast<int>(BlendFactorNames.size())))
+                    setBlendFactors();
+
+                int blendingOperationColor = static_cast<int>(obj.blendOperationColor);
+                int blendingOperationAlpha = static_cast<int>(obj.blendOperationAlpha);
+                auto setBlendOperations = [&]() {
+                    scene.setRenderStateBlendOperations(
+                        hnd, static_cast<EBlendOperation>(blendingOperationColor), static_cast<EBlendOperation>(blendingOperationAlpha));
+                };
+                if (ImGui::Combo("colorOperation", &blendingOperationColor, BlendOperationNames.data(), static_cast<int>(BlendOperationNames.size())))
+                    setBlendOperations();
+                if (ImGui::Combo("alphaOperation", &blendingOperationAlpha, BlendOperationNames.data(), static_cast<int>(BlendOperationNames.size())))
+                    setBlendOperations();
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("Depth"))
+            {
+                int depthFunc = static_cast<int>(obj.depthFunc);
+                if (ImGui::Combo("depthFunc", &depthFunc, DepthFuncNames.data(), static_cast<int>(DepthFuncNames.size())))
+                    scene.setRenderStateDepthFunc(hnd, static_cast<EDepthFunc>(depthFunc));
+                int depthWrite = static_cast<int>(obj.depthWrite);
+                if (ImGui::Combo("depthWrite", &depthWrite, DepthWriteNames.data(), static_cast<int>(DepthFuncNames.size())))
+                    scene.setRenderStateDepthWrite(hnd, static_cast<EDepthWrite>(depthWrite));
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("Scissor"))
+            {
+                int mode = static_cast<int>(obj.scissorTest);
+                std::array<int, 4> xywh = {
+                    obj.scissorRegion.x,
+                    obj.scissorRegion.y,
+                    obj.scissorRegion.width,
+                    obj.scissorRegion.height
+                };
+                auto setScissorTest = [&]() {
+                    scene.setRenderStateScissorTest(hnd, static_cast<EScissorTest>(mode),
+                        {static_cast<int16_t>(xywh[0]), static_cast<int16_t>(xywh[1]), static_cast<uint16_t>(xywh[2]), static_cast<uint16_t>(xywh[3])});
+                };
+                if (ImGui::Combo("scissorTest", &mode, ScissorTestNames.data(), static_cast<int>(ScissorTestNames.size())))
+                    setScissorTest();
+                if (ImGui::DragInt4("Region", xywh.data()))
+                    setScissorTest();
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("Stencil"))
+            {
+                int func = static_cast<int>(obj.stencilFunc);
+                std::array<int, 2> refMask = {
+                    obj.stencilRefValue,
+                    obj.stencilMask
+                };
+                auto setStencilFunc = [&]() {
+                    scene.setRenderStateStencilFunc(hnd, static_cast<EStencilFunc>(func), static_cast<uint8_t>(refMask[0]), static_cast<uint8_t>(refMask[1]));
+                };
+                if (ImGui::Combo("stencilFunc", &func, StencilFuncNames.data(), static_cast<int>(StencilFuncNames.size())))
+                    setStencilFunc();
+                if (ImGui::DragInt2("RefValue, Mask", refMask.data()))
+                    setStencilFunc();
+
+                int sfail = static_cast<int>(obj.stencilOpFail);
+                int dpfail = static_cast<int>(obj.stencilOpDepthFail);
+                int dppass = static_cast<int>(obj.stencilOpDepthPass);
+                auto setStencilOps = [&]() {
+                    scene.setRenderStateStencilOps(hnd, static_cast<EStencilOp>(sfail), static_cast<EStencilOp>(dpfail), static_cast<EStencilOp>(dppass));
+                };
+                if (ImGui::Combo("fail operation", &sfail, StencilOperationNames.data(), static_cast<int>(StencilOperationNames.size())))
+                    setStencilOps();
+                if (ImGui::Combo("depth fail operation", &dpfail, StencilOperationNames.data(), static_cast<int>(StencilOperationNames.size())))
+                    setStencilOps();
+                if (ImGui::Combo("depth pass operation", &dppass, StencilOperationNames.data(), static_cast<int>(StencilOperationNames.size())))
+                    setStencilOps();
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("DrawMode"))
+            {
+                int culling = static_cast<int>(obj.cullMode);
+                if (ImGui::Combo("Culling", &culling, CullModeNames.data(), static_cast<int>(CullModeNames.size())))
+                    scene.setRenderStateCullMode(hnd, static_cast<ECullMode>(culling));
+                int drawMode = static_cast<int>(obj.drawMode);
+                if (ImGui::Combo("DrawMode", &drawMode, DrawModeNames.data(), static_cast<int>(DrawModeNames.size())))
+                    scene.setRenderStateDrawMode(hnd, static_cast<EDrawMode>(drawMode));
+                uint32_t colorFlags = obj.colorWriteMask;
+                ImGui::Text("ColorWriteMask");
+                auto setColorWriteMask = [&]() { scene.setRenderStateColorWriteMask(hnd, static_cast<uint8_t>(colorFlags)); };
+                if (ImGui::CheckboxFlags("Red", &colorFlags, EColorWriteFlag_Red))
+                    setColorWriteMask();
+                if (ImGui::CheckboxFlags("Green", &colorFlags, EColorWriteFlag_Green))
+                    setColorWriteMask();
+                if (ImGui::CheckboxFlags("Blue", &colorFlags, EColorWriteFlag_Blue))
+                    setColorWriteMask();
+                if (ImGui::CheckboxFlags("Alpha", &colorFlags, EColorWriteFlag_Alpha))
+                    setColorWriteMask();
+                ImGui::TreePop();
+            }
+        }
+
+        std::string SaveToPng(const Byte* data, size_t size, ETextureFormat fmt, uint32_t width, uint32_t height, const std::string& filename, const TextureSwizzleArray& swizzle)
         {
             std::string errorMsg;
             std::vector<uint8_t> imageData;

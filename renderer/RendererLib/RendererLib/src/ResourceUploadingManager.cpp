@@ -18,7 +18,7 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Resource/EffectResource.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include <chrono>
 
 namespace ramses_internal
@@ -52,7 +52,7 @@ namespace ramses_internal
         // Or in case display is being destructed together with scenes and there is no more rendering,
         // i.e. no more deferred upload/unloads
         ResourceContentHashVector resourcesToUnload;
-        getResourcesToUnloadNext(resourcesToUnload, false, std::numeric_limits<UInt64>::max());
+        getResourcesToUnloadNext(resourcesToUnload, false, std::numeric_limits<uint64_t>::max());
         unloadResources(resourcesToUnload);
 
         for(const auto& resource : m_resources.getAllResourceDescriptors())
@@ -62,7 +62,7 @@ namespace ramses_internal
         }
     }
 
-    Bool ResourceUploadingManager::hasAnythingToUpload() const
+    bool ResourceUploadingManager::hasAnythingToUpload() const
     {
         return !m_resources.getAllProvidedResources().empty() || m_resources.hasAnyResourcesScheduledForUpload();
     }
@@ -70,9 +70,9 @@ namespace ramses_internal
     void ResourceUploadingManager::uploadAndUnloadPendingResources()
     {
         ResourceContentHashVector resourcesToUpload;
-        UInt64 sizeToUpload = 0u;
+        uint64_t sizeToUpload = 0u;
         getAndPrepareResourcesToUploadNext(resourcesToUpload, sizeToUpload);
-        const UInt64 sizeToBeFreed = getAmountOfMemoryToBeFreedForNewResources(sizeToUpload);
+        const uint64_t sizeToBeFreed = getAmountOfMemoryToBeFreedForNewResources(sizeToUpload);
 
         ResourceContentHashVector resourcesToUnload;
         getResourcesToUnloadNext(resourcesToUnload, m_keepEffects, sizeToBeFreed);
@@ -141,16 +141,16 @@ namespace ramses_internal
     void ResourceUploadingManager::uploadResources(const ResourceContentHashVector& resourcesToUpload)
     {
         assert(m_resourceUploadBatchSize > 0u);
-        UInt32 sizeUploaded = 0u;
+        uint32_t sizeUploaded = 0u;
         for (size_t i = 0u; i < resourcesToUpload.size(); ++i)
         {
             const ResourceDescriptor& rd = m_resources.getResourceDescriptor(resourcesToUpload[i]);
-            const UInt32 resourceSize = rd.resource->getDecompressedDataSize();
+            const uint32_t resourceSize = rd.resource->getDecompressedDataSize();
             uploadResource(rd);
             m_stats.resourceUploaded(resourceSize);
             sizeUploaded += resourceSize;
 
-            const Bool checkTimeLimit = (i % m_resourceUploadBatchSize == 0) || (resourceSize > LargeResourceByteSizeThreshold);
+            const bool checkTimeLimit = (i % m_resourceUploadBatchSize == 0) || (resourceSize > LargeResourceByteSizeThreshold);
             std::chrono::milliseconds sectionDuration{};
             if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ResourcesUpload, &sectionDuration))
             {
@@ -186,8 +186,8 @@ namespace ramses_internal
         pResource->decompress();
         assert(pResource->isDeCompressedAvailable());
 
-        const UInt32 resourceSize = pResource->getDecompressedDataSize();
-        UInt32 vramSize = 0;
+        const uint32_t resourceSize = pResource->getDecompressedDataSize();
+        uint32_t vramSize = 0;
         // upload to GPU
         const auto deviceHandle = m_uploader->uploadResource(m_renderBackend, rd, vramSize);
         if (deviceHandle.has_value())
@@ -209,7 +209,7 @@ namespace ramses_internal
         {
             // effect not found in cache, schedule for upload in uploader thread
             assert(rd.type == EResourceType_Effect);
-            assert(absl::c_find_if(m_effectsToUpload, [&](const auto& e){ return e->getHash() == rd.hash;}) == m_effectsToUpload.cend());
+            assert(std::find_if(std::cbegin(m_effectsToUpload), std::cend(m_effectsToUpload), [&](const auto& e){ return e->getHash() == rd.hash;}) == m_effectsToUpload.cend());
             m_effectsToUpload.push_back(pResource->convertTo<const EffectResource>());
             m_resources.setResourceScheduledForUpload(rd.hash);
         }
@@ -234,11 +234,11 @@ namespace ramses_internal
         m_resources.unregisterResource(rd.hash);
     }
 
-    void ResourceUploadingManager::getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, Bool keepEffects, UInt64 sizeToBeFreed) const
+    void ResourceUploadingManager::getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, bool keepEffects, uint64_t sizeToBeFreed) const
     {
         assert(resourcesToUnload.empty());
         const ResourceContentHashVector& unusedResources = m_resources.getAllResourcesNotInUseByScenes();
-        UInt64 sizeToUnload = 0u;
+        uint64_t sizeToUnload = 0u;
 
         // collect unused resources to be unloaded
         // if total size of resources to be unloaded is enough
@@ -253,7 +253,7 @@ namespace ramses_internal
             const ResourceDescriptor& rd = m_resources.getResourceDescriptor(hash);
             if (rd.status == EResourceStatus::Uploaded)
             {
-                const Bool keepEffectCached = keepEffects && (rd.type == EResourceType_Effect);
+                const bool keepEffectCached = keepEffects && (rd.type == EResourceType_Effect);
                 if (!keepEffectCached)
                 {
                     resourcesToUnload.push_back(hash);
@@ -264,7 +264,7 @@ namespace ramses_internal
         }
     }
 
-    void ResourceUploadingManager::getAndPrepareResourcesToUploadNext(ResourceContentHashVector& resourcesToUpload, UInt64& totalSize) const
+    void ResourceUploadingManager::getAndPrepareResourcesToUploadNext(ResourceContentHashVector& resourcesToUpload, uint64_t& totalSize) const
     {
         assert(resourcesToUpload.empty());
 
@@ -306,7 +306,7 @@ namespace ramses_internal
         }
     }
 
-    Int32 ResourceUploadingManager::getScenePriority(const ResourceDescriptor& rd) const
+    int32_t ResourceUploadingManager::getScenePriority(const ResourceDescriptor& rd) const
     {
         if (!m_scenePriorities.empty() && !rd.sceneUsage.empty())
         {
@@ -319,17 +319,17 @@ namespace ramses_internal
         return 0;
     }
 
-    UInt64 ResourceUploadingManager::getAmountOfMemoryToBeFreedForNewResources(UInt64 sizeToUpload) const
+    uint64_t ResourceUploadingManager::getAmountOfMemoryToBeFreedForNewResources(uint64_t sizeToUpload) const
     {
         if (m_resourceCacheSize == 0u)
         {
             // unload all if no caching is allowed
-            return std::numeric_limits<UInt64>::max();
+            return std::numeric_limits<uint64_t>::max();
         }
 
         if (m_resourceCacheSize > m_resourceTotalUploadedSize)
         {
-            const UInt64 remainingCacheSize = m_resourceCacheSize - m_resourceTotalUploadedSize;
+            const uint64_t remainingCacheSize = m_resourceCacheSize - m_resourceTotalUploadedSize;
             if (remainingCacheSize < sizeToUpload)
             {
                 return sizeToUpload - remainingCacheSize;

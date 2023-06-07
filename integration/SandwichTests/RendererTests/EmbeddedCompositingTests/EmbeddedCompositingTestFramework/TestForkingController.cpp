@@ -17,8 +17,12 @@ namespace ramses_internal
 {
     TestForkingController::TestForkingController()
     {
-        for(const auto& testPipeNames : m_testPipeNames)
-            m_testPipes.push_back({std::make_unique<NamedPipe>(testPipeNames.first, true), std::make_unique<NamedPipe>(testPipeNames.second, true)});
+        for (const auto& testPipeNames : m_testPipeNames)
+        {
+            auto p1 = std::make_unique<NamedPipe>(testPipeNames.first, true);
+            auto p2 = std::make_unique<NamedPipe>(testPipeNames.second, true);
+            m_testPipes.push_back({std::move(p1), std::move(p2)});
+        }
 
         startForkerApplication();
     }
@@ -50,7 +54,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication :" << testAppIdx);
         assert(testAppIdx < m_testPipes.size());
 
-        const UInt32 dataSize = static_cast<UInt32>(os.getSize());
+        const uint32_t dataSize = static_cast<uint32_t>(os.getSize());
         if (!m_testPipes[testAppIdx].testToWaylandClientPipe->write(&dataSize, sizeof(dataSize)))
         {
             LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication failed to write data size to pipe!");

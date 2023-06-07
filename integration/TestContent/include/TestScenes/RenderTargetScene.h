@@ -22,7 +22,7 @@ namespace ramses_internal
     class RenderTargetScene : public IntegrationScene
     {
     public:
-        RenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        RenderTargetScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {
@@ -44,9 +44,9 @@ namespace ramses_internal
         };
 
     private:
-        const ramses::RenderBuffer& createRenderBuffer(UInt32 state);
-        ramses::Camera* createCamera(UInt32 state);
-        void initInputRenderPass(UInt32 state);
+        const ramses::RenderBuffer& createRenderBuffer(uint32_t state);
+        ramses::Camera* createCamera(uint32_t state);
+        void initInputRenderPass(uint32_t state);
         void initFinalRenderPass();
 
         const ramses::RenderBuffer& m_renderBuffer;

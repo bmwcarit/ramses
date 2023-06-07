@@ -11,23 +11,23 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/Macros.h"
-#include "Math3d/Vector4i.h"
 #include "Utils/AssertMovable.h"
+#include "DataTypesImpl.h"
+
 #include <vector>
 #include <array>
 #include <cassert>
+#include <string>
 
 namespace ramses_internal
 {
-    class String;
-
     class Image
     {
     public:
         Image() = default;
         template <typename Iter>
-        Image(UInt32 width, UInt32 height, Iter begin, Iter end, bool flipVertically = false);
-        Image(UInt32 width, UInt32 height, std::vector<UInt8>&& data);
+        Image(uint32_t width, uint32_t height, Iter begin, Iter end, bool flipVertically = false);
+        Image(uint32_t width, uint32_t height, std::vector<uint8_t>&& data);
 
         Image(const Image& other) = default;
         Image(Image&& other) noexcept = default;
@@ -35,39 +35,39 @@ namespace ramses_internal
         Image& operator=(const Image& other) = default;
         Image& operator=(Image&& other) noexcept = default;
 
-        void loadFromFilePNG(const String& filename);
-        void saveToFilePNG(const String& filename) const;
+        void loadFromFilePNG(const std::string& filename);
+        void saveToFilePNG(const std::string& filename) const;
 
-        UInt32 getWidth() const;
-        UInt32 getHeight() const;
-        UInt32 getNumberOfPixels() const;
-        Vector4i getSumOfPixelValues() const;
-        UInt32 getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel = 1) const;
+        [[nodiscard]] uint32_t getWidth() const;
+        [[nodiscard]] uint32_t getHeight() const;
+        [[nodiscard]] uint32_t getNumberOfPixels() const;
+        [[nodiscard]] glm::ivec4 getSumOfPixelValues() const;
+        [[nodiscard]] uint32_t getNumberOfNonBlackPixels(uint8_t maxDiffPerColorChannel = 1) const;
 
-        Image createDiffTo(const Image& other) const;
-        std::pair<Image, Image> createSeparateColorAndAlphaImages() const;
-        Image createEnlarged(UInt32 width, UInt32 height, std::array<UInt8, 4> fillValue = {0x0, 0x0, 0x0, 0xff}) const;
+        [[nodiscard]] Image createDiffTo(const Image& other) const;
+        [[nodiscard]] std::pair<Image, Image> createSeparateColorAndAlphaImages() const;
+        [[nodiscard]] Image createEnlarged(uint32_t width, uint32_t height, std::array<uint8_t, 4> fillValue = {0x0, 0x0, 0x0, 0xff}) const;
 
-        const std::vector<UInt8>& getData() const;
+        [[nodiscard]] const std::vector<uint8_t>& getData() const;
 
         bool operator==(const Image& other) const;
         bool operator!=(const Image& other) const;
 
     private:
-        UInt32 m_width = 0u;
-        UInt32 m_height = 0u;
-        std::vector<UInt8> m_data;
+        uint32_t m_width = 0u;
+        uint32_t m_height = 0u;
+        std::vector<uint8_t> m_data;
     };
 
     ASSERT_MOVABLE(Image)
 
     template <typename Iter>
-    Image::Image(UInt32 width, UInt32 height, Iter begin, Iter end, bool flipVertically /*= false*/)
+    Image::Image(uint32_t width, uint32_t height, Iter begin, Iter end, bool flipVertically /*= false*/)
         : m_width(width)
         , m_height(height)
         , m_data(width * height * 4u)
     {
-        assert(m_width * m_height * 4u == static_cast<UInt32>(std::distance(begin, end)));
+        assert(m_width * m_height * 4u == static_cast<uint32_t>(std::distance(begin, end)));
 
         if (flipVertically)
         {

@@ -25,8 +25,31 @@ namespace ramses_internal
         }
         {
             ELogLevel ll;
+            EXPECT_TRUE(LogHelper::StringToLogLevel("Info", ll));
+            EXPECT_EQ(ELogLevel::Info, ll);
+        }
+        {
+            ELogLevel ll;
+            EXPECT_TRUE(LogHelper::StringToLogLevel(" Info ", ll));
+            EXPECT_EQ(ELogLevel::Info, ll);
+        }
+        {
+            ELogLevel ll;
+            EXPECT_TRUE(LogHelper::StringToLogLevel("    INFO   ", ll));
+            EXPECT_EQ(ELogLevel::Info, ll);
+        }
+        {
+            ELogLevel ll;
             EXPECT_TRUE(LogHelper::StringToLogLevel("0", ll));
             EXPECT_EQ(ELogLevel::Off, ll);
+        }
+        {
+            ELogLevel ll;
+            EXPECT_FALSE(LogHelper::StringToLogLevel("", ll));
+            EXPECT_FALSE(LogHelper::StringToLogLevel(" ", ll));
+            EXPECT_FALSE(LogHelper::StringToLogLevel("  ", ll));
+            EXPECT_FALSE(LogHelper::StringToLogLevel("42", ll));
+            EXPECT_FALSE(LogHelper::StringToLogLevel("In fo", ll));
         }
     }
 

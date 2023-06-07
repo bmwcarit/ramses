@@ -19,7 +19,6 @@
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/TextureBuffer.h"
 #include "SceneAPI/GeometryDataBuffer.h"
-#include "SceneAPI/StreamTexture.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/RenderTarget.h"
 #include "SceneAPI/BlitPass.h"
@@ -35,12 +34,12 @@ namespace ramses_internal
     {
         MemoryInfoVector memoryInfos;
         ramses::RamsesObjectVector resources;
-        scene.getObjectRegistry().getObjectsOfType(resources, ramses::ERamsesObjectType_Resource);
+        scene.getObjectRegistry().getObjectsOfType(resources, ramses::ERamsesObjectType::Resource);
 
         for (const auto it : resources)
         {
             const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(*it);
-            const IResource* resourceObject  = scene.getClientImpl().getResource(resource.impl.getLowlevelResourceHash()).get();
+            const IResource* resourceObject  = scene.getClientImpl().getResource(resource.m_impl.getLowlevelResourceHash()).get();
 
             if (nullptr != resourceObject)
             {
@@ -57,7 +56,7 @@ namespace ramses_internal
             }
         }
 
-        auto createMemInfo = [](const String& logMessage, uint32_t numElements, const std::function< size_t(uint32_t) >& sizeOfIndividualElement){
+        auto createMemInfo = [](const auto& logMessage, uint32_t numElements, const std::function< size_t(uint32_t) >& sizeOfIndividualElement){
             StringOutputStream stream;
             stream << numElements << " " << logMessage << " allocated";
 
@@ -80,7 +79,6 @@ namespace ramses_internal
         memoryInfos.push_back(createMemInfo("BlitPasses",      iscene.getBlitPassCount(),       [](uint32_t){return sizeof(BlitPass);}));
         memoryInfos.push_back(createMemInfo("RenderBuffers",   iscene.getRenderBufferCount(),   [](uint32_t){return sizeof(RenderBuffer);}));
         memoryInfos.push_back(createMemInfo("TextureSamplers", iscene.getTextureSamplerCount(), [](uint32_t){return sizeof(TextureSampler);}));
-        memoryInfos.push_back(createMemInfo("StreamTextures",  iscene.getStreamTextureCount(),  [](uint32_t){return sizeof(StreamTexture);}));
         memoryInfos.push_back(createMemInfo("DataSlots",       iscene.getDataSlotCount(),       [](uint32_t){return sizeof(DataSlot);}));
 
         memoryInfos.push_back(createMemInfo("Nodes",           iscene.getNodeCount(), [&iscene](uint32_t h){

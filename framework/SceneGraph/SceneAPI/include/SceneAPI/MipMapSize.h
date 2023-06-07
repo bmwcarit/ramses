@@ -15,8 +15,8 @@ namespace ramses_internal
 {
     struct MipMapSize
     {
-        UInt32 width;
-        UInt32 height;
+        uint32_t width;
+        uint32_t height;
     };
 
     using MipMapDimensions = std::vector<MipMapSize>;

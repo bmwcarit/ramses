@@ -21,7 +21,7 @@ namespace ramses_internal
 
         IOutputStream& write(const void* data, size_t size) override;
 
-        size_t getSize() const;
+        [[nodiscard]] size_t getSize() const;
 
     private:
         size_t m_size;

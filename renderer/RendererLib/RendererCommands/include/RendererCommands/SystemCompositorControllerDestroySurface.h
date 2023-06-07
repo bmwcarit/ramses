@@ -14,11 +14,11 @@
 
 namespace ramses_internal
 {
-    class SystemCompositorControllerDestroySurface : public RamshCommandArgs<UInt32>
+    class SystemCompositorControllerDestroySurface : public RamshCommandArgs<uint32_t>
     {
     public:
         explicit SystemCompositorControllerDestroySurface(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt32& surfaceId) const override;
+        bool execute(uint32_t& surfaceId) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

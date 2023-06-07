@@ -19,7 +19,7 @@ namespace ramses_internal
             : Viewport(0, 0, 0, 0)
         {}
 
-        Viewport(Int32 x, Int32 y, UInt32 w, UInt32 h)
+        Viewport(int32_t x, int32_t y, uint32_t w, uint32_t h)
             : posX(x)
             , posY(y)
             , width(w)
@@ -27,10 +27,10 @@ namespace ramses_internal
         {
         }
 
-        Int32 posX;
-        Int32 posY;
-        UInt32 width;
-        UInt32 height;
+        int32_t posX;
+        int32_t posY;
+        uint32_t width;
+        uint32_t height;
 
         bool operator==(const Viewport& other) const
         {

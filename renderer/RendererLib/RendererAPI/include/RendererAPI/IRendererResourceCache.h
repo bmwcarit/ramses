@@ -22,10 +22,10 @@ namespace ramses_internal
     public:
         virtual ~IRendererResourceCache() {};
 
-        virtual bool hasResource(ResourceContentHash resourceId, UInt32& size) const = 0;
-        virtual bool getResourceData(ResourceContentHash resourceId, uint8_t* buffer, UInt32 bufferSize) const = 0;
-        virtual bool shouldResourceBeCached(ResourceContentHash resourceId, UInt32 resourceDataSize, ResourceCacheFlag cacheFlag, SceneId sceneId) const = 0;
-        virtual void storeResource(ResourceContentHash resourceId, const uint8_t* resourceData, UInt32 resourceDataSize, ResourceCacheFlag cacheFlag, SceneId sceneId) = 0;
+        virtual bool hasResource(ResourceContentHash resourceId, uint32_t& size) const = 0;
+        virtual bool getResourceData(ResourceContentHash resourceId, uint8_t* buffer, uint32_t bufferSize) const = 0;
+        [[nodiscard]] virtual bool shouldResourceBeCached(ResourceContentHash resourceId, uint32_t resourceDataSize, ResourceCacheFlag cacheFlag, SceneId sceneId) const = 0;
+        virtual void storeResource(ResourceContentHash resourceId, const uint8_t* resourceData, uint32_t resourceDataSize, ResourceCacheFlag cacheFlag, SceneId sceneId) = 0;
     };
 }
 

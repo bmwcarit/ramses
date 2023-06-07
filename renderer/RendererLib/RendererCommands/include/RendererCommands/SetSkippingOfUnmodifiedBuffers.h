@@ -15,11 +15,11 @@ namespace ramses_internal
 {
     class RendererCommandBuffer;
 
-    class SetSkippingOfUnmodifiedBuffers : public RamshCommandArgs<UInt32>
+    class SetSkippingOfUnmodifiedBuffers : public RamshCommandArgs<uint32_t>
     {
     public:
         explicit SetSkippingOfUnmodifiedBuffers(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt32& enableSkipping) const override;
+        bool execute(uint32_t& enableSkipping) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

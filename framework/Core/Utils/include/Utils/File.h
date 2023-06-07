@@ -9,11 +9,13 @@
 #ifndef RAMSES_FILE_H
 #define RAMSES_FILE_H
 
-#include "Collections/String.h"
 #include "PlatformAbstraction/PlatformError.h"
 #include "PlatformAbstraction/Macros.h"
+
 #include <cstdint>
 #include <cstdio>
+#include <string_view>
+#include <string>
 
 namespace ramses_internal
 {
@@ -38,7 +40,7 @@ namespace ramses_internal
             RelativeToCurrentPosition // seeks relative to current position within the file
         };
 
-        explicit File(String filepath);
+        explicit File(std::string_view filepath);
         ~File();
 
         File(File&& other) noexcept;
@@ -63,16 +65,16 @@ namespace ramses_internal
         RNODISCARD bool getPos(size_t& position) const;
         bool flush();
 
-        RNODISCARD String getFileName() const;
-        RNODISCARD String getPath() const;
-        RNODISCARD String getExtension() const;
+        RNODISCARD std::string getFileName() const;
+        RNODISCARD std::string getPath() const;
+        RNODISCARD std::string getExtension() const;
 
         File(const File&) = delete;
         File& operator=(File&) = delete;
 
     private:
         bool m_isOpen;
-        String m_path;
+        std::string m_path;
         FILE* m_handle;
     };
 }

@@ -21,7 +21,7 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 #include "PlatformAbstraction/PlatformTime.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include <unistd.h>
 
 namespace ramses_internal
@@ -51,7 +51,7 @@ namespace ramses_internal
         m_linuxDmabufGlobal.destroy();
     }
 
-    Bool EmbeddedCompositor_Wayland::init()
+    bool EmbeddedCompositor_Wayland::init()
     {
         if (!m_serverDisplay.init(m_waylandEmbeddedSocketName, m_waylandEmbeddedSocketGroup, m_waylandEmbeddedSocketPermissions, m_waylandEmbeddedSocketFD))
         {
@@ -99,7 +99,7 @@ namespace ramses_internal
         m_serverDisplay.dispatchEventLoop();
     }
 
-    Bool EmbeddedCompositor_Wayland::hasUpdatedStreamTextureSources() const
+    bool EmbeddedCompositor_Wayland::hasUpdatedStreamTextureSources() const
     {
         return 0u != m_updatedStreamTextureSourceIds.size();
     }
@@ -180,12 +180,12 @@ namespace ramses_internal
         return nullptr;
     }
 
-    void EmbeddedCompositor_Wayland::endFrame(Bool notifyClients)
+    void EmbeddedCompositor_Wayland::endFrame(bool notifyClients)
     {
         if (notifyClients)
         {
             LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::endFrame(): will send surface frame callbacks to clients");
-            const UInt32 time = static_cast<UInt32>(PlatformTime::GetMillisecondsAbsolute());
+            const uint32_t time = static_cast<uint32_t>(PlatformTime::GetMillisecondsAbsolute());
 
             for (auto surface: m_surfaces)
             {
@@ -199,7 +199,7 @@ namespace ramses_internal
         m_serverDisplay.flushClients();
     }
 
-    UInt32 EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
+    uint32_t EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
     {
         assert(streamTextureSourceId.isValid());
         IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
@@ -219,7 +219,7 @@ namespace ramses_internal
 
         WaylandBufferResource& waylandBufferResource = waylandBuffer->getResource();
 
-        const UInt8* sharedMemoryBufferData = static_cast<const UInt8*>(waylandBufferResource.bufferGetSharedMemoryData());
+        const uint8_t* sharedMemoryBufferData = static_cast<const uint8_t*>(waylandBufferResource.bufferGetSharedMemoryData());
         LinuxDmabufBufferData* linuxDmabufBuffer = LinuxDmabufBuffer::fromWaylandBufferResource(waylandBufferResource);
 
         const bool surfaceBufferTypeChanged = waylandSurface->dispatchBufferTypeChanged();
@@ -248,7 +248,7 @@ namespace ramses_internal
                 StringOutputStream message;
                 message << "Failed creating EGL image from dma buffer for stream source id: " << waylandSurface->getIviSurfaceId();
 
-                waylandBufferResource.postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER, String(message.release()));
+                waylandBufferResource.postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER, message.release());
             }
         }
         else
@@ -257,7 +257,7 @@ namespace ramses_internal
         }
     }
 
-    Bool EmbeddedCompositor_Wayland::isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
+    bool EmbeddedCompositor_Wayland::isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
         if(waylandClientSurface)
@@ -268,7 +268,7 @@ namespace ramses_internal
         return false;
     }
 
-    UInt64 EmbeddedCompositor_Wayland::getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const
+    uint64_t EmbeddedCompositor_Wayland::getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(waylandSurfaceId);
         if (waylandClientSurface)
@@ -281,7 +281,7 @@ namespace ramses_internal
         }
     }
 
-    Bool EmbeddedCompositor_Wayland::isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
+    bool EmbeddedCompositor_Wayland::isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(waylandSurfaceId);
         if (waylandClientSurface)
@@ -294,12 +294,12 @@ namespace ramses_internal
         }
     }
 
-    UInt32 EmbeddedCompositor_Wayland::getNumberOfCompositorConnections() const
+    uint32_t EmbeddedCompositor_Wayland::getNumberOfCompositorConnections() const
     {
         return m_compositorConnections.size();
     }
 
-    Bool EmbeddedCompositor_Wayland::hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
+    bool EmbeddedCompositor_Wayland::hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         for (const auto surface: m_surfaces)
         {
@@ -314,11 +314,11 @@ namespace ramses_internal
 
     const IWaylandSurface& EmbeddedCompositor_Wayland::findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
-        const auto it = absl::c_find_if(m_surfaces, [&](const auto surface){ return surface->getIviSurfaceId() == streamTextureSourceId;});
+        const auto it = std::find_if(std::cbegin(m_surfaces), std::cend(m_surfaces), [&](const auto surface){ return surface->getIviSurfaceId() == streamTextureSourceId;});
         return **it;
     }
 
-    String EmbeddedCompositor_Wayland::getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
+    std::string EmbeddedCompositor_Wayland::getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(waylandSurfaceId);
         if (waylandClientSurface)
@@ -327,7 +327,7 @@ namespace ramses_internal
         }
         else
         {
-            return String();
+            return {};
         }
     }
 
@@ -354,7 +354,7 @@ namespace ramses_internal
         return *buffer;
     }
 
-    Bool EmbeddedCompositor_Wayland::isRealCompositor() const
+    bool EmbeddedCompositor_Wayland::isRealCompositor() const
     {
         return true;
     }

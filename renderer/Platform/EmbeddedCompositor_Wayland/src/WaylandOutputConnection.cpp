@@ -13,6 +13,8 @@
 #include <wayland-server.h>
 #include <wayland-server-protocol.h>
 
+#include <cassert>
+
 namespace ramses_internal
 {
     WaylandOutputConnection::WaylandOutputConnection(const WaylandOutputParams& waylandOutputParams, IWaylandClient& client, uint32_t version, uint32_t id)

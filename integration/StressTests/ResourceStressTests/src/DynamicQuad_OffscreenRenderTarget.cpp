@@ -43,7 +43,7 @@ namespace ramses_internal
 
         m_meshNode.setAppearance(m_appearance);
         m_meshNode.setIndexCount(4);
-        m_appearance.setDrawMode(ramses::EDrawMode_TriangleStrip);
+        m_appearance.setDrawMode(ramses::EDrawMode::TriangleStrip);
         m_meshNode.setGeometryBinding(m_geometryBinding);
     }
 
@@ -82,7 +82,7 @@ namespace ramses_internal
 
         const uint32_t randomDivisor = static_cast<uint32_t>(TestRandom::Get(5, 10));
 
-        resources.renderBuffer = m_scene.createRenderBuffer(m_screenspaceQuad.getWidthOfScreen() / randomDivisor, m_screenspaceQuad.getHeightOfScreen()/ randomDivisor, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite);
+        resources.renderBuffer = m_scene.createRenderBuffer(m_screenspaceQuad.getWidthOfScreen() / randomDivisor, m_screenspaceQuad.getHeightOfScreen()/ randomDivisor, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite);
 
         ramses::RenderTargetDescription renderTargetDescription;
         renderTargetDescription.addRenderBuffer(*resources.renderBuffer);
@@ -91,10 +91,10 @@ namespace ramses_internal
         m_offscreenRenderPass.setRenderTarget(resources.renderTarget);
 
         resources.textureSampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Linear,
-            ramses::ETextureSamplingMethod_Linear,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Linear,
+            ramses::ETextureSamplingMethod::Linear,
             *resources.renderBuffer);
 
         return resources;

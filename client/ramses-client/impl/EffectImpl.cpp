@@ -20,8 +20,8 @@
 
 namespace ramses
 {
-    EffectImpl::EffectImpl(ramses_internal::ResourceHashUsage hashUsage, SceneImpl& scene, const char* effectname)
-        : ResourceImpl(ERamsesObjectType_Effect, std::move(hashUsage), scene, effectname)
+    EffectImpl::EffectImpl(ramses_internal::ResourceHashUsage hashUsage, SceneImpl& scene, std::string_view effectname)
+        : ResourceImpl(ERamsesObjectType::Effect, std::move(hashUsage), scene, effectname)
     {
     }
 
@@ -29,7 +29,7 @@ namespace ramses
     {
     }
 
-    void EffectImpl::initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, absl::optional<ramses_internal::EDrawMode> geometryShaderInputType)
+    void EffectImpl::initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, std::optional<EDrawMode> geometryShaderInputType)
     {
         m_effectUniformInputs = uniformInputs;
         m_effectAttributeInputs = attributeInputs;
@@ -45,7 +45,7 @@ namespace ramses
         {
             outStream << input.inputName;
             outStream << static_cast<uint32_t>(input.dataType);
-            outStream << input.elementCount;
+            outStream << static_cast<uint32_t>(input.elementCount);
             outStream << static_cast<uint32_t>(input.semantics);
         }
 
@@ -57,8 +57,8 @@ namespace ramses
             outStream << static_cast<uint32_t>(input.semantics);
         }
 
-        // TODO (backported) enable this once 27 merged to master
-        //outStream << static_cast<uint32_t>(m_geometryShaderInputType);
+        const int32_t gsInputType = (m_geometryShaderInputType ? static_cast<int32_t>(*m_geometryShaderInputType) : -1);
+        outStream << gsInputType;
 
         return StatusOK;
     }
@@ -102,25 +102,25 @@ namespace ramses
             m_effectAttributeInputs[i].semantics = static_cast<ramses_internal::EFixedSemantics>(semanticAsUInt);
         }
 
-        // TODO (backported) enable this once 27 merged to master
-        //ramses_internal::EDrawMode geometryShaderInputType;
-        //inStream >> geometryShaderInputType;
-        //m_geometryShaderInputType = geometryShaderInputType;
+        int32_t gsInputType = -1;
+        inStream >> gsInputType;
+        if (gsInputType >= 0)
+            m_geometryShaderInputType = static_cast<EDrawMode>(gsInputType);
 
         return StatusOK;
     }
 
-    uint32_t EffectImpl::getUniformInputCount() const
+    size_t EffectImpl::getUniformInputCount() const
     {
-        return static_cast<uint32_t>(m_effectUniformInputs.size());
+        return m_effectUniformInputs.size();
     }
 
-    uint32_t EffectImpl::getAttributeInputCount() const
+    size_t EffectImpl::getAttributeInputCount() const
     {
-        return static_cast<uint32_t>(m_effectAttributeInputs.size());
+        return m_effectAttributeInputs.size();
     }
 
-    status_t EffectImpl::getUniformInput(uint32_t index, EffectInputImpl& inputImpl) const
+    status_t EffectImpl::getUniformInput(size_t index, EffectInputImpl& inputImpl) const
     {
         if (index >= getUniformInputCount())
         {
@@ -134,7 +134,7 @@ namespace ramses
 
     status_t EffectImpl::findUniformInput(EEffectUniformSemantic uniformSemantic, EffectInputImpl& inputImpl) const
     {
-        const uint32_t index = findEffectInputIndex(m_effectUniformInputs, EffectInputSemanticUtils::GetEffectInputSemanticInternal(uniformSemantic));
+        const size_t index = findEffectInputIndex(m_effectUniformInputs, EffectInputSemanticUtils::GetEffectInputSemanticInternal(uniformSemantic));
         if (index == InvalidInputIndex)
         {
             return addErrorEntry("Effect: getUniformInput failed, semantic is not defined in effect!");
@@ -146,7 +146,7 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t EffectImpl::getAttributeInput(uint32_t index, EffectInputImpl& inputImpl) const
+    status_t EffectImpl::getAttributeInput(size_t index, EffectInputImpl& inputImpl) const
     {
         if (index >= getAttributeInputCount())
         {
@@ -160,7 +160,7 @@ namespace ramses
 
     status_t EffectImpl::findAttributeInput(EEffectAttributeSemantic attributeSemantic, EffectInputImpl& inputImpl) const
     {
-        const uint32_t index = findEffectInputIndex(m_effectAttributeInputs, EffectInputSemanticUtils::GetEffectInputSemanticInternal(attributeSemantic));
+        const size_t index = findEffectInputIndex(m_effectAttributeInputs, EffectInputSemanticUtils::GetEffectInputSemanticInternal(attributeSemantic));
         if (index == InvalidInputIndex)
         {
             return addErrorEntry("Effect: getAttributeInput failed, semantic not defined in effect!");
@@ -172,9 +172,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t EffectImpl::findUniformInput(const char* inputName, EffectInputImpl& inputImpl) const
+    status_t EffectImpl::findUniformInput(std::string_view inputName, EffectInputImpl& inputImpl) const
     {
-        const uint32_t index = getEffectInputIndex(m_effectUniformInputs, inputName);
+        const size_t index = getEffectInputIndex(m_effectUniformInputs, inputName);
         if (index == InvalidInputIndex)
             return addErrorEntry((ramses_internal::StringOutputStream() << "Effect::findUniformInput: failed, uniform input '" << inputName << "' could not be found in effect '" << getName()).c_str());
 
@@ -184,9 +184,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t EffectImpl::findAttributeInput(const char* inputName, EffectInputImpl& inputImpl) const
+    status_t EffectImpl::findAttributeInput(std::string_view inputName, EffectInputImpl& inputImpl) const
     {
-        const uint32_t index = getEffectInputIndex(m_effectAttributeInputs, inputName);
+        const size_t index = getEffectInputIndex(m_effectAttributeInputs, inputName);
         if (index == InvalidInputIndex)
             return addErrorEntry((ramses_internal::StringOutputStream() << "Effect::findAttributeInput: failed, attribute input '" << inputName << "' could not be found in effect '" << getName()).c_str());
 
@@ -206,10 +206,10 @@ namespace ramses
         return m_effectAttributeInputs;
     }
 
-    uint32_t EffectImpl::getEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, const char* inputName) const
+    size_t EffectImpl::getEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, std::string_view inputName) const
     {
-        const uint32_t numInputs = static_cast<uint32_t>(effectInputVector.size());
-        for (uint32_t i = 0u; i < numInputs; ++i)
+        const size_t numInputs = effectInputVector.size();
+        for (size_t i = 0u; i < numInputs; ++i)
         {
             const ramses_internal::EffectInputInformation& effectInputInfo = effectInputVector[i];
             if (effectInputInfo.inputName == inputName)
@@ -221,13 +221,13 @@ namespace ramses
         return InvalidInputIndex;
     }
 
-    uint32_t EffectImpl::findEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, ramses_internal::EFixedSemantics inputSemantics) const
+    size_t EffectImpl::findEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, ramses_internal::EFixedSemantics inputSemantics) const
     {
         if (ramses_internal::EFixedSemantics::Invalid == inputSemantics)
             return InvalidInputIndex;
 
-        const uint32_t numInputs = static_cast<uint32_t>(effectInputVector.size());
-        for (uint32_t i = 0u; i < numInputs; ++i)
+        const size_t numInputs = effectInputVector.size();
+        for (size_t i = 0u; i < numInputs; ++i)
         {
             const ramses_internal::EffectInputInformation& effectInputInfo = effectInputVector[i];
             if (effectInputInfo.semantics == inputSemantics)
@@ -239,7 +239,7 @@ namespace ramses
         return InvalidInputIndex;
     }
 
-    void EffectImpl::initializeEffectInputData(EffectInputImpl& effectInputImpl, const ramses_internal::EffectInputInformation& effectInputInfo, uint32_t index) const
+    void EffectImpl::initializeEffectInputData(EffectInputImpl& effectInputImpl, const ramses_internal::EffectInputInformation& effectInputInfo, size_t index) const
     {
         effectInputImpl.initialize(
             getLowlevelResourceHash(),
@@ -263,7 +263,7 @@ namespace ramses
             return addErrorEntry((ramses_internal::StringOutputStream() << "Effect::getGeometryShaderInputType: failed, effect '" << getName() << "' has no geometry shader attached to it!").c_str());
         }
 
-        inputType = AppearanceUtils::GetDrawModeFromInternal(*m_geometryShaderInputType);
+        inputType = *m_geometryShaderInputType;
         return StatusOK;
     }
 }

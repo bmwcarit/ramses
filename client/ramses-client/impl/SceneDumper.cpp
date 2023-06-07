@@ -15,7 +15,6 @@
 #include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/TextureSamplerExternal.h"
 #include "ramses-client-api/TextureSampler.h"
-#include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderGroup.h"
@@ -32,7 +31,6 @@
 #include "GeometryBindingImpl.h"
 #include "Texture2DBufferImpl.h"
 #include "ObjectIteratorImpl.h"
-#include "StreamTextureImpl.h"
 #include "RamsesClientImpl.h"
 #include "RenderBufferImpl.h"
 #include "RenderTargetImpl.h"
@@ -68,11 +66,6 @@ namespace ramses
         return impl.getTextureBufferHandle();
     }
 
-    template <> ramses_internal::StreamTextureHandle SceneDumper::GetHandle(const StreamTextureImpl& impl)
-    {
-        return impl.getHandle();
-    }
-
     template <class ObjectType, class ObjectImplType, class HandleType>
     void SceneDumper::setupMap(ramses_internal::HashMap<HandleType, const ObjectImplType*>& map)
     {
@@ -86,7 +79,7 @@ namespace ramses
         RamsesObjectRegistryIterator iterator(m_objectRegistry, TYPE_ID_OF_RAMSES_OBJECT<ObjectType>::ID);
         while (const ObjectType* object = iterator.getNext<ObjectType>())
         {
-            map.put(GetHandle<ObjectImplType, HandleType>(object->impl), &object->impl);
+            map.put(GetHandle<ObjectImplType, HandleType>(object->m_impl), &object->m_impl);
         }
     }
 
@@ -99,9 +92,6 @@ namespace ramses
     void SceneDumper::dumpUnrequiredObjects(ramses_internal::StringOutputStream& output)
     {
         setupMaps();
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationObject);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystem);
-        markAllObjectsOfTypeAsRequired(ERamsesObjectType_AnimationSystemRealTime);
 
         RenderPassSet requiredRenderPasses = markRequiredScreenRenderPasses();
         while (requiredRenderPasses.size() > 0)
@@ -122,7 +112,6 @@ namespace ramses
             markRequiredRenderTargets(requiredRenderPasses);
             RenderBufferSet requiredRenderBuffers = markRequiredRenderBuffer(requiredTextureSamplers);
             markRequiredTextureBuffer(requiredTextureSamplers);
-            markRequiredStreamTextures(requiredTextureSamplers);
 
             requiredRenderPasses = getRequiredRenderPasses(requiredRenderBuffers);
         }
@@ -142,7 +131,6 @@ namespace ramses
         addToMap<TextureSamplerExternal, TextureSamplerImpl, ramses_internal::TextureSamplerHandle>(m_textureSamplerHandleToObjectMap);
         setupMap<RenderBuffer, RenderBufferImpl, ramses_internal::RenderBufferHandle>(m_renderBufferHandleToObjectMap);
         setupMap<Texture2DBuffer, Texture2DBufferImpl, ramses_internal::TextureBufferHandle>(m_textureBufferHandleToObjectMap);
-        setupMap<StreamTexture, StreamTextureImpl, ramses_internal::StreamTextureHandle>(m_streamTextureHandleToObjectMap);
 
         setupResourceMap();
         setupRenderPassMap();
@@ -153,11 +141,11 @@ namespace ramses
     {
         m_resourceContentHashToObjectMap.clear();
 
-        ObjectIteratorImpl iter(m_objectRegistry, ERamsesObjectType_Resource);
+        ObjectIteratorImpl iter(m_objectRegistry, ERamsesObjectType::Resource);
         auto resourceAsObject = iter.getNext();
         while (resourceAsObject)
         {
-            const ResourceImpl* resource = &RamsesObjectTypeUtils::ConvertTo<Resource>(*resourceAsObject).impl;
+            const ResourceImpl* resource = &RamsesObjectTypeUtils::ConvertTo<Resource>(*resourceAsObject).m_impl;
             m_resourceContentHashToObjectMap.put(resource->getLowlevelResourceHash(), resource);
             resourceAsObject = iter.getNext();
         }
@@ -166,16 +154,16 @@ namespace ramses
     void SceneDumper::setupRenderPassMap()
     {
         m_destinationRenderBufferHandleToRenderPassSetMap.clear();
-        RamsesObjectRegistryIterator renderPassIterator(m_objectRegistry, ERamsesObjectType_RenderPass);
+        RamsesObjectRegistryIterator renderPassIterator(m_objectRegistry, ERamsesObjectType::RenderPass);
         while (const RenderPass* renderPass = renderPassIterator.getNext<RenderPass>())
         {
             const RenderTarget* renderTarget = renderPass->getRenderTarget();
             if (nullptr != renderTarget)
             {
-                const ramses_internal::ClientScene& clientScene = renderTarget->impl.getIScene();
+                const ramses_internal::ClientScene& clientScene = renderTarget->m_impl.getIScene();
 
                 const ramses_internal::RenderTargetHandle renderTargetHandle =
-                    renderTarget->impl.getRenderTargetHandle();
+                    renderTarget->m_impl.getRenderTargetHandle();
                 uint32_t renderBufferCount = clientScene.getRenderTargetRenderBufferCount(renderTargetHandle);
 
                 for (uint32_t i = 0; i < renderBufferCount; i++)
@@ -183,7 +171,7 @@ namespace ramses
                     const ramses_internal::RenderBufferHandle renderBufferHandle =
                         clientScene.getRenderTargetRenderBuffer(renderTargetHandle, i);
 
-                    m_destinationRenderBufferHandleToRenderPassSetMap[renderBufferHandle].put(&renderPass->impl);
+                    m_destinationRenderBufferHandleToRenderPassSetMap[renderBufferHandle].put(&renderPass->m_impl);
                 }
             }
         }
@@ -192,11 +180,11 @@ namespace ramses
     void SceneDumper::setupRenderBufferSetMap()
     {
         m_blitPassDestinationRenderBufferToSourceRenderBuffersMap.clear();
-        RamsesObjectRegistryIterator blitPassIterator(m_objectRegistry, ERamsesObjectType_BlitPass);
+        RamsesObjectRegistryIterator blitPassIterator(m_objectRegistry, ERamsesObjectType::BlitPass);
         while (const BlitPass* blitPass = blitPassIterator.getNext<BlitPass>())
         {
-            const ramses_internal::ClientScene& clientScene = blitPass->impl.getIScene();
-            const ramses_internal::BlitPassHandle blitPassHandle = blitPass->impl.getBlitPassHandle();
+            const ramses_internal::ClientScene& clientScene = blitPass->m_impl.getIScene();
+            const ramses_internal::BlitPassHandle blitPassHandle = blitPass->m_impl.getBlitPassHandle();
             const ramses_internal::BlitPass& blitPassData = clientScene.getBlitPass(blitPassHandle);
 
             const RenderBufferImpl** sourceRenderBuffer = m_renderBufferHandleToObjectMap.get(blitPassData.sourceRenderBuffer);
@@ -212,16 +200,6 @@ namespace ramses
                               << blitPassData.sourceRenderBuffer << " !!!");
                 assert(false);
             }
-        }
-    }
-
-    void SceneDumper::markAllObjectsOfTypeAsRequired(ERamsesObjectType objectType)
-    {
-        RamsesObjectVector objects;
-        m_objectRegistry.getObjectsOfType(objects, objectType);
-        for (auto object : objects)
-        {
-            m_requiredObjects.put(&object->impl);
         }
     }
 
@@ -242,14 +220,14 @@ namespace ramses
     {
         RenderPassSet requiredRenderPasses;
 
-        RamsesObjectRegistryIterator objectIterator(m_objectRegistry, ERamsesObjectType_RenderPass);
+        RamsesObjectRegistryIterator objectIterator(m_objectRegistry, ERamsesObjectType::RenderPass);
         while (const RenderPass* renderPass = objectIterator.getNext<RenderPass>())
         {
             if (renderPass->isEnabled() && nullptr == renderPass->getRenderTarget())
             {
-                if (addToRequiredObjects(renderPass->impl))
+                if (addToRequiredObjects(renderPass->m_impl))
                 {
-                    requiredRenderPasses.put(&renderPass->impl);
+                    requiredRenderPasses.put(&renderPass->m_impl);
                 }
             }
         }
@@ -484,9 +462,9 @@ namespace ramses
             const Camera* camera = renderPass->getCamera();
             if (nullptr != camera)
             {
-                if (addToRequiredObjects(camera->impl))
+                if (addToRequiredObjects(camera->m_impl))
                 {
-                    requiredCameras.put(&camera->impl);
+                    requiredCameras.put(&camera->m_impl);
                 }
             }
         }
@@ -521,7 +499,7 @@ namespace ramses
             const RenderTarget* renderTarget = renderPass->getRenderTarget();
             if (nullptr != renderTarget)
             {
-                addToRequiredObjects(renderTarget->impl);
+                addToRequiredObjects(renderTarget->m_impl);
             }
         }
     }
@@ -585,40 +563,6 @@ namespace ramses
         }
     }
 
-    SceneDumper::StreamTextureSet
-    SceneDumper::markRequiredStreamTextures(const TextureSamplerSet& requiredTextureSamplers)
-    {
-        SceneDumper::StreamTextureSet                                  requiredStreamTextures;
-        ramses_internal::HashSet<ramses_internal::ResourceContentHash> requiredTextureResourceHashes;
-        for (auto textureSampler : requiredTextureSamplers)
-        {
-            const auto sampler = textureSampler->getIScene().getTextureSampler(textureSampler->getTextureSamplerHandle());
-            if (ramses_internal::TextureSampler::ContentType::StreamTexture == sampler.contentType && ramses_internal::StreamTextureHandle::Invalid() != sampler.contentHandle)
-            {
-                const ramses_internal::StreamTextureHandle streamTextureHandle(sampler.contentHandle);
-                const StreamTextureImpl** streamTexture = m_streamTextureHandleToObjectMap.get(streamTextureHandle);
-
-                if (nullptr != streamTexture)
-                {
-                    assert(*streamTexture);
-                    if (addToRequiredObjects(**streamTexture))
-                    {
-                        requiredStreamTextures.put(*streamTexture);
-                    }
-                }
-                else
-                {
-                    LOG_ERROR(ramses_internal::CONTEXT_CLIENT,
-                              "SceneDumper::getRequiredStreamTextures Could not lookup stream texture handle: "
-                                  << streamTextureHandle << " !!!");
-                    assert(false);
-                }
-            }
-        }
-
-        return requiredStreamTextures;
-    }
-
     void SceneDumper::addNodeWithAllParentNodes(const NodeImpl* node)
     {
         while (nullptr != node)
@@ -649,7 +593,7 @@ namespace ramses
     {
         RamsesObjectSet    objects;
         RamsesObjectVector sceneObjects;
-        m_objectRegistry.getObjectsOfType(sceneObjects, ERamsesObjectType_RamsesObject);
+        m_objectRegistry.getObjectsOfType(sceneObjects, ERamsesObjectType::RamsesObject);
         for (auto sceneObject : sceneObjects)
         {
             objects.put(sceneObject);
@@ -672,7 +616,7 @@ namespace ramses
         ramses_internal::HashMap<ERamsesObjectType, Counter> typeStatistic;
         for (RamsesObject* object : objects)
         {
-            const RamsesObjectImpl* objectImpl = &object->impl;
+            const RamsesObjectImpl* objectImpl = &object->m_impl;
             ERamsesObjectType type = object->getType();
             if (false == m_requiredObjects.contains(objectImpl))
             {
@@ -687,7 +631,7 @@ namespace ramses
         AddString("OBEJCT TYPE", output, 39);
 
         AddString("#UNREQUIRED / #TOTAL\n\n", output);
-        for (uint32_t type = 0; type < ERamsesObjectType::ERamsesObjectType_NUMBER_OF_TYPES; type++)
+        for (uint32_t type = 0; type < static_cast<uint32_t>(ERamsesObjectType::NUMBER_OF_TYPES); type++)
         {
             if (RamsesObjectTypeUtils::IsConcreteType(ERamsesObjectType(type)))
             {
@@ -711,7 +655,7 @@ namespace ramses
         }
     }
 
-    void SceneDumper::AddString(const ramses_internal::String&       stringToAppend,
+    void SceneDumper::AddString(std::string_view                     stringToAppend,
                                 ramses_internal::StringOutputStream& string,
                                 uint32_t                             width,
                                 bool rightAlign)
@@ -738,7 +682,7 @@ namespace ramses
                                               ramses_internal::StringOutputStream& outputStream)
     {
         outputStream << "Not required " << RamsesObjectTypeUtils::GetRamsesObjectTypeName(object.getType());
-        outputStream << " name: \"" << object.getName() << "\" handle: " << object.impl.getObjectRegistryHandle()
+        outputStream << " name: \"" << object.getName() << "\" handle: " << object.m_impl.getObjectRegistryHandle()
                      << "\n";
 
     }

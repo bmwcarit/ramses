@@ -20,6 +20,8 @@
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/EDataType.h"
 
+#include <string_view>
+
 namespace ramses
 {
     class Texture2D;
@@ -27,14 +29,13 @@ namespace ramses
     class TextureCube;
     class Texture2DBuffer;
     class RenderBuffer;
-    class StreamTexture;
     class Resource;
 
     class TextureSamplerImpl final : public SceneObjectImpl
     {
     public:
-        TextureSamplerImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
-        virtual ~TextureSamplerImpl() override;
+        TextureSamplerImpl(SceneImpl& scene, ERamsesObjectType type, std::string_view name);
+        ~TextureSamplerImpl() override;
 
         void initializeFrameworkData(
             const ramses_internal::TextureSamplerStates& samplerStates,
@@ -43,10 +44,10 @@ namespace ramses
             ramses_internal::ResourceContentHash textureHash,
             ramses_internal::MemoryHandle contentHandle);
 
-        virtual void     deinitializeFrameworkData() override;
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t validate() const override;
+        void     deinitializeFrameworkData() override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t validate() const override;
 
         ETextureAddressMode getWrapUMode() const;
         ETextureAddressMode getWrapVMode() const;
@@ -60,7 +61,6 @@ namespace ramses
         status_t setTextureData(const TextureCube& texture);
         status_t setTextureData(const Texture2DBuffer& texture);
         status_t setTextureData(const RenderBuffer& texture);
-        status_t setTextureData(const StreamTexture& texture);
 
         ramses_internal::TextureSamplerHandle getTextureSamplerHandle() const;
         ramses_internal::EDataType getTextureDataType() const;
@@ -73,7 +73,6 @@ namespace ramses
             ramses_internal::MemoryHandle contentHandle);
 
         status_t validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle) const;
-        status_t validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle) const;
         status_t validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle) const;
         status_t validateResource(const Resource* resource) const;
 

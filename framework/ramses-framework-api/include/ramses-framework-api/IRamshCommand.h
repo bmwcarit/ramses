@@ -34,14 +34,14 @@ namespace ramses
          * having this keyword as first token will call this commands execute method.
          * @returns the keyword string
          */
-        virtual const std::string& keyword() const = 0;
+        [[nodiscard]] virtual const std::string& keyword() const = 0;
 
         /**
          * @brief Helptext for this ramsh command. It will be displayed when the user invokes the 'help'
          * command. It should be a short description of the command and its expected arguments.
          * @returns the help text
          */
-        virtual const std::string& help() const = 0;
+        [[nodiscard]] virtual const std::string& help() const = 0;
 
         /**
          * @brief The command handler. It will be invoked with all ramsh command tokens.

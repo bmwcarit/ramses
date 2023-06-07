@@ -38,9 +38,9 @@ namespace ramses_internal
         void handleBufferDestroyedOrSourceUnavailable(StreamBufferHandle providerBuffer);
         void handleBufferDestroyed(ExternalBufferHandle providerBuffer);
 
-        const TransformationLinkManager& getTransformationLinkManager() const;
-        const DataReferenceLinkManager&  getDataReferenceLinkManager() const;
-        const TextureLinkManager&        getTextureLinkManager() const;
+        [[nodiscard]] const TransformationLinkManager& getTransformationLinkManager() const;
+        [[nodiscard]] const DataReferenceLinkManager&  getDataReferenceLinkManager() const;
+        [[nodiscard]] const TextureLinkManager&        getTextureLinkManager() const;
 
     private:
         template <typename BUFFERHANDLE>

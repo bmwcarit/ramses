@@ -9,15 +9,19 @@
 #ifndef RAMSES_NAMEDPIPE_H
 #define RAMSES_NAMEDPIPE_H
 
+#include "PlatformAbstraction/PlatformTypes.h"
+#include "Utils/LogMacros.h"
+
 #include <fcntl.h>
 #include <unistd.h>
-#include <cerrno>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <poll.h>
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "Utils/LogMacros.h"
+
 #include <cassert>
+#include <cerrno>
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -32,14 +36,14 @@ namespace ramses_internal
     class NamedPipe
     {
     public:
-        NamedPipe(const String& pipeName, bool createPipe)
+        NamedPipe(std::string_view pipeName, bool createPipe)
             : m_pipeName(pipeName)
             , m_createPipe(createPipe)
             , m_pipeFileDescriptor(-1)
         {
             if(m_createPipe)
             {
-                if (::mkfifo(pipeName.c_str(), 0666) != 0)
+                if (::mkfifo(m_pipeName.c_str(), 0666) != 0)
                 {
                     LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::NamedPipe mkfifo for pipe " << pipeName << " failed with errno: " << getSystemErrorStatus() << "!");
                 }
@@ -78,7 +82,7 @@ namespace ramses_internal
         {
             assert(-1 != m_pipeFileDescriptor);
             ssize_t bytesLeftToWrite = totalBytesToWrite;
-            const UInt8* writingLocation = static_cast<const UInt8*>(sourcePointer);
+            const uint8_t* writingLocation = static_cast<const uint8_t*>(sourcePointer);
 
             while(bytesLeftToWrite > 0)
             {
@@ -103,7 +107,7 @@ namespace ramses_internal
             return readExactBytesFromPipe(destinationPointer, totalBytesToRead);
         }
 
-        const String& getName() const
+        [[nodiscard]] const std::string& getName() const
         {
             return m_pipeName;
         }
@@ -127,7 +131,7 @@ namespace ramses_internal
         EReadFromPipeStatus readExactBytesFromPipe(void *writingLocation, ssize_t totalBytesToRead) const
         {
             ssize_t bytesRemaining = totalBytesToRead;
-            uint8_t* currentWritingLocation = reinterpret_cast<uint8_t*>(writingLocation);
+            uint8_t* currentWritingLocation = static_cast<uint8_t*>(writingLocation);
 
             while (true)
             {
@@ -157,8 +161,8 @@ namespace ramses_internal
                     // 1. pipe is empty (happens only iff pipe is non-blocking)
                     // 2. there is (a real) error
                     const int readErrorStatus = getSystemErrorStatus();
-                    const Bool isPipeEmpty = (readErrorStatus == EAGAIN || readErrorStatus == EWOULDBLOCK);
-                    const Bool isInTheMiddleOfReadingOperation = totalBytesToRead != bytesRemaining;
+                    const bool isPipeEmpty = (readErrorStatus == EAGAIN || readErrorStatus == EWOULDBLOCK);
+                    const bool isInTheMiddleOfReadingOperation = totalBytesToRead != bytesRemaining;
 
                     if(isPipeEmpty)
                     {
@@ -186,8 +190,8 @@ namespace ramses_internal
             return EReadFromPipeStatus_Failure;
         }
 
-        const String m_pipeName;
-        const Bool m_createPipe;
+        const std::string m_pipeName;
+        const bool m_createPipe;
         int m_pipeFileDescriptor;
     };
 

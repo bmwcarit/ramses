@@ -18,14 +18,13 @@ namespace ramses_internal
     {
         assert(m_renderBuffers.size() == 0u);
         assert(m_renderTargets.size() == 0u);
-        assert(m_streamTextures.size() == 0u);
         assert(m_blitPasses.size() == 0u);
         assert(m_dataBuffers.size() == 0u);
         assert(m_textureBuffers.size() == 0u);
         assert(m_vertexArrays.size() == 0u);
     }
 
-    void RendererSceneResourceRegistry::addRenderBuffer(RenderBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size, bool writeOnly)
+    void RendererSceneResourceRegistry::addRenderBuffer(RenderBufferHandle handle, DeviceResourceHandle deviceHandle, uint32_t size, bool writeOnly)
     {
         assert(!m_renderBuffers.contains(handle));
         m_renderBuffers.put(handle, { deviceHandle, size, writeOnly });
@@ -43,7 +42,7 @@ namespace ramses_internal
         return m_renderBuffers.get(handle)->deviceHandle;
     }
 
-    UInt32 RendererSceneResourceRegistry::getRenderBufferByteSize(RenderBufferHandle handle) const
+    uint32_t RendererSceneResourceRegistry::getRenderBufferByteSize(RenderBufferHandle handle) const
     {
         assert(m_renderBuffers.contains(handle));
         return m_renderBuffers.get(handle)->size;
@@ -112,42 +111,14 @@ namespace ramses_internal
     void RendererSceneResourceRegistry::getAllBlitPasses(BlitPassHandleVector& blitPasses) const
     {
         assert(blitPasses.empty());
-        blitPasses.reserve(m_streamTextures.size());
+        blitPasses.reserve(m_blitPasses.size());
         for(const auto& blitPass : m_blitPasses)
         {
             blitPasses.push_back(blitPass.key);
         }
     }
 
-    void RendererSceneResourceRegistry::addStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source)
-    {
-        assert(!m_streamTextures.contains(handle));
-        m_streamTextures.put(handle, { source });
-    }
-
-    void RendererSceneResourceRegistry::removeStreamTexture(StreamTextureHandle handle)
-    {
-        assert(m_streamTextures.contains(handle));
-        m_streamTextures.remove(handle);
-    }
-
-    WaylandIviSurfaceId RendererSceneResourceRegistry::getStreamTextureSourceId(StreamTextureHandle handle) const
-    {
-        assert(m_streamTextures.contains(handle));
-        return *m_streamTextures.get(handle);
-    }
-
-    void RendererSceneResourceRegistry::getAllStreamTextures(StreamTextureHandleVector& streamTextures) const
-    {
-        assert(streamTextures.empty());
-        streamTextures.reserve(m_streamTextures.size());
-        for(const auto& streamTexture : m_streamTextures)
-        {
-            streamTextures.push_back(streamTexture.key);
-        }
-    }
-
-    void RendererSceneResourceRegistry::addDataBuffer(DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, UInt32 size)
+    void RendererSceneResourceRegistry::addDataBuffer(DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, uint32_t size)
     {
         assert(!m_dataBuffers.contains(handle));
         m_dataBuffers.put(handle, { deviceHandle, size, dataBufferType });
@@ -181,7 +152,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneResourceRegistry::addTextureBuffer(TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, UInt32 size)
+    void RendererSceneResourceRegistry::addTextureBuffer(TextureBufferHandle handle, DeviceResourceHandle deviceHandle, ETextureFormat format, uint32_t size)
     {
         assert(!m_textureBuffers.contains(handle));
         m_textureBuffers.put(handle, { deviceHandle, size, format });
@@ -205,7 +176,7 @@ namespace ramses_internal
         return m_textureBuffers.get(handle)->format;
     }
 
-    UInt32 RendererSceneResourceRegistry::getTextureBufferByteSize(TextureBufferHandle handle) const
+    uint32_t RendererSceneResourceRegistry::getTextureBufferByteSize(TextureBufferHandle handle) const
     {
         assert(m_textureBuffers.contains(handle));
         return m_textureBuffers.get(handle)->size;
@@ -247,9 +218,9 @@ namespace ramses_internal
             vertexArrayRenderables.push_back(va.key);
     }
 
-    UInt32 RendererSceneResourceRegistry::getSceneResourceMemoryUsage(ESceneResourceType resourceType) const
+    uint32_t RendererSceneResourceRegistry::getSceneResourceMemoryUsage(ESceneResourceType resourceType) const
     {
-        UInt32 result = 0;
+        uint32_t result = 0;
         switch (resourceType)
         {
         case ESceneResourceType_RenderBuffer_WriteOnly:
@@ -277,9 +248,6 @@ namespace ramses_internal
             {
                 result += texBuffer.value.size;
             }
-            break;
-        case ESceneResourceType_StreamTexture:
-            // TODO Violin add stream texture memory
             break;
         default:
             assert(false && "Invalid scene resource type");

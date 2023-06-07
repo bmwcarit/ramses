@@ -23,7 +23,7 @@ namespace ramses_internal
         m_creator.preallocateSceneSize(sizeInfo);
     }
 
-    void ActionCollectingScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
+    void ActionCollectingScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride)
     {
         ResourceChangeCollectingScene::setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
         m_creator.setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
@@ -41,67 +41,67 @@ namespace ramses_internal
         m_creator.setDataReference(containerHandle, field, dataRef);
     }
 
-    void ActionCollectingScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data)
+    void ActionCollectingScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec4* data)
     {
         ResourceChangeCollectingScene::setDataVector4iArray(containerHandle, field, elementCount, data);
         m_creator.setDataVector4iArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data)
+    void ActionCollectingScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat2* data)
     {
         ResourceChangeCollectingScene::setDataMatrix22fArray(containerHandle, field, elementCount, data);
         m_creator.setDataMatrix22fArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data)
+    void ActionCollectingScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat3* data)
     {
         ResourceChangeCollectingScene::setDataMatrix33fArray(containerHandle, field, elementCount, data);
         m_creator.setDataMatrix33fArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data)
+    void ActionCollectingScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat4* data)
     {
         ResourceChangeCollectingScene::setDataMatrix44fArray(containerHandle, field, elementCount, data);
         m_creator.setDataMatrix44fArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data)
+    void ActionCollectingScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec3* data)
     {
         ResourceChangeCollectingScene::setDataVector3iArray(containerHandle, field, elementCount, data);
         m_creator.setDataVector3iArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data)
+    void ActionCollectingScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec2* data)
     {
         ResourceChangeCollectingScene::setDataVector2iArray(containerHandle, field, elementCount, data);
         m_creator.setDataVector2iArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data)
+    void ActionCollectingScene::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const int32_t* data)
     {
         ResourceChangeCollectingScene::setDataIntegerArray(containerHandle, field, elementCount, data);
         m_creator.setDataIntegerArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data)
+    void ActionCollectingScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec4* data)
     {
         ResourceChangeCollectingScene::setDataVector4fArray(containerHandle, field, elementCount, data);
         m_creator.setDataVector4fArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data)
+    void ActionCollectingScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec3* data)
     {
         ResourceChangeCollectingScene::setDataVector3fArray(containerHandle, field, elementCount, data);
         m_creator.setDataVector3fArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data)
+    void ActionCollectingScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec2* data)
     {
         ResourceChangeCollectingScene::setDataVector2fArray(containerHandle, field, elementCount, data);
         m_creator.setDataVector2fArray(containerHandle, field, elementCount, data);
     }
 
-    void ActionCollectingScene::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data)
+    void ActionCollectingScene::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const float* data)
     {
         ResourceChangeCollectingScene::setDataFloatArray(containerHandle, field, elementCount, data);
         m_creator.setDataFloatArray(containerHandle, field, elementCount, data);
@@ -135,22 +135,22 @@ namespace ramses_internal
         return handleActual;
     }
 
-    void ActionCollectingScene::setScaling(TransformHandle handle, const Vector3& scaling)
+    void ActionCollectingScene::setScaling(TransformHandle handle, const glm::vec3& scaling)
     {
         ResourceChangeCollectingScene::setScaling(handle, scaling);
-        m_creator.setTransformComponent(ETransformPropertyType_Scaling, handle, scaling, {});
+        m_creator.setScaling(handle, scaling);
     }
 
-    void ActionCollectingScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void ActionCollectingScene::setRotation(TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType)
     {
-        ResourceChangeCollectingScene::setRotation(handle, rotation, convention);
-        m_creator.setTransformComponent(ETransformPropertyType_Rotation, handle, rotation, convention);
+        ResourceChangeCollectingScene::setRotation(handle, rotation, rotationType);
+        m_creator.setRotation(handle, rotation, rotationType);
     }
 
-    void ActionCollectingScene::setTranslation(TransformHandle handle, const Vector3& translation)
+    void ActionCollectingScene::setTranslation(TransformHandle handle, const glm::vec3& translation)
     {
         ResourceChangeCollectingScene::setTranslation(handle, translation);
-        m_creator.setTransformComponent(ETransformPropertyType_Translation, handle, translation, {});
+        m_creator.setTranslation(handle, translation);
     }
 
     void ActionCollectingScene::removeChildFromNode(NodeHandle parent, NodeHandle child)
@@ -185,7 +185,7 @@ namespace ramses_internal
         m_creator.releaseNode(nodeHandle);
     }
 
-    NodeHandle ActionCollectingScene::allocateNode(UInt32 childrenCount, NodeHandle handle)
+    NodeHandle ActionCollectingScene::allocateNode(uint32_t childrenCount, NodeHandle handle)
     {
         NodeHandle handleActual = ResourceChangeCollectingScene::allocateNode(childrenCount, handle);
         m_creator.allocateNode(childrenCount, handleActual);
@@ -212,7 +212,7 @@ namespace ramses_internal
         m_creator.setRenderStateStencilOps(stateHandle, sfail, dpfail, dppass);
     }
 
-    void ActionCollectingScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
+    void ActionCollectingScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, uint8_t ref, uint8_t mask)
     {
         ResourceChangeCollectingScene::setRenderStateStencilFunc(stateHandle, func, ref, mask);
         m_creator.setRenderStateStencilFunc(stateHandle, func, ref, mask);
@@ -260,7 +260,7 @@ namespace ramses_internal
         m_creator.setRenderStateBlendOperations(stateHandle, operationColor, operationAlpha);
     }
 
-    void ActionCollectingScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    void ActionCollectingScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const glm::vec4& color)
     {
         ResourceChangeCollectingScene::setRenderStateBlendColor(stateHandle, color);
         m_creator.setRenderStateBlendColor(stateHandle, color);
@@ -310,7 +310,7 @@ namespace ramses_internal
         m_creator.setRenderableRenderState(renderableHandle, stateHandle);
     }
 
-    void ActionCollectingScene::setRenderableIndexCount(RenderableHandle renderableHandle, UInt32 indexCount)
+    void ActionCollectingScene::setRenderableIndexCount(RenderableHandle renderableHandle, uint32_t indexCount)
     {
         if (ResourceChangeCollectingScene::getRenderable(renderableHandle).indexCount != indexCount)
         {
@@ -319,7 +319,7 @@ namespace ramses_internal
         }
     }
 
-    void ActionCollectingScene::setRenderableStartIndex(RenderableHandle renderableHandle, UInt32 startIndex)
+    void ActionCollectingScene::setRenderableStartIndex(RenderableHandle renderableHandle, uint32_t startIndex)
     {
         if (ResourceChangeCollectingScene::getRenderable(renderableHandle).startIndex != startIndex)
         {
@@ -337,13 +337,13 @@ namespace ramses_internal
         }
     }
 
-    void ActionCollectingScene::setRenderableInstanceCount(RenderableHandle renderableHandle, UInt32 instanceCount)
+    void ActionCollectingScene::setRenderableInstanceCount(RenderableHandle renderableHandle, uint32_t instanceCount)
     {
         ResourceChangeCollectingScene::setRenderableInstanceCount(renderableHandle, instanceCount);
         m_creator.setRenderableInstanceCount(renderableHandle, instanceCount);
     }
 
-    void ActionCollectingScene::setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex)
+    void ActionCollectingScene::setRenderableStartVertex(RenderableHandle renderableHandle, uint32_t startVertex)
     {
         ResourceChangeCollectingScene::setRenderableStartVertex(renderableHandle, startVertex);
         m_creator.setRenderableStartVertex(renderableHandle, startVertex);
@@ -377,7 +377,7 @@ namespace ramses_internal
         return handleActual;
     }
 
-    RenderGroupHandle ActionCollectingScene::allocateRenderGroup(UInt32 renderableCount, UInt32 nestedGroupCount, RenderGroupHandle groupHandle)
+    RenderGroupHandle ActionCollectingScene::allocateRenderGroup(uint32_t renderableCount, uint32_t nestedGroupCount, RenderGroupHandle groupHandle)
     {
         const RenderGroupHandle handleActual = ResourceChangeCollectingScene::allocateRenderGroup(renderableCount, nestedGroupCount, groupHandle);
         m_creator.allocateRenderGroup(renderableCount, nestedGroupCount, handleActual);
@@ -391,13 +391,13 @@ namespace ramses_internal
         m_creator.releaseRenderGroup(groupHandle);
     }
 
-    void ActionCollectingScene::addRenderableToRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order)
+    void ActionCollectingScene::addRenderableToRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle, int32_t order)
     {
         ResourceChangeCollectingScene::addRenderableToRenderGroup(groupHandle, renderableHandle, order);
         m_creator.addRenderableToRenderGroup(groupHandle, renderableHandle, order);
     }
 
-    void ActionCollectingScene::addRenderGroupToRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, Int32 order)
+    void ActionCollectingScene::addRenderGroupToRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, int32_t order)
     {
         ResourceChangeCollectingScene::addRenderGroupToRenderGroup(groupHandleParent, groupHandleChild, order);
         m_creator.addRenderGroupToRenderGroup(groupHandleParent, groupHandleChild, order);
@@ -415,21 +415,7 @@ namespace ramses_internal
         m_creator.removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
     }
 
-    AnimationSystemHandle ActionCollectingScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle)
-    {
-        auto handle = ResourceChangeCollectingScene::addAnimationSystem(animationSystem, externalHandle);
-        m_creator.addAnimationSystem(handle, animationSystem->getFlags(), animationSystem->getTotalSizeInformation());
-        return handle;
-    }
-
-    void ActionCollectingScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        // SceneAction must be created first because animationSystemID is deleted with next call!
-        m_creator.removeAnimationSystem(animSystemHandle);
-        ResourceChangeCollectingScene::removeAnimationSystem(animSystemHandle);
-    }
-
-    ramses_internal::RenderPassHandle ActionCollectingScene::allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle handle /*= InvalidRenderPassHandle*/)
+    ramses_internal::RenderPassHandle ActionCollectingScene::allocateRenderPass(uint32_t renderGroupCount, RenderPassHandle handle /*= InvalidRenderPassHandle*/)
     {
         const RenderPassHandle handleActual = ResourceChangeCollectingScene::allocateRenderPass(renderGroupCount, handle);
         m_creator.allocateRenderPass(renderGroupCount, handleActual);
@@ -454,7 +440,7 @@ namespace ramses_internal
         m_creator.setRenderPassRenderTarget(passHandle, targetHandle);
     }
 
-    void ActionCollectingScene::setRenderPassRenderOrder(RenderPassHandle passHandle, Int32 renderOrder)
+    void ActionCollectingScene::setRenderPassRenderOrder(RenderPassHandle passHandle, int32_t renderOrder)
     {
         ResourceChangeCollectingScene::setRenderPassRenderOrder(passHandle, renderOrder);
         m_creator.setRenderPassRenderOrder(passHandle, renderOrder);
@@ -478,7 +464,7 @@ namespace ramses_internal
         m_creator.retriggerRenderPassRenderOnce(passHandle);
     }
 
-    void ActionCollectingScene::addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order)
+    void ActionCollectingScene::addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, int32_t order)
     {
         ResourceChangeCollectingScene::addRenderGroupToRenderPass(passHandle, groupHandle, order);
         m_creator.addRenderGroupToRenderPass(passHandle, groupHandle, order);
@@ -503,7 +489,7 @@ namespace ramses_internal
         m_creator.releaseBlitPass(passHandle);
     }
 
-    void ActionCollectingScene::setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder)
+    void ActionCollectingScene::setBlitPassRenderOrder(BlitPassHandle passHandle, int32_t renderOrder)
     {
         ResourceChangeCollectingScene::setBlitPassRenderOrder(passHandle, renderOrder);
         m_creator.setBlitPassRenderOrder(passHandle, renderOrder);
@@ -617,38 +603,19 @@ namespace ramses_internal
         m_creator.addRenderTargetRenderBuffer(targetHandle, bufferHandle);
     }
 
-    void ActionCollectingScene::setRenderPassClearColor(RenderPassHandle pass, const Vector4& clearColor)
+    void ActionCollectingScene::setRenderPassClearColor(RenderPassHandle pass, const glm::vec4& clearColor)
     {
         ResourceChangeCollectingScene::setRenderPassClearColor(pass, clearColor);
         m_creator.setRenderPassClearColor(pass, clearColor);
     }
 
-    void ActionCollectingScene::setRenderPassClearFlag(RenderPassHandle pass, UInt32 clearFlag)
+    void ActionCollectingScene::setRenderPassClearFlag(RenderPassHandle pass, uint32_t clearFlag)
     {
         ResourceChangeCollectingScene::setRenderPassClearFlag(pass, clearFlag);
         m_creator.setRenderPassClearFlag(pass, clearFlag);
     }
 
-    StreamTextureHandle ActionCollectingScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle /*= StreamTextureHandle::Invalid()*/)
-    {
-        const StreamTextureHandle handleActual = ResourceChangeCollectingScene::allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
-        m_creator.allocateStreamTexture(streamSource, fallbackTextureHash, handleActual);
-        return handleActual;
-    }
-
-    void ActionCollectingScene::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        ResourceChangeCollectingScene::releaseStreamTexture(streamTextureHandle);
-        m_creator.releaseStreamTexture(streamTextureHandle);
-    }
-
-    void ActionCollectingScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        ResourceChangeCollectingScene::setForceFallbackImage(streamTextureHandle, forceFallbackImage);
-        m_creator.setStreamTextureForceFallback(streamTextureHandle, forceFallbackImage);
-    }
-
-    DataBufferHandle ActionCollectingScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)
+    DataBufferHandle ActionCollectingScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle)
     {
         const DataBufferHandle allocatedHandle = ResourceChangeCollectingScene::allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, handle);
         m_creator.allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, allocatedHandle);
@@ -662,7 +629,7 @@ namespace ramses_internal
         m_creator.releaseDataBuffer(handle);
     }
 
-    void ActionCollectingScene::updateDataBuffer(DataBufferHandle handle, UInt32 offsetInBytes, UInt32 dataSizeInBytes, const Byte* data)
+    void ActionCollectingScene::updateDataBuffer(DataBufferHandle handle, uint32_t offsetInBytes, uint32_t dataSizeInBytes, const Byte* data)
     {
         ResourceChangeCollectingScene::updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
         m_creator.updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
@@ -682,10 +649,10 @@ namespace ramses_internal
         m_creator.releaseTextureBuffer(handle);
     }
 
-    void ActionCollectingScene::updateTextureBuffer(TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data)
+    void ActionCollectingScene::updateTextureBuffer(TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const Byte* data)
     {
         ResourceChangeCollectingScene::updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
-        const UInt32 dataSize = width * height * GetTexelSizeFromFormat(getTextureBuffer(handle).textureFormat);
+        const uint32_t dataSize = width * height * GetTexelSizeFromFormat(getTextureBuffer(handle).textureFormat);
         m_creator.updateTextureBuffer(handle, mipLevel, x, y, width, height, data, dataSize);
     }
 

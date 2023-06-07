@@ -15,13 +15,13 @@
 #include "Utils/BinaryFileOutputStream.h"
 #include "Utils/BinaryFileInputStream.h"
 #include "Utils/LogMacros.h"
-#include "Collections/String.h"
-#include <array>
 #include "Scene/ClientScene.h"
+
+#include <array>
 
 namespace ramses_internal
 {
-    static const UInt32 gSceneMarker = 0x534d4152;  // {'R', 'A', 'M', 'S'}
+    static const uint32_t gSceneMarker = 0x534d4152;  // {'R', 'A', 'M', 'S'}
 
     void ScenePersistation::ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo)
     {
@@ -43,7 +43,6 @@ namespace ramses_internal
         inStream >> sizeInfo.renderBufferCount;
         inStream >> sizeInfo.textureSamplerCount;
         inStream >> sizeInfo.dataBufferCount;
-        inStream >> sizeInfo.animationSystemCount;
         inStream >> sizeInfo.textureBufferCount;
         createInfo.m_sizeInfo = sizeInfo;
 
@@ -68,7 +67,6 @@ namespace ramses_internal
         outStream << sizeInfo.renderBufferCount;
         outStream << sizeInfo.textureSamplerCount;
         outStream << sizeInfo.dataBufferCount;
-        outStream << sizeInfo.animationSystemCount;
         outStream << sizeInfo.textureBufferCount;
 
         outStream << scene.getName();
@@ -83,22 +81,22 @@ namespace ramses_internal
 
         const std::vector<Byte>& actionData = collection.collectionData();
 
-        outStream << static_cast<UInt32>(gSceneMarker);
-        outStream << static_cast<UInt32>(collection.numberOfActions());
-        outStream << static_cast<UInt32>(actionData.size());
+        outStream << static_cast<uint32_t>(gSceneMarker);
+        outStream << static_cast<uint32_t>(collection.numberOfActions());
+        outStream << static_cast<uint32_t>(actionData.size());
 
         // write data
-        outStream.write(actionData.data(), static_cast<UInt32>(actionData.size()));
+        outStream.write(actionData.data(), static_cast<uint32_t>(actionData.size()));
 
         // write types and offsets
         for (const auto& reader : collection)
         {
-            outStream << static_cast<UInt32>(reader.type());
-            outStream << static_cast<UInt32>(reader.offsetInCollection());
+            outStream << static_cast<uint32_t>(reader.type());
+            outStream << static_cast<uint32_t>(reader.offsetInCollection());
         }
     }
 
-    void ScenePersistation::WriteSceneToFile(const String& filename, const ClientScene& scene)
+    void ScenePersistation::WriteSceneToFile(std::string_view filename, const ClientScene& scene)
     {
         File f(filename);
         BinaryFileOutputStream stream(f);
@@ -113,9 +111,9 @@ namespace ramses_internal
         }
     }
 
-    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene, AnimationSystemFactory* animSystemFactory)
+    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene)
     {
-        UInt32 sceneMarker = 0;
+        uint32_t sceneMarker = 0;
         inStream >> sceneMarker;
         if (sceneMarker != gSceneMarker)
         {
@@ -123,9 +121,9 @@ namespace ramses_internal
             return;
         }
 
-        UInt32 numberOfSceneActionsToRead = 0;
+        uint32_t numberOfSceneActionsToRead = 0;
         inStream >> numberOfSceneActionsToRead;
-        UInt32 sizeOfAllSceneActions = 0;
+        uint32_t sizeOfAllSceneActions = 0;
         inStream >> sizeOfAllSceneActions;
 
         SceneActionCollection actions(0, numberOfSceneActionsToRead);
@@ -138,11 +136,11 @@ namespace ramses_internal
         std::array<uint32_t, NumOfSceneActionTypes> objectCounts = {};
 
         // read types and offsets
-        for (UInt32 i = 0; i < numberOfSceneActionsToRead; ++i)
+        for (uint32_t i = 0; i < numberOfSceneActionsToRead; ++i)
         {
-            UInt32 actionType = 0;
+            uint32_t actionType = 0;
             inStream >> actionType;
-            UInt32 offsetInCollection = 0;
+            uint32_t offsetInCollection = 0;
             inStream >> offsetInCollection;
             actions.addRawSceneActionInformation(static_cast<ESceneActionId>(actionType), offsetInCollection);
             ++objectCounts[actionType];
@@ -159,10 +157,10 @@ namespace ramses_internal
                     }
                 }));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, actions, animSystemFactory);
+        SceneActionApplier::ApplyActionsOnScene(scene, actions);
     }
 
-    void ScenePersistation::ReadSceneFromFile(const String& filename, IScene& scene, AnimationSystemFactory* animSystemFactory)
+    void ScenePersistation::ReadSceneFromFile(std::string_view filename, IScene& scene)
     {
         File f(filename);
         if (!f.exists())
@@ -175,7 +173,7 @@ namespace ramses_internal
         const EStatus state = stream.getState();
         if (EStatus::Ok == state)
         {
-            ScenePersistation::ReadSceneFromStream(stream, scene, animSystemFactory);
+            ScenePersistation::ReadSceneFromStream(stream, scene);
         }
         else
         {

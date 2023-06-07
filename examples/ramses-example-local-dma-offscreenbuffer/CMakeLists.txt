@@ -6,12 +6,13 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_DYNAMIC(ramses-example-local-dma-offscreenbuffer
+expandModuleByPlatform(
+    NAME                ramses-example-local-dma-offscreenbuffer
     TYPE                BINARY
+    LINKED_TYPE         DYNAMIC
     ENABLE_INSTALL      ON
-    FILES_SOURCE        src/*
-    RESOURCE_FOLDER     res
-    DEPENDENCIES        displaycluster
-                        gbm
+    SRC_FILES           src/*
+    RESOURCE_FOLDERS    res
+    DEPENDENCIES        gbm
                         libdrm
 )

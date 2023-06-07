@@ -10,11 +10,11 @@
 #define RAMSES_RAMSHCOMMUNICATIONCHANNELDLT_H
 
 #include <cstdint>
+#include <string>
 
 namespace ramses_internal
 {
     class Ramsh;
-    class String;
 
     /**
      * RamshInput from DLT
@@ -27,7 +27,7 @@ namespace ramses_internal
 
     private:
         static int dltInjectionCallbackF(uint32_t sid, void* data, uint32_t length);
-        void processInput(const String& s);
+        void processInput(const std::string& s);
 
         Ramsh& m_ramsh;
 

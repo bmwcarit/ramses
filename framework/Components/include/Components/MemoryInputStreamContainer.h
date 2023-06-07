@@ -18,6 +18,7 @@ namespace ramses_internal
     class MemoryInputStreamContainer : public IInputStreamContainer
     {
     public:
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         explicit MemoryInputStreamContainer(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data)
             : m_data(std::move(data))
             , m_stream(m_data.get())
@@ -30,6 +31,7 @@ namespace ramses_internal
         }
 
     private:
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         const std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> m_data;
         BinaryInputStream m_stream;
     };

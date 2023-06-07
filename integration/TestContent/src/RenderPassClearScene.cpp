@@ -21,18 +21,17 @@
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/MeshNode.h"
 #include "TestScenes/RenderPassClearScene.h"
-#include "Math3d/Vector3.h"
 
 namespace ramses_internal
 {
-    RenderPassClearScene::RenderPassClearScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    RenderPassClearScene::RenderPassClearScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect("ramses-test-client-basic"))
         , m_blueTriangle(scene, m_effect, ramses::TriangleAppearance::EColor_Blue)
         , m_redTriangle(scene, m_effect, ramses::TriangleAppearance::EColor_Red)
         , m_greenTriangle(scene, m_effect, ramses::TriangleAppearance::EColor_Green)
-        , m_colorBuffer(*m_scene.createRenderBuffer(200u, 200u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
-        , m_depthStencilBuffer(*m_scene.createRenderBuffer(200u, 200u, ramses::ERenderBufferType_DepthStencil, ramses::ERenderBufferFormat_Depth24_Stencil8, ramses::ERenderBufferAccessMode_ReadWrite))
+        , m_colorBuffer(*m_scene.createRenderBuffer(200u, 200u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite))
+        , m_depthStencilBuffer(*m_scene.createRenderBuffer(200u, 200u, ramses::ERenderBufferType::DepthStencil, ramses::ERenderBufferFormat::Depth24_Stencil8, ramses::ERenderBufferAccessMode::ReadWrite))
     {
         ramses::RenderTarget& renderTarget = createRenderTarget();
         const ramses::PerspectiveCamera& camera = createCamera();
@@ -42,14 +41,14 @@ namespace ramses_internal
             ramses::RenderGroup& blueRenderGroup = *m_scene.createRenderGroup();
             ramses::RenderPass& blueRenderPass = *m_scene.createRenderPass();
 
-            m_blueTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc_LessEqual);
-            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Always, 0, 0xff);
-            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment);
+            m_blueTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc::LessEqual);
+            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Always, 0, 0xff);
+            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment);
 
             addTriangleMesh(m_blueTriangle, blueRenderGroup, -0.5f, -0.1f, -2.3f);
 
             blueRenderPass.setRenderOrder(0);
-            blueRenderPass.setClearColor(1.f, 0.f, 1.f, 1.f);
+            blueRenderPass.setClearColor({1.f, 0.f, 1.f, 1.f});
             blueRenderPass.setClearFlags(ramses::EClearFlags_All);
             blueRenderPass.addRenderGroup(blueRenderGroup);
             blueRenderPass.setCamera(camera);
@@ -61,13 +60,13 @@ namespace ramses_internal
             ramses::RenderGroup& redRenderGroup = *m_scene.createRenderGroup();
             ramses::RenderPass& redRenderPass = *m_scene.createRenderPass();
 
-            m_redTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc_LessEqual);
-            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Always, 0, 0xff);
-            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment);
+            m_redTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc::LessEqual);
+            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Always, 0, 0xff);
+            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment);
             addTriangleMesh(m_redTriangle, redRenderGroup, 0.5f, 0.1f, -3.0f);
 
             redRenderPass.setRenderOrder(1);
-            redRenderPass.setClearColor(0.f, 0.f, 0.f, 1.f);
+            redRenderPass.setClearColor({0.f, 0.f, 0.f, 1.f});
             redRenderPass.setClearFlags(state); // state will contain all combinations of clear flags tested
             redRenderPass.addRenderGroup(redRenderGroup);
             redRenderPass.setCamera(camera);
@@ -79,9 +78,9 @@ namespace ramses_internal
             ramses::RenderGroup& greenRenderGroup = *m_scene.createRenderGroup();
             ramses::RenderPass& greenRenderPass = *m_scene.createRenderPass();
 
-            m_greenTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc_LessEqual);
-            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Equal, 0, 0xff);
-            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Keep, ramses::EStencilOperation_Keep, ramses::EStencilOperation_Keep);
+            m_greenTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc::LessEqual);
+            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Equal, 0, 0xff);
+            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Keep, ramses::EStencilOperation::Keep, ramses::EStencilOperation::Keep);
             addTriangleMesh(m_greenTriangle, greenRenderGroup, 0.0f, 0.0f, -2.2f);
 
             greenRenderPass.setRenderOrder(2);
@@ -125,7 +124,7 @@ namespace ramses_internal
 
         ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(meshNode);
-        translateNode->translate(x, y, z);
+        translateNode->translate({x, y, z});
 
         targetGroup.addMeshNode(meshNode);
     }
@@ -138,7 +137,7 @@ namespace ramses_internal
 
         ramses::Node& posNode = *m_scene.createNode();
         posNode.addChild(camera);
-        posNode.translate(0.f, 0.f, 5.0f);
+        posNode.translate({0.f, 0.f, 5.0f});
 
         camera.setParent(posNode);
 
@@ -150,19 +149,19 @@ namespace ramses_internal
         const ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
-        const float vertexPositionsArray[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray
         {
-            -1.f, -1.f, 0.f,
-            1.f, -1.f, 0.f,
-            -1.f, 1.f, 0.f,
-            1.f, 1.f, 0.f
+            ramses::vec3f{ -1.f, -1.f, 0.f },
+            ramses::vec3f{ 1.f, -1.f, 0.f },
+            ramses::vec3f{ -1.f, 1.f, 0.f },
+            ramses::vec3f{ 1.f, 1.f, 0.f }
         };
 
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
-        const float textureCoordsArray[] = { 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 0.f}, ramses::vec2f{1.f, 0.f}, ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f} };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
 
@@ -178,10 +177,10 @@ namespace ramses_internal
         geometry->setInputBuffer(texCoordsInput, *textureCoords);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Nearest,
-            ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Nearest,
+            ramses::ETextureSamplingMethod::Nearest,
             renderBuffer);
 
         ramses::UniformInput textureInput;
@@ -193,7 +192,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -2.5f);
+        transNode->setTranslation({0.f, 0.f, -2.5f});
         meshNode->setParent(*transNode);
 
         return *meshNode;

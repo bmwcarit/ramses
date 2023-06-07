@@ -16,7 +16,7 @@
 namespace ramses_internal
 {
     template <typename DataType>
-    void logStatisticSummaryEntry(StringOutputStream& stream, const SummaryEntry<DataType>& summary, UInt32 numberTimeIntervals)
+    void logStatisticSummaryEntry(StringOutputStream& stream, const SummaryEntry<DataType>& summary, uint32_t numberTimeIntervals)
     {
         if (numberTimeIntervals > 0)
         {
@@ -32,7 +32,7 @@ namespace ramses_internal
     }
 
     template <typename DataType, size_t N>
-    void logStatisticSummaryEntry(StringOutputStream& stream, const FirstNElementsSummaryEntry<DataType, N>& summary, UInt32 numberTimeIntervals)
+    void logStatisticSummaryEntry(StringOutputStream& stream, const FirstNElementsSummaryEntry<DataType, N>& summary, uint32_t numberTimeIntervals)
     {
         if (numberTimeIntervals > 0 && summary.array.size() > 0)
         {

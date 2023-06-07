@@ -23,9 +23,9 @@ namespace ramses_internal
 
         IOutputStream& write(const void* data, size_t size) override;
 
-        const Byte* getData() const;
-        size_t getSize() const;
-        size_t getBytesWritten() const;
+        [[nodiscard]] const Byte* getData() const;
+        [[nodiscard]] size_t getSize() const;
+        [[nodiscard]] size_t getBytesWritten() const;
 
     private:
         Byte* m_dataBase;

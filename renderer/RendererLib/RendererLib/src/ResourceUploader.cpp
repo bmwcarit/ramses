@@ -27,7 +27,7 @@ namespace ramses_internal
     {
     }
 
-    absl::optional<DeviceResourceHandle> ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize)
+    std::optional<DeviceResourceHandle> ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, uint32_t& outVRAMSize)
     {
         ManagedResource res = rd.resource;
         const IResource& resourceObject = *res.get();
@@ -97,13 +97,13 @@ namespace ramses_internal
         }
     }
 
-    DeviceResourceHandle ResourceUploader::uploadTexture(IDevice& device, const TextureResource& texture, UInt32& vramSize)
+    DeviceResourceHandle ResourceUploader::uploadTexture(IDevice& device, const TextureResource& texture, uint32_t& vramSize)
     {
-        const Bool generateMipsFlag = texture.getGenerateMipChainFlag();
+        const bool generateMipsFlag = texture.getGenerateMipChainFlag();
         const auto& mipDataSizes = texture.getMipDataSizes();
-        const UInt32 numProvidedMipLevels = static_cast<UInt32>(mipDataSizes.size());
+        const uint32_t numProvidedMipLevels = static_cast<uint32_t>(mipDataSizes.size());
         assert(numProvidedMipLevels == 1u || !generateMipsFlag);
-        const UInt32 numMipLevelsToAllocate = generateMipsFlag ? TextureMathUtils::GetMipLevelCount(texture.getWidth(), texture.getHeight(), texture.getDepth()) : numProvidedMipLevels;
+        const uint32_t numMipLevelsToAllocate = generateMipsFlag ? TextureMathUtils::GetMipLevelCount(texture.getWidth(), texture.getHeight(), texture.getDepth()) : numProvidedMipLevels;
         vramSize = EstimateGPUAllocatedSizeOfTexture(texture, numMipLevelsToAllocate);
 
         // allocate texture
@@ -130,22 +130,22 @@ namespace ramses_internal
         {
         case EResourceType_Texture2D:
         case EResourceType_Texture3D:
-            for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
+            for (uint32_t mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
             {
-                const UInt32 width = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
-                const UInt32 height = TextureMathUtils::GetMipSize(mipLevel, texture.getHeight());
-                const UInt32 depth = TextureMathUtils::GetMipSize(mipLevel, texture.getDepth());
+                const uint32_t width = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
+                const uint32_t height = TextureMathUtils::GetMipSize(mipLevel, texture.getHeight());
+                const uint32_t depth = TextureMathUtils::GetMipSize(mipLevel, texture.getDepth());
                 device.uploadTextureData(textureDeviceHandle, mipLevel, 0u, 0u, 0u, width, height, depth, pData, mipDataSizes[mipLevel]);
                 pData += mipDataSizes[mipLevel];
             }
             break;
         case EResourceType_TextureCube:
-            for (UInt32 i = 0; i < 6u; ++i)
+            for (uint32_t i = 0; i < 6u; ++i)
             {
                 const ETextureCubeFace faceId = static_cast<ETextureCubeFace>(i);
-                for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
+                for (uint32_t mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipDataSizes.size()); ++mipLevel)
                 {
-                    const UInt32 faceSize = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
+                    const uint32_t faceSize = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
                     // texture faceID is encoded in Z offset
                     device.uploadTextureData(textureDeviceHandle, mipLevel, 0u, 0u, faceId, faceSize, faceSize, 1u, pData, mipDataSizes[mipLevel]);
                     pData += mipDataSizes[mipLevel];
@@ -181,7 +181,7 @@ namespace ramses_internal
         if (m_binaryShaderCache->hasBinaryShader(hash))
         {
             LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: Cache has binary shader");
-            const UInt32 binaryShaderSize = m_binaryShaderCache->getBinaryShaderSize(hash);
+            const uint32_t binaryShaderSize = m_binaryShaderCache->getBinaryShaderSize(hash);
             const BinaryShaderFormatID binaryShaderFormat = m_binaryShaderCache->getBinaryShaderFormat(hash);
 
             UInt8Vector buffer(binaryShaderSize);
@@ -215,14 +215,14 @@ namespace ramses_internal
             if (device.getBinaryShader(deviceHandle, binaryShader, format))
             {
                 assert(binaryShader.size() != 0u);
-                m_binaryShaderCache->storeBinaryShader(hash, sceneid, &binaryShader.front(), static_cast<UInt32>(binaryShader.size()), format);
+                m_binaryShaderCache->storeBinaryShader(hash, sceneid, &binaryShader.front(), static_cast<uint32_t>(binaryShader.size()), format);
             }
             else
                 LOG_WARN_P(CONTEXT_RENDERER, "ResourceUploader::storeShaderInBinaryShaderCache: failed to retrieve binary shader from device, shader cannot be stored in cache (deviceHandle={} hash={} sceneId={})", deviceHandle, hash, sceneid);
         }
     }
 
-    UInt32 ResourceUploader::EstimateGPUAllocatedSizeOfTexture(const TextureResource& texture, UInt32 numMipLevelsToAllocate)
+    uint32_t ResourceUploader::EstimateGPUAllocatedSizeOfTexture(const TextureResource& texture, uint32_t numMipLevelsToAllocate)
     {
         if (IsFormatCompressed(texture.getTextureFormat()))
         {

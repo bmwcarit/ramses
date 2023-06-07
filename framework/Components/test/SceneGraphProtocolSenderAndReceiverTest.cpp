@@ -37,21 +37,21 @@ namespace ramses_internal
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, broadcastNewScenesAvailable)
     {
         const SceneId sceneId(55u);
-        const String name("sceneName");
+        const std::string name("sceneName");
         SceneInfoVector newScenes;
         newScenes.push_back(SceneInfo(sceneId, name));
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, ramses::EFeatureLevel_Latest)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.broadcastNewScenesAvailable(newScenes));
+        EXPECT_TRUE(sender.broadcastNewScenesAvailable(newScenes, ramses::EFeatureLevel_Latest));
         ASSERT_TRUE(waitForEvent());
     }
 
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendInitializeScene)
     {
-        const String name("test");
+        const std::string name("test");
         const SceneId sceneId(1ull << 63);
 
         {
@@ -91,9 +91,9 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleNewScenesAvailable(newScenes, senderId, ramses::EFeatureLevel_Latest)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendScenesAvailable(receiverId, newScenes));
+        EXPECT_TRUE(sender.sendScenesAvailable(receiverId, newScenes, ramses::EFeatureLevel_Latest));
         ASSERT_TRUE(waitForEvent());
     }
 

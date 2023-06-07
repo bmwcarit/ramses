@@ -20,21 +20,21 @@ namespace ramses_internal
         return m_resources;
     }
 
-    void Context_Base::ParseContextExtensionsHelper(const Char* extensionNativeString, StringSet& extensionsOut)
+    void Context_Base::ParseContextExtensionsHelper(const char* extensionNativeString, HashSet<std::string>& extensionsOut)
     {
-        extensionsOut = StringUtils::TokenizeToSet(StringUtils::Trim(extensionNativeString));
+        extensionsOut = StringUtils::TokenizeToSet(StringUtils::TrimView(extensionNativeString));
     }
 
-    void Context_Base::parseContextExtensions(const Char* extensionNativeString)
+    void Context_Base::parseContextExtensions(const char* extensionNativeString)
     {
         ParseContextExtensionsHelper(extensionNativeString, m_contextExtensions);
     }
 
-    Bool Context_Base::isContextExtensionAvailable(const String& extensionName) const
+    bool Context_Base::isContextExtensionAvailable(const std::string& extensionName) const
     {
         // try out various prefixes; add more if required
-        String nameEXT = "EGL_EXT_" + extensionName;
-        String nameARB = "EGL_ARB_" + extensionName;
+        std::string nameEXT = "EGL_EXT_" + extensionName;
+        std::string nameARB = "EGL_ARB_" + extensionName;
 
         return  m_contextExtensions.contains(nameEXT) ||
                 m_contextExtensions.contains(nameARB);

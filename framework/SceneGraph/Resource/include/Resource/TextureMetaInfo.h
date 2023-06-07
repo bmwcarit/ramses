@@ -18,13 +18,13 @@
 
 namespace ramses_internal
 {
-    using MipDataSizeVector = std::vector<UInt32>;
+    using MipDataSizeVector = std::vector<uint32_t>;
     using TextureSwizzleArray = std::array<ETextureChannelColor, 4>;
     constexpr TextureSwizzleArray DefaultTextureSwizzleArray{ ETextureChannelColor::Red, ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Alpha };
 
     struct TextureMetaInfo
     {
-        explicit TextureMetaInfo(UInt32 width = 0u, UInt32 height = 0u, UInt32 depth = 0u, ETextureFormat format = ETextureFormat::Invalid, bool generateMipChain = false, const TextureSwizzleArray swizzle = {}, const MipDataSizeVector& mipDataSizes = {})
+        explicit TextureMetaInfo(uint32_t width = 0u, uint32_t height = 0u, uint32_t depth = 0u, ETextureFormat format = ETextureFormat::Invalid, bool generateMipChain = false, const TextureSwizzleArray swizzle = {}, const MipDataSizeVector& mipDataSizes = {})
             : m_width(width)
             , m_height(height)
             , m_depth(depth)
@@ -35,9 +35,9 @@ namespace ramses_internal
         {
         }
 
-        UInt32                      m_width;
-        UInt32                      m_height;
-        UInt32                      m_depth;
+        uint32_t                      m_width;
+        uint32_t                      m_height;
+        uint32_t                      m_depth;
         ETextureFormat              m_format;
         bool                        m_generateMipChain;
         MipDataSizeVector           m_dataSizes;

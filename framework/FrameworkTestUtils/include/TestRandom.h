@@ -17,11 +17,11 @@ namespace ramses_internal
     class TestRandom
     {
     public:
-        static UInt Get(UInt minVal, UInt maxVal)
+        static size_t Get(size_t minVal, size_t maxVal)
         {
             if (minVal >= maxVal)
                 return maxVal;
-            std::uniform_int_distribution<UInt> dis(minVal, maxVal - 1);
+            std::uniform_int_distribution<size_t> dis(minVal, maxVal - 1);
             return dis(getGen());
         }
     private:

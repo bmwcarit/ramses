@@ -39,7 +39,7 @@ namespace ramses_internal
          * @param   threadCount   The number of threads which should be created.
          * @param   aliveHandler  Thread alive handler
          */
-        void init(UInt16 threadCount, IThreadAliveNotifier& aliveHandler);
+        void init(uint16_t threadCount, IThreadAliveNotifier& aliveHandler);
 
         /**
          * Deinitialize the thread pool.

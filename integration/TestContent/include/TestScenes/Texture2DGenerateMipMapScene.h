@@ -27,7 +27,7 @@ namespace ramses_internal
     class Texture2DGenerateMipMapScene : public IntegrationScene
     {
     public:
-        Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
+        Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum EState
         {
@@ -39,7 +39,7 @@ namespace ramses_internal
         void createOrthoCamera();
         void createMesh(const ramses::TextureSampler& sampler, float translateXY = 0.0f, float scale = 1.0f);
         void createGeometry();
-        ramses::TextureSampler* createTexture2DSampler(UInt32 width = 2u, UInt32 height = 2u, UInt8 transparency = 0u);
+        ramses::TextureSampler* createTexture2DSampler(uint32_t width = 2u, uint32_t height = 2u, uint8_t transparency = 0u);
 
         const ramses::ArrayResource* m_indexArray;
         const ramses::ArrayResource* m_vertexPositions;

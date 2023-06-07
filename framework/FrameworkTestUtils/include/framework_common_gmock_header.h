@@ -11,6 +11,7 @@
 
 #include "SceneAPI/Handles.h"
 #include <iosfwd>
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -20,22 +21,23 @@ namespace ramses_internal
     // which violates the one definition rule (http://en.wikipedia.org/wiki/One_Definition_Rule)
     // Can also read more about it here: https://groups.google.com/forum/#!topic/googletestframework/mBlPZtprtr8
 
-    class Matrix44f;
     class SceneActionCollection;
-    class String;
     class RamshInput;
     class Guid;
     struct SceneInfo;
-    struct SomeIPMsgHeader;
 
-    void PrintTo(const Matrix44f& matrix, ::std::ostream* os);
     void PrintTo(const SceneActionCollection& actions, std::ostream* os);
-    void PrintTo(const String& string, std::ostream* os);
     void PrintTo(const DataFieldHandle& field, ::std::ostream* os);
     void PrintTo(const Guid& guid, ::std::ostream* os);
     void PrintTo(const SceneInfo&, ::std::ostream* os);
     void PrintTo(const RamshInput&, ::std::ostream* os);
-    void PrintTo(const SomeIPMsgHeader&, ::std::ostream* os);
+}
+
+namespace glm
+{
+    void PrintTo(const mat4& matrix, ::std::ostream* os);
+    void PrintTo(const vec3& value, ::std::ostream* os);
+    void PrintTo(const vec4& value, ::std::ostream* os);
 }
 
 

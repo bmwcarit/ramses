@@ -16,7 +16,7 @@ namespace ramses_internal
     class ShaderGPUResource : public GPUResource
     {
     public:
-        explicit ShaderGPUResource(UInt32 gpuAddress)
+        explicit ShaderGPUResource(uint32_t gpuAddress)
             : GPUResource(gpuAddress, 1u) // Giving shader size 1 byte as the footprint of shader in GPU memory is driver/platform specific and it should anyway not affect any measuring
         {
         }

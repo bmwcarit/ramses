@@ -26,7 +26,6 @@ public:
     {
         allocateHelper.allocateRenderTarget(renderTargetHandle);
         allocateHelper.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, renderBufferHandle);
-        allocateHelper.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, ResourceContentHash(1u, 2u), streamTextureHandle);
         allocateHelper.allocateBlitPass(RenderBufferHandle(81u), RenderBufferHandle(82u), blitPassHandle);
         allocateHelper.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u, dataBufferHandle);
         allocateHelper.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4 },{ 2, 2 },{ 1, 1 } }, textureBufferHandle);
@@ -36,7 +35,6 @@ protected:
     const SceneId               sceneID = SceneId(13u);
     const RenderTargetHandle    renderTargetHandle = RenderTargetHandle(5u);
     const RenderBufferHandle    renderBufferHandle = RenderBufferHandle(6u);
-    const StreamTextureHandle   streamTextureHandle = StreamTextureHandle(7u);
     const BlitPassHandle        blitPassHandle = BlitPassHandle(8u);
     const DataBufferHandle      dataBufferHandle = DataBufferHandle(9u);
     const TextureBufferHandle   textureBufferHandle = TextureBufferHandle(10u);
@@ -66,7 +64,6 @@ struct BasicActionSet
 static const BasicActionSet ActionSet_RenderTarget{ ESceneResourceAction_CreateRenderTarget, ESceneResourceAction_DestroyRenderTarget };
 static const BasicActionSet ActionSet_RenderBuffer{ ESceneResourceAction_CreateRenderBuffer, ESceneResourceAction_DestroyRenderBuffer };
 static const BasicActionSet ActionSet_BlitPass{ ESceneResourceAction_CreateBlitPass, ESceneResourceAction_DestroyBlitPass };
-static const BasicActionSet ActionSet_StreamTexture{ ESceneResourceAction_CreateStreamTexture, ESceneResourceAction_DestroyStreamTexture };
 static const BasicActionSet ActionSet_DataBuffer{ ESceneResourceAction_CreateDataBuffer, ESceneResourceAction_DestroyDataBuffer, ESceneResourceAction_UpdateDataBuffer };
 static const BasicActionSet ActionSet_TextureBuffer{ ESceneResourceAction_CreateTextureBuffer, ESceneResourceAction_DestroyTextureBuffer, ESceneResourceAction_UpdateTextureBuffer };
 
@@ -75,7 +72,6 @@ static const BasicActionSet TestSceneResourceActions[] =
     ActionSet_RenderTarget,
     ActionSet_RenderBuffer,
     ActionSet_BlitPass,
-    ActionSet_StreamTexture,
     ActionSet_DataBuffer,
     ActionSet_TextureBuffer
 };
@@ -91,7 +87,6 @@ TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions)
     SceneResourceActionVector actions;
     actions.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_CreateRenderBuffer));
     actions.push_back(SceneResourceAction(renderTargetHandle.asMemoryHandle(), ESceneResourceAction_CreateRenderTarget));
-    actions.push_back(SceneResourceAction(streamTextureHandle.asMemoryHandle(), ESceneResourceAction_CreateStreamTexture));
     actions.push_back(SceneResourceAction(blitPassHandle.asMemoryHandle(), ESceneResourceAction_CreateBlitPass));
     actions.push_back(SceneResourceAction(dataBufferHandle.asMemoryHandle(), ESceneResourceAction_CreateDataBuffer));
     actions.push_back(SceneResourceAction(dataBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateDataBuffer));
@@ -101,7 +96,6 @@ TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions)
     InSequence seq;
     EXPECT_CALL(resourceManager, uploadRenderTargetBuffer(renderBufferHandle, sceneID, _));
     EXPECT_CALL(resourceManager, uploadRenderTarget(renderTargetHandle, _, sceneID));
-    EXPECT_CALL(resourceManager, uploadStreamTexture(streamTextureHandle, _, sceneID));
     EXPECT_CALL(resourceManager, uploadBlitPassRenderTargets(blitPassHandle, _, _, sceneID));
     EXPECT_CALL(resourceManager, uploadDataBuffer(dataBufferHandle, _, _, _, sceneID));
     EXPECT_CALL(resourceManager, updateDataBuffer(dataBufferHandle, _, _, sceneID));
@@ -115,7 +109,6 @@ TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions_Unloads)
     SceneResourceActionVector actions;
     actions.push_back(SceneResourceAction(renderTargetHandle.asMemoryHandle(), ESceneResourceAction_DestroyRenderTarget));
     actions.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_DestroyRenderBuffer));
-    actions.push_back(SceneResourceAction(streamTextureHandle.asMemoryHandle(), ESceneResourceAction_DestroyStreamTexture));
     actions.push_back(SceneResourceAction(blitPassHandle.asMemoryHandle(), ESceneResourceAction_DestroyBlitPass));
     actions.push_back(SceneResourceAction(dataBufferHandle.asMemoryHandle(), ESceneResourceAction_DestroyDataBuffer));
     actions.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_DestroyTextureBuffer));
@@ -123,7 +116,6 @@ TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions_Unloads)
     InSequence seq;
     EXPECT_CALL(resourceManager, unloadRenderTarget(renderTargetHandle, sceneID));
     EXPECT_CALL(resourceManager, unloadRenderTargetBuffer(renderBufferHandle, sceneID));
-    EXPECT_CALL(resourceManager, unloadStreamTexture(streamTextureHandle, sceneID));
     EXPECT_CALL(resourceManager, unloadBlitPassRenderTargets(blitPassHandle, sceneID));
     EXPECT_CALL(resourceManager, unloadDataBuffer(dataBufferHandle, sceneID));
     EXPECT_CALL(resourceManager, unloadTextureBuffer(textureBufferHandle, sceneID));
@@ -141,7 +133,6 @@ TEST_F(APendingSceneResourcesUtils, getsSceneResourcesFromSceneAndApliesThem)
     InSequence seq;
     EXPECT_CALL(resourceManager, uploadRenderTargetBuffer(renderBufferHandle, sceneID, _));
     EXPECT_CALL(resourceManager, uploadRenderTarget(renderTargetHandle, _, sceneID));
-    EXPECT_CALL(resourceManager, uploadStreamTexture(streamTextureHandle, _, sceneID));
     EXPECT_CALL(resourceManager, uploadBlitPassRenderTargets(blitPassHandle, RenderBufferHandle(81), RenderBufferHandle(82), sceneID));
     EXPECT_CALL(resourceManager, uploadDataBuffer(dataBufferHandle, _, _, _, sceneID));
     EXPECT_CALL(resourceManager, updateDataBuffer(dataBufferHandle, _, _, sceneID));

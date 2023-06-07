@@ -8,6 +8,8 @@
 
 #include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 #include "Utils/ThreadLocalLogForced.h"
+#include "Utils/StringUtils.h"
+
 #include <cassert>
 
 namespace ramses_internal
@@ -41,11 +43,11 @@ namespace ramses_internal
 
     void WaylandEGLExtensionProcs::Init()
     {
-        ramses_internal::String eglExtensionsString(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
-        ramses_internal::String glExtensionsString(reinterpret_cast<const ramses_internal::Char*>(glGetString(GL_EXTENSIONS)));
+        std::string eglExtensionsString(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
+        std::string glExtensionsString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
-        const StringSet eglExtensions = StringUtils::TokenizeToSet(eglExtensionsString);
-        const StringSet glExtensions = StringUtils::TokenizeToSet(glExtensionsString);
+        const auto eglExtensions = StringUtils::TokenizeToSet(eglExtensionsString);
+        const auto glExtensions = StringUtils::TokenizeToSet(glExtensionsString);
 
         if (CheckExtensionAvailable(glExtensions, "GL_OES_EGL_image") &&
             CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base") &&
@@ -77,7 +79,7 @@ namespace ramses_internal
         }
     }
 
-    bool WaylandEGLExtensionProcs::CheckExtensionAvailable(const ramses_internal::StringSet& eglExtensions, const ramses_internal::String& extensionName)
+    bool WaylandEGLExtensionProcs::CheckExtensionAvailable(const ramses_internal::HashSet<std::string>& eglExtensions, const std::string& extensionName)
     {
         if (eglExtensions.contains(extensionName))
         {

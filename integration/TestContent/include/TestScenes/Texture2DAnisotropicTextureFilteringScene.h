@@ -27,7 +27,7 @@ namespace ramses_internal
     class Texture2DAnisotropicTextureFilteringScene : public IntegrationScene
     {
     public:
-        Texture2DAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        Texture2DAnisotropicTextureFilteringScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum EState
         {

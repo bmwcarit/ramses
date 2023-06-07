@@ -36,13 +36,13 @@ namespace ramses_internal
         MOCK_METHOD(bool, hasShellSurface, (), (const, override));
         MOCK_METHOD(void, logInfos, (RendererLogContext& context), (const, override));
         MOCK_METHOD(WaylandIviSurfaceId, getIviSurfaceId, (), (const, override));
-        MOCK_METHOD(void, sendFrameCallbacks, (UInt32 time), (override));
+        MOCK_METHOD(void, sendFrameCallbacks, (uint32_t time), (override));
         MOCK_METHOD(IWaylandBuffer*, getWaylandBuffer, (), (const, override));
-        MOCK_METHOD(UInt32, getNumberOfCommitedFrames, (), (const, override));
+        MOCK_METHOD(uint32_t, getNumberOfCommitedFrames, (), (const, override));
         MOCK_METHOD(void, resetNumberOfCommitedFrames, (), (override));
-        MOCK_METHOD(UInt64, getNumberOfCommitedFramesSinceBeginningOfTime, (), (const, override));
+        MOCK_METHOD(uint64_t, getNumberOfCommitedFramesSinceBeginningOfTime, (), (const, override));
         MOCK_METHOD(bool, hasPendingBuffer, (), (const, override));
-        MOCK_METHOD(const String&, getSurfaceTitle, (), (const, override));
+        MOCK_METHOD(const std::string&, getSurfaceTitle, (), (const, override));
         MOCK_METHOD(void, bufferDestroyed, (IWaylandBuffer& buffer), (override));
         MOCK_METHOD(void, setIviSurface, (IWaylandIVISurface* iviSurface), (override));
         MOCK_METHOD(bool, hasIviSurface, (), (const, override));

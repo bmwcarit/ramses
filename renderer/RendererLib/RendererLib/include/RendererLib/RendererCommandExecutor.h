@@ -48,13 +48,11 @@ namespace ramses_internal
         void operator()(const RendererCommand::DestroyOffscreenBuffer& cmd);
         void operator()(const RendererCommand::CreateStreamBuffer& cmd);
         void operator()(const RendererCommand::DestroyStreamBuffer& cmd);
-        void operator()(const RendererCommand::SetStreamBufferState& cmd);
         void operator()(const RendererCommand::CreateExternalBuffer& cmd);
         void operator()(const RendererCommand::DestroyExternalBuffer& cmd);
         void operator()(const RendererCommand::SetClearFlags& cmd);
         void operator()(const RendererCommand::SetClearColor& cmd);
         void operator()(const RendererCommand::SetExterallyOwnedWindowSize& cmd);
-        void operator()(RendererCommand::UpdateWarpingData& cmd);
         void operator()(RendererCommand::ReadPixels& cmd);
         void operator()(const RendererCommand::SetSkippingOfUnmodifiedBuffers& cmd);
         void operator()(const RendererCommand::LogStatistics& cmd);
@@ -71,10 +69,6 @@ namespace ramses_internal
         void operator()(const RendererCommand::SetLimits_FrameBudgets& cmd);
         void operator()(const RendererCommand::SetLimits_FlushesForceApply& cmd);
         void operator()(const RendererCommand::SetLimits_FlushesForceUnsubscribe& cmd);
-        void operator()(const RendererCommand::FrameProfiler_Toggle& cmd);
-        void operator()(const RendererCommand::FrameProfiler_TimingGraphHeight& cmd);
-        void operator()(const RendererCommand::FrameProfiler_CounterGraphHeight& cmd);
-        void operator()(const RendererCommand::FrameProfiler_RegionFilterFlags& cmd);
         void operator()(const RendererCommand::ConfirmationEcho& cmd);
 
     private:

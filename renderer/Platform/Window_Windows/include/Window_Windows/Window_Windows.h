@@ -16,19 +16,21 @@
 #include "Platform_Base/Window_Base.h"
 #include "RendererAPI/IWindowEventHandler.h"
 
+#include <string>
+
 namespace ramses_internal
 {
     class Window_Windows : public Window_Base
     {
     public:
-        Window_Windows(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, UInt32 id);
+        Window_Windows(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, uint32_t id);
         ~Window_Windows() override;
 
         virtual bool init() override;
 
-        Bool setFullscreen(Bool fullscreen) override;
+        bool setFullscreen(bool fullscreen) override;
         void handleEvents() override;
-        void setTitle(const String& title) override;
+        void setTitle(std::string_view title) override;
         bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
         bool hasTitle() const override
@@ -49,31 +51,31 @@ namespace ramses_internal
         WNDCLASSA   m_windowClass;
         DWORD       m_windowStyle;
         DWORD       m_windowEXStyle;
-        UInt32      m_keyModifiers;
+        uint32_t      m_keyModifiers;
 
-        Bool        m_bLButtonDown;
-        Bool        m_bRButtonDown;
-        Bool        m_bMButtonDown;
+        bool        m_bLButtonDown;
+        bool        m_bRButtonDown;
+        bool        m_bMButtonDown;
 
-        Int32       m_mousePosX;
-        Int32       m_mousePosY;
+        int32_t       m_mousePosX;
+        int32_t       m_mousePosY;
 
-        Bool        m_isMouseTracked;
+        bool        m_isMouseTracked;
 
-        String      m_classname;
+        std::string m_classname;
 
-        Bool        m_userProvidedWindowHandle;
+        bool        m_userProvidedWindowHandle;
 
         void generateUniqueClassname();
         static LRESULT WINAPI WindowProcedure(HWND hWnd, ::UINT uMsg, WPARAM wParam, LPARAM lParam);
 
         void handleSysCommand(WPARAM wParam);
-        void handleKeyEvent(UInt32 windowsMsg, WPARAM wParam, LPARAM lParam);
-        void handleMouseEvent(EMouseEventType type, Int32 posX, Int32 posY);
+        void handleKeyEvent(uint32_t windowsMsg, WPARAM wParam, LPARAM lParam);
+        void handleMouseEvent(EMouseEventType type, int32_t posX, int32_t posY);
         void handleWindowCloseEvent();
-        void handleWindowMoveEvent(Int32 posX, Int32 posY);
+        void handleWindowMoveEvent(int32_t posX, int32_t posY);
 
-        Bool setVisibility(Bool visible);
+        bool setVisibility(bool visible);
 
         static HWND WindowsWindowHandleToHWND(WindowsWindowHandle handle);
         static void PrintError();

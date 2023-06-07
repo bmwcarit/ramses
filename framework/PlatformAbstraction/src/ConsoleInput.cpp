@@ -8,6 +8,7 @@
 
 #include "PlatformAbstraction/ConsoleInput.h"
 #include <mutex>
+#include <array>
 
 #ifdef _MSC_VER
 
@@ -139,31 +140,6 @@ namespace
     };
 }
 
-#elif defined(__ghs__)
-namespace
-{
-    class ConsoleInputImpl final
-    {
-    public:
-        bool init()
-        {
-            return false;
-        }
-
-        ~ConsoleInputImpl()
-        {
-        }
-
-        bool readChar(char& c)
-        {
-            return false;
-        }
-
-        void interruptReadChar()
-        {
-        }
-    };
-}
 #else
 
 #include <sys/select.h>
@@ -183,14 +159,15 @@ namespace
             const int stdinFd = ::fileno(stdin);
             fd_set fdset;
             FD_ZERO(&fdset);  // NOLINT macro does unsafe stuff inside
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             FD_SET(stdinFd, &fdset);
             struct timeval timeout = {0, 0};
             if (::select(stdinFd + 1, &fdset, nullptr, nullptr, &timeout) < 0)
                 return false;
 
             // create interrupt pipes
-            int tmpPipes[2];
-            if (::pipe(tmpPipes) != 0)
+            std::array<int, 2> tmpPipes;
+            if (::pipe(tmpPipes.data()) != 0)
                 return false;
             m_readPipe = tmpPipes[0];
             m_WritePipe = tmpPipes[1];
@@ -235,6 +212,7 @@ namespace
                 // disable echo
                 struct termios temporaryWithoutEcho;
                 std::memcpy(&temporaryWithoutEcho, &m_oldTerminalSettings, sizeof(struct termios));
+                // NOLINTNEXTLINE(hicpp-signed-bitwise)
                 temporaryWithoutEcho.c_lflag &= ~(ECHO | ICANON);
                 temporaryWithoutEcho.c_cc[VTIME] = 0;
                 temporaryWithoutEcho.c_cc[VMIN] = 1;
@@ -247,16 +225,20 @@ namespace
                 // select infinitly on stdin and pipe
                 fd_set fdset;
                 FD_ZERO(&fdset);  // NOLINT macro does unsafe stuff inside
+                // NOLINTNEXTLINE(hicpp-signed-bitwise)
                 FD_SET(m_readPipe, &fdset); // read end of pipe;
+                // NOLINTNEXTLINE(hicpp-signed-bitwise)
                 FD_SET(stdinFd, &fdset);
                 if (::select(std::max(stdinFd, m_readPipe) + 1, &fdset, nullptr, nullptr, nullptr) > 0)
                 {
                     // check which fd triggered
+                    // NOLINTNEXTLINE(hicpp-signed-bitwise)
                     if (FD_ISSET(stdinFd, &fdset))
                     {
                         if (::read(stdinFd, &c, 1) == 1)
                             ok = true;
                     }
+                    // NOLINTNEXTLINE(hicpp-signed-bitwise)
                     if (FD_ISSET(m_readPipe, &fdset))
                     {
                         // user interrupt

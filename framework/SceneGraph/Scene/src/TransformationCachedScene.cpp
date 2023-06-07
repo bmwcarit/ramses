@@ -9,6 +9,13 @@
 #include "Scene/TransformationCachedScene.h"
 #include "Utils/MemoryPoolExplicit.h"
 #include "Utils/MemoryPool.h"
+#include "Math3d/Rotation.h"
+#include "glm/gtx/transform.hpp"
+
+namespace
+{
+    const auto Identity = glm::identity<glm::mat4>();
+}
 
 namespace ramses_internal
 {
@@ -61,7 +68,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::setTranslation(TransformHandle transform, const Vector3& translation)
+    void TransformationCachedSceneT<MEMORYPOOL>::setTranslation(TransformHandle transform, const glm::vec3& translation)
     {
         const NodeHandle nodeTransformIsConnectedTo = this->getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
@@ -71,17 +78,17 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention)
+    void TransformationCachedSceneT<MEMORYPOOL>::setRotation(TransformHandle transform, const glm::vec4& rotation, ERotationType rotationType)
     {
         const NodeHandle nodeTransformIsConnectedTo = this->getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
         getMatrixCacheEntry(nodeTransformIsConnectedTo).m_isIdentity = false;
         propagateDirty(nodeTransformIsConnectedTo);
-        SceneT<MEMORYPOOL>::setRotation(transform, rotation, convention);
+        SceneT<MEMORYPOOL>::setRotation(transform, rotation, rotationType);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::setScaling(TransformHandle transform, const Vector3& scaling)
+    void TransformationCachedSceneT<MEMORYPOOL>::setScaling(TransformHandle transform, const glm::vec3& scaling)
     {
         const NodeHandle nodeTransformIsConnectedTo = this->getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
@@ -91,7 +98,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    NodeHandle TransformationCachedSceneT<MEMORYPOOL>::allocateNode(UInt32 childrenCount, NodeHandle node)
+    NodeHandle TransformationCachedSceneT<MEMORYPOOL>::allocateNode(uint32_t childrenCount, NodeHandle node)
     {
         const NodeHandle _node = SceneT<MEMORYPOOL>::allocateNode(childrenCount, node);
         m_matrixCachePool.allocate(_node);
@@ -107,14 +114,14 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::setMatrixCache(ETransformationMatrixType matrixType, MatrixCacheEntry& matrixCache, const Matrix44f& matrix) const
+    void TransformationCachedSceneT<MEMORYPOOL>::setMatrixCache(ETransformationMatrixType matrixType, MatrixCacheEntry& matrixCache, const glm::mat4& matrix) const
     {
         matrixCache.m_matrix[matrixType] = matrix;
         matrixCache.m_matrixDirty[matrixType] = false;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Matrix44f& TransformationCachedSceneT<MEMORYPOOL>::findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(ETransformationMatrixType matrixType, NodeHandle node, NodeHandleVector& dirtyNodes) const
+    const glm::mat4& TransformationCachedSceneT<MEMORYPOOL>::findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(ETransformationMatrixType matrixType, NodeHandle node, NodeHandleVector& dirtyNodes) const
     {
         dirtyNodes.clear();
         NodeHandle currentNode = node;
@@ -132,13 +139,13 @@ namespace ramses_internal
             }
         }
 
-        return Matrix44f::Identity;
+        return Identity;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::updateMatrixCacheForDirtyNodes(ETransformationMatrixType matrixType, Matrix44f& chainMatrix, const NodeHandleVector& dirtyNodes) const
+    void TransformationCachedSceneT<MEMORYPOOL>::updateMatrixCacheForDirtyNodes(ETransformationMatrixType matrixType, glm::mat4& chainMatrix, const NodeHandleVector& dirtyNodes) const
     {
-        for (Int32 i = static_cast<Int32>(dirtyNodes.size()) - 1; i >= 0; --i)
+        for (int32_t i = static_cast<int32_t>(dirtyNodes.size()) - 1; i >= 0; --i)
         {
             const NodeHandle dirtyNode = dirtyNodes[i];
             MatrixCacheEntry& matrixCache = getMatrixCacheEntry(dirtyNode);
@@ -149,9 +156,9 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    Matrix44f TransformationCachedSceneT<MEMORYPOOL>::updateMatrixCache(ETransformationMatrixType matrixType, NodeHandle node) const
+    glm::mat4 TransformationCachedSceneT<MEMORYPOOL>::updateMatrixCache(ETransformationMatrixType matrixType, NodeHandle node) const
     {
-        Matrix44f chainMatrix = findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(matrixType, node, m_dirtyNodes);
+        auto chainMatrix = findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(matrixType, node, m_dirtyNodes);
         updateMatrixCacheForDirtyNodes(matrixType, chainMatrix, m_dirtyNodes);
 
         return chainMatrix;
@@ -159,7 +166,7 @@ namespace ramses_internal
 
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::computeMatrixForNode(ETransformationMatrixType matrixType, NodeHandle node, Matrix44f& chainMatrix) const
+    void TransformationCachedSceneT<MEMORYPOOL>::computeMatrixForNode(ETransformationMatrixType matrixType, NodeHandle node, glm::mat4& chainMatrix) const
     {
         switch (matrixType)
         {
@@ -220,32 +227,32 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::computeWorldMatrixForNode(NodeHandle node, Matrix44f& chainMatrix) const
+    void TransformationCachedSceneT<MEMORYPOOL>::computeWorldMatrixForNode(NodeHandle node, glm::mat4& chainMatrix) const
     {
         const TransformHandle* transformHandlePtr = m_nodeToTransformMap.get(node);
         if (transformHandlePtr != nullptr)
         {
             const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
-            const Matrix44f matrix =
-                Matrix44f::Translation(transform.translation) *
-                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention) *
-                Matrix44f::Scaling(transform.scaling);
+            const auto matrix =
+                glm::translate(transform.translation) *
+                Math3d::Rotation(transform.rotation, transform.rotationType) *
+                glm::scale(transform.scaling);
 
             chainMatrix *= matrix;
         }
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::computeObjectMatrixForNode(NodeHandle node, Matrix44f& chainMatrix) const
+    void TransformationCachedSceneT<MEMORYPOOL>::computeObjectMatrixForNode(NodeHandle node, glm::mat4& chainMatrix) const
     {
         const TransformHandle* transformHandlePtr = m_nodeToTransformMap.get(node);
         if (transformHandlePtr != nullptr)
         {
             const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
-            const Matrix44f matrix =
-                Matrix44f::Scaling(transform.scaling.inverse()) *
-                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention).transpose() *
-                Matrix44f::Translation(-transform.translation);
+            const auto matrix =
+                glm::scale(glm::vec3(1.f) / transform.scaling) *
+                glm::transpose(Math3d::Rotation(transform.rotation, transform.rotationType)) *
+                glm::translate(-transform.translation);
 
             chainMatrix = matrix * chainMatrix;
         }

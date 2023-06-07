@@ -33,7 +33,7 @@ namespace ramses_internal
         m_indent = m_indent.substr(0u, m_indent.size() - 2u);
     }
 
-    Bool RendererLogContext::isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const
+    bool RendererLogContext::isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const
     {
         return (m_activeLogLevelFlags & logLevelFlag) != 0u;
     }
@@ -43,7 +43,7 @@ namespace ramses_internal
         m_nodeHandleFilter = nodeHandleFilter;
     }
 
-    Bool RendererLogContext::isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const
+    bool RendererLogContext::isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const
     {
         if (!m_nodeHandleFilter.isValid())
         {
@@ -58,11 +58,11 @@ namespace ramses_internal
         return m_stream;
     }
 
-    String RendererLogContext::ExtractStringFromFilter(const String& filter)
+    std::string RendererLogContext::ExtractStringFromFilter(const std::string& filter)
     {
-        String resultString = filter.substr(1u, filter.size());
+        auto resultString = filter.substr(1u, filter.size());
 
-        const UInt lastCharIndex = std::max<Int>(0, resultString.size() - 1);
+        const size_t lastCharIndex = std::max<Int>(0, resultString.size() - 1);
         if (resultString[lastCharIndex] == '*')
         {
             resultString = resultString.substr(0, lastCharIndex);
@@ -71,9 +71,9 @@ namespace ramses_internal
         return resultString;
     }
 
-    UInt32 RendererLogContext::GetActiveLogLevelFlags(const ERendererLogLevelFlag logLevel)
+    uint32_t RendererLogContext::GetActiveLogLevelFlags(const ERendererLogLevelFlag logLevel)
     {
-        UInt32 activeLogLevels = 0u;
+        uint32_t activeLogLevels = 0u;
         switch (logLevel)
         {
         case ERendererLogLevelFlag_Details:

@@ -89,7 +89,7 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    Bool EmbeddedCompositingManager::hasRealCompositor() const
+    bool EmbeddedCompositingManager::hasRealCompositor() const
     {
         return m_embeddedCompositor.isRealCompositor();
     }
@@ -100,7 +100,7 @@ namespace ramses_internal
         m_embeddedCompositor.endFrame(false);
     }
 
-    Bool EmbeddedCompositingManager::hasUpdatedContentFromStreamSourcesToUpload() const
+    bool EmbeddedCompositingManager::hasUpdatedContentFromStreamSourcesToUpload() const
     {
         return m_embeddedCompositor.hasUpdatedStreamTextureSources();
     }

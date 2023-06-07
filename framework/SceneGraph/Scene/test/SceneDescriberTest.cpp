@@ -12,12 +12,8 @@
 #include "Scene/ClientScene.h"
 #include "SceneActionUtils.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneActionApplierHelper.h"
+#include "Scene/SceneActionApplier.h"
 #include "TestEqualHelper.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
 #include "Utils/MemoryUtils.h"
 
 using namespace testing;
@@ -31,11 +27,11 @@ namespace ramses_internal
             : creator(actions)
         {}
 
-        void expectAllocateNodeAction(SceneActionCollection::SceneActionReader action, NodeHandle handle, UInt32 expectedChildrenCount)
+        void expectAllocateNodeAction(SceneActionCollection::SceneActionReader action, NodeHandle handle, uint32_t expectedChildrenCount)
         {
             EXPECT_EQ(ESceneActionId::AllocateNode, action.type());
             NodeHandle actualHandle;
-            UInt32 actualChidlrenCount = 0;
+            uint32_t actualChidlrenCount = 0;
             action.read(actualChidlrenCount);
             action.read(actualHandle);
             EXPECT_EQ(expectedChildrenCount, actualChidlrenCount);
@@ -67,15 +63,15 @@ namespace ramses_internal
             , startVertex(199u)
             {}
 
-            UInt32              startIndex;
-            UInt32              indexCount;
-            UInt32              instanceCount;
+            uint32_t              startIndex;
+            uint32_t              indexCount;
+            uint32_t              instanceCount;
             EVisibilityMode     visibility;
             RenderStateHandle   state;
             ResourceContentHash effectHash;
             DataInstanceHandle  geoInstanceHandle;
             DataInstanceHandle  uniformInstanceHandle;
-            UInt32              startVertex;
+            uint32_t              startVertex;
         };
 
         void createRenderable(const RenderableCreationData& data = RenderableCreationData())
@@ -105,7 +101,7 @@ namespace ramses_internal
             , cullMode(ECullMode::BackFacing)
             , drawMode(EDrawMode::Lines)
             , depthWrite(EDepthWrite::Enabled)
-            , depthFunc(EDepthFunc::SmallerEqual)
+            , depthFunc(EDepthFunc::LessEqual)
             , scissorTest(EScissorTest::Enabled)
             , scissorRegion{
                 12, 14, 16, 18
@@ -125,7 +121,7 @@ namespace ramses_internal
             EBlendFactor    bfDstAlpha;
             EBlendOperation boColor;
             EBlendOperation boAlpha;
-            Vector4         blendColor;
+            glm::vec4       blendColor;
             ECullMode       cullMode;
             EDrawMode       drawMode;
             EDepthWrite     depthWrite;
@@ -133,8 +129,8 @@ namespace ramses_internal
             EScissorTest    scissorTest;
             RenderState::ScissorRegion scissorRegion;
             EStencilFunc    stencilFunc;
-            UInt8           stencilRefValue;
-            UInt8           stencilMask;
+            uint8_t         stencilRefValue;
+            uint8_t         stencilMask;
             EStencilOp      stencilOpFail;
             EStencilOp      stencilOpDepthFail;
             EStencilOp      stencilOpDepthPass;
@@ -190,7 +186,7 @@ namespace ramses_internal
 
     TEST_F(SceneDescriberTest, skipSceneActionForDataInstancesWithBinaryDataEqualZero)
     {
-        const UInt32 dataFieldElementCount = 3u;
+        const uint32_t dataFieldElementCount = 3u;
         const DataFieldInfoVector dataFieldInfos =
         {
             DataFieldInfo{ EDataType::Int32,     dataFieldElementCount, EFixedSemantics::Invalid },
@@ -218,8 +214,7 @@ namespace ramses_internal
         // no actions for setting the zeroed data types
 
         Scene newScene;
-        SceneActionApplierHelper sceneCreator(newScene);
-        sceneCreator.applyActionsOnScene(actions);
+        SceneActionApplier::ApplyActionsOnScene(newScene, actions);
 
         // validate skipped actions still result in nulled data
         EXPECT_TRUE(MemoryUtils::AreAllBytesZero(newScene.getDataIntegerArray(dataInstance, DataFieldHandle(0u)), dataFieldElementCount));

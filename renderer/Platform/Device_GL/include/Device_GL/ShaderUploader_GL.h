@@ -12,6 +12,9 @@
 #include "RendererAPI/Types.h"
 #include "Types_GL.h"
 
+#include <string>
+#include <string_view>
+
 namespace ramses_internal
 {
     struct ShaderProgramInfo;
@@ -20,13 +23,13 @@ namespace ramses_internal
     class ShaderUploader_GL
     {
     public:
-        static Bool UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
-        static Bool UploadShaderProgramFromBinary(const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog);
+        static bool UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, std::string& debugErrorLog);
+        static bool UploadShaderProgramFromBinary(const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat, ShaderProgramInfo& programShaderInfoOut, std::string& debugErrorLog);
 
     private:
-        static GLHandle CompileShaderStage(const char* stageSource, GLenum shaderType, String& errorLogOut);
-        static Bool CheckShaderProgramLinkStatus(GLHandle shaderProgram, String& errorLogOut);
-        static void PrintShaderSourceWithLineNumbers(const String& source);
+        static GLHandle CompileShaderStage(const char* stageSource, GLenum shaderType, std::string& errorLogOut);
+        static bool CheckShaderProgramLinkStatus(GLHandle shaderProgram, std::string& errorLogOut);
+        static void PrintShaderSourceWithLineNumbers(std::string_view source);
     };
 }
 

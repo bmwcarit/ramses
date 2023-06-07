@@ -13,7 +13,7 @@
 #include "ramses-client-api/TextureSwizzle.h"
 #include "SceneAPI/TextureEnums.h"
 #include "TextureUtils.h"
-#include "ramses-client-api/EDataType.h"
+#include "ramses-framework-api/EDataType.h"
 
 template <>
 struct fmt::formatter<ramses::TextureSwizzle> : public ramses_internal::SimpleFormatterBase
@@ -31,7 +31,7 @@ struct fmt::formatter<ramses::TextureSwizzle> : public ramses_internal::SimpleFo
 
 namespace ramses
 {
-    static const char* DataTypeNames[] =
+    const std::array DataTypeNames =
     {
         "UINT16",
         "UINT32",

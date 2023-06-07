@@ -18,17 +18,17 @@
 
 namespace ramses_internal
 {
-    MultipleGeometryScene::MultipleGeometryScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    MultipleGeometryScene::MultipleGeometryScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Appearance* appearance = m_scene.createAppearance(*effect);
         ramses::UniformInput colorInput;
         effect->findUniformInput("color", colorInput);
-        appearance->setInputValueVector4f(colorInput, 1.f, 0.f, 1.f, 1.f);
+        appearance->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 1.f, 1.f });
         if (MULTI_TRIANGLE_STRIP_GEOMETRY_WITHOUT_INDEX_ARRAY == state)
         {
-            appearance->setDrawMode(ramses::EDrawMode_TriangleStrip);
+            appearance->setDrawMode(ramses::EDrawMode::TriangleStrip);
         }
 
         static const float translation[] =
@@ -39,13 +39,13 @@ namespace ramses_internal
             -0.5f,  1.0f, -18.0f,
         };
 
-        for (UInt32 i = 0; i < NumMeshes; ++i)
+        for (uint32_t i = 0; i < NumMeshes; ++i)
         {
             m_meshNode[i] = m_scene.createMeshNode("mesh");
             addMeshNodeToDefaultRenderGroup(*m_meshNode[i]);
 
             ramses::Node* trafoNode = m_scene.createNode("transformation node");
-            trafoNode->setTranslation(translation[i * 3 + 0], translation[i * 3 + 1], translation[i * 3 + 2]);
+            trafoNode->setTranslation({translation[i * 3 + 0], translation[i * 3 + 1], translation[i * 3 + 2]});
 
             m_meshNode[i]->setParent(*trafoNode);
             m_meshNode[i]->setAppearance(*appearance);
@@ -54,7 +54,7 @@ namespace ramses_internal
         createGeometries(*effect, state);
     }
 
-    void MultipleGeometryScene::createGeometries(ramses::Effect& effect, UInt32 state)
+    void MultipleGeometryScene::createGeometries(ramses::Effect& effect, uint32_t state)
     {
         const ramses::ArrayResource* indicesTri  = nullptr;
         const ramses::ArrayResource* indicesQuad = nullptr;
@@ -62,16 +62,16 @@ namespace ramses_internal
 
         if (MULTI_TRIANGLE_LIST_GEOMETRY_WITH_INDEX_ARRAY == state)
         {
-            static const UInt16 indicesData[] =
+            static const uint16_t indicesData[] =
             {
                 0, 1, 2,
                 0, 2, 3,
                 0, 3, 4
             };
 
-            indicesTri  = m_scene.createArrayResource(ramses::EDataType::UInt16, 3, indicesData);
-            indicesQuad = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesData);
-            indicesPoly = m_scene.createArrayResource(ramses::EDataType::UInt16, 9, indicesData);
+            indicesTri  = m_scene.createArrayResource(3, indicesData);
+            indicesQuad = m_scene.createArrayResource(6, indicesData);
+            indicesPoly = m_scene.createArrayResource(9, indicesData);
         }
 
         const ramses::ArrayResource* verticesTri  = nullptr;
@@ -82,82 +82,82 @@ namespace ramses_internal
         {
         case MULTI_TRIANGLE_LIST_GEOMETRY_WITH_INDEX_ARRAY:
         {
-            static const float verticesData[] =
+            const std::array<ramses::vec3f, 5u> verticesData
             {
-                0.0f,  0.0f,  0.0f,
-                0.0f, -1.0f,  0.0f,
-                1.0f, -1.0f,  0.0f,
-                1.0f,  0.0f,  0.0f,
-                0.5f,  0.5f,  0.0f
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.5f,  0.5f,  0.0f }
             };
-            verticesTri = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, verticesData);
-            verticesQuad = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, verticesData);
-            verticesPoly = m_scene.createArrayResource(ramses::EDataType::Vector3F, 5, verticesData);
+            verticesTri = m_scene.createArrayResource(3u, verticesData.data());
+            verticesQuad = m_scene.createArrayResource(4u, verticesData.data());
+            verticesPoly = m_scene.createArrayResource(5u, verticesData.data());
             break;
         }
         case MULTI_TRIANGLE_LIST_GEOMETRY_WITHOUT_INDEX_ARRAY:
         {
-            static const float verticesData[] =
+            const std::array<ramses::vec3f, 9u> verticesData
             {
-                0.0f,  0.0f,  0.0f,
-                0.0f, -1.0f,  0.0f,
-                1.0f, -1.0f,  0.0f,
-                0.0f,  0.0f,  0.0f,
-                1.0f, -1.0f,  0.0f,
-                1.0f,  0.0f,  0.0f,
-                0.0f,  0.0f,  0.0f,
-                1.0f,  0.0f,  0.0f,
-                0.5f,  0.5f,  0.0f
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 1.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.5f,  0.5f,  0.0f }
             };
-            verticesTri  = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, verticesData);
-            verticesQuad = m_scene.createArrayResource(ramses::EDataType::Vector3F, 6, verticesData);
-            verticesPoly = m_scene.createArrayResource(ramses::EDataType::Vector3F, 9, verticesData);
+            verticesTri  = m_scene.createArrayResource(3u, verticesData.data());
+            verticesQuad = m_scene.createArrayResource(6u, verticesData.data());
+            verticesPoly = m_scene.createArrayResource(9u, verticesData.data());
             break;
         }
         case MULTI_TRIANGLE_STRIP_GEOMETRY_WITHOUT_INDEX_ARRAY:
         {
-            static const float verticesData[] =
+            const std::array<ramses::vec3f, 5u> verticesData
             {
-                    0.0f, -1.0f,  0.0f,
-                    1.0f, -1.0f,  0.0f,
-                    0.0f,  0.0f,  0.0f,
-                    1.0f,  0.0f,  0.0f,
-                    0.5f,  0.5f,  0.0f
+                ramses::vec3f{ 0.0f, -1.0f,  0.0f},
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f},
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f},
+                ramses::vec3f{ 1.0f,  0.0f,  0.0f},
+                ramses::vec3f{ 0.5f,  0.5f,  0.0f}
             };
-            verticesTri  = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, verticesData);
-            verticesQuad = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, verticesData);
-            verticesPoly = m_scene.createArrayResource(ramses::EDataType::Vector3F, 5, verticesData);
+            verticesTri  = m_scene.createArrayResource(3u, verticesData.data());
+            verticesQuad = m_scene.createArrayResource(4u, verticesData.data());
+            verticesPoly = m_scene.createArrayResource(5u, verticesData.data());
             break;
         }
         case VERTEX_ARRAYS_WITH_OFFSET:
         {
-            static const float verticesData[] =
+            const std::array<ramses::vec3f, 18u> verticesData
             {
-                    //triangle
-                    0.0f, -1.0f,  0.0f,
-                    1.0f, -1.0f,  0.0f,
-                    0.0f,  0.0f,  0.0f,
+                //triangle
+                ramses::vec3f{ 0.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
 
-                    //quad
-                    0.0f,  0.0f,  0.0f,
-                    0.0f, -1.0f,  0.0f,
-                    1.0f, -1.0f,  0.0f,
-                    0.0f,  0.0f,  0.0f,
-                    1.0f, -1.0f,  0.0f,
-                    1.0f,  0.0f,  0.0f,
+                //quad
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f,  0.0f,  0.0f },
 
-                    //polygon
-                    0.0f,  0.0f,  0.0f,
-                    0.0f, -1.0f,  0.0f,
-                    1.0f, -1.0f,  0.0f,
-                    0.0f,  0.0f,  0.0f,
-                    1.0f, -1.0f,  0.0f,
-                    1.0f,  0.0f,  0.0f,
-                    0.0f,  0.0f,  0.0f,
-                    1.0f,  0.0f,  0.0f,
-                    0.5f,  0.5f,  0.0f
+                //polygon
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 1.0f, -1.0f,  0.0f },
+                ramses::vec3f{ 1.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 1.0f,  0.0f,  0.0f },
+                ramses::vec3f{ 0.5f,  0.5f,  0.0f }
             };
-            verticesTri = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3 + 6 + 9, verticesData);
+            verticesTri = m_scene.createArrayResource(3 + 6 + 9, verticesData.data());
             verticesQuad = verticesTri;
             verticesPoly = verticesTri;
             break;

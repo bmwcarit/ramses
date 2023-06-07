@@ -73,7 +73,7 @@ protected:
         expectLinkCount(consumerScene2, 0u, 0u);
     }
 
-    void expectLinkCount(SceneId sceneId, UInt32 providerScenesLinked, UInt32 consumerScenesLinked)
+    void expectLinkCount(SceneId sceneId, uint32_t providerScenesLinked, uint32_t consumerScenesLinked)
     {
         SceneLinkVector links;
         sceneLinks.getLinkedProviders(sceneId, links);

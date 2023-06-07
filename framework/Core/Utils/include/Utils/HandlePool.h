@@ -22,29 +22,29 @@ namespace ramses_internal
     public:
         using handle_type = HANDLE;
 
-        explicit HandlePool(UInt32 size = 0);
+        explicit HandlePool(uint32_t size = 0);
 
         // Creation/Deletion
         HANDLE                          acquire(HANDLE handle = InvalidMemoryHandle());
         void                            release(HANDLE handle);
-        bool                            isAcquired(HANDLE handle) const;
-        UInt32                          getNumberOfAcquired() const;
+        [[nodiscard]] bool                            isAcquired(HANDLE handle) const;
+        [[nodiscard]] uint32_t                          getNumberOfAcquired() const;
 
-        UInt32                          size() const;
-        void                            resize(UInt32 size);
+        [[nodiscard]] uint32_t                          size() const;
+        void                            resize(uint32_t size);
 
         static HANDLE                   InvalidMemoryHandle();
 
     protected:
         HANDLE acquireInternal(MemoryHandle handle);
 
-        std::vector<UInt8> m_handlePool;
+        std::vector<uint8_t> m_handlePool;
         MemoryHandle  m_nextAvailableHint;
-        UInt32        m_numberOfAcquired;
+        uint32_t        m_numberOfAcquired;
     };
 
     template <typename HANDLE>
-    HandlePool<HANDLE>::HandlePool(UInt32 size)
+    HandlePool<HANDLE>::HandlePool(uint32_t size)
         : m_handlePool(size)
         , m_nextAvailableHint(0u)
         , m_numberOfAcquired(0u)
@@ -54,7 +54,7 @@ namespace ramses_internal
     template <typename HANDLE>
     HANDLE HandlePool<HANDLE>::acquire(HANDLE handle)
     {
-        const UInt poolSize = m_handlePool.size();
+        const size_t poolSize = m_handlePool.size();
         if (handle == InvalidMemoryHandle())
         {
             if (m_numberOfAcquired < poolSize)
@@ -97,7 +97,7 @@ namespace ramses_internal
         assert(handle < m_handlePool.size());
         assert(m_handlePool[handle] == 0);
         m_nextAvailableHint = handle + 1u;
-        m_handlePool[handle] = std::numeric_limits<UInt8>::max();
+        m_handlePool[handle] = std::numeric_limits<uint8_t>::max();
         ++m_numberOfAcquired;
         return HANDLE(handle);
     }
@@ -123,19 +123,19 @@ namespace ramses_internal
 
 
     template <typename HANDLE>
-    UInt32 ramses_internal::HandlePool<HANDLE>::getNumberOfAcquired() const
+    uint32_t ramses_internal::HandlePool<HANDLE>::getNumberOfAcquired() const
     {
         return m_numberOfAcquired;
     }
 
     template <typename HANDLE>
-    UInt32 HandlePool<HANDLE>::size() const
+    uint32_t HandlePool<HANDLE>::size() const
     {
-        return static_cast<UInt32>(m_handlePool.size());
+        return static_cast<uint32_t>(m_handlePool.size());
     }
 
     template <typename HANDLE>
-    void HandlePool<HANDLE>::resize(UInt32 size)
+    void HandlePool<HANDLE>::resize(uint32_t size)
     {
         m_handlePool.resize(size);
     }

@@ -6,13 +6,13 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(ramses-scene-viewer
-    TYPE                    BINARY
-    ENABLE_INSTALL          ON
-
-    FILES_SOURCE            src/*.cpp
-
+expandModuleByPlatform(
+    NAME            ramses-scene-viewer
+    TYPE            BINARY
+    LINKED_TYPE     STATIC
+    ENABLE_INSTALL  ON
+    SRC_FILES               src/*.cpp
     DEPENDENCIES            ramses-client
-                            ramses-renderer-lib
                             ramses-imgui
+                            ramses-cli
 )

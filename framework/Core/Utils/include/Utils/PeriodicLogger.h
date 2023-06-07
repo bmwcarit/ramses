@@ -29,7 +29,7 @@ namespace ramses_internal
         PeriodicLogger(PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
         ~PeriodicLogger() override;
 
-        void startLogging(UInt32 periodicLogTimeoutSeconds);
+        void startLogging(uint32_t periodicLogTimeoutSeconds);
 
         void registerPeriodicLogSupplier(IPeriodicLogSupplier* supplier);
         void removePeriodicLogSupplier(IPeriodicLogSupplier* supplier);
@@ -38,27 +38,27 @@ namespace ramses_internal
         void removeStatisticCollectionScene(const SceneId& sceneId);
 
     private:
-        virtual void run() override final;
+        void run() final override;
         void printVersion();
         void printStatistic();
 
         bool           m_isRunning;
         PlatformEvent  m_event;
-        UInt32         m_periodicLogTimeoutSeconds;
+        uint32_t         m_periodicLogTimeoutSeconds;
         PlatformThread m_thread;
         PlatformLock&  m_frameworkLock;
         std::vector<IPeriodicLogSupplier*> m_periodicLogSuppliers;
         StatisticCollectionFramework& m_statisticCollection;
-        UInt32 m_triggerCounter;
+        uint32_t m_triggerCounter;
         HashMap<SceneId, StatisticCollectionScene*> m_statisticCollectionScenes;
 
         std::chrono::steady_clock::time_point m_previousSteadyTime;
         synchronized_clock::time_point m_previousSyncTime;
 
-        const UInt64 m_ramsesInstanceStartupTime;
-        static const UInt64 m_processStartupTime;
-        static std::atomic<UInt32> m_numberOfRamsesInstancesCurrentlyActive;
-        static std::atomic<UInt32> m_numberOfRamsesInstancesStartedInProcess;
+        const uint64_t m_ramsesInstanceStartupTime;
+        static const uint64_t m_processStartupTime;
+        static std::atomic<uint32_t> m_numberOfRamsesInstancesCurrentlyActive;
+        static std::atomic<uint32_t> m_numberOfRamsesInstancesStartedInProcess;
     };
 }
 

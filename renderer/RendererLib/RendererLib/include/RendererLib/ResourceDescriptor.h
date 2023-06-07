@@ -27,9 +27,9 @@ namespace ramses_internal
         ResourceContentHash hash;
         SceneIdVector sceneUsage;
         ManagedResource resource;
-        UInt32 compressedSize = 0;
-        UInt32 decompressedSize = 0;
-        UInt32 vramSize = 0;
+        uint32_t compressedSize = 0;
+        uint32_t decompressedSize = 0;
+        uint32_t vramSize = 0;
     };
 
     using ResourceDescriptors = HashMap<ResourceContentHash, ResourceDescriptor>;

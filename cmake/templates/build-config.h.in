@@ -1,0 +1,19 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2023 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+// this file is auto-generated - do not modify it
+
+#ifndef RAMSES_BUILDCONFIG_H
+#define RAMSES_BUILDCONFIG_H
+
+namespace ramses_sdk
+{
+@EXPORTED_RAMSES_CONFIG_SYMBOLS@
+}
+
+#endif

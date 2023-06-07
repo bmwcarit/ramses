@@ -18,88 +18,80 @@ namespace ramses_internal
     }
 
     template <typename HANDLE>
-    UInt32& getObjectCount(SceneSizeInformation& sizeInfo)
+    uint32_t& getObjectCount(SceneSizeInformation& sizeInfo)
     {
         assert(false);
         return sizeInfo.nodeCount;
     }
-    template <> UInt32& getObjectCount<NodeHandle>          (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<NodeHandle>          (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.nodeCount;
     }
-    template <> UInt32& getObjectCount<CameraHandle>        (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<CameraHandle>        (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.cameraCount;
     }
-    template <> UInt32& getObjectCount<TransformHandle>     (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<TransformHandle>     (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.transformCount;
     }
-    template <> UInt32& getObjectCount<RenderableHandle>    (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<RenderableHandle>    (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.renderableCount;
     }
-    template <> UInt32& getObjectCount<RenderStateHandle>   (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<RenderStateHandle>   (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.renderStateCount;
     }
-    template <> UInt32& getObjectCount<DataLayoutHandle>    (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<DataLayoutHandle>    (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.datalayoutCount;
     }
-    template <> UInt32& getObjectCount<DataInstanceHandle>  (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<DataInstanceHandle>  (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.datainstanceCount;
     }
-    template <> UInt32& getObjectCount<RenderGroupHandle>   (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<RenderGroupHandle>   (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.renderGroupCount;
     }
-    template <> UInt32& getObjectCount<RenderPassHandle>    (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<RenderPassHandle>    (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.renderPassCount;
     }
-    template <> UInt32& getObjectCount<BlitPassHandle>      (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<BlitPassHandle>      (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.blitPassCount;
     }
-    template <> UInt32& getObjectCount<RenderTargetHandle>  (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<RenderTargetHandle>  (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.renderTargetCount;
     }
-    template <> UInt32& getObjectCount<RenderBufferHandle>  (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<RenderBufferHandle>  (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.renderBufferCount;
     }
-    template <> UInt32& getObjectCount<TextureSamplerHandle>(SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<TextureSamplerHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.textureSamplerCount;
     }
-    template <> UInt32& getObjectCount<StreamTextureHandle> (SceneSizeInformation& sizeInfo)
-    {
-        return sizeInfo.streamTextureCount;
-    }
-    template <> UInt32& getObjectCount<DataSlotHandle>      (SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<DataSlotHandle>      (SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.dataSlotCount;
     }
-    template <> UInt32& getObjectCount<DataBufferHandle>(SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<DataBufferHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.dataBufferCount;
     }
-    template <> UInt32& getObjectCount<AnimationSystemHandle>(SceneSizeInformation& sizeInfo)
-    {
-        return sizeInfo.animationSystemCount;
-    }
-    template <> UInt32& getObjectCount<TextureBufferHandle>(SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<TextureBufferHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.textureBufferCount;
     }
-    template <> UInt32& getObjectCount<PickableObjectHandle>(SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<PickableObjectHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.pickableObjectCount;
     }
-    template <> UInt32& getObjectCount<SceneReferenceHandle>(SceneSizeInformation& sizeInfo)
+    template <> uint32_t& getObjectCount<SceneReferenceHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.sceneReferenceCount;
     }
@@ -109,7 +101,7 @@ namespace ramses_internal
     {
         HANDLE actualHandle = handle;
         SceneSizeInformation sizeInfo = m_scene.getSceneSizeInformation();
-        UInt32& objectCount = getObjectCount<HANDLE>(sizeInfo);
+        uint32_t& objectCount = getObjectCount<HANDLE>(sizeInfo);
 
         if (!actualHandle.isValid())
         {
@@ -140,7 +132,7 @@ namespace ramses_internal
         return m_scene.allocateCamera(type, nodeHandle, dataInstance, preallocateHandle(handle));
     }
 
-    NodeHandle SceneAllocateHelper::allocateNode(UInt32 childrenCount, NodeHandle handle)
+    NodeHandle SceneAllocateHelper::allocateNode(uint32_t childrenCount, NodeHandle handle)
     {
         return m_scene.allocateNode(childrenCount, preallocateHandle(handle));
     }
@@ -170,7 +162,7 @@ namespace ramses_internal
         return m_scene.allocateRenderGroup(0u, 0u, preallocateHandle(handle));
     }
 
-    RenderPassHandle SceneAllocateHelper::allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle handle)
+    RenderPassHandle SceneAllocateHelper::allocateRenderPass(uint32_t renderGroupCount, RenderPassHandle handle)
     {
         return m_scene.allocateRenderPass(renderGroupCount, preallocateHandle(handle));
     }
@@ -190,17 +182,12 @@ namespace ramses_internal
         return m_scene.allocateRenderBuffer(renderBuffer, preallocateHandle(handle));
     }
 
-    StreamTextureHandle SceneAllocateHelper::allocateStreamTexture(WaylandIviSurfaceId streamSource, ResourceContentHash fallbackTextureHash, StreamTextureHandle handle)
-    {
-        return m_scene.allocateStreamTexture(streamSource, fallbackTextureHash, preallocateHandle(handle));
-    }
-
     DataSlotHandle SceneAllocateHelper::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle)
     {
         return m_scene.allocateDataSlot(dataSlot, preallocateHandle(handle));
     }
 
-    DataBufferHandle SceneAllocateHelper::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)
+    DataBufferHandle SceneAllocateHelper::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle)
     {
         return m_scene.allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, preallocateHandle(handle));
     }

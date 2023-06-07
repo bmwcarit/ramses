@@ -17,14 +17,14 @@ namespace ramses_internal
     {
     public:
 
-        UInt32 getResult() const
+        [[nodiscard]] uint32_t getResult() const
         {
             return (m_b << 16) | m_a;
         }
 
-        void addData(const Byte* ptr, UInt32 size)
+        void addData(const Byte* ptr, uint32_t size)
         {
-            for (UInt32 i = 0; i < size; i++)
+            for (uint32_t i = 0; i < size; i++)
             {
                 m_a = (m_a + ptr[i]) % MOD_ADLER;
                 m_b = (m_b + m_a) % MOD_ADLER;
@@ -34,8 +34,8 @@ namespace ramses_internal
     private:
         const int MOD_ADLER = 65521;
 
-        UInt32 m_a = 1;
-        UInt32 m_b = 0;
+        uint32_t m_a = 1;
+        uint32_t m_b = 0;
     };
 }
 #endif

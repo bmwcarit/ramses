@@ -12,11 +12,11 @@
 
 namespace ramses
 {
-    ClientUniquePtr ClientFactory::createClient(RamsesFrameworkImpl* impl, const char* applicationName) const
+    ClientUniquePtr ClientFactory::createClient(RamsesFrameworkImpl& framework, std::string_view applicationName) const
     {
-        ClientUniquePtr client(new RamsesClient(*new RamsesClientImpl(*impl, applicationName)),
-            [](RamsesClient* client_) { delete client_; });
-        return client;
+        auto impl = std::make_unique<RamsesClientImpl>(framework, applicationName);
+        return ClientUniquePtr{ new RamsesClient{ std::move(impl) },
+            [](RamsesClient* client_) { delete client_; } };
     }
 
     bool ClientFactory::RegisterClientFactory()

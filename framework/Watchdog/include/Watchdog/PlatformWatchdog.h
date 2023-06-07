@@ -10,20 +10,22 @@
 #define RAMSES_PLATFORMABSTRACTION_PLATFORMWATCHDOG_H
 
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
-#include "Collections/String.h"
+
 #include <chrono>
+#include <string_view>
 
 namespace ramses_internal
 {
     inline
-    static String EnumToString(const ramses::ERamsesThreadIdentifier& thread)
+    static constexpr std::string_view EnumToString(const ramses::ERamsesThreadIdentifier& thread)
     {
         switch (thread)
         {
-            case ramses::ERamsesThreadIdentifier_Workers: return "ERamsesThread_Workers";
-            case ramses::ERamsesThreadIdentifier_Renderer: return "ERamsesThread_Renderer";
-            default: return "ERamsesThread_Unknown";
+            case ramses::ERamsesThreadIdentifier::Workers: return "ERamsesThread_Workers";
+            case ramses::ERamsesThreadIdentifier::Renderer: return "ERamsesThread_Renderer";
+            case ramses::ERamsesThreadIdentifier::Unknown: return "ERamsesThread_Unknown";
         }
+        return "";
     }
 
     class PlatformWatchdog
@@ -33,7 +35,7 @@ namespace ramses_internal
         virtual ~PlatformWatchdog();
 
         void                      notifyWatchdog();
-        std::chrono::milliseconds calculateTimeout() const;
+        [[nodiscard]] std::chrono::milliseconds calculateTimeout() const;
 
     private:
         const std::chrono::milliseconds m_interval;

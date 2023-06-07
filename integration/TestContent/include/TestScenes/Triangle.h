@@ -24,7 +24,7 @@ namespace ramses
     class ArrayResourceInput;
     class Effect;
     class UniformInput;
-    class DataVector4f;
+    class DataObject;
 
     class Triangle
     {
@@ -40,7 +40,7 @@ namespace ramses
             return m_geometry.GetGeometry();
         }
 
-        void bindColor(const DataVector4f& colorDataObject);
+        void bindColor(const DataObject& colorDataObject);
         void unbindColor();
 
     private:

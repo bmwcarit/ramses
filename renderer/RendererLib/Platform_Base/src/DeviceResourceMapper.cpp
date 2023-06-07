@@ -19,7 +19,7 @@ namespace ramses_internal
 
     DeviceResourceMapper::~DeviceResourceMapper()
     {
-        for (UInt32 i = 0; i < m_resources.getTotalCount(); ++i)
+        for (uint32_t i = 0; i < m_resources.getTotalCount(); ++i)
         {
             const DeviceResourceHandle handle(i);
             if (containsResource(handle))
@@ -29,7 +29,7 @@ namespace ramses_internal
         }
     }
 
-    UInt32 DeviceResourceMapper::getTotalGpuMemoryUsageInKB() const
+    uint32_t DeviceResourceMapper::getTotalGpuMemoryUsageInKB() const
     {
         return m_memoryUsage >> 10;
     }

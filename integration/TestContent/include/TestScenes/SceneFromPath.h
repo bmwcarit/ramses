@@ -10,14 +10,15 @@
 #define RAMSES_SCENEFROMPATH_H
 
 #include "ramses-client-api/Scene.h"
-#include "Collections/String.h"
+
+#include <string>
 
 namespace ramses_internal
 {
     class SceneFromPath
     {
     public:
-        SceneFromPath(ramses::RamsesClient& ramsesClient, const String& folder, const String& fileName);
+        SceneFromPath(ramses::RamsesClient& ramsesClient, const std::string& folder, const std::string& fileName);
         ramses::Scene* getCreatedScene();
     private:
         ramses::Scene* m_createdScene = nullptr;

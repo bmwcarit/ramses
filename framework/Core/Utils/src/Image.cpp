@@ -12,13 +12,12 @@
 #include "Utils/BinaryFileInputStream.h"
 #include "lodepng.h"
 #include "Utils/LogMacros.h"
-#include "Collections/String.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include <numeric>
 
 namespace ramses_internal
 {
-    Image::Image(UInt32 width, UInt32 height, std::vector<UInt8>&& data)
+    Image::Image(uint32_t width, uint32_t height, std::vector<uint8_t>&& data)
         : m_width(width)
         , m_height(height)
         , m_data(std::move(data))
@@ -26,16 +25,16 @@ namespace ramses_internal
         assert(m_width * m_height * 4u == m_data.size());
     }
 
-    void Image::loadFromFilePNG(const String& filename)
+    void Image::loadFromFilePNG(const std::string& filename)
     {
-        const unsigned int ret = lodepng::decode(m_data, m_width, m_height, filename.c_str());
+        const unsigned int ret = lodepng::decode(m_data, m_width, m_height, filename);
         if (ret != 0)
             LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
     }
 
-    void Image::saveToFilePNG(const String& filename) const
+    void Image::saveToFilePNG(const std::string& filename) const
     {
-        const unsigned int ret = lodepng::encode(filename.c_str(), m_data, m_width, m_height);
+        const unsigned int ret = lodepng::encode(filename, m_data, m_width, m_height);
         if (ret != 0)
             LOG_ERROR(CONTEXT_FRAMEWORK, "Error while saving PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
     }
@@ -56,11 +55,11 @@ namespace ramses_internal
     {
         assert(m_width == other.m_width && m_height == other.m_height);
 
-        std::vector<UInt8> resultData(m_width * m_height * 4u);
-        std::transform(m_data.cbegin(), m_data.cend(), other.m_data.cbegin(), resultData.begin(), [](UInt8 c1, UInt8 c2)
+        std::vector<uint8_t> resultData(m_width * m_height * 4u);
+        std::transform(m_data.cbegin(), m_data.cend(), other.m_data.cbegin(), resultData.begin(), [](uint8_t c1, uint8_t c2)
         {
             // cast should not be needed but MSVC2017 deduces 'int' here resulting in compilation warning when assigning back to uint8
-            return static_cast<UInt8>(c1 >= c2 ? c1 - c2 : c2 - c1);
+            return static_cast<uint8_t>(c1 >= c2 ? c1 - c2 : c2 - c1);
         });
 
         return Image(m_width, m_height, std::move(resultData));
@@ -68,14 +67,14 @@ namespace ramses_internal
 
     std::pair<Image, Image> Image::createSeparateColorAndAlphaImages() const
     {
-        std::vector<UInt8> resultRGBData;
-        std::vector<UInt8> resultAlphaData;
+        std::vector<uint8_t> resultRGBData;
+        std::vector<uint8_t> resultAlphaData;
         resultRGBData.reserve(m_width * m_height * 4u);
         resultAlphaData.reserve(m_width * m_height * 4u);
 
         for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
-            const UInt8* pxData = &m_data[4 * px];
+            const uint8_t* pxData = &m_data[4 * px];
             resultRGBData.push_back(pxData[0]);
             resultRGBData.push_back(pxData[1]);
             resultRGBData.push_back(pxData[2]);
@@ -93,14 +92,14 @@ namespace ramses_internal
         return { std::move(rgbImage), std::move(alphaImage) };
     }
 
-    Image Image::createEnlarged(UInt32 width, UInt32 height, std::array<UInt8, 4> fillValue) const
+    Image Image::createEnlarged(uint32_t width, uint32_t height, std::array<uint8_t, 4> fillValue) const
     {
         if (width < m_width || height < m_height)
             return {};
         if (width == m_width && height == m_height)
             return *this;
 
-        std::vector<UInt8> enlargedData(width * height * 4u);
+        std::vector<uint8_t> enlargedData(width * height * 4u);
 
         const size_t srcRowSize = m_width * 4u;
         const size_t dstRowSize = width * 4u;
@@ -108,7 +107,7 @@ namespace ramses_internal
         // copy source row and fill rest of row
         auto srcRowBegin = m_data.cbegin();
         auto dst = enlargedData.begin();
-        for (UInt32 row = 0u; row < m_height; ++row)
+        for (uint32_t row = 0u; row < m_height; ++row)
         {
             // copy source row
             auto srcRowEnd = srcRowBegin + srcRowSize;
@@ -129,22 +128,22 @@ namespace ramses_internal
         return Image(width, height, std::move(enlargedData));
     }
 
-    UInt32 Image::getWidth() const
+    uint32_t Image::getWidth() const
     {
         return m_width;
     }
 
-    UInt32 Image::getHeight() const
+    uint32_t Image::getHeight() const
     {
         return m_height;
     }
 
-    UInt32 Image::getNumberOfPixels() const
+    uint32_t Image::getNumberOfPixels() const
     {
         return m_width * m_height;
     }
 
-    Vector4i Image::getSumOfPixelValues() const
+    glm::ivec4 Image::getSumOfPixelValues() const
     {
         auto addWithoutOverflow = [](int32_t& dest, uint8_t value) {
             constexpr int32_t maximumValueBeforeOverflow = std::numeric_limits<int32_t>::max() - std::numeric_limits<uint8_t>::max() - 1;
@@ -159,10 +158,10 @@ namespace ramses_internal
         };
 
         bool overflow = false;
-        Vector4i result{0};
+        glm::ivec4 result{0};
         for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
-            const UInt8* pxData = &m_data[4 * px];
+            const uint8_t* pxData = &m_data[4 * px];
             overflow |= addWithoutOverflow(result.x, pxData[0]);
             overflow |= addWithoutOverflow(result.y, pxData[1]);
             overflow |= addWithoutOverflow(result.z, pxData[2]);
@@ -176,12 +175,12 @@ namespace ramses_internal
         return result;
     }
 
-    UInt32 Image::getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel) const
+    uint32_t Image::getNumberOfNonBlackPixels(uint8_t maxDiffPerColorChannel) const
     {
-        UInt32 result = 0;
+        uint32_t result = 0;
         for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
-            const UInt8* pxData = &m_data[4 * px];
+            const uint8_t* pxData = &m_data[4 * px];
             if (pxData[0] > maxDiffPerColorChannel ||
                 pxData[1] > maxDiffPerColorChannel ||
                 pxData[2] > maxDiffPerColorChannel ||
@@ -194,7 +193,7 @@ namespace ramses_internal
         return result;
     }
 
-    const std::vector<ramses_internal::UInt8>& Image::getData() const
+    const std::vector<uint8_t>& Image::getData() const
     {
         return m_data;
     }

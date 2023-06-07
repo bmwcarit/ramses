@@ -23,11 +23,11 @@ namespace ramses_internal
 
         void                          removeSceneLinks(SceneId sceneId);
 
-        Bool                          createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
-        Bool                          removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+        bool                          createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+        bool                          removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
 
-        const SceneDependencyChecker& getDependencyChecker() const;
-        const SceneLinks&             getSceneLinks() const;
+        [[nodiscard]] const SceneDependencyChecker& getDependencyChecker() const;
+        [[nodiscard]] const SceneLinks&             getSceneLinks() const;
 
     protected:
         RendererScenes& m_scenes;

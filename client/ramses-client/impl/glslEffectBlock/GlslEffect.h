@@ -15,7 +15,9 @@
 #include "SceneAPI/EFixedSemantics.h"
 #include "SceneAPI/RenderState.h"
 #include "Resource/IResource.h"
-#include "absl/types/optional.h"
+
+#include <string>
+#include <string_view>
 
 struct TBuiltInResource;
 namespace glslang
@@ -32,47 +34,47 @@ namespace ramses_internal
     class GlslEffect
     {
     public:
-        GlslEffect(const String& vertexShader,
-            const String& fragmentShader,
-            const String& geometryShader,
-            const std::vector<String>& compilerDefines,
-            const HashMap<String, EFixedSemantics>& semanticInputs,
-            const String& name);
+        GlslEffect(std::string_view vertexShader,
+            std::string_view fragmentShader,
+            std::string_view geometryShader,
+            const std::vector<std::string>& compilerDefines,
+            const HashMap<std::string, EFixedSemantics>& semanticInputs,
+            std::string_view name);
 
         ~GlslEffect();
 
         EffectResource* createEffectResource(ResourceCacheFlag cacheFlag);
 
-        UInt32 getShadingLanguageVersion() const;
-        String getEffectErrorMessages() const;
+        uint32_t getShadingLanguageVersion() const;
+        std::string getEffectErrorMessages() const;
 
     private:
         struct ShaderParts
         {
-            String version;
-            String defines;
-            String userCode;
+            std::string version;
+            std::string defines;
+            std::string userCode;
         };
 
-        const String m_vertexShader;
-        const String m_fragmentShader;
-        const String m_geometryShader;
-        const std::vector<String> m_compilerDefines;
-        const HashMap<String, EFixedSemantics> m_semanticInputs;
-        const String m_name;
+        const std::string m_vertexShader;
+        const std::string m_fragmentShader;
+        const std::string m_geometryShader;
+        const std::vector<std::string> m_compilerDefines;
+        const HashMap<std::string, EFixedSemantics> m_semanticInputs;
+        const std::string m_name;
 
         mutable StringOutputStream m_errorMessages;
         EffectResource* m_effectResource;
-        UInt32 m_shadingLanguageVersion;
+        uint32_t m_shadingLanguageVersion;
 
-        String createDefineString() const;
-        bool createShaderParts(ShaderParts& outParts, const String& defineString, const String& userShader) const;
-        String mergeShaderParts(const ShaderParts& shaderParts) const;
-        bool parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const String& shaderName);
+        std::string createDefineString() const;
+        bool createShaderParts(ShaderParts& outParts, const std::string& defineString, const std::string& userShader) const;
+        std::string mergeShaderParts(const ShaderParts& shaderParts) const;
+        bool parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const std::string& shaderName);
         glslang::TProgram* linkProgram(glslang::TShader* vertexShader, glslang::TShader* fragmentShader, glslang::TShader* geometryShader) const;
         bool extractAndCheckShaderVersions(const glslang::TProgram* program);
         bool extractAndCheckExtensions(const glslang::TProgram* program);
-        bool isSupportedExtension(const String& extension) const;
+        bool isSupportedExtension(const std::string& extension) const;
     };
 
 }

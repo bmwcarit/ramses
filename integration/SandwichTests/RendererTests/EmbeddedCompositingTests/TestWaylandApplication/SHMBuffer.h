@@ -9,8 +9,9 @@
 #ifndef RAMSES_SHMBUFFER_H
 #define RAMSES_SHMBUFFER_H
 
-#include "Collections/String.h"
 #include "wayland-client.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -19,12 +20,12 @@ namespace ramses_internal
     public:
         SHMBuffer(wl_shm* shm, uint32_t width, uint32_t height, uint32_t id);
         ~SHMBuffer();
-        bool isFree()const;
-        uint32_t getWidth()const;
-        uint32_t getHeight()const;
-        uint8_t* getPixelData()const;
-        wl_buffer* getWaylandBuffer()const;
-        uint32_t getId()const;
+        [[nodiscard]] bool isFree()const;
+        [[nodiscard]] uint32_t getWidth()const;
+        [[nodiscard]] uint32_t getHeight()const;
+        [[nodiscard]] uint8_t* getPixelData()const;
+        [[nodiscard]] wl_buffer* getWaylandBuffer()const;
+        [[nodiscard]] uint32_t getId()const;
         void attachAndCommitToSurface(wl_surface* surface);
 
     private:
@@ -33,7 +34,7 @@ namespace ramses_internal
         static void ReleaseCallback(void* data, wl_buffer* buffer);
 
         static int CreateAnonymousFile(off_t size);
-        static int CreateTmpFileCloexec(const String& tmpname);
+        static int CreateTmpFileCloexec(const std::string& tmpname);
 
         const struct Buffer_Listener : public wl_buffer_listener
         {

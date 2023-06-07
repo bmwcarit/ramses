@@ -116,11 +116,6 @@ namespace ramses_internal
             LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream CRITICALLY failed with a std::exception ('{}')"
                 " for type {}, hash {}, fileHandle {}, offset {}, size {}, streamState {}, current streamPos {}. No resource created, expect further errors.",
                 e.what(), entry.resourceInfo.type, entry.resourceInfo.hash, fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState(), currentPos);
-#ifdef __ghs__
-            // this shortened fatal log will ultimately lead to a system reset on some platforms and will be integrated in the crash report
-            LOG_FATAL_P(CONTEXT_FRAMEWORK, "load resource exception {}, file/pos/size {}:{}:{} , streamState {}, streamPos {}",
-                e.what(), fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState(), currentPos);
-#endif
             return {};
         }
         if (!lowLevelResource)

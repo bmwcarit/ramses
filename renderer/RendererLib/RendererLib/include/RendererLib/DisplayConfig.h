@@ -10,11 +10,15 @@
 #define RAMSES_DISPLAYCONFIG_H
 
 #include "RendererAPI/Types.h"
+#include "RendererAPI/EDeviceType.h"
+#include "RendererAPI/EWindowType.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/TextureEnums.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
-#include "Math3d/Vector4.h"
+#include "DataTypesImpl.h"
+
 #include <unordered_map>
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -23,133 +27,137 @@ namespace ramses_internal
     public:
         DisplayConfig() {}
 
-        Bool getFullscreenState() const;
-        void setFullscreenState(Bool state);
+        [[nodiscard]] EDeviceType getDeviceType() const;
+        void setDeviceType(EDeviceType deviceType);
 
-        Bool getBorderlessState() const ;
-        void setBorderlessState(Bool state);
+        [[nodiscard]] EWindowType getWindowType() const;
+        void setWindowType(EWindowType windowType);
 
-        UInt32 getAntialiasingSampleCount() const;
-        void setAntialiasingSampleCount(UInt32 samples);
+        [[nodiscard]] bool getFullscreenState() const;
+        void setFullscreenState(bool state);
 
-        UInt32 getDesiredWindowWidth() const;
-        void setDesiredWindowWidth(UInt32 width);
 
-        UInt32 getDesiredWindowHeight() const;
-        void setDesiredWindowHeight(UInt32 height);
+        [[nodiscard]] bool getBorderlessState() const ;
+        void setBorderlessState(bool state);
 
-        Int32 getWindowPositionX() const;
-        void setWindowPositionX(Int32 posx);
+        [[nodiscard]] uint32_t getAntialiasingSampleCount() const;
+        void setAntialiasingSampleCount(uint32_t samples);
 
-        Int32 getWindowPositionY() const;
-        void setWindowPositionY(Int32 posy);
+        [[nodiscard]] uint32_t getDesiredWindowWidth() const;
+        void setDesiredWindowWidth(uint32_t width);
 
-        WaylandIviLayerId getWaylandIviLayerID() const;
+        [[nodiscard]] uint32_t getDesiredWindowHeight() const;
+        void setDesiredWindowHeight(uint32_t height);
+
+        [[nodiscard]] int32_t getWindowPositionX() const;
+        void setWindowPositionX(int32_t posx);
+
+        [[nodiscard]] int32_t getWindowPositionY() const;
+        void setWindowPositionY(int32_t posy);
+
+        [[nodiscard]] WaylandIviLayerId getWaylandIviLayerID() const;
         void setWaylandIviLayerID(WaylandIviLayerId waylandIviLayerID);
 
-        WaylandIviSurfaceId getWaylandIviSurfaceID() const;
+        [[nodiscard]] WaylandIviSurfaceId getWaylandIviSurfaceID() const;
         void setWaylandIviSurfaceID(WaylandIviSurfaceId waylandIviSurfaceID);
 
-        void setWaylandDisplay(const String& waylandDisplay);
-        const String& getWaylandDisplay() const;
-
-        IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const;
-        void setIntegrityRGLDeviceUnit(IntegrityRGLDeviceUnit rglDeviceUnit);
+        void setWaylandDisplay(std::string_view waylandDisplay);
+        [[nodiscard]] std::string_view getWaylandDisplay() const;
 
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
-        WindowsWindowHandle getWindowsWindowHandle() const;
+        [[nodiscard]] WindowsWindowHandle getWindowsWindowHandle() const;
 
         void setX11WindowHandle(X11WindowHandle x11WindowHandle);
-        X11WindowHandle getX11WindowHandle() const;
+        [[nodiscard]] X11WindowHandle getX11WindowHandle() const;
 
-        AndroidNativeWindowPtr getAndroidNativeWindow() const;
+        [[nodiscard]] AndroidNativeWindowPtr getAndroidNativeWindow() const;
         void setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr);
 
-        Bool getStartVisibleIvi() const;
+        [[nodiscard]] bool getStartVisibleIvi() const;
         void setStartVisibleIvi(bool startVisible);
 
-        Bool isWarpingEnabled() const;
-        void setWarpingEnabled(Bool enabled);
+        [[nodiscard]] bool getKeepEffectsUploaded() const;
+        void setKeepEffectsUploaded(bool enable);
 
-        Bool getKeepEffectsUploaded() const;
-        void setKeepEffectsUploaded(Bool enable);
+        [[nodiscard]] bool isResizable() const;
+        void setResizable(bool resizable);
 
-        Bool isResizable() const;
-        void setResizable(Bool resizable);
+        [[nodiscard]] uint64_t getGPUMemoryCacheSize() const;
+        void setGPUMemoryCacheSize(uint64_t size);
 
-        UInt64 getGPUMemoryCacheSize() const;
-        void setGPUMemoryCacheSize(UInt64 size);
-
-        void setClearColor(const Vector4& clearColor);
-        const Vector4& getClearColor() const;
+        void setClearColor(const glm::vec4& clearColor);
+        [[nodiscard]] const glm::vec4& getClearColor() const;
 
         void setDepthStencilBufferType(ERenderBufferType depthStencilBufferType);
-        ERenderBufferType getDepthStencilBufferType() const;
+        [[nodiscard]] ERenderBufferType getDepthStencilBufferType() const;
 
         void setAsyncEffectUploadEnabled(bool enabled);
-        bool isAsyncEffectUploadEnabled() const;
+        [[nodiscard]] bool isAsyncEffectUploadEnabled() const;
 
-        void setWaylandEmbeddedCompositingSocketName(const String& socket);
-        const String& getWaylandSocketEmbedded() const;
+        void setWaylandEmbeddedCompositingSocketName(std::string_view socket);
+        [[nodiscard]] std::string_view getWaylandSocketEmbedded() const;
 
-        void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
-        const String& getWaylandSocketEmbeddedGroup() const;
+        void setWaylandEmbeddedCompositingSocketGroup(std::string_view groupNameForSocketPermissions);
+        [[nodiscard]] std::string_view getWaylandSocketEmbeddedGroup() const;
 
         void setWaylandEmbeddedCompositingSocketFD(int fd);
-        int getWaylandSocketEmbeddedFD() const;
+        [[nodiscard]] int getWaylandSocketEmbeddedFD() const;
 
         bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
-        uint32_t getWaylandSocketEmbeddedPermissions() const;
+        [[nodiscard]] uint32_t getWaylandSocketEmbeddedPermissions() const;
 
-        void setPlatformRenderNode(const String& renderNode);
-        const String& getPlatformRenderNode() const;
+        void setPlatformRenderNode(std::string_view renderNode);
+        [[nodiscard]] std::string_view getPlatformRenderNode() const;
 
         void setSwapInterval(int32_t interval);
-        int32_t getSwapInterval() const;
+        [[nodiscard]] int32_t getSwapInterval() const;
 
         void setScenePriority(SceneId sceneId, int32_t priority);
-        int32_t getScenePriority(SceneId sceneId) const;
-        const std::unordered_map<SceneId, int32_t>& getScenePriorities() const;
+        [[nodiscard]] int32_t getScenePriority(SceneId sceneId) const;
+        [[nodiscard]] const std::unordered_map<SceneId, int32_t>& getScenePriorities() const;
 
         void setResourceUploadBatchSize(uint32_t batchSize);
-        uint32_t getResourceUploadBatchSize() const;
+        [[nodiscard]] uint32_t getResourceUploadBatchSize() const;
 
-        Bool operator==(const DisplayConfig& other) const;
-        Bool operator!=(const DisplayConfig& other) const;
+        bool operator==(const DisplayConfig& other) const;
+        bool operator!=(const DisplayConfig& other) const;
 
     private:
-        Bool m_fullscreen = false;
-        Bool m_borderless = false;
-        Bool m_warpingEnabled = false;
-        Bool m_resizable = false;
+        EDeviceType m_deviceType = EDeviceType::GLES_3_0;
 
-        UInt32 m_desiredWindowWidth = 1280;
-        UInt32 m_desiredWindowHeight = 480;
-        Int32 m_windowPositionX = 0;
-        Int32 m_windowPositionY = 0;
+        static_assert(SupportedWindowTypes.size() > 0, "No window types supported for build configuration");
+        EWindowType m_windowType = *SupportedWindowTypes.begin();
+
+        bool m_fullscreen = false;
+        bool m_borderless = false;
+        bool m_resizable = false;
+
+        uint32_t m_desiredWindowWidth = 1280;
+        uint32_t m_desiredWindowHeight = 480;
+        int32_t m_windowPositionX = 0;
+        int32_t m_windowPositionY = 0;
 
         WaylandIviLayerId m_waylandIviLayerID;
         WaylandIviSurfaceId m_waylandIviSurfaceID;
-        IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         WindowsWindowHandle m_windowsWindowHandle;
         X11WindowHandle m_x11WindowHandle;
         AndroidNativeWindowPtr m_androidNativeWindowPtr;
-        Bool m_startVisibleIvi = false;
-        String m_waylandDisplay;
+        bool m_startVisibleIvi = false;
+        std::string m_waylandDisplay;
 
-        UInt32 m_antiAliasingSamples = 1;
+        uint32_t m_antiAliasingSamples = 1;
 
-        Bool m_keepEffectsUploaded = true;
-        UInt64 m_gpuMemoryCacheSize = 0u;
-        Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
+        bool m_keepEffectsUploaded = true;
+        uint64_t m_gpuMemoryCacheSize = 0u;
+        glm::vec4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
         ERenderBufferType m_depthStencilBufferType = ERenderBufferType_DepthStencilBuffer;
         bool m_asyncEffectUploadEnabled = true;
 
-        String m_waylandSocketEmbedded;
-        String m_waylandSocketEmbeddedGroupName;
+        std::string m_waylandSocketEmbedded;
+        std::string m_waylandSocketEmbeddedGroupName;
         uint32_t m_waylandSocketEmbeddedPermissions = 0;
         int m_waylandSocketEmbeddedFD = -1;
-        String m_platformRenderNode;
+        std::string m_platformRenderNode;
 
         int32_t m_swapInterval = -1;
         std::unordered_map<SceneId, int32_t> m_scenePriorities;

@@ -25,7 +25,7 @@
 
 namespace ramses_internal
 {
-    RenderTargetScene::RenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    RenderTargetScene::RenderTargetScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_renderBuffer(createRenderBuffer(state))
     {
@@ -33,51 +33,51 @@ namespace ramses_internal
         initFinalRenderPass();
     }
 
-    const ramses::RenderBuffer& RenderTargetScene::createRenderBuffer(UInt32 state)
+    const ramses::RenderBuffer& RenderTargetScene::createRenderBuffer(uint32_t state)
     {
-        ramses::ERenderBufferFormat bufferFormat = ramses::ERenderBufferFormat_RGBA8;
+        ramses::ERenderBufferFormat bufferFormat = ramses::ERenderBufferFormat::RGBA8;
 
         switch (state)
         {
         case PERSPECTIVE_PROJECTION:
         case ORTHOGRAPHIC_PROJECTION:
-            bufferFormat = ramses::ERenderBufferFormat_RGBA8;
+            bufferFormat = ramses::ERenderBufferFormat::RGBA8;
             break;
         case RENDERBUFFER_FORMAT_RGBA4:
-            bufferFormat = ramses::ERenderBufferFormat_RGBA4;
+            bufferFormat = ramses::ERenderBufferFormat::RGBA4;
             break;
         case RENDERBUFFER_FORMAT_R8:
-            bufferFormat = ramses::ERenderBufferFormat_R8;
+            bufferFormat = ramses::ERenderBufferFormat::R8;
             break;
         case RENDERBUFFER_FORMAT_RG8:
-            bufferFormat = ramses::ERenderBufferFormat_RG8;
+            bufferFormat = ramses::ERenderBufferFormat::RG8;
             break;
         case RENDERBUFFER_FORMAT_RGB8:
-            bufferFormat = ramses::ERenderBufferFormat_RGB8;
+            bufferFormat = ramses::ERenderBufferFormat::RGB8;
             break;
         case RENDERBUFFER_FORMAT_R16F:
-            bufferFormat = ramses::ERenderBufferFormat_R16F;
+            bufferFormat = ramses::ERenderBufferFormat::R16F;
             break;
         case RENDERBUFFER_FORMAT_R32F:
-            bufferFormat = ramses::ERenderBufferFormat_R32F;
+            bufferFormat = ramses::ERenderBufferFormat::R32F;
             break;
         case RENDERBUFFER_FORMAT_RG16F:
-            bufferFormat = ramses::ERenderBufferFormat_RG16F;
+            bufferFormat = ramses::ERenderBufferFormat::RG16F;
             break;
         case RENDERBUFFER_FORMAT_RG32F:
-            bufferFormat = ramses::ERenderBufferFormat_RG32F;
+            bufferFormat = ramses::ERenderBufferFormat::RG32F;
             break;
         case RENDERBUFFER_FORMAT_RGB16F:
-            bufferFormat = ramses::ERenderBufferFormat_RGB16F;
+            bufferFormat = ramses::ERenderBufferFormat::RGB16F;
             break;
         case RENDERBUFFER_FORMAT_RGB32F:
-            bufferFormat = ramses::ERenderBufferFormat_RGB32F;
+            bufferFormat = ramses::ERenderBufferFormat::RGB32F;
             break;
         case RENDERBUFFER_FORMAT_RGBA16F:
-            bufferFormat = ramses::ERenderBufferFormat_RGBA16F;
+            bufferFormat = ramses::ERenderBufferFormat::RGBA16F;
             break;
         case RENDERBUFFER_FORMAT_RGBA32F:
-            bufferFormat = ramses::ERenderBufferFormat_RGBA32F;
+            bufferFormat = ramses::ERenderBufferFormat::RGBA32F;
             break;
 
         default:
@@ -85,12 +85,12 @@ namespace ramses_internal
             break;
         }
 
-        const ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, bufferFormat, ramses::ERenderBufferAccessMode_ReadWrite);
+        const ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Color, bufferFormat, ramses::ERenderBufferAccessMode::ReadWrite);
         assert(renderBuffer != nullptr);
         return *renderBuffer;
     }
 
-    ramses::Camera* RenderTargetScene::createCamera(UInt32 state)
+    ramses::Camera* RenderTargetScene::createCamera(uint32_t state)
     {
         switch (state)
         {
@@ -129,7 +129,7 @@ namespace ramses_internal
         }
     }
 
-    void RenderTargetScene::initInputRenderPass(UInt32 state)
+    void RenderTargetScene::initInputRenderPass(uint32_t state)
     {
         ramses::MeshNode* meshNode = m_scene.createMeshNode();
         if (state == PERSPECTIVE_PROJECTION || state == ORTHOGRAPHIC_PROJECTION)
@@ -147,7 +147,7 @@ namespace ramses_internal
 
         ramses::Node* translateNode = m_scene.createNode();
         translateNode->addChild(*meshNode);
-        translateNode->translate(0.0f, -0.5f, -5.0f);
+        translateNode->translate({0.0f, -0.5f, -5.0f});
 
         ramses::RenderPass* renderPass = m_scene.createRenderPass();
         ramses::RenderGroup* renderGroup = m_scene.createRenderGroup();
@@ -160,7 +160,7 @@ namespace ramses_internal
         rtDesc.addRenderBuffer(m_renderBuffer);
         ramses::RenderTarget* renderTarget = m_scene.createRenderTarget(rtDesc);
         renderPass->setRenderTarget(renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags::EClearFlags_All);
     }
 
@@ -169,17 +169,17 @@ namespace ramses_internal
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
 
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
-        float vertexPositionsArray[] = {
-            -0.5f, -0.5f, 0.f,
-            0.5f, -0.5f, 0.f,
-            -0.5f, 0.5f, 0.f,
-            0.5f, 0.5f, 0.f };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray{
+            ramses::vec3f{ -0.5f, -0.5f, 0.f },
+            ramses::vec3f{ 0.5f, -0.5f, 0.f },
+            ramses::vec3f{ -0.5f, 0.5f, 0.f },
+            ramses::vec3f{ 0.5f, 0.5f, 0.f } };
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        float textureCoordsArray[] = { 0.f, 0.f, 2.f, 0.f, 0.f, 2.f, 2.f, 2.f };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 0.f}, ramses::vec2f{2.f, 0.f}, ramses::vec2f{0.f, 2.f}, ramses::vec2f{2.f, 2.f} };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
 
@@ -195,10 +195,10 @@ namespace ramses_internal
         geometry->setInputBuffer(texCoordsInput, *textureCoords);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Nearest,
-            ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Nearest,
+            ramses::ETextureSamplingMethod::Nearest,
             m_renderBuffer);
 
         ramses::UniformInput textureInput;
@@ -210,7 +210,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -4.f);
+        transNode->setTranslation({0.f, 0.f, -4.f});
         meshNode->setParent(*transNode);
 
         ramses::Camera& camera = createCameraWithDefaultParameters();

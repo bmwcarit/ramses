@@ -32,7 +32,7 @@ namespace ramses_internal
         m_numberTimeIntervalsSinceLastSummaryReset++;
     }
 
-    ramses_internal::UInt32 StatisticCollection::getNumberTimeIntervalsSinceLastSummaryReset() const
+    uint32_t StatisticCollection::getNumberTimeIntervalsSinceLastSummaryReset() const
     {
         return m_numberTimeIntervalsSinceLastSummaryReset;
     }
@@ -69,8 +69,8 @@ namespace ramses_internal
 
         statMessagesSent.updateSummaryAndResetCounter();
         statMessagesReceived.updateSummaryAndResetCounter();
-        const UInt32 resourcesCreated = statResourcesCreated.updateSummaryAndResetCounter();
-        const UInt32 resourcesDestroyed = statResourcesDestroyed.updateSummaryAndResetCounter();
+        const uint32_t resourcesCreated = statResourcesCreated.updateSummaryAndResetCounter();
+        const uint32_t resourcesDestroyed = statResourcesDestroyed.updateSummaryAndResetCounter();
         statResourcesLoadedFromFileNumber.updateSummaryAndResetCounter();
         statResourcesLoadedFromFileSize.updateSummaryAndResetCounter();
 
@@ -132,8 +132,8 @@ namespace ramses_internal
         StatisticCollection::nextTimeInterval();
 
         statFlushesTriggered.updateSummaryAndResetCounter();
-        const UInt32 objectsCreated = statObjectsCreated.updateSummaryAndResetCounter();
-        const UInt32 objectsDestroyed = statObjectsDestroyed.updateSummaryAndResetCounter();
+        const uint32_t objectsCreated = statObjectsCreated.updateSummaryAndResetCounter();
+        const uint32_t objectsDestroyed = statObjectsDestroyed.updateSummaryAndResetCounter();
 
         statSceneActionsSent.updateSummaryAndResetCounter();
         statSceneActionsSentSkipped.updateSummaryAndResetCounter();

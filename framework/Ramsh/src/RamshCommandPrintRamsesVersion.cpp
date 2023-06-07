@@ -21,7 +21,7 @@ namespace ramses_internal
 
     bool RamshCommandPrintRamsesVersion::executeInput(const std::vector<std::string>& /*input*/)
     {
-        LOG_INFO(CONTEXT_RAMSH, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING);
+        LOG_INFO(CONTEXT_RAMSH, ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION);
         return true;
     }
 

@@ -14,17 +14,14 @@
 namespace ramses
 {
     SceneObjectIterator::SceneObjectIterator(const Scene& scene, ERamsesObjectType objectType)
-        : impl(new ObjectIteratorImpl(scene.impl.getObjectRegistry(), objectType))
+        : m_impl{ std::make_unique<ObjectIteratorImpl>(scene.m_impl.getObjectRegistry(), objectType) }
     {
     }
 
-    SceneObjectIterator::~SceneObjectIterator()
-    {
-        delete impl;
-    }
+    SceneObjectIterator::~SceneObjectIterator() = default;
 
     RamsesObject* SceneObjectIterator::getNext()
     {
-        return impl->getNext();
+        return m_impl->getNext();
     }
 }

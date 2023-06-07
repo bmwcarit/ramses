@@ -12,12 +12,12 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    MultipleTrianglesScene::MultipleTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    MultipleTrianglesScene::MultipleTrianglesScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_Effect(getTestEffect("ramses-test-client-basic"))
         , m_meshNode1(nullptr)
@@ -31,11 +31,11 @@ namespace ramses_internal
         , m_redTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Red)
         , m_greenTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Green)
         , m_blueTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue)
-        , m_yellowLine(scene, *m_Effect, ramses::Line::EColor_Yellow, ramses::EDrawMode_Lines)
+        , m_yellowLine(scene, *m_Effect, ramses::Line::EColor_Yellow, ramses::EDrawMode::Lines)
         , m_whiteQuad(scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_White)
         , m_triangleFan(scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_Red, 1.f, ramses::MultiTriangleGeometry::EGeometryType_TriangleFan)
-        , m_lineStrip               (scene, *m_Effect, ramses::Line::EColor_Red, ramses::EDrawMode_LineStrip)
-        , m_linePoints              (scene, *m_Effect, ramses::Line::EColor_White, ramses::EDrawMode_Points)
+        , m_lineStrip               (scene, *m_Effect, ramses::Line::EColor_Red, ramses::EDrawMode::LineStrip)
+        , m_linePoints              (scene, *m_Effect, ramses::Line::EColor_White, ramses::EDrawMode::Points)
         , m_redTransparentTriangle  (scene, *m_Effect, ramses::TriangleAppearance::EColor_Red, 0.6f)
         , m_greenTransparentTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Green, 0.6f)
         , m_blueTransparentTriangle (scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue, 0.6f)
@@ -67,7 +67,7 @@ namespace ramses_internal
         setState(state);
     }
 
-    void MultipleTrianglesScene::setState(UInt32 state)
+    void MultipleTrianglesScene::setState(uint32_t state)
     {
         ramses::Node* rotate = nullptr;
         ramses::Node* translate = nullptr;
@@ -85,20 +85,20 @@ namespace ramses_internal
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
-            m_redTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite_Disabled);
-            m_greenTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite_Disabled);
-            m_blueTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite_Disabled);
+            m_redTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite::Disabled);
+            m_greenTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite::Disabled);
+            m_blueTriangle.GetAppearance().setDepthWrite(ramses::EDepthWrite::Disabled);
             addMeshNodeToDefaultRenderGroup(*m_meshNode1, 99);
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, -1);
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 1);
             break;
         case ADDITIVE_BLENDING:
-            m_redTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_One, ramses::EBlendFactor_One, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_redTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-            m_greenTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_One, ramses::EBlendFactor_One, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_greenTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-            m_blueTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_One, ramses::EBlendFactor_One, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_blueTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+            m_redTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::One, ramses::EBlendFactor::One, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_redTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+            m_greenTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::One, ramses::EBlendFactor::One, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_greenTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+            m_blueTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::One, ramses::EBlendFactor::One, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_blueTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
             m_meshNode1->setAppearance(m_redTransparentTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTransparentTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTransparentTriangle.GetAppearance());
@@ -109,10 +109,10 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
         case SUBTRACTIVE_BLENDING:
-            m_greenTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_One, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_greenTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_ReverseSubtract, ramses::EBlendOperation_Add);
-            m_blueTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_One, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_blueTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_ReverseSubtract, ramses::EBlendOperation_Add);
+            m_greenTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::One, ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_greenTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::ReverseSubtract, ramses::EBlendOperation::Add);
+            m_blueTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::One, ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_blueTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::ReverseSubtract, ramses::EBlendOperation::Add);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTransparentTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTransparentTriangle.GetAppearance());
@@ -123,12 +123,12 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
         case ALPHA_BLENDING:
-            m_redTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_redTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-            m_greenTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_greenTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-            m_blueTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-            m_blueTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+            m_redTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_redTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+            m_greenTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_greenTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+            m_blueTransparentTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+            m_blueTransparentTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
             m_meshNode1->setAppearance(m_redTransparentTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTransparentTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTransparentTriangle.GetAppearance());
@@ -141,9 +141,9 @@ namespace ramses_internal
         case BLENDING_CONSTANT:
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
 
-            m_whiteTriangle.GetAppearance().setBlendingColor(.5f, .5f, 0.f, .7f);
-            m_whiteTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_ConstColor, ramses::EBlendFactor_ConstAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_Zero);
-            m_whiteTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+            m_whiteTriangle.GetAppearance().setBlendingColor(ramses::vec4f{ .5f, .5f, 0.f, .7f });
+            m_whiteTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::ConstColor, ramses::EBlendFactor::ConstAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::Zero);
+            m_whiteTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
             m_meshNode2->setAppearance(m_whiteTriangle.GetAppearance());
             m_meshNode2->setGeometryBinding(m_whiteTriangle.GetGeometry());
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
@@ -151,15 +151,15 @@ namespace ramses_internal
         case BLENDING_DST_COLOR_AND_ALPHA:
             m_meshNode1->setAppearance(m_greenTransparentTriangle.GetAppearance());
 
-            m_whiteTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_DstColor, ramses::EBlendFactor_Zero, ramses::EBlendFactor_One, ramses::EBlendFactor_Zero);
-            m_whiteTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-            m_blueTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-            m_blueTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_One, ramses::EBlendFactor_Zero, ramses::EBlendFactor_DstAlpha, ramses::EBlendFactor_Zero);
+            m_whiteTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::DstColor, ramses::EBlendFactor::Zero, ramses::EBlendFactor::One, ramses::EBlendFactor::Zero);
+            m_whiteTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+            m_blueTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+            m_blueTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor::One, ramses::EBlendFactor::Zero, ramses::EBlendFactor::DstAlpha, ramses::EBlendFactor::Zero);
             m_meshNode2->setAppearance(m_whiteTriangle.GetAppearance());
             m_meshNode2->setGeometryBinding(m_whiteTriangle.GetGeometry());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
             m_meshNode3->setGeometryBinding(m_blueTriangle.GetGeometry());
-            m_meshNode3->translate(0.f, -1.f, 0.f);
+            m_meshNode3->translate({0.f, -1.f, 0.f});
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
@@ -186,13 +186,13 @@ namespace ramses_internal
             getDefaultCamera().setParent(*rotate);
             rotate->setParent(*translate);
 
-            translate->setTranslation(-3.f, 3.5f, 0.f);
-            rotate->setRotation(2.0f, 22.0f, 60.0f);
+            translate->setTranslation({-3.f, 3.5f, 0.f});
+            rotate->setRotation({-2.0f, -22.0f, -60.0f}, ramses::ERotationType::Euler_XYZ);
             break;
         case FACE_CULLING:
-            m_CCWTriangle.GetAppearance().setCullingMode(ramses::ECullMode_BackFacing);
-            m_CWTriangle.GetAppearance().setCullingMode(ramses::ECullMode_FrontFacing);
-            m_CWTriangleCCWIndices.GetAppearance().setCullingMode(ramses::ECullMode_BackFacing);
+            m_CCWTriangle.GetAppearance().setCullingMode(ramses::ECullMode::BackFacing);
+            m_CWTriangle.GetAppearance().setCullingMode(ramses::ECullMode::FrontFacing);
+            m_CWTriangleCCWIndices.GetAppearance().setCullingMode(ramses::ECullMode::BackFacing);
             m_meshNode1->setAppearance(m_CCWTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_CWTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_CWTriangleCCWIndices.GetAppearance());
@@ -201,9 +201,9 @@ namespace ramses_internal
             m_meshNode3->setGeometryBinding(m_CWTriangleCCWIndices.GetGeometry());
             break;
         case DEPTH_FUNC:
-            m_redTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc_Greater);
-            m_greenTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc_Greater);
-            m_blueTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc_LessEqual);
+            m_redTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc::Greater);
+            m_greenTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc::Greater);
+            m_blueTriangle.GetAppearance().setDepthFunction(ramses::EDepthFunc::LessEqual);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
@@ -212,12 +212,12 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 0);
             break;
         case DRAW_MODE:
-            m_redTriangle.GetAppearance().setDrawMode(ramses::EDrawMode_Triangles);
-            m_yellowLine.GetAppearance().setDrawMode(ramses::EDrawMode_Lines);
-            m_greenTriangle.GetAppearance().setDrawMode(ramses::EDrawMode_LineLoop);
+            m_redTriangle.GetAppearance().setDrawMode(ramses::EDrawMode::Triangles);
+            m_yellowLine.GetAppearance().setDrawMode(ramses::EDrawMode::Lines);
+            m_greenTriangle.GetAppearance().setDrawMode(ramses::EDrawMode::LineLoop);
             addMeshNodeToDefaultRenderGroup(*m_meshNode4);
             addMeshNodeToDefaultRenderGroup(*m_meshNode5);
-            m_whiteQuad.GetAppearance().setDrawMode(ramses::EDrawMode_TriangleStrip);
+            m_whiteQuad.GetAppearance().setDrawMode(ramses::EDrawMode::TriangleStrip);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->removeAppearanceAndGeometry();
@@ -231,12 +231,12 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode7);
             break;
         case STENCIL_TEST_1:
-            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Always, 0, 0xff);
-            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment);
-            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Equal, 1, 0xff);
-            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment);
-            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Equal, 2, 0xff);
-            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment);
+            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Always, 0, 0xff);
+            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment);
+            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Equal, 1, 0xff);
+            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment);
+            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Equal, 2, 0xff);
+            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
@@ -245,12 +245,12 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
         case STENCIL_TEST_2:
-            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Always, 10, 0x0f);
-            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace);
-            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Equal, 11, 0x0f); // Stencil is 10, so this should fail
-            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Decrement, ramses::EStencilOperation_Decrement, ramses::EStencilOperation_Decrement);
-            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Equal, 10, 0x0f); // Stencil is now decremented to 9, so this should also fail
-            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Keep, ramses::EStencilOperation_Keep, ramses::EStencilOperation_Keep);
+            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Always, 10, 0x0f);
+            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Replace, ramses::EStencilOperation::Replace, ramses::EStencilOperation::Replace);
+            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Equal, 11, 0x0f); // Stencil is 10, so this should fail
+            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Decrement, ramses::EStencilOperation::Decrement, ramses::EStencilOperation::Decrement);
+            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Equal, 10, 0x0f); // Stencil is now decremented to 9, so this should also fail
+            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Keep, ramses::EStencilOperation::Keep, ramses::EStencilOperation::Keep);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
@@ -260,12 +260,12 @@ namespace ramses_internal
             break;
         case STENCIL_TEST_3:
             // Test decrement wrapping
-            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_GreaterEqual, 0, 0xff);
-            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_DecrementWrap, ramses::EStencilOperation_DecrementWrap, ramses::EStencilOperation_DecrementWrap);
-            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_Greater, 250, 0xff);
-            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Decrement, ramses::EStencilOperation_Decrement, ramses::EStencilOperation_Decrement);
-            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc_GreaterEqual, 0, 0xff);
-            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment, ramses::EStencilOperation_Increment);
+            m_greenTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::GreaterEqual, 0, 0xff);
+            m_greenTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::DecrementWrap, ramses::EStencilOperation::DecrementWrap, ramses::EStencilOperation::DecrementWrap);
+            m_redTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::Greater, 250, 0xff);
+            m_redTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Decrement, ramses::EStencilOperation::Decrement, ramses::EStencilOperation::Decrement);
+            m_blueTriangle.GetAppearance().setStencilFunction(ramses::EStencilFunc::GreaterEqual, 0, 0xff);
+            m_blueTriangle.GetAppearance().setStencilOperation(ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment, ramses::EStencilOperation::Increment);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
@@ -274,9 +274,9 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
         case SCISSOR_TEST:
-            m_greenTriangle.GetAppearance().setScissorTest(ramses::EScissorTest_Enabled, 90, 50, 50u, 150u);
-            m_redTriangle.GetAppearance().setScissorTest(ramses::EScissorTest_Enabled, 90, 50, 50u, 150u);
-            m_blueTriangle.GetAppearance().setScissorTest(ramses::EScissorTest_Enabled, 100, 50, 50u, 100u);
+            m_greenTriangle.GetAppearance().setScissorTest(ramses::EScissorTest::Enabled, 90, 50, 50u, 150u);
+            m_redTriangle.GetAppearance().setScissorTest(ramses::EScissorTest::Enabled, 90, 50, 50u, 150u);
+            m_blueTriangle.GetAppearance().setScissorTest(ramses::EScissorTest::Enabled, 100, 50, 50u, 100u);
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
@@ -312,13 +312,13 @@ namespace ramses_internal
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
-            ramses::DataVector4f* colorData = m_scene.createDataVector4f();
+            ramses::DataObject* colorData = m_scene.createDataObject(ramses::EDataType::Vector4F);
             assert(colorData != nullptr);
-            colorData->setValue(0.f, 0.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 0.f, 0.f, 0.f, 1.f });
             m_redTriangle.bindColor(*colorData);
             m_greenTriangle.bindColor(*colorData);
             m_blueTriangle.bindColor(*colorData);
-            colorData->setValue(1.f, 0.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 1.f, 0.f, 0.f, 1.f });
         }
             break;
         case THREE_TRIANGLES_WITH_UNSHARED_COLOR:
@@ -326,16 +326,16 @@ namespace ramses_internal
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
-            ramses::DataVector4f* colorData = m_scene.createDataVector4f();
+            ramses::DataObject* colorData = m_scene.createDataObject(ramses::EDataType::Vector4F);
             assert(colorData != nullptr);
             m_redTriangle.bindColor(*colorData);
             m_greenTriangle.bindColor(*colorData);
             m_blueTriangle.bindColor(*colorData);
-            colorData->setValue(1.f, 0.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 1.f, 0.f, 0.f, 1.f });
             m_redTriangle.unbindColor();
             m_greenTriangle.unbindColor();
             m_blueTriangle.unbindColor();
-            colorData->setValue(0.f, 1.f, 0.f, 1.f);
+            colorData->setValue(ramses::vec4f{ 0.f, 1.f, 0.f, 1.f });
         }
             break;
         case EULER_ROTATION_CONVENTIONS:
@@ -389,27 +389,27 @@ namespace ramses_internal
 
         if (state == EULER_ROTATION_CONVENTIONS)
         {
-            transNode1->setTranslation(-1.f, -1.f, -15.f);
-            transNode2->setTranslation(-1.f, 0.f , -15.f);
-            transNode3->setTranslation(-1.f, 1.f , -15.f);
-            transNode4->setTranslation(1.f , -1.f, -15.f);
-            transNode5->setTranslation(1.f , 0.f , -15.f);
-            transNode6->setTranslation(1.f , 1.f , -15.f);
+            transNode1->setTranslation({-1.f, -1.f, -15.f});
+            transNode2->setTranslation({-1.f, 0.f, -15.f});
+            transNode3->setTranslation({-1.f, 1.f, -15.f});
+            transNode4->setTranslation({1.f, -1.f, -15.f});
+            transNode5->setTranslation({1.f, 0.f, -15.f});
+            transNode6->setTranslation({1.f, 1.f, -15.f});
 
-            transNode1->setRotation(0.f , 0.f, 45.f, ramses::ERotationConvention::XYZ);
-            transNode2->setRotation(0.f , 60.f, 45.f, ramses::ERotationConvention::XYZ);
-            transNode3->setRotation(60.f, 60.f, 45.f, ramses::ERotationConvention::XYZ);
-            transNode4->setRotation(45.f, 60.f, 45.f, ramses::ERotationConvention::ZYZ);
+            transNode1->setRotation({0.f, 0.f, 45.f}, ramses::ERotationType::Euler_ZYX);
+            transNode2->setRotation({0.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYX);
+            transNode3->setRotation({60.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYX);
+            transNode4->setRotation({45.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYZ);
 
             ramses::Node* transNode5Child = m_scene.createNode();
             transNode5->addChild(*transNode5Child);
-            transNode5->setRotation(60.f, 0.f, 0.f, ramses::ERotationConvention::ZYX);
-            transNode5Child->setRotation(0.f, 60.f, 45.f, ramses::ERotationConvention::YZX);
+            transNode5->setRotation({60.f, 0.f, 0.f}, ramses::ERotationType::Euler_XYZ);
+            transNode5Child->setRotation({0.f, 60.f, 45.f}, ramses::ERotationType::Euler_XZY);
 
             ramses::Node* transNode6Child = m_scene.createNode();
             transNode6->addChild(*transNode6Child);
-            transNode6->setRotation(-80.f, -60.f, -45.f, ramses::ERotationConvention::ZYX);
-            transNode6Child->setRotation(80.f, 60.f, 45.f, ramses::ERotationConvention::XYZ);
+            transNode6->setRotation({-80.f, -60.f, -45.f}, ramses::ERotationType::Euler_XYZ);
+            transNode6Child->setRotation({80.f, 60.f, 45.f}, ramses::ERotationType::Euler_ZYX);
 
             m_meshNode1->setParent(*transNode1);
             m_meshNode2->setParent(*transNode2);
@@ -420,15 +420,15 @@ namespace ramses_internal
         }
         else
         {
-            transNode1->setTranslation(0.f, -0.2f, -12.f);
-            transNode2->setTranslation(-0.2f, 0.f, -11.f);
-            transNode3->setTranslation(0.2f, 0.2f, -10.f);
-            transNode4->setTranslation(-0.2f, -0.2f, -9.f);
-            transNode5->setTranslation(-0.3f, -0.2f, -8.f);
-            transNode6->setTranslation(2.0f, -0.6f, -12.f);
+            transNode1->setTranslation({0.f, -0.2f, -12.f});
+            transNode2->setTranslation({-0.2f, 0.f, -11.f});
+            transNode3->setTranslation({0.2f, 0.2f, -10.f});
+            transNode4->setTranslation({-0.2f, -0.2f, -9.f});
+            transNode5->setTranslation({-0.3f, -0.2f, -8.f});
+            transNode6->setTranslation({2.0f, -0.6f, -12.f});
 
             ramses::Node* transNode7 = m_scene.createNode();
-            transNode7->setTranslation(1.0f, 0.6f, -12.f);
+            transNode7->setTranslation({1.0f, 0.6f, -12.f});
 
             m_meshNode1->setParent(*transNode1);
             m_meshNode2->setParent(*transNode2);

@@ -9,6 +9,8 @@
 #ifndef RAMSES_LOGLEVEL_H
 #define RAMSES_LOGLEVEL_H
 
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
+
 namespace ramses_internal
 {
     enum class ELogLevel
@@ -22,6 +24,29 @@ namespace ramses_internal
         Debug = 5,
         Trace = 6
     };
+
+    inline ELogLevel GetELogLevelInternal(ramses::ELogLevel logLevel)
+    {
+        switch (logLevel)
+        {
+        case ramses::ELogLevel::Off:
+            return ramses_internal::ELogLevel::Off;
+        case ramses::ELogLevel::Fatal:
+            return ramses_internal::ELogLevel::Fatal;
+        case ramses::ELogLevel::Error:
+            return ramses_internal::ELogLevel::Error;
+        case ramses::ELogLevel::Warn:
+            return ramses_internal::ELogLevel::Warn;
+        case ramses::ELogLevel::Info:
+            return ramses_internal::ELogLevel::Info;
+        case ramses::ELogLevel::Debug:
+            return ramses_internal::ELogLevel::Debug;
+        case ramses::ELogLevel::Trace:
+            return ramses_internal::ELogLevel::Trace;
+        }
+
+        return ramses_internal::ELogLevel::Off;
+    }
 }
 
 #endif

@@ -11,14 +11,16 @@
 
 #include "Resource/TextureMetaInfo.h"
 #include "Resource/BufferResource.h"
+
 #include <numeric>
+#include <string_view>
 
 namespace ramses_internal
 {
     class TextureResource : public BufferResource
     {
     public:
-        TextureResource(EResourceType typeID, const TextureMetaInfo& texDesc, ResourceCacheFlag cacheFlag, const String& name)
+        TextureResource(EResourceType typeID, const TextureMetaInfo& texDesc, ResourceCacheFlag cacheFlag, std::string_view name)
             : BufferResource(typeID, GetTotalDataSizeFromMipSizes(texDesc.m_dataSizes, typeID), nullptr, cacheFlag, name)
             , m_width(texDesc.m_width)
             , m_height(texDesc.m_height)
@@ -34,21 +36,21 @@ namespace ramses_internal
             assert((texDesc.m_dataSizes.size() == 1) || !texDesc.m_generateMipChain);
         };
 
-        virtual ~TextureResource() override
+        ~TextureResource() override
         {
         };
 
-        UInt32 getWidth() const
+        uint32_t getWidth() const
         {
             return m_width;
         }
 
-        UInt32 getHeight() const
+        uint32_t getHeight() const
         {
             return m_height;
         }
 
-        UInt32 getDepth() const
+        uint32_t getDepth() const
         {
             return m_depth;
         }
@@ -73,7 +75,7 @@ namespace ramses_internal
             return m_generateMipChain;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override final
+        void serializeResourceMetadataToStream(IOutputStream& output) const final override
         {
             switch (getTypeID())
             {
@@ -93,12 +95,12 @@ namespace ramses_internal
                 assert(false);
             }
 
-            output << static_cast<UInt32>(m_format);
+            output << static_cast<uint32_t>(m_format);
             for (const auto swizzle : m_swizzle)
             {
                 output << swizzle;
             }
-            output << static_cast<UInt32>(m_mipDataSizes.size());
+            output << static_cast<uint32_t>(m_mipDataSizes.size());
             for (const auto mipSize : m_mipDataSizes)
             {
                 output << mipSize;
@@ -106,12 +108,12 @@ namespace ramses_internal
             output << m_generateMipChain;
         }
 
-        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, EResourceType typeID, ResourceCacheFlag cacheFlag, const String& name)
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, EResourceType typeID, ResourceCacheFlag cacheFlag, std::string_view name)
         {
             TextureMetaInfo texDesc(1u, 1u, 1u);
-            UInt32 texelFormat = 0;
-            UInt32 mipLevelCount = 0;
-            UInt32 mipLevelSize = 0;
+            uint32_t texelFormat = 0;
+            uint32_t mipLevelCount = 0;
+            uint32_t mipLevelSize = 0;
 
             switch (typeID)
             {
@@ -134,13 +136,13 @@ namespace ramses_internal
             input >> texelFormat;
             texDesc.m_format = static_cast<ETextureFormat>(texelFormat);
             static_assert(texDesc.m_swizzle.size() == 4, "Wrong size of texture swizzle array");
-            for (UInt32 ii = 0; ii < 4; ++ii)
+            for (uint32_t ii = 0; ii < 4; ++ii)
             {
                 input >> texDesc.m_swizzle[ii];
             }
             input >> mipLevelCount;
             texDesc.m_dataSizes.reserve(mipLevelCount);
-            for (UInt32 ii = 0; ii < mipLevelCount; ++ii)
+            for (uint32_t ii = 0; ii < mipLevelCount; ++ii)
             {
                 input >> mipLevelSize;
                 texDesc.m_dataSizes.push_back(mipLevelSize);
@@ -152,15 +154,15 @@ namespace ramses_internal
         }
 
     private:
-        static UInt32 GetTotalDataSizeFromMipSizes(const MipDataSizeVector& mipSizes, EResourceType typeID)
+        static uint32_t GetTotalDataSizeFromMipSizes(const MipDataSizeVector& mipSizes, EResourceType typeID)
         {
-            const UInt32 totalMipChainDataSize = std::accumulate(mipSizes.begin(), mipSizes.end(), 0u);
+            const uint32_t totalMipChainDataSize = std::accumulate(mipSizes.begin(), mipSizes.end(), 0u);
             return (typeID == EResourceType_TextureCube ? 6u * totalMipChainDataSize : totalMipChainDataSize);
         }
 
-        UInt32                      m_width;
-        UInt32                      m_height;
-        UInt32                      m_depth;
+        uint32_t                      m_width;
+        uint32_t                      m_height;
+        uint32_t                      m_depth;
         MipDataSizeVector           m_mipDataSizes;
         ETextureFormat              m_format;
         TextureSwizzleArray         m_swizzle;

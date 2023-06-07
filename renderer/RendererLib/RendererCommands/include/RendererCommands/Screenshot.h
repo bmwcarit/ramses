@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit Screenshot(RendererCommandBuffer& rendererCommandBuffer);
-        virtual bool executeInput(const std::vector<std::string>& input) override;
+        bool executeInput(const std::vector<std::string>& input) override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

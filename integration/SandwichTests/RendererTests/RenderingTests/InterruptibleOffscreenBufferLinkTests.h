@@ -11,11 +11,13 @@
 
 #include "IRendererTest.h"
 
+#include <string>
+
 class InterruptibleOffscreenBufferLinkTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) override final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) override final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final override;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final override;
 
 private:
     enum
@@ -32,10 +34,10 @@ private:
     };
 
     template <typename INTEGRATION_SCENE>
-    ramses::sceneId_t createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const ramses_internal::Vector3& camPos = { 0, 0, 0 }, uint32_t vpWidth = ramses_internal::IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = ramses_internal::IntegrationScene::DefaultViewportHeight);
-    bool renderAndCompareScreenshot(RendererTestsFramework& testFramework, const ramses_internal::String& expectedImage, uint32_t numFramesToRender = 1u);
+    ramses::sceneId_t createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const glm::vec3& camPos = { 0, 0, 0 }, uint32_t vpWidth = ramses_internal::IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = ramses_internal::IntegrationScene::DefaultViewportHeight);
+    bool renderAndCompareScreenshot(RendererTestsFramework& testFramework, const std::string& expectedImage, uint32_t numFramesToRender = 1u);
 
-    const ramses_internal::Vector3 m_cameraMid{ 0.f, 0.f, 8.f };
+    const glm::vec3 m_cameraMid{ 0.f, 0.f, 8.f };
 
     static constexpr uint32_t OBWidth = 256u;
     static constexpr uint32_t OBHeight = 256u;

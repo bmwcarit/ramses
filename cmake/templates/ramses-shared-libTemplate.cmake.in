@@ -7,12 +7,10 @@
 #  -------------------------------------------------------------------------
 
 # Use like this with find_package:
-# find_package(ramses-shared-lib <RAMSES-VERSION> [REQUIRED] COMPONENTS <SYSTEM> [GL_VERSION])
-# <SYSTEM> must be one of: WINDOWS, LINUX-X11, LINUX-WAYLAND, ANDROID
-# GL_VERSION can be one of: GL4.2, GL4.5, GLES3.0
-# GL_VERSION is overridden for some systems
+# find_package(ramses-shared-lib <RAMSES-VERSION>)
 
 INCLUDE(FindPackageHandleStandardArgs)
+INCLUDE(CMakeFindDependencyMacro)
 SET(ramses-shared-lib_VERSION @RAMSES_VERSION@)
 
 @PACKAGE_INIT@
@@ -21,83 +19,62 @@ FIND_PACKAGE(PkgConfig QUIET)
 
 # Process COMPONENT parameters
 
-LIST(GET ramses-shared-lib_FIND_COMPONENTS 0 RENDERER_PLATFORM)
 LIST(LENGTH ramses-shared-lib_FIND_COMPONENTS COMPONENTS_LENGTH)
-IF(COMPONENTS_LENGTH GREATER 1)
-    LIST(GET ramses-shared-lib_FIND_COMPONENTS 1 GL_VERSION)
-ELSE()
-    SET(GL_VERSION NOTFOUND)
-ENDIF()
+if(COMPONENTS_LENGTH GREATER 0)
+    MESSAGE(FATAL_ERROR "Unused components passed: ${ramses-shared-lib_FIND_COMPONENTS}")
+endif()
 
 # find include dir
-IF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
+IF("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
     FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
-        HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+        HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
         CMAKE_FIND_ROOT_PATH_BOTH
     )
 ELSE()
     FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
-        HINTS @PACKAGE_PROJECT_INSTALL_HEADER@
+        HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
     )
 ENDIF()
 
+if(IS_DIRECTORY "${ramses-shared-lib_INCLUDE_DIRS}/glm")
+    add_library(glm::glm INTERFACE IMPORTED)
+    set_target_properties(glm::glm PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${ramses-shared-lib_INCLUDE_DIRS})
+else()
+    find_dependency(glm REQUIRED)
+
+    if(NOT TARGET glm::glm)
+        add_library(glm::glm ALIAS glm)
+    endif()
+endif()
+
 # find library
-IF("${RENDERER_PLATFORM}" STREQUAL "WINDOWS")
-
-    IF(NOT GL_VERSION)
-        MESSAGE("Using OpenGL 4.2 as no OpenGL version was specified")
-        SET(GL_VERSION "GL4.2")
-    ENDIF()
-
-    IF("${GL_VERSION}" STREQUAL "GL4.2")
-        SET(RAMSES_GL_LIB ramses-shared-lib-windows-wgl-4-2-core)
-    ELSEIF("${GL_VERSION}" STREQUAL "GL4.5")
-        SET(RAMSES_GL_LIB ramses-shared-lib-windows-wgl-4-5)
-    ELSEIF("${GL_VERSION}" STREQUAL "GLES3.0")
-        SET(RAMSES_GL_LIB ramses-shared-lib-windows-wgl-es-3-0)
-    ELSE()
-        MESSAGE(FATAL_ERROR "OpenGL version ${GL_VERSION} not supported on platform ${RENDERER_PLATFORM}. Use one of [GL4.2, GL4.5, GLES3.0]")
-    ENDIF()
+IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
     # no shlib versioning support on windows
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
-        NAMES "${RAMSES_GL_LIB}"
-        HINTS @PACKAGE_PROJECT_INSTALL_BINARY@
+        NAMES "ramses-shared-lib"
+        HINTS @PACKAGE_RAMSES_INSTALL_RUNTIME_PATH@
     )
 
-ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-X11")
-
-    MESSAGE("Using OpenGL ES 3.0. Ignoring GL_VERSION")
+ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
     # require exact shlib version
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
-        NAMES "libramses-shared-lib-x11-egl-es-3-0.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        NAMES "libramses-shared-lib.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
     )
 
-ELSEIF("${RENDERER_PLATFORM}" STREQUAL "LINUX-WAYLAND")
-
-    MESSAGE("Using OpenGL ES 3.0. Ignoring GL_VERSION")
-
-    # require exact shlib version
-    FIND_LIBRARY(ramses-shared-lib_LIBRARIES
-        NAMES "libramses-shared-lib-wayland-ivi-egl-es-3-0.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
-    )
-
-ELSEIF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
-
-    MESSAGE("Using OpenGL ES 3.0. Ignoring GL_VERSION")
+ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 
     # no shlib versioning support on Android
     FIND_LIBRARY(ramses-shared-lib_LIBRARIES
-        NAMES "libramses-shared-lib-android-egl-es-3-0.so"
-        HINTS @PACKAGE_PROJECT_INSTALL_SHARED_LIB@
+        NAMES "libramses-shared-lib"
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
         CMAKE_FIND_ROOT_PATH_BOTH
     )
 
 ELSE()
-    MESSAGE(FATAL_ERROR "please use component syntax, choose one of WINDOWS, LINUX-X11, LINUX-WAYLAND, ANDROID")
+    MESSAGE(FATAL_ERROR "Unsupported system: ${CMAKE_SYSTEM_NAME}, cant find shared lib")
 ENDIF()
 
 
@@ -125,6 +102,7 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
             set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib_LIBRARIES})
         endif()
         target_include_directories(ramses-ramses-shared-lib INTERFACE ${ramses-shared-lib_INCLUDE_DIRS})
+        target_link_libraries(ramses-ramses-shared-lib INTERFACE glm::glm)
 
         if (NOT TARGET ramses::ramses)
             add_library(ramses::ramses ALIAS ramses-ramses-shared-lib)

@@ -13,12 +13,12 @@
 namespace ramses_internal
 {
     RenderExecutorInternalState::RenderExecutorInternalState(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer)
-        : viewportState(Viewport(std::numeric_limits<Int32>::max(), std::numeric_limits<Int32>::max(), std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max()))
+        : viewportState()
         , m_currentRenderIterator(renderContext.renderFrom)
         , m_device(device)
         , m_scene(nullptr)
         , m_renderContext(renderContext)
-        , m_projectionMatrix(Matrix44f::Identity)
+        , m_projectionMatrix(1.f)
         , m_cameraWorldPosition(0.0f)
         , m_frameTimer(frameTimer)
     {
@@ -42,15 +42,15 @@ namespace ramses_internal
 
             m_viewMatrix = m_scene->updateMatrixCacheWithLinks(ETransformationMatrixType_Object, cameraData.node);
 
-            const Vector4 position = m_viewMatrix.inverse() * Vector4(0.0f, 0.0f, 0.0f, 1.0f);
-            m_cameraWorldPosition = Vector3(position.x, position.y, position.z);
+            const auto position = glm::inverse(m_viewMatrix) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            m_cameraWorldPosition = position;
 
             Viewport newViewport;
             const auto vpOffsetRef = m_scene->getDataReference(cameraData.dataInstance, Camera::ViewportOffsetField);
             const auto vpSizeRef = m_scene->getDataReference(cameraData.dataInstance, Camera::ViewportSizeField);
             const auto& vpOffset = m_scene->getDataSingleVector2i(vpOffsetRef, DataFieldHandle{ 0 });
             const auto& vpSize = m_scene->getDataSingleVector2i(vpSizeRef, DataFieldHandle{ 0 });
-            newViewport = Viewport{ vpOffset.x, vpOffset.y, UInt32(vpSize.x), UInt32(vpSize.y) };
+            newViewport = Viewport{ vpOffset.x, vpOffset.y, uint32_t(vpSize.x), uint32_t(vpSize.y) };
 
             const auto frustumPlanesRef = m_scene->getDataReference(cameraData.dataInstance, Camera::FrustumPlanesField);
             const auto frustumNearFarRef = m_scene->getDataReference(cameraData.dataInstance, Camera::FrustumNearFarPlanesField);

@@ -28,15 +28,15 @@ namespace ramses_internal
         SceneLinkScene::addChildToNode(parent, child);
     }
 
-    void TransformationLinkCachedScene::setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention)
+    void TransformationLinkCachedScene::setRotation(TransformHandle transform, const glm::vec4& rotation, ERotationType rotationType)
     {
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
         propagateDirtyToConsumers(nodeTransformIsConnectedTo);
-        SceneLinkScene::setRotation(transform, rotation, convention);
+        SceneLinkScene::setRotation(transform, rotation, rotationType);
     }
 
-    void TransformationLinkCachedScene::setScaling(TransformHandle transform, const Vector3& scaling)
+    void TransformationLinkCachedScene::setScaling(TransformHandle transform, const glm::vec3& scaling)
     {
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
@@ -44,7 +44,7 @@ namespace ramses_internal
         SceneLinkScene::setScaling(transform, scaling);
     }
 
-    void TransformationLinkCachedScene::setTranslation(TransformHandle transform, const Vector3& translation)
+    void TransformationLinkCachedScene::setTranslation(TransformHandle transform, const glm::vec3& translation)
     {
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
@@ -73,7 +73,7 @@ namespace ramses_internal
             NodeHandle node = m_dirtyPropagationTraversalBuffer.back();
             m_dirtyPropagationTraversalBuffer.pop_back();
 
-            const Bool wasDirty = markDirty(node);
+            const bool wasDirty = markDirty(node);
             m_sceneLinksManager.getTransformationLinkManager().propagateTransformationDirtinessToConsumers(getSceneId(), node);
 
             if (!wasDirty)
@@ -84,7 +84,7 @@ namespace ramses_internal
         }
     }
 
-    Matrix44f TransformationLinkCachedScene::updateMatrixCacheWithLinks(ETransformationMatrixType matrixType, NodeHandle node) const
+    glm::mat4 TransformationLinkCachedScene::updateMatrixCacheWithLinks(ETransformationMatrixType matrixType, NodeHandle node) const
     {
         if (!m_sceneLinksManager.getTransformationLinkManager().getDependencyChecker().hasDependencyAsConsumer(getSceneId()))
         {
@@ -92,10 +92,10 @@ namespace ramses_internal
             return SceneLinkScene::updateMatrixCache(matrixType, node);
         }
 
-        Matrix44f chainMatrix = SceneLinkScene::findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(matrixType, node, m_dirtyNodes);
+        glm::mat4 chainMatrix = SceneLinkScene::findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(matrixType, node, m_dirtyNodes);
 
         // update cache for all transforms for the nodes we collected
-        for (Int32 i = static_cast<Int32>(m_dirtyNodes.size()) - 1; i >= 0; --i)
+        for (int32_t i = static_cast<int32_t>(m_dirtyNodes.size()) - 1; i >= 0; --i)
         {
             const NodeHandle nodeToUpdate = m_dirtyNodes[i];
             getMatrixForNode(matrixType, nodeToUpdate, chainMatrix);
@@ -105,7 +105,7 @@ namespace ramses_internal
         return chainMatrix;
     }
 
-    void TransformationLinkCachedScene::getMatrixForNode(ETransformationMatrixType matrixType, NodeHandle node, Matrix44f& chainMatrix) const
+    void TransformationLinkCachedScene::getMatrixForNode(ETransformationMatrixType matrixType, NodeHandle node, glm::mat4& chainMatrix) const
     {
         if (m_sceneLinksManager.getTransformationLinkManager().nodeHasDataLinkToProvider(getSceneId(), node))
         {
@@ -117,7 +117,7 @@ namespace ramses_internal
         }
     }
 
-    void TransformationLinkCachedScene::resolveMatrix(ETransformationMatrixType matrixType, NodeHandle node, Matrix44f& chainMatrix) const
+    void TransformationLinkCachedScene::resolveMatrix(ETransformationMatrixType matrixType, NodeHandle node, glm::mat4& chainMatrix) const
     {
         chainMatrix = m_sceneLinksManager.getTransformationLinkManager().getLinkedTransformationFromDataProvider(matrixType, getSceneId(), node);
     }

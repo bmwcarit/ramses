@@ -14,15 +14,13 @@
 
 namespace ramses_internal
 {
-    class String;
-
     class RamshTools
     {
     public:
-        static std::vector<std::string> parseCommandString(const String& msg);
-        static std::size_t delimiterPosition(const String& msg, const String& delimiter);
-        static std::size_t trailingSpacesPosition(const String& msg, std::size_t offset);
-        static std::size_t leadingSpacesPosition(const String& msg, std::size_t offset);
+        static std::vector<std::string> parseCommandString(const std::string& msg);
+        static std::size_t delimiterPosition(const std::string& msg, const std::string& delimiter);
+        static std::size_t trailingSpacesPosition(const std::string& msg, std::size_t offset);
+        static std::size_t leadingSpacesPosition(const std::string& msg, std::size_t offset);
     };
 
 }

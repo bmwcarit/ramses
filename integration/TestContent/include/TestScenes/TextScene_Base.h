@@ -9,6 +9,8 @@
 #ifndef RAMSES_TEXTSCENE_BASE_H
 #define RAMSES_TEXTSCENE_BASE_H
 
+#if defined(RAMSES_TEXT_ENABLED)
+
 #include "IntegrationScene.h"
 #include "ramses-text-api/FontInstanceId.h"
 #include "ramses-text-api/TextLine.h"
@@ -25,7 +27,7 @@ namespace ramses_internal
     class TextScene_Base : public IntegrationScene
     {
     public:
-        TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        TextScene_Base(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
     protected:
         ramses::FontRegistry        m_fontRegistry;
@@ -34,4 +36,5 @@ namespace ramses_internal
     };
 }
 
+#endif
 #endif

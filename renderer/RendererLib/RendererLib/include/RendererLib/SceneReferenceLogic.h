@@ -38,11 +38,11 @@ namespace ramses_internal
     public:
         SceneReferenceLogic(const RendererScenes& scenes, IRendererSceneControlLogic& sceneLogicIRendererSceneControl, IRendererSceneUpdater& sceneUpdater, IRendererSceneEventSender& sender, SceneReferenceOwnership& sharedOwnership);
 
-        virtual void addActions(SceneId masterScene, const SceneReferenceActionVector& actions) override;
-        virtual void update() override;
+        void addActions(SceneId masterScene, const SceneReferenceActionVector& actions) override;
+        void update() override;
 
         void extractAndSendSceneReferenceEvents(RendererEventVector& events);
-        bool hasAnyReferencedScenes() const;
+        [[nodiscard]] bool hasAnyReferencedScenes() const;
 
     private:
         void updateReferencedScenes();
@@ -50,7 +50,7 @@ namespace ramses_internal
         void cleanupReleasedReferences();
         void executePendingActions();
         void consolidateExpirationState(SceneId masterSceneId, RendererEventVector& events);
-        SceneId findMasterSceneForReferencedScene(SceneId sceneId) const;
+        [[nodiscard]] SceneId findMasterSceneForReferencedScene(SceneId sceneId) const;
 
         enum class ExpirationState
         {

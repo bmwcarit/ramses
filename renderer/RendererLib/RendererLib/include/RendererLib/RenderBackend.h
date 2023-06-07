@@ -17,13 +17,13 @@ namespace ramses_internal
     {
     public:
         RenderBackend(IWindow& window, IContext& context, IDevice& device, IEmbeddedCompositor& embeddedCompositor, ITextureUploadingAdapter& textureUploadingAdapter);
-        virtual ~RenderBackend()  override = default;
+        ~RenderBackend()  override = default;
 
-        virtual IWindow& getWindow() const override;
-        virtual IContext& getContext() const override;
-        virtual IDevice& getDevice() const override;
-        virtual IEmbeddedCompositor& getEmbeddedCompositor() const override;
-        virtual ITextureUploadingAdapter& getTextureUploadingAdapter() const override;
+        [[nodiscard]] IWindow& getWindow() const override;
+        [[nodiscard]] IContext& getContext() const override;
+        [[nodiscard]] IDevice& getDevice() const override;
+        [[nodiscard]] IEmbeddedCompositor& getEmbeddedCompositor() const override;
+        [[nodiscard]] ITextureUploadingAdapter& getTextureUploadingAdapter() const override;
 
     private:
         IWindow& m_window;

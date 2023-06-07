@@ -57,7 +57,7 @@ namespace ramses_internal
         return m_maxViewportHeight;
     }
 
-    UInt32 RendererLimits::getMaximumDrawBuffers() const
+    uint32_t RendererLimits::getMaximumDrawBuffers() const
     {
         return m_maximumDrawBuffers;
     }

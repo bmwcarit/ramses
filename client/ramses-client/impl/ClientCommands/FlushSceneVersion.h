@@ -23,7 +23,7 @@ namespace ramses_internal
     {
     public:
         explicit FlushSceneVersion(ramses::RamsesClientImpl& client);
-        virtual Bool execute(ramses::sceneVersionTag_t& sceneVersion, uint64_t& sceneId) const override;
+        bool execute(ramses::sceneVersionTag_t& sceneVersion, uint64_t& sceneId) const override;
 
     private:
         ramses::RamsesClientImpl& m_client;

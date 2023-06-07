@@ -13,6 +13,8 @@
 #include "EmbeddedCompositor_Wayland/IWaylandGlobal.h"
 #include "Utils/ThreadLocalLogForced.h"
 
+#include <cassert>
+
 namespace ramses_internal
 {
     WaylandOutputGlobal::WaylandOutputGlobal(const WaylandOutputParams& waylandOutputParams)

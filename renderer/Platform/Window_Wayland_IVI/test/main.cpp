@@ -9,15 +9,11 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
-#include "RendererTestUtils.h"
 #include "PlatformAbstraction/PlatformConsole.h"
+#include "ramses-framework-api/RamsesFrameworkConfig.h"
 
 int main(int argc, char* argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
     testing::InitGoogleMock(&argc, argv);
 
     return RUN_ALL_TESTS();

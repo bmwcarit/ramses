@@ -13,13 +13,8 @@
 #include "SceneAPI/RenderGroup.h"
 #include "SceneAPI/PixelRectangle.h"
 #include "SceneAPI/TextureSamplerStates.h"
-#include "SceneAPI/StreamTexture.h"
-#include "Animation/AnimationSystemDescriber.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/MemoryUtils.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 
 namespace ramses_internal
 {
@@ -27,10 +22,10 @@ namespace ramses_internal
     void SceneDescriber::describeScene(const T& source, SceneActionCollectionCreator& collector)
     {
         // 25% more than node+transform+renderable count
-        const UInt numberOfSceneActionsEstimate =
+        const size_t numberOfSceneActionsEstimate =
             (source.getNodeCount() + source.getTransformCount() + source.getRenderableCount()) * 125 / 100;
         // circa 30 bytes per action
-        const UInt sizeOfSceneActionsEstimate = 30u * numberOfSceneActionsEstimate;
+        const size_t sizeOfSceneActionsEstimate = 30u * numberOfSceneActionsEstimate;
         collector.collection.reserveAdditionalCapacity(sizeOfSceneActionsEstimate, numberOfSceneActionsEstimate);
 
         RecreateNodes(                   source, collector);
@@ -41,7 +36,6 @@ namespace ramses_internal
         RecreateDataLayouts(             source, collector);
         RecreateDataInstances(           source, collector);
         RecreateCameras(                 source, collector);
-        RecreateAnimationSystems(        source, collector);
         RecreateRenderGroups(            source, collector);
         RecreateRenderPasses(            source, collector);
         RecreateBlitPasses(              source, collector);
@@ -50,14 +44,13 @@ namespace ramses_internal
         RecreateTextureBuffers(          source, collector);
         RecreateTextureSamplers(         source, collector);
         RecreateRenderBuffersAndTargets( source, collector);
-        RecreateStreamTextures(          source, collector);
         RecreateDataSlots(               source, collector);
         RecreateSceneReferences(         source, collector);
     }
 
     void SceneDescriber::RecreateNodes(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalNodeCount = source.getNodeCount();
+        const uint32_t totalNodeCount = source.getNodeCount();
         for (NodeHandle n(0u); n < totalNodeCount; ++n)
         {
             if (source.isNodeAllocated(n))
@@ -70,8 +63,8 @@ namespace ramses_internal
             if (source.isNodeAllocated(n))
             {
                 // Copy children
-                const UInt32 childCount = source.getChildCount(n);
-                for (UInt32 child = 0; child < childCount; ++child)
+                const uint32_t childCount = source.getChildCount(n);
+                for (uint32_t child = 0; child < childCount; ++child)
                 {
                     collector.addChildToNode(n, source.getChild(n, child));
                 }
@@ -81,7 +74,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateCameras(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalCameraCount = source.getCameraCount();
+        const uint32_t totalCameraCount = source.getCameraCount();
         for (CameraHandle c(0u); c < totalCameraCount; ++c)
         {
             if (source.isCameraAllocated(c))
@@ -94,7 +87,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateTransformNodes(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalTransformCount = source.getTransformCount();
+        const uint32_t totalTransformCount = source.getTransformCount();
         for (TransformHandle t(0u); t < totalTransformCount; ++t)
         {
             if (source.isTransformAllocated(t))
@@ -106,26 +99,26 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateTransformations(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalTransformCount = source.getTransformCount();
+        const uint32_t totalTransformCount = source.getTransformCount();
         for (TransformHandle t(0u); t < totalTransformCount; ++t)
         {
             if (source.isTransformAllocated(t))
             {
-                const Vector3& translation = source.getTranslation(t);
-                if (translation != Vector3(0.f))
+                const auto& translation = source.getTranslation(t);
+                if (translation != IScene::IdentityTranslation)
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Translation, t, translation, {});
+                    collector.setTranslation(t, translation);
                 }
-                const Vector3& rotation = source.getRotation(t);
-                if (rotation != Vector3(0.f))
+                const auto& rotation = source.getRotation(t);
+                if (rotation != IScene::IdentityRotation)
                 {
-                    const auto rotationConvention = source.getRotationConvention(t);
-                    collector.setTransformComponent(ETransformPropertyType_Rotation, t, rotation, rotationConvention);
+                    const auto rotationType = source.getRotationType(t);
+                    collector.setRotation(t, rotation, rotationType);
                 }
-                const Vector3& scaling = source.getScaling(t);
-                if (scaling != Vector3(1.0f))
+                const auto& scaling = source.getScaling(t);
+                if (scaling != IScene::IdentityScaling)
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Scaling, t, scaling, {});
+                    collector.setScaling(t, scaling);
                 }
             }
         }
@@ -133,7 +126,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateRenderables(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalRenderableCount = source.getRenderableCount();
+        const uint32_t totalRenderableCount = source.getRenderableCount();
         for (RenderableHandle r(0u); r < totalRenderableCount; ++r)
         {
             if (source.isRenderableAllocated(r))
@@ -145,7 +138,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateStates(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalStateCount = source.getRenderStateCount();
+        const uint32_t totalStateCount = source.getRenderStateCount();
         for (RenderStateHandle s(0u); s < totalStateCount; ++s)
         {
             if (source.isRenderStateAllocated(s))
@@ -157,7 +150,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateDataLayouts(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalDataLayoutCount = source.getDataLayoutCount();
+        const uint32_t totalDataLayoutCount = source.getDataLayoutCount();
         for (DataLayoutHandle l(0u); l < totalDataLayoutCount; ++l)
         {
             if (source.isDataLayoutAllocated(l))
@@ -171,7 +164,7 @@ namespace ramses_internal
     // overload for a client scene which compacts data layouts and those must be expanded while serializing
     void SceneDescriber::RecreateDataLayouts(const ClientScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalDataLayoutCount = source.getDataLayoutCount();
+        const uint32_t totalDataLayoutCount = source.getDataLayoutCount();
         for (DataLayoutHandle l(0u); l < totalDataLayoutCount; ++l)
         {
             if (source.isDataLayoutAllocated(l))
@@ -180,8 +173,8 @@ namespace ramses_internal
                 const DataFieldInfoVector& layoutFields = layout.getDataFields();
                 const ResourceContentHash& effectHash = layout.getEffectHash();
 
-                const UInt32 numRefs = source.getNumDataLayoutReferences(l);
-                for (UInt32 r = 0u; r < numRefs; ++r)
+                const uint32_t numRefs = source.getNumDataLayoutReferences(l);
+                for (uint32_t r = 0u; r < numRefs; ++r)
                 {
                     collector.allocateDataLayout(layoutFields, effectHash, l);
                 }
@@ -191,7 +184,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateDataInstances(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 totalDataInstanceCount = source.getDataInstanceCount();
+        const uint32_t totalDataInstanceCount = source.getDataInstanceCount();
         for (DataInstanceHandle i(0u); i < totalDataInstanceCount; ++i)
         {
             if (source.isDataInstanceAllocated(i))
@@ -203,13 +196,13 @@ namespace ramses_internal
                 for (DataFieldHandle f(0u); f < layout.getFieldCount(); ++f)
                 {
                     const DataFieldInfo& field = layout.getField(f);
-                    const UInt32 elementCount = field.elementCount;
+                    const uint32_t elementCount = field.elementCount;
 
                     switch (field.dataType)
                     {
                     case EDataType::Float:
                     {
-                        const Float* value = source.getDataFloatArray(i, f);
+                        const float* value = source.getDataFloatArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataFloatArray(i, f, elementCount, value);
@@ -218,7 +211,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector2F:
                     {
-                        const Vector2* value = source.getDataVector2fArray(i, f);
+                        const auto* value = source.getDataVector2fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector2fArray(i, f, elementCount, value);
@@ -227,7 +220,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector3F:
                     {
-                        const Vector3* value = source.getDataVector3fArray(i, f);
+                        const auto* value = source.getDataVector3fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector3fArray(i, f, elementCount, value);
@@ -236,7 +229,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector4F:
                     {
-                        const Vector4* value = source.getDataVector4fArray(i, f);
+                        const auto* value = source.getDataVector4fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector4fArray(i, f, elementCount, value);
@@ -245,7 +238,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix22F:
                     {
-                        const Matrix22f* value = source.getDataMatrix22fArray(i, f);
+                        const glm::mat2* value = source.getDataMatrix22fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix22fArray(i, f, elementCount, value);
@@ -254,7 +247,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix33F:
                     {
-                        const Matrix33f* value = source.getDataMatrix33fArray(i, f);
+                        const auto* value = source.getDataMatrix33fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix33fArray(i, f, elementCount, value);
@@ -263,7 +256,7 @@ namespace ramses_internal
                     }
                     case EDataType::Matrix44F:
                     {
-                        const Matrix44f* value = source.getDataMatrix44fArray(i, f);
+                        const auto* value = source.getDataMatrix44fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataMatrix44fArray(i, f, elementCount, value);
@@ -272,7 +265,7 @@ namespace ramses_internal
                     }
                     case EDataType::Int32:
                     {
-                        const Int32* value = source.getDataIntegerArray(i, f);
+                        const int32_t* value = source.getDataIntegerArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataIntegerArray(i, f, elementCount, value);
@@ -281,7 +274,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector2I:
                     {
-                        const Vector2i* value = source.getDataVector2iArray(i, f);
+                        const auto* value = source.getDataVector2iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector2iArray(i, f, elementCount, value);
@@ -290,7 +283,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector3I:
                     {
-                        const Vector3i* value = source.getDataVector3iArray(i, f);
+                        const auto* value = source.getDataVector3iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector3iArray(i, f, elementCount, value);
@@ -299,7 +292,7 @@ namespace ramses_internal
                     }
                     case EDataType::Vector4I:
                     {
-                        const Vector4i* value = source.getDataVector4iArray(i, f);
+                        const auto* value = source.getDataVector4iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
                         {
                             collector.setDataVector4iArray(i, f, elementCount, value);
@@ -345,31 +338,15 @@ namespace ramses_internal
         }
     }
 
-    void SceneDescriber::RecreateAnimationSystems(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        // send all animation systems
-        for (auto animId = AnimationSystemHandle(0); animId < source.getAnimationSystemCount(); ++animId)
-        {
-            if (source.isAnimationSystemAllocated(animId))
-            {
-                // animation system
-                const IAnimationSystem* animSystem = source.getAnimationSystem(animId);
-                assert(animSystem != nullptr);
-                collector.addAnimationSystem(animId, animSystem->getFlags(), animSystem->getTotalSizeInformation());
-                AnimationSystemDescriber::DescribeAnimationSystem(*animSystem, collector, animId);
-            }
-        }
-    }
-
     void SceneDescriber::RecreateRenderGroups(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 renderGroupTotalCount = source.getRenderGroupCount();
+        const uint32_t renderGroupTotalCount = source.getRenderGroupCount();
         for (RenderGroupHandle renderGroup(0u); renderGroup < renderGroupTotalCount; ++renderGroup)
         {
             if (source.isRenderGroupAllocated(renderGroup))
             {
                 const RenderGroup& rg = source.getRenderGroup(renderGroup);
-                collector.allocateRenderGroup(static_cast<UInt32>(rg.renderables.size()), static_cast<UInt32>(rg.renderGroups.size()), renderGroup);
+                collector.allocateRenderGroup(static_cast<uint32_t>(rg.renderables.size()), static_cast<uint32_t>(rg.renderGroups.size()), renderGroup);
 
                 for (const auto& renderableEntry : rg.renderables)
                     collector.addRenderableToRenderGroup(renderGroup, renderableEntry.renderable, renderableEntry.order);
@@ -381,13 +358,13 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateRenderPasses(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 renderPassTotalCount = source.getRenderPassCount();
+        const uint32_t renderPassTotalCount = source.getRenderPassCount();
         for (RenderPassHandle renderPass(0u); renderPass < renderPassTotalCount; ++renderPass)
         {
             if (source.isRenderPassAllocated(renderPass))
             {
                 const RenderPass& rp = source.getRenderPass(renderPass);
-                collector.allocateRenderPass(static_cast<UInt32>(rp.renderGroups.size()), renderPass);
+                collector.allocateRenderPass(static_cast<uint32_t>(rp.renderGroups.size()), renderPass);
                 collector.setRenderPassRenderOrder(renderPass, rp.renderOrder);
                 collector.setRenderPassClearColor(renderPass, rp.clearColor);
                 collector.setRenderPassClearFlag(renderPass, rp.clearFlags);
@@ -405,7 +382,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateBlitPasses(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 blitPassTotalCount = source.getBlitPassCount();
+        const uint32_t blitPassTotalCount = source.getBlitPassCount();
         for (BlitPassHandle blitPassHandle(0u); blitPassHandle < blitPassTotalCount; ++blitPassHandle)
         {
             if (source.isBlitPassAllocated(blitPassHandle))
@@ -421,7 +398,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreatePickableObjects(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 pickableObjectTotalCount = source.getPickableObjectCount();
+        const uint32_t pickableObjectTotalCount = source.getPickableObjectCount();
         for (PickableObjectHandle handle(0u); handle < pickableObjectTotalCount; ++handle)
         {
             if (source.isPickableObjectAllocated(handle))
@@ -436,13 +413,13 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateDataBuffers(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 dataBufferTotalCount = source.getDataBufferCount();
+        const uint32_t dataBufferTotalCount = source.getDataBufferCount();
         for (DataBufferHandle handle(0u); handle < dataBufferTotalCount; ++handle)
         {
             if (source.isDataBufferAllocated(handle))
             {
                 const GeometryDataBuffer& dataBuffer = source.getDataBuffer(handle);
-                collector.allocateDataBuffer(dataBuffer.bufferType, dataBuffer.dataType, static_cast<UInt32>(dataBuffer.data.size()), handle);
+                collector.allocateDataBuffer(dataBuffer.bufferType, dataBuffer.dataType, static_cast<uint32_t>(dataBuffer.data.size()), handle);
                 collector.updateDataBuffer(handle, 0u, dataBuffer.usedSize, dataBuffer.data.data());
             }
         }
@@ -452,7 +429,7 @@ namespace ramses_internal
     {
         std::vector<Byte> tempForCopyingUsedTextureDataBuffer;
 
-        const UInt32 textureBufferTotalCount = source.getTextureBufferCount();
+        const uint32_t textureBufferTotalCount = source.getTextureBufferCount();
         for (TextureBufferHandle textureBufferHandle(0u); textureBufferHandle < textureBufferTotalCount; ++textureBufferHandle)
         {
             if (source.isTextureBufferAllocated(textureBufferHandle))
@@ -472,7 +449,7 @@ namespace ramses_internal
 
                 collector.allocateTextureBuffer(textureBuffer.textureFormat, mipMapDimensions, textureBufferHandle);
 
-                for (UInt32 mipMapLevel = 0u; mipMapLevel < static_cast<uint32_t>(mipMapDimensions.size()); ++mipMapLevel)
+                for (uint32_t mipMapLevel = 0u; mipMapLevel < static_cast<uint32_t>(mipMapDimensions.size()); ++mipMapLevel)
                 {
                     const auto& mip = textureBuffer.mipMaps[mipMapLevel];
                     const auto& usedRegion = mip.usedRegion;
@@ -481,7 +458,7 @@ namespace ramses_internal
                         continue;
 
                     const auto& mipMapSize = mipMapDimensions[mipMapLevel];
-                    const UInt32 usedDataSize = usedRegion.width * usedRegion.height * texelSize;
+                    const uint32_t usedDataSize = usedRegion.width * usedRegion.height * texelSize;
                     const Byte* mipMapData = mip.data.data();
 
                     const Byte* updatedData = mipMapData;
@@ -491,7 +468,7 @@ namespace ramses_internal
                     //memory because the data has non-zero stride ,i.e., the data for each row in the
                     //used region is not continuous in memory.
                     //P.S: Mip map (or used region) height is not a factor in this situation.
-                    if (usedRegion.width < static_cast<Int32>(mipMapSize.width))
+                    if (usedRegion.width < static_cast<int32_t>(mipMapSize.width))
                     {
                         //increase size iff needed
                         tempForCopyingUsedTextureDataBuffer.resize(usedDataSize);
@@ -501,12 +478,12 @@ namespace ramses_internal
                         //copy the used texture buffer data since rows have non-zero stride
                         //i.e, not all data for every used row must be copied
 
-                        const UInt32 dataRowSize = usedRegion.width * texelSize;
-                        const UInt32 mipLevelRowSize = mipMapSize.width * texelSize;
+                        const uint32_t dataRowSize = usedRegion.width * texelSize;
+                        const uint32_t mipLevelRowSize = mipMapSize.width * texelSize;
 
                         const Byte* sourcePtr = mipMapData + usedRegion.x * texelSize + usedRegion.y * mipLevelRowSize;
                         Byte* destinationPtr = tempForCopyingUsedTextureDataBuffer.data();
-                        for (Int32 i = 0; i < usedRegion.height; ++i)
+                        for (int32_t i = 0; i < usedRegion.height; ++i)
                         {
                             PlatformMemory::Copy(destinationPtr, sourcePtr, dataRowSize);
                             sourcePtr += mipLevelRowSize;
@@ -522,7 +499,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateTextureSamplers(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 samplerCount = source.getTextureSamplerCount();
+        const uint32_t samplerCount = source.getTextureSamplerCount();
         for (TextureSamplerHandle samplerHandle(0u); samplerHandle < samplerCount; ++samplerHandle)
         {
             if (source.isTextureSamplerAllocated(samplerHandle))
@@ -534,7 +511,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateRenderBuffersAndTargets(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 renderBufferCount = source.getRenderBufferCount();
+        const uint32_t renderBufferCount = source.getRenderBufferCount();
         for (RenderBufferHandle renderBufferHandle(0u); renderBufferHandle < renderBufferCount; ++renderBufferHandle)
         {
             if (source.isRenderBufferAllocated(renderBufferHandle))
@@ -543,15 +520,15 @@ namespace ramses_internal
             }
         }
 
-        const UInt32 renderTargetCount = source.getRenderTargetCount();
+        const uint32_t renderTargetCount = source.getRenderTargetCount();
         for (RenderTargetHandle renderTargetHandle(0u); renderTargetHandle < renderTargetCount; ++renderTargetHandle)
         {
             if (source.isRenderTargetAllocated(renderTargetHandle))
             {
                 collector.allocateRenderTarget(renderTargetHandle);
 
-                const UInt32 bufferCount = source.getRenderTargetRenderBufferCount(renderTargetHandle);
-                for (UInt32 bufferIdx = 0u; bufferIdx < bufferCount; ++bufferIdx)
+                const uint32_t bufferCount = source.getRenderTargetRenderBufferCount(renderTargetHandle);
+                for (uint32_t bufferIdx = 0u; bufferIdx < bufferCount; ++bufferIdx)
                 {
                     const RenderBufferHandle buffer = source.getRenderTargetRenderBuffer(renderTargetHandle, bufferIdx);
                     collector.addRenderTargetRenderBuffer(renderTargetHandle, buffer);
@@ -560,23 +537,9 @@ namespace ramses_internal
         }
     }
 
-    void SceneDescriber::RecreateStreamTextures(const IScene& source, SceneActionCollectionCreator& collector)
-    {
-        const UInt32 streamTextureCount = source.getStreamTextureCount();
-        for (StreamTextureHandle streamTextureHandle(0u); streamTextureHandle < streamTextureCount; ++streamTextureHandle)
-        {
-            if (source.isStreamTextureAllocated(streamTextureHandle))
-            {
-                const StreamTexture& streamTexture = source.getStreamTexture(streamTextureHandle);
-                collector.allocateStreamTexture(streamTexture.source, streamTexture.fallbackTexture, streamTextureHandle);
-                collector.setStreamTextureForceFallback(streamTextureHandle, streamTexture.forceFallbackTexture);
-            }
-        }
-    }
-
     void SceneDescriber::RecreateDataSlots(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 DataSlotCount = source.getDataSlotCount();
+        const uint32_t DataSlotCount = source.getDataSlotCount();
         for (DataSlotHandle dltHandle(0u); dltHandle < DataSlotCount; ++dltHandle)
         {
             if (source.isDataSlotAllocated(dltHandle))
@@ -588,7 +551,7 @@ namespace ramses_internal
 
     void SceneDescriber::RecreateSceneReferences(const IScene& source, SceneActionCollectionCreator& collector)
     {
-        const UInt32 count = source.getSceneReferenceCount();
+        const uint32_t count = source.getSceneReferenceCount();
         for (SceneReferenceHandle handle{ 0u }; handle < count; ++handle)
         {
             if (source.isSceneReferenceAllocated(handle))

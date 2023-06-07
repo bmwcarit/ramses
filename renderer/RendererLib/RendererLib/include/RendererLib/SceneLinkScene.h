@@ -21,8 +21,8 @@ namespace ramses_internal
         explicit SceneLinkScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         // From IScene
-        virtual DataSlotHandle          allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
-        virtual void                    releaseDataSlot(DataSlotHandle handle) override;
+        DataSlotHandle          allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
+        void                    releaseDataSlot(DataSlotHandle handle) override;
 
     protected:
         SceneLinksManager& m_sceneLinksManager;

@@ -9,6 +9,7 @@
 #define RAMSES_INATIVEWAYLANDRESOURCE_H
 
 #include <cstdint>
+#include <string>
 
 using IWaylandResourceDestroyFuncT = void (*)(struct wl_resource *);
 
@@ -17,14 +18,12 @@ struct wl_resource;
 
 namespace ramses_internal
 {
-    class String;
-
     class INativeWaylandResource
     {
     public:
         virtual ~INativeWaylandResource() {}
         virtual int getVersion() = 0;
-        virtual void postError(uint32_t code, const String& message) = 0;
+        virtual void postError(uint32_t code, const std::string& message) = 0;
         virtual void* getUserData() = 0;
         virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback) = 0;
         virtual void addDestroyListener(wl_listener* listener) = 0;

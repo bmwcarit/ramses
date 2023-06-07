@@ -21,12 +21,12 @@ namespace ramses_internal
     {
     public:
         ResourceMock(ResourceContentHash hash, EResourceType typeId);
-        virtual ~ResourceMock() override;
+        ~ResourceMock() override;
 
         MOCK_METHOD(const ResourceBlob&, getResourceData, (), (const, override));
         MOCK_METHOD(const CompressedResourceBlob&, getCompressedResourceData, (), (const, override));
-        MOCK_METHOD(UInt32, getDecompressedDataSize, (), (const, override));
-        MOCK_METHOD(UInt32, getCompressedDataSize, (), (const, override));
+        MOCK_METHOD(uint32_t, getDecompressedDataSize, (), (const, override));
+        MOCK_METHOD(uint32_t, getCompressedDataSize, (), (const, override));
         MOCK_METHOD(bool, isCompressedAvailable, (), (const, override));
         MOCK_METHOD(bool, isDeCompressedAvailable, (), (const, override));
         MOCK_METHOD(void, compress, (CompressionLevel), (const, override));
@@ -36,14 +36,14 @@ namespace ramses_internal
         MOCK_METHOD(void, setCompressedResourceData, (CompressedResourceBlob, CompressionLevel, uint32_t uncompressedSize, const ResourceContentHash&), (override));
         MOCK_METHOD(void, serializeResourceMetadataToStream, (IOutputStream& output), (const, override));
         MOCK_METHOD(ResourceCacheFlag, getCacheFlag, (), (const, override));
-        MOCK_METHOD(const String&, getName, (), (const, override));
+        MOCK_METHOD(const std::string&, getName, (), (const, override));
 
-        virtual const ResourceContentHash& getHash() const override
+        [[nodiscard]] const ResourceContentHash& getHash() const override
         {
             return m_hash;
         }
 
-        virtual EResourceType getTypeID() const override
+        [[nodiscard]] EResourceType getTypeID() const override
         {
             return m_typeId;
         }
@@ -68,7 +68,7 @@ namespace ramses_internal
 
         MOCK_METHOD(void, Die, ());
 
-        virtual ~ResourceWithDestructorMock()
+        ~ResourceWithDestructorMock() override
         {
             Die();
         }

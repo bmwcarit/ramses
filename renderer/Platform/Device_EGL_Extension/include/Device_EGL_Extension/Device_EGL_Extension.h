@@ -14,6 +14,8 @@
 #include "Platform_Base/RenderBufferGPUResource.h"
 #include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 
+#include <string>
+
 struct gbm_device;
 struct gbm_bo;
 
@@ -22,7 +24,7 @@ namespace ramses_internal
     class DmaRenderBufferGpuResource: public RenderBufferGPUResource
     {
     public:
-        DmaRenderBufferGpuResource(UInt32 gpuAddress, UInt32 width, UInt32 height, EGLImage eglImage, gbm_bo* gbmBufferObject, int fd, UInt32 stride)
+        DmaRenderBufferGpuResource(uint32_t gpuAddress, uint32_t width, uint32_t height, EGLImage eglImage, gbm_bo* gbmBufferObject, int fd, uint32_t stride)
             : RenderBufferGPUResource(gpuAddress, width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, 0u, ERenderBufferAccessMode_ReadWrite)
             , m_eglImage(eglImage)
             , m_gbmBufferObject(gbmBufferObject)
@@ -31,22 +33,22 @@ namespace ramses_internal
         {
         }
 
-        EGLImage getEGLImage() const
+        [[nodiscard]] EGLImage getEGLImage() const
         {
             return m_eglImage;
         }
 
-        gbm_bo* getGBMBufferObject() const
+        [[nodiscard]] gbm_bo* getGBMBufferObject() const
         {
             return m_gbmBufferObject;
         }
 
-        int getFD() const
+        [[nodiscard]] int getFD() const
         {
             return m_fd;
         }
 
-        UInt32 getStride() const
+        [[nodiscard]] uint32_t getStride() const
         {
             return m_stride;
         }
@@ -55,26 +57,26 @@ namespace ramses_internal
         EGLImage m_eglImage = EGL_NO_IMAGE;
         gbm_bo* m_gbmBufferObject = nullptr;
         int m_fd = -1;
-        UInt32 m_stride = 0u;
+        uint32_t m_stride = 0u;
     };
 
     class Device_EGL_Extension: public IDeviceExtension
     {
     public:
-        explicit Device_EGL_Extension(Context_EGL& context, const String& renderNode);
-        virtual ~Device_EGL_Extension() override;
+        explicit Device_EGL_Extension(Context_EGL& context, std::string_view renderNode);
+        ~Device_EGL_Extension() override;
 
         bool init();
 
-        virtual DeviceResourceHandle    createDmaRenderBuffer       (uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
-        virtual int                     getDmaRenderBufferFD        (DeviceResourceHandle handle) override;
-        virtual uint32_t                getDmaRenderBufferStride    (DeviceResourceHandle handle) override;
-        virtual void                    destroyDmaRenderBuffer      (DeviceResourceHandle handle) override;
+        DeviceResourceHandle    createDmaRenderBuffer       (uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
+        int                     getDmaRenderBufferFD        (DeviceResourceHandle handle) override;
+        uint32_t                getDmaRenderBufferStride    (DeviceResourceHandle handle) override;
+        void                    destroyDmaRenderBuffer      (DeviceResourceHandle handle) override;
 
     private:
         DeviceResourceMapper& m_resourceMapper;
         WaylandEGLExtensionProcs m_eglExtensionProcs;
-        const String m_renderNode;
+        const std::string m_renderNode;
 
         // GBM (Generic Buffer Manager) lib provides an API for platform abstracted creation of buffers
         // that could be used by EGL and GL for rendering.

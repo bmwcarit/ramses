@@ -20,7 +20,7 @@
 
 namespace ramses_internal
 {
-    ShaderTestScene::ShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    ShaderTestScene::ShaderTestScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect(getEffectNameFromState(state)))
         , m_triangle(scene, m_effect, ramses::TriangleAppearance::EColor_Red)
@@ -31,13 +31,13 @@ namespace ramses_internal
         meshNode->setGeometryBinding(m_triangle.GetGeometry());
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(0.f, 0.f, -12.f);
+        transNode->setTranslation({0.f, 0.f, -12.f});
         meshNode->setParent(*transNode);
 
         initInputs(state);
     }
 
-    String ShaderTestScene::getEffectNameFromState(UInt32 state) const
+    std::string ShaderTestScene::getEffectNameFromState(uint32_t state) const
     {
         switch (state)
         {
@@ -60,7 +60,7 @@ namespace ramses_internal
 
     }
 
-    void ShaderTestScene::initInputs(UInt32 state)
+    void ShaderTestScene::initInputs(uint32_t state)
     {
         ramses::Appearance& appearance = m_triangle.GetAppearance();
         ramses::UniformInput input;
@@ -71,7 +71,7 @@ namespace ramses_internal
             assert(status == ramses::StatusOK);
             if (status == ramses::StatusOK)
             {
-                status = appearance.setInputValueFloat(input, 10.f);
+                status = appearance.setInputValue(input, 10.f);
                 assert(status == ramses::StatusOK);
             }
         }
@@ -81,7 +81,7 @@ namespace ramses_internal
             assert(status == ramses::StatusOK);
             if (status == ramses::StatusOK)
             {
-                status = appearance.setInputValueFloat(input, 1.f);
+                status = appearance.setInputValue(input, 1.f);
                 assert(status == ramses::StatusOK);
             }
         }
@@ -94,36 +94,36 @@ namespace ramses_internal
             ramses::status_t status = m_effect.findUniformInput("inputVar.data[0].red", input);
             UNUSED(status); // Needed by release build
             assert(ramses::StatusOK == status);
-            status = appearance.setInputValueFloat(input, 0.8f);
+            status = appearance.setInputValue(input, 0.8f);
             assert(ramses::StatusOK == status);
             status = m_effect.findUniformInput("inputVar.data[0].green", input);
             assert(ramses::StatusOK == status);
-            status = appearance.setInputValueFloat(input, 0.2f);
+            status = appearance.setInputValue(input, 0.2f);
             assert(ramses::StatusOK == status);
             status = m_effect.findUniformInput("inputVar.data[1].blue", input);
             assert(ramses::StatusOK == status);
-            status = appearance.setInputValueFloat(input, 0.75f);
+            status = appearance.setInputValue(input, 0.75f);
             assert(ramses::StatusOK == status);
             status = m_effect.findUniformInput("inputVar.data[1].alpha", input);
             assert(ramses::StatusOK == status);
-            status = appearance.setInputValueFloat(input, 0.9f);
+            status = appearance.setInputValue(input, 0.9f);
             assert(ramses::StatusOK == status);
         }
         else if (state == TEXTURE_SIZE)
         {
             const ramses::Texture2D& texture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", m_scene);
-            ramses::TextureSampler& texSampler = *m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, texture);
+            ramses::TextureSampler& texSampler = *m_scene.createTextureSampler(ramses::ETextureAddressMode::Repeat, ramses::ETextureAddressMode::Repeat, ramses::ETextureSamplingMethod::Nearest, ramses::ETextureSamplingMethod::Nearest, texture);
 
-            const Float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f };
-            const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 3u, textureCoordsArray);
+            const std::array<ramses::vec2f, 3u> textureCoordsArray{ ramses::vec2f{0.f, 1.f}, ramses::vec2f{1.f, 1.f}, ramses::vec2f{0.f, 0.f} };
+            const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(3u, textureCoordsArray.data());
 
             ramses::AttributeInput texCoordsInput;
             m_effect.findAttributeInput("a_texCoords", texCoordsInput);
             m_triangle.GetGeometry().setInputBuffer(texCoordsInput, *textureCoords);
 
             // Adjust the vertices, such that the triangle texture looks less skewed
-            const Float vertexPositionsData[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, -1.f, 1.f, -1.f };
-            const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
+            const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{-1.f, 1.f, -1.f} };
+            const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(3u, vertexPositionsData.data());
 
             ramses::AttributeInput positionsInput;
             m_effect.findAttributeInput("a_position", positionsInput);
@@ -135,7 +135,7 @@ namespace ramses_internal
 
             // Pass in the texture size as a uniform, which allows us to compare against the output of the "textureSize" method in the shader.
             appearance.getEffect().findUniformInput("texSizeFromApplication", texInput);
-            appearance.setInputValueVector2i(texInput, texture.getWidth(), texture.getHeight());
+            appearance.setInputValue(texInput, ramses::vec2i{ static_cast<int32_t>(texture.getWidth()), static_cast<int32_t>(texture.getHeight()) });
         }
         else if (state == BOOL_UNIFORM)
         {
@@ -144,7 +144,7 @@ namespace ramses_internal
             assert(status == ramses::StatusOK);
             if (status == ramses::StatusOK)
             {
-                status = appearance.setInputValueInt32(input, 1);
+                status = appearance.setInputValue(input, 1);
                 assert(status == ramses::StatusOK);
             }
         }

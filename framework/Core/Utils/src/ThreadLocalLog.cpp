@@ -8,6 +8,8 @@
 
 #include "Utils/ThreadLocalLog.h"
 
+#include <cassert>
+
 namespace ramses_internal
 {
     namespace TLSPrefix

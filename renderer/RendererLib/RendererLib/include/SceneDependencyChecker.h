@@ -21,22 +21,22 @@ namespace ramses_internal
     public:
         SceneDependencyChecker();
 
-        Bool addDependency(SceneId providerScene, SceneId consumerScene);
+        bool addDependency(SceneId providerScene, SceneId consumerScene);
         void removeDependency(SceneId providerScene, SceneId consumerScene);
-        Bool hasDependencyAsConsumer(SceneId scene) const;
+        bool hasDependencyAsConsumer(SceneId scene) const;
         void removeScene(SceneId scene);
         const SceneIdVector& getDependentScenesInOrder() const;
-        Bool isEmpty() const;
+        bool isEmpty() const;
 
     private:
-        Bool hasDependencyAsConsumerToProvider(SceneId consumerScene, SceneId providerScene) const;
+        bool hasDependencyAsConsumerToProvider(SceneId consumerScene, SceneId providerScene) const;
         void updateSceneOrder() const;
 
         using ConsumerToProvidersMap = HashMap<SceneId, SceneIdVector>;
         ConsumerToProvidersMap m_consumerToProvidersMap;
 
         mutable SceneIdVector m_sceneOrderList;
-        mutable Bool m_dirty;
+        mutable bool m_dirty;
     };
 }
 

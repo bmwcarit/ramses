@@ -11,7 +11,9 @@
 
 #include "ramses-text/Freetype2Wrapper.h"
 #include "Utils/BinaryOffsetFileInputStream.h"
+
 #include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -40,7 +42,7 @@ namespace ramses_internal
     class FreetypeFontFaceFilePath : public FreetypeFontFace
     {
     public:
-        FreetypeFontFaceFilePath(const char* fontPath, FT_Library freetypeLib);
+        FreetypeFontFaceFilePath(std::string_view fontPath, FT_Library freetypeLib);
 
         bool init() override;
 

@@ -8,7 +8,6 @@
 
 #include "Platform_Base/Window_Base.h"
 #include "Collections/StringOutputStream.h"
-
 #include "RendererLib/DisplayConfig.h"
 #include "RendererAPI/IWindowEventHandler.h"
 #include "Utils/LogMacros.h"
@@ -16,7 +15,7 @@
 
 namespace ramses_internal
 {
-    Window_Base::Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, UInt32 id)
+    Window_Base::Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, uint32_t id)
         : m_windowName((StringOutputStream() << "RAMSES Renderer " << id).release())
         , m_eventHandler(eventHandler)
         , m_fullscreen(displayConfig.getFullscreenState())
@@ -26,14 +25,13 @@ namespace ramses_internal
         , m_height(displayConfig.getDesiredWindowHeight())
         , m_posX(displayConfig.getWindowPositionX())
         , m_posY(displayConfig.getWindowPositionY())
-        , m_integrityRGLDeviceUnit(displayConfig.getIntegrityRGLDeviceUnit())
         , m_waylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID())
         , m_resizable(displayConfig.isResizable())
     {
         m_msaaSampleCount = displayConfig.getAntialiasingSampleCount();
     }
 
-    Bool Window_Base::canRenderNewFrame() const
+    bool Window_Base::canRenderNewFrame() const
     {
         return true;
     }
@@ -42,24 +40,19 @@ namespace ramses_internal
     {
     }
 
-    const String& Window_Base::getTitle() const
+    const std::string& Window_Base::getTitle() const
     {
         return m_windowName;
     }
 
-    void Window_Base::setTitle(const String& title)
+    void Window_Base::setTitle(std::string_view title)
     {
         m_windowName = title;
     }
 
-    UInt32 Window_Base::getMSAASampleCount() const
+    uint32_t Window_Base::getMSAASampleCount() const
     {
         return m_msaaSampleCount;
-    }
-
-    IntegrityRGLDeviceUnit Window_Base::getIntegrityRGLDeviceUnit() const
-    {
-        return m_integrityRGLDeviceUnit;
     }
 
     WaylandIviSurfaceId Window_Base::getWaylandIviSurfaceID() const
@@ -73,27 +66,27 @@ namespace ramses_internal
         return false;
     }
 
-    UInt32 Window_Base::getWidth() const
+    uint32_t Window_Base::getWidth() const
     {
         return m_width;
     }
 
-    UInt32 Window_Base::getHeight() const
+    uint32_t Window_Base::getHeight() const
     {
         return m_height;
     }
 
-    Float Window_Base::getAspectRatio() const
+    float Window_Base::getAspectRatio() const
     {
-        return static_cast<Float>(m_width) / m_height;
+        return static_cast<float>(m_width) / m_height;
     }
 
-    Int32 Window_Base::getPosX() const
+    int32_t Window_Base::getPosX() const
     {
         return m_posX;
     }
 
-    Int32 Window_Base::getPosY() const
+    int32_t Window_Base::getPosY() const
     {
         return m_posY;
     }

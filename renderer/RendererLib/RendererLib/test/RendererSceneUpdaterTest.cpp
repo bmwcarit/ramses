@@ -11,8 +11,6 @@
 
 namespace ramses_internal {
 
-constexpr DisplayHandle ARendererSceneUpdater::Display;
-
 ///////////////////////////
 // General tests
 ///////////////////////////
@@ -273,44 +271,6 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterDestroysAllDisplayContexts)
     destroySceneUpdater();
 
     EXPECT_FALSE(renderer.hasDisplayController());
-}
-
-TEST_F(ARendererSceneUpdater, updateScenesWillUpdateRealTimeAnimationSystems)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    IScene& scene = *stagingScene[0u];
-    AnimationSystem& animSystem = *new AnimationSystem(EAnimationSystemFlags_Default, AnimationSystemSizeInformation());
-    AnimationSystem& animSystemReal = *new AnimationSystem(EAnimationSystemFlags_RealTime, AnimationSystemSizeInformation());
-
-    auto hdl1 = scene.addAnimationSystem(&animSystem);
-    auto hdl2 = scene.addAnimationSystem(&animSystemReal);
-    performFlush();
-    update();
-
-    const IScene& rendererScene = rendererScenes.getScene(getSceneId());
-    const IAnimationSystem* rendAnimSystem = rendererScene.getAnimationSystem(hdl1);
-    const IAnimationSystem* rendAnimSystemReal = rendererScene.getAnimationSystem(hdl2);
-    ASSERT_TRUE(rendAnimSystem != nullptr);
-    ASSERT_TRUE(rendAnimSystemReal != nullptr);
-
-    const AnimationTime time1 = rendAnimSystem->getTime();
-    const AnimationTime time1real = rendAnimSystemReal->getTime();
-    PlatformThread::Sleep(2u); // needed to make sure there's actual difference
-    update();
-    const AnimationTime time2 = rendAnimSystem->getTime();
-    const AnimationTime time2real = rendAnimSystemReal->getTime();
-
-    EXPECT_TRUE(time1 == time2);
-    EXPECT_TRUE(time1real < time2real);
-
-    hideScene();
-    unmapScene();
-
-    destroyDisplay();
 }
 
 TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
@@ -778,7 +738,7 @@ TEST_F(ARendererSceneUpdater, setsClearColorForOB)
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
 
-    EXPECT_CALL(renderer, setClearColor(DeviceMock::FakeRenderTargetDeviceHandle, Vector4{ 1, 2, 3, 4 }));
+    EXPECT_CALL(renderer, setClearColor(DeviceMock::FakeRenderTargetDeviceHandle, glm::vec4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(buffer, { 1, 2, 3, 4 });
 
     expectOffscreenBufferDeleted(buffer);
@@ -796,7 +756,7 @@ TEST_F(ARendererSceneUpdater, setsClearColorForFBIfNoOBSpecified)
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
-    EXPECT_CALL(renderer, setClearColor(renderer.getDisplayController().getDisplayBuffer(), Vector4{ 1, 2, 3, 4 }));
+    EXPECT_CALL(renderer, setClearColor(renderer.getDisplayController().getDisplayBuffer(), glm::vec4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(OffscreenBufferHandle::Invalid(), { 1, 2, 3, 4 });
 
     expectOffscreenBufferDeleted(buffer);
@@ -843,13 +803,13 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFramebuffer)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "";
+    const uint32_t x = 1u;
+    const uint32_t y = 2u;
+    const uint32_t width = 3u;
+    const uint32_t height = 4u;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
+    const std::string_view filename;
 
     readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
     expectDisplayControllerReadPixels(DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
@@ -869,13 +829,13 @@ TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "";
+    const uint32_t x = 1u;
+    const uint32_t y = 2u;
+    const uint32_t width = 3u;
+    const uint32_t height = 4u;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
+    const std::string_view filename;
 
     readPixels(buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
     expectDisplayControllerReadPixels(DeviceMock::FakeRenderTargetDeviceHandle, x, y, width, height);
@@ -892,13 +852,13 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfInvalidOffscreenBuff
 
     const OffscreenBufferHandle buffer(1u);
 
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "";
+    const uint32_t x = 1u;
+    const uint32_t y = 2u;
+    const uint32_t width = 3u;
+    const uint32_t height = 4u;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
+    const std::string_view filename;
 
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     readPixels(buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
@@ -922,9 +882,9 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfDisp
     dispConfig.setDesiredWindowHeight(displayHeight);
     createDisplayAndExpectSuccess(dispConfig);
 
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "";
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
+    const std::string_view filename;
 
 
     readPixels({}, displayWidth, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
@@ -955,9 +915,9 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfOffs
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "";
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
+    const std::string_view filename;
 
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).Times(4).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     readPixels(buffer, 10, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
@@ -983,13 +943,13 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayAndSaveToFileWithoutGeneratin
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "testScreenshot";
+    const uint32_t x = 1u;
+    const uint32_t y = 2u;
+    const uint32_t width = 3u;
+    const uint32_t height = 4u;
+    const bool fullScreen = false;
+    const bool sendViaDLT = false;
+    const std::string_view filename{"testScreenshot"};
 
     readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
     expectDisplayControllerReadPixels(DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
@@ -1011,13 +971,13 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFullscreen)
     dispConfig.setDesiredWindowHeight(displayHeight);
     createDisplayAndExpectSuccess(dispConfig);
 
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-    const Bool fullScreen = true;
-    const Bool sendViaDLT = false;
-    const String& filename = "";
+    const uint32_t x = 1u;
+    const uint32_t y = 2u;
+    const uint32_t width = 3u;
+    const uint32_t height = 4u;
+    const bool fullScreen = true;
+    const bool sendViaDLT = false;
+    const std::string_view filename;
 
     readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
     expectDisplayControllerReadPixels(DisplayControllerMock::FakeFrameBufferHandle, 0, 0, WindowMock::FakeWidth, WindowMock::FakeHeight);
@@ -1071,24 +1031,6 @@ TEST_F(ARendererSceneUpdater, failsToDestroyStreamBufferOnUnknownDisplay)
 {
     constexpr StreamBufferHandle buffer{ 1u };
     EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
-}
-
-TEST_F(ARendererSceneUpdater, emitsStreamBufferEnabledDisabledEvents)
-{
-    createDisplayAndExpectSuccess();
-
-    constexpr StreamBufferHandle buffer{ 1u };
-    constexpr WaylandIviSurfaceId source{ 2u };
-    expectStreamBufferUploaded(buffer, source);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
-
-    EXPECT_TRUE(rendererSceneUpdater->setStreamBufferState(buffer, true));
-    expectStreamBufferEvent(buffer, true);
-
-    EXPECT_TRUE(rendererSceneUpdater->setStreamBufferState(buffer, false));
-    expectStreamBufferEvent(buffer, false);
-
-    destroyDisplay();
 }
 
 ///////////////////////////
@@ -1683,22 +1625,6 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_OB)
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_SB)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    constexpr StreamBufferHandle buffer{ 123u };
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    createBufferLink(buffer, getSceneId(), DataSlotId{ 1u }, true);
-
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
-
-    unmapScene();
-    destroyDisplay();
-}
-
 TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_EB)
 {
     createDisplayAndExpectSuccess();
@@ -1794,16 +1720,27 @@ TEST_F(ARendererSceneUpdater, appliesBigPendingWithinOneUpdate)
 // Tests for marking scenes as modified
 /////////////////////////////////////////////
 
-TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsNotUpdated)
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamBufferStateIsNotUpdated)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
-    createRenderableAndResourcesWithStreamTexture();
 
-    expectStreamTextureUploaded();
-    expectVertexArrayUploaded();
+    constexpr StreamBufferHandle streamBuffer{ 13u };
+
+    const auto dataSlotId = createRenderableWithTextureConsumer();
+    createBufferLink(streamBuffer, getSceneId(0u), dataSlotId);
+    update();
+
+    expectRenderableResourcesClean();
+
+    constexpr WaylandIviSurfaceId source{ 12u };
+    const StreamUsage fakeStreamUsage{ {}, { streamBuffer} };
+    const WaylandIviSurfaceIdVector changedSources{ source };
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(streamBuffer));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
     update();
     expectRenderableResourcesClean();
 
@@ -1816,36 +1753,6 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
 
     hideScene();
     unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdated_usedByScenes)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene();
-    mapScene(0u);
-    mapScene(1u);
-    showScene(0u);
-    showScene(1u);
-
-    constexpr WaylandIviSurfaceId source{ 12u };
-    constexpr StreamTextureHandle tex1{ 13u };
-    constexpr StreamTextureHandle tex2{ 14u };
-    const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
-
-    StreamSourceUpdates updates{ {source, 1u } };
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-
-    expectModifiedScenesReportedToRenderer({ 0u, 1u });
-    update();
-
-    hideScene(0u);
-    hideScene(1u);
-    unmapScene(0u);
-    unmapScene(1u);
     destroyDisplay();
 }
 
@@ -1862,7 +1769,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     constexpr WaylandIviSurfaceId source{ 12u };
     constexpr StreamBufferHandle sb1{ 13u };
     constexpr StreamBufferHandle sb2{ 14u };
-    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+    const StreamUsage fakeStreamUsage{ sb1, sb2 };
 
     // link both SBs to scenes
     const auto dataSlotId1 = createTextureConsumer(0u);
@@ -1875,36 +1782,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     EXPECT_CALL(renderer.m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
     EXPECT_CALL(renderer.m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-
-    expectModifiedScenesReportedToRenderer({ 0u, 1u });
-    update();
-
-    hideScene(0u);
-    hideScene(1u);
-    unmapScene(0u);
-    unmapScene(1u);
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityChanged_usedByScenes)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene();
-    mapScene(0u);
-    mapScene(1u);
-    showScene(0u);
-    showScene(1u);
-
-    constexpr WaylandIviSurfaceId source{ 12u };
-    constexpr StreamTextureHandle tex1{ 13u };
-    constexpr StreamTextureHandle tex2{ 14u };
-    const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
-
-    WaylandIviSurfaceIdVector changedSources{ source };
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1929,7 +1806,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     constexpr WaylandIviSurfaceId source{ 12u };
     constexpr StreamBufferHandle sb1{ 13u };
     constexpr StreamBufferHandle sb2{ 14u };
-    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+    const StreamUsage fakeStreamUsage{ sb1, sb2 };
 
     // link both SBs to scenes
     const auto dataSlotId1 = createTextureConsumer(0u);
@@ -1941,7 +1818,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     WaylandIviSurfaceIdVector changedSources{ source };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1953,7 +1829,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavailable_sameSource)
+TEST_F(ARendererSceneUpdater, WillNotUnlinkStreamBuffer_IfStreamSourceBecameAvailabilityChanges_sameSource)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -1966,7 +1842,7 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavail
     constexpr WaylandIviSurfaceId source{ 12u };
     constexpr StreamBufferHandle sb1{ 13u };
     constexpr StreamBufferHandle sb2{ 14u };
-    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+    const StreamUsage fakeStreamUsage{ sb1, sb2 };
 
     // link both SBs to scenes
     const auto dataSlotId1 = createTextureConsumer(0u);
@@ -1978,13 +1854,12 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavail
     WaylandIviSurfaceIdVector changedSources{ source };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
 
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
 
     hideScene(0u);
     hideScene(1u);
@@ -1993,7 +1868,7 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavail
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfOneOfStreamSourcesBecameUnavailabile)
+TEST_F(ARendererSceneUpdater, WillNotUnlinkStreamBuffer_IfOneOfStreamSourcesChangesAvailability)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -2021,15 +1896,12 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfOneOfStreamSourcesBecameU
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source1)).WillOnce(ReturnRef(fakeStreamUsage1));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source2)).WillOnce(ReturnRef(fakeStreamUsage2));
-    // only source2 is unavailable
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source1)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source2)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 1u });
     update();
 
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
 
     hideScene(0u);
     hideScene(1u);
@@ -2992,7 +2864,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
         expectEvent(ERendererEventType::OffscreenBufferCreated);
     }
 
-    for (UInt32 i = 0u; i < 6; ++i)
+    for (uint32_t i = 0u; i < 6; ++i)
     {
         createPublishAndSubscribeScene();
         mapScene(i);
@@ -3038,7 +2910,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     update();
 
 
-    for (UInt32 i = 0u; i < 6; ++i)
+    for (uint32_t i = 0u; i < 6; ++i)
     {
         hideScene(i);
         unmapScene(i);
@@ -3064,7 +2936,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
         expectEvent(ERendererEventType::OffscreenBufferCreated);
     }
 
-    for (UInt32 i = 0u; i < 5; ++i)
+    for (uint32_t i = 0u; i < 5; ++i)
     {
         createPublishAndSubscribeScene();
         mapScene(i);
@@ -3102,39 +2974,12 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     expectNoModifiedScenesReportedToRenderer();
     update();
 
-    for (UInt32 i = 0u; i < 5; ++i)
+    for (uint32_t i = 0u; i < 5; ++i)
     {
         hideScene(i);
         unmapScene(i);
     }
 
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfRealTimeAnimationIsActive)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    const auto animationHandle = createRealTimeActiveAnimation();
-    PlatformThread::Sleep(1u);
-    expectModifiedScenesReportedToRenderer();
-    update();
-
-    PlatformThread::Sleep(1u);
-    expectModifiedScenesReportedToRenderer();
-    update();
-
-    expectModifiedScenesReportedToRenderer();
-    stopAnimation(animationHandle);
-
-    expectNoModifiedScenesReportedToRenderer();
-    update();
-
-    hideScene();
-    unmapScene();
     destroyDisplay();
 }
 
@@ -3246,8 +3091,8 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfEffectTimeIsSynced)
 TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScene)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene1 = createPublishAndSubscribeScene();
-    const UInt32 scene2 = createPublishAndSubscribeScene();
+    const uint32_t scene1 = createPublishAndSubscribeScene();
+    const uint32_t scene2 = createPublishAndSubscribeScene();
     mapScene(scene1);
     mapScene(scene2);
 
@@ -3286,8 +3131,8 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScen
 TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFromScene)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene1 = createPublishAndSubscribeScene();
-    const UInt32 scene2 = createPublishAndSubscribeScene();
+    const uint32_t scene1 = createPublishAndSubscribeScene();
+    const uint32_t scene2 = createPublishAndSubscribeScene();
     mapScene(scene1);
     mapScene(scene2);
 
@@ -3333,8 +3178,8 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
 TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOBIsShownAfterOBLinked)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene1 = createPublishAndSubscribeScene();
-    const UInt32 scene2 = createPublishAndSubscribeScene();
+    const uint32_t scene1 = createPublishAndSubscribeScene();
+    const uint32_t scene2 = createPublishAndSubscribeScene();
     const DataSlotId consumer = createTextureConsumer(scene1);
     mapScene(scene1);
     mapScene(scene2);
@@ -3377,8 +3222,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTransformationConsumerAndPro
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 providerScene = createPublishAndSubscribeScene();
-    const UInt32 consumerScene = createPublishAndSubscribeScene();
+    const uint32_t providerScene = createPublishAndSubscribeScene();
+    const uint32_t consumerScene = createPublishAndSubscribeScene();
     mapScene(providerScene);
     mapScene(consumerScene);
     showScene(providerScene);
@@ -3412,8 +3257,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfDataConsumerAndProviderLinke
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 providerScene = createPublishAndSubscribeScene();
-    const UInt32 consumerScene = createPublishAndSubscribeScene();
+    const uint32_t providerScene = createPublishAndSubscribeScene();
+    const uint32_t consumerScene = createPublishAndSubscribeScene();
     mapScene(providerScene);
     mapScene(consumerScene);
     showScene(providerScene);
@@ -3448,8 +3293,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTextureConsumerAndProviderLi
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 providerScene = createPublishAndSubscribeScene();
-    const UInt32 consumerScene = createPublishAndSubscribeScene();
+    const uint32_t providerScene = createPublishAndSubscribeScene();
+    const uint32_t consumerScene = createPublishAndSubscribeScene();
     mapScene(providerScene);
     mapScene(consumerScene);
     showScene(providerScene);
@@ -3555,8 +3400,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfInterruptedSceneIsHidd
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3578,8 +3423,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneIsHidden)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3601,9 +3446,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneIsShown)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
-    const UInt32 sceneToShow = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t sceneToShow = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3629,9 +3474,9 @@ TEST_F(ARendererSceneUpdater, doesNotResetInterruptedRenderingIfAnotherSceneIsMa
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
-    const UInt32 sceneToMap = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t sceneToMap = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3655,9 +3500,9 @@ TEST_F(ARendererSceneUpdater, doesNotResetInterruptedRenderingIfAnotherSceneIsUn
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
-    const UInt32 sceneToUnmap = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t sceneToUnmap = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3681,8 +3526,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfInterruptedSceneAssign
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3705,9 +3550,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
-    const UInt32 sceneToAssign = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t sceneToAssign = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3741,8 +3586,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3765,8 +3610,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneLinkedToOf
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3791,9 +3636,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneUnlinkedFr
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
-    const UInt32 sceneToUnlink = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t sceneToUnlink = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3828,8 +3673,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTransformationLinked)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3855,8 +3700,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTransformationUnlinked
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3883,8 +3728,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDataLinked)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3911,8 +3756,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDataUnlinked)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3940,8 +3785,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesLinked)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3968,8 +3813,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesUnlinked)
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -3997,8 +3842,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferCreated
 {
     createDisplayAndExpectSuccess();
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -4034,8 +3879,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     expectEvent(ERendererEventType::OffscreenBufferCreated);
 
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -4059,8 +3904,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
 TEST_F(ARendererSceneUpdater, blocksFlushesForSceneAssignedToInterruptibleOBWhenThereIsInterruption)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -4097,8 +3942,8 @@ TEST_F(ARendererSceneUpdater, blocksFlushesForSceneAssignedToInterruptibleOBWhen
 TEST_F(ARendererSceneUpdater, doesNotBlockFlushesForSceneAssignedToNormalOBWhenThereIsInterruption)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     mapScene(scene);
     mapScene(sceneInterrupted);
@@ -4135,8 +3980,8 @@ TEST_F(ARendererSceneUpdater, doesNotBlockFlushesForSceneAssignedToNormalOBWhenT
 TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPendingFlushesReached)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
+    const uint32_t sceneInterrupted = createPublishAndSubscribeScene();
 
     createRenderable(sceneInterrupted);
     setRenderableResources(sceneInterrupted);
@@ -4166,7 +4011,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getResourceType(_)).Times(AnyNumber());
     expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, sceneInterrupted);
     expectVertexArrayUnloaded(sceneInterrupted);
-    for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+    for (size_t i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
         performFlushWithCreateNodeAction(sceneInterrupted);
         update();
@@ -4187,7 +4032,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
 
 TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurtherFlushes)
 {
-    const UInt32 scene = createPublishAndSubscribeScene(false);
+    const uint32_t scene = createPublishAndSubscribeScene(false);
     // initial flush and enable monitoring
     performFlushWithExpiration(scene, 1000u + 1u);
     expectInternalSceneStateEvent(ERendererEventType::SceneSubscribed);
@@ -4196,7 +4041,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurthe
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     // no further flush, no expiration updates
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
@@ -4207,13 +4052,13 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurthe
 
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushedRegularly)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     // enable monitoring
     performFlushWithExpiration(scene, 2000);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
@@ -4224,14 +4069,14 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushe
 
 TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
@@ -4242,13 +4087,13 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
 
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
@@ -4256,7 +4101,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
     // expect exactly one event
     expectSceneEvent(ERendererEventType::SceneExpired);
 
-    for (UInt32 i = 10u; i < 20u; ++i)
+    for (uint32_t i = 10u; i < 20u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
@@ -4269,7 +4114,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRenderedRegularly)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4278,7 +4123,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRend
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
@@ -4295,7 +4140,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRend
 TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRenderedRegularly)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4311,7 +4156,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
     sceneAllocator.allocateNode(0u, nodeHandle);
     sceneAllocator.allocateTransform(nodeHandle, transform);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
         performFlushWithExpiration(scene, 1000u + i + 2u);
@@ -4328,7 +4173,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotRenderedBecauseItIsHidden)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4346,7 +4191,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotR
     sceneAllocator.allocateNode(0u, nodeHandle);
     sceneAllocator.allocateTransform(nodeHandle, transform);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
         performFlushWithExpiration(scene, 1000u + i + 2u);
@@ -4361,13 +4206,13 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotR
 
 TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRendered)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         expirationMonitor.onRendered(getSceneId());
@@ -4380,7 +4225,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRender
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byRenderingRegularlyAgain)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4396,7 +4241,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     sceneAllocator.allocateNode(0u, nodeHandle);
     sceneAllocator.allocateTransform(nodeHandle, transform);
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
         performFlushWithExpiration(scene, 1000u + i + 2u);
@@ -4405,7 +4250,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     }
     expectSceneEvent(ERendererEventType::SceneExpired);
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
@@ -4422,7 +4267,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byHidingSceneAndKeepingRegularFlushes)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4438,7 +4283,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     sceneAllocator.allocateNode(0u, nodeHandle);
     sceneAllocator.allocateTransform(nodeHandle, transform);
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
         performFlushWithExpiration(scene, 1000u + i + 2u);
@@ -4449,7 +4294,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
 
     hideScene();
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         iscene.setTranslation(transform, {}); // so that flush is not 'empty' - modifies scene
         performFlushWithExpiration(scene, 1000u + i + 2u);
@@ -4465,7 +4310,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedRegularlyButSkippedRenderingDueToEmptyFlushes)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4474,7 +4319,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedRegular
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u);
         update();
@@ -4490,7 +4335,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedRegular
 TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBlockedByMissingResource)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
 
     // flush with expiration info to initiate monitoring
@@ -4504,7 +4349,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u); // blocked due to missing resource
         update();
@@ -4519,7 +4364,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
 TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBlockedByMissingResource)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4534,7 +4379,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u); // blocked due to missing resource
         update();
@@ -4551,7 +4396,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushedAndRenderedButBlockedByMissingResource)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
@@ -4570,7 +4415,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     expectVertexArrayUploaded();
     update();
 
-    for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
+    for (uint32_t i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         performFlushWithExpiration(scene, expTS++); // blocked due to missing resource
         update();
@@ -4583,7 +4428,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
 
-    for (UInt32 i = ForceApplyFlushesLimit / 2u; i < ForceApplyFlushesLimit; ++i)
+    for (uint32_t i = ForceApplyFlushesLimit / 2u; i < ForceApplyFlushesLimit; ++i)
     {
         performFlushWithExpiration(scene, expTS++); // not blocked anymore
         update();
@@ -4599,16 +4444,16 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
 
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     update();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 1u; i < 10u; ++i)
+    for (uint32_t i = 1u; i < 10u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
@@ -4620,7 +4465,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         // check with TS after initial TS
@@ -4632,16 +4477,16 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
 
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     update();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 1u; i < 10u; ++i)
+    for (uint32_t i = 1u; i < 10u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(i)));
@@ -4657,7 +4502,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         // check with TS after initial TS
@@ -4670,7 +4515,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_rendered)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
@@ -4678,12 +4523,12 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
     doRenderLoop();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 1u; i < 10u; ++i)
+    for (uint32_t i = 1u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4696,7 +4541,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4714,7 +4559,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_rendered)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
@@ -4722,12 +4567,12 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
     doRenderLoop();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 1u; i < 10u; ++i)
+    for (uint32_t i = 1u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4744,7 +4589,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4762,7 +4607,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hiddenAfterRendered)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
@@ -4770,12 +4615,12 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
     doRenderLoop();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 1u; i < 10u; ++i)
+    for (uint32_t i = 1u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4790,7 +4635,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4807,7 +4652,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hiddenAfterRendered)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
@@ -4815,12 +4660,12 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
     doRenderLoop();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 1u; i < 10u; ++i)
+    for (uint32_t i = 1u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4839,7 +4684,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         update();
         doRenderLoop();
@@ -4856,7 +4701,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_confidenceTest)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
@@ -4864,12 +4709,12 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
     doRenderLoop();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         // make change
         const NodeHandle nodeHandle(i);
@@ -4895,7 +4740,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 10u; i < 20u; ++i)
+    for (uint32_t i = 10u; i < 20u; ++i)
     {
         update();
         doRenderLoop();
@@ -4912,7 +4757,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFlushes_confidenceTest)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
@@ -4920,12 +4765,12 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
     doRenderLoop();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         // make change
         const NodeHandle nodeHandle(i);
@@ -4949,7 +4794,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 10u; i < 20u; ++i)
+    for (uint32_t i = 10u; i < 20u; ++i)
     {
         update();
         doRenderLoop();
@@ -4966,7 +4811,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
 TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEmptyFlushes_confidenceTest)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
@@ -4974,12 +4819,12 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     doRenderLoop();
 
     // flush once only to set limit
-    const UInt32 initialTS = 1000u;
+    const uint32_t initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
-    for (UInt32 i = 0u; i < 10u; ++i)
+    for (uint32_t i = 0u; i < 10u; ++i)
     {
         performFlushWithExpiration(scene, initialTS + i);
 
@@ -5002,7 +4847,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     update();
     expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
-    for (UInt32 i = 10u; i < 20u; ++i)
+    for (uint32_t i = 10u; i < 20u; ++i)
     {
         update();
         doRenderLoop();
@@ -5018,9 +4863,9 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
 
 TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + 2u); // will expire
         update();
@@ -5031,7 +4876,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired)
     // disable expiration
     performFlushWithExpiration(scene, 0u);
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
@@ -5042,11 +4887,11 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired)
 TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_rendered)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + 2u); // will expire
         update();
@@ -5057,7 +4902,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
     // disable expiration
     performFlushWithExpiration(scene, 0u);
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
@@ -5071,9 +4916,9 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
 
 TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_nonEmptyFlush)
 {
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + 2u); // will expire
         update();
@@ -5088,7 +4933,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_no
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
@@ -5099,11 +4944,11 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_no
 TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_rendered_nonEmptyFlush)
 {
     createDisplayAndExpectSuccess();
-    const UInt32 scene = createPublishAndSubscribeScene();
+    const uint32_t scene = createPublishAndSubscribeScene();
     mapScene(scene);
     showScene(scene);
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + 2u); // will expire
         update();
@@ -5119,7 +4964,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
 
-    for (UInt32 i = 0u; i < 5u; ++i)
+    for (uint32_t i = 0u; i < 5u; ++i)
     {
         update();
         doRenderLoop();
@@ -5160,8 +5005,8 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     const NodeHandle nodeHandle(0u);
     sceneAllocator.allocateNode(0u, nodeHandle);
     const std::array<float, 9> geomData{ -1.f, 0.f, -0.5f, 0.f, 1.f, -0.5f, 0.f, 0.f, -0.5f };
-    const auto geomHandle = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType::Vector3F, UInt32(geomData.size() * sizeof(float)));
-    iscene.updateDataBuffer(geomHandle, 0, UInt32(geomData.size() * sizeof(float)), reinterpret_cast<const Byte*>(geomData.data()));
+    const auto geomHandle = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType::Vector3F, uint32_t(geomData.size() * sizeof(float)));
+    iscene.updateDataBuffer(geomHandle, 0, uint32_t(geomData.size() * sizeof(float)), reinterpret_cast<const Byte*>(geomData.data()));
 
     const auto dataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
     const auto dataInstance = sceneAllocator.allocateDataInstance(dataLayout);

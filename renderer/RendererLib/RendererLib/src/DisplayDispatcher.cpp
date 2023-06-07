@@ -9,16 +9,17 @@
 #include "RendererLib/DisplayDispatcher.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "RendererLib/RendererCommandUtils.h"
-#include "Platform_Base/Platform_Base.h"
 #include "Utils/ThreadLocalLog.h"
 
 namespace ramses_internal
 {
     DisplayDispatcher::DisplayDispatcher(
+        std::unique_ptr<IPlatformFactory> platformFactory,
         const RendererConfig& config,
         IRendererSceneEventSender& rendererSceneSender,
         IThreadAliveNotifier& notifier)
-        : m_rendererConfig{ config }
+        : m_platformFactory(std::move(platformFactory))
+        , m_rendererConfig{ config }
         , m_rendererSceneSender{ rendererSceneSender }
         , m_notifier{ notifier }
     {
@@ -35,7 +36,7 @@ namespace ramses_internal
     {
         // log only if there are commands other than scene update or periodic log
         const bool logCommands = std::any_of(cmds.cbegin(), cmds.cend(), [&](const auto& c) {
-            return !absl::holds_alternative<RendererCommand::UpdateScene>(c) && !absl::holds_alternative<RendererCommand::LogInfo>(c);
+            return !std::holds_alternative<RendererCommand::UpdateScene>(c) && !std::holds_alternative<RendererCommand::LogInfo>(c);
         });
         if (logCommands)
             LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: dispatching {} commands (only other than scene update commands will be logged)", cmds.size());
@@ -43,7 +44,7 @@ namespace ramses_internal
         std::lock_guard<std::mutex> lock{ m_displaysAccessLock };
         for (auto&& cmd : cmds)
         {
-            if (logCommands && !absl::holds_alternative<RendererCommand::UpdateScene>(cmd))
+            if (logCommands && !std::holds_alternative<RendererCommand::UpdateScene>(cmd))
                 LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: dispatching command [{}]", RendererCommandUtils::ToString(cmd));
 
             preprocessCommand(cmd);
@@ -66,7 +67,7 @@ namespace ramses_internal
         }
 
         // TODO vaclav remove, for debugging if display thread stuck
-        const auto estNumFramesWithinWatchdogTimeoutPeriod = std::chrono::seconds{ 1 } / m_generalMinFrameDuration;
+        const auto estNumFramesWithinWatchdogTimeoutPeriod = std::chrono::seconds{ 1 } / DefaultMinFrameDuration;
         if (m_threadedDisplays && m_displayThreadsUpdating && m_loopCounter++ > estNumFramesWithinWatchdogTimeoutPeriod / 2)
         {
             m_loopCounter = 0;
@@ -90,32 +91,30 @@ namespace ramses_internal
             // in non-threaded mode overwrite the TLS log prefix before each display update
             ThreadLocalLog::SetPrefix(static_cast<int>(display.first.asMemoryHandle()));
 
-            if (m_displays.size() > 1u)
+            // avoid unnecessary context switch if running only single display
+            if (m_displays.size() > 1u || m_forceContextEnableNextLoop)
                 display.second.displayBundle->enableContext();
+
             display.second.displayBundle->doOneLoop(m_loopMode, sleepTime);
         }
+
+        m_forceContextEnableNextLoop = false;
     }
 
     void DisplayDispatcher::preprocessCommand(const RendererCommand::Variant& cmd)
     {
-        if (absl::holds_alternative<RendererCommand::CreateDisplay>(cmd))
+        if (std::holds_alternative<RendererCommand::CreateDisplay>(cmd))
         {
             // create display thread
-            const auto& cmdData = absl::get<RendererCommand::CreateDisplay>(cmd);
+            const auto& cmdData = std::get<RendererCommand::CreateDisplay>(cmd);
             const auto displayHandle = cmdData.display;
             assert(m_displays.count(displayHandle) == 0u);
-            auto displayBundle = createDisplayBundle(displayHandle);
+            auto displayBundle = createDisplayBundle(displayHandle, cmdData.config);
             {
                 if (displayBundle.displayThread)
                 {
                     displayBundle.displayThread->setLoopMode(m_loopMode);
-                    std::chrono::microseconds minFrameDuration = m_generalMinFrameDuration;
-                    // use display specific value if set
-                    if (m_minFrameDurationsPerDisplay.count(displayHandle))
-                    {
-                        minFrameDuration = m_minFrameDurationsPerDisplay[displayHandle];
-                        m_minFrameDurationsPerDisplay.erase(displayHandle);
-                    }
+                    const auto minFrameDuration = (m_minFrameDurationsPerDisplay.count(displayHandle) ? m_minFrameDurationsPerDisplay[displayHandle] : DefaultMinFrameDuration);
                     displayBundle.displayThread->setMinFrameDuration(minFrameDuration);
                     if (m_displayThreadsUpdating)
                         displayBundle.displayThread->startUpdating();
@@ -138,20 +137,20 @@ namespace ramses_internal
             m_displays[displayHandle].displayBundle->pushAndConsumeCommands(m_stashedCommandsForNewDisplays[displayHandle]);
             m_stashedCommandsForNewDisplays.erase(displayHandle);
         }
-        else if (absl::holds_alternative<RendererCommand::SetSceneMapping>(cmd))
+        else if (std::holds_alternative<RendererCommand::SetSceneMapping>(cmd))
         {
             // set scene ownership so that future commands are dispatched to its display
-            const auto& cmdData = absl::get<RendererCommand::SetSceneMapping>(cmd);
+            const auto& cmdData = std::get<RendererCommand::SetSceneMapping>(cmd);
             m_sceneDisplayTrackerForCommands.setSceneOwnership(cmdData.scene, cmdData.display);
         }
-        else if (absl::holds_alternative<RendererCommand::ReceiveScene>(cmd))
+        else if (std::holds_alternative<RendererCommand::ReceiveScene>(cmd))
         {
             // Special handling of referenced scenes, refScenes are fully handled by internal logic within DisplayBundle/SceneRefLogic,
             // therefore their ownership is not known at dispatcher level. When a subscription of referenced scene arrives its master
             // is queried from a thread-safe shared ownership registry.
             if (!m_sceneDisplayTrackerForCommands.determineDisplayFromRendererCommand(cmd)->isValid())
             {
-                const auto refScene = absl::get<RendererCommand::ReceiveScene>(cmd).info.sceneID;
+                const auto refScene = std::get<RendererCommand::ReceiveScene>(cmd).info.sceneID;
                 LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: missing scene {} display ownership when processing {}, assuming a referenced scene.", refScene, RendererCommandUtils::ToString(cmd));
                 for (const auto& display : m_displays)
                 {
@@ -173,22 +172,19 @@ namespace ramses_internal
         }
     }
 
-    DisplayDispatcher::Display DisplayDispatcher::createDisplayBundle(DisplayHandle displayHandle)
+    DisplayDispatcher::Display DisplayDispatcher::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig)
     {
         Display bundle;
         LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: creating platform for display {}", displayHandle);
-        bundle.platform.reset(Platform_Base::CreatePlatform(m_rendererConfig));
+        bundle.platform = m_platformFactory->createPlatform(m_rendererConfig, dispConfig);
 
         LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: creating display bundle of components for display {}", displayHandle);
-        const bool firstDisplay = m_displays.empty(); // allow time report and KPI monitoring only for 1st display
         bundle.displayBundle = DisplayBundleShared{ std::make_unique<DisplayBundle>(
             displayHandle,
             m_rendererSceneSender,
             *bundle.platform,
             m_notifier,
-            m_rendererConfig.getRenderThreadLoopTimingReportingPeriod(),
-            firstDisplay,
-            firstDisplay ? m_rendererConfig.getKPIFileName() : String{})
+            m_rendererConfig.getRenderThreadLoopTimingReportingPeriod())
         };
         if (m_threadedDisplays)
         {
@@ -206,8 +202,8 @@ namespace ramses_internal
         {
             if (m_displays.count(*cmdDisplay) == 0)
             {
-                if (absl::holds_alternative<RendererCommand::SetSceneMapping>(cmd) ||
-                    absl::holds_alternative<RendererCommand::SetSceneState>(cmd))
+                if (std::holds_alternative<RendererCommand::SetSceneMapping>(cmd) ||
+                    std::holds_alternative<RendererCommand::SetSceneState>(cmd))
                 {
                     // Special case for commands that are to be dispatched only after their corresponding display is created, therefore cannot fail.
                     // This makes it possible that scene mapping/state can be set before display is even created.
@@ -279,6 +275,11 @@ namespace ramses_internal
             for (const auto& display : destroyedDisplays)
                 m_displays.erase(display);
 
+            // if there was any display destroyed make sure context of the remaining display(s) is enabled
+            // in the next doOneLoop (relevant only for non-threaded rendering)
+            if (!m_threadedDisplays && !destroyedDisplays.empty())
+                m_forceContextEnableNextLoop = true;
+
             m_cmdDispatchLoopsSinceLastEventDispatch = 0;
         }
 
@@ -335,6 +336,11 @@ namespace ramses_internal
         m_injectedSceneControlEvents.push_back(std::move(event));
     }
 
+    void DisplayDispatcher::injectPlatformFactory(std::unique_ptr<IPlatformFactory> platformFactory)
+    {
+        m_platformFactory = std::move(platformFactory);
+    }
+
     void DisplayDispatcher::startDisplayThreadsUpdating()
     {
         std::lock_guard<std::mutex> lock{ m_displaysAccessLock };
@@ -381,13 +387,10 @@ namespace ramses_internal
         }
     }
 
-    void DisplayDispatcher::setMinFrameDuration(std::chrono::microseconds minFrameDuration )
+    std::chrono::microseconds DisplayDispatcher::getMinFrameDuration(DisplayHandle display) const
     {
-        std::lock_guard<std::mutex> lock{ m_displaysAccessLock };
-        m_generalMinFrameDuration = minFrameDuration;
-        for (auto& display : m_displays)
-            if (display.second.displayThread)
-                display.second.displayThread->setMinFrameDuration(minFrameDuration);
+        const auto it = m_minFrameDurationsPerDisplay.find(display);
+        return (it != m_minFrameDurationsPerDisplay.end() ? it->second : DefaultMinFrameDuration);
     }
 
     IEmbeddedCompositingManager& DisplayDispatcher::getECManager(DisplayHandle display)

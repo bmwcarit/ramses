@@ -24,9 +24,9 @@ namespace ramses_internal
         getArgument<4>().setDescription("alpha channel value");
     }
 
-    Bool SetClearColor::execute(UInt32& displayId, Float& red, Float& green, Float& blue, Float& alpha) const
+    bool SetClearColor::execute(uint32_t& displayId, float& red, float& green, float& blue, float& alpha) const
     {
-        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SetClearColor{ DisplayHandle{displayId}, {}, Vector4{red, green, blue, alpha} });
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SetClearColor{ DisplayHandle{displayId}, {}, glm::vec4{red, green, blue, alpha} });
         return true;
     }
 }

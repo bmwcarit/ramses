@@ -10,6 +10,9 @@
 #define RAMSES_RESOURCESTRESSTESTS_RESOURCESTRESSTESTS_H
 
 #include "ramses-client-api/RamsesClient.h"
+#include "ramses-framework-api/RamsesFrameworkConfig.h"
+#include "ramses-renderer-api/RendererConfig.h"
+#include "ramses-renderer-api/DisplayConfig.h"
 
 #include "StressTestRenderer.h"
 #include "ResourceStressTestScene.h"
@@ -21,15 +24,16 @@ namespace ramses_internal
 {
     struct StressTestConfig
     {
-        int32_t argc;
-        const char** argv;
+        ramses::RamsesFrameworkConfig frameworkConfig{ ramses::EFeatureLevel_Latest };
+        ramses::RendererConfig        rendererConfig;
+        ramses::DisplayConfig         displayConfig;
         uint32_t durationEachTestSeconds;
         uint32_t displayCount;
         uint32_t sceneSetsPerDisplay;
         bool disableSkippingOfFrames;
-        UInt32 perFrameBudgetMSec_ClientRes;
-        UInt32 perFrameBudgetMSec_Rendering;
-        UInt32 renderablesBatchSizeForRenderingInterruption;
+        uint32_t perFrameBudgetMSec_ClientRes;
+        uint32_t perFrameBudgetMSec_Rendering;
+        uint32_t renderablesBatchSizeForRenderingInterruption;
     };
 
     enum EStressTestCaseId
@@ -65,18 +69,18 @@ namespace ramses_internal
     class ResourceStressTests
     {
     public:
-        static Int32 RunTest(EStressTestCaseId testToRun, const StressTestConfig& config);
-        static Int32 RunAllTests(const StressTestConfig& config);
+        static int32_t RunTest(EStressTestCaseId testToRun, const StressTestConfig& config);
+        static int32_t RunAllTests(const StressTestConfig& config);
 
     private:
 
         explicit ResourceStressTests(const StressTestConfig& config);
 
-        Int32 runTest(EStressTestCaseId testToRun);
+        int32_t runTest(EStressTestCaseId testToRun);
 
-        Int32 recreateResourcesEveryFrame(uint32_t sceneFpsLimit);
-        Int32 recreateResourcesEveryFrame_MapSceneAfterAWhile(uint32_t sceneFpsLimit, uint32_t mapSceneDelayMSec);
-        Int32 recreateResourcesEveryFrame_RemapSceneAllTheTime(uint32_t remapCycleDurationMSec);
+        int32_t recreateResourcesEveryFrame(uint32_t sceneFpsLimit);
+        int32_t recreateResourcesEveryFrame_MapSceneAfterAWhile(uint32_t sceneFpsLimit, uint32_t mapSceneDelayMSec);
+        int32_t recreateResourcesEveryFrame_RemapSceneAllTheTime(uint32_t remapCycleDurationMSec);
 
         SceneArrayConfig generateStressSceneConfig() const;
 
@@ -84,7 +88,7 @@ namespace ramses_internal
         void setRendererFPS(uint32_t rendererFPS);
         void throttleSceneUpdatesAndConsumeRendererEvents(uint32_t sceneFpsLimit);
 
-        const StressTestConfig  m_testConfig;
+        const StressTestConfig& m_testConfig;
         ramses::RamsesFramework m_framework;
         ramses::RamsesClient&   m_client;
         StressTestRenderer      m_testRenderer;

@@ -16,7 +16,7 @@
 
 namespace ramses_internal
 {
-    UInt32 SingleResourceSerialization::SizeOfSerializedResource(const IResource& resource)
+    uint32_t SingleResourceSerialization::SizeOfSerializedResource(const IResource& resource)
     {
         VoidOutputStream stream;
         SerializeResource(stream, resource);

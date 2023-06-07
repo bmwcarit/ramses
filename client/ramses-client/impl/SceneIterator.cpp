@@ -14,19 +14,15 @@
 
 namespace ramses
 {
-
     SceneIterator::SceneIterator(const RamsesClient& client)
-        : impl(new SceneIteratorImpl(client.impl.getListOfScenes()))
+        : m_impl{ std::make_unique<SceneIteratorImpl>(client.m_impl.getListOfScenes()) }
     {
     }
 
-    SceneIterator::~SceneIterator()
-    {
-        delete impl;
-    }
+    SceneIterator::~SceneIterator() = default;
 
     Scene* SceneIterator::getNext()
     {
-        return impl->getNext();
+        return m_impl->getNext();
     }
 }

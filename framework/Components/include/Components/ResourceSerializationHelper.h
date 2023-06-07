@@ -18,7 +18,6 @@ namespace ramses_internal
 {
     class IOutputStream;
     class IInputStream;
-    class String;
 
     // TODO(tobias) must add standalone tests for these functions
     namespace ResourceSerializationHelper
@@ -27,12 +26,12 @@ namespace ramses_internal
         {
             std::unique_ptr<IResource> resource;
             EResourceCompressionStatus compressionStatus;
-            UInt32 decompressedSize;
-            UInt32 compressedSize;
+            uint32_t decompressedSize;
+            uint32_t compressedSize;
         };
 
         void SerializeResourceMetadata(IOutputStream& output, const IResource& resource);
-        UInt32 ResourceMetadataSize(const IResource& resource);
+        uint32_t ResourceMetadataSize(const IResource& resource);
 
         DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input);
     }

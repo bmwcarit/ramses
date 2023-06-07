@@ -16,14 +16,14 @@ namespace ramses_internal
 {
     // GLHandle is not strongly typed because most of the time its scope is limited and involves GL call
     // and it is stored in GPUResource as platform independent type, thus would require conversion every time it is used
-    using GLHandle = UInt32;
+    using GLHandle = uint32_t;
     static const GLHandle InvalidGLHandle(0u);
 
     struct GLInputLocationTag {};
-    using GLInputLocation = StronglyTypedValue<Int32, -1, GLInputLocationTag>;
+    using GLInputLocation = StronglyTypedValue<int32_t, -1, GLInputLocationTag>;
     static const GLInputLocation GLInputLocationInvalid(-1);
 
-    using TextureSlot = Int32;
+    using TextureSlot = int32_t;
 
     // TODO Violin fix this
     using GLenum = unsigned int;

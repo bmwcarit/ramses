@@ -10,8 +10,8 @@
 
 namespace ramses
 {
-    ArrayResourceImpl::ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, SceneImpl& scene, const char* name)
-        : ResourceImpl(ERamsesObjectType_ArrayResource, std::move(arrayHash), scene, name)
+    ArrayResourceImpl::ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, SceneImpl& scene, std::string_view name)
+        : ResourceImpl(ERamsesObjectType::ArrayResource, std::move(arrayHash), scene, name)
         , m_elementCount(0)
         , m_elementType(EDataType::UInt16)
     {

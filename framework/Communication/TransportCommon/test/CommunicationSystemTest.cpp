@@ -17,7 +17,6 @@ namespace ramses_internal
     INSTANTIATE_TEST_SUITE_P(TypedCommunicationTest, ACommunicationSystem, ::testing::ValuesIn(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     INSTANTIATE_TEST_SUITE_P(TypedCommunicationTestRamses, ACommunicationSystemWithDaemon, TESTING_SERVICETYPE_RAMSES(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
-    INSTANTIATE_TEST_SUITE_P(TypedCommunicationTestDcsm, ACommunicationSystemWithDaemon, TESTING_SERVICETYPE_DCSM(CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()));
 
     TEST_P(ACommunicationSystem, canStartStopDiscoveryDaemon)
     {
@@ -31,8 +30,6 @@ namespace ramses_internal
         auto csw = std::make_unique<CommunicationSystemTestWrapper>(*state);
         csw->commSystem->getRamsesConnectionStatusUpdateNotifier().registerForConnectionUpdates(&listener);
         csw->commSystem->getRamsesConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&listener);
-        csw->commSystem->getDcsmConnectionStatusUpdateNotifier().registerForConnectionUpdates(&listener);
-        csw->commSystem->getDcsmConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&listener);
     }
 
     TEST_P(ACommunicationSystem, sendFunctionsFailWhenNotYetConnected)
@@ -40,22 +37,13 @@ namespace ramses_internal
         Guid to(5);
         StatisticCollectionScene sceneStatistics;
         auto csw = std::make_unique<CommunicationSystemTestWrapper>(*state);
-        EXPECT_FALSE(csw->commSystem->broadcastNewScenesAvailable(SceneInfoVector()));
+        EXPECT_FALSE(csw->commSystem->broadcastNewScenesAvailable(SceneInfoVector(), ramses::EFeatureLevel_01));
         EXPECT_FALSE(csw->commSystem->broadcastScenesBecameUnavailable(SceneInfoVector()));
-        EXPECT_FALSE(csw->commSystem->sendScenesAvailable(to, SceneInfoVector()));
+        EXPECT_FALSE(csw->commSystem->sendScenesAvailable(to, SceneInfoVector(), ramses::EFeatureLevel_01));
         EXPECT_FALSE(csw->commSystem->sendSubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
         EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics)));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
-        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, CategoryInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, CategoryInfo{}, AnimationInformation{}));
     }
 
     TEST_P(ACommunicationSystem, sendFunctionsFailAfterCallingDisconnect)
@@ -66,22 +54,13 @@ namespace ramses_internal
         csw->commSystem->connectServices();
         csw->commSystem->disconnectServices();
 
-        EXPECT_FALSE(csw->commSystem->broadcastNewScenesAvailable(SceneInfoVector()));
+        EXPECT_FALSE(csw->commSystem->broadcastNewScenesAvailable(SceneInfoVector(), ramses::EFeatureLevel_01));
         EXPECT_FALSE(csw->commSystem->broadcastScenesBecameUnavailable(SceneInfoVector()));
-        EXPECT_FALSE(csw->commSystem->sendScenesAvailable(to, SceneInfoVector()));
+        EXPECT_FALSE(csw->commSystem->sendScenesAvailable(to, SceneInfoVector(), ramses::EFeatureLevel_01));
         EXPECT_FALSE(csw->commSystem->sendSubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
         EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics)));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
-        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastRequestStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastForceStopOfferContent(ContentID{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmCanvasSizeChange(to, ContentID{}, CategoryInfo{}, AnimationInformation{}));
-        EXPECT_FALSE(csw->commSystem->sendDcsmContentStateChange(to, ContentID{}, EDcsmState::Offered, CategoryInfo{}, AnimationInformation{}));
     }
 
     TEST_P(ACommunicationSystemWithDaemon, canConnectAndDisconnectWithoutBlocking)

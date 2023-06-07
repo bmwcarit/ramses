@@ -27,21 +27,21 @@ namespace ramses_internal
         getArgument<2>().setDefaultValue("");
     }
 
-    Bool ValidateCommand::execute(uint64_t& sceneId, String& severity, String& objectName) const
+    bool ValidateCommand::execute(uint64_t& sceneId, std::string& severity, std::string& objectName) const
     {
         SceneCommandValidationRequest command;
 
-        if (severity == String("info"))
+        if (severity == "info")
         {
-            command.severity = ramses::EValidationSeverity_Info;
+            command.severity = ramses::EValidationSeverity::Info;
         }
-        else if (severity == String("warning"))
+        else if (severity == "warning")
         {
-            command.severity = ramses::EValidationSeverity_Warning;
+            command.severity = ramses::EValidationSeverity::Warning;
         }
-        else if (severity == String("error"))
+        else if (severity == "error")
         {
-            command.severity = ramses::EValidationSeverity_Error;
+            command.severity = ramses::EValidationSeverity::Error;
         }
         else
         {

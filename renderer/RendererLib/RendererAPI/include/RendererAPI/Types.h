@@ -14,21 +14,17 @@
 #include "SceneAPI/RendererSceneState.h"
 #include "Collections/Vector.h"
 #include "Collections/HashSet.h"
-#include "Collections/String.h"
 #include "Common/StronglyTypedValue.h"
 #include "Common/TypedMemoryHandle.h"
 #include "Common/BitForgeMacro.h"
 #include "Utils/LoggingUtils.h"
 
+#include <unordered_set>
+#include <string>
+
 namespace ramses_internal
 {
     enum class EDataType;
-
-    enum EPostProcessingEffect
-    {
-        EPostProcessingEffect_None = 0,
-        EPostProcessingEffect_Warping = BIT(0)
-    };
 
     struct DisplayHandleTag {};
     using DisplayHandle = TypedMemoryHandle<DisplayHandleTag>;
@@ -50,14 +46,19 @@ namespace ramses_internal
     struct DmaBufferModifiersTag{};
     using DmaBufferModifiers = StronglyTypedValue<uint64_t, std::numeric_limits<uint64_t>::max(), DmaBufferModifiersTag>;
 
+    struct WaylandIviSurfaceIdTag {};
+    using WaylandIviSurfaceId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), WaylandIviSurfaceIdTag>;
+    using WaylandIviSurfaceIdSet = std::unordered_set<WaylandIviSurfaceId>;
+    using WaylandIviSurfaceIdVector = std::vector<WaylandIviSurfaceId>;
+
     using GenericDataPtr = void *;
     using GenericConstDataPtr = const void *;
 
     using NativeHandle = void *;
 
     using RenderableSet = HashSet<RenderableHandle>;
-    using BoolVector = std::vector<Bool>;
-    using UInt8Vector = std::vector<UInt8>;
+    using BoolVector = std::vector<bool>;
+    using UInt8Vector = std::vector<uint8_t>;
     using RenderTargetHandleVector = std::vector<RenderTargetHandle>;
 
     struct DeviceResourceHandleTag {};
@@ -66,9 +67,6 @@ namespace ramses_internal
 
     struct WaylandIviLayerIdTag {};
     using WaylandIviLayerId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), WaylandIviLayerIdTag>;
-
-    struct IntegrityEglDisplayIdTag {};
-    using IntegrityRGLDeviceUnit = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), IntegrityEglDisplayIdTag>;
 
     struct X11WindowHandleTag {};
     using X11WindowHandle = StronglyTypedValue<unsigned long, std::numeric_limits<unsigned long>::max(), X11WindowHandleTag>;
@@ -83,30 +81,30 @@ namespace ramses_internal
     {
         struct Rectangle
         {
-            UInt32 x;
-            UInt32 y;
-            UInt32 width;
-            UInt32 height;
+            uint32_t x;
+            uint32_t y;
+            uint32_t width;
+            uint32_t height;
         };
         Rectangle     rectangle;
-        String        filename;
-        Bool          fullScreen;
-        Bool          sendViaDLT;
+        std::string   filename;
+        bool          fullScreen;
+        bool          sendViaDLT;
         UInt8Vector   pixelData;
     };
     using ScreenshotInfoVector = std::vector<ScreenshotInfo>;
 
-    using BinaryShaderFormatID = StronglyTypedValue<UInt32, 0, struct BinaryShaderFormatIDTag>;
+    using BinaryShaderFormatID = StronglyTypedValue<uint32_t, 0, struct BinaryShaderFormatIDTag>;
 
     struct VertexBufferInfo
     {
         DeviceResourceHandle deviceHandle;
         DataFieldHandle field;
-        UInt32 instancingDivisor;
-        UInt32 startVertex;
+        uint32_t instancingDivisor;
+        uint32_t startVertex;
         EDataType bufferDataType;
-        UInt16 offsetWithinElement;
-        UInt16 stride;
+        uint16_t offsetWithinElement;
+        uint16_t stride;
     };
 
     struct VertexArrayInfo
@@ -120,7 +118,6 @@ namespace ramses_internal
     {
         Displays = 0,
         SceneStates,
-        StreamTextures,
         Resources,
         MissingResources,
         RenderQueue,
@@ -132,11 +129,10 @@ namespace ramses_internal
         COUNT
     };
 
-    static const char* RendererLogTopicNames[] =
+    const std::array RendererLogTopicNames =
     {
         "Displays",
         "SceneStates",
-        "StreamTextures",
         "Resources",
         "MissingResources",
         "RenderQueue",
@@ -149,10 +145,10 @@ namespace ramses_internal
 }
 
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviLayerId)
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::IntegrityRGLDeviceUnit)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WindowsWindowHandle)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::AndroidNativeWindowPtr)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::BinaryShaderFormatID)
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviSurfaceId)
 MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::ERendererLogTopic, "ERendererLogTopic", ramses_internal::RendererLogTopicNames, ramses_internal::ERendererLogTopic::COUNT);
 
 #endif

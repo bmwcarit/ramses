@@ -10,14 +10,18 @@
 #define RAMSES_RAMSESOBJECTREGISTRY_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-client-api/RamsesObject.h"
 
 #include "RamsesObjectHandle.h"
 #include "RamsesObjectVector.h"
 #include "IRamsesObjectRegistry.h"
 
 #include "Collections/HashMap.h"
-#include "Collections/String.h"
 #include "Utils/MemoryPool.h"
+
+#include <string_view>
+#include <array>
+#include <string>
 
 namespace ramses
 {
@@ -28,49 +32,69 @@ namespace ramses
     class RamsesObjectRegistry final : public IRamsesObjectRegistry
     {
     public:
-        virtual ~RamsesObjectRegistry() override;
+        ~RamsesObjectRegistry() override;
 
-        void     addObject(RamsesObject& object);
-        void     removeObject(RamsesObject& object);
-        void     reserveAdditionalGeneralCapacity(uint32_t additionalCount);
-        void     reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount);
-        uint32_t getNumberOfObjects(ERamsesObjectType type) const;
+        template <typename T, typename ImplT>
+        T& createAndRegisterObject(std::unique_ptr<ImplT> impl);
+        void destroyAndUnregisterObject(RamsesObject& object);
 
-        void     getObjectsOfType(RamsesObjectVector& objects, ERamsesObjectType ofType) const;
+        void reserveAdditionalGeneralCapacity(uint32_t additionalCount);
+        void reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount);
+        [[nodiscard]] uint32_t getNumberOfObjects(ERamsesObjectType type) const;
+
+        void getObjectsOfType(RamsesObjectVector& objects, ERamsesObjectType ofType) const;
 
         // IRamsesObjectRegistry
-        virtual void updateName(RamsesObject& object, const ramses_internal::String& name) override final;
+        void updateName(RamsesObject& object, const std::string& name) override;
 
-        const RamsesObject* findObjectByName(const char* name) const;
-        RamsesObject*       findObjectByName(const char* name);
+        [[nodiscard]] const RamsesObject* findObjectByName(std::string_view name) const;
+        RamsesObject*       findObjectByName(std::string_view name);
 
-        const SceneObject* findObjectById(sceneObjectId_t id) const;
+        [[nodiscard]] const SceneObject* findObjectById(sceneObjectId_t id) const;
         SceneObject* findObjectById(sceneObjectId_t id);
 
 
         void setNodeDirty(NodeImpl& node, bool dirty);
-        bool isNodeDirty(const NodeImpl& node) const;
+        [[nodiscard]] bool isNodeDirty(const NodeImpl& node) const;
 
-        const NodeImplSet& getDirtyNodes() const;
-        void               clearDirtyNodes();
+        [[nodiscard]] const NodeImplSet& getDirtyNodes() const;
+        void clearDirtyNodes();
 
     private:
-        bool containsObject(const RamsesObject& object) const;
+        void registerObjectInternal(RamsesObject& object);
+        [[nodiscard]] bool containsObject(const RamsesObject& object) const;
         void trackSceneObjectById(RamsesObject& object);
 
-        using ObjectNameMap = ramses_internal::HashMap<ramses_internal::String, RamsesObject *>;
+        using ObjectNameMap = ramses_internal::HashMap<std::string, RamsesObject *>;
         ObjectNameMap m_objectsByName;
 
         using ObjectIdMap = ramses_internal::HashMap<sceneObjectId_t, SceneObject *>;
         ObjectIdMap m_objectsById;
 
         using RamsesObjectsPool = ramses_internal::MemoryPool<RamsesObject *, RamsesObjectHandle>;
-        RamsesObjectsPool m_objects[ERamsesObjectType_NUMBER_OF_TYPES];
+        std::array<RamsesObjectsPool, static_cast<size_t>(ERamsesObjectType::NUMBER_OF_TYPES)> m_objects;
+
+        using RamsesObjectUniquePtr = std::unique_ptr<RamsesObject, std::function<void(RamsesObject*)>>;
+        std::vector<RamsesObjectUniquePtr> m_objectsOwningContainer;
 
         NodeImplSet m_dirtyNodes;
 
         friend class RamsesObjectRegistryIterator;
     };
+
+    template <typename T, typename ImplT>
+    T& RamsesObjectRegistry::createAndRegisterObject(std::unique_ptr<ImplT> impl)
+    {
+        static_assert(std::is_base_of_v<RamsesObject, T>, "Meant for RamsesObject instances only");
+
+        std::unique_ptr<T, std::function<void(RamsesObject*)>> object{ new T{ std::move(impl) }, [](RamsesObject* o) { delete o; } };
+        T* objectRawPtr = object.get();
+        this->m_objectsOwningContainer.push_back(std::move(object));
+
+        this->registerObjectInternal(*objectRawPtr);
+
+        return *objectRawPtr;
+    }
 }
 
 #endif

@@ -16,19 +16,19 @@ namespace ramses_internal
     class IndexBufferGPUResource : public GPUResource
     {
     public:
-        IndexBufferGPUResource(UInt32 gpuAddress, UInt32 totalSizeInBytes, UInt32 elementSizeInBytes)
+        IndexBufferGPUResource(uint32_t gpuAddress, uint32_t totalSizeInBytes, uint32_t elementSizeInBytes)
             : GPUResource(gpuAddress, totalSizeInBytes)
             , m_elementSizeInBytes(elementSizeInBytes)
         {
         }
 
-        UInt32 getElementSizeInBytes() const
+        [[nodiscard]] uint32_t getElementSizeInBytes() const
         {
             return m_elementSizeInBytes;
         }
 
     private:
-        const UInt32 m_elementSizeInBytes;
+        const uint32_t m_elementSizeInBytes;
     };
 }
 

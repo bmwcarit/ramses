@@ -10,7 +10,6 @@
 #define RAMSES_RENDERERLOGGER_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "Collections/String.h"
 #include "Utils/LogContext.h"
 #include "Utils/LoggingUtils.h"
 #include "SceneAPI/SceneId.h"
@@ -19,6 +18,7 @@
 #include "SceneAPI/EDataSlotType.h"
 #include "RendererAPI/Types.h"
 
+#include <string_view>
 namespace ramses_internal
 {
     class RendererSceneUpdater;
@@ -32,7 +32,7 @@ namespace ramses_internal
     class RendererLogger
     {
     public:
-        static void LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter = NodeHandle::Invalid());
+        static void LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, bool verbose, NodeHandle nodeHandleFilter = NodeHandle::Invalid());
 
     private:
         RendererLogger();
@@ -49,7 +49,6 @@ namespace ramses_internal
         static void LogEmbeddedCompositor(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogEventQueue(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogPeriodicInfo(const RendererSceneUpdater& updater);
-        static void LogStreamTextures(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogReferencedScenes(const RendererSceneUpdater& updater, RendererLogContext& context);
 
         static void LogProvider(const RendererScenes& scenes, RendererLogContext& context, const RendererCachedScene& scene, const DataSlotHandle slotHandle, bool asLinked = false);
@@ -61,8 +60,8 @@ namespace ramses_internal
         static OffscreenBufferHandle GetOffscreenBufferLinkedToConsumer(const RendererScenes& scenes, SceneId consumerScene, DataSlotHandle consumerSlot);
         static StreamBufferHandle GetStreamBufferLinkedToConsumer(const RendererScenes& scenes, SceneId consumerScene, DataSlotHandle consumerSlot);
 
-        static void StartSection(const String& name, RendererLogContext& context);
-        static void EndSection(const String& name, RendererLogContext& context);
+        static void StartSection(std::string_view name, RendererLogContext& context);
+        static void EndSection(std::string_view name, RendererLogContext& context);
 
         static void Log(const LogContext& logContext, const RendererLogContext& context);
     };

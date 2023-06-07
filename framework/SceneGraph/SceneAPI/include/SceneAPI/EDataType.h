@@ -14,6 +14,7 @@
 #include "SceneAPI/Handles.h"
 #include "Utils/LoggingUtils.h"
 #include "Utils/Warnings.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -25,13 +26,7 @@ WARNING_DISABLE_GCC(-Wshadow)
     {
         Invalid = 0,
 
-        // TODO Violin should make this a public type with 28+! Currently reported as Int32
-        //Bool,
         Int32,
-        // And while we are at it, we could as well fix all the types...
-        // Support non-square matrices
-        // Support unsigned int vectors (OR remove unsigned int scalars) - does not make sense to have one but not the other
-        // Handle 'double' properly, _OR_ forbid it in the parsing stage (we currently downcast to float -> bad idea
         UInt16,
         UInt32,
         Float,
@@ -51,14 +46,19 @@ WARNING_DISABLE_GCC(-Wshadow)
         TextureSampler2DMS,
         TextureSampler3D,
         TextureSamplerCube,
-        Indices,        // special type that is not strictly typed by effect and both 16/32bit integer can be used
+
+        Indices, // special type that is not strictly typed by effect and both 16/32bit integer can be used
+
+        // these are special internal types used for effect attributes,
+        // essentially the type carries 2 bits of information - element type and that it is a buffer,
+        // see GlslToEffectConverter::replaceVertexAttributeWithBufferVariant
         UInt16Buffer,
         FloatBuffer,
         Vector2Buffer,
         Vector3Buffer,
         Vector4Buffer,
-        ByteBlob,
 
+        ByteBlob,
         TextureSamplerExternal,
 
         NUMBER_OF_ELEMENTS // must be last, used for checking
@@ -66,7 +66,7 @@ WARNING_DISABLE_GCC(-Wshadow)
 
 WARNINGS_POP
 
-    static const char* DataTypeNames[] =
+    const std::array DataTypeNames =
     {
         "DATATYPE_INVALID",
         "DATATYPE_INT32",
@@ -99,7 +99,7 @@ WARNINGS_POP
 
     ENUM_TO_STRING(EDataType, DataTypeNames, EDataType::NUMBER_OF_ELEMENTS);
 
-    inline UInt32 EnumToNumComponents(EDataType type)
+    inline constexpr uint32_t EnumToNumComponents(EDataType type)
     {
         switch (type)
         {
@@ -107,6 +107,7 @@ WARNINGS_POP
         case EDataType::UInt16:
         case EDataType::UInt32:
         case EDataType::Float:
+        case EDataType::ByteBlob:
             return 1u;
         case EDataType::Vector2F:
         case EDataType::Vector2I:
@@ -147,23 +148,23 @@ WARNINGS_POP
         }
     }
 
-    inline UInt32 EnumToSize(EDataType type)
+    inline constexpr uint32_t EnumToSize(EDataType type)
     {
         switch (type)
         {
-        case EDataType::Int32            : return sizeof(Int32);
-        case EDataType::UInt16           : return sizeof(UInt16);
-        case EDataType::UInt32           : return sizeof(UInt32);
-        case EDataType::Float            : return sizeof(Float);
-        case EDataType::Vector2F         : return sizeof(Float) * EnumToNumComponents(EDataType::Vector2F);
-        case EDataType::Vector3F         : return sizeof(Float) * EnumToNumComponents(EDataType::Vector3F);
-        case EDataType::Vector4F         : return sizeof(Float) * EnumToNumComponents(EDataType::Vector4F);
-        case EDataType::Vector2I         : return sizeof(Int32) * EnumToNumComponents(EDataType::Vector2I);
-        case EDataType::Vector3I         : return sizeof(Int32) * EnumToNumComponents(EDataType::Vector3I);
-        case EDataType::Vector4I         : return sizeof(Int32) * EnumToNumComponents(EDataType::Vector4I);
-        case EDataType::Matrix22F        : return sizeof(Float) * EnumToNumComponents(EDataType::Matrix22F);
-        case EDataType::Matrix33F        : return sizeof(Float) * EnumToNumComponents(EDataType::Matrix33F);
-        case EDataType::Matrix44F        : return sizeof(Float) * EnumToNumComponents(EDataType::Matrix44F);
+        case EDataType::Int32            : return sizeof(int32_t);
+        case EDataType::UInt16           : return sizeof(uint16_t);
+        case EDataType::UInt32           : return sizeof(uint32_t);
+        case EDataType::Float            : return sizeof(float);
+        case EDataType::Vector2F         : return sizeof(float) * EnumToNumComponents(EDataType::Vector2F);
+        case EDataType::Vector3F         : return sizeof(float) * EnumToNumComponents(EDataType::Vector3F);
+        case EDataType::Vector4F         : return sizeof(float) * EnumToNumComponents(EDataType::Vector4F);
+        case EDataType::Vector2I         : return sizeof(int32_t) * EnumToNumComponents(EDataType::Vector2I);
+        case EDataType::Vector3I         : return sizeof(int32_t) * EnumToNumComponents(EDataType::Vector3I);
+        case EDataType::Vector4I         : return sizeof(int32_t) * EnumToNumComponents(EDataType::Vector4I);
+        case EDataType::Matrix22F        : return sizeof(float) * EnumToNumComponents(EDataType::Matrix22F);
+        case EDataType::Matrix33F        : return sizeof(float) * EnumToNumComponents(EDataType::Matrix33F);
+        case EDataType::Matrix44F        : return sizeof(float) * EnumToNumComponents(EDataType::Matrix44F);
         case EDataType::ByteBlob         : return 1u;
 
         case EDataType::DataReference    : return sizeof(DataInstanceHandle);
@@ -178,29 +179,33 @@ WARNINGS_POP
         case EDataType::Vector2Buffer    : return sizeof(ResourceField);
         case EDataType::Vector3Buffer    : return sizeof(ResourceField);
         case EDataType::Vector4Buffer    : return sizeof(ResourceField);
-        default:
-            assert(false);
-            return 0;
+
+        case EDataType::Invalid:
+        case EDataType::NUMBER_OF_ELEMENTS:
+            break;
         };
+
+        assert(false);
+        return 0;
     }
 
-    inline UInt EnumToAlignment(EDataType type)
+    inline size_t EnumToAlignment(EDataType type)
     {
         switch (type)
         {
-        case EDataType::Int32            : return alignof(Int32);
-        case EDataType::UInt16           : return alignof(UInt16);
-        case EDataType::UInt32           : return alignof(UInt32);
-        case EDataType::Float            : return alignof(Float);
-        case EDataType::Vector2F         : return alignof(Float);
-        case EDataType::Vector3F         : return alignof(Float);
-        case EDataType::Vector4F         : return alignof(Float);
-        case EDataType::Vector2I         : return alignof(Int32);
-        case EDataType::Vector3I         : return alignof(Int32);
-        case EDataType::Vector4I         : return alignof(Int32);
-        case EDataType::Matrix22F        : return alignof(Float);
-        case EDataType::Matrix33F        : return alignof(Float);
-        case EDataType::Matrix44F        : return alignof(Float);
+        case EDataType::Int32            : return alignof(int32_t);
+        case EDataType::UInt16           : return alignof(uint16_t);
+        case EDataType::UInt32           : return alignof(uint32_t);
+        case EDataType::Float            : return alignof(float);
+        case EDataType::Vector2F         : return alignof(float);
+        case EDataType::Vector3F         : return alignof(float);
+        case EDataType::Vector4F         : return alignof(float);
+        case EDataType::Vector2I         : return alignof(int32_t);
+        case EDataType::Vector3I         : return alignof(int32_t);
+        case EDataType::Vector4I         : return alignof(int32_t);
+        case EDataType::Matrix22F        : return alignof(float);
+        case EDataType::Matrix33F        : return alignof(float);
+        case EDataType::Matrix44F        : return alignof(float);
 
         case EDataType::DataReference    : return alignof(DataInstanceHandle);
         case EDataType::TextureSampler2D : return alignof(TextureSamplerHandle);
@@ -239,16 +244,6 @@ WARNINGS_POP
             || dataType == EDataType::TextureSamplerExternal;
     }
 
-    class Vector2i;
-    class Vector3i;
-    class Vector4i;
-    class Vector2;
-    class Vector3;
-    class Vector4;
-    class Matrix22f;
-    class Matrix33f;
-    class Matrix44f;
-
     template <typename T>
     struct TypeToEDataTypeTraits
     {
@@ -279,55 +274,55 @@ WARNINGS_POP
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector2i >
+    struct TypeToEDataTypeTraits < glm::ivec2 >
     {
         static const EDataType DataType = EDataType::Vector2I;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector3i >
+    struct TypeToEDataTypeTraits < glm::ivec3 >
     {
         static const EDataType DataType = EDataType::Vector3I;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector4i >
+    struct TypeToEDataTypeTraits < glm::ivec4 >
     {
         static const EDataType DataType = EDataType::Vector4I;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector2 >
+    struct TypeToEDataTypeTraits < glm::vec2 >
     {
         static const EDataType DataType = EDataType::Vector2F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector3 >
+    struct TypeToEDataTypeTraits < glm::vec3 >
     {
         static const EDataType DataType = EDataType::Vector3F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Vector4 >
+    struct TypeToEDataTypeTraits < glm::vec4 >
     {
         static const EDataType DataType = EDataType::Vector4F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Matrix22f >
+    struct TypeToEDataTypeTraits < glm::mat2 >
     {
         static const EDataType DataType = EDataType::Matrix22F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Matrix33f >
+    struct TypeToEDataTypeTraits < glm::mat3 >
     {
         static const EDataType DataType = EDataType::Matrix33F;
     };
 
     template <>
-    struct TypeToEDataTypeTraits < Matrix44f >
+    struct TypeToEDataTypeTraits < glm::mat4 >
     {
         static const EDataType DataType = EDataType::Matrix44F;
     };

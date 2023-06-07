@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    AsyncEventCounter::AsyncEventCounter(UInt32 waitTimeMs)
+    AsyncEventCounter::AsyncEventCounter(uint32_t waitTimeMs)
         : m_eventCounter(0)
         , m_waitTimeMs(waitTimeMs)
     {
@@ -26,7 +26,7 @@ namespace ramses_internal
         cond.notify_one();
     }
 
-    testing::AssertionResult AsyncEventCounter::waitForEvents(UInt32 numberEventsToWaitFor, UInt32 waitTimeMsOverride)
+    testing::AssertionResult AsyncEventCounter::waitForEvents(uint32_t numberEventsToWaitFor, uint32_t waitTimeMsOverride)
     {
         std::unique_lock<std::mutex> l(lock);
         if (cond.wait_for(l,
@@ -54,8 +54,7 @@ namespace ramses_internal
 
     ConnectionSystemTestDaemon::ConnectionSystemTestDaemon(const std::function<void(ramses::RamsesFrameworkConfigImpl&)>& configModifier)
     {
-        ramses::RamsesFrameworkConfigImpl config(0, nullptr);
-        config.enableProtocolVersionOffset();
+        ramses::RamsesFrameworkConfigImpl config(ramses::EFeatureLevel_Latest);
         if (configModifier)
             configModifier(config);
         daemon = CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection);

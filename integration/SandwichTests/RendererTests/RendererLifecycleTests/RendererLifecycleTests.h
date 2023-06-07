@@ -18,8 +18,7 @@ namespace ramses_internal
     {
     public:
         ARendererLifecycleTest()
-            : frameworkConfig()
-            , testScenesAndRenderer(frameworkConfig)
+            : testScenesAndRenderer(frameworkConfig)
             , testRenderer(testScenesAndRenderer.getTestRenderer())
         {}
 
@@ -40,12 +39,12 @@ namespace ramses_internal
         }
 
         template <typename INTEGRATION_SCENE>
-        ramses::sceneId_t createScene(uint32_t state, const Vector3& cameraPosition = { 0.f, 0.f, 0.f }, uint32_t vpWidth = WindowWidth, uint32_t vpHeight = WindowHeight)
+        ramses::sceneId_t createScene(uint32_t state, const glm::vec3& cameraPosition = { 0.f, 0.f, 0.f }, uint32_t vpWidth = WindowWidth, uint32_t vpHeight = WindowHeight)
         {
             return testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, cameraPosition, vpWidth, vpHeight);
         }
         template <typename INTEGRATION_SCENE>
-        void createScene(uint32_t state, ramses::sceneId_t sceneId, const Vector3& cameraPosition = { 0.f, 0.f, 0.f })
+        void createScene(uint32_t state, ramses::sceneId_t sceneId, const glm::vec3& cameraPosition = { 0.f, 0.f, 0.f })
         {
             testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, WindowWidth, WindowHeight);
         }
@@ -55,7 +54,7 @@ namespace ramses_internal
         static const uint32_t WindowWidth = 128u;
         static const uint32_t WindowHeight = 64u;
 
-        ramses::RamsesFrameworkConfig frameworkConfig;
+        ramses::RamsesFrameworkConfig frameworkConfig{ramses::EFeatureLevel_Latest};
         TestScenesAndRenderer testScenesAndRenderer;
         TestRenderer& testRenderer;
     };

@@ -57,20 +57,20 @@ void DataLinkingTests::setUpTestCases(RendererTestsFramework& testFramework)
 
 bool DataLinkingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
 {
-    String expectedImageName("!!unknown!!");
+    std::string expectedImageName("!!unknown!!");
     float expectedPixelError = RendererTestUtils::DefaultMaxAveragePercentPerPixel;
     switch (testCase.m_id)
     {
     case TransformationLinkTest_ConsumerNotLinkedToProvider:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerOvrSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consAndProvSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_AND_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.publishAndFlushScene(consumerOvrSceneId);
@@ -85,9 +85,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_ConsumerLinkedToProvider:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.getSceneToRendered(providerSceneId);
@@ -99,9 +99,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_LinkOverridesComsumerTransform:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerOvrSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerOvrSceneId);
         testFramework.getSceneToRendered(providerSceneId);
@@ -113,9 +113,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_LinkRemoved:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.getSceneToRendered(providerSceneId);
@@ -128,11 +128,11 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_ConsumerLinkedToProviderNested:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consAndProvSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER_AND_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consAndProvSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
@@ -148,9 +148,9 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     case TransformationLinkTest_RemovedConsumerFromScene:
     {
         const ramses::sceneId_t providerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_PROVIDER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         const ramses::sceneId_t consumerSceneId = testFramework.getScenesRegistry().createScene<TransformationLinkScene>(TransformationLinkScene::TRANSFORMATION_CONSUMER,
-            ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            glm::vec3(0.0f, 0.0f, 12.0f));
         testFramework.publishAndFlushScene(providerSceneId);
         testFramework.publishAndFlushScene(consumerSceneId);
         testFramework.getSceneToRendered(providerSceneId);
@@ -192,12 +192,12 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         testFramework.getSceneToRendered(m_sceneIdProviderConsumer);
         testFramework.getSceneToRendered(m_sceneIdConsumer);
 
-        for (UInt32 rowId = MultiTransformationLinkScene::DataIdRowStart; rowId < MultiTransformationLinkScene::DataIdRowStart + 4u; ++rowId)
+        for (uint32_t rowId = MultiTransformationLinkScene::DataIdRowStart; rowId < MultiTransformationLinkScene::DataIdRowStart + 4u; ++rowId)
         {
             testFramework.createDataLink(m_sceneIdProvider, ramses::dataProviderId_t{rowId}, m_sceneIdProviderConsumer, ramses::dataConsumerId_t{rowId});
         }
 
-        for (UInt32 meshId = MultiTransformationLinkScene::DataIdMeshStart; meshId < MultiTransformationLinkScene::DataIdMeshStart + 16u; ++meshId)
+        for (uint32_t meshId = MultiTransformationLinkScene::DataIdMeshStart; meshId < MultiTransformationLinkScene::DataIdMeshStart + 16u; ++meshId)
         {
             testFramework.createDataLink(m_sceneIdProviderConsumer, ramses::dataProviderId_t{meshId}, m_sceneIdConsumer, ramses::dataConsumerId_t{meshId});
         }
@@ -379,7 +379,7 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     return renderAndCompareScreenshot(testFramework, expectedImageName, 0u, expectedPixelError);
 }
 
-bool DataLinkingTests::renderAndCompareScreenshot(RendererTestsFramework& testFramework, const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, float expectedPixelError)
+bool DataLinkingTests::renderAndCompareScreenshot(RendererTestsFramework& testFramework, const std::string& expectedImageName, uint32_t testDisplayIdx, float expectedPixelError)
 {
     // changes to offscreen buffers are delayed by 1 frame, render one frame before taking screenshot
     testFramework.flushRendererAndDoOneLoop();

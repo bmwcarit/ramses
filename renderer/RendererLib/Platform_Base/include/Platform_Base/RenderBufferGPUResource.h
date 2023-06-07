@@ -17,7 +17,7 @@ namespace ramses_internal
     class RenderBufferGPUResource : public GPUResource
     {
     public:
-        RenderBufferGPUResource(UInt32 gpuAddress, UInt32 width, UInt32 height, ERenderBufferType type, ETextureFormat format, UInt32 sampleCount, ERenderBufferAccessMode accessMode)
+        RenderBufferGPUResource(uint32_t gpuAddress, uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, uint32_t sampleCount, ERenderBufferAccessMode accessMode)
             : GPUResource(gpuAddress, width * height * GetTexelSizeFromFormat(format) * std::max(1u, sampleCount))
             , m_type(type)
             , m_format(format)
@@ -28,32 +28,32 @@ namespace ramses_internal
         {
         }
 
-        ERenderBufferType getType() const
+        [[nodiscard]] ERenderBufferType getType() const
         {
             return m_type;
         }
 
-        ETextureFormat getStorageFormat() const
+        [[nodiscard]] ETextureFormat getStorageFormat() const
         {
             return m_format;
         }
 
-        UInt32 getWidth() const
+        [[nodiscard]] uint32_t getWidth() const
         {
             return m_width;
         }
 
-        UInt32 getHeight() const
+        [[nodiscard]] uint32_t getHeight() const
         {
             return m_height;
         }
 
-        UInt32 getSampleCount() const
+        [[nodiscard]] uint32_t getSampleCount() const
         {
             return m_sampleCount;
         }
 
-        ERenderBufferAccessMode getAccessMode() const
+        [[nodiscard]] ERenderBufferAccessMode getAccessMode() const
         {
             return m_accessMode;
         }
@@ -61,9 +61,9 @@ namespace ramses_internal
     private:
         const ERenderBufferType m_type;
         const ETextureFormat m_format;
-        const UInt32 m_sampleCount;
-        const UInt32 m_width;
-        const UInt32 m_height;
+        const uint32_t m_sampleCount;
+        const uint32_t m_width;
+        const uint32_t m_height;
         const ERenderBufferAccessMode m_accessMode;
     };
 }

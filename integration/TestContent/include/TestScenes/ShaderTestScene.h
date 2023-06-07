@@ -12,12 +12,14 @@
 #include "IntegrationScene.h"
 #include "Triangle.h"
 
+#include <string>
+
 namespace ramses_internal
 {
     class ShaderTestScene : public IntegrationScene
     {
     public:
-        ShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        ShaderTestScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -30,8 +32,8 @@ namespace ramses_internal
         };
 
     private:
-        String getEffectNameFromState(UInt32 state) const;
-        void initInputs(UInt32 state);
+        [[nodiscard]] std::string getEffectNameFromState(uint32_t state) const;
+        void initInputs(uint32_t state);
 
         ramses::Effect&   m_effect;
         ramses::Triangle  m_triangle;

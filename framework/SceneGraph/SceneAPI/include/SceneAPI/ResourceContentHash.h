@@ -29,7 +29,7 @@ namespace ramses_internal
         {
         }
 
-        constexpr ResourceContentHash(UInt64 low, UInt64 high)
+        constexpr ResourceContentHash(uint64_t low, uint64_t high)
             : lowPart(low)
             , highPart(high)
         {
@@ -40,7 +40,7 @@ namespace ramses_internal
             return ResourceContentHash();
         }
 
-        constexpr inline bool isValid() const
+        [[nodiscard]] constexpr inline bool isValid() const
         {
             return *this != Invalid();
         }
@@ -55,8 +55,8 @@ namespace ramses_internal
             return !(*this == rhs);
         }
 
-        UInt64 lowPart;
-        UInt64 highPart;
+        uint64_t lowPart;
+        uint64_t highPart;
     };
 
     constexpr inline bool operator<(ResourceContentHash const& lhs, ResourceContentHash const& rhs)
@@ -84,7 +84,7 @@ struct fmt::formatter<ramses_internal::ResourceContentHash> : public ramses_inte
     constexpr auto format(const ramses_internal::ResourceContentHash& res, FormatContext& ctx)
     {
         const char* typeShortString = nullptr;
-        const uint32_t type = (res.highPart >> 60LU) & 0xF;
+        const auto type = static_cast<uint32_t>((res.highPart >> 60LU) & 0xFu);
         switch (type)
         {
         case static_cast<uint32_t>(ramses_internal::EResourceType_VertexArray):

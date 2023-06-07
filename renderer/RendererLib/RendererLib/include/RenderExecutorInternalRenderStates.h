@@ -20,14 +20,14 @@ namespace ramses_internal
 
     struct StencilState
     {
-        EStencilFunc    m_stencilFunc = EStencilFunc::NUMBER_OF_ELEMENTS;
-        EStencilOp      m_stencilOpFail = EStencilOp::NUMBER_OF_ELEMENTS;
-        EStencilOp      m_stencilOpDepthFail = EStencilOp::NUMBER_OF_ELEMENTS;
-        EStencilOp      m_stencilOpDepthPass = EStencilOp::NUMBER_OF_ELEMENTS;
-        UInt8           m_stencilMask = 0;
-        UInt8           m_stencilRefValue = 0;
+        EStencilFunc    m_stencilFunc{};
+        EStencilOp      m_stencilOpFail{};
+        EStencilOp      m_stencilOpDepthFail{};
+        EStencilOp      m_stencilOpDepthPass{};
+        uint8_t         m_stencilMask = 0;
+        uint8_t         m_stencilRefValue = 0;
 
-        Bool operator!=(const StencilState& other) const
+        bool operator!=(const StencilState& other) const
         {
             return m_stencilFunc != other.m_stencilFunc
                 || m_stencilOpFail != other.m_stencilOpFail
@@ -40,7 +40,7 @@ namespace ramses_internal
 
     struct ScissorState
     {
-        EScissorTest m_scissorTest = EScissorTest::NUMBER_OF_ELEMENTS;
+        EScissorTest m_scissorTest{};
         RenderState::ScissorRegion m_scissorRegion = {0, 0, 0, 0};
 
         bool operator!=(const ScissorState& other) const
@@ -53,8 +53,8 @@ namespace ramses_internal
 
     struct BlendOperationsState
     {
-        EBlendOperation m_blendOperationColor = EBlendOperation::NUMBER_OF_ELEMENTS;
-        EBlendOperation m_blendOperationAlpha = EBlendOperation::NUMBER_OF_ELEMENTS;
+        EBlendOperation m_blendOperationColor{};
+        EBlendOperation m_blendOperationAlpha{};
 
         bool operator!=(const BlendOperationsState& other) const
         {
@@ -65,10 +65,10 @@ namespace ramses_internal
 
     struct BlendFactorsState
     {
-        EBlendFactor    m_blendFactorSrcColor = EBlendFactor::NUMBER_OF_ELEMENTS;
-        EBlendFactor    m_blendFactorDstColor = EBlendFactor::NUMBER_OF_ELEMENTS;
-        EBlendFactor    m_blendFactorSrcAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
-        EBlendFactor    m_blendFactorDstAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
+        EBlendFactor    m_blendFactorSrcColor{};
+        EBlendFactor    m_blendFactorDstColor{};
+        EBlendFactor    m_blendFactorSrcAlpha{};
+        EBlendFactor    m_blendFactorDstAlpha{};
 
         bool operator!=(const BlendFactorsState& other) const
         {

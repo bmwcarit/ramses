@@ -27,7 +27,7 @@ namespace ramses_internal
     class Texture2DCompressedMipMapScene : public IntegrationScene
     {
     public:
-        Texture2DCompressedMipMapScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
+        Texture2DCompressedMipMapScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum EState
         {

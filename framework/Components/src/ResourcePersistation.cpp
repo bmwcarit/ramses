@@ -38,16 +38,16 @@ namespace ramses_internal
         // achieve maximum resource file loading speed by reading in increasing file position order
         // so store TOC first followed by all resources, as the toc is read before the resources
 
-        UInt offsetForTOC = 0;
+        size_t offsetForTOC = 0;
         outStream.getPos(offsetForTOC);
 
         // get size and offset of resources by writing to dummy stream
         VoidOutputStream dummyStream;
         ResourceTableOfContents dummyToc;
-        std::vector<UInt32> resourceOffsetSize;
+        std::vector<uint32_t> resourceOffsetSize;
         resourceOffsetSize.reserve(resourcesForFile.size() * 2);
-        UInt32 offsetBeforeWrite = 0;
-        UInt32 currentPosAfterWrite = 0;
+        uint32_t offsetBeforeWrite = 0;
+        uint32_t currentPosAfterWrite = 0;
 
         // possible compress all resources before writing
         for (const auto& res : resourcesForFile)
@@ -59,28 +59,28 @@ namespace ramses_internal
         {
             WriteOneResourceToStream(dummyStream, res);
             currentPosAfterWrite = static_cast<uint32_t>(dummyStream.getSize());
-            const UInt32 bytesWritten = currentPosAfterWrite - offsetBeforeWrite;
+            const uint32_t bytesWritten = currentPosAfterWrite - offsetBeforeWrite;
             resourceOffsetSize.push_back(offsetBeforeWrite);
             resourceOffsetSize.push_back(bytesWritten);
 
             dummyToc.registerContents(ResourceInfo(res.get()), 0, 0);
 
-            offsetBeforeWrite = static_cast<UInt32>(currentPosAfterWrite);
+            offsetBeforeWrite = static_cast<uint32_t>(currentPosAfterWrite);
         }
 
         // get size of TOC by writing to dummy stream
         dummyToc.writeTOCToStream(dummyStream);
         currentPosAfterWrite = static_cast<uint32_t>(dummyStream.getSize());
-        const UInt32 tocSize = currentPosAfterWrite - offsetBeforeWrite;
+        const uint32_t tocSize = currentPosAfterWrite - offsetBeforeWrite;
 
         // create final TOC with correct resource offsets
         ResourceTableOfContents toc;
-        UInt32 i = 0;
+        uint32_t i = 0;
         for (const auto& res : resourcesForFile)
         {
-            const UInt32 resourceOffset = resourceOffsetSize[i++];
-            const UInt32 resourceSize = resourceOffsetSize[i++];
-            toc.registerContents(ResourceInfo(res.get()), static_cast<UInt32>(offsetForTOC) + tocSize + resourceOffset, resourceSize);
+            const uint32_t resourceOffset = resourceOffsetSize[i++];
+            const uint32_t resourceSize = resourceOffsetSize[i++];
+            toc.registerContents(ResourceInfo(res.get()), static_cast<uint32_t>(offsetForTOC) + tocSize + resourceOffset, resourceSize);
         }
 
         // write final toc and resources to output stream
@@ -112,7 +112,7 @@ namespace ramses_internal
             return {};
         }
 
-        UInt currentPosAfterRead = 0;
+        size_t currentPosAfterRead = 0;
         const EStatus posStatus = inStream.getPos(currentPosAfterRead);
         if (posStatus != EStatus::Ok || currentPosAfterRead - fileEntry.offsetInBytes != fileEntry.sizeInBytes)
         {

@@ -21,7 +21,7 @@ namespace ramses_internal
         getArgument<1>().setDescription("visibility");
     }
 
-    Bool SystemCompositorControllerSetSurfaceVisibility::execute(Int32& surfaceId, Int32& visibility) const
+    bool SystemCompositorControllerSetSurfaceVisibility::execute(int32_t& surfaceId, int32_t& visibility) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCSetIviSurfaceVisibility{ WaylandIviSurfaceId(surfaceId), visibility != 0 });
         return true;

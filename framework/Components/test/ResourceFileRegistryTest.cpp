@@ -42,7 +42,7 @@ namespace ramses_internal
         ResourceContentHash hash(123, 0);
 
         ResourceTableOfContents toc;
-        String resourceFileName("testfile");
+        std::string resourceFileName("testfile");
         toc.registerContents(ResourceInfo(EResourceType_VertexArray, hash, 22, 11), 0, 10);
 
         InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>(resourceFileName));
@@ -76,8 +76,8 @@ namespace ramses_internal
     {
         ResourceContentHash hash(123, 0);
         ResourceInfo resInfo(EResourceType_VertexArray, hash, 22, 11);
-        UInt32 offset = 11u;
-        UInt32 size = 22u;
+        uint32_t offset = 11u;
+        uint32_t size = 22u;
         InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>("testfile"));
 
         ResourceTableOfContents toc;
