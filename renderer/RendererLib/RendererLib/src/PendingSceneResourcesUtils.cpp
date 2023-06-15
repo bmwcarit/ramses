@@ -12,7 +12,6 @@
 #include "RendererLib/FrameTimer.h"
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/GeometryDataBuffer.h"
-#include "SceneAPI/StreamTexture.h"
 
 namespace ramses_internal
 {
@@ -23,7 +22,7 @@ namespace ramses_internal
 
         for (const auto& sceneResourceAction : newActions)
         {
-            Bool wasCanceledOut = false;
+            bool wasCanceledOut = false;
             // Cancel out create and destroy action for the same resource.
             // This is needed because the create action cannot be executed if the scene resource
             // was removed from scene (scene actions are applied before applying scene resource actions)
@@ -35,9 +34,6 @@ namespace ramses_internal
                 break;
             case ESceneResourceAction_DestroyRenderBuffer:
                 wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateRenderBuffer);
-                break;
-            case ESceneResourceAction_DestroyStreamTexture:
-                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateStreamTexture);
                 break;
             case ESceneResourceAction_DestroyBlitPass:
                 wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateBlitPass);
@@ -98,12 +94,6 @@ namespace ramses_internal
             case ESceneResourceAction_DestroyRenderBuffer:
                 resourceManager.unloadRenderTargetBuffer(RenderBufferHandle(handle), scene.getSceneId());
                 break;
-            case ESceneResourceAction_CreateStreamTexture:
-                resourceManager.uploadStreamTexture(StreamTextureHandle(handle), WaylandIviSurfaceId(scene.getStreamTexture(StreamTextureHandle(handle)).source), scene.getSceneId());
-                break;
-            case ESceneResourceAction_DestroyStreamTexture:
-                resourceManager.unloadStreamTexture(StreamTextureHandle(handle), scene.getSceneId());
-                break;
             case ESceneResourceAction_CreateBlitPass:
                 SceneResourceUploader::UploadBlitPassRenderTargets(scene, BlitPassHandle(handle), resourceManager);
                 break;
@@ -113,7 +103,7 @@ namespace ramses_internal
             case ESceneResourceAction_CreateDataBuffer:
             {
                 const GeometryDataBuffer& dataBuffer = scene.getDataBuffer(DataBufferHandle(handle));
-                resourceManager.uploadDataBuffer(DataBufferHandle(handle), dataBuffer.bufferType, dataBuffer.dataType, static_cast<UInt32>(dataBuffer.data.size()), scene.getSceneId());
+                resourceManager.uploadDataBuffer(DataBufferHandle(handle), dataBuffer.bufferType, dataBuffer.dataType, static_cast<uint32_t>(dataBuffer.data.size()), scene.getSceneId());
             }
                 break;
             case ESceneResourceAction_DestroyDataBuffer:
@@ -122,7 +112,7 @@ namespace ramses_internal
             case ESceneResourceAction_UpdateDataBuffer:
             {
                 const GeometryDataBuffer& dataBuffer = scene.getDataBuffer(DataBufferHandle(handle));
-                resourceManager.updateDataBuffer(DataBufferHandle(handle), static_cast<UInt32>(dataBuffer.data.size()), dataBuffer.data.data(), scene.getSceneId());
+                resourceManager.updateDataBuffer(DataBufferHandle(handle), static_cast<uint32_t>(dataBuffer.data.size()), dataBuffer.data.data(), scene.getSceneId());
             }
                 break;
             case ESceneResourceAction_CreateTextureBuffer:
@@ -149,7 +139,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool PendingSceneResourcesUtils::RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
+    bool PendingSceneResourcesUtils::RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
     {
         for (auto actionIter = actions.begin(); actionIter != actions.end(); ++actionIter)
         {
@@ -164,7 +154,7 @@ namespace ramses_internal
         return false;
     }
 
-    Bool PendingSceneResourcesUtils::ContainsSceneResourceAction(const SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
+    bool PendingSceneResourcesUtils::ContainsSceneResourceAction(const SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
     {
         for (const auto& a : actions)
         {

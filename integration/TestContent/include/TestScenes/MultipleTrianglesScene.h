@@ -21,9 +21,9 @@ namespace ramses_internal
     class MultipleTrianglesScene : public IntegrationScene
     {
     public:
-        MultipleTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        MultipleTrianglesScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
-        void setState(UInt32 state);
+        void setState(uint32_t state);
 
         enum
         {

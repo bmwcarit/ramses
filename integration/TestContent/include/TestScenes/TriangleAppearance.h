@@ -22,7 +22,7 @@ namespace ramses
     class ArrayResourceInput;
     class Effect;
     class UniformInput;
-    class DataVector4f;
+    class DataObject;
 
     class TriangleAppearance
     {
@@ -44,7 +44,7 @@ namespace ramses
         }
 
         void setColor(enum EColor color, float alpha);
-        void bindColor(const DataVector4f& colorDataObject);
+        void bindColor(const DataObject& colorDataObject);
         void unbindColor();
 
     private:

@@ -20,7 +20,7 @@ namespace ramses_internal
     {
         EDataBufferType bufferType = EDataBufferType::Invalid;
         EDataType       dataType = EDataType::Invalid;
-        UInt32          usedSize = 0u;
+        uint32_t        usedSize = 0u;
         std::vector<Byte>    data;
     };
 

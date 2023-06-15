@@ -12,23 +12,23 @@
 
 namespace ramses_internal
 {
-    UInt32 SceneActionCollectionUtils::CountNumberOfActionsOfType(const SceneActionCollection& actions, ESceneActionId type)
+    uint32_t SceneActionCollectionUtils::CountNumberOfActionsOfType(const SceneActionCollection& actions, ESceneActionId type)
     {
         auto p = [&type](const SceneActionCollection::SceneActionReader& reader)-> bool
             {
                 return reader.type() == type;
             };
 
-        return static_cast<UInt32>(std::count_if(actions.begin(),actions.end(), p));
+        return static_cast<uint32_t>(std::count_if(actions.begin(),actions.end(), p));
     }
 
-    UInt32 SceneActionCollectionUtils::CountNumberOfActionsOfType(const SceneActionCollection& actions, const SceneActionIdVector& types)
+    uint32_t SceneActionCollectionUtils::CountNumberOfActionsOfType(const SceneActionCollection& actions, const SceneActionIdVector& types)
     {
-        auto p = [&types](const SceneActionCollection::SceneActionReader& action)-> Bool
+        auto p = [&types](const SceneActionCollection::SceneActionReader& action)-> bool
             {
                 return contains_c(types, action.type());
             };
 
-        return static_cast<UInt32>(std::count_if(actions.begin(),actions.end(), p));
+        return static_cast<uint32_t>(std::count_if(actions.begin(),actions.end(), p));
     }
 }

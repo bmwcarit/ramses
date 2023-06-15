@@ -9,20 +9,21 @@
 #ifndef RAMSES_TESTSIGNALHANDLER_H
 #define RAMSES_TESTSIGNALHANDLER_H
 
-#include "Collections/String.h"
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
     class TestSignalHandler
     {
     public:
-        static void RegisterSignalHandlersForCurrentProcess(String processName);
+        static void RegisterSignalHandlersForCurrentProcess(std::string_view processName);
 
     private:
         TestSignalHandler();
         static void HandleSignalCallback(int32_t signal);
 
-        static String ProcessName;
+        static std::string ProcessName;
     };
 }
 

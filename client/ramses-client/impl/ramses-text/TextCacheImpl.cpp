@@ -134,8 +134,7 @@ namespace ramses
         textLine.indices = m_scene.createArrayBuffer(ramses::EDataType::UInt16, numIndices, "");
         textLine.indices->updateData(0u, numIndices, geometry.indices.data());
 
-        assert(geometry.positions.size() % 2 == 0);  // two floats per Vector2F
-        const uint32_t numVertexElements = static_cast<uint32_t>(geometry.positions.size()) / 2;
+        const uint32_t numVertexElements = static_cast<uint32_t>(geometry.positions.size());
         textLine.positions = m_scene.createArrayBuffer(ramses::EDataType::Vector2F, numVertexElements, "");
         textLine.positions->updateData(0u, numVertexElements, geometry.positions.data());
 

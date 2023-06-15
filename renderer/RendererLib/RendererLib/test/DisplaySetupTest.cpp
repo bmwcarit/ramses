@@ -36,7 +36,7 @@ protected:
     DisplaySetup displaySetup;
 
     const Viewport viewport{ 1,2,3,4 };
-    const Vector4 clearColor{ 10,20,30,40 };
+    const glm::vec4 clearColor{ 10,20,30,40 };
 };
 
 TEST_F(ADisplaySetup, hasNoBuffersInitially)
@@ -392,9 +392,9 @@ TEST_F(ADisplaySetup, canSetClearColorForAnyRegisteredBuffer)
     EXPECT_EQ(clearColor, displaySetup.getDisplayBuffer(bufferHandleOB).clearColor);
     EXPECT_EQ(clearColor, displaySetup.getDisplayBuffer(bufferHandleOBint).clearColor);
 
-    const Vector4 clr1{ 9, 8, 7, 6 };
-    const Vector4 clr2{ 5, 4, 3, 2 };
-    const Vector4 clr3{ 1, 0, -1, -2 };
+    const glm::vec4 clr1{ 9, 8, 7, 6 };
+    const glm::vec4 clr2{ 5, 4, 3, 2 };
+    const glm::vec4 clr3{ 1, 0, -1, -2 };
     displaySetup.setClearColor(bufferHandleFB, clr1);
     displaySetup.setClearColor(bufferHandleOB, clr2);
     displaySetup.setClearColor(bufferHandleOBint, clr3);

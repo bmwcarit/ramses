@@ -18,7 +18,7 @@ namespace ramses_internal
     class IndexArray32BitScene : public IntegrationScene
     {
     public:
-        IndexArray32BitScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        IndexArray32BitScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         void create16BitIndexArray(ramses::GeometryBinding* geometry);
         void create32BitIndexArray(ramses::GeometryBinding* geometry);
@@ -32,7 +32,7 @@ namespace ramses_internal
         };
 
     private:
-        void createGeometry(ramses::Effect& effect,UInt32 state);
+        void createGeometry(ramses::Effect& effect,uint32_t state);
 
         ramses::MeshNode* m_meshNode;
     };

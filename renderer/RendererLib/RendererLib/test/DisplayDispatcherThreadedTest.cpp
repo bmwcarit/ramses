@@ -43,7 +43,7 @@ namespace ramses_internal
         {
             m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, DisplayConfig{}, nullptr });
 
-            EXPECT_CALL(m_displayDispatcher, createDisplayBundle(displayHandle));
+            EXPECT_CALL(m_displayDispatcher, createDisplayBundle(displayHandle, _));
             update();
             ASSERT_TRUE(m_displayDispatcher.getDisplayBundleMock<MOCK_TYPE>(displayHandle) != nullptr);
             ASSERT_TRUE(m_displayDispatcher.getDisplayThreadMock<MOCK_TYPE>(displayHandle) != nullptr);
@@ -132,67 +132,78 @@ namespace ramses_internal
         createDisplay(display2);
     }
 
-    TEST_F(ADisplayDispatcherThreadedStrict, canChangeMinFrameDurationForAllDisplays)
+    TEST_F(ADisplayDispatcherThreadedStrict, newDisplaysUseDefaultMinFrameDuration)
     {
+        m_displayDispatcher.m_expectedMinFrameDurationForNextDisplayCreation = DefaultMinFrameDuration;
+
         constexpr DisplayHandle display1{ 1u };
         constexpr DisplayHandle display2{ 2u };
         createDisplay(display1);
         createDisplay(display2);
 
-        constexpr std::chrono::microseconds minFrame{ 50 };
-        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display1), setMinFrameDuration(minFrame));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display2), setMinFrameDuration(minFrame));
-        m_displayDispatcher.setMinFrameDuration(minFrame);
+        EXPECT_EQ(DefaultMinFrameDuration, m_displayDispatcher.getMinFrameDuration(display1));
+        EXPECT_EQ(DefaultMinFrameDuration, m_displayDispatcher.getMinFrameDuration(display2));
     }
 
-    TEST_F(ADisplayDispatcherThreadedStrict, newDisplayWillUseLastGeneralSetMinFrameDuration)
+    TEST_F(ADisplayDispatcherThreadedStrict, canChangeMinFrameDuration)
     {
         constexpr DisplayHandle display1{ 1u };
         constexpr DisplayHandle display2{ 2u };
         createDisplay(display1);
-
-        constexpr std::chrono::microseconds minFrame{ 50 };
-        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display1), setMinFrameDuration(minFrame));
-        m_displayDispatcher.setMinFrameDuration(minFrame);
-        m_displayDispatcher.m_expectedMinFrameDurationForNextDisplayCreation = minFrame;
-
         createDisplay(display2);
+        EXPECT_EQ(DefaultMinFrameDuration, m_displayDispatcher.getMinFrameDuration(display1));
+        EXPECT_EQ(DefaultMinFrameDuration, m_displayDispatcher.getMinFrameDuration(display2));
+
+        constexpr std::chrono::microseconds minFrame1{ 50 };
+        constexpr std::chrono::microseconds minFrame2{ 20 };
+
+        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display1), setMinFrameDuration(minFrame1));
+        m_displayDispatcher.setMinFrameDuration(minFrame1, display1);
+        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display2), setMinFrameDuration(minFrame2));
+        m_displayDispatcher.setMinFrameDuration(minFrame2, display2);
+
+        EXPECT_EQ(minFrame1, m_displayDispatcher.getMinFrameDuration(display1));
+        EXPECT_EQ(minFrame2, m_displayDispatcher.getMinFrameDuration(display2));
     }
 
-    TEST_F(ADisplayDispatcherThreadedStrict, correctDisplayWillPreferDisplaySpecificMinFrameDuration)
+    TEST_F(ADisplayDispatcherThreadedStrict, newDisplayWillUsePreviouslySetFrameDuration)
     {
         constexpr DisplayHandle display1{ 1u };
         constexpr DisplayHandle display2{ 2u };
+
+        constexpr std::chrono::microseconds minFrame1{ 50 };
+        constexpr std::chrono::microseconds minFrame2{ 20 };
+
+        // displays not created yet but can set FPS limit already, and independently from each other
+        m_displayDispatcher.setMinFrameDuration(minFrame1, display1);
+        m_displayDispatcher.setMinFrameDuration(minFrame2, display2);
+        EXPECT_EQ(minFrame1, m_displayDispatcher.getMinFrameDuration(display1));
+        EXPECT_EQ(minFrame2, m_displayDispatcher.getMinFrameDuration(display2));
+
+        m_displayDispatcher.m_expectedMinFrameDurationForNextDisplayCreation = minFrame1;
         createDisplay(display1);
 
-        constexpr std::chrono::microseconds generalMinFrameTime{ 50 };
-        constexpr std::chrono::microseconds specificForDisplay2{ 1234 };
-        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display1), setMinFrameDuration(generalMinFrameTime));
-        m_displayDispatcher.setMinFrameDuration(generalMinFrameTime);
-        m_displayDispatcher.setMinFrameDuration(specificForDisplay2, display2);
-
-        m_displayDispatcher.m_expectedMinFrameDurationForNextDisplayCreation = specificForDisplay2;
+        m_displayDispatcher.m_expectedMinFrameDurationForNextDisplayCreation = minFrame2;
         createDisplay(display2);
+
+        EXPECT_EQ(minFrame1, m_displayDispatcher.getMinFrameDuration(display1));
+        EXPECT_EQ(minFrame2, m_displayDispatcher.getMinFrameDuration(display2));
     }
 
-    TEST_F(ADisplayDispatcherThreadedStrict, canUpdateMinFrameDurationAfterCreation)
+    TEST_F(ADisplayDispatcherThreadedStrict, canGetMinFrameDurationEvenIfDisplayDestroyed) // not a useful feature but documented behavior
     {
         constexpr DisplayHandle display1{ 1u };
-        constexpr DisplayHandle display2{ 2u };
+        constexpr std::chrono::microseconds minFrame1{ 50 };
+
+        m_displayDispatcher.m_expectedMinFrameDurationForNextDisplayCreation = DefaultMinFrameDuration;
         createDisplay(display1);
-        createDisplay(display2);
 
-        constexpr std::chrono::microseconds generalMinFrameTime{ 50 };
-        constexpr std::chrono::microseconds displaySpecificTime{ 1234 };
-        // set general (not display specific) sets on both threads
-        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display1), setMinFrameDuration(generalMinFrameTime));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display2), setMinFrameDuration(generalMinFrameTime));
-        m_displayDispatcher.setMinFrameDuration(generalMinFrameTime);
+        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display1), setMinFrameDuration(minFrame1));
+        m_displayDispatcher.setMinFrameDuration(minFrame1, display1);
+        EXPECT_EQ(minFrame1, m_displayDispatcher.getMinFrameDuration(display1));
 
-        // set for specific display only changes for correct thread
-        EXPECT_CALL(*m_displayDispatcher.getDisplayThreadMock(display2), setMinFrameDuration(displaySpecificTime));
-        m_displayDispatcher.setMinFrameDuration(displaySpecificTime, display2);
-
+        destroyDisplay(display1);
+        EXPECT_EQ(minFrame1, m_displayDispatcher.getMinFrameDuration(display1));
     }
 
     TEST_F(ADisplayDispatcherThreadedStrict, canStartStopUpdatingAllDisplays)
@@ -230,7 +241,7 @@ namespace ramses_internal
 
         // due to threading there will be calls right after creation, not purpose of this test, just ignore them
         m_displayDispatcher.m_useNiceMock = true;
-        EXPECT_CALL(m_displayDispatcher, createDisplayBundle(_)).Times(AnyNumber());
+        EXPECT_CALL(m_displayDispatcher, createDisplayBundle(_, _)).Times(AnyNumber());
 
         std::thread t([&]
         {
@@ -260,7 +271,7 @@ namespace ramses_internal
 
         // due to threading there will be calls right after creation, not purpose of this test, just ignore them
         m_displayDispatcher.m_useNiceMock = true;
-        EXPECT_CALL(m_displayDispatcher, createDisplayBundle(_)).Times(AnyNumber());
+        EXPECT_CALL(m_displayDispatcher, createDisplayBundle(_, _)).Times(AnyNumber());
 
         std::thread t([&]
         {
@@ -269,7 +280,7 @@ namespace ramses_internal
             {
                 m_displayDispatcher.stopDisplayThreadsUpdating();
                 m_displayDispatcher.startDisplayThreadsUpdating();
-                m_displayDispatcher.setMinFrameDuration(DefaultMinFrameDuration);
+                m_displayDispatcher.setMinFrameDuration(DefaultMinFrameDuration, DisplayHandle{ 1u });
                 m_displayDispatcher.setLoopMode(ELoopMode::UpdateOnly);
             }
         });

@@ -19,42 +19,40 @@ namespace ramses_internal
     class Window_Base : public IWindow
     {
     public:
-        Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
+        Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
 
-        Bool canRenderNewFrame() const override;
+        [[nodiscard]] bool canRenderNewFrame() const override;
         void frameRendered() override;
-        Int32 getPosX() const override final;
-        Int32 getPosY() const override final;
+        [[nodiscard]] int32_t getPosX() const final override;
+        [[nodiscard]] int32_t getPosY() const final override;
 
-        UInt32 getWidth() const override final;
-        UInt32 getHeight() const override final;
-        Float  getAspectRatio() const override final;
+        [[nodiscard]] uint32_t getWidth() const final override;
+        [[nodiscard]] uint32_t getHeight() const final override;
+        [[nodiscard]] float  getAspectRatio() const final override;
 
-        const String& getTitle() const override final;
-        void setTitle(const String& title) override;
+        [[nodiscard]] const std::string& getTitle() const final override;
+        void setTitle(std::string_view title) override;
 
-        UInt32 getMSAASampleCount() const;
+        [[nodiscard]] uint32_t getMSAASampleCount() const;
 
-        virtual IntegrityRGLDeviceUnit getIntegrityRGLDeviceUnit() const final;
-        virtual WaylandIviSurfaceId getWaylandIviSurfaceID() const override final;
+        [[nodiscard]] WaylandIviSurfaceId getWaylandIviSurfaceID() const final override;
 
-        virtual bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
+        bool setExternallyOwnedWindowSize(uint32_t width, uint32_t height) override;
 
     protected:
-        String m_windowName;
+        std::string m_windowName;
         IWindowEventHandler& m_eventHandler;
-        const Bool m_fullscreen;
-        const Bool m_borderless;
-        UInt32 m_msaaSampleCount;
+        const bool m_fullscreen;
+        const bool m_borderless;
+        uint32_t m_msaaSampleCount;
 
-        UInt32 m_width;
-        UInt32 m_height;
-        Int32 m_posX;
-        Int32 m_posY;
+        uint32_t m_width;
+        uint32_t m_height;
+        int32_t m_posX;
+        int32_t m_posY;
 
-        const IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         const WaylandIviSurfaceId m_waylandIviSurfaceID;
-        const Bool m_resizable;
+        const bool m_resizable;
     };
 }
 

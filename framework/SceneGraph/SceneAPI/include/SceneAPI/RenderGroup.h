@@ -18,7 +18,7 @@ namespace ramses_internal
     struct RenderableOrderEntry
     {
         RenderableHandle renderable;
-        Int32            order;
+        int32_t            order;
     };
     using RenderableOrderVector = std::vector<RenderableOrderEntry>;
 

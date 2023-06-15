@@ -61,7 +61,7 @@ namespace ramses_internal
 
         const EDataSlotType providerSlotType = DataLinkUtils::GetDataSlot(providerSceneId, providerSlotHandle, m_rendererScenes).type;
         const EDataSlotType consumerSlotType = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_rendererScenes).type;
-        Bool linkSuccess = false;
+        bool linkSuccess = false;
 
         if (providerSlotType == EDataSlotType_TransformationProvider && consumerSlotType == EDataSlotType_TransformationConsumer)
         {
@@ -145,7 +145,7 @@ namespace ramses_internal
         }
 
         const EDataSlotType consumerSlotType = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_rendererScenes).type;
-        Bool unlinkSuccess = false;
+        bool unlinkSuccess = false;
         SceneId providerSceneId;
 
         if (consumerSlotType == EDataSlotType_TransformationConsumer)

@@ -8,7 +8,6 @@
 
 #include "Components/ResourceStorage.h"
 #include "Components/ResourceDeleterCallingCallback.h"
-#include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal

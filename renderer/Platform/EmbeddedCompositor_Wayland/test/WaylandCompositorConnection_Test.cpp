@@ -26,7 +26,7 @@ namespace ramses_internal
         {
         }
 
-        ~AWaylandCompositorConnection()
+        ~AWaylandCompositorConnection() override
         {
             if (nullptr != m_waylandCompositorConnection)
             {

@@ -13,8 +13,8 @@
 
 namespace ramses
 {
-    TextureCubeImpl::TextureCubeImpl(ramses_internal::ResourceHashUsage texture, SceneImpl& scene, const char* name)
-        : ResourceImpl(ERamsesObjectType_TextureCube, std::move(texture), scene, name)
+    TextureCubeImpl::TextureCubeImpl(ramses_internal::ResourceHashUsage texture, SceneImpl& scene, std::string_view name)
+        : ResourceImpl(ERamsesObjectType::TextureCube, std::move(texture), scene, name)
         , m_size(0)
         , m_textureFormat(ETextureFormat::Invalid)
     {

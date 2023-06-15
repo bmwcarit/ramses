@@ -34,7 +34,7 @@ namespace ramses_internal
     namespace ramsh_utils
     {
         // returns type N of a list of types
-        template<Int32 N, typename T1, typename T2 = void, typename T3 = void, typename T4 = void, typename T5 = void>
+        template<int32_t N, typename T1, typename T2 = void, typename T3 = void, typename T4 = void, typename T5 = void>
         struct SelectType;
 
         template<typename T1, typename T2, typename T3, typename T4, typename T5>
@@ -43,7 +43,7 @@ namespace ramses_internal
             using type = T1;
         };
 
-        template<Int32 N, typename T1, typename T2, typename T3, typename T4, typename T5>
+        template<int32_t N, typename T1, typename T2, typename T3, typename T4, typename T5>
         struct SelectType
         {
             using type = typename SelectType<N - 1, T2, T3, T4, T5>::type;

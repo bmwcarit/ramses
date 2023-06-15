@@ -1,0 +1,41 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+include "LogicObject.fbs";
+
+namespace rlogic_serialization;
+
+enum EDataArrayType:uint8
+{
+    Float = 0,
+    Vec2f = 1,
+    Vec3f = 2,
+    Vec4f = 3,
+    Int32 = 4,
+    Vec2i = 5,
+    Vec3i = 6,
+    Vec4i = 7,
+    FloatArray = 8
+}
+
+table floatArr { data:[float]; }
+table intArr { data:[int32]; }
+
+union ArrayUnion
+{
+    floatArr,
+    intArr
+}
+
+table DataArray
+{
+    base:LogicObject;
+    type:EDataArrayType;
+    data:ArrayUnion;
+    numElements:uint32;   // all vector and array types are stored as flattened arrays, store the total number of elements extra
+}

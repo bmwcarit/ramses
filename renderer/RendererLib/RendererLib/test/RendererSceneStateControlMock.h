@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         RendererSceneStateControlMock();
-        virtual ~RendererSceneStateControlMock() override;
+        ~RendererSceneStateControlMock() override;
 
         MOCK_METHOD(void, handleSceneSubscriptionRequest, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneUnsubscriptionRequest, (SceneId sceneId, bool indirect), (override));

@@ -10,7 +10,7 @@
 
 namespace ramses
 {
-    ClientObjectImpl::ClientObjectImpl(RamsesClientImpl& client, ERamsesObjectType type, const char* name)
+    ClientObjectImpl::ClientObjectImpl(RamsesClientImpl& client, ERamsesObjectType type, std::string_view name)
         : RamsesObjectImpl(type, name)
         , m_client(client)
     {

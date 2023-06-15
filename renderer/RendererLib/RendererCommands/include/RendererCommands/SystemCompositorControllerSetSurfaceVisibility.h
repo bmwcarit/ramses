@@ -15,11 +15,11 @@
 namespace ramses_internal
 {
 
-    class SystemCompositorControllerSetSurfaceVisibility : public RamshCommandArgs<Int32, Int32>
+    class SystemCompositorControllerSetSurfaceVisibility : public RamshCommandArgs<int32_t, int32_t>
     {
     public:
         explicit SystemCompositorControllerSetSurfaceVisibility(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(Int32& surfaceId, Int32& visibility) const override;
+        bool execute(int32_t& surfaceId, int32_t& visibility) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

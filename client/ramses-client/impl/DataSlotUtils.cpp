@@ -15,7 +15,7 @@ namespace ramses_internal
     {
         bool HasDataSlotId(const ClientScene& scene, DataSlotId id)
         {
-            const UInt32 slotHandleCount = scene.getDataSlotCount();
+            const uint32_t slotHandleCount = scene.getDataSlotCount();
             for (DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
             {
                 if (scene.isDataSlotAllocated(slotHandle) && scene.getDataSlot(slotHandle).id == id)
@@ -29,7 +29,7 @@ namespace ramses_internal
 
         bool HasDataSlotIdForNode(const ClientScene& scene, NodeHandle nodeHandle)
         {
-            const UInt32 slotHandleCount = scene.getDataSlotCount();
+            const uint32_t slotHandleCount = scene.getDataSlotCount();
             for (DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
             {
                 if (scene.isDataSlotAllocated(slotHandle) && scene.getDataSlot(slotHandle).attachedNode == nodeHandle)
@@ -43,7 +43,7 @@ namespace ramses_internal
 
         bool HasDataSlotIdForDataObject(const ClientScene& scene, DataInstanceHandle dataRef)
         {
-            const UInt32 slotHandleCount = scene.getDataSlotCount();
+            const uint32_t slotHandleCount = scene.getDataSlotCount();
             for (DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
             {
                 if (scene.isDataSlotAllocated(slotHandle) &&
@@ -58,7 +58,7 @@ namespace ramses_internal
 
         bool HasDataSlotIdForTextureSampler(const ClientScene& scene, TextureSamplerHandle sampler)
         {
-            const UInt32 slotHandleCount = scene.getDataSlotCount();
+            const uint32_t slotHandleCount = scene.getDataSlotCount();
             for (DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
             {
                 if (scene.isDataSlotAllocated(slotHandle) &&
@@ -73,7 +73,7 @@ namespace ramses_internal
 
         bool HasDataSlotIdForTexture(const ClientScene& scene, const ResourceContentHash& texture)
         {
-            const UInt32 slotHandleCount = scene.getDataSlotCount();
+            const uint32_t slotHandleCount = scene.getDataSlotCount();
             for (DataSlotHandle slotHandle(0u); slotHandle < slotHandleCount; slotHandle++)
             {
                 if (scene.isDataSlotAllocated(slotHandle) &&

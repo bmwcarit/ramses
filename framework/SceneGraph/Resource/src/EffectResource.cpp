@@ -10,20 +10,41 @@
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Utils/BinaryOutputStream.h"
 #include "Utils/BinaryInputStream.h"
+#include "AppearanceEnumsImpl.h"
 
 namespace ramses_internal
 {
-    EffectResource::EffectResource(const String& vertexShader, const String& fragmentShader, const String& geometryShader,
-        absl::optional<EDrawMode> geometryShaderInputType, const EffectInputInformationVector& uniformInputs,
-        const EffectInputInformationVector& attributeInputs, const String& name, ResourceCacheFlag cacheFlag)
+    namespace
+    {
+        constexpr bool IsValidDrawmode(std::underlying_type_t<EDrawMode> value)
+        {
+            switch (static_cast<EDrawMode>(value))
+            {
+            case EDrawMode::Points:
+            case EDrawMode::Lines:
+            case EDrawMode::LineLoop:
+            case EDrawMode::Triangles:
+            case EDrawMode::TriangleStrip:
+            case EDrawMode::TriangleFan:
+            case EDrawMode::LineStrip:
+                return true;
+            }
+            return false;
+        }
+    }
+
+    EffectResource::EffectResource(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader,
+        std::optional<EDrawMode> geometryShaderInputType, const EffectInputInformationVector& uniformInputs,
+        const EffectInputInformationVector& attributeInputs, std::string_view name, ResourceCacheFlag cacheFlag)
         : ResourceBase(EResourceType_Effect, cacheFlag, name)
         , m_uniformInputs(uniformInputs)
         , m_attributeInputs(attributeInputs)
-        , m_fragmentShaderOffset(static_cast<UInt32>(vertexShader.size() + 1))
-        , m_geometryShaderOffset(m_fragmentShaderOffset+static_cast<UInt32>(fragmentShader.size() + 1))
+        , m_fragmentShaderOffset(static_cast<uint32_t>(vertexShader.size() + 1))
+        , m_geometryShaderOffset(m_fragmentShaderOffset+static_cast<uint32_t>(fragmentShader.size() + 1))
         , m_geometryShaderInputType(geometryShaderInputType)
     {
-        const UInt32 dataLength = static_cast<UInt32>(vertexShader.size() + 1 + fragmentShader.size() + 1 + geometryShader.size() + 1); // including 3x terminating '0'
+        assert((geometryShader.empty() != geometryShaderInputType.has_value()));
+        const uint32_t dataLength = static_cast<uint32_t>(vertexShader.size() + 1 + fragmentShader.size() + 1 + geometryShader.size() + 1); // including 3x terminating '0'
         ResourceBlob blob(dataLength);
         std::memcpy(blob.data(), vertexShader.c_str(), vertexShader.size() + 1);
         std::memcpy(blob.data() + m_fragmentShaderOffset, fragmentShader.c_str(), fragmentShader.size() + 1);
@@ -31,8 +52,8 @@ namespace ramses_internal
         setResourceData(std::move(blob));
     }
 
-    EffectResource::EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, absl::optional<EDrawMode> geometryShaderInputType,
-        const String& name, UInt32 fragmentShaderOffset, UInt32 geometryShaderOffset, ResourceCacheFlag cacheFlag)
+    EffectResource::EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, std::optional<EDrawMode> geometryShaderInputType,
+        std::string_view name, uint32_t fragmentShaderOffset, uint32_t geometryShaderOffset, ResourceCacheFlag cacheFlag)
         : ResourceBase(EResourceType_Effect, cacheFlag, name)
         , m_uniformInputs(uniformInputs)
         , m_attributeInputs(attributeInputs)
@@ -63,10 +84,8 @@ namespace ramses_internal
         return data + m_geometryShaderOffset;
     }
 
-    absl::optional<EDrawMode> EffectResource::getGeometryShaderInputType() const
+    std::optional<EDrawMode> EffectResource::getGeometryShaderInputType() const
     {
-        // TODO (backported) once 27 merged to master, consider if we want to add few asserts in this class that
-        // geometry shader input is not nullopt IFF geometry shader is set (for additional safety)
         return m_geometryShaderInputType;
     }
 
@@ -80,25 +99,25 @@ namespace ramses_internal
         return m_attributeInputs;
     }
 
-    DataFieldHandle EffectResource::getUniformDataFieldHandleByName(const String& name) const
+    DataFieldHandle EffectResource::getUniformDataFieldHandleByName(std::string_view name) const
     {
-        for (UInt i = 0; i < m_uniformInputs.size(); ++i)
+        for (size_t i = 0; i < m_uniformInputs.size(); ++i)
         {
             if (m_uniformInputs[i].inputName == name)
             {
-                return DataFieldHandle(static_cast<UInt32>(i));
+                return DataFieldHandle(static_cast<uint32_t>(i));
             }
         }
         return DataFieldHandle::Invalid();
     }
 
-    DataFieldHandle EffectResource::getAttributeDataFieldHandleByName(const String& name) const
+    DataFieldHandle EffectResource::getAttributeDataFieldHandleByName(std::string_view name) const
     {
-        for (UInt i = 0; i < m_attributeInputs.size(); ++i)
+        for (size_t i = 0; i < m_attributeInputs.size(); ++i)
         {
             if (m_attributeInputs[i].inputName == name)
             {
-                return DataFieldHandle(static_cast<UInt32>(i));
+                return DataFieldHandle(static_cast<uint32_t>(i));
             }
         }
         return DataFieldHandle::Invalid();
@@ -110,64 +129,61 @@ namespace ramses_internal
         WriteInputVector(output, m_attributeInputs);
         output << m_fragmentShaderOffset;
         output << m_geometryShaderOffset;
-
-        // TODO (backported) enable this once 27 merged to master
-        // Also drag in the geometry shader offset inside the if below
-        //if (m_geometryShaderInputType)
-        //{
-        //    output << static_cast<uint8_t>(*m_geometryShaderInputType);
-        //}
-        //else
-        //{
-        //    output << static_cast<uint8_t>(EDrawMode::NUMBER_OF_ELEMENTS);
-        //}
+        if (m_geometryShaderInputType.has_value())
+        {
+            output << m_geometryShaderInputType.value();
+        }
+        else
+        {
+            constexpr auto maxValue = std::numeric_limits<std::underlying_type_t<EDrawMode>>::max();
+            static_assert(ramses::DrawModeNames.size() < maxValue, "Last enum value is reserved");
+            output << maxValue;
+        }
     }
 
-    std::unique_ptr<IResource> EffectResource::CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name)
+    std::unique_ptr<IResource> EffectResource::CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, std::string_view name)
     {
         EffectInputInformationVector uniformInputs;
         ReadInputVector(input, uniformInputs);
         EffectInputInformationVector attributeInputs;
         ReadInputVector(input, attributeInputs);
 
-        UInt32 fragementShaderOffset = 0;
+        uint32_t fragementShaderOffset = 0;
         input >> fragementShaderOffset;
-        UInt32 geometryShaderOffset = 0;
+        uint32_t geometryShaderOffset = 0;
         input >> geometryShaderOffset;
+        std::underlying_type_t<EDrawMode> gsInputTypeValue = 0;
+        input >> gsInputTypeValue;
 
-        absl::optional<EDrawMode> geometryShaderInputTypeOpt;
-        // TODO (backported) enable this once 27 merged to master
-        //uint8_t geometryShaderInputTypeInt = 0;
-        //input >> geometryShaderInputTypeInt;
-        //if (geometryShaderInputTypeInt != static_cast<uint8_t>(EDrawMode::NUMBER_OF_ELEMENTS))
-        //{
-        //    geometryShaderInputTypeOpt = static_cast<EDrawMode>(geometryShaderInputTypeInt);
-        //}
-
-        return std::unique_ptr<EffectResource>(new EffectResource(uniformInputs, attributeInputs, geometryShaderInputTypeOpt, name, fragementShaderOffset, geometryShaderOffset, cacheFlag));
+        std::optional<EDrawMode> gsInputType;
+        if (IsValidDrawmode(gsInputTypeValue))
+        {
+            gsInputType = static_cast<EDrawMode>(gsInputTypeValue);
+        }
+        return std::unique_ptr<EffectResource>(new EffectResource(uniformInputs, attributeInputs, gsInputType, name, fragementShaderOffset, geometryShaderOffset, cacheFlag));
     }
 
     void EffectResource::WriteInputVector(IOutputStream& stream, const EffectInputInformationVector& inputVector)
     {
-        UInt32 length = static_cast<UInt32>(inputVector.size());
+        uint32_t length = static_cast<uint32_t>(inputVector.size());
         stream << length;
-        for (UInt32 i = 0; i < length; ++i)
+        for (uint32_t i = 0; i < length; ++i)
         {
             const EffectInputInformation& input = inputVector[i];
-            stream << input.inputName << input.elementCount << static_cast<UInt32>(input.dataType) << static_cast<UInt32>(input.semantics);
+            stream << input.inputName << input.elementCount << static_cast<uint32_t>(input.dataType) << static_cast<uint32_t>(input.semantics);
         }
     }
 
     void EffectResource::ReadInputVector(IInputStream& stream, EffectInputInformationVector& inputVector)
     {
-        UInt32 length;
+        uint32_t length;
         stream >> length;
         inputVector.reserve(length);
-        for (UInt32 i = 0; i < length; ++i)
+        for (uint32_t i = 0; i < length; ++i)
         {
             EffectInputInformation input;
-            UInt32 typeTmp;
-            UInt32 semanticTmp;
+            uint32_t typeTmp;
+            uint32_t semanticTmp;
             stream >> input.inputName >> input.elementCount >> typeTmp >> semanticTmp;
             input.dataType = static_cast<EDataType>(typeTmp);
             input.semantics = static_cast<EFixedSemantics>(semanticTmp);

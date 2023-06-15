@@ -52,8 +52,8 @@ namespace ramses_internal
         return 0;
     }
 
-    String Guid::toString() const
+    std::string Guid::toString() const
     {
-        return String{fmt::to_string(*this)};
+        return fmt::to_string(*this);
     }
 }

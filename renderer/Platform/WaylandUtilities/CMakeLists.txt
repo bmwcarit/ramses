@@ -6,24 +6,13 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    WaylandUtilities
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/WaylandUtilities/*.h
-    FILES_SOURCE            src/*.cpp
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
+    INCLUDE_PATHS           include
+    SRC_FILES               include/WaylandUtilities/*.h
+                            src/*.cpp
     DEPENDENCIES            ramses-renderer-lib
                             LinuxInput
                             wayland-server
@@ -32,25 +21,12 @@ ACME_MODULE(
 
 
 IF (${ramses-sdk_BUILD_TESTS})
-    ACME_MODULE(
-
-        #==========================================================================
-        # general module information
-        #==========================================================================
+    createModule(
         NAME                    WaylandTestUtils
         TYPE                    STATIC_LIBRARY
-
-        #==========================================================================
-        # files of this module
-        #==========================================================================
-
-        INCLUDE_BASE            WaylandTestUtils
-        FILES_PRIVATE_HEADER    WaylandTestUtils/*.h
-        FILES_SOURCE            WaylandTestUtils/*.cpp
-
-        #==========================================================================
-        # dependencies
-        #==========================================================================
+        INCLUDE_PATHS           WaylandTestUtils
+        SRC_FILES               WaylandTestUtils/*.h
+                                WaylandTestUtils/*.cpp
         DEPENDENCIES            WaylandUtilities
                                 ramses-gmock
     )

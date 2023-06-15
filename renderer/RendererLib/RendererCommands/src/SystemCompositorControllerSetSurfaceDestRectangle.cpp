@@ -24,7 +24,7 @@ namespace ramses_internal
         getArgument<4>().setDescription("height");
     }
 
-    Bool SystemCompositorControllerSetSurfaceDestRectangle::execute(Int32& surfaceId, Int32& x, Int32& y, Int32& width, Int32& height) const
+    bool SystemCompositorControllerSetSurfaceDestRectangle::execute(int32_t& surfaceId, int32_t& x, int32_t& y, int32_t& width, int32_t& height) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCSetIviSurfaceDestRectangle{ WaylandIviSurfaceId(surfaceId), x, y, width ,height });
         return true;

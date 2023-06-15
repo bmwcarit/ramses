@@ -18,18 +18,21 @@ extern "C"
 #include "Utils/LogLevel.h"
 #include "Utils/LogMessage.h"
 #include "Utils/InplaceStringTokenizer.h"
+
 #include <cassert>
+#include <string>
 
 namespace ramses_internal
 {
     DltAdapterImpl::DltAdapterImpl()
-        : m_logLevelChangeCallback([](const String&, int) {})
+        : m_logLevelChangeCallback([](const std::string&, int) {})
     {
     }
 
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     void DltAdapterImpl::DltLogLevelChangedCallback(char context_id[DLT_ID_SIZE], uint8_t log_level, uint8_t /*trace_status*/)
     {
-        const String contextIDString(context_id, 0, DLT_ID_SIZE - 1); //set end value as passed char-array is not null-terminated
+        const std::string contextIDString(context_id, 0, DLT_ID_SIZE - 1); //set end value as passed char-array is not null-terminated
         getDltAdapter()->m_logLevelChangeCallback(contextIDString, log_level);
     }
 
@@ -101,7 +104,7 @@ namespace ramses_internal
             return true;
         }
 
-        UInt maxLineCapacity = 130u;
+        size_t maxLineCapacity = 130u;
 #ifdef DLT_MESSAGE_MAX_SIZE
         maxLineCapacity = DLT_MESSAGE_MAX_SIZE;
 #elif DLT_USER_BUF_MAX_SIZE
@@ -126,7 +129,7 @@ namespace ramses_internal
         else
         {
             // create modifyable copy of msg
-            String s(msgData, 0, msgLength);
+            std::string s(msgData, 0, msgLength);
             InplaceStringTokenizer::TokenizeToCStrings(s, maxLineCapacity, '\n',
                 [&](const char* tok) {
                     if (tok && *tok != 0)
@@ -141,8 +144,8 @@ namespace ramses_internal
         return true;
     }
 
-    bool DltAdapterImpl::initialize(const String& appId, const String& appDescription, bool registerApplication,
-                                    const std::function<void(const String&, int)>& logLevelChangeCallback,
+    bool DltAdapterImpl::initialize(const std::string& appId, const std::string& appDescription, bool registerApplication,
+                                    const std::function<void(const std::string&, int)>& logLevelChangeCallback,
                                     const std::vector<LogContext*>& contexts, bool pushLogLevelsToDaemon)
     {
         if (m_initialized)
@@ -226,7 +229,7 @@ namespace ramses_internal
             DLT_UNREGISTER_APP();
         }
 
-        m_logLevelChangeCallback = [](const String&, int) {};
+        m_logLevelChangeCallback = [](const std::string&, int) {};
         m_appRegistered = false;
         m_initialized = false;
     }
@@ -251,7 +254,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool DltAdapterImpl::transmitFile(LogContext& ctx, const String& uri, bool deleteFile)
+    bool DltAdapterImpl::transmitFile(LogContext& ctx, const std::string& uri, bool deleteFile)
     {
         if (!m_initialized)
         {
@@ -276,7 +279,7 @@ namespace ramses_internal
         m_thread.join();
     }
 
-    bool DltAdapterImpl::FileTransferWorker::transmitFile(LogContext& ctx, const String& uri, bool deleteFile)
+    bool DltAdapterImpl::FileTransferWorker::transmitFile(LogContext& ctx, const std::string& uri, bool deleteFile)
     {
         if (uri.size() == 0 || ctx.getUserData() == nullptr)
         {

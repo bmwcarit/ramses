@@ -31,7 +31,7 @@ namespace ramses_internal
             EXPECT_TRUE(isSceneKnown(scene));
         }
 
-        void checkNumberOfKnownScenes(UInt32 expectedNumber) const
+        void checkNumberOfKnownScenes(uint32_t expectedNumber) const
         {
             SceneIdVector knownScenes;
             sceneStateInfo.getKnownSceneIds(knownScenes);
@@ -42,7 +42,7 @@ namespace ramses_internal
         SceneStateInfo sceneStateInfo;
 
     private:
-        Bool isSceneKnown(const SceneId scene) const
+        [[nodiscard]] bool isSceneKnown(const SceneId  scene) const
         {
             SceneIdVector knownScenes;
             sceneStateInfo.getKnownSceneIds(knownScenes);

@@ -10,7 +10,6 @@
 #define RAMSES_DLTADAPTERDUMMY_H
 
 #include "DltLogAppender/IDltAdapter.h"
-#include "Collections/String.h"
 
 namespace ramses_internal
 {
@@ -35,13 +34,13 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool logMessage(const LogMessage&) override
+        bool logMessage(const LogMessage&) override
         {
             return true;
         }
 
-        bool initialize(const String& /*id*/, const String& /*description*/, bool /*registerApplication*/,
-                        const std::function<void(const String&, int)>& /*logLevelChangeCallback*/,
+        bool initialize(const std::string& /*id*/, const std::string& /*description*/, bool /*registerApplication*/,
+                        const std::function<void(const std::string&, int)>& /*logLevelChangeCallback*/,
                         const std::vector<LogContext*>& /*contexts*/, bool /*pushLogLevelsToDaemon*/) override
         {
             return true;
@@ -49,24 +48,24 @@ namespace ramses_internal
 
         void uninitialize() override {}
 
-        virtual bool registerInjectionCallback(LogContext*, uint32_t, int(*)(uint32_t, void*, uint32_t)) override
+        bool registerInjectionCallback(LogContext*, uint32_t, int(*)(uint32_t, void*, uint32_t)) override
         {
             return true;
         }
 
-        virtual bool transmitFile(LogContext&, const String&, bool) override
+        bool transmitFile(LogContext&, const std::string&, bool) override
         {
             return true;
         }
 
-        virtual bool isInitialized() override
+        bool isInitialized() override
         {
             return true;
         }
 
     private:
         DltAdapterDummy() {};
-        virtual ~DltAdapterDummy() override {};
+        ~DltAdapterDummy() override {};
     };
 }
 #endif // RAMSES_DLTADAPTERDUMMY_H

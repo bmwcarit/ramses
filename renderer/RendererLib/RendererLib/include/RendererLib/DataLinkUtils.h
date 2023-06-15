@@ -26,7 +26,7 @@ namespace ramses_internal
     inline DataSlotHandle DataLinkUtils::GetDataSlotHandle(SceneId sceneId, DataSlotId slotId, const RendererScenes& scenes)
     {
         const IScene& scene = scenes.getScene(sceneId);
-        const UInt32 slotCount = scene.getDataSlotCount();
+        const uint32_t slotCount = scene.getDataSlotCount();
         for (DataSlotHandle slotHandle(0u); slotHandle < slotCount; ++slotHandle)
         {
             if (scene.isDataSlotAllocated(slotHandle) &&

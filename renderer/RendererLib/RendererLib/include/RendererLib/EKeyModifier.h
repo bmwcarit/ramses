@@ -10,7 +10,8 @@
 #define RAMSES_EKEYMODIFIER_H
 
 #include "Common/BitForgeMacro.h"
-#include "Collections/String.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -25,9 +26,9 @@ namespace ramses_internal
         EKeyModifier_Numpad     = BIT(4u)
     };
 
-    static inline String KeyModifierToString(UInt32 flags)
+    static inline std::string KeyModifierToString(uint32_t flags)
     {
-        String s = "(";
+        std::string s = "(";
         if (flags == EKeyModifier_NoModifier)
         {
             s.append("EKeyModifier_NoModifier");

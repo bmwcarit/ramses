@@ -22,7 +22,7 @@ namespace ramses_internal
         Rendered,
     };
 
-    static const char* RendererSceneStateNames[] =
+    const std::array RendererSceneStateNames =
     {
         "Unavailable",
         "Available",

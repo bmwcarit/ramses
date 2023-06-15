@@ -15,10 +15,11 @@
  * @brief Basic Renderpasses Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel_Latest};
+    ramses::RamsesFramework framework(config);
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-renderpasses"));
     framework.connect();
 
@@ -26,11 +27,11 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic renderpasses scene");
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -0.5f, 0.f, -1.f, 0.5f, 0.f, -1.f, -0.5f, 1.f, -1.f, 0.5f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+    const std::array<ramses::vec3f, 4u> vertexPositionsData{ ramses::vec3f{-0.5f, 0.f, -1.f}, ramses::vec3f{0.5f, 0.f, -1.f}, ramses::vec3f{-0.5f, 1.f, -1.f}, ramses::vec3f{0.5f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(4u, vertexPositionsData.data());
 
-    uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    const std::array<uint16_t, 6u> indicesArray{ 0, 1, 2, 2, 1, 3 };
+    ramses::ArrayResource* indices = scene->createArrayResource(6u, indicesArray.data());
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-renderpasses.vert");
@@ -45,7 +46,7 @@ int main(int argc, char* argv[])
     // every render pass needs a camera to define rendering parameters
     // create camera with perspective projection
     ramses::Node* cameraTranslate = scene->createNode();
-    cameraTranslate->setTranslation(0.0f, 0.0f, 5.0f);
+    cameraTranslate->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::PerspectiveCamera* cameraA = scene->createPerspectiveCamera("perspective camera of renderpass A");
     cameraA->setParent(*cameraTranslate);
     cameraA->setFrustum(45.f, 640.f / 480.f, 0.1f, 100.f);
@@ -88,8 +89,8 @@ int main(int argc, char* argv[])
     // use two appearances, each with a different color for distinguishing the meshes
     ramses::UniformInput color;
     effectTex->findUniformInput("color", color);
-    appearanceA->setInputValueVector4f(color, 1.0f,0.0f,0.0f,1.0f);
-    appearanceB->setInputValueVector4f(color, 0.0f,1.0f,0.0f,1.0f);
+    appearanceA->setInputValue(color, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
+    appearanceB->setInputValue(color, ramses::vec4f{ 0.0f, 1.0f, 0.0f, 1.0f });
 
     ramses::MeshNode* meshNodeA = scene->createMeshNode("red triangle mesh node");
     meshNodeA->setAppearance(*appearanceA);

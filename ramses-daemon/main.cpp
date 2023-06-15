@@ -16,29 +16,45 @@
 #include "Utils/RamsesLogger.h"
 #include "Utils/StatisticCollection.h"
 #include <memory>
-
+#include "ramses-framework-cli.h"
 
 int main(int argc, const char* argv[])
 {
     using namespace ramses_internal;
 
-    ramses::RamsesFrameworkConfigImpl config(argc, argv);
-    GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false, true); // no framework used
+    ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel_Latest};
+    config.setDLTApplicationDescription("ramses-daemon");
+    config.setDLTApplicationID("SMGR");
+
+    CLI::App cli;
+    try
+    {
+        ramses::registerOptions(cli, config);
+    }
+    catch (const CLI::Error& error)
+    {
+        // configuration error
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
+
+    GetRamsesLogger().initialize(config.m_impl.get().loggerConfig, false, true); // no framework used
 
     auto commandExit = std::make_shared<RamshCommandExit>();
-    RamshStandardSetup ramsh(ramses::ERamsesShellType_Console, "Daemon");
+    RamshStandardSetup ramsh(ramses::ERamsesShellType::Console, "Daemon");
     ramsh.add(commandExit);
     ramsh.start();
 
     LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Starting Ramses Daemon");
-    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING <<
+    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: " << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION <<
              " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT);
 
     PlatformLock frameworkLock;
     StatisticCollectionFramework statisticCollection;
-    std::unique_ptr<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection, &ramsh));
+    std::unique_ptr<IDiscoveryDaemon> discoveryDaemon(CommunicationSystemFactory::ConstructDiscoveryDaemon(config.m_impl, frameworkLock, statisticCollection, &ramsh));
     discoveryDaemon->start();
-    LOG_INFO(CONTEXT_SMOKETEST, "Ramsh commands registered");
+    LOG_DEBUG(CONTEXT_SMOKETEST, "Ramsh commands registered");
 
     commandExit->waitForExitRequest();
 

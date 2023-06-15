@@ -30,7 +30,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RAMSH,"");
         LOG_INFO(CONTEXT_RAMSH,"           Appender Log Levels          ");
         LOG_INFO(CONTEXT_RAMSH,"----------------------------------------");
-        LOG_INFO(CONTEXT_RAMSH,"Console | " << static_cast<Int32>(consoleLogLevel) << " | " << RamsesLogger::GetLogLevelText(consoleLogLevel));
+        LOG_INFO(CONTEXT_RAMSH,"Console | " << static_cast<int32_t>(consoleLogLevel) << " | " << RamsesLogger::GetLogLevelText(consoleLogLevel));
         LOG_INFO(CONTEXT_RAMSH,"");
         LOG_INFO(CONTEXT_RAMSH,"           Context Log Levels           ");
         LOG_INFO(CONTEXT_RAMSH,"ID   | Name                  | V | Level");
@@ -40,7 +40,7 @@ namespace ramses_internal
         {
             LOG_INFO(CONTEXT_RAMSH, info.id << " | " << info.name
                         << " | "
-                        << static_cast<Int32>(info.logLevel)
+                        << static_cast<int32_t>(info.logLevel)
                         << " | "
                         << RamsesLogger::GetLogLevelText(info.logLevel));
         }

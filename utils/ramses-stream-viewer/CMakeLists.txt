@@ -6,9 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(ramses-stream-viewer
-    TYPE                BINARY
-    ENABLE_INSTALL      ON
-    FILES_SOURCE        src/*
-    DEPENDENCIES        ramses-client
+createModuleWithRenderer(
+    NAME            ramses-stream-viewer
+    TYPE            BINARY
+    ENABLE_INSTALL  ON
+    SRC_FILES       src/*
+    DEPENDENCIES    ramses-client ramses-cli
 )

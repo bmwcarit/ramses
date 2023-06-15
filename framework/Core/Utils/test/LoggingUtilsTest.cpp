@@ -20,7 +20,7 @@ namespace ramses_internal
             EFoo_Last
         };
 
-        const char* FooNames[] = {"EFoo_A", "EFoo_B"};
+        const std::array FooNames = {"EFoo_A", "EFoo_B"};
 
         ENUM_TO_STRING(EFoo, FooNames, EFoo_Last)
 
@@ -31,7 +31,7 @@ namespace ramses_internal
             Last
         };
 
-        const char* LogTestBarNames[] = {"X", "Y"};
+        const std::array LogTestBarNames = {"X", "Y"};
 
         enum class LogTestBarNoLast
         {

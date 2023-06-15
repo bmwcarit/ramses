@@ -11,7 +11,7 @@
 
 namespace ramses_internal
 {
-    void DisplaySetup::registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const Vector4& clearColor, Bool isOffscreenBuffer, Bool isInterruptible)
+    void DisplaySetup::registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const glm::vec4& clearColor, bool isOffscreenBuffer, bool isInterruptible)
     {
         assert(!isInterruptible || isOffscreenBuffer);
         assert(m_displayBuffers.find(displayBuffer) == m_displayBuffers.cend());
@@ -33,12 +33,12 @@ namespace ramses_internal
         return it->second;
     }
 
-    void DisplaySetup::setDisplayBufferToBeRerendered(DeviceResourceHandle displayBuffer, Bool rerender)
+    void DisplaySetup::setDisplayBufferToBeRerendered(DeviceResourceHandle displayBuffer, bool rerender)
     {
         getDisplayBufferInternal(displayBuffer).needsRerender = rerender;
     }
 
-    void DisplaySetup::assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, Int32 sceneOrder)
+    void DisplaySetup::assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, int32_t sceneOrder)
     {
         AssignedSceneInfo sceneInfo{ sceneId, sceneOrder, false };
         const auto displayBufferOld = findDisplayBufferSceneIsAssignedTo(sceneId);
@@ -50,7 +50,7 @@ namespace ramses_internal
 
         auto& bufferInfo = getDisplayBufferInternal(displayBuffer);
         auto& assignedScenes = bufferInfo.scenes;
-        const auto it = std::upper_bound(assignedScenes.begin(), assignedScenes.end(), sceneOrder, [](Int32 order, const AssignedSceneInfo& info) { return order < info.globalSceneOrder; });
+        const auto it = std::upper_bound(assignedScenes.begin(), assignedScenes.end(), sceneOrder, [](int32_t order, const AssignedSceneInfo& info) { return order < info.globalSceneOrder; });
         assignedScenes.insert(it, sceneInfo);
         bufferInfo.needsRerender = true;
     }
@@ -89,7 +89,7 @@ namespace ramses_internal
         return *it;
     }
 
-    void DisplaySetup::setSceneShown(SceneId sceneId, Bool show)
+    void DisplaySetup::setSceneShown(SceneId sceneId, bool show)
     {
         const auto displayBuffer = findDisplayBufferSceneIsAssignedTo(sceneId);
         findSceneInfo(sceneId, displayBuffer).shown = show;
@@ -101,7 +101,7 @@ namespace ramses_internal
         getDisplayBufferInternal(displayBuffer).clearFlags = clearFlags;
     }
 
-    void DisplaySetup::setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor)
+    void DisplaySetup::setClearColor(DeviceResourceHandle displayBuffer, const glm::vec4& clearColor)
     {
         auto& bufferInfo = getDisplayBufferInternal(displayBuffer);
         bufferInfo.clearColor = clearColor;

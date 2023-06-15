@@ -10,8 +10,7 @@
 #define RAMSES_WAYLANDEGLEXTENSIONPROCS_H
 
 #include "Utils/Warnings.h"
-#include "Collections/String.h"
-#include "Utils/StringUtils.h"
+#include "Collections/HashSet.h"
 
 WARNINGS_PUSH
 WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
@@ -25,6 +24,8 @@ WARNINGS_POP
 #ifdef RAMSES_HAS_EGLMESAEXT
 #include "EGL/eglmesaext.h"
 #endif
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -40,14 +41,14 @@ namespace ramses_internal
         EGLBoolean eglBindWaylandDisplayWL(wl_display* waylandDisplay) const;
         EGLBoolean eglUnbindWaylandDisplayWL(wl_display* waylandDisplay) const;
 
-        bool areExtensionsSupported()const;
-        bool areDmabufExtensionsSupported()const;
+        [[nodiscard]] bool areExtensionsSupported()const;
+        [[nodiscard]] bool areDmabufExtensionsSupported()const;
 
     private:
 
         void Init();
 
-        static bool CheckExtensionAvailable(const ramses_internal::StringSet& eglExtensions, const ramses_internal::String& extensionName);
+        static bool CheckExtensionAvailable(const ramses_internal::HashSet<std::string>& eglExtensions, const std::string& extensionName);
 
         const EGLDisplay m_eglDisplay;
 

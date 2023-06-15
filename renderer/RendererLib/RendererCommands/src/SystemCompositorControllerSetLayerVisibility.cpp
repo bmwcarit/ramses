@@ -21,7 +21,7 @@ namespace ramses_internal
         getArgument<1>().setDescription("visibility");
     }
 
-    Bool SystemCompositorControllerSetLayerVisibility::execute(Int32& layerId, Int32& visibility) const
+    bool SystemCompositorControllerSetLayerVisibility::execute(int32_t& layerId, int32_t& visibility) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCSetIviLayerVisibility{ WaylandIviLayerId(layerId), visibility != 0 });
         return true;

@@ -14,7 +14,9 @@
 #include "Types_GL.h"
 #include "DebugOutput.h"
 #include "SceneAPI/TextureSamplerStates.h"
+
 #include <unordered_map>
+#include <string>
 
 namespace ramses_internal
 {
@@ -26,120 +28,118 @@ namespace ramses_internal
     class Device_GL : public Device_Base
     {
     public:
-        explicit Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded, IDeviceExtension* deviceExtension);
-        virtual ~Device_GL() override;
+        explicit Device_GL(IContext& context, IDeviceExtension* deviceExtension);
+        ~Device_GL() override;
 
-        Bool init();
+        bool init();
 
-        virtual EDeviceTypeId getDeviceTypeId() const override;
+        void drawIndexedTriangles(int32_t startOffset, int32_t elementCount, uint32_t instanceCount) override;
+        void drawTriangles         (int32_t startOffset, int32_t elementCount, uint32_t instanceCount) override;
 
-        virtual void drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
-        virtual void drawTriangles         (Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;
+        void clear                 (uint32_t clearFlags) override;
+        void colorMask             (bool r, bool g, bool b, bool a) override;
+        void clearColor            (const glm::vec4& clearColor) override;
+        void clearDepth            (float d) override;
+        void clearStencil          (int32_t s) override;
+        void depthFunc             (EDepthFunc func) override;
+        void depthWrite            (EDepthWrite flag) override;
+        void scissorTest           (EScissorTest state, const RenderState::ScissorRegion& region) override;
+        void blendFactors          (EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) override;
+        void blendColor            (const glm::vec4& color) override;
+        void blendOperations       (EBlendOperation operationColor, EBlendOperation operationAlpha) override;
+        void cullMode              (ECullMode mode) override;
+        void stencilFunc           (EStencilFunc func, uint8_t ref, uint8_t mask) override;
+        void stencilOp             (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
+        void drawMode              (EDrawMode mode) override;
+        void setViewport           (int32_t x, int32_t y, uint32_t width, uint32_t height) override;
 
-        virtual void clear                 (UInt32 clearFlags) override;
-        virtual void colorMask             (Bool r, Bool g, Bool b, Bool a) override;
-        virtual void clearColor            (const Vector4& clearColor) override;
-        virtual void clearDepth            (Float d) override;
-        virtual void clearStencil          (Int32 s) override;
-        virtual void depthFunc             (EDepthFunc func) override;
-        virtual void depthWrite            (EDepthWrite flag) override;
-        virtual void scissorTest           (EScissorTest state, const RenderState::ScissorRegion& region) override;
-        virtual void blendFactors          (EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) override;
-        virtual void blendColor            (const Vector4& color) override;
-        virtual void blendOperations       (EBlendOperation operationColor, EBlendOperation operationAlpha) override;
-        virtual void cullMode              (ECullMode mode) override;
-        virtual void stencilFunc           (EStencilFunc func, UInt8 ref, UInt8 mask) override;
-        virtual void stencilOp             (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
-        virtual void drawMode              (EDrawMode mode) override;
-        virtual void setViewport           (int32_t x, int32_t y, uint32_t width, uint32_t height) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const float*      value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::vec2*    value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::vec3*    value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::vec4*    value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const int32_t*      value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::ivec2*   value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::ivec3*   value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::ivec4*   value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::mat2*  value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::mat3*  value) override;
+        void setConstant(DataFieldHandle field, uint32_t count, const glm::mat4*  value) override;
 
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Float*      value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector2*    value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector3*    value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector4*    value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Int32*      value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector2i*   value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector3i*   value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector4i*   value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Matrix22f*  value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Matrix33f*  value) override;
-        virtual void setConstant(DataFieldHandle field, UInt32 count, const Matrix44f*  value) override;
+        void readPixels(uint8_t* buffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
-        virtual void readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height) override;
+        DeviceResourceHandle    allocateVertexBuffer  (uint32_t totalSizeInBytes) override;
+        void                    uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, uint32_t dataSize) override;
+        void                    deleteVertexBuffer    (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    allocateVertexBuffer  (UInt32 totalSizeInBytes) override;
-        virtual void                    uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
-        virtual void                    deleteVertexBuffer    (DeviceResourceHandle handle) override;
+        DeviceResourceHandle    allocateVertexArray   (const VertexArrayInfo& vertexArrayInfo) override;
+        void                    activateVertexArray   (DeviceResourceHandle handle) override;
+        void                    deleteVertexArray     (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    allocateVertexArray   (const VertexArrayInfo& vertexArrayInfo) override;
-        virtual void                    activateVertexArray   (DeviceResourceHandle handle) override;
-        virtual void                    deleteVertexArray     (DeviceResourceHandle handle) override;
+        DeviceResourceHandle    allocateIndexBuffer   (EDataType dataType, uint32_t sizeInBytes) override;
+        void                    uploadIndexBufferData (DeviceResourceHandle handle, const Byte* data, uint32_t dataSize) override;
+        void                    deleteIndexBuffer     (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    allocateIndexBuffer   (EDataType dataType, UInt32 sizeInBytes) override;
-        virtual void                    uploadIndexBufferData (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
-        virtual void                    deleteIndexBuffer     (DeviceResourceHandle handle) override;
+        std::unique_ptr<const GPUResource> uploadShader(const EffectResource& shader) override;
+        DeviceResourceHandle    registerShader      (std::unique_ptr<const GPUResource> shaderResource) override;
+        DeviceResourceHandle    uploadBinaryShader  (const EffectResource& shader, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) override;
+        bool                    getBinaryShader     (DeviceResourceHandle handleconst, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) override;
+        void                    deleteShader        (DeviceResourceHandle handle) override;
+        void                    activateShader      (DeviceResourceHandle handle) override;
 
-        virtual std::unique_ptr<const GPUResource> uploadShader(const EffectResource& shader) override;
-        virtual DeviceResourceHandle    registerShader      (std::unique_ptr<const GPUResource> shaderResource) override;
-        virtual DeviceResourceHandle    uploadBinaryShader  (const EffectResource& shader, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) override;
-        virtual Bool                    getBinaryShader     (DeviceResourceHandle handleconst, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) override;
-        virtual void                    deleteShader        (DeviceResourceHandle handle) override;
-        virtual void                    activateShader      (DeviceResourceHandle handle) override;
+        DeviceResourceHandle    allocateTexture2D   (uint32_t width, uint32_t height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, uint32_t mipLevelCount, uint32_t totalSizeInBytes) override;
+        DeviceResourceHandle    allocateTexture3D   (uint32_t width, uint32_t height, uint32_t depth, ETextureFormat textureFormat, uint32_t mipLevelCount, uint32_t totalSizeInBytes) override;
+        DeviceResourceHandle    allocateTextureCube (uint32_t faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, uint32_t mipLevelCount, uint32_t totalSizeInBytes) override;
+        DeviceResourceHandle    allocateExternalTexture() override;
+        DeviceResourceHandle    getEmptyExternalTexture() const override;
 
-        virtual DeviceResourceHandle    allocateTexture2D   (UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
-        virtual DeviceResourceHandle    allocateTexture3D   (UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
-        virtual DeviceResourceHandle    allocateTextureCube (UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes) override;
-        virtual DeviceResourceHandle    allocateExternalTexture() override;
-        virtual DeviceResourceHandle    getEmptyExternalTexture() const override;
+        void                    bindTexture         (DeviceResourceHandle handle) override;
+        void                    generateMipmaps     (DeviceResourceHandle handle) override;
+        void                    uploadTextureData   (DeviceResourceHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height, uint32_t depth, const Byte* data, uint32_t dataSize) override;
+        DeviceResourceHandle    uploadStreamTexture2D(DeviceResourceHandle handle, uint32_t width, uint32_t height, ETextureFormat format, const uint8_t* data, const TextureSwizzleArray& swizzle) override;
+        void                    deleteTexture       (DeviceResourceHandle handle) override;
+        void                    activateTexture     (DeviceResourceHandle handle, DataFieldHandle field) override;
+        int                     getTextureAddress   (DeviceResourceHandle handle) const override;
 
-        virtual void                    bindTexture         (DeviceResourceHandle handle) override;
-        virtual void                    generateMipmaps     (DeviceResourceHandle handle) override;
-        virtual void                    uploadTextureData   (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) override;
-        virtual DeviceResourceHandle    uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) override;
-        virtual void                    deleteTexture       (DeviceResourceHandle handle) override;
-        virtual void                    activateTexture     (DeviceResourceHandle handle, DataFieldHandle field) override;
-        virtual int                     getTextureAddress   (DeviceResourceHandle handle) const override;
+        DeviceResourceHandle    uploadRenderBuffer  (uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount) override;
+        void                    deleteRenderBuffer  (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    uploadRenderBuffer  (uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount) override;
-        virtual void                    deleteRenderBuffer  (DeviceResourceHandle handle) override;
+        DeviceResourceHandle    uploadDmaRenderBuffer   (uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
+        int                     getDmaRenderBufferFD    (DeviceResourceHandle handle) override;
+        uint32_t                getDmaRenderBufferStride(DeviceResourceHandle handle) override;
+        void                    destroyDmaRenderBuffer  (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    uploadDmaRenderBuffer   (UInt32 width, UInt32 height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
-        virtual int                     getDmaRenderBufferFD    (DeviceResourceHandle handle) override;
-        virtual uint32_t                getDmaRenderBufferStride(DeviceResourceHandle handle) override;
-        virtual void                    destroyDmaRenderBuffer  (DeviceResourceHandle handle) override;
+        void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) override;
 
-        virtual void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) override;
+        DeviceResourceHandle    getFramebufferRenderTarget() const override;
+        DeviceResourceHandle    uploadRenderTarget  (const DeviceHandleVector& renderBuffers) override;
+        void                    activateRenderTarget(DeviceResourceHandle handle) override;
+        void                    deleteRenderTarget(DeviceResourceHandle handle) override;
+        void                    discardDepthStencil() override;
 
-        virtual DeviceResourceHandle    getFramebufferRenderTarget() const override;
-        virtual DeviceResourceHandle    uploadRenderTarget  (const DeviceHandleVector& renderBuffers) override;
-        virtual void                    activateRenderTarget(DeviceResourceHandle handle) override;
-        virtual void                    deleteRenderTarget(DeviceResourceHandle handle) override;
-        virtual void                    discardDepthStencil() override;
+        void                    pairRenderTargetsForDoubleBuffering(const std::array<DeviceResourceHandle, 2>& renderTargets, const std::array<DeviceResourceHandle, 2>& colorBuffers) override;
+        void                    unpairRenderTargets(DeviceResourceHandle renderTarget) override;
+        void                    swapDoubleBufferedRenderTarget(DeviceResourceHandle renderTarget) override;
 
-        virtual void                    pairRenderTargetsForDoubleBuffering(DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2]) override;
-        virtual void                    unpairRenderTargets(DeviceResourceHandle renderTarget) override;
-        virtual void                    swapDoubleBufferedRenderTarget(DeviceResourceHandle renderTarget) override;
+        void                    blitRenderTargets   (DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, bool colorOnly) override;
 
-        virtual void                    blitRenderTargets   (DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, Bool colorOnly) override;
-
-        virtual void                    validateDeviceStatusHealthy() const override;
-        virtual Bool                    isDeviceStatusHealthy() const override;
-        virtual void                    getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const override;
-        virtual bool                    isExternalTextureExtensionSupported() const override;
+        void                    validateDeviceStatusHealthy() const override;
+        bool                    isDeviceStatusHealthy() const override;
+        void                    getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const override;
+        bool                    isExternalTextureExtensionSupported() const override;
 
 
-        virtual UInt32                  getTotalGpuMemoryUsageInKB() const override;
+        uint32_t                  getTotalGpuMemoryUsageInKB() const override;
 
-        virtual void                    flush() override;
+        void                    flush() override;
 
     private:
         DeviceResourceHandle        m_framebufferRenderTarget;
 
         struct RenderTargetPair
         {
-            DeviceResourceHandle renderTargets[2];
-            DeviceResourceHandle colorBuffers[2];
-            UInt8 readingIndex;
+            std::array<DeviceResourceHandle, 2> renderTargets;
+            std::array<DeviceResourceHandle, 2> colorBuffers;
+            uint8_t readingIndex;
         };
 
         std::vector<RenderTargetPair> m_pairedRenderTargets;
@@ -150,26 +150,23 @@ namespace ramses_internal
         uint32_t                    m_activeIndexArrayElementSizeBytes = 0u;
         uint32_t                    m_activeIndexArraySizeBytes = 0u;
 
-        const UInt8                 m_majorApiVersion;
-        const UInt8                 m_minorApiVersion;
-        const bool                  m_isEmbedded;
         DebugOutput                 m_debugOutput;
-        HashSet<String>             m_apiExtensions;
+        HashSet<std::string>        m_apiExtensions;
         std::vector<GLint>          m_supportedBinaryProgramFormats;
         IDeviceExtension*           m_deviceExtension = nullptr;
         const DeviceResourceHandle  m_emptyExternalTextureResource;
 
         std::unordered_map<uint64_t, DeviceResourceHandle> m_textureSamplerObjectsCache;
 
-        Bool getUniformLocation(DataFieldHandle field, GLInputLocation& location) const;
-        Bool getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const;
+        bool getUniformLocation(DataFieldHandle field, GLInputLocation& location) const;
+        bool getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const;
 
-        Bool allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const;
+        bool allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const;
         void bindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, size_t colorBufferSlot);
         void bindReadWriteRenderBufferToRenderTarget(ERenderBufferType bufferType, size_t colorBufferSlot, GLHandle bufferGLHandle, bool multiSample);
         void bindWriteOnlyRenderBufferToRenderTarget(ERenderBufferType bufferType, size_t colorBufferSlot, GLHandle bufferGLHandle);
-        GLHandle createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat, UInt32 sampleCount) const;
-        GLHandle createRenderBuffer(UInt32 width, UInt32 height, ETextureFormat format, UInt32 sampleCount);
+        GLHandle createTexture(uint32_t width, uint32_t height, ETextureFormat storageFormat, uint32_t sampleCount) const;
+        GLHandle createRenderBuffer(uint32_t width, uint32_t height, ETextureFormat format, uint32_t sampleCount);
 
         DeviceResourceHandle    uploadTextureSampler(const TextureSamplerStates& samplerStates);
         void                    deleteTextureSampler(DeviceResourceHandle handle);
@@ -177,13 +174,13 @@ namespace ramses_internal
 
         GLHandle generateAndBindTexture(GLenum target) const;
 
-        void fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& texInfoOut) const;
+        void fillGLInternalTextureInfo(GLenum target, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& texInfoOut) const;
         uint32_t checkAndClampNumberOfSamples(GLenum internalFormat, uint32_t numSamples) const;
 
-        void allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels, UInt32 sampleCount = 0) const;
-        void uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize) const;
+        void allocateTextureStorage(const GLTextureInfo& texInfo, uint32_t mipLevels, uint32_t sampleCount = 0) const;
+        void uploadTextureMipMapData(uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height, uint32_t depth, const GLTextureInfo& texInfo, const uint8_t *pData, uint32_t dataSize) const;
 
-        Bool isApiExtensionAvailable(const String& extensionName) const;
+        bool isApiExtensionAvailable(const std::string& extensionName) const;
         void queryDeviceDependentFeatures();
         void loadOpenGLExtensions();
     };

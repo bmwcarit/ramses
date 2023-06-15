@@ -23,7 +23,7 @@ TestScenes::~TestScenes()
     }
 }
 
-void TestScenes::createFileLoadingScene(ramses::sceneId_t sceneId, const ramses_internal::Vector3& cameraPosition, const ramses::RamsesFrameworkConfig& config, uint32_t sceneState, uint32_t vpWidth, uint32_t vpHeight)
+void TestScenes::createFileLoadingScene(ramses::sceneId_t sceneId, const glm::vec3& cameraPosition, const ramses::RamsesFrameworkConfig& config, uint32_t sceneState, uint32_t vpWidth, uint32_t vpHeight)
 {
     // This creates the scene internally inside the instance
     ramses_internal::FileLoadingScene fileLoadingScene(m_client, sceneState, sceneId, cameraPosition, ".", config, vpWidth, vpHeight);

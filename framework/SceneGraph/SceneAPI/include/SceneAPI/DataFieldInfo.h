@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     struct DataFieldInfo
     {
-        explicit DataFieldInfo(EDataType dataType_ = EDataType::Invalid, UInt32 elementCount_ = 1u, EFixedSemantics semantics_ = EFixedSemantics::Invalid)
+        explicit DataFieldInfo(EDataType dataType_ = EDataType::Invalid, uint32_t elementCount_ = 1u, EFixedSemantics semantics_ = EFixedSemantics::Invalid)
             : dataType(dataType_)
             , elementCount(elementCount_)
             , semantics(semantics_)
@@ -37,7 +37,7 @@ namespace ramses_internal
         }
 
         EDataType       dataType;
-        UInt32          elementCount;
+        uint32_t          elementCount;
         EFixedSemantics semantics;
     };
 

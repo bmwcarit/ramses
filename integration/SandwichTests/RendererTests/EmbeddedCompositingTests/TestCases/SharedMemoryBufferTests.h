@@ -11,13 +11,15 @@
 
 #include "IEmbeddedCompositingTest.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class SharedMemoryBufferTests : public IEmbeddedCompositingTest
     {
     public:
-        virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
-        virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+        void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
+        bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
     private:
         enum
@@ -44,8 +46,8 @@ namespace ramses_internal
             TestCorrectBufferRelease,
         };
 
-        bool renderAndCheckOneSharedMemoryFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, ETriangleColor color, WaylandIviSurfaceId streamTextureSourceId, UInt32& frameCount, const String& expectedImageName);
-        bool checkFreeBufferState(EmbeddedCompositingTestsFramework& testFramework, const ramses_internal::String& bufferFreeState);
+        bool renderAndCheckOneSharedMemoryFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, ETriangleColor color, WaylandIviSurfaceId waylandSurfaceIviId, uint32_t& frameCount, const std::string& expectedImageName);
+        bool checkFreeBufferState(EmbeddedCompositingTestsFramework& testFramework, std::string_view bufferFreeState);
 
         static constexpr uint32_t DisplayWidth = IntegrationScene::DefaultViewportWidth;
         static constexpr uint32_t DisplayWidthTwoStreams = IntegrationScene::DefaultViewportWidth * 2;

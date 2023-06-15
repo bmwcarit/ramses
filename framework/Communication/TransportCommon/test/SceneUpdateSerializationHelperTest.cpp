@@ -39,7 +39,7 @@ namespace ramses_internal
         in.write(static_cast<uint32_t>(123));
         in.write(static_cast<uint32_t>(456));
         in.beginWriteSceneAction(ESceneActionId::AllocateNode);
-        in.write(String("foobar"));
+        in.write("foobar");
 
         EXPECT_EQ(in, SerializeDeserialize(in));
     }

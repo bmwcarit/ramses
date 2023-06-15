@@ -13,6 +13,8 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-client-api/SceneConfig.h"
 
+#include <string>
+
 namespace ramses
 {
     class RenderGroup;
@@ -25,7 +27,7 @@ namespace ramses_internal
     class FileLoadingScene
     {
     public:
-        FileLoadingScene(ramses::RamsesClient& clientForLoading, UInt32 state, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::RamsesFrameworkConfig& config, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+        FileLoadingScene(ramses::RamsesClient& clientForLoading, uint32_t state, ramses::sceneId_t sceneId, const glm::vec3& cameraPosition, const std::string& folder, const ramses::RamsesFrameworkConfig& config, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         ramses::Scene* getCreatedScene();
 
@@ -36,10 +38,10 @@ namespace ramses_internal
         };
 
     private:
-        void createFiles(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::SceneConfig& sceneConfig = ramses::SceneConfig());
-        void initializeAnimationContent(ramses::Scene& scene, ramses::RenderGroup& renderGroup);
-        void loadFromFiles(ramses::RamsesClient& client, const String& folder);
-        void cleanupFiles(const String& folder);
+        void createFiles(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const glm::vec3& cameraPosition, const std::string& folder, const ramses::SceneConfig& sceneConfig = ramses::SceneConfig());
+        void addTriangles(ramses::Scene& scene, ramses::RenderGroup& renderGroup);
+        void loadFromFiles(ramses::RamsesClient& client, const std::string& folder);
+        void cleanupFiles(const std::string& folder);
 
         ramses::Scene* m_createdScene = nullptr;
         uint32_t m_viewportWidth;

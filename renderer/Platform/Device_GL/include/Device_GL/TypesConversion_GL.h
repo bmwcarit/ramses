@@ -21,8 +21,8 @@ namespace ramses_internal
         GLenum sizedInternalFormat = GL_ZERO;
         GLenum baseInternalFormat = GL_ZERO;
         GLenum type = GL_ZERO;
-        Bool compressed = false;
-        UInt32 byteAlignment = 0u;
+        bool compressed = false;
+        uint32_t byteAlignment = 0u;
         TextureSwizzleArray swizzle = {};
     };
 
@@ -30,7 +30,7 @@ namespace ramses_internal
     {
     public:
         static GLenum GetDrawMode(EDrawMode mode);
-        static GLenum GetIndexElementType(UInt32 indexElementSizeInBytes);
+        static GLenum GetIndexElementType(uint32_t indexElementSizeInBytes);
         static GLenum GetDepthFunc(EDepthFunc func);
         static GLenum GetBlendFactor(EBlendFactor factor);
         static GLenum GetBlendOperation(EBlendOperation operation);

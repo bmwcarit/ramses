@@ -25,13 +25,20 @@
 
 namespace ramses_internal
 {
-    SceneGraphComponent::SceneGraphComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, IResourceProviderComponent& res, PlatformLock& frameworkLock)
+    SceneGraphComponent::SceneGraphComponent(
+        const Guid& myID,
+        ICommunicationSystem& communicationSystem,
+        IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier,
+        IResourceProviderComponent& res,
+        PlatformLock& frameworkLock,
+        ramses::EFeatureLevel featureLevel)
         : m_sceneRendererHandler(nullptr)
         , m_myID(myID)
         , m_communicationSystem(communicationSystem)
         , m_connectionStatusUpdateNotifier(connectionStatusUpdateNotifier)
         , m_frameworkLock(frameworkLock)
         , m_resourceComponent(res)
+        , m_featureLevel{ featureLevel }
     {
         m_connectionStatusUpdateNotifier.registerForConnectionUpdates(this);
         m_communicationSystem.setSceneProviderServiceHandler(this);
@@ -142,7 +149,7 @@ namespace ramses_internal
             m_sceneRendererHandler->handleSceneUpdate(sceneId, std::move(sceneUpdate), m_myID);
     }
 
-    void SceneGraphComponent::sendPublishScene(SceneId sceneId, EScenePublicationMode mode, const String& name)
+    void SceneGraphComponent::sendPublishScene(SceneId sceneId, EScenePublicationMode mode, std::string_view name)
     {
         LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::publishScene: publishing scene: " << sceneId << " mode: " << EnumToString(mode));
 
@@ -152,7 +159,7 @@ namespace ramses_internal
             m_sceneRendererHandler->handleNewSceneAvailable(info, m_myID);
 
         if (mode != EScenePublicationMode_LocalOnly && m_connected)
-            m_communicationSystem.broadcastNewScenesAvailable({info});
+            m_communicationSystem.broadcastNewScenesAvailable({info}, m_featureLevel);
 
         m_locallyPublishedScenes.put(sceneId, info);
     }
@@ -250,7 +257,7 @@ namespace ramses_internal
         }
 
         if (availableScenes.size() > 0)
-            m_communicationSystem.sendScenesAvailable(connnectedParticipant, availableScenes);
+            m_communicationSystem.sendScenesAvailable(connnectedParticipant, availableScenes, m_featureLevel);
     }
 
     void SceneGraphComponent::participantHasDisconnected(const Guid& disconnnectedParticipant)
@@ -541,18 +548,18 @@ namespace ramses_internal
         }
     }
 
-    void SceneGraphComponent::handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID)
+    void SceneGraphComponent::handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, ramses::EFeatureLevel featureLevel)
     {
         // TODO(tobias) also cross-check with locally published scenes (+ published by someone else?) and warn/ignore if exists
 
         for(const auto& newScene : newScenes)
         {
-            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: sceneId: " << newScene.sceneID << ", name " << newScene.friendlyName <<",  by " << providerID);
+            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: sceneId: " << newScene.sceneID << ", name " << newScene.friendlyName <<", by " << providerID << ", featureLevel " << featureLevel);
 
             auto existingSceneIt = m_remoteScenes.find(newScene.sceneID);
             if (existingSceneIt != m_remoteScenes.end() && existingSceneIt->second.provider == providerID)
             {
-                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: duplicate publish ofscene: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << ". Will unpublish first");
+                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: duplicate publish of scene: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << ". Will unpublish first");
                 if (m_sceneRendererHandler)
                     m_sceneRendererHandler->handleSceneBecameUnavailable(newScene.sceneID, providerID);
                 m_remoteScenes.erase(newScene.sceneID);
@@ -560,12 +567,20 @@ namespace ramses_internal
 
             if (m_remoteScenes.find(newScene.sceneID) == m_remoteScenes.end())
             {
-                LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: scene published: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
+                if (featureLevel == m_featureLevel)
+                {
+                    LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: scene published: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
 
-                m_remoteScenes[newScene.sceneID] = ReceivedScene{newScene, providerID, nullptr};
+                    m_remoteScenes[newScene.sceneID] = ReceivedScene{ newScene, providerID, nullptr };
 
-                if (m_sceneRendererHandler)
-                    m_sceneRendererHandler->handleNewSceneAvailable(SceneInfo(newScene.sceneID, newScene.friendlyName, EScenePublicationMode_LocalAndRemote), providerID);
+                    if (m_sceneRendererHandler)
+                        m_sceneRendererHandler->handleNewSceneAvailable(SceneInfo(newScene.sceneID, newScene.friendlyName, EScenePublicationMode_LocalAndRemote), providerID);
+                }
+                else
+                {
+                    LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: ignore publish for scene with mismatched feature level: "
+                        "sceneId: " << newScene.sceneID.getValue() << ", provider: " << providerID << ", name:" << newScene.friendlyName << ", featureLevel: " << featureLevel);
+                }
             }
             else
             {

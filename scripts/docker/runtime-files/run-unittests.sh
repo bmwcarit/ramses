@@ -12,7 +12,6 @@ set -e
 cd $RAMSES_BUILD
 
 export GTEST_COLOR=yes
-export CONSOLE_LOGLEVEL=off
 
 if [ -z "$XDG_RUNTIME_DIR" ]; then
     RENDERER_TEST_FILTER=".*x11.*_RNDSANDWICHTEST_SWRAST"

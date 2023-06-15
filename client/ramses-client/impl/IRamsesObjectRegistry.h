@@ -10,7 +10,8 @@
 #define RAMSES_IRAMSESOBJECTREGISTRY_H
 
 #include "ramses-client-api/RamsesObjectTypes.h"
-#include "Collections/String.h"
+
+#include <string>
 
 namespace ramses
 {
@@ -22,7 +23,7 @@ namespace ramses
     public:
         virtual ~IRamsesObjectRegistry() {};
 
-        virtual void updateName(RamsesObject&, const ramses_internal::String&) = 0;
+        virtual void updateName(RamsesObject&, const std::string&) = 0;
     };
 }
 

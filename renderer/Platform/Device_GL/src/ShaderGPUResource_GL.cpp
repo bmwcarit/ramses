@@ -68,20 +68,20 @@ namespace ramses_internal
         const EffectInputInformationVector& uniformInputs = effect.getUniformInputs();
         const EffectInputInformationVector& attributeInputs = effect.getAttributeInputs();
 
-        const UInt vertexInputCount = attributeInputs.size();
-        const UInt globalInputCount = uniformInputs.size();
+        const size_t vertexInputCount = attributeInputs.size();
+        const size_t globalInputCount = uniformInputs.size();
 
         m_attributeLocationMap.resize(vertexInputCount);
         m_uniformLocationMap.resize(globalInputCount);
 
-        for (UInt32 i = 0u; i < vertexInputCount; ++i)
+        for (uint32_t i = 0u; i < vertexInputCount; ++i)
         {
             const GLInputLocation location = loadAttributeLocation(effect, attributeInputs[i]);
             m_attributeLocationMap[i] = location;
         }
 
         TextureSlot slotCounter = 0; // texture unit 0
-        for (UInt32 i = 0; i < globalInputCount; ++i)
+        for (uint32_t i = 0; i < globalInputCount; ++i)
         {
             const EffectInputInformation& input = uniformInputs[i];
             if (IsTextureSamplerType(input.dataType))
@@ -99,7 +99,7 @@ namespace ramses_internal
 
     GLInputLocation ShaderGPUResource_GL::loadAttributeLocation(const EffectResource& effect, const EffectInputInformation& input) const
     {
-        const Char* varName = input.inputName.c_str();
+        const char* varName = input.inputName.c_str();
         const GLint address = glGetAttribLocation(m_shaderProgramInfo.shaderProgramHandle, varName);
         const GLInputLocation inputLocation(address);
         if (inputLocation == GLInputLocationInvalid)
@@ -112,7 +112,7 @@ namespace ramses_internal
 
     GLInputLocation ShaderGPUResource_GL::loadUniformLocation(const EffectResource& effect, const EffectInputInformation& input) const
     {
-        const Char* varName = input.inputName.c_str();
+        const char* varName = input.inputName.c_str();
         const GLint address = glGetUniformLocation(m_shaderProgramInfo.shaderProgramHandle, varName);
         const GLInputLocation inputLocation(address);
         if (inputLocation == GLInputLocationInvalid)

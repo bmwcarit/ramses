@@ -19,7 +19,7 @@ namespace ramses_internal
     class MultipleGeometryScene : public IntegrationScene
     {
     public:
-        MultipleGeometryScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultipleGeometryScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -30,9 +30,9 @@ namespace ramses_internal
         };
 
     private:
-        void createGeometries(ramses::Effect& effect, UInt32 state);
+        void createGeometries(ramses::Effect& effect, uint32_t state);
 
-        static const UInt32 NumMeshes = 4u;
+        static const uint32_t NumMeshes = 4u;
         ramses::MeshNode* m_meshNode[NumMeshes];
     };
 }

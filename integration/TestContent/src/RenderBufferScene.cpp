@@ -19,18 +19,18 @@
 
 namespace ramses_internal
 {
-    RenderBufferScene::RenderBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+    RenderBufferScene::RenderBufferScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : CommonRenderBufferTestScene(scene, cameraPosition)
-        , m_readWriteColorRenderBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
-        , m_writeOnlyDepthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_WriteOnly))
-        , m_writeOnlyDepthStencilBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_DepthStencil, ramses::ERenderBufferFormat_Depth24_Stencil8, ramses::ERenderBufferAccessMode_WriteOnly))
+        , m_readWriteColorRenderBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite))
+        , m_writeOnlyDepthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Depth, ramses::ERenderBufferFormat::Depth24, ramses::ERenderBufferAccessMode::WriteOnly))
+        , m_writeOnlyDepthStencilBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::DepthStencil, ramses::ERenderBufferFormat::Depth24_Stencil8, ramses::ERenderBufferAccessMode::WriteOnly))
     {
         initClearPass(state);
         initRenderingPass(state);
         addRenderPassUsingRenderBufferAsQuadTexture(createQuadWithTexture(m_readWriteColorRenderBuffer));
     }
 
-    ramses::RenderTarget& RenderBufferScene::createRenderTarget(UInt32 state)
+    ramses::RenderTarget& RenderBufferScene::createRenderTarget(uint32_t state)
     {
         ramses::RenderTargetDescription rtDesc;
 
@@ -55,7 +55,7 @@ namespace ramses_internal
         return *m_scene.createRenderTarget(rtDesc);
     }
 
-    void RenderBufferScene::initClearPass(UInt32 state)
+    void RenderBufferScene::initClearPass(uint32_t state)
     {
         ramses::RenderPass* renderPass = m_scene.createRenderPass();
         renderPass->setRenderOrder(-100);
@@ -64,21 +64,21 @@ namespace ramses_internal
         ramses::RenderTarget& renderTarget = createRenderTarget(state);
 
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags_All);
     }
 
-    void RenderBufferScene::initRenderingPass(UInt32 state)
+    void RenderBufferScene::initRenderingPass(uint32_t state)
     {
         ramses::MeshNode& meshNode = createMesh(getEffectRenderOneBuffer());
 
         //fill stencil buffer with value of 1 for every fragment that gets rendered into
-        meshNode.getAppearance()->setStencilFunction(ramses::EStencilFunc_Always, 1, 0xff);
-        meshNode.getAppearance()->setStencilOperation(ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace, ramses::EStencilOperation_Replace);
+        meshNode.getAppearance()->setStencilFunction(ramses::EStencilFunc::Always, 1, 0xff);
+        meshNode.getAppearance()->setStencilOperation(ramses::EStencilOperation::Replace, ramses::EStencilOperation::Replace, ramses::EStencilOperation::Replace);
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
-        transNode.translate(0.0f, -0.5f, -5.0f);
+        transNode.translate({0.0f, -0.5f, -5.0f});
 
         ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();
         renderGroup.addMeshNode(meshNode);
@@ -99,19 +99,19 @@ namespace ramses_internal
 
         if (state == ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH_STENCIL_BUFFER)
         {
-            farTriangleTransNode.translate(0.5f, 0.0f, 0.1f);
+            farTriangleTransNode.translate({0.5f, 0.0f, 0.1f});
         }
         else
         {
-            farTriangleTransNode.translate(0.5f, 0.0f, -0.1f);
+            farTriangleTransNode.translate({0.5f, 0.0f, -0.1f});
         }
 
         ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), ramses::TriangleAppearance::EColor_Blue);
         farTriangleTransNode.addChild(meshNode2);
         transNode.addChild(farTriangleTransNode);
 
-        meshNode2.getAppearance()->setDepthFunction(ramses::EDepthFunc_LessEqual);
-        meshNode2.getAppearance()->setStencilFunction(ramses::EStencilFunc_NotEqual, 0u, 0xff);
+        meshNode2.getAppearance()->setDepthFunction(ramses::EDepthFunc::LessEqual);
+        meshNode2.getAppearance()->setStencilFunction(ramses::EStencilFunc::NotEqual, 0u, 0xff);
         renderGroup.addMeshNode(meshNode2);
 
         renderGroup.addMeshNode(meshNode2);

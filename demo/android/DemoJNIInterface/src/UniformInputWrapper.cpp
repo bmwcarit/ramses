@@ -19,7 +19,7 @@ UniformInputWrapper::UniformInputWrapper(const char* inputName, ramses::Appearan
 
 void UniformInputWrapper::setInputValueFloat(float x)
 {
-    m_appearance.setInputValueFloat(m_input, x);
+    m_appearance.setInputValue(m_input, x);
 }
 
 

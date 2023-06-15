@@ -23,7 +23,7 @@ namespace ramses_internal
         virtual void unregisterThread(uint64_t identifier) = 0;
 
         virtual void notifyAlive(uint64_t identifier) = 0;
-        virtual std::chrono::milliseconds calculateTimeout() const = 0;
+        [[nodiscard]] virtual std::chrono::milliseconds calculateTimeout() const = 0;
     };
 }
 

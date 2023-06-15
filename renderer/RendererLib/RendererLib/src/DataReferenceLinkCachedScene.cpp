@@ -40,67 +40,67 @@ namespace ramses_internal
         }
     }
 
-    void DataReferenceLinkCachedScene::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data)
+    void DataReferenceLinkCachedScene::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const float* data)
     {
         TransformationLinkCachedScene::setDataFloatArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data)
+    void DataReferenceLinkCachedScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec2* data)
     {
         TransformationLinkCachedScene::setDataVector2fArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data)
+    void DataReferenceLinkCachedScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec3* data)
     {
         TransformationLinkCachedScene::setDataVector3fArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data)
+    void DataReferenceLinkCachedScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec4* data)
     {
         TransformationLinkCachedScene::setDataVector4fArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data)
+    void DataReferenceLinkCachedScene::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const int32_t* data)
     {
         TransformationLinkCachedScene::setDataIntegerArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data)
+    void DataReferenceLinkCachedScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec2* data)
     {
         TransformationLinkCachedScene::setDataVector2iArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data)
+    void DataReferenceLinkCachedScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec3* data)
     {
         TransformationLinkCachedScene::setDataVector3iArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data)
+    void DataReferenceLinkCachedScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec4* data)
     {
         TransformationLinkCachedScene::setDataVector4iArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data)
+    void DataReferenceLinkCachedScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat2* data)
     {
         TransformationLinkCachedScene::setDataMatrix22fArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data)
+    void DataReferenceLinkCachedScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat3* data)
     {
         TransformationLinkCachedScene::setDataMatrix33fArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);
     }
 
-    void DataReferenceLinkCachedScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data)
+    void DataReferenceLinkCachedScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat4* data)
     {
         TransformationLinkCachedScene::setDataMatrix44fArray(containerHandle, field, elementCount, data);
         updateFallbackValue(containerHandle, data);

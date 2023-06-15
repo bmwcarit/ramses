@@ -17,20 +17,18 @@
 #include "ConnectionSystemTestHelper.h"
 #include "Collections/Guid.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
-    class CommandLineParser;
-
     enum class ECommunicationSystemType
     {
         Tcp,
-        GenericSomeIP,
     };
 
     enum class EServiceType
     {
-        Ramses,
-        Dcsm
+        Ramses
     };
 
     // better output from gtest
@@ -46,7 +44,7 @@ namespace ramses_internal
 
         void connectAll();
         void disconnectAll();
-        testing::AssertionResult blockOnAllConnected(UInt32 waitTimeMsOverride = 0);
+        testing::AssertionResult blockOnAllConnected(uint32_t waitTimeMsOverride = 0);
 
         void sendEvent();
 
@@ -60,7 +58,7 @@ namespace ramses_internal
     class CommunicationSystemTestWrapper
     {
     public:
-        explicit CommunicationSystemTestWrapper(CommunicationSystemTestState& state_, const String& name = String(), const Guid& id_ = Guid());
+        explicit CommunicationSystemTestWrapper(CommunicationSystemTestState& state_, std::string_view name = {}, const Guid& id_ = Guid());
         virtual ~CommunicationSystemTestWrapper();
 
         virtual void registerAsEventReceiver() {}

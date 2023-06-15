@@ -16,7 +16,7 @@ namespace ramses_internal
     {
     }
 
-    Bool SceneDependencyChecker::addDependency(SceneId providerScene, SceneId consumerScene)
+    bool SceneDependencyChecker::addDependency(SceneId providerScene, SceneId consumerScene)
     {
         if (hasDependencyAsConsumerToProvider(providerScene, consumerScene))
         {
@@ -51,7 +51,7 @@ namespace ramses_internal
         m_dirty = true;
     }
 
-    Bool SceneDependencyChecker::hasDependencyAsConsumer(SceneId scene) const
+    bool SceneDependencyChecker::hasDependencyAsConsumer(SceneId scene) const
     {
         return m_consumerToProvidersMap.contains(scene);
     }
@@ -92,7 +92,7 @@ namespace ramses_internal
         m_dirty = true;
     }
 
-    Bool SceneDependencyChecker::hasDependencyAsConsumerToProvider(SceneId consumerScene, SceneId providerScene) const
+    bool SceneDependencyChecker::hasDependencyAsConsumerToProvider(SceneId consumerScene, SceneId providerScene) const
     {
         SceneIdVector scenesQueue;
         scenesQueue.reserve(m_sceneOrderList.size());
@@ -149,7 +149,7 @@ namespace ramses_internal
 
             // check if has any dependency to the rest of the scenes
             // (intersection of its providers list and rest of scenes is not empty)
-            Bool dependsOnRestOfTheSet = false;
+            bool dependsOnRestOfTheSet = false;
             if (m_consumerToProvidersMap.contains(currScene))
             {
                 const auto& providers = *m_consumerToProvidersMap.get(currScene);
@@ -178,7 +178,7 @@ namespace ramses_internal
         m_dirty = false;
     }
 
-    Bool SceneDependencyChecker::isEmpty() const
+    bool SceneDependencyChecker::isEmpty() const
     {
         return m_consumerToProvidersMap.size() == 0u;
     }

@@ -12,14 +12,16 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "RendererLib/RendererCommandBuffer.h"
 
+#include <string>
+
 namespace ramses_internal
 {
 
-    class SystemCompositorControllerScreenshot : public RamshCommandArgs<String, int32_t>
+    class SystemCompositorControllerScreenshot : public RamshCommandArgs<std::string, int32_t>
     {
     public:
         explicit SystemCompositorControllerScreenshot(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(String& fileName, int32_t& screenIviId) const override;
+        bool execute(std::string& fileName, int32_t& screenIviId) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

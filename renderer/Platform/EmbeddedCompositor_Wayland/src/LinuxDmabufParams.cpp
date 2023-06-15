@@ -141,7 +141,7 @@ namespace ramses_internal
 
             StringOutputStream message;
             message << "plane index " << index << " is too high";
-            m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX, String(message.release()));
+            m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX, message.release());
             ::close(fd);
             return;
         }
@@ -152,7 +152,7 @@ namespace ramses_internal
 
             StringOutputStream message;
             message << "a dmabuf has already been added for plane " << index;
-            m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET, String(message.release()));
+            m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET, message.release());
             ::close(fd);
             return;
         }
@@ -207,7 +207,7 @@ namespace ramses_internal
 
                 StringOutputStream message;
                 message << "no dmabuf has been added for plane " << i;
-                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE, String(message.release()));
+                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE, message.release());
 
                 delete m_data;
                 m_data = nullptr;
@@ -227,7 +227,7 @@ namespace ramses_internal
 
             StringOutputStream message;
             message << "invalid width " << width << " or height " << height;
-            m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS, String(message.release()));
+            m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS, message.release());
 
             delete m_data;
             m_data = nullptr;
@@ -247,7 +247,7 @@ namespace ramses_internal
 
                 StringOutputStream message;
                 message << "size overflow for plane " << i;
-                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, String(message.release()));
+                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
 
                 delete m_data;
                 m_data = nullptr;
@@ -261,7 +261,7 @@ namespace ramses_internal
 
                 StringOutputStream message;
                 message << "size overflow for plane " << i;
-                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, String(message.release()));
+                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
 
                 delete m_data;
                 m_data = nullptr;
@@ -286,7 +286,7 @@ namespace ramses_internal
 
                 StringOutputStream message;
                 message << "invalid offset " << offset << " for plane " << i;
-                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, String(message.release()));
+                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
 
                 delete m_data;
                 m_data = nullptr;
@@ -300,7 +300,7 @@ namespace ramses_internal
 
                 StringOutputStream message;
                 message << "invalid stride " << offset << " for plane " << i;
-                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, String(message.release()));
+                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
 
                 delete m_data;
                 m_data = nullptr;
@@ -316,7 +316,7 @@ namespace ramses_internal
 
                 StringOutputStream message;
                 message << "invalid buffer stride or height for plane " << i;
-                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, String(message.release()));
+                m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS, message.release());
 
                 delete m_data;
                 m_data = nullptr;

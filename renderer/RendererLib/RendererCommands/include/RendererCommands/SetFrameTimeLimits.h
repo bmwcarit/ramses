@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit SetFrameTimeLimits(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(uint32_t& limitForDynamicResourcesUploadMicrosec, uint32_t& limitForStaticResourcesUploadMicrosec, uint32_t& limitForOffscreenBufferRenderMicrosec) const override;
+        bool execute(uint32_t& limitForDynamicResourcesUploadMicrosec, uint32_t& limitForStaticResourcesUploadMicrosec, uint32_t& limitForOffscreenBufferRenderMicrosec) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

@@ -22,11 +22,11 @@ namespace ramses_internal
     public:
         virtual ~IWindowEventHandler() {};
 
-        virtual void onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode) = 0;
-        virtual void onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY) = 0;
+        virtual void onKeyEvent(EKeyEventType event, uint32_t modifiers, EKeyCode keyCode) = 0;
+        virtual void onMouseEvent(EMouseEventType event, int32_t posX, int32_t posY) = 0;
         virtual void onClose() = 0;
-        virtual void onResize(UInt32 width, UInt32 height) = 0;
-        virtual void onWindowMove(Int32 posX, Int32 posY) = 0;
+        virtual void onResize(uint32_t width, uint32_t height) = 0;
+        virtual void onWindowMove(int32_t posX, int32_t posY) = 0;
     };
 }
 

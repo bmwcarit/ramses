@@ -17,7 +17,7 @@
 
 namespace ramses_internal
 {
-    std::unique_ptr<RamshCommunicationChannelConsole> RamshCommunicationChannelConsole::Construct(Ramsh& ramsh, const String& prompt, bool startThread)
+    std::unique_ptr<RamshCommunicationChannelConsole> RamshCommunicationChannelConsole::Construct(Ramsh& ramsh, const std::string& prompt, bool startThread)
     {
         std::unique_ptr<ConsoleInput> consoleInput(ConsoleInput::TryGetUniqueConsoleInput());
         if (!consoleInput)
@@ -29,7 +29,7 @@ namespace ramses_internal
         return std::unique_ptr<RamshCommunicationChannelConsole>(new RamshCommunicationChannelConsole(ramsh, prompt, std::move(consoleInput), startThread));
     }
 
-    RamshCommunicationChannelConsole::RamshCommunicationChannelConsole(Ramsh& ramsh, const String& prompt, std::unique_ptr<ConsoleInput> consoleInput, bool startThread)
+    RamshCommunicationChannelConsole::RamshCommunicationChannelConsole(Ramsh& ramsh, const std::string& prompt, std::unique_ptr<ConsoleInput> consoleInput, bool startThread)
         : m_ramsh(ramsh)
         , m_prompt(prompt)
         , m_pausePrompt(false)
@@ -87,7 +87,7 @@ namespace ramses_internal
         }
     }
 
-    void RamshCommunicationChannelConsole::processInput(Char c)
+    void RamshCommunicationChannelConsole::processInput(char c)
     {
         switch (c)
         {
@@ -164,8 +164,8 @@ namespace ramses_internal
         case '#': // get youngest/next oldest history command
         {
             PlatformGuard g(m_lock);
-            UInt inputLength = m_input.size();
-            for (UInt i = 0u; i < inputLength; i++)
+            size_t inputLength = m_input.size();
+            for (size_t i = 0u; i < inputLength; i++)
             {
                 fmt::print("\b \b");
                 std::fflush(stdout);
@@ -198,7 +198,7 @@ namespace ramses_internal
         }
     }
 
-    String RamshCommunicationChannelConsole::promptString() const
+    std::string RamshCommunicationChannelConsole::promptString() const
     {
         PlatformGuard g(m_lock);
         return m_prompt + ">" + m_input;

@@ -9,28 +9,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
-#include "RendererTestUtils.h"
 #include "PlatformAbstraction/PlatformConsole.h"
 
 int main(int argc, char* argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-
-    ramses_internal::ArgumentBool helpRequested(parser, "help", "help");
-
     testing::InitGoogleMock(&argc, argv);
-
-    if (helpRequested)
-    {
-        ramses_internal::StringOutputStream stream;
-        stream << "\n";
-        stream << "Additional command line parameters:\n";
-        stream << "\n";
-
-        ramses_internal::Console::Print(ramses_internal::ConsoleColor::Green, stream.c_str());
-    }
-
     return RUN_ALL_TESTS();
 }

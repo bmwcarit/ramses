@@ -15,9 +15,9 @@
 
 namespace ramses_internal
 {
-    const UInt64 PeriodicLogger::m_processStartupTime = PlatformTime::GetMillisecondsMonotonic();
-    std::atomic<UInt32> PeriodicLogger::m_numberOfRamsesInstancesStartedInProcess(0);
-    std::atomic<UInt32> PeriodicLogger::m_numberOfRamsesInstancesCurrentlyActive(0);
+    const uint64_t PeriodicLogger::m_processStartupTime = PlatformTime::GetMillisecondsMonotonic();
+    std::atomic<uint32_t> PeriodicLogger::m_numberOfRamsesInstancesStartedInProcess(0);
+    std::atomic<uint32_t> PeriodicLogger::m_numberOfRamsesInstancesCurrentlyActive(0);
 
     PeriodicLogger::PeriodicLogger(PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
         : m_isRunning(false)
@@ -45,7 +45,7 @@ namespace ramses_internal
         --m_numberOfRamsesInstancesCurrentlyActive;
     }
 
-    void PeriodicLogger::startLogging(UInt32 periodicLogTimeoutSeconds)
+    void PeriodicLogger::startLogging(uint32_t periodicLogTimeoutSeconds)
     {
         assert(!m_isRunning);
         assert(periodicLogTimeoutSeconds > 0);
@@ -128,7 +128,7 @@ namespace ramses_internal
         int64_t steadyDiff = std::chrono::duration_cast<std::chrono::milliseconds>(steadyNow - m_previousSteadyTime).count();
         int64_t syncDiff = std::chrono::duration_cast<std::chrono::milliseconds>(syncNow - m_previousSyncTime).count();
 
-        LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
+        LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
             << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << " Type:" << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE
             << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL
             << " SyncT:" << asMilliseconds(syncNow) << "ms (dtSteady:" << steadyDiff << " - dtSync:" << syncDiff << " -> " << (steadyDiff - syncDiff) << ")"
@@ -142,7 +142,7 @@ namespace ramses_internal
     void PeriodicLogger::printStatistic()
     {
         LOG_INFO_F(CONTEXT_PERIODIC, ([&](ramses_internal::StringOutputStream& output) {
-                    UInt32 numberTimeIntervals = m_statisticCollection.getNumberTimeIntervalsSinceLastSummaryReset();
+                    uint32_t numberTimeIntervals = m_statisticCollection.getNumberTimeIntervalsSinceLastSummaryReset();
                     output << "msgIn ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesReceived.getSummary(), numberTimeIntervals);
                     output << " msgO ";
@@ -166,7 +166,7 @@ namespace ramses_internal
             LOG_INFO_F(CONTEXT_PERIODIC, ([&](ramses_internal::StringOutputStream& output) {
                         for (auto entry : m_statisticCollectionScenes)
                         {
-                            UInt32 numberTimeIntervals = entry.value->getNumberTimeIntervalsSinceLastSummaryReset();
+                            uint32_t numberTimeIntervals = entry.value->getNumberTimeIntervalsSinceLastSummaryReset();
                             output << "scene: " << entry.key;
                             output << " flush ";
                             logStatisticSummaryEntry(output, entry.value->statFlushesTriggered.getSummary(), numberTimeIntervals);

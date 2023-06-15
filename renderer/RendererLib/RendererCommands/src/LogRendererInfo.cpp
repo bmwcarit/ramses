@@ -23,7 +23,7 @@ namespace ramses_internal
         getArgument<1>().setDefaultValue(false);
         getArgument<2>().setDefaultValue(NodeHandle::Invalid().asMemoryHandle());
 
-        getArgument<0>().setDescription("topic (display|scene|stream|res|queue|links|ec|events|all)");
+        getArgument<0>().setDescription("topic (display|scene|res|queue|links|ec|events|all)");
         getArgument<1>().setDescription("verbose mode");
         getArgument<2>().setDescription("node Id filter");
 
@@ -31,7 +31,7 @@ namespace ramses_internal
         getArgument<2>().registerKeyword("f");
     }
 
-    Bool LogRendererInfo::execute(String& topic, Bool& verbose, MemoryHandle& nodeHandleFilter) const
+    bool LogRendererInfo::execute(std::string& topic, bool& verbose, MemoryHandle& nodeHandleFilter) const
     {
         const ERendererLogTopic etopic = GetRendererTopic(topic);
         if (etopic == ERendererLogTopic::COUNT)
@@ -41,25 +41,23 @@ namespace ramses_internal
         return true;
     }
 
-    ERendererLogTopic LogRendererInfo::GetRendererTopic(const String& topicName)
+    ERendererLogTopic LogRendererInfo::GetRendererTopic(const std::string& topicName)
     {
-        if (topicName == String("display"))
+        if (topicName == "display")
             return ERendererLogTopic::Displays;
-        if (topicName == String("scene"))
+        if (topicName == "scene")
             return ERendererLogTopic::SceneStates;
-        if (topicName == String("stream"))
-            return ERendererLogTopic::StreamTextures;
-        if (topicName == String("res"))
+        if (topicName == "res")
             return ERendererLogTopic::Resources;
-        if (topicName == String("queue"))
+        if (topicName == "queue")
             return ERendererLogTopic::RenderQueue;
-        if (topicName == String("links"))
+        if (topicName == "links")
             return ERendererLogTopic::Links;
-        if (topicName == String("ec"))
+        if (topicName == "ec")
             return ERendererLogTopic::EmbeddedCompositor;
-        if (topicName == String("events"))
+        if (topicName == "events")
             return ERendererLogTopic::EventQueue;
-        if (topicName == String("all"))
+        if (topicName == "all")
             return ERendererLogTopic::All;
 
         return ERendererLogTopic::COUNT;

@@ -10,7 +10,6 @@
 #define RAMSES_DATALAYOUTCREATIONHELPER_H
 
 #include "SceneAPI/Handles.h"
-#include "Collections/String.h"
 #include "SceneAPI/EDataType.h"
 #include "Collections/Vector.h"
 #include "Resource/EffectInputInformation.h"
@@ -19,7 +18,7 @@ namespace ramses_internal
 {
     class IScene;
 
-    using InputIndexVector = std::vector<UInt32>;
+    using InputIndexVector = std::vector<uint32_t>;
 
     class DataLayoutCreationHelper
     {

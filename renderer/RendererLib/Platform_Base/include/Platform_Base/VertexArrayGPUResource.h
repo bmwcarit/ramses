@@ -16,13 +16,13 @@ namespace ramses_internal
     class VertexArrayGPUResource : public GPUResource
     {
     public:
-        VertexArrayGPUResource(UInt32 gpuAddress, DeviceResourceHandle indexBufferHandle)
+        VertexArrayGPUResource(uint32_t gpuAddress, DeviceResourceHandle indexBufferHandle)
             : GPUResource(gpuAddress, 0u)
             , m_indexBufferHandle(indexBufferHandle)
         {
         }
 
-        DeviceResourceHandle getIndexBufferHandle() const
+        [[nodiscard]] DeviceResourceHandle getIndexBufferHandle() const
         {
             return m_indexBufferHandle;
         }

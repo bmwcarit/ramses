@@ -104,7 +104,7 @@ namespace ramses_internal
         ASSERT_EQ(res.getGenerateMipChainFlag(), loadedTextureResource->getGenerateMipChainFlag());
         ASSERT_EQ(texDesc.m_dataSizes, loadedTextureResource->getMipDataSizes());
         ASSERT_EQ(flag, loadedTextureResource->getCacheFlag());
-        EXPECT_EQ(String("resName"), loadedTextureResource->getName());
+        EXPECT_EQ(std::string("resName"), loadedTextureResource->getName());
     }
 
     TEST_F(AResourcePersistation, WriteRead_TextureResourceCube)
@@ -127,17 +127,17 @@ namespace ramses_internal
         ASSERT_EQ(res.getGenerateMipChainFlag(), loadedTextureResource->getGenerateMipChainFlag());
         ASSERT_EQ(texDesc.m_dataSizes, loadedTextureResource->getMipDataSizes());
         ASSERT_EQ(flag, loadedTextureResource->getCacheFlag());
-        EXPECT_EQ(String("resName"), loadedTextureResource->getName());
+        EXPECT_EQ(std::string("resName"), loadedTextureResource->getName());
     }
 
     TEST_F(AResourcePersistation, WriteRead_VertexArrayResource)
     {
-        const UInt32 cnt = 200;
+        const uint32_t cnt = 200;
         const ResourceCacheFlag flag(15u);
 
         ArrayResource res(EResourceType_VertexArray, cnt, EDataType::Vector2F, nullptr, flag, "resName");
         ResourceBlob vertices(cnt * EnumToSize(EDataType::Vector2F));
-        for (UInt i = 0; i < 2*cnt; ++i)
+        for (size_t i = 0; i < 2*cnt; ++i)
         {
             UnsafeTestMemoryHelpers::WriteToMemoryBlob(i*.1f, vertices.data(), i);
         }
@@ -148,19 +148,19 @@ namespace ramses_internal
         ASSERT_EQ(res.getElementCount(), loadedVertexArrayResource->getElementCount());
         ASSERT_EQ(EDataType::Vector2F, loadedVertexArrayResource->getElementType());
         ASSERT_EQ(flag, loadedVertexArrayResource->getCacheFlag());
-        EXPECT_EQ(String("resName"), loadedVertexArrayResource->getName());
+        EXPECT_EQ(std::string("resName"), loadedVertexArrayResource->getName());
     }
 
     TEST_F(AResourcePersistation, WriteRead_Index16ArrayResource)
     {
-        const UInt32 cnt = 220;
+        const uint32_t cnt = 220;
         const ResourceCacheFlag flag(15u);
 
         ArrayResource res(EResourceType_IndexArray, cnt, EDataType::UInt16, nullptr, flag, "resName");
         ResourceBlob indices(cnt * EnumToSize(EDataType::UInt16));
-        for (UInt i = 0; i < cnt; ++i)
+        for (size_t i = 0; i < cnt; ++i)
         {
-            UnsafeTestMemoryHelpers::WriteToMemoryBlob(static_cast<UInt16>(i), indices.data(), i);
+            UnsafeTestMemoryHelpers::WriteToMemoryBlob(static_cast<uint16_t>(i), indices.data(), i);
         }
         res.setResourceData(std::move(indices));
 
@@ -169,19 +169,19 @@ namespace ramses_internal
         ASSERT_EQ(res.getElementCount(), loadedIndexArrayResource->getElementCount());
         ASSERT_EQ(EDataType::UInt16, loadedIndexArrayResource->getElementType());
         ASSERT_EQ(flag, loadedIndexArrayResource->getCacheFlag());
-        EXPECT_EQ(String("resName"), loadedIndexArrayResource->getName());
+        EXPECT_EQ(std::string("resName"), loadedIndexArrayResource->getName());
     }
 
     TEST_F(AResourcePersistation, WriteRead_Index32ArrayResource)
     {
-        const UInt32 cnt = 220;
+        const uint32_t cnt = 220;
         const ResourceCacheFlag flag(15u);
 
         ArrayResource res(EResourceType_IndexArray, cnt, EDataType::UInt32, nullptr, flag, "resName");
         ResourceBlob indices(cnt * EnumToSize(EDataType::UInt32));
-        for (UInt i = 0; i < cnt; ++i)
+        for (size_t i = 0; i < cnt; ++i)
         {
-            UnsafeTestMemoryHelpers::WriteToMemoryBlob(static_cast<UInt32>(i), indices.data(), i);
+            UnsafeTestMemoryHelpers::WriteToMemoryBlob(static_cast<uint32_t>(i), indices.data(), i);
         }
         res.setResourceData(std::move(indices));
 
@@ -190,13 +190,13 @@ namespace ramses_internal
         ASSERT_EQ(res.getElementCount(), loadedIndexArrayResource->getElementCount());
         ASSERT_EQ(EDataType::UInt32, loadedIndexArrayResource->getElementType());
         ASSERT_EQ(flag, loadedIndexArrayResource->getCacheFlag());
-        EXPECT_EQ(String("resName"), loadedIndexArrayResource->getName());
+        EXPECT_EQ(std::string("resName"), loadedIndexArrayResource->getName());
     }
 
     TEST_F(AResourcePersistation, WriteRead_EffectResource)
     {
         const ResourceCacheFlag flag(15u);
-        EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", flag);
+        EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", flag);
 
         auto loadedEffectResource = createLoadedResource<EffectResource>(effectResource, EResourceType_Effect);
 
@@ -204,7 +204,8 @@ namespace ramses_internal
         EXPECT_STREQ(effectResource.getFragmentShader(), loadedEffectResource->getFragmentShader());
         EXPECT_STREQ(effectResource.getGeometryShader(), loadedEffectResource->getGeometryShader());
         ASSERT_EQ(flag, loadedEffectResource->getCacheFlag());
-        EXPECT_EQ(String("effect name"), loadedEffectResource->getName());
+        EXPECT_EQ(std::string("effect name"), loadedEffectResource->getName());
+        EXPECT_EQ(EDrawMode::Lines, loadedEffectResource->getGeometryShaderInputType());
     }
 
     TEST(ResourcePersistation, sandwich_writeThreeResources_ReadOneBackBasedTableOfContentsInformation)
@@ -219,7 +220,7 @@ namespace ramses_internal
         float dataA[9];
         for (uint32_t i = 0u; i < 9; ++i)
         {
-            dataA[i] = static_cast<Float>(i);
+            dataA[i] = static_cast<float>(i);
         }
         ArrayResource res(EResourceType_VertexArray, 3, EDataType::Vector3F, dataA, flag1, "res1");
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };
@@ -228,13 +229,13 @@ namespace ramses_internal
         float dataB[18];
         for (uint32_t i = 0u; i < 18; ++i)
         {
-            dataB[i] = static_cast<Float>(i);
+            dataB[i] = static_cast<float>(i);
         }
         ArrayResource res2(EResourceType_VertexArray, 6, EDataType::Vector3F, dataB, flag2, "res2");
         ManagedResource managedRes2{ &res2, dummyManagedResourceCallback };
         const ResourceContentHash hash2 = managedRes2->getHash();
 
-        EffectResource res3("foo", "bar", "qux", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", flag3);
+        EffectResource res3("foo", "bar", "qux", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", flag3);
         ManagedResource managedRes3{ &res3, dummyManagedResourceCallback };
         const ResourceContentHash hash3 = managedRes3->getHash();
 
@@ -243,8 +244,7 @@ namespace ramses_internal
         resources.push_back(managedRes2);
         resources.push_back(managedRes3);
 
-        const String filename("onDemandResourceFile");
-        File tempFile(filename);
+        File tempFile("onDemandResourceFile");
         BinaryFileOutputStream out(tempFile);
         ResourcePersistation::WriteNamedResourcesWithTOCToStream(out, resources, false);
         tempFile.close();
@@ -258,7 +258,7 @@ namespace ramses_internal
             auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash));
             ASSERT_TRUE(UnsafeTestMemoryHelpers::CompareMemoryBlobToSpan(dataA, sizeof(dataA), loadedResource->getResourceData().span()));
             ASSERT_EQ(flag1, loadedResource->getCacheFlag());
-            EXPECT_EQ(String("res1"), loadedResource->getName());
+            EXPECT_EQ(std::string("res1"), loadedResource->getName());
         }
 
         {
@@ -266,7 +266,7 @@ namespace ramses_internal
             auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2));
             ASSERT_TRUE(UnsafeTestMemoryHelpers::CompareMemoryBlobToSpan(dataB, sizeof(dataB), loadedResource->getResourceData().span()));
             ASSERT_EQ(flag2, loadedResource->getCacheFlag());
-            EXPECT_EQ(String("res2"), loadedResource->getName());
+            EXPECT_EQ(std::string("res2"), loadedResource->getName());
         }
 
         {
@@ -275,14 +275,14 @@ namespace ramses_internal
             EXPECT_STREQ(res3.getVertexShader(), loadedResource->convertTo<EffectResource>()->getVertexShader());
             EXPECT_STREQ(res3.getFragmentShader(), loadedResource->convertTo<EffectResource>()->getFragmentShader());
             ASSERT_EQ(flag3, loadedResource->getCacheFlag());
-            EXPECT_EQ(String("Some effect with a name"), loadedResource->getName());
+            EXPECT_EQ(std::string("Some effect with a name"), loadedResource->getName());
         }
     }
 
     static std::pair<std::vector<Byte>, ResourceFileEntry> getDummyResourceData()
     {
         BinaryOutputStream outStream;
-        EffectResource res("foo", "bar", "qux", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", ResourceCacheFlag(0));
+        EffectResource res("foo", "bar", "qux", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", ResourceCacheFlag(0));
         NiceMock<ManagedResourceDeleterCallbackMock> managedResourceDeleter;
         ResourceDeleterCallingCallback dummyManagedResourceCallback(managedResourceDeleter);
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };

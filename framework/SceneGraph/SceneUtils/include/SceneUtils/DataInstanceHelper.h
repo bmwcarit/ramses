@@ -10,15 +10,7 @@
 #define RAMSES_DATAINSTANCEHELPER_H
 
 #include "SceneAPI/Handles.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
+#include "DataTypesImpl.h"
 
 #include "PlatformAbstraction/VariantWrapper.h"
 
@@ -26,19 +18,19 @@ namespace ramses_internal
 {
     class IScene;
 
-    using DataInstanceValueVariant = absl::variant<
-        absl::monostate,
+    using DataInstanceValueVariant = std::variant<
+        std::monostate,
         float,
         int32_t,
-        Vector2,
-        Vector3,
-        Vector4,
-        Vector2i,
-        Vector3i,
-        Vector4i,
-        Matrix22f,
-        Matrix33f,
-        Matrix44f>;
+        glm::vec2,
+        glm::vec3,
+        glm::vec4,
+        glm::ivec2,
+        glm::ivec3,
+        glm::ivec4,
+        glm::mat2,
+        glm::mat3,
+        glm::mat4>;
 
     class DataInstanceHelper
     {

@@ -44,10 +44,10 @@ namespace ramses
 
             using TypeCountPair = std::pair<ERamsesObjectType, uint32_t>;
             std::vector<TypeCountPair> typesToSerialize;
-            typesToSerialize.reserve(ERamsesObjectType_NUMBER_OF_TYPES);
+            typesToSerialize.reserve(static_cast<size_t>(ERamsesObjectType::NUMBER_OF_TYPES));
             uint32_t totalCount = 0u;
 
-            for (uint32_t typeIdx = 0u; typeIdx < ERamsesObjectType_NUMBER_OF_TYPES; ++typeIdx)
+            for (uint32_t typeIdx = 0u; typeIdx < static_cast<uint32_t>(ERamsesObjectType::NUMBER_OF_TYPES); ++typeIdx)
             {
                 const ERamsesObjectType type = static_cast<ERamsesObjectType>(typeIdx);
                 if (RamsesObjectTypeUtils::IsConcreteType(type) &&
@@ -76,7 +76,7 @@ namespace ramses
                 RamsesObjectRegistryIterator iter(registry, type);
                 while (const ObjectsBaseType* obj = iter.getNext<ObjectsBaseType>())
                 {
-                    CHECK_RETURN_ERR(obj->impl.serialize(outStream, serializationContext));
+                    CHECK_RETURN_ERR(obj->m_impl.serialize(outStream, serializationContext));
                 }
             }
 
@@ -91,7 +91,7 @@ namespace ramses
 
         static ERamsesObjectType DeserializeObjectTypeAndCount(ramses_internal::IInputStream& inStream, uint32_t& count)
         {
-            uint32_t typeInt = ERamsesObjectType_Invalid;
+            auto typeInt = static_cast<uint32_t>(ERamsesObjectType::Invalid);
             inStream >> typeInt;
             inStream >> count;
 

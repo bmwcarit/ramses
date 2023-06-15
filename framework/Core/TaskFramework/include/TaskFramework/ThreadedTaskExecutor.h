@@ -32,19 +32,19 @@ namespace ramses_internal
         * @param   threadCount     The number of threads which should be created.
         * @param   watchdogConfig The configuration for watchdogHandling
         */
-        explicit ThreadedTaskExecutor(UInt16 threadCount, const ThreadWatchdogConfig& watchdogConfig = ThreadWatchdogConfig());
+        explicit ThreadedTaskExecutor(uint16_t threadCount, const ThreadWatchdogConfig& watchdogConfig = ThreadWatchdogConfig());
 
         /**
          * Virtual destructor.
          */
-        virtual ~ThreadedTaskExecutor() override;
+        ~ThreadedTaskExecutor() override;
 
         /**
          * @name    TaskExecutor implementation
          * @see ITaskChainComponent
          * @{
          */
-        virtual bool enqueue(ITask& Task) override;
+        bool enqueue(ITask& Task) override;
 
         /**
          * @}
@@ -59,7 +59,7 @@ namespace ramses_internal
          * Stop the instance with the executing thread and the thread pool.
          */
         void stop();
-        virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
+        void disableAcceptingTasksAfterExecutingCurrentQueue() override;
     private:
         /**
          * Start the instance with the executing thread and the thread pool.

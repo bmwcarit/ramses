@@ -16,7 +16,7 @@ namespace ramses_internal
     class GPUResource
     {
     public:
-        inline GPUResource(UInt32 gpuAddress, UInt32 totalSizeInBytes)
+        inline GPUResource(uint32_t gpuAddress, uint32_t totalSizeInBytes)
             : m_GPUAddress(gpuAddress)
             , m_sizeInBytes(totalSizeInBytes)
         {
@@ -24,19 +24,19 @@ namespace ramses_internal
 
         virtual ~GPUResource() {}
 
-        inline UInt32 getGPUAddress() const
+        [[nodiscard]] inline uint32_t getGPUAddress() const
         {
             return m_GPUAddress;
         }
 
-        inline UInt32 getTotalSizeInBytes() const
+        [[nodiscard]] inline uint32_t getTotalSizeInBytes() const
         {
             return m_sizeInBytes;
         }
 
     private:
-        const UInt32 m_GPUAddress;
-        const UInt32 m_sizeInBytes;
+        const uint32_t m_GPUAddress;
+        const uint32_t m_sizeInBytes;
     };
 }
 

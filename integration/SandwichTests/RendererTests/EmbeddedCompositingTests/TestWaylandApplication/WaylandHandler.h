@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -73,14 +74,14 @@ namespace ramses_internal
     class WaylandHandler
     {
     public:
-        bool init(const String& displayName, int displayFD);
+        bool init(const std::string& displayName, int displayFD);
         bool initWithSharedDisplayConnection(WaylandHandler& handlerToShareDisplay);
         void deinit();
 
         void setRequiredWaylandOutputVersion(uint32_t protocolVersion);
         bool createWindow(TestApplicationSurfaceId surfaceId, uint32_t windowWidth, uint32_t windowHeight, uint32_t swapInterval, bool useEGL);
         void createShellSurface(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId);
-        void setShellSurfaceTitle(TestApplicationShellSurfaceId shellSurfaceId, const String& title);
+        void setShellSurfaceTitle(TestApplicationShellSurfaceId shellSurfaceId, const std::string& title);
         void setShellSurfaceDummyValues(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId);
         void destroyShellSurface(TestApplicationShellSurfaceId shellSurfaceId);
         void destroyWindow(TestApplicationSurfaceId surfaceId);
@@ -97,9 +98,9 @@ namespace ramses_internal
         void waitOnFrameCallback(TestApplicationSurfaceId surfaceId);
         void getWindowSize(TestApplicationSurfaceId surfaceId, uint32_t& width, uint32_t& height) const;
 
-        SHMBuffer* getFreeSHMBuffer(uint32_t width, uint32_t height);
-        uint32_t getNumberOfAllocatedSHMBuffer() const;
-        bool getIsSHMBufferFree(uint32_t buffer) const;
+        [[nodiscard]] SHMBuffer* getFreeSHMBuffer(uint32_t width, uint32_t height);
+        [[nodiscard]] uint32_t getNumberOfAllocatedSHMBuffer() const;
+        [[nodiscard]] bool getIsSHMBufferFree(uint32_t buffer) const;
         void getWaylandOutputTestParams(bool& errorsFound, WaylandOutputTestParams& waylandOutputParams) const;
 
     private:
@@ -145,14 +146,14 @@ namespace ramses_internal
               int32_t factor);
 
         bool setupEGL();
-        bool setupWayland(const String& displayName, int displayFD);
+        bool setupWayland(const std::string& displayName, int displayFD);
         void closeWayland();
         bool createSurface(TestWaylandWindow& window);
         bool createEGLWindow(TestWaylandWindow& window);
         void terminateEGL();
 
-        TestWaylandWindow& getWindow(TestApplicationSurfaceId surfaceId) const;
-        wl_shell_surface& getShellSurface(TestApplicationShellSurfaceId shellSurfaceId) const;
+        [[nodiscard]] TestWaylandWindow& getWindow(TestApplicationSurfaceId surfaceId) const;
+        [[nodiscard]] wl_shell_surface& getShellSurface(TestApplicationShellSurfaceId shellSurfaceId) const;
 
         using WindowsHashMap = HashMap<TestApplicationSurfaceId, TestWaylandWindow*>;
         using ShellSurfacesHashMap = HashMap<TestApplicationShellSurfaceId, wl_shell_surface *>;

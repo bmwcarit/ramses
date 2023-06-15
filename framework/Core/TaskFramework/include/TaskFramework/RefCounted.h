@@ -24,7 +24,7 @@ namespace ramses_internal
         uint32_t addRef();
         uint32_t release();
 
-        uint32_t getReferenceCount() const;
+        [[nodiscard]] uint32_t getReferenceCount() const;
 
     private:
         std::atomic<uint32_t> m_refCount{1u};

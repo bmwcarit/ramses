@@ -25,12 +25,12 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             m_logic.setSceneDisplayBufferAssignment(sceneId, OffscreenBufferHandle{}, sceneRenderOrder);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             // expect nothing to dispatch
             expectEvents({});

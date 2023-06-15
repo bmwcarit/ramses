@@ -17,19 +17,19 @@ namespace ramses_internal
     class AThreadWatchdog : public ::testing::Test
     {
     public:
-        void SetUp()
+        void SetUp() override
         {
             config.setThreadWatchDogCallback(&mockCallback);
-            config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 0);
+            config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier::Workers, 0);
             EXPECT_CALL(mockCallback, registerThread(_));
         }
 
         void createWatchdog()
         {
-            watchdog = std::make_unique<ThreadWatchdog>(config, ramses::ERamsesThreadIdentifier_Workers);
+            watchdog = std::make_unique<ThreadWatchdog>(config, ramses::ERamsesThreadIdentifier::Workers);
         }
 
-        void TearDown()
+        void TearDown() override
         {
             EXPECT_CALL(mockCallback, unregisterThread(_));
         }
@@ -46,18 +46,18 @@ namespace ramses_internal
         config.setThreadWatchDogCallback(&mockCallback);
 
         {
-            EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-            ThreadWatchdog watchdog(config, ramses::ERamsesThreadIdentifier_Workers);
+            EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
+            ThreadWatchdog watchdog(config, ramses::ERamsesThreadIdentifier::Workers);
 
             Mock::VerifyAndClearExpectations(&mockCallback);
-            EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+            EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
         }
         {
-            EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier_Renderer));
-            ThreadWatchdog watchdog(config, ramses::ERamsesThreadIdentifier_Renderer);
+            EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier::Renderer));
+            ThreadWatchdog watchdog(config, ramses::ERamsesThreadIdentifier::Renderer);
 
             Mock::VerifyAndClearExpectations(&mockCallback);
-            EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier_Renderer));
+            EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier::Renderer));
         }
     }
 
@@ -228,7 +228,7 @@ namespace ramses_internal
     // TODO(Carsten): test if actual value is respected as soon as time system can be mocked
     TEST_F(AThreadWatchdog, respectsNotificationInterval)
     {
-        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, static_cast<uint32_t>(-1));
+        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier::Workers, static_cast<uint32_t>(-1));
         createWatchdog();
         auto t0 = watchdog->registerThread();
         auto t1 = watchdog->registerThread();

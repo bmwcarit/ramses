@@ -11,11 +11,9 @@
 
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/DataSlot.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector4.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -32,26 +30,25 @@ namespace ramses_internal
         virtual void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) = 0;
         virtual void handleSceneUnpublished(SceneId sceneId) = 0;
         virtual void handleSceneReceived(const SceneInfo& sceneInfo) = 0;
-        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
-        virtual bool handleDmaBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) = 0;
+        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, uint32_t width, uint32_t height, uint32_t sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
+        virtual bool handleDmaBufferCreateRequest(OffscreenBufferHandle buffer, uint32_t width, uint32_t height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) = 0;
         virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) = 0;
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) = 0;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) = 0;
-        virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) = 0;
         virtual bool handleExternalBufferCreateRequest(ExternalBufferHandle buffer) = 0;
         virtual bool handleExternalBufferDestroyRequest(ExternalBufferHandle buffer) = 0;
         virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) = 0;
-        virtual void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) = 0;
+        virtual void handleSetClearColor(OffscreenBufferHandle buffer, const glm::vec4& clearColor) = 0;
         virtual void handleSetExternallyOwnedWindowSize(uint32_t width, uint32_t height) = 0;
         virtual void handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) = 0;
-        virtual void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) = 0;
+        virtual void handlePickEvent(SceneId sceneId, glm::vec2 coordsNormalizedToBufferSize) = 0;
         virtual void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void handleBufferToSceneDataLinkRequest(ExternalBufferHandle externalBuffer, SceneId consumerSceneId, DataSlotId consumerId) = 0;
         virtual void handleDataUnlinkRequest(SceneId consumerSceneId, DataSlotId consumerId) = 0;
-        virtual void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply) = 0;
-        virtual void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe) = 0;
+        virtual void setLimitFlushesForceApply(size_t limitForPendingFlushesForceApply) = 0;
+        virtual void setLimitFlushesForceUnsubscribe(size_t limitForPendingFlushesForceUnsubscribe) = 0;
         virtual void setSkippingOfUnmodifiedScenes(bool enable) = 0;
         virtual void logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const = 0;
 

@@ -26,5 +26,5 @@ namespace ramses_internal
     static_assert(1u == sizeof(Byte), "Unexpected sizeof(Byte)");
 
     static_assert(sizeof(void*) == sizeof(Int), "Unexpected sizeof(Int)");
-    static_assert(sizeof(void*) == sizeof(UInt), "Unexpected sizeof(UInt)");
+    static_assert(sizeof(void*) == sizeof(uintptr_t), "Unexpected sizeof(uintptr_t)");
 }

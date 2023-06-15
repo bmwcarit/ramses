@@ -13,7 +13,7 @@ namespace ramses_internal
 {
     Window_Wayland_Shell::Window_Wayland_Shell(const DisplayConfig& displayConfig,
                                                IWindowEventHandler& windowEventHandler,
-                                               UInt32               id,
+                                               uint32_t               id,
                                                std::chrono::microseconds frameCallbackMaxPollTime)
         : Window_Wayland(displayConfig, windowEventHandler, id, frameCallbackMaxPollTime)
     {
@@ -64,7 +64,7 @@ namespace ramses_internal
         return true;
     }
 
-    void Window_Wayland_Shell::setTitle(const String& title)
+    void Window_Wayland_Shell::setTitle(std::string_view title)
     {
         Window_Wayland::setTitle(title);
         if (nullptr != m_shellSurface)

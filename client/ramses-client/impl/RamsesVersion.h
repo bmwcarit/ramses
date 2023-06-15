@@ -9,7 +9,11 @@
 #ifndef RAMSES_INTERNAL_RAMSESVERSION_H
 #define RAMSES_INTERNAL_RAMSESVERSION_H
 
-#include "Collections/String.h"
+#include "ramses-framework-api/EFeatureLevel.h"
+#include "PlatformAbstraction/PlatformTypes.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -20,15 +24,15 @@ namespace ramses_internal
     {
         struct VersionInfo
         {
-            String gitHash;
-            String versionString;
-            UInt32 major;
-            UInt32 minor;
+            std::string gitHash;
+            std::string versionString;
+            uint32_t major;
+            uint32_t minor;
         };
 
-        void WriteToStream(IOutputStream& stream, const String& versionString, const String& gitHash);
-        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion);
-        bool MatchesMajorMinor(UInt32 currentMajor, UInt32 currentMinor, const VersionInfo& in);
+        void WriteToStream(IOutputStream& stream, std::string_view versionString, std::string_view gitHash, ramses::EFeatureLevel featureLevel);
+        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion, ramses::EFeatureLevel& outFeatureLevel);
+        bool MatchesMajorMinor(uint32_t currentMajor, uint32_t currentMinor, const VersionInfo& in);
     }
 }
 

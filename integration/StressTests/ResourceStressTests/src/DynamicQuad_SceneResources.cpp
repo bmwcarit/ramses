@@ -30,7 +30,7 @@ namespace ramses_internal
     DynamicQuad_SceneResources::DynamicQuad_SceneResources(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
         : DynamicQuad_Base(scene, screenspaceQuad)
         , m_textureBuffer   (m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGB8, DynamicTextureWidth, DynamicTextureHeight, 1u))
-        , m_textureSampler  (m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Linear_MipMapLinear, ramses::ETextureSamplingMethod_Linear, *m_textureBuffer))
+        , m_textureSampler  (m_scene.createTextureSampler(ramses::ETextureAddressMode::Repeat, ramses::ETextureAddressMode::Repeat, ramses::ETextureSamplingMethod::Linear_MipMapLinear, ramses::ETextureSamplingMethod::Linear, *m_textureBuffer))
         , m_indices         (m_scene.createArrayBuffer( ramses::EDataType::UInt16, 4))
         , m_texCoords       (m_scene.createArrayBuffer(ramses::EDataType::Vector2F, 8))
         , m_vertexPos       (m_scene.createArrayBuffer( ramses::EDataType::Vector3F, 12))
@@ -54,7 +54,7 @@ namespace ramses_internal
 
         m_meshNode.setAppearance(m_appearance);
         m_meshNode.setIndexCount(4);
-        m_appearance.setDrawMode(ramses::EDrawMode_TriangleStrip);
+        m_appearance.setDrawMode(ramses::EDrawMode::TriangleStrip);
         m_meshNode.setGeometryBinding(m_geometryBinding);
     }
 
@@ -88,10 +88,10 @@ namespace ramses_internal
 
     void DynamicQuad_SceneResources::recreate()
     {
-        static const uint16_t indicesData[] = { 0, 1, 3, 2 };
+        const std::array<uint16_t, 4> indicesData = { 0, 1, 3, 2 };
 
         // Vertex positions in normalized screen space, i.e. fraction of the screen (0.0f == bottom/left, 1.0f == top/right)
-        Vector3 vertexPositionsData[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsData
         {
             m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u),
             m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u),
@@ -99,23 +99,26 @@ namespace ramses_internal
             m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u)
         };
 
-        float vertexTexcoordsData[] = {
-            0.f, 0.f,
-            1.f, 0.f,
-            1.f, 1.f,
-            0.f, 1.f
+        std::array<ramses::vec2f, 4u> vertexTexcoordsData
+        {
+            ramses::vec2f{ 0.f, 0.f },
+            ramses::vec2f{ 1.f, 0.f },
+            ramses::vec2f{ 1.f, 1.f },
+            ramses::vec2f{ 0.f, 1.f }
         };
 
-        for (size_t t = 0; t < sizeof(vertexTexcoordsData) / sizeof(float); ++t)
+        for (auto& tc : vertexTexcoordsData)
         {
-            vertexTexcoordsData[t] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
+            tc[0] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
+            tc[1] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }
 
-        m_indices->updateData(0u, 4, indicesData);
-        m_vertexPos->updateData(0u, 4, &vertexPositionsData[0].x);
-        m_texCoords->updateData(0u, 4, vertexTexcoordsData);
+        m_indices->updateData(0u, 4, indicesData.data());
+        m_vertexPos->updateData(0u, 4, vertexPositionsData.data());
+        m_texCoords->updateData(0u, 4, vertexTexcoordsData.data());
 
-        std::unique_ptr<uint8_t[]> rawData(new uint8_t[DynamicTextureWidth * DynamicTextureHeight * 3]);
+        std::vector<uint8_t> rawData;
+        rawData.resize(DynamicTextureWidth * DynamicTextureHeight * 3);
 
         for (uint32_t x = 0; x < DynamicTextureWidth; ++x)
         {
@@ -127,6 +130,6 @@ namespace ramses_internal
             }
         }
 
-        m_textureBuffer->updateData(0, 0, 0, DynamicTextureWidth, DynamicTextureHeight, rawData.get());
+        m_textureBuffer->updateData(0, 0, 0, DynamicTextureWidth, DynamicTextureHeight, rawData.data());
     }
 }

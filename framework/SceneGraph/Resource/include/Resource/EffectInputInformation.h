@@ -12,7 +12,9 @@
 #include "Collections/Vector.h"
 #include "SceneAPI/EDataType.h"
 #include "SceneAPI/EFixedSemantics.h"
-#include "Collections/String.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -44,13 +46,13 @@ namespace ramses_internal
     struct EffectInputInformation
     {
         inline EffectInputInformation();
-        inline EffectInputInformation(const String& inputName_, UInt32 elementCount_, EDataType dataType_, EFixedSemantics semantics_);
+        inline EffectInputInformation(std::string_view inputName_, uint32_t elementCount_, EDataType dataType_, EFixedSemantics semantics_);
 
         inline friend bool operator==(const EffectInputInformation& a, const EffectInputInformation& b);
         inline friend bool operator!=(const EffectInputInformation& a, const EffectInputInformation& b);
 
-        String inputName;
-        UInt32 elementCount;
+        std::string inputName;
+        uint32_t elementCount;
         EDataType dataType;
         EFixedSemantics semantics;
     };
@@ -65,7 +67,7 @@ namespace ramses_internal
     {
     }
 
-    EffectInputInformation::EffectInputInformation(const String& inputName_, UInt32 elementCount_, EDataType dataType_, EFixedSemantics semantics_)
+    EffectInputInformation::EffectInputInformation(std::string_view inputName_, uint32_t elementCount_, EDataType dataType_, EFixedSemantics semantics_)
         : inputName(inputName_)
         , elementCount(elementCount_)
         , dataType(dataType_)

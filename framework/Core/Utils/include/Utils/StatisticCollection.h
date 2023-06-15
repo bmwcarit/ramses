@@ -77,7 +77,7 @@ namespace ramses_internal
             }
         }
 
-        constexpr size_t maxSize() const noexcept
+        [[nodiscard]] constexpr size_t maxSize() const noexcept
         {
             return N;
         }
@@ -116,7 +116,7 @@ namespace ramses_internal
                 m_counter = newValue;
         }
 
-        DataType getCounterValue() const
+        [[nodiscard]] DataType getCounterValue() const
         {
             return m_counter.load();
         }
@@ -161,26 +161,26 @@ namespace ramses_internal
         virtual void resetSummaries();
         virtual void nextTimeInterval();
 
-        UInt32 getNumberTimeIntervalsSinceLastSummaryReset() const;
+        [[nodiscard]] uint32_t getNumberTimeIntervalsSinceLastSummaryReset() const;
 
     protected:
-        UInt32 m_numberTimeIntervalsSinceLastSummaryReset;
+        uint32_t m_numberTimeIntervalsSinceLastSummaryReset;
     };
 
     class StatisticCollectionFramework : public StatisticCollection
     {
     public:
-        virtual void reset() override;
-        virtual void resetSummaries() override;
-        virtual void nextTimeInterval() override;
+        void reset() override;
+        void resetSummaries() override;
+        void nextTimeInterval() override;
 
-        StatisticEntry<UInt32, SummaryEntry> statMessagesSent;
-        StatisticEntry<UInt32, SummaryEntry> statMessagesReceived;
-        StatisticEntry<UInt32, SummaryEntry> statResourcesCreated;
-        StatisticEntry<UInt32, SummaryEntry> statResourcesDestroyed;
-        StatisticEntry<UInt32, SummaryEntry> statResourcesNumber; //updated by values of statResourcesCreated and statResourcesDestroyed
-        StatisticEntry<UInt32, SummaryEntry> statResourcesLoadedFromFileNumber;
-        StatisticEntry<UInt32, SummaryEntry> statResourcesLoadedFromFileSize;
+        StatisticEntry<uint32_t, SummaryEntry> statMessagesSent;
+        StatisticEntry<uint32_t, SummaryEntry> statMessagesReceived;
+        StatisticEntry<uint32_t, SummaryEntry> statResourcesCreated;
+        StatisticEntry<uint32_t, SummaryEntry> statResourcesDestroyed;
+        StatisticEntry<uint32_t, SummaryEntry> statResourcesNumber; //updated by values of statResourcesCreated and statResourcesDestroyed
+        StatisticEntry<uint32_t, SummaryEntry> statResourcesLoadedFromFileNumber;
+        StatisticEntry<uint32_t, SummaryEntry> statResourcesLoadedFromFileSize;
     };
 
     enum EResourceStatisticIndex : std::size_t // deliberately not enum class, supposed to be implicitly convertible
@@ -198,25 +198,25 @@ namespace ramses_internal
     class StatisticCollectionScene : public StatisticCollection
     {
     public:
-        virtual void reset() override;
-        virtual void resetSummaries() override;
-        virtual void nextTimeInterval() override;
+        void reset() override;
+        void resetSummaries() override;
+        void nextTimeInterval() override;
 
-        StatisticEntry<UInt32, SummaryEntry> statFlushesTriggered;
-        StatisticEntry<UInt32, SummaryEntry> statObjectsCreated;
-        StatisticEntry<UInt32, SummaryEntry> statObjectsDestroyed;
-        StatisticEntry<UInt32, SummaryEntry> statObjectsCount; //updated by values of statObjectsCreated and statObjectsDestroyed
-        StatisticEntry<UInt32, SummaryEntry> statSceneActionsSent;
-        StatisticEntry<UInt32, SummaryEntry> statSceneActionsSentSkipped;
-        StatisticEntry<UInt32, SummaryEntry> statSceneActionsGenerated;
-        StatisticEntry<UInt32, SummaryEntry> statSceneActionsGeneratedSize;
-        StatisticEntry<UInt32, SummaryEntry> statSceneUpdatesGeneratedPackets;
-        StatisticEntry<UInt32, SummaryEntry> statSceneUpdatesGeneratedSize;
-        StatisticEntry<UInt64, FirstFiveElements> statMaximumSizeSingleSceneUpdate;
+        StatisticEntry<uint32_t, SummaryEntry> statFlushesTriggered;
+        StatisticEntry<uint32_t, SummaryEntry> statObjectsCreated;
+        StatisticEntry<uint32_t, SummaryEntry> statObjectsDestroyed;
+        StatisticEntry<uint32_t, SummaryEntry> statObjectsCount; //updated by values of statObjectsCreated and statObjectsDestroyed
+        StatisticEntry<uint32_t, SummaryEntry> statSceneActionsSent;
+        StatisticEntry<uint32_t, SummaryEntry> statSceneActionsSentSkipped;
+        StatisticEntry<uint32_t, SummaryEntry> statSceneActionsGenerated;
+        StatisticEntry<uint32_t, SummaryEntry> statSceneActionsGeneratedSize;
+        StatisticEntry<uint32_t, SummaryEntry> statSceneUpdatesGeneratedPackets;
+        StatisticEntry<uint32_t, SummaryEntry> statSceneUpdatesGeneratedSize;
+        StatisticEntry<uint64_t, FirstFiveElements> statMaximumSizeSingleSceneUpdate;
 
-        std::array<StatisticEntry<UInt64, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceCount;
-        std::array<StatisticEntry<UInt64, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceAvgSize;
-        std::array<StatisticEntry<UInt64, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceMaxSize;
+        std::array<StatisticEntry<uint64_t, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceCount;
+        std::array<StatisticEntry<uint64_t, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceAvgSize;
+        std::array<StatisticEntry<uint64_t, SummaryEntry>, EResourceStatisticIndex_NumIndices> statResourceMaxSize;
     };
 }
 

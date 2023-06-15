@@ -14,7 +14,7 @@ namespace ramses_internal
     {
     }
 
-    Quad::Quad(Int32 _x, Int32 _y, Int32 _width, Int32 _height)
+    Quad::Quad(int32_t _x, int32_t _y, int32_t _width, int32_t _height)
         : x(_x)
         , y(_y)
         , width(_width)
@@ -48,7 +48,7 @@ namespace ramses_internal
         return { minX, minY, maxX - minX, maxY - minY };
     }
 
-    Int32 Quad::getArea() const
+    int32_t Quad::getArea() const
     {
         return width * height;
     }

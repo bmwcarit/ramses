@@ -50,9 +50,9 @@ namespace ramses_internal
         uint32_t m_keyModifiers          = EKeyModifier_NoModifier;
         double   m_cursorPosX            = 0.0;
         double   m_cursorPosY            = 0.0;
-        Bool     m_leftMouseButtonDown   = false;
-        Bool     m_rightMouseButtonDown  = false;
-        Bool     m_middleMouseButtonDown = false;
+        bool     m_leftMouseButtonDown   = false;
+        bool     m_rightMouseButtonDown  = false;
+        bool     m_middleMouseButtonDown = false;
 
         const struct Seat_Listener : public wl_seat_listener
         {

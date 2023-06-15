@@ -74,8 +74,6 @@ protected:
     static constexpr DeviceResourceHandle compositedTextureDeviceHandle{ 111u };
 };
 
-constexpr DeviceResourceHandle AnEmbeddedCompositingManager::compositedTextureDeviceHandle;
-
 TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTexture)
 {
     addStreamReference(streamTextureSourceId);

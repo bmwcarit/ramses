@@ -7,15 +7,32 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererTestUtils.h"
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
+#include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "gmock/gmock.h"
+#include "ramses-cli.h"
 
 int main(int argc, char *argv[])
 {
-    ramses_internal::CommandLineParser parser(argc, argv);
-    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
-
     testing::InitGoogleMock(&argc, argv);
+
+    CLI::App cli;
+    ramses::RamsesFrameworkConfig framworkConfig{ramses::EFeatureLevel_Latest};
+    ramses::RendererConfig rendererConfig;
+    ramses::DisplayConfig displayConfig;
+    try
+    {
+        ramses::registerOptions(cli, framworkConfig);
+        ramses::registerOptions(cli, rendererConfig);
+        ramses::registerOptions(cli, displayConfig);
+    }
+    catch (const CLI::Error& error)
+    {
+        // configuration error
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
+    RendererTestUtils::SetDefaultConfigForAllTests(rendererConfig, displayConfig);
+
     return RUN_ALL_TESTS();
 }

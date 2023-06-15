@@ -45,22 +45,7 @@ namespace ramses_internal
 }
 
 // platform specific implementations
-#if defined(__INTEGRITY)
-namespace ramses_internal
-{
-    inline const char* synchronized_clock::source()
-    {
-        return "gptp";
-    }
-
-    inline synchronized_clock_type synchronized_clock::getClockType()
-    {
-        return synchronized_clock_type::PTP;
-    }
-
-}
-
-#elif defined(RAMSES_LINUX_USE_DEV_PTP)
+#if defined(RAMSES_LINUX_USE_DEV_PTP)
 #include <ctime>
 
 namespace ramses_internal

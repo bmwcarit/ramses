@@ -11,7 +11,8 @@
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Ramsh/Ramsh.h"
-#include "Collections/String.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -21,15 +22,15 @@ namespace ramses_internal
     class RamshStandardSetup : public Ramsh
     {
     public:
-        explicit RamshStandardSetup(ramses::ERamsesShellType type, String prompt = "ramses");
-        virtual ~RamshStandardSetup() override;
+        explicit RamshStandardSetup(ramses::ERamsesShellType type, std::string prompt = "ramses");
+        ~RamshStandardSetup() override;
 
         bool start();
         bool stop();
 
     private:
         const ramses::ERamsesShellType m_type;
-        const String m_prompt;
+        const std::string m_prompt;
         bool m_started = false;
         std::unique_ptr<RamshCommunicationChannelConsole> m_consoleChannel;
         std::unique_ptr<RamshCommunicationChannelDLT> m_dltChannel;

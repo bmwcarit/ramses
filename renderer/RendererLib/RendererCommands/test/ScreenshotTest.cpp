@@ -12,6 +12,8 @@
 #include "RendererLib/RendererCommandBuffer.h"
 #include "RendererCommandVisitorMock.h"
 
+#include <string_view>
+
 using namespace ramses_internal;
 using namespace ::testing;
 
@@ -25,10 +27,10 @@ public:
     }
 
 protected:
-    void expectScreenshotCommand(const std::string& filename, const DisplayHandle& displayHandle = DisplayHandle(0u), bool autoSize = true)
+    void expectScreenshotCommand(std::string_view filename, const DisplayHandle& displayHandle = DisplayHandle(0u), bool autoSize = true)
     {
         StrictMock<RendererCommandVisitorMock> cmdVisitor;
-        EXPECT_CALL(cmdVisitor, handleReadPixels(displayHandle, OffscreenBufferHandle::Invalid(), _, _, _, _, autoSize, String(filename)));
+        EXPECT_CALL(cmdVisitor, handleReadPixels(displayHandle, OffscreenBufferHandle::Invalid(), _, _, _, _, autoSize, filename));
         cmdVisitor.visit(m_rendererCommandBuffer);
     }
 

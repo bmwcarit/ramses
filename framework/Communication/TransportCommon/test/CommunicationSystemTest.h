@@ -45,8 +45,6 @@ namespace ramses_internal
 
 #define TESTING_SERVICETYPE_RAMSES(commsysProvider) \
     ::testing::Combine(::testing::ValuesIn(commsysProvider), ::testing::Values(EServiceType::Ramses))
-#define TESTING_SERVICETYPE_DCSM(commsysProvider) \
-    ::testing::Combine(::testing::ValuesIn(commsysProvider), ::testing::Values(EServiceType::Dcsm))
 }
 
 #endif

@@ -14,7 +14,7 @@
 #include "Resource/ResourceTypes.h"
 #include "Components/ManagedResource.h"
 #include "SceneAPI/SceneId.h"
-#include "absl/types/optional.h"
+#include <optional>
 
 namespace ramses_internal
 {
@@ -27,7 +27,7 @@ namespace ramses_internal
     public:
         virtual ~IResourceUploader() {}
 
-        virtual absl::optional<DeviceResourceHandle> uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& resourceObject, UInt32& outVRAMSize) = 0;
+        virtual std::optional<DeviceResourceHandle> uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& resourceObject, uint32_t& outVRAMSize) = 0;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) = 0;
         virtual void                 storeShaderInBinaryShaderCache(IRenderBackend& renderBackend, DeviceResourceHandle deviceHandle, const ResourceContentHash& hash, SceneId sceneid) = 0;
     };

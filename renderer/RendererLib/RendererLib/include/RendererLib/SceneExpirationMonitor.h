@@ -28,21 +28,21 @@ namespace ramses_internal
         SceneExpirationMonitor(const RendererScenes& scenes, RendererEventCollector& eventCollector, RendererStatistics& statistics);
         ~SceneExpirationMonitor();
 
-        void onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, UInt64 flushIndex);
+        void onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, uint64_t flushIndex);
         void onRendered(SceneId sceneId);
         void onHidden(SceneId sceneId);
         void checkExpiredScenes(FlushTime::Clock::time_point currentTime);
 
         void onDestroyed(SceneId sceneId);
 
-        FlushTime::Clock::time_point getExpirationTimestampOfRenderedScene(SceneId sceneId) const;
+        [[nodiscard]] FlushTime::Clock::time_point getExpirationTimestampOfRenderedScene(SceneId sceneId) const;
 
     private:
         struct TimeStampTag
         {
             FlushTime::Clock::time_point ts = FlushTime::InvalidTimestamp;
             SceneVersionTag tag;
-            UInt64 internalIndex = std::numeric_limits<UInt64>::max();
+            uint64_t internalIndex = std::numeric_limits<uint64_t>::max();
         };
 
         struct SceneTimestamps

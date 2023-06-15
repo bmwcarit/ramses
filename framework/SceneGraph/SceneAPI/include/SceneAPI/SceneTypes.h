@@ -19,7 +19,7 @@ namespace ramses_internal
     struct RenderGroupOrderEntry
     {
         RenderGroupHandle renderGroup;
-        Int32             order;
+        int32_t             order;
 
         bool operator<(const RenderGroupOrderEntry& other) const
         {
@@ -33,7 +33,6 @@ namespace ramses_internal
     using NodeHandleVector           =  std::vector<NodeHandle>;
     using TransformHandleVector      =  std::vector<TransformHandle>;
     using RenderBufferHandleVector   =  std::vector<RenderBufferHandle>;
-    using StreamTextureHandleVector  =  std::vector<StreamTextureHandle>;
     using RenderGroupOrderVector     =  std::vector<RenderGroupOrderEntry>;
     using BlitPassHandleVector       =  std::vector<BlitPassHandle>;
     using PickableObjectHandleVector =  std::vector<PickableObjectHandle>;
@@ -42,7 +41,7 @@ namespace ramses_internal
     using TextureSamplerHandleVector =  std::vector<TextureSamplerHandle>;
 
     struct PickableObjectIdTag {};
-    using PickableObjectId = StronglyTypedValue<UInt32, std::numeric_limits<uint32_t>::max(), PickableObjectIdTag>;
+    using PickableObjectId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), PickableObjectIdTag>;
     using PickableObjectIds = std::vector<PickableObjectId>;
 }
 

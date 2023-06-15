@@ -16,7 +16,6 @@
 #include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/RamsesLogger.h"
-#include "Utils/CommandLineParser.h"
 
 namespace ramses_internal
 {
@@ -61,7 +60,7 @@ namespace ramses_internal
 
     class DummyRamshCommand : public RamshCommand
     {
-        virtual bool executeInput(const std::vector<std::string>& /*input*/) override
+        bool executeInput(const std::vector<std::string>& /*input*/) override
         {
             return true;
         }
@@ -145,34 +144,34 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, parseCommandStringTest)
     {
-        String in1 = "  test    ' a b c'  -arg ''  ";
+        std::string in1 = "  test    ' a b c'  -arg ''  ";
         std::vector<std::string> result1 = RamshTools::parseCommandString(in1);
-        EXPECT_EQ(String("test"), result1[0]);
-        EXPECT_EQ(String(" a b c"), result1[1]);
-        EXPECT_EQ(String("-arg"), result1[2]);
-        EXPECT_EQ(String(), result1[3]);
+        EXPECT_EQ(std::string("test"), result1[0]);
+        EXPECT_EQ(std::string(" a b c"), result1[1]);
+        EXPECT_EQ(std::string("-arg"), result1[2]);
+        EXPECT_EQ(std::string(), result1[3]);
 
-        String in2 = R"(  "te-' 'st " abc' ' 'def'a   )";
+        std::string in2 = R"(  "te-' 'st " abc' ' 'def'a   )";
         std::vector<std::string> result2 = RamshTools::parseCommandString(in2);
-        EXPECT_EQ(String("te-' 'st "), result2[0]);
-        EXPECT_EQ(String("abc'"), result2[1]);
-        EXPECT_EQ(String("'"), result2[2]);
-        EXPECT_EQ(String("'def'a"), result2[3]);
+        EXPECT_EQ(std::string("te-' 'st "), result2[0]);
+        EXPECT_EQ(std::string("abc'"), result2[1]);
+        EXPECT_EQ(std::string("'"), result2[2]);
+        EXPECT_EQ(std::string("'def'a"), result2[3]);
 
-        String in3 = R"(abc -arg "test argument" 'test argument' 'test "argument"' "test 'argument'")";
+        std::string in3 = R"(abc -arg "test argument" 'test argument' 'test "argument"' "test 'argument'")";
         std::vector<std::string> result3 = RamshTools::parseCommandString(in3);
-        EXPECT_EQ(String("abc"), result3[0]);
-        EXPECT_EQ(String("-arg"), result3[1]);
-        EXPECT_EQ(String("test argument"), result3[2]);
-        EXPECT_EQ(String("test argument"), result3[3]);
-        EXPECT_EQ(String("test \"argument\""), result3[4]);
-        EXPECT_EQ(String("test 'argument'"), result3[5]);
+        EXPECT_EQ(std::string("abc"), result3[0]);
+        EXPECT_EQ(std::string("-arg"), result3[1]);
+        EXPECT_EQ(std::string("test argument"), result3[2]);
+        EXPECT_EQ(std::string("test argument"), result3[3]);
+        EXPECT_EQ(std::string("test \"argument\""), result3[4]);
+        EXPECT_EQ(std::string("test 'argument'"), result3[5]);
     }
 
 
     TEST_F(RamshAPI, typedCommand)
     {
-        auto typedCmd = std::make_shared<TypedTestCommand<uint32_t, bool, String, Float>>();
+        auto typedCmd = std::make_shared<TypedTestCommand<uint32_t, bool, std::string, float>>();
 
         typedCmd->registerKeyword("typed");
 
@@ -203,7 +202,7 @@ namespace ramses_internal
         EXPECT_EQ(44u, typedCmd->data->a1);
         EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("foobar"), typedCmd->data->a3);
+        EXPECT_EQ(std::string("foobar"), typedCmd->data->a3);
 
         EXPECT_FLOAT_EQ(1.337f, typedCmd->data->a4);
 
@@ -225,7 +224,7 @@ namespace ramses_internal
         EXPECT_EQ(123u, typedCmd->data->a1);
         EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("foo"), typedCmd->data->a3);
+        EXPECT_EQ(std::string("foo"), typedCmd->data->a3);
 
         EXPECT_FLOAT_EQ(-1337.f, typedCmd->data->a4);
 
@@ -257,7 +256,7 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommandWithDefaultValues)
     {
-        auto typedCmd = std::make_shared<TypedTestCommand<int32_t, bool, String, Float>>();
+        auto typedCmd = std::make_shared<TypedTestCommand<int32_t, bool, std::string, float>>();
 
         typedCmd->registerKeyword("typed");
 
@@ -271,7 +270,7 @@ namespace ramses_internal
 
         typedCmd->getArgument<2>()
             .registerKeyword("string")
-            .setDefaultValue(String("abcdef"));
+            .setDefaultValue(std::string("abcdef"));
 
         typedCmd->getArgument<3>()
             .registerKeyword("float")
@@ -287,7 +286,7 @@ namespace ramses_internal
         EXPECT_EQ(-1, typedCmd->data->a1);
         EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("abcdef"), typedCmd->data->a3);
+        EXPECT_EQ(std::string("abcdef"), typedCmd->data->a3);
 
         EXPECT_FLOAT_EQ(-13.37f, typedCmd->data->a4);
 
@@ -302,7 +301,7 @@ namespace ramses_internal
         EXPECT_EQ(-1, typedCmd->data->a1);
         EXPECT_FALSE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("abcdef"), typedCmd->data->a3);
+        EXPECT_EQ(std::string("abcdef"), typedCmd->data->a3);
 
         EXPECT_FLOAT_EQ(-13.37f, typedCmd->data->a4);
 
@@ -323,7 +322,7 @@ namespace ramses_internal
         EXPECT_EQ(90000, typedCmd->data->a1);
         EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("foo"), typedCmd->data->a3);
+        EXPECT_EQ(std::string("foo"), typedCmd->data->a3);
 
         EXPECT_FLOAT_EQ(-1337.1337f, typedCmd->data->a4);
     }
@@ -336,7 +335,7 @@ namespace ramses_internal
                 : b(b_)
             {}
 
-            virtual bool executeInput(const std::vector<std::string>& /*input*/) override
+            bool executeInput(const std::vector<std::string>& /*input*/) override
             {
                 b = true;
                 return true;
@@ -392,7 +391,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void run() override
+        void run() override
         {
             logSomeMessage();
         }
@@ -409,10 +408,10 @@ namespace ramses_internal
 
     TEST_F(RamshCommunicationChannelConsoleTest, processInput)
     {
-        String input = "help\nbla";
+        std::string input = "help\nbla";
         EXPECT_CALL(ramsh, execute(std::vector<std::string>{"help"}));
 
-        for (UInt i = 0; i < input.size(); i++)
+        for (size_t i = 0; i < input.size(); i++)
         {
             inputProvider->processInput(input[i]);
         }
@@ -428,8 +427,8 @@ namespace ramses_internal
 
         thread.start(runnable);
 
-        String input = "help\n";
-        for (UInt i = 0; i < input.size(); i++)
+        std::string input = "help\n";
+        for (size_t i = 0; i < input.size(); i++)
         {
             inputProvider->processInput(input[i]);
         }
@@ -448,10 +447,13 @@ namespace ramses_internal
             return input;
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             // reset loglevels back to default
-            GetRamsesLogger().initialize(CommandLineParser{0, nullptr}, "RAMS", "ramses", false, true);
+            RamsesLoggerConfig cfg;
+            cfg.dltAppId = "RAMS";
+            cfg.dltAppDescription = "ramses";
+            GetRamsesLogger().initialize(cfg, false, true);
         }
 
         Ramsh rsh;

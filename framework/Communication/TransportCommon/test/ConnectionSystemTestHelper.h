@@ -29,18 +29,18 @@ namespace ramses_internal
     class AsyncEventCounter
     {
     public:
-        explicit AsyncEventCounter(UInt32 waitTimeMs = 20000);
+        explicit AsyncEventCounter(uint32_t waitTimeMs = 20000);
 
         void signal();
-        testing::AssertionResult waitForEvents(UInt32 numberEventsToWaitFor, UInt32 waitTimeMsOverride = 0);
+        testing::AssertionResult waitForEvents(uint32_t numberEventsToWaitFor, uint32_t waitTimeMsOverride = 0);
 
         void discardPendingEvents();
 
     private:
         std::mutex lock;
         std::condition_variable cond;
-        UInt32 m_eventCounter;
-        UInt32 m_waitTimeMs;
+        uint32_t m_eventCounter;
+        uint32_t m_waitTimeMs;
     };
 
     class ConnectionSystemTestDaemon

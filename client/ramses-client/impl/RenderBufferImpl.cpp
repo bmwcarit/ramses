@@ -12,8 +12,8 @@
 
 namespace ramses
 {
-    RenderBufferImpl::RenderBufferImpl(SceneImpl& scene, const char* name)
-        : SceneObjectImpl(scene, ERamsesObjectType_RenderBuffer, name)
+    RenderBufferImpl::RenderBufferImpl(SceneImpl& scene, std::string_view name)
+        : SceneObjectImpl(scene, ERamsesObjectType::RenderBuffer, name)
     {
     }
 
@@ -163,20 +163,20 @@ namespace ramses
         // explicitly warn about usage of potentially uninitialized buffer
         if (usedAsTexture && !(usedInRenderPass || usedAsBlitDestination))
         {
-            addValidationMessage(EValidationSeverity_Warning, "RenderBuffer is used in a TextureSampler for reading but is not set as destination in any RenderPass or BlitPass, this can lead to usage of uninitialized data.");
+            addValidationMessage(EValidationSeverity::Warning, "RenderBuffer is used in a TextureSampler for reading but is not set as destination in any RenderPass or BlitPass, this can lead to usage of uninitialized data.");
             hasIssue = true;
         }
 
         if (!usedInRenderPass && !usedAsBlitDestination)
         {
             hasIssue = true;
-            addValidationMessage(EValidationSeverity_Warning, "RenderBuffer is not set as destination in any RenderPass or BlitPass, destroy it if not needed.");
+            addValidationMessage(EValidationSeverity::Warning, "RenderBuffer is not set as destination in any RenderPass or BlitPass, destroy it if not needed.");
         }
 
         if (!usedAsTexture && !usedAsBlitSource && isColorBuffer) // depth/stencil buffer does not need to be validated for usage as texture
         {
             hasIssue = true;
-            addValidationMessage(EValidationSeverity_Warning, "RenderBuffer is neither used in a TextureSampler for reading nor set as source in a BlitPass, destroy it if not needed.");
+            addValidationMessage(EValidationSeverity::Warning, "RenderBuffer is neither used in a TextureSampler for reading nor set as source in a BlitPass, destroy it if not needed.");
         }
 
         if (hasIssue)
@@ -184,7 +184,7 @@ namespace ramses
             ramses_internal::StringOutputStream rbDesc;
             const ramses_internal::RenderBuffer& rb = getIScene().getRenderBuffer(m_renderBufferHandle);
             rbDesc << " [" << rb.width << "x" << rb.height << "; " << ramses_internal::EnumToString(rb.type) << "; " << ramses_internal::EnumToString(rb.format) << "; " << ramses_internal::EnumToString(rb.accessMode) << "; " << rb.sampleCount << " samples]";
-            return addValidationMessage(EValidationSeverity_Warning, rbDesc.c_str());
+            return addValidationMessage(EValidationSeverity::Warning, rbDesc.c_str());
         }
 
         return status;

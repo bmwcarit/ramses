@@ -30,19 +30,19 @@ namespace ramses_internal
         typename T::handle_type allocatedObject;
         typename T::handle_type undefinedObject;
 
-        static const UInt32 InitialSize = 100u;
+        static const uint32_t InitialSize = 100u;
     };
 
     using MemoryPoolTypes = ::testing::Types<
-        MemoryPool<int, UInt32>,
-        MemoryPool<int, UInt16>
+        MemoryPool<int, uint32_t>,
+        MemoryPool<int, uint16_t>
     >;
 
     TYPED_TEST_SUITE(AMemoryPool, MemoryPoolTypes);
 
     TYPED_TEST(AMemoryPool, HasInitialSizes)
     {
-        EXPECT_EQ(UInt32(this->InitialSize), this->memoryPool.getTotalCount());
+        EXPECT_EQ(uint32_t(this->InitialSize), this->memoryPool.getTotalCount());
         EXPECT_EQ(1u, this->memoryPool.getActualCount());
     }
 
@@ -77,8 +77,8 @@ namespace ramses_internal
 
     TYPED_TEST(AMemoryPool, ReducesActualObjectCountByOneAfterDeletion)
     {
-        UInt32 totalObjectsBeforeDeletion = this->memoryPool.getTotalCount();
-        UInt32 actualObjectsBeforeDeletion = this->memoryPool.getActualCount();
+        uint32_t totalObjectsBeforeDeletion = this->memoryPool.getTotalCount();
+        uint32_t actualObjectsBeforeDeletion = this->memoryPool.getActualCount();
 
         ASSERT_GT(actualObjectsBeforeDeletion, 0u);
 
@@ -100,8 +100,8 @@ namespace ramses_internal
 
     TYPED_TEST(AMemoryPool, AllocateUsingSpecificHandle)
     {
-        UInt32 totalObjects = this->memoryPool.getTotalCount();
-        UInt32 actualObjects = this->memoryPool.getActualCount();
+        uint32_t totalObjects = this->memoryPool.getTotalCount();
+        uint32_t actualObjects = this->memoryPool.getActualCount();
 
         typename TypeParam::handle_type desiredHandle = static_cast<typename TypeParam::handle_type>(this->InitialSize - 10u);
         typename TypeParam::handle_type someObject = this->memoryPool.allocate(desiredHandle);
@@ -113,7 +113,7 @@ namespace ramses_internal
 
     TYPED_TEST(AMemoryPool, AllocateUsingSpecificHandleBeyondCapacity)
     {
-        const UInt32 totalObjects = this->memoryPool.getTotalCount();
+        const uint32_t totalObjects = this->memoryPool.getTotalCount();
 
         typename TypeParam::handle_type desiredHandle = static_cast<typename TypeParam::handle_type>(totalObjects + 10u);
         typename TypeParam::handle_type someObject = this->memoryPool.allocate(desiredHandle);
@@ -124,11 +124,11 @@ namespace ramses_internal
 
     TYPED_TEST(AMemoryPool, AllocatingFullInitialCapacityDoesNotChangeCapacity)
     {
-        const UInt32 totalCapacity = this->memoryPool.getTotalCount();
-        const UInt32 usedCapacity = this->memoryPool.getActualCount();
-        const UInt32 freeCapacity = totalCapacity - usedCapacity;
+        const uint32_t totalCapacity = this->memoryPool.getTotalCount();
+        const uint32_t usedCapacity = this->memoryPool.getActualCount();
+        const uint32_t freeCapacity = totalCapacity - usedCapacity;
 
-        for (UInt32 i = 0u; i < freeCapacity; ++i)
+        for (uint32_t i = 0u; i < freeCapacity; ++i)
         {
             this->memoryPool.allocate();
         }

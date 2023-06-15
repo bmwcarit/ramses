@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         TextureUploadingAdapter_Wayland(IDevice& device, wl_display* waylandWindowDisplay, wl_display* embeddedCompositingDisplay);
-        ~TextureUploadingAdapter_Wayland();
+        ~TextureUploadingAdapter_Wayland() override;
 
         void uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, EGLClientBuffer bufferResource);
         bool uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf);
@@ -33,8 +33,8 @@ namespace ramses_internal
             DmabufEglImage(TextureUploadingAdapter_Wayland& parent, EGLImage eglImage, GLenum textureTarget);
             ~DmabufEglImage();
 
-            EGLImage getEglImage() const;
-            GLenum getTextureTarget() const;
+            [[nodiscard]] EGLImage getEglImage() const;
+            [[nodiscard]] GLenum getTextureTarget() const;
 
         private:
             TextureUploadingAdapter_Wayland& m_parent;

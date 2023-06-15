@@ -73,16 +73,6 @@ namespace ramses_internal
         EXPECT_EQ(TextureSampler::ContentType::RenderBuffer, this->m_scene.getTextureSampler(sampler).contentType);
     }
 
-    TYPED_TEST(AScene, AllocatedTextureSamplerHasGivenReferencesToResources_StreamTexture)
-    {
-        const StreamTextureHandle streamTex(this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{ 10u }, ResourceContentHash(30u, 40u)));
-        const TextureSamplerHandle sampler = this->m_scene.allocateTextureSampler({ SamplerStates, streamTex });
-
-        EXPECT_FALSE(this->m_scene.getTextureSampler(sampler).textureResource.isValid());
-        EXPECT_NE(InvalidMemoryHandle, this->m_scene.getTextureSampler(sampler).contentHandle);
-        EXPECT_EQ(TextureSampler::ContentType::StreamTexture, this->m_scene.getTextureSampler(sampler).contentType);
-    }
-
     TYPED_TEST(AScene, AllocatedTextureSamplerHasGivenReferencesToResources_TextureBuffer)
     {
         const TextureBufferHandle textureBuffer(1432u);

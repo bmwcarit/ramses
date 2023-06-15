@@ -23,9 +23,9 @@ namespace ramses_internal
                 uid_t userId,
                 gid_t groupId);
 
-        pid_t getProcessId() const;
-        uid_t getUserId() const;
-        gid_t getGroupId() const;
+        [[nodiscard]] pid_t getProcessId() const;
+        [[nodiscard]] uid_t getUserId() const;
+        [[nodiscard]] gid_t getGroupId() const;
 
     private:
         pid_t m_processId = -1;

@@ -19,27 +19,27 @@ namespace ramses_internal
     {
     public:
         // Device limits
-        uint32_t getMaximumTextureUnits() const;
+        [[nodiscard]] uint32_t getMaximumTextureUnits() const;
         void     setMaximumTextureUnits(uint32_t units);
 
-        uint32_t getMaximumSamples() const;
+        [[nodiscard]] uint32_t getMaximumSamples() const;
         void     setMaximumSamples(uint32_t samples);
 
-        UInt32   getMaximumAnisotropy() const;
+        [[nodiscard]] uint32_t   getMaximumAnisotropy() const;
         void     setMaximumAnisotropy(uint32_t anisotropy);
 
         void setMaxViewport(uint32_t maxWidth, uint32_t maxHeight);
-        uint32_t getMaxViewportWidth() const;
-        uint32_t getMaxViewportHeight() const;
+        [[nodiscard]] uint32_t getMaxViewportWidth() const;
+        [[nodiscard]] uint32_t getMaxViewportHeight() const;
 
-        UInt32   getMaximumDrawBuffers() const;
+        [[nodiscard]] uint32_t   getMaximumDrawBuffers() const;
         void     setMaximumDrawBuffers(uint32_t drawBuffers);
 
         // Texture formats
-        bool isTextureFormatAvailable(ETextureFormat format) const;
+        [[nodiscard]] bool isTextureFormatAvailable(ETextureFormat format) const;
         void addTextureFormat(ETextureFormat format);
 
-        bool isExternalTextureExtensionSupported() const;
+        [[nodiscard]] bool isExternalTextureExtensionSupported() const;
         void setExternalTextureExtensionSupported(bool supported);
 
         void logLimits() const;

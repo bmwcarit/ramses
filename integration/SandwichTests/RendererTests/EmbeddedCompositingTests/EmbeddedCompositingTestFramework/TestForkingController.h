@@ -9,14 +9,15 @@
 #ifndef RAMSES_TESTFORKINGCONTROLLER_H
 #define RAMSES_TESTFORKINGCONTROLLER_H
 
-#include "Collections/String.h"
 #include "NamedPipe.h"
 #include "EmbeddedCompositingTestMessages.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "Utils/LogMacros.h"
 #include "Utils/BinaryOutputStream.h"
+
 #include <memory>
 #include <array>
+#include <string>
 
 namespace ramses_internal
 {
@@ -47,10 +48,10 @@ namespace ramses_internal
         void sendForkRequest(uint32_t testAppIdx);
         void sendWaitForExitRequest(uint32_t testAppIdx);
 
-        const std::array<std::pair<String,String>, 2>   m_testPipeNames{{
-                                                            {"/tmp/ramses-ec-tests-testToWaylandClientPipe-0", "/tmp/ramses-ec-tests-waylandClientToTestPipe-0"},
-                                                            {"/tmp/ramses-ec-tests-testToWaylandClientPipe-1", "/tmp/ramses-ec-tests-waylandClientToTestPipe-1"}
-                                                        }};
+        const std::array<std::pair<std::string,std::string>, 2> m_testPipeNames{{
+                                                                    {"/tmp/ramses-ec-tests-testToWaylandClientPipe-0", "/tmp/ramses-ec-tests-waylandClientToTestPipe-0"},
+                                                                    {"/tmp/ramses-ec-tests-testToWaylandClientPipe-1", "/tmp/ramses-ec-tests-waylandClientToTestPipe-1"}
+                                                                }};
 
         NamedPipe               m_testToForkerPipe{"/tmp/ramses-ec-tests-testToForkerPipe", true};
         std::vector<TestPipes>  m_testPipes;

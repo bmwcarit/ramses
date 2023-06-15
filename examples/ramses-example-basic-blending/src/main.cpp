@@ -16,10 +16,11 @@
  * @brief Basic Blending Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel_Latest};
+    ramses::RamsesFramework framework(config);
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-blending"));
     framework.connect();
 
@@ -30,7 +31,7 @@ int main(int argc, char* argv[])
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -38,10 +39,10 @@ int main(int argc, char* argv[])
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsData[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
-    uint16_t indexData[] = {0, 1, 2};
-    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indexData);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -1.f}, ramses::vec3f{1.f, 0.f, -1.f}, ramses::vec3f{0.f, 1.f, -1.f} };
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{0, 1, 2};
+    ramses::ArrayResource* indices = scene->createArrayResource(3u, indexData.data());
 
     // initialize effect
     ramses::EffectDescription effectDesc;
@@ -71,28 +72,28 @@ int main(int argc, char* argv[])
 
     // offset triangles so that they are not fully overlapping
 
-    meshNodeRed->setTranslation(0.f, -0.2f, -12.f);
-    meshNodeGreen->setTranslation(-0.2f, 0.f, -11.f);
-    meshNodeBlue->setTranslation(0.2f, 0.2f, -10.f);
+    meshNodeRed->setTranslation({0.f, -0.2f, -12.f});
+    meshNodeGreen->setTranslation({-0.2f, 0.f, -11.f});
+    meshNodeBlue->setTranslation({0.2f, 0.2f, -10.f});
 
     // get handle to appearances' input and set color with alpha smaller than 1
     ramses::UniformInput colorInput;
     effect->findUniformInput("color", colorInput);
-    appearanceRed->setInputValueVector4f(colorInput, 1.f, 0.f, 0.f, 0.9f);
-    appearanceGreen->setInputValueVector4f(colorInput, 0.f, 1.f, 0.f, 0.6f);
-    appearanceBlue->setInputValueVector4f(colorInput, 0.f, 0.f, 1.f, 0.3f);
+    appearanceRed->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 0.9f });
+    appearanceGreen->setInputValue(colorInput, ramses::vec4f{ 0.f, 1.f, 0.f, 0.6f });
+    appearanceBlue->setInputValue(colorInput, ramses::vec4f{ 0.f, 0.f, 1.f, 0.3f });
 
     /// [Basic Blending Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
 
     // set blending states for alpha blending
-    appearanceRed->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-    appearanceRed->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-    appearanceGreen->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-    appearanceGreen->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-    appearanceBlue->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
-    appearanceBlue->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+    appearanceRed->setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+    appearanceRed->setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+    appearanceGreen->setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+    appearanceGreen->setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
+    appearanceBlue->setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::One);
+    appearanceBlue->setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
 
     // set appearances to mesh nodes
     meshNodeRed->setAppearance(*appearanceRed);

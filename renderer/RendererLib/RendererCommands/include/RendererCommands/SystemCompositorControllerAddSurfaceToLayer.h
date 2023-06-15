@@ -15,11 +15,11 @@
 namespace ramses_internal
 {
 
-    class SystemCompositorControllerAddSurfaceToLayer : public RamshCommandArgs<UInt32, UInt32>
+    class SystemCompositorControllerAddSurfaceToLayer : public RamshCommandArgs<uint32_t, uint32_t>
     {
     public:
         explicit SystemCompositorControllerAddSurfaceToLayer(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt32& surfaceId, UInt32& layerId) const override;
+        bool execute(uint32_t& surfaceId, uint32_t& layerId) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

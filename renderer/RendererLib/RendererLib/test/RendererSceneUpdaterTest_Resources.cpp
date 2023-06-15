@@ -402,36 +402,36 @@ TEST_F(ARendererSceneUpdater, confidenceTest_doesNotReferenceOrUnreferenceResour
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_SingleScene)
+TEST_F(ARendererSceneUpdater, updatesScenesCachedStreamBufferHandles_SingleScene)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
-    createRenderableAndResourcesWithStreamTexture();
 
-    expectStreamTextureUploaded();
-    expectVertexArrayUploaded();
+    constexpr StreamBufferHandle streamBuffer{ 13u };
+
+    const auto dataSlotId = createRenderableWithTextureConsumer();
+    createBufferLink(streamBuffer, getSceneId(0u), dataSlotId);
     update();
+
     expectRenderableResourcesClean();
 
     constexpr WaylandIviSurfaceId source{ 12u };
-    const StreamUsage fakeStreamUsage{ { {getSceneId(0u), {streamTextureHandle}} }, {} };
-
+    const StreamUsage fakeStreamUsage{ {}, { streamBuffer} };
     const WaylandIviSurfaceIdVector changedSources{ source };
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(changedSources));
-    // getCompositedTextureDeviceHandleForStreamTexture is always queried once for checking if stream became unavailable
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(2).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(streamBuffer));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
     update();
-    expectRenderableResourcesDirty();
+    expectRenderableResourcesClean();
 
     hideScene();
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes)
+TEST_F(ARendererSceneUpdater, updatesScenesCachedStreamBufferHandles_MultipleScenes)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -441,29 +441,28 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes)
     showScene(0u);
     showScene(1u);
 
-    createRenderableAndResourcesWithStreamTexture(0u);
-    expectStreamTextureUploaded();
-    expectVertexArrayUploaded();
-    update();
 
-    createRenderableAndResourcesWithStreamTexture(1u);
-    expectVertexArrayUploaded(1u);
+    constexpr StreamBufferHandle streamBuffer{ 13u };
+
+    const auto dataSlotId1 = createRenderableWithTextureConsumer(0u);
+    const auto dataSlotId2 = createRenderableWithTextureConsumer(1u);
+    createBufferLink(streamBuffer, getSceneId(0u), dataSlotId1);
+    createBufferLink(streamBuffer, getSceneId(1u), dataSlotId2);
     update();
 
     expectRenderableResourcesClean(0u);
     expectRenderableResourcesClean(1u);
 
-    constexpr WaylandIviSurfaceId source{ 12u };
-    const StreamUsage fakeStreamUsage{ { {getSceneId(0u), {streamTextureHandle}}, {getSceneId(1u), {streamTextureHandle}} }, {} };
+    constexpr WaylandIviSurfaceId source{ 112u };
+    const StreamUsage fakeStreamUsage{ {}, { streamBuffer} };
 
     const WaylandIviSurfaceIdVector changedSources{ source };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(changedSources));
-    // getCompositedTextureDeviceHandleForStreamTexture is always queried once for checking if stream became unavailable
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(3).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(streamBuffer)).Times(2u);
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
     update();
-    expectRenderableResourcesDirty(0u);
-    expectRenderableResourcesDirty(1u);
+    expectRenderableResourcesClean(0u);
+    expectRenderableResourcesClean(1u);
 
     hideScene(0u);
     hideScene(1u);
@@ -472,7 +471,7 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes)
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes_MultipleSources)
+TEST_F(ARendererSceneUpdater, updatesScenesCachedStreamBufferHandles_MultipleScenes_MultipleSources)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -482,32 +481,33 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes_Mu
     showScene(0u);
     showScene(1u);
 
-    createRenderableAndResourcesWithStreamTexture(0u);
-    expectStreamTextureUploaded();
-    expectVertexArrayUploaded(0u);
-    update();
 
-    createRenderableAndResourcesWithStreamTexture(1u);
-    expectVertexArrayUploaded(1u);
+    constexpr StreamBufferHandle streamBuffer1{ 13u };
+    constexpr StreamBufferHandle streamBuffer2{ 15u };
+
+    const auto dataSlotId1 = createRenderableWithTextureConsumer(0u);
+    const auto dataSlotId2 = createRenderableWithTextureConsumer(1u);
+    createBufferLink(streamBuffer1, getSceneId(0u), dataSlotId1);
+    createBufferLink(streamBuffer2, getSceneId(1u), dataSlotId2);
     update();
 
     expectRenderableResourcesClean(0u);
     expectRenderableResourcesClean(1u);
 
-    constexpr WaylandIviSurfaceId source1{ 12u };
-    constexpr WaylandIviSurfaceId source2{ 13u };
-    const StreamUsage fakeStreamUsage1{ { {getSceneId(0u), {streamTextureHandle}} }, {} };
-    const StreamUsage fakeStreamUsage2{ { {getSceneId(1u), {streamTextureHandle}} }, {} };
+    constexpr WaylandIviSurfaceId source1{ 112u };
+    constexpr WaylandIviSurfaceId source2{ 121u };
+    const StreamUsage fakeStreamUsage1{ {}, { streamBuffer1} };
+    const StreamUsage fakeStreamUsage2{ {}, { streamBuffer2} };
 
     const WaylandIviSurfaceIdVector changedSources{ source1, source2 };
     EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(changedSources));
-    // getCompositedTextureDeviceHandleForStreamTexture is always queried once per source for checking if stream became unavailable
-    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(4).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(streamBuffer1));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(streamBuffer2));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source1)).WillOnce(ReturnRef(fakeStreamUsage1));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source2)).WillOnce(ReturnRef(fakeStreamUsage2));
     update();
-    expectRenderableResourcesDirty(0u);
-    expectRenderableResourcesDirty(1u);
+    expectRenderableResourcesClean(0u);
+    expectRenderableResourcesClean(1u);
 
     hideScene(0u);
     hideScene(1u);
@@ -1653,7 +1653,7 @@ TEST_F(ARendererSceneUpdater, willForceMapSceneAfterMaximumNumberOfPendingFlushe
 
     // will force apply and log blocking resources
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getResourceType(_)).Times(AnyNumber());
-    for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+    for (size_t i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
         performFlushWithCreateNodeAction();
         update();
@@ -1731,7 +1731,7 @@ TEST_F(ARendererSceneUpdater, forceAppliesPendingFlushesAfterMaximumNumberReache
     // mapped state
     {
         // flushes are blocked due to unresolved resource
-        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        for (size_t i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlushWithCreateNodeAction();
             update();
@@ -1753,7 +1753,7 @@ TEST_F(ARendererSceneUpdater, forceAppliesPendingFlushesAfterMaximumNumberReache
         setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
 
         // flushes are blocked due to unresolved resource
-        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        for (size_t i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlushWithCreateNodeAction();
             update();
@@ -1786,7 +1786,7 @@ TEST_F(ARendererSceneUpdater, reactsOnDynamicChangesOfFlushForceApplyLimit)
     update();
 
     // Reduce flush limit -> expect force flush earlier
-    constexpr UInt newShorterFlushLimit = ForceApplyFlushesLimit / 2u;
+    constexpr size_t newShorterFlushLimit = ForceApplyFlushesLimit / 2u;
     rendererSceneUpdater->setLimitFlushesForceApply(newShorterFlushLimit);
 
     // type queried for logging of missing resources
@@ -1795,7 +1795,7 @@ TEST_F(ARendererSceneUpdater, reactsOnDynamicChangesOfFlushForceApplyLimit)
     // mapped state
     {
         // flushes are blocked due to unresolved resource
-        for (UInt i = 0u; i < newShorterFlushLimit + 1u; ++i)
+        for (size_t i = 0u; i < newShorterFlushLimit + 1u; ++i)
         {
             performFlushWithCreateNodeAction();
             update();
@@ -1817,7 +1817,7 @@ TEST_F(ARendererSceneUpdater, reactsOnDynamicChangesOfFlushForceApplyLimit)
         setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
 
         // flushes are blocked due to unresolved resource
-        for (UInt i = 0u; i < newShorterFlushLimit + 1u; ++i)
+        for (size_t i = 0u; i < newShorterFlushLimit + 1u; ++i)
         {
             performFlushWithCreateNodeAction();
             update();
@@ -1869,7 +1869,7 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
     {
         // flushes are blocked due to unresolved resource
         expectVertexArrayUploaded(1u);
-        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        for (size_t i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlushWithCreateNodeAction(1u);
             update();
@@ -1882,7 +1882,7 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
 
         // repeat for scene 0
         expectVertexArrayUploaded(0u);
-        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        for (size_t i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlushWithCreateNodeAction(0u);
             update();
@@ -2068,7 +2068,7 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, 0u);
 
     // create many scene resources (if not enough scene resources the budget is not even checked)
-    for (UInt32 i = 0; i < 40; ++i)
+    for (uint32_t i = 0; i < 40; ++i)
     {
         createRenderTargetWithBuffers(0u, RenderTargetHandle{ i }, RenderBufferHandle{ i * 2 }, RenderBufferHandle{ i * 2 + 1 });
         update();
@@ -2114,7 +2114,7 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, 0u);
 
     // create many scene resources (if not enough scene resources the budget is not even checked)
-    for (UInt32 i = 0; i < 40; ++i)
+    for (uint32_t i = 0; i < 40; ++i)
     {
         createRenderTargetWithBuffers(sceneIdx2, RenderTargetHandle{ i }, RenderBufferHandle{ i * 2 }, RenderBufferHandle{ i * 2 + 1 });
         update();

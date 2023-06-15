@@ -28,7 +28,7 @@ namespace ramses_internal
         assert(m_monitoredScenes.empty());
     }
 
-    void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, UInt64 flushIndex)
+    void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, uint64_t flushIndex)
     {
         if (expirationTimestamp != FlushTime::InvalidTimestamp)
         {
@@ -101,7 +101,7 @@ namespace ramses_internal
                 expDelayRendered = std::chrono::duration_cast<FlushTime::Clock::milliseconds>(currentTime - timestamps.expirationTSOfRenderedScene.ts);
                 if (expDelayRendered > FlushTime::Clock::milliseconds::zero())
                 {
-                    const UInt64 expirationTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(timestamps.expirationTSOfRenderedScene.ts.time_since_epoch()).count();
+                    const uint64_t expirationTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(timestamps.expirationTSOfRenderedScene.ts.time_since_epoch()).count();
                     LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Content of rendered scene " << sceneId << " is expired (version tag of rendered scene " << timestamps.expirationTSOfRenderedScene.tag << "). "
                         << "Expiration time stamp " << expirationTimestamp << " ms, " << "expired by " << expDelayRendered.count() << " ms. "
                         << "Internal flush index " << timestamps.expirationTSOfRenderedScene.internalIndex);
@@ -114,7 +114,7 @@ namespace ramses_internal
                 expDelayApplied = std::chrono::duration_cast<FlushTime::Clock::milliseconds>(currentTime - timestamps.expirationTSOfLastAppliedFlush.ts);
                 if (expDelayApplied > FlushTime::Clock::milliseconds::zero())
                 {
-                    const UInt64 expirationTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(timestamps.expirationTSOfLastAppliedFlush.ts.time_since_epoch()).count();
+                    const uint64_t expirationTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(timestamps.expirationTSOfLastAppliedFlush.ts.time_since_epoch()).count();
                     LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Flush applied to scene " << sceneId << " is expired (version tag of applied flush " << timestamps.expirationTSOfLastAppliedFlush.tag << "). "
                         << "Expiration time stamp " << expirationTimestamp << " ms, " << "expired by " << expDelayApplied.count() << " ms."
                         << "Internal flush index " << timestamps.expirationTSOfLastAppliedFlush.internalIndex);
@@ -134,8 +134,8 @@ namespace ramses_internal
                     const bool lastPendingFlushExpired = expDelayPending > FlushTime::Clock::milliseconds::zero();
                     if (expired || lastPendingFlushExpired) // early out if nothing expired
                     {
-                        const UInt64 expirationTimestampPendingFlush = asMilliseconds(lastPendingTimeInfo.expirationTimestamp);
-                        const UInt64 internalTimestampPendingFlush = asMilliseconds(lastPendingTimeInfo.internalTimestamp);
+                        const uint64_t expirationTimestampPendingFlush = asMilliseconds(lastPendingTimeInfo.expirationTimestamp);
+                        const uint64_t internalTimestampPendingFlush = asMilliseconds(lastPendingTimeInfo.internalTimestamp);
 
                         if (lastPendingFlushExpired)
                         {

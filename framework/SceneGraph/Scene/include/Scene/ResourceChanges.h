@@ -27,9 +27,6 @@ namespace ramses_internal
         ESceneResourceAction_CreateRenderTarget,
         ESceneResourceAction_DestroyRenderTarget,
 
-        ESceneResourceAction_CreateStreamTexture,
-        ESceneResourceAction_DestroyStreamTexture,
-
         ESceneResourceAction_CreateBlitPass,
         ESceneResourceAction_DestroyBlitPass,
 
@@ -76,10 +73,10 @@ namespace ramses_internal
     struct ResourceChanges
     {
         void   clear();
-        bool   empty() const;
+        [[nodiscard]] bool   empty() const;
         void   putToSceneAction(SceneActionCollection& action) const;
         void   getFromSceneAction(SceneActionCollection::SceneActionReader& action);
-        UInt   getPutSizeEstimate() const;
+        [[nodiscard]] size_t   getPutSizeEstimate() const;
 
         ResourceContentHashVector m_resourcesAdded;
         ResourceContentHashVector m_resourcesRemoved;
@@ -99,15 +96,13 @@ namespace ramses_internal
         }
     };
 
-    static const char* SceneResourceActionNames[ESceneResourceAction_NUMBER_OF_ELEMENTS] =
+    const std::array SceneResourceActionNames =
     {
         "Invalid",
         "CreateRenderBuffer",
         "DestroyRenderBuffer",
         "CreateRenderTarget",
         "DestroyRenderTarget",
-        "CreateStreamTexture",
-        "DestroyStreamTexture",
         "CreateBlitPass",
         "DestroyBlitPass",
         "CreateDataBuffer",

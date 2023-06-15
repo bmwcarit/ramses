@@ -27,7 +27,7 @@ TEST(NumericLimits, ensureAvailableForAlltypes)
     (void)std::numeric_limits<float>::max();
     (void)std::numeric_limits<double>::max();
 
-    (void)std::numeric_limits<ramses_internal::UInt>::max();
+    (void)std::numeric_limits<size_t>::max();
     (void)std::numeric_limits<ramses_internal::Int>::max();
 }
 

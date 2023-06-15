@@ -10,7 +10,7 @@
 #define RAMSES_EFFECTINPUTIMPL_H
 
 // client api
-#include "ramses-client-api/EffectInputDataType.h"
+#include "ramses-framework-api/EDataType.h"
 #include "ramses-client-api/EffectInputSemantic.h"
 
 // internal
@@ -20,7 +20,9 @@
 #include "SceneAPI/ResourceContentHash.h"
 #include "SceneAPI/EDataType.h"
 #include "SceneAPI/EFixedSemantics.h"
-#include "Collections/String.h"
+
+#include <string_view>
+#include <string>
 
 namespace ramses
 {
@@ -28,27 +30,26 @@ namespace ramses
     {
     public:
         EffectInputImpl();
-        virtual ~EffectInputImpl();
+        ~EffectInputImpl() override;
 
         void initialize(
             const ramses_internal::ResourceContentHash& effectHash,
-            const ramses_internal::String&              name,
+            std::string_view                            name,
             ramses_internal::EDataType                  dataType,
             ramses_internal::EFixedSemantics            semantics,
-            uint32_t                                    elementCount,
-            uint32_t                                    index);
+            size_t                                      elementCount,
+            size_t                                      index);
 
         bool                                 isValid() const;
 
         ramses_internal::ResourceContentHash getEffectHash() const;
-        const ramses_internal::String&       getName() const;
-        ramses_internal::EDataType           getDataType() const;
+        const std::string&                   getName() const;
+        ramses_internal::EDataType           getInternalDataType() const;
         ramses_internal::EFixedSemantics     getSemantics() const;
-        uint32_t                             getElementCount() const;
-        uint32_t                             getInputIndex() const;
+        size_t                               getElementCount() const;
+        size_t                               getInputIndex() const;
 
-        EEffectInputDataType                 getUniformInputDataType() const;
-        EEffectInputDataType                 getAttributeInputDataType() const;
+        std::optional<EDataType>             getDataType() const;
         EEffectUniformSemantic               getUniformSemantics() const;
         EEffectAttributeSemantic             getAttributeSemantics() const;
 
@@ -60,11 +61,11 @@ namespace ramses
 
     private:
         ramses_internal::ResourceContentHash m_effectHash;
-        ramses_internal::String              m_name;
+        std::string                          m_name;
         ramses_internal::EDataType           m_dataType;
         ramses_internal::EFixedSemantics     m_semantics;
-        uint32_t                             m_elementCount;
-        uint32_t                             m_inputIndex;
+        size_t                               m_elementCount;
+        size_t                               m_inputIndex;
     };
 }
 

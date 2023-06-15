@@ -27,7 +27,7 @@ namespace ramses_internal
 
     /* WindowEvent handlers */
 
-    void DisplayEventHandler::onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode)
+    void DisplayEventHandler::onKeyEvent(EKeyEventType event, uint32_t modifiers, EKeyCode keyCode)
     {
         LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onKeyEvent: [display: " << m_displayHandle.asMemoryHandle() <<
             "; eventType: " << EnumToString(event) << "; modifiers: " << KeyModifierToString(modifiers) << "; key: " << EnumToString(keyCode) << "]");
@@ -40,7 +40,7 @@ namespace ramses_internal
         m_eventCollector.addWindowEvent(ERendererEventType::WindowKeyEvent, m_displayHandle, keyEvent);
     }
 
-    void DisplayEventHandler::onMouseEvent(EMouseEventType event, Int32 posX, Int32 posY)
+    void DisplayEventHandler::onMouseEvent(EMouseEventType event, int32_t posX, int32_t posY)
     {
         LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onMouseEvent: [display: " << m_displayHandle.asMemoryHandle() <<
             "; eventType: " << EnumToString(event) << "; posX: " << posX << "; posY: " << posY << "]");
@@ -59,12 +59,12 @@ namespace ramses_internal
         m_eventCollector.addDisplayEvent(ERendererEventType::WindowClosed, m_displayHandle);
     }
 
-    void DisplayEventHandler::onResize(UInt32 width, UInt32 height)
+    void DisplayEventHandler::onResize(uint32_t width, uint32_t height)
     {
        m_eventCollector.addWindowEvent(ERendererEventType::WindowResizeEvent, m_displayHandle, ResizeEvent{width, height});
     }
 
-    void DisplayEventHandler::onWindowMove(Int32 posX, Int32 posY)
+    void DisplayEventHandler::onWindowMove(int32_t posX, int32_t posY)
     {
         m_eventCollector.addWindowEvent(ERendererEventType::WindowMoveEvent, m_displayHandle, WindowMoveEvent{ posX, posY });
     }

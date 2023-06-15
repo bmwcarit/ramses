@@ -13,7 +13,7 @@
 
 namespace ramses
 {
-    SceneObjectImpl::SceneObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name)
+    SceneObjectImpl::SceneObjectImpl(SceneImpl& scene, ERamsesObjectType type, std::string_view name)
         : ClientObjectImpl(scene.getClientImpl(), type, name)
         , m_scene(scene)
         , m_sceneObjectId(scene.getNextSceneObjectId())

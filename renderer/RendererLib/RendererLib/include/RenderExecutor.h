@@ -25,11 +25,11 @@ namespace ramses_internal
     public:
         RenderExecutor(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
 
-        SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene) const;
+        [[nodiscard]] SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene) const;
 
         // This is exposed and can be modified but acts as a global parameter
-        static constexpr const UInt32 DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks = 10u;
-        static UInt32 NumRenderablesToRenderInBetweenTimeBudgetChecks;
+        static constexpr const uint32_t DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks = 10u;
+        static uint32_t NumRenderablesToRenderInBetweenTimeBudgetChecks;
 
     protected:
         mutable RenderExecutorInternalState m_state;
@@ -38,7 +38,7 @@ namespace ramses_internal
         void executeRenderTarget    (RenderTargetHandle renderTarget) const;
         void executeRenderStates    () const;
         void executeEffectAndInputs () const;
-        void executeConstant        (EDataType dataType, UInt32 elementCount, DataInstanceHandle dataInstance, DataFieldHandle dataInstancefield, DataFieldHandle uniformInputField) const;
+        void executeConstant        (EDataType dataType, uint32_t elementCount, DataInstanceHandle dataInstance, DataFieldHandle dataInstancefield, DataFieldHandle uniformInputField) const;
         void executeDrawCall        () const;
 
         void setGlobalInternalStates    (const RendererCachedScene& scene) const;
@@ -51,9 +51,9 @@ namespace ramses_internal
         void executeCamera(CameraHandle camera) const;
 
     private:
-        Bool executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const;
+        [[nodiscard]] bool executeRenderPass(const RendererCachedScene& scene, const RenderPassHandle pass) const;
         void executeBlitPass(const RendererCachedScene& scene, const BlitPassHandle pass) const;
-        bool canDiscardDepthBuffer() const;
+        [[nodiscard]] bool canDiscardDepthBuffer() const;
 
         static RenderBufferHandle FindDepthRenderBufferInRenderTarget(const IScene& scene, RenderTargetHandle renderTarget);
     };

@@ -21,7 +21,7 @@ namespace ramses_internal
         getArgument<1>().setDescription("layer ivi id");
     }
 
-    Bool SystemCompositorControllerAddSurfaceToLayer::execute(UInt32& surfaceId, UInt32& layerId) const
+    bool SystemCompositorControllerAddSurfaceToLayer::execute(uint32_t& surfaceId, uint32_t& layerId) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCAddIviSurfaceToIviLayer{ WaylandIviSurfaceId(surfaceId), WaylandIviLayerId(layerId) });
         return true;

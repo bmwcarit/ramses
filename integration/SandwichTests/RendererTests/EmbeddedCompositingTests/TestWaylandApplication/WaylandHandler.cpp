@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    bool WaylandHandler::init(const String& displayName, int displayFD)
+    bool WaylandHandler::init(const std::string& displayName, int displayFD)
     {
         if (!setupWayland(displayName, displayFD))
         {
@@ -211,6 +211,7 @@ namespace ramses_internal
             return false;
         }
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (pfd.revents & POLLIN)
         {
             return wl_display_dispatch(wayland.display) != 0;
@@ -367,7 +368,7 @@ namespace ramses_internal
         UNUSED(name);
     }
 
-    bool WaylandHandler::setupWayland(const String& displayName, int displayFD)
+    bool WaylandHandler::setupWayland(const std::string& displayName, int displayFD)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::setupWayland(): will connect to display");
 
@@ -884,7 +885,7 @@ namespace ramses_internal
     }
 
 
-    void WaylandHandler::setShellSurfaceTitle(TestApplicationShellSurfaceId shellSurfaceId, const String& title)
+    void WaylandHandler::setShellSurfaceTitle(TestApplicationShellSurfaceId shellSurfaceId, const std::string& title)
     {
         wl_shell_surface& shellSurface = getShellSurface(shellSurfaceId);
         wl_shell_surface_set_title(&shellSurface, title.c_str());

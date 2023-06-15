@@ -39,7 +39,7 @@ namespace ramses_internal
     }
 
     template <typename BUFFERHANDLE>
-    Bool BufferLinks<BUFFERHANDLE>::hasAnyLinksToProvider(SceneId consumerSceneId) const
+    bool BufferLinks<BUFFERHANDLE>::hasAnyLinksToProvider(SceneId consumerSceneId) const
     {
         for(const auto& link : m_links)
         {
@@ -53,7 +53,7 @@ namespace ramses_internal
     }
 
     template <typename BUFFERHANDLE>
-    Bool BufferLinks<BUFFERHANDLE>::hasAnyLinksToConsumer(BUFFERHANDLE providerBuffer) const
+    bool BufferLinks<BUFFERHANDLE>::hasAnyLinksToConsumer(BUFFERHANDLE providerBuffer) const
     {
         for(const auto& link : m_links)
         {
@@ -67,7 +67,7 @@ namespace ramses_internal
     }
 
     template <typename BUFFERHANDLE>
-    Bool BufferLinks<BUFFERHANDLE>::hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
+    bool BufferLinks<BUFFERHANDLE>::hasLinkedProvider(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle) const
     {
         for(const auto& link : m_links)
         {

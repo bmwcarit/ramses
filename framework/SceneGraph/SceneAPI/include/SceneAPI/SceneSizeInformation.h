@@ -17,26 +17,24 @@ namespace ramses_internal
     struct SceneSizeInformation
     {
         SceneSizeInformation(
-            UInt32 nodes,
-            UInt32 cameras,
-            UInt32 transforms,
-            UInt32 renderables,
-            UInt32 states,
-            UInt32 datalayouts,
-            UInt32 datainstances,
-            UInt32 renderGroups,
-            UInt32 renderPasses,
-            UInt32 blitPasses,
-            UInt32 renderTargets,
-            UInt32 renderBuffers,
-            UInt32 textureSamplers,
-            UInt32 streamTextures,
-            UInt32 dataSlots,
-            UInt32 dataBuffers,
-            UInt32 animationSystems,
-            UInt32 textureBuffers,
-            UInt32 pickableObjects,
-            UInt32 sceneReferences)
+            uint32_t nodes,
+            uint32_t cameras,
+            uint32_t transforms,
+            uint32_t renderables,
+            uint32_t states,
+            uint32_t datalayouts,
+            uint32_t datainstances,
+            uint32_t renderGroups,
+            uint32_t renderPasses,
+            uint32_t blitPasses,
+            uint32_t renderTargets,
+            uint32_t renderBuffers,
+            uint32_t textureSamplers,
+            uint32_t dataSlots,
+            uint32_t dataBuffers,
+            uint32_t textureBuffers,
+            uint32_t pickableObjects,
+            uint32_t sceneReferences)
             : nodeCount(nodes)
             , cameraCount(cameras)
             , transformCount(transforms)
@@ -50,10 +48,8 @@ namespace ramses_internal
             , renderTargetCount(renderTargets)
             , renderBufferCount(renderBuffers)
             , textureSamplerCount(textureSamplers)
-            , streamTextureCount(streamTextures)
             , dataSlotCount(dataSlots)
             , dataBufferCount(dataBuffers)
-            , animationSystemCount(animationSystems)
             , textureBufferCount(textureBuffers)
             , pickableObjectCount(pickableObjects)
             , sceneReferenceCount(sceneReferences)
@@ -77,14 +73,11 @@ namespace ramses_internal
                 && (renderTargetCount == other.renderTargetCount)
                 && (renderBufferCount == other.renderBufferCount)
                 && (textureSamplerCount == other.textureSamplerCount)
-                && (streamTextureCount == other.streamTextureCount)
                 && (dataSlotCount == other.dataSlotCount)
                 && (dataBufferCount == other.dataBufferCount)
                 && (textureBufferCount == other.textureBufferCount)
                 && (pickableObjectCount == other.pickableObjectCount)
-                && (sceneReferenceCount == other.sceneReferenceCount)
-                && (animationSystemCount == other.animationSystemCount)
-                && (textureBufferCount == other.textureBufferCount);
+                && (sceneReferenceCount == other.sceneReferenceCount);
         }
 
         bool operator>(const SceneSizeInformation& other) const
@@ -103,36 +96,31 @@ namespace ramses_internal
                 || (renderTargetCount > other.renderTargetCount)
                 || (renderBufferCount > other.renderBufferCount)
                 || (textureSamplerCount > other.textureSamplerCount)
-                || (streamTextureCount > other.streamTextureCount)
                 || (dataSlotCount > other.dataSlotCount)
                 || (dataBufferCount > other.dataBufferCount)
                 || (textureBufferCount > other.textureBufferCount)
                 || (pickableObjectCount > other.pickableObjectCount)
-                || (sceneReferenceCount > other.sceneReferenceCount)
-                || (animationSystemCount > other.animationSystemCount)
-                || (textureBufferCount > other.textureBufferCount);
+                || (sceneReferenceCount > other.sceneReferenceCount);
         }
 
-        UInt32 nodeCount            = 0u;
-        UInt32 cameraCount          = 0u;
-        UInt32 transformCount       = 0u;
-        UInt32 renderableCount      = 0u;
-        UInt32 renderStateCount     = 0u;
-        UInt32 datalayoutCount      = 0u;
-        UInt32 datainstanceCount    = 0u;
-        UInt32 renderGroupCount     = 0u;
-        UInt32 renderPassCount      = 0u;
-        UInt32 blitPassCount        = 0u;
-        UInt32 renderTargetCount    = 0u;
-        UInt32 renderBufferCount    = 0u;
-        UInt32 textureSamplerCount  = 0u;
-        UInt32 streamTextureCount   = 0u;
-        UInt32 dataSlotCount        = 0u;
-        UInt32 dataBufferCount      = 0u;
-        UInt32 animationSystemCount = 0u;
-        UInt32 textureBufferCount   = 0u;
-        UInt32 pickableObjectCount  = 0u;
-        UInt32 sceneReferenceCount  = 0u;
+        uint32_t nodeCount            = 0u;
+        uint32_t cameraCount          = 0u;
+        uint32_t transformCount       = 0u;
+        uint32_t renderableCount      = 0u;
+        uint32_t renderStateCount     = 0u;
+        uint32_t datalayoutCount      = 0u;
+        uint32_t datainstanceCount    = 0u;
+        uint32_t renderGroupCount     = 0u;
+        uint32_t renderPassCount      = 0u;
+        uint32_t blitPassCount        = 0u;
+        uint32_t renderTargetCount    = 0u;
+        uint32_t renderBufferCount    = 0u;
+        uint32_t textureSamplerCount  = 0u;
+        uint32_t dataSlotCount        = 0u;
+        uint32_t dataBufferCount      = 0u;
+        uint32_t textureBufferCount   = 0u;
+        uint32_t pickableObjectCount  = 0u;
+        uint32_t sceneReferenceCount  = 0u;
     };
 }
 
@@ -144,7 +132,7 @@ struct fmt::formatter<ramses_internal::SceneSizeInformation> : public ramses_int
     {
         return fmt::format_to(ctx.out(),
                               "[node={} camera={} transform={} renderable={} state={} datalayout={} datainstance={} renderGroup={} renderPass={} blitPass={} "
-                              "renderTarget={} renderBuffer={} textureSampler={} streamTexture={} dataSlot={} dataBuffer={} animationSystem={} textureBuffer={} "
+                              "renderTarget={} renderBuffer={} textureSampler={} dataSlot={} dataBuffer={} textureBuffer={} "
                               "pickableObjectCount={} sceneReferenceCount={}]",
                               si.nodeCount,
                               si.cameraCount,
@@ -159,10 +147,8 @@ struct fmt::formatter<ramses_internal::SceneSizeInformation> : public ramses_int
                               si.renderTargetCount,
                               si.renderBufferCount,
                               si.textureSamplerCount,
-                              si.streamTextureCount,
                               si.dataSlotCount,
                               si.dataBufferCount,
-                              si.animationSystemCount,
                               si.textureBufferCount,
                               si.pickableObjectCount,
                               si.sceneReferenceCount);

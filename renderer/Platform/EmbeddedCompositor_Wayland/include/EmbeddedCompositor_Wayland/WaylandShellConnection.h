@@ -19,11 +19,11 @@ namespace ramses_internal
     {
     public:
         WaylandShellConnection(IWaylandClient& client, uint32_t version, uint32_t id);
-        virtual ~WaylandShellConnection() override;
-        bool wasSuccessfullyInitialized() const;
+        ~WaylandShellConnection() override;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
 
-        virtual void resourceDestroyed() override;
-        virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, INativeWaylandResource& surfaceResource) override;
+        void resourceDestroyed() override;
+        void shellGetShellSurface(IWaylandClient& client, uint32_t id, INativeWaylandResource& surfaceResource) override;
 
     private:
         static void ResourceDestroyedCallback(wl_resource* shellConnectionResource);

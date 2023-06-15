@@ -18,7 +18,7 @@ namespace ramses_internal
         getArgument<0>().setDescription("test step nr.");
     }
 
-    Bool TestStepCommand::execute(Int& testStep) const
+    bool TestStepCommand::execute(Int& testStep) const
     {
         m_testStep = testStep;
         m_testStepSetEvent.signal();
@@ -30,7 +30,7 @@ namespace ramses_internal
         return m_testStep.load();
     }
 
-    void TestStepCommand::waitForTestStepSetEvent(UInt32 timeoutMillisec)
+    void TestStepCommand::waitForTestStepSetEvent(uint32_t timeoutMillisec)
     {
         m_testStepSetEvent.wait(timeoutMillisec);
     }

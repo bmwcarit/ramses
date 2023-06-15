@@ -10,18 +10,20 @@
 #define RAMSES_TESTEQUALHELPER_H
 
 #include "gtest/gtest.h"
+#include "glm/mat2x2.hpp"
 
 namespace ramses_internal
 {
-
-    template <typename MATRIXTYPE>
+    template <int C, int R>
     inline
-    void expectMatrixFloatEqual(const MATRIXTYPE& expected, const MATRIXTYPE& actual)
+    void expectMatrixFloatEqual(const glm::mat<C, R, float, glm::defaultp>& expected, const glm::mat<C, R, float, glm::defaultp>& actual)
     {
-        constexpr auto elementCount = sizeof(MATRIXTYPE) / sizeof(float);
-        for (uint32_t i = 0u; i < elementCount; i++)
+        for (int i = 0; i < C; i++)
         {
-            EXPECT_NEAR(expected.data[i], actual.data[i], 1.0e-6f);
+            for (int k = 0; k < R; ++k)
+            {
+                EXPECT_NEAR(expected[i][k], actual[i][k], 1.0e-6f);
+            }
         }
     }
 }

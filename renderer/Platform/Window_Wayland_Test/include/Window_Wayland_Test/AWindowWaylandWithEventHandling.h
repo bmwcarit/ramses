@@ -34,7 +34,7 @@ namespace ramses_internal
     public:
         AWindowWaylandWithEventHandling() {}
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             openInputDevices();
             setupWaylandWindow();
@@ -52,7 +52,7 @@ namespace ramses_internal
             processAllEvents();
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             closeOpenGLContext();
             this->destroyWaylandWindow();
@@ -93,11 +93,11 @@ namespace ramses_internal
             ASSERT_TRUE(eglInitialize(eglDisplay, &iMajorVersion, &iMinorVersion));
             ASSERT_TRUE(eglBindAPI(EGL_OPENGL_ES_API) != EGL_FALSE);
 
-            EGLint surfaceAttributes[] = {EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE};
+            std::array<EGLint, 3> surfaceAttributes = {EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE};
 
             EGLConfig eglConfig;
             EGLint    num_config;
-            ASSERT_TRUE(eglChooseConfig(eglDisplay, surfaceAttributes, &eglConfig, 1, &num_config));
+            ASSERT_TRUE(eglChooseConfig(eglDisplay, surfaceAttributes.data(), &eglConfig, 1, &num_config));
 
             ASSERT_TRUE(num_config == 1);
 
@@ -136,7 +136,7 @@ namespace ramses_internal
             }
         }
 
-        Bool openInputDevice(const char* deviceName, int& deviceFd)
+        bool openInputDevice(const char* deviceName, int& deviceFd)
         {
             deviceFd = open(deviceName, O_WRONLY);
             return (deviceFd >= 0);
@@ -148,7 +148,7 @@ namespace ramses_internal
             deviceFd = -1;
         }
 
-        Bool sendInputEvent(int inputFd, UInt16 type, UInt16 key, Int32 value)
+        bool sendInputEvent(int inputFd, uint16_t type, uint16_t key, int32_t value)
         {
             struct input_event event;
             memset(&event, 0, sizeof(event));
@@ -156,7 +156,7 @@ namespace ramses_internal
             event.type                = type;
             event.code                = key;
             event.value               = value;
-            const UInt32 writtenBytes = write(inputFd, &event, sizeof(event));
+            const uint32_t writtenBytes = write(inputFd, &event, sizeof(event));
             return (writtenBytes == sizeof(event));
         }
 
@@ -166,27 +166,27 @@ namespace ramses_internal
             sync(); // enforce writing events to disc otherwise they may not be gathered by the system compositor
         }
 
-        void sendKeyEvent(UInt32 key)
+        void sendKeyEvent(uint32_t key)
         {
             sendInputEvent(keyboardFd, EV_KEY, key, EV_PRESSED);
             sendInputEvent(keyboardFd, EV_KEY, key, EV_RELEASED);
             sendSyncEvent(keyboardFd);
         }
 
-        void sendMouseButtonEvent(UInt32 key, Bool pressed)
+        void sendMouseButtonEvent(uint32_t key, bool pressed)
         {
             sendInputEvent(mouseFd, EV_KEY, key, pressed ? EV_PRESSED : EV_RELEASED);
             sendSyncEvent(mouseFd);
         }
 
-        void sendMouseMoveEvent(UInt32 numPixelsToMoveX, UInt32 numPixelsToMoveY = 0)
+        void sendMouseMoveEvent(uint32_t numPixelsToMoveX, uint32_t numPixelsToMoveY = 0)
         {
             sendInputEvent(mouseFd, EV_REL, REL_X, numPixelsToMoveX);
             sendInputEvent(mouseFd, EV_REL, REL_Y, numPixelsToMoveY);
             sendSyncEvent(mouseFd);
         }
 
-        void sendMouseWheelEvent(UInt32 wheelDelta)
+        void sendMouseWheelEvent(uint32_t wheelDelta)
         {
             sendInputEvent(mouseFd, EV_REL, REL_WHEEL, wheelDelta);
             sendSyncEvent(mouseFd);
@@ -195,14 +195,14 @@ namespace ramses_internal
         void processAllEvents()
         {
             PlatformThread::Sleep(20); // give some time for event handling inside os / compositor
-            for (UInt32 i = 0; i < 10;
+            for (uint32_t i = 0; i < 10;
                  i++) // enforce handling of all enqueued m_window events which will trigger our event handler
             {
                 this->m_window->handleEvents();
             }
         }
 
-        void testKeyCode(UInt32       virtualKeyCode,
+        void testKeyCode(uint32_t       virtualKeyCode,
                          EKeyCode     expectedRamsesKeyCode,
                          EKeyModifier expectedModifier = EKeyModifier_NoModifier)
         {

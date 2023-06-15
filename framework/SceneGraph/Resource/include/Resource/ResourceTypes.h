@@ -19,7 +19,7 @@ namespace ramses_internal
     using CompressedResourceBlob = HeapArray<Byte, struct CompressedResourceBlobTag>;
 
     struct ResourceCacheFlagTag {};
-    using ResourceCacheFlag = StronglyTypedValue<UInt32, static_cast<UInt32>(-1), ResourceCacheFlagTag>;
+    using ResourceCacheFlag = StronglyTypedValue<uint32_t, static_cast<uint32_t>(-1), ResourceCacheFlagTag>;
     static const ResourceCacheFlag ResourceCacheFlag_DoNotCache(ResourceCacheFlag::Invalid());
 
     enum EResourceType
@@ -35,7 +35,7 @@ namespace ramses_internal
         EResourceType_NUMBER_OF_ELEMENTS
     };
 
-    static const char* ResourceTypeNames[] =
+    const std::array ResourceTypeNames =
     {
         "EResourceType_Invalid",
         "EResourceType_VertexArray",

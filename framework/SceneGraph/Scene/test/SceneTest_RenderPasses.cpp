@@ -32,8 +32,8 @@ namespace ramses_internal
         const RenderPass& rp = this->m_scene.getRenderPass(pass);
 
         EXPECT_TRUE(rp.isEnabled);
-        EXPECT_EQ(Vector4(0.f, 0.f, 0.f, 1.f), rp.clearColor);
-        EXPECT_EQ(static_cast<UInt32>(EClearFlags_All), rp.clearFlags);
+        EXPECT_EQ(glm::vec4(0.f, 0.f, 0.f, 1.f), rp.clearColor);
+        EXPECT_EQ(static_cast<uint32_t>(EClearFlags_All), rp.clearFlags);
         EXPECT_FALSE(rp.camera.isValid());
         EXPECT_FALSE(rp.renderTarget.isValid());
         EXPECT_EQ(0, rp.renderOrder);
@@ -101,13 +101,13 @@ namespace ramses_internal
         const RenderPassHandle pass = this->m_scene.allocateRenderPass();
 
         const RenderPass& rp = this->m_scene.getRenderPass(pass);
-        EXPECT_EQ(Vector4(0.f, 0.f, 0.f, 1.f), rp.clearColor);
-        EXPECT_EQ(static_cast<UInt32>(EClearFlags::EClearFlags_All), rp.clearFlags);
+        EXPECT_EQ(glm::vec4(0.f, 0.f, 0.f, 1.f), rp.clearColor);
+        EXPECT_EQ(static_cast<uint32_t>(EClearFlags::EClearFlags_All), rp.clearFlags);
     }
 
     TYPED_TEST(AScene, ReturnsClearParameterOfRenderPassWhichWereSetBefore)
     {
-        const Vector4 clearColor(0.5f, 0.0f, 1.f, 0.25f);
+        const glm::vec4 clearColor(0.5f, 0.0f, 1.f, 0.25f);
 
         const RenderPassHandle pass = this->m_scene.allocateRenderPass();
         this->m_scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
@@ -115,7 +115,7 @@ namespace ramses_internal
 
         const RenderPass& rp = this->m_scene.getRenderPass(pass);
         EXPECT_EQ(clearColor, rp.clearColor);
-        EXPECT_EQ(static_cast<UInt32>(EClearFlags::EClearFlags_None), rp.clearFlags);
+        EXPECT_EQ(static_cast<uint32_t>(EClearFlags::EClearFlags_None), rp.clearFlags);
     }
 
     TYPED_TEST(AScene, canAddRenderGroupToRenderPass)

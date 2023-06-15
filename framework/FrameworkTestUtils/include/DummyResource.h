@@ -11,33 +11,35 @@
 
 #include "Resource/ResourceBase.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class DummyResource : public ResourceBase
     {
     public:
-        DummyResource(const ResourceContentHash& hash, EResourceType typeId, ResourceCacheFlag cacheFlag = ResourceCacheFlag(123u), const String& name = String())
+        DummyResource(const ResourceContentHash& hash, EResourceType typeId, ResourceCacheFlag cacheFlag = ResourceCacheFlag(123u), std::string_view name = {})
             : ResourceBase(typeId, cacheFlag, name)
             , m_hash(hash)
         {
         }
 
-        virtual const ResourceContentHash& getHash() const override
+        const ResourceContentHash& getHash() const override
         {
             return m_hash;
         }
 
-        virtual UInt32 getCompressedDataSize() const override
+        uint32_t getCompressedDataSize() const override
         {
             return 0;
         }
 
-        virtual UInt32 getDecompressedDataSize() const override
+        uint32_t getDecompressedDataSize() const override
         {
             return 42;
         }
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& /*output*/) const override
+        void serializeResourceMetadataToStream(IOutputStream& /*output*/) const override
         {
         }
 

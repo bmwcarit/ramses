@@ -11,16 +11,15 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/Macros.h"
-#include "Collections/String.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
 #include "fmt/format.h"
+
 #include <functional>
+#include <string>
 
 namespace ramses_internal
 {
-    class String;
-
     class Guid final
     {
     public:
@@ -28,7 +27,7 @@ namespace ramses_internal
 
         constexpr Guid() = default;
         explicit Guid(const char* guid);
-        explicit Guid(const String& guid);
+        explicit Guid(const std::string& guid);
 
         template <typename T,
                   typename = std::enable_if_t<std::is_integral<T>::value && !std::is_same<char, T>::value && !std::is_same<bool, T>::value>>
@@ -39,7 +38,7 @@ namespace ramses_internal
         constexpr Guid(const Guid&) = default;
         constexpr Guid& operator=(const Guid&) = default;
 
-        String toString() const;
+        [[nodiscard]] std::string toString() const;
 
         RNODISCARD constexpr uint64_t get() const;
 
@@ -60,7 +59,7 @@ namespace ramses_internal
     {
     }
 
-    inline Guid::Guid(const String& guid)
+    inline Guid::Guid(const std::string& guid)
         : m_value(GetFromString(guid.c_str(), guid.size()))
     {
     }

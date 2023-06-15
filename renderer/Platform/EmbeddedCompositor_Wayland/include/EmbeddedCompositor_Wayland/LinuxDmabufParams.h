@@ -27,7 +27,7 @@ namespace ramses_internal
         LinuxDmabufParams(IWaylandClient& client, uint32_t version, uint32_t id);
         ~LinuxDmabufParams();
 
-        bool wasSuccessfullyInitialized() const;
+        [[nodiscard]] bool wasSuccessfullyInitialized() const;
 
     private:
         static void ResourceDestroyedCallback(wl_resource* dmabufParamsResource);

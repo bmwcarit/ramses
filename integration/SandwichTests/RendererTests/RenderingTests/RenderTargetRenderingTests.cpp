@@ -114,7 +114,7 @@ bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, cons
 }
 
 template <typename INTEGRATION_SCENE>
-bool RenderTargetRenderingTests::runBasicTest(RendererTestsFramework& testFramework, UInt32 sceneState, const String& expectedImageName, float maxAveragePercentErrorPerPixel)
+bool RenderTargetRenderingTests::runBasicTest(RendererTestsFramework& testFramework, uint32_t sceneState, const std::string& expectedImageName, float maxAveragePercentErrorPerPixel)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState);
     testFramework.publishAndFlushScene(sceneId);

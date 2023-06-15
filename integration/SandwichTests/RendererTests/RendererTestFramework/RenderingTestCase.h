@@ -10,9 +10,10 @@
 #define RAMSES_RENDERINGTESTCASE_H
 
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "RendererAPI/EDeviceTypeId.h"
 #include "Collections/Vector.h"
-#include "Collections/String.h"
+
+#include <string>
+#include <string_view>
 
 class IRendererTest;
 
@@ -20,7 +21,7 @@ using DisplayConfigVector = std::vector<ramses::DisplayConfig>;
 
 struct RenderingTestCase
 {
-    RenderingTestCase(ramses_internal::UInt32 id, IRendererTest& rendererTest, const ramses_internal::String& name, bool defaultRendererRequired)
+    RenderingTestCase(uint32_t id, IRendererTest& rendererTest, std::string_view name, bool defaultRendererRequired)
         : m_id(id)
         , m_name(name)
         , m_rendererTest(rendererTest)
@@ -28,8 +29,8 @@ struct RenderingTestCase
     {
     }
 
-    const ramses_internal::UInt32   m_id;
-    const ramses_internal::String   m_name;
+    const uint32_t   m_id;
+    const std::string               m_name;
     DisplayConfigVector             m_displayConfigs;
     IRendererTest&                  m_rendererTest;
     bool                            m_defaultRendererRequired;

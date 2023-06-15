@@ -26,31 +26,31 @@ namespace ramses_internal
         using iterator          = memory_pool_iterator<MemoryPool>;
         using const_iterator    = const_memory_pool_iterator<MemoryPool>;
 
-        explicit MemoryPool(UInt32 size = 0);
+        explicit MemoryPool(uint32_t size = 0);
 
         // Creation/Deletion
         HANDLE                          allocate(HANDLE handle = InvalidMemoryHandle());
         void                            release(HANDLE handle);
 
         // Access
-        UInt32                          getTotalCount() const;
-        UInt32                          getActualCount() const;
-        bool                            isAllocated(HANDLE handle) const;
+        [[nodiscard]] uint32_t                          getTotalCount() const;
+        [[nodiscard]] uint32_t                          getActualCount() const;
+        [[nodiscard]] bool                            isAllocated(HANDLE handle) const;
 
         // Access to actual memory
         OBJECTTYPE*                     getMemory(HANDLE handle);
-        const OBJECTTYPE*               getMemory(HANDLE handle) const;
+        [[nodiscard]] const OBJECTTYPE*               getMemory(HANDLE handle) const;
 
-        void                            preallocateSize(UInt32 size);
+        void                            preallocateSize(uint32_t size);
 
         static HANDLE                   InvalidMemoryHandle();
 
         iterator                        begin();
         iterator                        end();
-        const_iterator                  begin() const;
-        const_iterator                  end() const;
-        const_iterator                  cbegin() const;
-        const_iterator                  cend() const;
+        [[nodiscard]] const_iterator                  begin() const;
+        [[nodiscard]] const_iterator                  end() const;
+        [[nodiscard]] const_iterator                  cbegin() const;
+        [[nodiscard]] const_iterator                  cend() const;
 
         static_assert(std::is_move_constructible<OBJECTTYPE>::value && std::is_move_assignable<OBJECTTYPE>::value, "OBJECTTYPE must be movable");
     protected:
@@ -59,7 +59,7 @@ namespace ramses_internal
     };
 
     template <typename OBJECTTYPE, typename HANDLE>
-    void MemoryPool<OBJECTTYPE, HANDLE>::preallocateSize(UInt32 size)
+    void MemoryPool<OBJECTTYPE, HANDLE>::preallocateSize(uint32_t size)
     {
         assert(m_memoryPool.size() == m_handlePool.size());
         if (size > m_memoryPool.size())
@@ -70,7 +70,7 @@ namespace ramses_internal
     }
 
     template <typename OBJECTTYPE, typename HANDLE>
-    MemoryPool<OBJECTTYPE, HANDLE>::MemoryPool(UInt32 size /*= 0*/)
+    MemoryPool<OBJECTTYPE, HANDLE>::MemoryPool(uint32_t size /*= 0*/)
         : m_memoryPool(size)
         , m_handlePool(size)
     {
@@ -123,14 +123,14 @@ namespace ramses_internal
 
     template <typename OBJECTTYPE, typename HANDLE>
     inline
-    UInt32 MemoryPool<OBJECTTYPE, HANDLE>::getTotalCount() const
+    uint32_t MemoryPool<OBJECTTYPE, HANDLE>::getTotalCount() const
     {
-        return static_cast<UInt32>(m_memoryPool.size());
+        return static_cast<uint32_t>(m_memoryPool.size());
     }
 
     template <typename OBJECTTYPE, typename HANDLE>
     inline
-    UInt32 MemoryPool<OBJECTTYPE, HANDLE>::getActualCount() const
+    uint32_t MemoryPool<OBJECTTYPE, HANDLE>::getActualCount() const
     {
         return m_handlePool.getNumberOfAcquired();
     }

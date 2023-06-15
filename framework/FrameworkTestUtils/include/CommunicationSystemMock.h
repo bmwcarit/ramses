@@ -14,7 +14,6 @@
 #include "TransportCommon/ICommunicationSystem.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "Components/ManagedResource.h"
-#include "Components/CategoryInfo.h"
 #include "TransportCommon/ISceneUpdateSerializer.h"
 
 namespace ramses_internal
@@ -29,12 +28,11 @@ namespace ramses_internal
         MOCK_METHOD(bool, disconnectServices, (), (override));
 
         MOCK_METHOD(IConnectionStatusUpdateNotifier&, getRamsesConnectionStatusUpdateNotifier, (), (override));
-        MOCK_METHOD(IConnectionStatusUpdateNotifier&, getDcsmConnectionStatusUpdateNotifier, (), (override));
 
         // scene
-        MOCK_METHOD(bool, broadcastNewScenesAvailable, (const SceneInfoVector& newScenes), (override));
+        MOCK_METHOD(bool, broadcastNewScenesAvailable, (const SceneInfoVector& newScenes, ramses::EFeatureLevel featureLevel), (override));
         MOCK_METHOD(bool, broadcastScenesBecameUnavailable, (const SceneInfoVector& unavailableScenes), (override));
-        MOCK_METHOD(bool, sendScenesAvailable, (const Guid& to, const SceneInfoVector& availableScenes), (override));
+        MOCK_METHOD(bool, sendScenesAvailable, (const Guid& to, const SceneInfoVector& availableScenes, ramses::EFeatureLevel featureLevel), (override));
 
         MOCK_METHOD(bool, sendSubscribeScene, (const Guid& to, const SceneId& sceneId), (override));
         MOCK_METHOD(bool, sendUnsubscribeScene, (const Guid& to, const SceneId& sceneId), (override));
@@ -44,25 +42,11 @@ namespace ramses_internal
 
         MOCK_METHOD(bool, sendRendererEvent, (const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data), (override));
 
-        MOCK_METHOD(bool, sendDcsmBroadcastOfferContent, (ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string&), (override));
-        MOCK_METHOD(bool, sendDcsmOfferContent, (const Guid& to, ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string&), (override));
-        MOCK_METHOD(bool, sendDcsmContentDescription, (const Guid& to, ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor), (override));
-        MOCK_METHOD(bool, sendDcsmContentReady, (const Guid& to, ContentID contentID), (override));
-        MOCK_METHOD(bool, sendDcsmContentEnableFocusRequest, (const Guid& to, ContentID contentID, int32_t focusRequest), (override));
-        MOCK_METHOD(bool, sendDcsmContentDisableFocusRequest, (const Guid& to, ContentID contentID, int32_t focusRequest), (override));
-        MOCK_METHOD(bool, sendDcsmBroadcastRequestStopOfferContent, (ContentID contentID), (override));
-        MOCK_METHOD(bool, sendDcsmBroadcastForceStopOfferContent, (ContentID contentID), (override));
-        MOCK_METHOD(bool, sendDcsmUpdateContentMetadata, (const Guid& to, ContentID contentID, const DcsmMetadata& metadata), (override));
-        MOCK_METHOD(bool, sendDcsmCanvasSizeChange, (const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation), (override));
-        MOCK_METHOD(bool, sendDcsmContentStateChange, (const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo&, AnimationInformation), (override));
-        MOCK_METHOD(bool, sendDcsmContentStatus, (const Guid& to, ContentID contentID, uint64_t messageID, std::vector<Byte> const& message), (override));
         MOCK_METHOD(void, logConnectionInfo, (), (override));
         MOCK_METHOD(void, triggerLogMessageForPeriodicLog, (), (override));
 
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
-        void setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler) override;
-        void setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* handler) override;
     };
 }
 

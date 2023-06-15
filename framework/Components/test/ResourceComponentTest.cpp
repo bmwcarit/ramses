@@ -37,7 +37,7 @@ namespace ramses_internal
 
         virtual ResourceComponent& getResourceComponent() = 0;
 
-        virtual ~ResourceComponentTestBase()
+        ~ResourceComponentTestBase() override
         {
             deleteTestResourceFile();
         }
@@ -51,7 +51,7 @@ namespace ramses_internal
             };
             vertexData.resize(vertexData.size() + extraSize*3);
 
-            ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3 + static_cast<uint32_t>(extraSize), EDataType::Vector3F, vertexData.data(), ResourceCacheFlag(0u), String("resName"));
+            ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3 + static_cast<uint32_t>(extraSize), EDataType::Vector3F, vertexData.data(), ResourceCacheFlag(0u), "resName");
             return resource;
         }
 
@@ -63,14 +63,14 @@ namespace ramses_internal
             return hashes;
         }
 
-        ResourceContentHashVector writeMultipleTestResourceFile(UInt32 num, size_t extraSize = 0, bool compress = false)
+        ResourceContentHashVector writeMultipleTestResourceFile(uint32_t num, size_t extraSize = 0, bool compress = false)
         {
             ResourceComponent& localResourceComponent = getResourceComponent();
 
             ManagedResourceVector managedResourceVec;
             ResourceContentHashVector hashes;
 
-            for (UInt32 i = 0; i < num; ++i)
+            for (uint32_t i = 0; i < num; ++i)
             {
                 IResource* resource = CreateTestResource(i*1.0f, extraSize);
                 ManagedResource managedResource = localResourceComponent.manageResource(*resource, true);
@@ -130,10 +130,10 @@ namespace ramses_internal
 
     protected:
         PlatformLock frameworkLock;
-        const String resourceFileName;
-        const String anotherResFileName;
-        const String subDirName;
-        const String equallyNamedResFileInSubDir;
+        const std::string resourceFileName;
+        const std::string anotherResFileName;
+        const std::string subDirName;
+        const std::string equallyNamedResFileInSubDir;
         StatisticCollectionScene sceneStatistics;
     };
 
@@ -144,7 +144,7 @@ namespace ramses_internal
             : localResourceComponent(statistics, frameworkLock)
         {}
 
-        virtual ResourceComponent& getResourceComponent() override
+        ResourceComponent& getResourceComponent() override
         {
             return localResourceComponent;
         }
@@ -180,7 +180,7 @@ namespace ramses_internal
             : localResourceComponent(statistics, frameworkLock)
         {}
 
-        virtual ResourceComponent& getResourceComponent() override
+        ResourceComponent& getResourceComponent() override
         {
             return localResourceComponent;
         }
@@ -293,15 +293,15 @@ namespace ramses_internal
         EXPECT_EQ(hash, hashUsage.getHash());
     }
 
-    std::pair<SceneFileHandle, ResourceContentHash> setupTest(String const& resourceFileName, ResourceComponent& localResourceComponent)
+    std::pair<SceneFileHandle, ResourceContentHash> setupTest(std::string const& resourceFileName, ResourceComponent& localResourceComponent)
     {
         // setup test
-        const Float vertexData[] = {
+        const float vertexData[] = {
             0.0f, 0.0f, 0.0f,
             1.0f, 0.0f, 0.0f,
             1.0f, 1.0f, 0.0f
         };
-        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType::Vector3F, vertexData, ResourceCacheFlag(0u), String("resName"));
+        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType::Vector3F, vertexData, ResourceCacheFlag(0u), "resName");
         ResourceContentHash hash = resource->getHash();
         {
             File resourceFile(resourceFileName);
@@ -532,7 +532,7 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, getsResourceInfoForResourceHashVector)
     {
-        IResource* tex = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
+        IResource* tex = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, {});
         tex->setResourceData(ResourceBlob{ 2 }, { 4u, 4u });
         auto res1 = localResourceComponent.manageResource(*CreateTestResource());
         auto res2 = localResourceComponent.manageResource(*CreateTestResource(1.0f, 2));

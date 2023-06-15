@@ -39,7 +39,7 @@ namespace ramses_internal
         TimeMs,
     };
 
-    static constexpr const char* const EFixedSemanticsNames[] =
+    const std::array EFixedSemanticsNames =
     {
         "Invalid",
         "ProjectionMatrix",

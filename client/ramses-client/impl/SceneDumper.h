@@ -18,6 +18,8 @@
 
 #include "TextureSamplerImpl.h"
 
+#include <string_view>
+
 namespace ramses
 {
     class RamsesObjectRegistry;
@@ -27,7 +29,6 @@ namespace ramses
     class GeometryBindingImpl;
     class Texture2DBufferImpl;
     class TextureSamplerImpl;
-    class StreamTextureImpl;
     class TextureBufferImpl;
     class RamsesObjectImpl;
     class RamsesClientImpl;
@@ -49,11 +50,10 @@ namespace ramses
         using RamsesObjectImplSet = ramses_internal::HashSet<const RamsesObjectImpl*>;
         explicit SceneDumper(const ramses::SceneImpl& scene);
         void dumpUnrequiredObjects(ramses_internal::StringOutputStream& output);
-        const RamsesObjectImplSet& getRequiredObjects() const;
+        [[nodiscard]] const RamsesObjectImplSet& getRequiredObjects() const;
     private:
         using GeometryBindingSet = ramses_internal::HashSet<const GeometryBindingImpl *>;
         using TextureSamplerSet = ramses_internal::HashSet<const TextureSamplerImpl *>;
-        using StreamTextureSet = ramses_internal::HashSet<const StreamTextureImpl *>;
         using RenderTargetSet = ramses_internal::HashSet<const RenderTargetImpl *>;
         using RenderBufferSet = ramses_internal::HashSet<const RenderBufferImpl *>;
         using RenderGroupSet = ramses_internal::HashSet<const RenderGroupImpl *>;
@@ -70,7 +70,6 @@ namespace ramses
 
         using TextureSamplerHandleToObjectMap = ramses_internal::HashMap<ramses_internal::TextureSamplerHandle, const TextureSamplerImpl *>;
         using TextureBufferHandleToObjectMap = ramses_internal::HashMap<ramses_internal::TextureBufferHandle, const Texture2DBufferImpl *>;
-        using StreamTextureHandleToObjectMap = ramses_internal::HashMap<ramses_internal::StreamTextureHandle, const StreamTextureImpl *>;
         using RenderBufferHandleToObjectMap = ramses_internal::HashMap<ramses_internal::RenderBufferHandle, const RenderBufferImpl *>;
         using RenderBufferHandleRenderBufferSetMap = ramses_internal::HashMap<ramses_internal::RenderBufferHandle, RenderBufferSet>;
         using ResourceContentHashToObjectMap = ramses_internal::HashMap<ramses_internal::ResourceContentHash, const ResourceImpl *>;
@@ -92,7 +91,6 @@ namespace ramses
         void setupResourceMap();
 
         bool addToRequiredObjects(const RamsesObjectImpl& object);
-        void markAllObjectsOfTypeAsRequired(ERamsesObjectType objectType);
 
         RenderPassSet      markRequiredScreenRenderPasses();
         RenderPassSet      getRequiredRenderPasses(const RenderBufferSet& requiredRenderBuffers);
@@ -109,7 +107,6 @@ namespace ramses
         void               markRequiredRenderTargets(const RenderPassSet& requiredRenderPasses);
         RenderBufferSet    markRequiredRenderBuffer(const TextureSamplerSet& requiredTextureSamplers);
         void               markRequiredTextureBuffer(const TextureSamplerSet& requiredTextureSamplers);
-        StreamTextureSet   markRequiredStreamTextures(const TextureSamplerSet& requiredTextureSamplers);
         RenderBufferSet    getRequiredRenderBuffers(RenderBufferSet& requiredRenderBuffers);
         void               markRequiredResourcesFromHash(const ResourceContentHashSet& requiredResourceHashes);
 
@@ -123,7 +120,7 @@ namespace ramses
         void addNodeWithAllParentNodes(const NodeImpl* node);
         void addRenderBufferRecursive(const RenderBufferImpl& renderBuffer, RenderBufferSet& requiredRenderBuffers);
 
-        static void AddString(const ramses_internal::String&       stringToAppend,
+        static void AddString(std::string_view                     stringToAppend,
                               ramses_internal::StringOutputStream& string,
                               uint32_t                             width      = 0,
                               bool                                 rightAlign = false);
@@ -137,7 +134,6 @@ namespace ramses
         TextureSamplerHandleToObjectMap                   m_textureSamplerHandleToObjectMap;
         ResourceContentHashToObjectMap                    m_resourceContentHashToObjectMap;
         TextureBufferHandleToObjectMap                    m_textureBufferHandleToObjectMap;
-        StreamTextureHandleToObjectMap                    m_streamTextureHandleToObjectMap;
         RenderBufferHandleToObjectMap                     m_renderBufferHandleToObjectMap;
     };
 

@@ -11,79 +11,150 @@
 
 namespace ramses
 {
-    RamsesFrameworkConfig::RamsesFrameworkConfig()
-        : RamsesFrameworkConfig(0, nullptr)
+    RamsesFrameworkConfig::RamsesFrameworkConfig(EFeatureLevel featureLevel)
+        : StatusObject{ std::make_unique<RamsesFrameworkConfigImpl>(featureLevel) }
+        , m_impl{ static_cast<RamsesFrameworkConfigImpl&>(*StatusObject::m_impl) }
     {
     }
 
-    RamsesFrameworkConfig::RamsesFrameworkConfig(int32_t argc, char const* const* argv)
-        : StatusObject(*new RamsesFrameworkConfigImpl(argc, argv))
-        , impl(static_cast<RamsesFrameworkConfigImpl&>(StatusObject::impl))
+    RamsesFrameworkConfig::~RamsesFrameworkConfig() = default;
+
+    RamsesFrameworkConfig::RamsesFrameworkConfig(const RamsesFrameworkConfig& other)
+        : StatusObject{ std::make_unique<RamsesFrameworkConfigImpl>(other.m_impl) }
+        , m_impl{ static_cast<RamsesFrameworkConfigImpl&>(*StatusObject::m_impl) }
     {
     }
 
-    RamsesFrameworkConfig::~RamsesFrameworkConfig()
+    RamsesFrameworkConfig::RamsesFrameworkConfig(RamsesFrameworkConfig&& other) noexcept
+        : StatusObject{ std::move(other.StatusObject::m_impl) }
+        , m_impl{ static_cast<RamsesFrameworkConfigImpl&>(*StatusObject::m_impl) }
     {
+    }
+
+    RamsesFrameworkConfig& RamsesFrameworkConfig::operator=(const RamsesFrameworkConfig& other)
+    {
+        StatusObject::m_impl = std::make_unique<RamsesFrameworkConfigImpl>(other.m_impl);
+        m_impl = static_cast<RamsesFrameworkConfigImpl&>(*StatusObject::m_impl);
+        return *this;
+    }
+
+    RamsesFrameworkConfig& RamsesFrameworkConfig::operator=(RamsesFrameworkConfig&& other) noexcept
+    {
+        StatusObject::m_impl = std::move(other.StatusObject::m_impl);
+        m_impl = static_cast<RamsesFrameworkConfigImpl&>(*StatusObject::m_impl);
+        return *this;
+    }
+
+    status_t RamsesFrameworkConfig::setFeatureLevel(EFeatureLevel featureLevel)
+    {
+        return m_impl.get().setFeatureLevel(featureLevel);
+    }
+
+    EFeatureLevel RamsesFrameworkConfig::getFeatureLevel() const
+    {
+        return m_impl.get().getFeatureLevel();
     }
 
     status_t RamsesFrameworkConfig::setRequestedRamsesShellType(ERamsesShellType requestedShellType)
     {
-        const status_t status = impl.setRequestedRamsesShellType(requestedShellType);
+        const status_t status = m_impl.get().setRequestedRamsesShellType(requestedShellType);
         return status;
     }
 
     status_t RamsesFrameworkConfig::setWatchdogNotificationInterval(ERamsesThreadIdentifier thread, uint32_t interval)
     {
-        return impl.setWatchdogNotificationInterval(thread, interval);
+        return m_impl.get().setWatchdogNotificationInterval(thread, interval);
     }
 
     status_t RamsesFrameworkConfig::setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback)
     {
-        return impl.setWatchdogNotificationCallBack(callback);
+        return m_impl.get().setWatchdogNotificationCallBack(callback);
     }
 
     status_t RamsesFrameworkConfig::disableDLTApplicationRegistration()
     {
-        return impl.enableDLTApplicationRegistration(false);
+        return m_impl.get().enableDLTApplicationRegistration(false);
     }
 
-    void RamsesFrameworkConfig::setDLTApplicationID(const char* id)
+    void RamsesFrameworkConfig::setDLTApplicationID(std::string_view id)
     {
-        impl.setDLTApplicationID(id);
+        m_impl.get().setDLTApplicationID(id);
     }
 
-    const char* RamsesFrameworkConfig::getDLTApplicationID() const
+    std::string_view RamsesFrameworkConfig::getDLTApplicationID() const
     {
-        return impl.getDLTApplicationID();
+        return m_impl.get().getDLTApplicationID();
     }
 
-    void RamsesFrameworkConfig::setDLTApplicationDescription(const char* description)
+    void RamsesFrameworkConfig::setDLTApplicationDescription(std::string_view description)
     {
-        impl.setDLTApplicationDescription(description);
+        m_impl.get().setDLTApplicationDescription(description);
     }
 
-    const char* RamsesFrameworkConfig::getDLTApplicationDescription() const
+    std::string_view RamsesFrameworkConfig::getDLTApplicationDescription() const
     {
-        return impl.getDLTApplicationDescription();
+        return m_impl.get().getDLTApplicationDescription();
     }
 
-    void RamsesFrameworkConfig::setPeriodicLogsEnabled(bool enabled)
+    void RamsesFrameworkConfig::setLogLevel(ELogLevel logLevel)
     {
-        impl.setPeriodicLogsEnabled(enabled);
+        m_impl.get().setLogLevel(logLevel);
     }
 
-    void RamsesFrameworkConfig::setInterfaceSelectionIPForTCPCommunication(const char* ip)
+    status_t RamsesFrameworkConfig::setLogLevel(std::string_view context, ELogLevel logLevel)
     {
-        impl.m_tcpConfig.setIPAddress(ip);
+        return m_impl.get().setLogLevel(context, logLevel);
     }
 
-    void RamsesFrameworkConfig::setDaemonIPForTCPCommunication(const char* ip)
+    void RamsesFrameworkConfig::setLogLevelConsole(ELogLevel logLevel)
     {
-        impl.m_tcpConfig.setDaemonIPAddress(ip);
+        m_impl.get().setLogLevelConsole(logLevel);
+    }
+
+    void RamsesFrameworkConfig::setPeriodicLogInterval(std::chrono::seconds interval)
+    {
+        m_impl.get().setPeriodicLogInterval(interval);
+    }
+
+    status_t RamsesFrameworkConfig::setParticipantGuid(uint64_t guid)
+    {
+        return m_impl.get().setParticipantGuid(guid);
+    }
+
+    status_t RamsesFrameworkConfig::setParticipantName(std::string_view name)
+    {
+        return m_impl.get().setParticipantName(name);
+    }
+
+    status_t RamsesFrameworkConfig::setConnectionSystem(EConnectionSystem connectionSystem)
+    {
+        return m_impl.get().setConnectionSystem(connectionSystem);
+    }
+
+    void RamsesFrameworkConfig::setInterfaceSelectionIPForTCPCommunication(std::string_view ip)
+    {
+        m_impl.get().m_tcpConfig.setIPAddress(ip);
+    }
+
+    void RamsesFrameworkConfig::setInterfaceSelectionPortForTCPCommunication(uint16_t port)
+    {
+        m_impl.get().m_tcpConfig.setPort(port);
+    }
+
+    void RamsesFrameworkConfig::setDaemonIPForTCPCommunication(std::string_view ip)
+    {
+        m_impl.get().m_tcpConfig.setDaemonIPAddress(ip);
     }
 
     void RamsesFrameworkConfig::setDaemonPortForTCPCommunication(uint16_t port)
     {
-        impl.m_tcpConfig.setDaemonPort(port);
+        m_impl.get().m_tcpConfig.setDaemonPort(port);
+    }
+
+    status_t RamsesFrameworkConfig::setConnectionKeepaliveSettings(std::chrono::milliseconds interval, std::chrono::milliseconds timeout)
+    {
+        m_impl.get().m_tcpConfig.setAliveInterval(interval);
+        m_impl.get().m_tcpConfig.setAliveTimeout(timeout);
+        return StatusOK;
     }
 }

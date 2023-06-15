@@ -17,7 +17,7 @@ using namespace ramses_internal;
 
 TEST(AnImage, canGetResolution)
 {
-    UInt8 data[2 * 3 * 4] = { 3 };  // width*height*channels
+    uint8_t data[2 * 3 * 4] = { 3 };  // width*height*channels
 
     Image bitmap(2u, 3u, data, data + sizeof(data));
     EXPECT_EQ(2u, bitmap.getWidth());
@@ -29,8 +29,8 @@ TEST(AnImage, canSaveAndLoadPNG)
 {
     const uint32_t w = 10u;
     const uint32_t h = 5u;
-    std::vector<UInt8> data(w * h * 4);
-    std::iota(data.begin(), data.end(), UInt8(0u));
+    std::vector<uint8_t> data(w * h * 4);
+    std::iota(data.begin(), data.end(), uint8_t(0u));
     const Image bitmap(w, h, std::move(data));
     bitmap.saveToFilePNG("bitmapTest.png");
     Image loadedBitmap;
@@ -43,9 +43,9 @@ TEST(AnImage, canSaveAndLoadPNG)
 
 TEST(AnImage, ReportsTheSumOfAllItsPixels)
 {
-    UInt8 data[400];
+    uint8_t data[400];
 
-    for (UInt8 i = 0; i < 100; ++i)
+    for (uint8_t i = 0; i < 100; ++i)
     {
         data[4 * i + 0] = 1;
         data[4 * i + 1] = 2;
@@ -55,7 +55,7 @@ TEST(AnImage, ReportsTheSumOfAllItsPixels)
 
     Image bitmap(10, 10, data, data + sizeof(data));
 
-    const Vector4i expectedSumOfPixelData{ 100u, 200u, 300u, 400u };
+    const glm::ivec4 expectedSumOfPixelData{ 100u, 200u, 300u, 400u };
     EXPECT_EQ(expectedSumOfPixelData, bitmap.getSumOfPixelValues());
 }
 
@@ -68,7 +68,7 @@ TEST(AnImage, ReportsTheSumOfAllItsPixels_4K_Image)
     std::vector<uint8_t> data(width * height * 4, maxPixelValue);
     const Image bitmap(width, height, std::move(data));
 
-    const Vector4i resultSumOfPixelValues = bitmap.getSumOfPixelValues();
+    const glm::ivec4 resultSumOfPixelValues = bitmap.getSumOfPixelValues();
     ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.y);
     ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.z);
     ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.w);
@@ -86,7 +86,7 @@ TEST(AnImage, CanGenerateSeparateColorAndAlphaImages)
     expectedColorData.reserve(400u);
     expectedAlphaData.reserve(400u);
 
-    for (UInt8 i = 0; i < 100; ++i)
+    for (uint8_t i = 0; i < 100; ++i)
     {
         data.push_back(1);
         data.push_back(2);
@@ -117,14 +117,14 @@ TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
 {
     constexpr size_t Width = 5;
     constexpr size_t Height = 3;
-    UInt8 data1[Width * Height * 4];
-    UInt8 data2[Width * Height * 4];
+    uint8_t data1[Width * Height * 4];
+    uint8_t data2[Width * Height * 4];
 
-    for (UInt8 i = 0; i < Width * Height; ++i)
+    for (uint8_t i = 0; i < Width * Height; ++i)
     {
         // create mosaic difference
-        const UInt8 value1 = (i % 2) ? 1 : 3;
-        const UInt8 value2 = (i % 2) ? 3 : 1;
+        const uint8_t value1 = (i % 2) ? 1 : 3;
+        const uint8_t value2 = (i % 2) ? 3 : 1;
 
         data1[4 * i + 0] = value1;
         data1[4 * i + 1] = value1;
@@ -143,7 +143,7 @@ TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
     const Image bitmapDiff2 = bitmap2.createDiffTo(bitmap1);
 
     // W*H pixels, times a difference of 2 (because of shifted mosaic pattern)
-    const Vector4i expectedDiff(2u * Width * Height);
+    const glm::ivec4 expectedDiff(2u * Width * Height);
 
     EXPECT_EQ(expectedDiff, bitmapDiff1.getSumOfPixelValues());
     EXPECT_EQ(expectedDiff, bitmapDiff2.getSumOfPixelValues());
@@ -155,9 +155,9 @@ TEST(AnImage, YieldsBlackImageWhenSubtractedFromItself)
 {
     constexpr size_t Width = 3;
     constexpr size_t Height = 5;
-    UInt8 data[Width * Height * 4];
+    uint8_t data[Width * Height * 4];
 
-    for (UInt8 i = 0; i < Width*Height; ++i)
+    for (uint8_t i = 0; i < Width*Height; ++i)
     {
         data[4 * i + 0] = 12u;
         data[4 * i + 1] = 14u;
@@ -168,7 +168,7 @@ TEST(AnImage, YieldsBlackImageWhenSubtractedFromItself)
     const Image bitmap(Width, Height, data, data + sizeof(data));
     const Image bitmapDiff = bitmap.createDiffTo(bitmap);
 
-    EXPECT_EQ(Vector4i(0u), bitmapDiff.getSumOfPixelValues());
+    EXPECT_EQ(glm::ivec4(0u), bitmapDiff.getSumOfPixelValues());
 }
 
 TEST(AnImage, GivesEmptyImageIfEnlargingToSmallerSize)
@@ -234,9 +234,9 @@ TEST(AnImage, CreatesEnlargedImageContainingOriginalAndRestFilledWithGivenValue_
 
 TEST(AnImage, CopyConstructedBitmapIsSame)
 {
-    UInt8 data[400] = { 0 };
+    uint8_t data[400] = { 0 };
 
-    for (UInt8 i = 0; i < 100; ++i)
+    for (uint8_t i = 0; i < 100; ++i)
     {
         data[4 * i + 0] = 12u;
         data[4 * i + 1] = 14u;
@@ -283,7 +283,7 @@ TEST(AnImage, MoveAssignedBitmapIsSame)
 
 TEST(AnImage, UnequalSizeBitmapsAreDifferent)
 {
-    static const UInt8 data[5 * 3 * 4] = { 0 };
+    static const uint8_t data[5 * 3 * 4] = { 0 };
     const Image bitmap(5, 3, data, data + sizeof(data));
 
     const Image otherHeight(5, 2, data, data + 5*2*4);
@@ -297,7 +297,7 @@ TEST(AnImage, UnequalSizeBitmapsAreDifferent)
 
 TEST(AnImage, FlipsImage2x1)
 {
-    const std::vector<UInt8> data
+    const std::vector<uint8_t> data
     {
         1,  2,  3,  4,   5,  6,  7,  8
     };
@@ -311,7 +311,7 @@ TEST(AnImage, FlipsImage2x1)
 
 TEST(AnImage, FlipsImage2x2)
 {
-    const std::vector<UInt8> data
+    const std::vector<uint8_t> data
     {
         1,  2,  3,  4,   5,  6,  7,  8,
         9, 10, 11, 12,  13, 14, 15, 16
@@ -327,7 +327,7 @@ TEST(AnImage, FlipsImage2x2)
 
 TEST(AnImage, FlipsImage2x3)
 {
-    const std::vector<UInt8> data
+    const std::vector<uint8_t> data
     {
         1,  2,  3,  4,    5,  6,  7,  8,
         9, 10, 11, 12,   13, 14, 15, 16,
@@ -345,7 +345,7 @@ TEST(AnImage, FlipsImage2x3)
 
 TEST(AnImage, FlipsImage4x4)
 {
-    const std::vector<UInt8> data
+    const std::vector<uint8_t> data
     {
         1,  2,  3,  4,    5,  6,  7,  8,   9, 10, 11, 12,  13, 14, 15, 16,
         17, 18, 19, 20,  21, 22, 23, 24,  25, 26, 27, 28,  29, 30, 31, 32,
@@ -365,7 +365,7 @@ TEST(AnImage, FlipsImage4x4)
 
 TEST(AnImage, getsNumOfNonBlackPixels)
 {
-    std::array<UInt8, 2 * 2 * 4> data{ { 0, 1, 0, 0, 0, 2, 1, 0, 5, 2, 1, 0, 13, 20, 1, 0 } };
+    std::array<uint8_t, 2 * 2 * 4> data{ { 0, 1, 0, 0, 0, 2, 1, 0, 5, 2, 1, 0, 13, 20, 1, 0 } };
     const Image bitmap(2, 2, data.cbegin(), data.cend());
     EXPECT_EQ(3u, bitmap.getNumberOfNonBlackPixels());
     EXPECT_EQ(2u, bitmap.getNumberOfNonBlackPixels(2));

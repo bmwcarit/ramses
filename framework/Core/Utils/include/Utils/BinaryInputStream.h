@@ -20,10 +20,10 @@ namespace ramses_internal
 
         IInputStream& read(void* buffer, size_t size) override;
 
-        virtual EStatus getState() const  override;
+        [[nodiscard]] EStatus getState() const  override;
 
-        const Byte* readPosition() const;
-        size_t getCurrentReadBytes() const;
+        [[nodiscard]] const Byte* readPosition() const;
+        [[nodiscard]] size_t getCurrentReadBytes() const;
         void skip(int64_t offset);
 
         EStatus seek(Int numberOfBytesToSeek, Seek origin) override;

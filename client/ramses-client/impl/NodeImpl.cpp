@@ -12,16 +12,12 @@
 #include "SerializationContext.h"
 #include "RamsesObjectTypeUtils.h"
 #include "Scene/ClientScene.h"
-#include "Math3d/Vector3.h"
-#include "RotationConventionUtils.h"
+#include "RotationTypeUtils.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace ramses
 {
-    static const ramses_internal::Vector3 IdentityTranslation(0.0f, 0.0f, 0.0f);
-    static const ramses_internal::Vector3 IdentityRotation(0.0f, 0.0f, 0.0f);
-    static const ramses_internal::Vector3 IdentityScaling(1.0f, 1.0f, 1.0f);
-
-    NodeImpl::NodeImpl(SceneImpl& scene, ERamsesObjectType type, const char* nodeName)
+    NodeImpl::NodeImpl(SceneImpl& scene, ERamsesObjectType type, std::string_view nodeName)
         : SceneObjectImpl(scene, type, nodeName)
         , m_parent(nullptr)
         , m_visibilityMode(EVisibilityMode::Visible)
@@ -71,9 +67,9 @@ namespace ramses
             }
         }
 
-        const ramses_internal::UInt32 childCount = getIScene().getChildCount(m_nodeHandle);
+        const uint32_t childCount = getIScene().getChildCount(m_nodeHandle);
         m_children.reserve(childCount);
-        for (ramses_internal::UInt32 i = 0; i < childCount; i++)
+        for (uint32_t i = 0; i < childCount; i++)
         {
             const ramses_internal::NodeHandle childNodeHandle = getIScene().getChild(m_nodeHandle, i);
             NodeImpl* childNode = serializationContext.getNodeImplForHandle(childNodeHandle);
@@ -111,20 +107,20 @@ namespace ramses
         return !m_children.empty();
     }
 
-    uint32_t NodeImpl::getChildCount() const
+    size_t NodeImpl::getChildCount() const
     {
-        return static_cast<uint32_t>(m_children.size());
+        return m_children.size();
     }
 
-    Node* NodeImpl::getChild(uint32_t index)
+    Node* NodeImpl::getChild(size_t index)
     {
         // Use const version of getChild to avoid code duplication
         return const_cast<Node*>(const_cast<const NodeImpl&>(*this).getChild(index));
     }
 
-    const Node* NodeImpl::getChild(uint32_t index) const
+    const Node* NodeImpl::getChild(size_t index) const
     {
-        if (index >= static_cast<uint32_t>(m_children.size()))
+        if (index >= m_children.size())
         {
             return nullptr;
         }
@@ -133,12 +129,12 @@ namespace ramses
         return &RamsesObjectTypeUtils::ConvertTo<Node>(child.getRamsesObject());
     }
 
-    NodeImpl& NodeImpl::getChildImpl(uint32_t index)
+    NodeImpl& NodeImpl::getChildImpl(size_t index)
     {
         return const_cast<NodeImpl&>(const_cast<const NodeImpl&>(*this).getChildImpl(index));
     }
 
-    const NodeImpl& NodeImpl::getChildImpl(uint32_t index) const
+    const NodeImpl& NodeImpl::getChildImpl(size_t index) const
     {
         assert(index < m_children.size());
         return *m_children[index];
@@ -236,17 +232,15 @@ namespace ramses
         return m_parent->removeChild(*this);
     }
 
-    status_t NodeImpl::getModelMatrix(float(&modelMatrix)[16]) const
+    status_t NodeImpl::getModelMatrix(matrix44f& modelMatrix) const
     {
-        const ramses_internal::Matrix44f mat44 = getIScene().updateMatrixCache(ramses_internal::ETransformationMatrixType_World, m_nodeHandle);
-        ramses_internal::PlatformMemory::Copy(modelMatrix, mat44.data, sizeof(modelMatrix));
+        modelMatrix = getIScene().updateMatrixCache(ramses_internal::ETransformationMatrixType_World, m_nodeHandle);
         return StatusOK;
     }
 
-    status_t NodeImpl::getInverseModelMatrix(float(&inverseModelMatrix)[16]) const
+    status_t NodeImpl::getInverseModelMatrix(matrix44f& inverseModelMatrix) const
     {
-        const ramses_internal::Matrix44f mat44 = getIScene().updateMatrixCache(ramses_internal::ETransformationMatrixType_Object, m_nodeHandle);
-        ramses_internal::PlatformMemory::Copy(inverseModelMatrix, mat44.data, sizeof(inverseModelMatrix));
+        inverseModelMatrix = getIScene().updateMatrixCache(ramses_internal::ETransformationMatrixType_Object, m_nodeHandle);
         return StatusOK;
     }
 
@@ -281,12 +275,65 @@ namespace ramses
         getIScene().removeChildFromNode(m_nodeHandle, child.m_nodeHandle);
     }
 
-    status_t NodeImpl::setRotationInternal(const ramses_internal::Vector3& rotation, ramses_internal::ERotationConvention rotationConventionInternal)
+    status_t NodeImpl::translate(const vec3f& translation)
     {
         if (!m_transformHandle.isValid())
         {
-            if (rotation == IdentityRotation &&
-                rotationConventionInternal == ramses_internal::ERotationConvention::Legacy_ZYX)
+            if (translation == ramses_internal::IScene::IdentityTranslation)
+            {
+                return StatusOK;
+            }
+            initializeTransform();
+        }
+        const auto& previous = getIScene().getTranslation(m_transformHandle);
+        getIScene().setTranslation(m_transformHandle, previous + glm::vec3(translation));
+        return StatusOK;
+    }
+
+    status_t NodeImpl::setTranslation(const vec3f& translation)
+    {
+        if (!m_transformHandle.isValid())
+        {
+            if (translation == ramses_internal::IScene::IdentityTranslation)
+            {
+                return StatusOK;
+            }
+            initializeTransform();
+        }
+        if (translation != getIScene().getTranslation(m_transformHandle))
+        {
+            getIScene().setTranslation(m_transformHandle, translation);
+        }
+        return StatusOK;
+    }
+
+    status_t NodeImpl::getTranslation(vec3f& translation) const
+    {
+        if (!m_transformHandle.isValid())
+        {
+            translation = ramses_internal::IScene::IdentityTranslation;
+            return StatusOK;
+        }
+
+        translation = getIScene().getTranslation(m_transformHandle);
+        return StatusOK;
+    }
+
+    ramses::status_t NodeImpl::setRotation(const vec3f& rotation, ERotationType rotationType)
+    {
+        if (rotationType == ERotationType::Quaternion)
+        {
+            return addErrorEntry("Invalid rotation rotationType: Quaternion");
+        }
+        const auto rotationConventionInternal = RotationTypeUtils::ConvertRotationTypeToInternal(rotationType);
+        return setRotationInternal({rotation.x, rotation.y, rotation.z, 1.f}, rotationConventionInternal);
+    }
+
+    ramses::status_t NodeImpl::setRotationInternal(glm::vec4&& rotation, ramses_internal::ERotationType rotationType)
+    {
+        if (!m_transformHandle.isValid())
+        {
+            if (rotation == ramses_internal::IScene::IdentityRotation)
             {
                 return StatusOK;
             }
@@ -294,198 +341,108 @@ namespace ramses
         }
 
         if (rotation != getIScene().getRotation(m_transformHandle)
-            || rotationConventionInternal != getIScene().getRotationConvention(m_transformHandle))
+            || rotationType != getIScene().getRotationType(m_transformHandle))
         {
-            getIScene().setRotation(m_transformHandle, rotation, rotationConventionInternal);
+            getIScene().setRotation(m_transformHandle, rotation, rotationType);
         }
 
         return StatusOK;
     }
 
-    status_t NodeImpl::translate(float x, float y, float z)
+    ERotationType NodeImpl::getRotationType() const
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityTranslation)
-            {
-                return StatusOK;
-            }
-            initializeTransform();
+            return ERotationType::Euler_XYZ;
         }
-        const ramses_internal::Vector3& previous = getIScene().getTranslation(m_transformHandle);
-        getIScene().setTranslation(m_transformHandle, previous + ramses_internal::Vector3(x, y, z));
-        return StatusOK;
+        const auto rotationConventionInternal = getIScene().getRotationType(m_transformHandle);
+        return RotationTypeUtils::ConvertRotationTypeFromInternal(rotationConventionInternal);
     }
 
-    status_t NodeImpl::setTranslation(float x, float y, float z)
+    status_t NodeImpl::getRotation(vec3f& rotation) const
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityTranslation)
-            {
-                return StatusOK;
-            }
-            initializeTransform();
-        }
-        const ramses_internal::Vector3 newValue(x, y, z);
-        if (newValue != getIScene().getTranslation(m_transformHandle))
-        {
-            getIScene().setTranslation(m_transformHandle, newValue);
-        }
-        return StatusOK;
-    }
-
-    status_t NodeImpl::getTranslation(float& x, float& y, float& z) const
-    {
-        if (!m_transformHandle.isValid())
-        {
-            x = IdentityTranslation.x;
-            y = IdentityTranslation.y;
-            z = IdentityTranslation.z;
+            rotation = ramses_internal::IScene::IdentityRotation;
             return StatusOK;
         }
 
-        const ramses_internal::Vector3& value = getIScene().getTranslation(m_transformHandle);
-        x = value[0];
-        y = value[1];
-        z = value[2];
+        if (ramses_internal::ERotationType::Quaternion == getIScene().getRotationType(m_transformHandle))
+        {
+            return addErrorEntry("Node::getRotation(vec3f&) failed: rotation was set by quaternion before. Check Node::getRotationType().");
+        }
+
+        rotation = getIScene().getRotation(m_transformHandle);
         return StatusOK;
     }
 
-    status_t NodeImpl::rotate(float x, float y, float z)
+    status_t NodeImpl::setRotation(const quat& rotation)
+    {
+        glm::vec4 vec{rotation.x, rotation.y, rotation.z, rotation.w};
+        return setRotationInternal(std::move(vec), ramses_internal::ERotationType::Quaternion);
+    }
+
+    ramses::status_t NodeImpl::getRotation(quat& rotation) const
     {
         if (!m_transformHandle.isValid())
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityRotation)
+            rotation = glm::identity<quat>();
+            return StatusOK;
+        }
+
+        if (ramses_internal::ERotationType::Quaternion != getIScene().getRotationType(m_transformHandle))
+        {
+            return addErrorEntry("Node::getRotation(quat&) failed: rotation was set by euler angles before. Check Node::getRotationType().");
+        }
+
+        const auto& value = getIScene().getRotation(m_transformHandle);
+        rotation = quat(value.w, value.x, value.y, value.z);
+        return StatusOK;
+    }
+
+    status_t NodeImpl::scale(const vec3f& scaling)
+    {
+        if (!m_transformHandle.isValid())
+        {
+            if (scaling == ramses_internal::IScene::IdentityScaling)
             {
                 return StatusOK;
             }
             initializeTransform();
         }
-        else if (ramses_internal::ERotationConvention::Legacy_ZYX != getIScene().getRotationConvention(m_transformHandle))
-            return addErrorEntry("Node::rotate() can only be used with legacy left-handed rotation: setRotation(float,float,float)");
-
-        const ramses_internal::Vector3& previous = getIScene().getRotation(m_transformHandle);
-        const ramses_internal::Vector3 increment(x, y, z);
-        getIScene().setRotation(m_transformHandle, previous + increment, ramses_internal::ERotationConvention::Legacy_ZYX);
+        const auto& previous = getIScene().getScaling(m_transformHandle);
+        getIScene().setScaling(m_transformHandle, previous * scaling);
 
         return StatusOK;
     }
 
-    status_t NodeImpl::setRotation(float x, float y, float z)
-    {
-        return setRotationInternal({ x, y, z }, ramses_internal::ERotationConvention::Legacy_ZYX);
-    }
-
-    ramses::status_t NodeImpl::setRotation(float x, float y, float z, ERotationConvention rotationConvention)
-    {
-        const auto rotationConventionInternal = RotationConventionUtils::ConvertRotationConventionToInternal(rotationConvention);
-        return setRotationInternal({ x, y, z }, rotationConventionInternal);
-    }
-
-    status_t NodeImpl::getRotation(float& x, float& y, float& z) const
+    status_t NodeImpl::setScaling(const vec3f& scaling)
     {
         if (!m_transformHandle.isValid())
         {
-            x = IdentityRotation.x;
-            y = IdentityRotation.y;
-            z = IdentityRotation.z;
-            return StatusOK;
-        }
-        else if (ramses_internal::ERotationConvention::Legacy_ZYX != getIScene().getRotationConvention(m_transformHandle))
-            return addErrorEntry("Node::getRotation(float,float,float) can only be used with legacy left-handed rotation: setRotation(float,float,float)");
-
-        const ramses_internal::Vector3& value = getIScene().getRotation(m_transformHandle);
-        x = value[0];
-        y = value[1];
-        z = value[2];
-        return StatusOK;
-    }
-
-    status_t NodeImpl::getRotation(float& x, float& y, float& z, ERotationConvention& rotationConvention) const
-    {
-        if (!m_transformHandle.isValid())
-        {
-            x = IdentityRotation.x;
-            y = IdentityRotation.y;
-            z = IdentityRotation.z;
-            rotationConvention = ERotationConvention::XYZ;
-            return StatusOK;
-        }
-        else if (ramses_internal::ERotationConvention::Legacy_ZYX == getIScene().getRotationConvention(m_transformHandle))
-        {
-            if (getIScene().getRotation(m_transformHandle) == IdentityRotation)
-            {
-                x = IdentityRotation.x;
-                y = IdentityRotation.y;
-                z = IdentityRotation.z;
-                rotationConvention = ramses::ERotationConvention::XYZ;
-
-                return StatusOK;
-            }
-
-            return addErrorEntry("Node::getRotation(float,float,float,ERotationConvention) can only be used with right-handed rotation conventions: setRotation(float,float,float,ERotationConvention)");
-        }
-
-        const ramses_internal::Vector3& value = getIScene().getRotation(m_transformHandle);
-        x = value[0];
-        y = value[1];
-        z = value[2];
-
-        rotationConvention = RotationConventionUtils::ConvertDataTypeFromInternal(getIScene().getRotationConvention(m_transformHandle));
-        return StatusOK;
-    }
-
-    status_t NodeImpl::scale(float x, float y, float z)
-    {
-        if (!m_transformHandle.isValid())
-        {
-            if (ramses_internal::Vector3(x, y, z) == IdentityScaling)
+            if (scaling == ramses_internal::IScene::IdentityScaling)
             {
                 return StatusOK;
             }
             initializeTransform();
         }
-        const ramses_internal::Vector3& previous = getIScene().getScaling(m_transformHandle);
-        const ramses_internal::Vector3 factor(x, y, z);
-        getIScene().setScaling(m_transformHandle, previous * factor);
-
-        return StatusOK;
-    }
-
-    status_t NodeImpl::setScaling(float x, float y, float z)
-    {
-        if (!m_transformHandle.isValid())
+        if (scaling != getIScene().getScaling(m_transformHandle))
         {
-            if (ramses_internal::Vector3(x, y, z) == IdentityScaling)
-            {
-                return StatusOK;
-            }
-            initializeTransform();
-        }
-        const ramses_internal::Vector3 newValue(x, y, z);
-        if (newValue != getIScene().getScaling(m_transformHandle))
-        {
-            getIScene().setScaling(m_transformHandle, newValue);
+            getIScene().setScaling(m_transformHandle, scaling);
         }
 
         return StatusOK;
     }
 
-    status_t NodeImpl::getScaling(float& x, float& y, float& z) const
+    status_t NodeImpl::getScaling(vec3f& scaling) const
     {
         if (!m_transformHandle.isValid())
         {
-            x = IdentityScaling.x;
-            y = IdentityScaling.y;
-            z = IdentityScaling.z;
+            scaling = ramses_internal::IScene::IdentityScaling;
             return StatusOK;
         }
 
-        const ramses_internal::Vector3& value = getIScene().getScaling(m_transformHandle);
-        x = value[0];
-        y = value[1];
-        z = value[2];
+        scaling = getIScene().getScaling(m_transformHandle);
         return StatusOK;
     }
 

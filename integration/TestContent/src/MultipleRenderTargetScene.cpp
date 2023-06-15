@@ -18,16 +18,15 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/RenderTargetDescription.h"
-#include "Math3d/Vector3.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : CommonRenderBufferTestScene(scene, cameraPosition, vpWidth, vpHeight)
-        , m_renderBuffer1(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
+        , m_renderBuffer1(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite))
         , m_renderBuffer2(initRenderBuffer(scene, state))
-        , m_depthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_ReadWrite))
+        , m_depthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Depth, ramses::ERenderBufferFormat::Depth24, ramses::ERenderBufferAccessMode::ReadWrite))
     {
         initClearPass();
 
@@ -39,7 +38,7 @@ namespace ramses_internal
         initFinalRenderPass(state);
     }
 
-    const ramses::Effect& MultipleRenderTargetScene::getMRTEffect(UInt32 state)
+    const ramses::Effect& MultipleRenderTargetScene::getMRTEffect(uint32_t state)
     {
         switch (state)
         {
@@ -58,15 +57,15 @@ namespace ramses_internal
         }
     }
 
-    ramses::RenderBuffer& MultipleRenderTargetScene::initRenderBuffer(ramses::Scene& scene, UInt32 state)
+    ramses::RenderBuffer& MultipleRenderTargetScene::initRenderBuffer(ramses::Scene& scene, uint32_t state)
     {
         if (state == TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4)
-            return *scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA4, ramses::ERenderBufferAccessMode_ReadWrite);
+            return *scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA4, ramses::ERenderBufferAccessMode::ReadWrite);
         else
-            return *scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite);
+            return *scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite);
     }
 
-    ramses::RenderTarget& MultipleRenderTargetScene::createMRTRenderTarget(UInt32 state)
+    ramses::RenderTarget& MultipleRenderTargetScene::createMRTRenderTarget(uint32_t state)
     {
         ramses::RenderTargetDescription rtDesc;
 
@@ -97,29 +96,29 @@ namespace ramses_internal
         return *m_scene.createRenderTarget(rtDesc);
     }
 
-    const ramses::MeshNode& MultipleRenderTargetScene::createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const Vector3& translation, const Vector4& modulateColor)
+    const ramses::MeshNode& MultipleRenderTargetScene::createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const glm::vec3& translation, const glm::vec4& modulateColor)
     {
         const ramses::Effect* effect = getTestEffect("ramses-test-client-texturedWithColor");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(6u, indicesArray);
 
-        const float vertexPositionsArray[] =
+        const std::array<ramses::vec3f, 4u> vertexPositionsArray
         {
-            -0.5f, -0.5f, 0.f,
-            0.5f, -0.5f, 0.f,
-            -0.5f, 0.5f, 0.f,
-            0.5f, 0.5f, 0.f
+            ramses::vec3f{ -0.5f, -0.5f, 0.f },
+            ramses::vec3f{ 0.5f, -0.5f, 0.f },
+            ramses::vec3f{ -0.5f, 0.5f, 0.f },
+            ramses::vec3f{ 0.5f, 0.5f, 0.f }
         };
-        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        const float textureCoordsArray[] = { 0.f, 0.f, 2.f, 0.f, 0.f, 2.f, 2.f, 2.f };
-        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+        const std::array<ramses::vec2f, 4u> textureCoordsArray{ ramses::vec2f{0.f, 0.f}, ramses::vec2f{2.f, 0.f}, ramses::vec2f{0.f, 2.f}, ramses::vec2f{2.f, 2.f} };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(4u, textureCoordsArray.data());
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
         ramses::UniformInput colorInput;
         effect->findUniformInput("u_color", colorInput);
-        appearance->setInputValueVector4f(colorInput, modulateColor.x, modulateColor.y, modulateColor.z, modulateColor.w);
+        appearance->setInputValue(colorInput, modulateColor);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
@@ -133,10 +132,10 @@ namespace ramses_internal
         geometry->setInputBuffer(texCoordsInput, *textureCoords);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureAddressMode_Repeat,
-            ramses::ETextureSamplingMethod_Nearest,
-            ramses::ETextureSamplingMethod_Nearest,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureAddressMode::Repeat,
+            ramses::ETextureSamplingMethod::Nearest,
+            ramses::ETextureSamplingMethod::Nearest,
             renderBuffer);
 
         ramses::UniformInput textureInput;
@@ -148,7 +147,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(translation.x, translation.y, translation.z);
+        transNode->setTranslation({translation.x, translation.y, translation.z});
         meshNode->setParent(*transNode);
 
         return *meshNode;
@@ -167,20 +166,20 @@ namespace ramses_internal
         ramses::RenderTarget& renderTarget = *m_scene.createRenderTarget(rtDesc);
 
         renderPass->setRenderTarget(&renderTarget);
-        renderPass->setClearColor(1.f, 0.f, 1.f, 0.5f);
+        renderPass->setClearColor({1.f, 0.f, 1.f, 0.5f});
         renderPass->setClearFlags(ramses::EClearFlags::EClearFlags_All);
     }
 
-    void MultipleRenderTargetScene::initMRTPass(UInt32 state)
+    void MultipleRenderTargetScene::initMRTPass(uint32_t state)
     {
         ramses::MeshNode& meshNode = createMesh(getMRTEffect(state));
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
-        transNode.translate(0.0f, -0.5f, -5.0f);
+        transNode.translate({0.0f, -0.5f, -5.0f});
         if (state == DEPTH_WRITTEN_AND_READ)
         {
-            transNode.rotate(30.0f, 0.f, 0.f);
+            transNode.setRotation({-30.0f, 0.f, 0.f}, ramses::ERotationType::Euler_XYZ);
         }
 
         ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();
@@ -206,7 +205,7 @@ namespace ramses_internal
             ramses::MeshNode& meshNode2 = createMesh(getMRTEffect(state), ramses::TriangleAppearance::EColor_Blue);
             transNode.addChild(meshNode2);
 
-            meshNode2.getAppearance()->setDepthFunction(ramses::EDepthFunc_NotEqual);
+            meshNode2.getAppearance()->setDepthFunction(ramses::EDepthFunc::NotEqual);
 
             ramses::RenderGroup& renderGroup2 = *m_scene.createRenderGroup();
             renderGroup2.addMeshNode(meshNode2);
@@ -226,22 +225,22 @@ namespace ramses_internal
         }
     }
 
-    void MultipleRenderTargetScene::initFinalRenderPass(UInt32 state)
+    void MultipleRenderTargetScene::initFinalRenderPass(uint32_t state)
     {
         const ramses::MeshNode* quad1 = nullptr;
         const ramses::MeshNode* quad2 = nullptr;
 
         if (state != DEPTH_WRITTEN_AND_READ)
         {
-            quad1 = &createQuadWithTexture(m_renderBuffer1, Vector3(-0.6f, 0.f, -8.f));
-            quad2 = &createQuadWithTexture(m_renderBuffer2, Vector3(0.6f, 0.f, -8.f));
+            quad1 = &createQuadWithTexture(m_renderBuffer1, glm::vec3(-0.6f, 0.f, -8.f));
+            quad2 = &createQuadWithTexture(m_renderBuffer2, glm::vec3(0.6f, 0.f, -8.f));
         }
         else
         {
             // Modulate depth sampled as color with red color only, so that it can be tested consistently on different platforms.
             // Some platforms give the depth value in all RGBA channels, some only in R channel.
-            quad1 = &createQuadWithTexture(m_depthBuffer, Vector3(-0.6f, 0.f, -8.f), Vector4(1.f, 0.f, 0.f, 1.f));
-            quad2 = &createQuadWithTexture(m_depthBuffer, Vector3(0.6f, 0.f, -8.f), Vector4(1.f, 0.f, 0.f, 1.f));
+            quad1 = &createQuadWithTexture(m_depthBuffer, glm::vec3(-0.6f, 0.f, -8.f), glm::vec4(1.f, 0.f, 0.f, 1.f));
+            quad2 = &createQuadWithTexture(m_depthBuffer, glm::vec3(0.6f, 0.f, -8.f), glm::vec4(1.f, 0.f, 0.f, 1.f));
         }
 
         ramses::Camera& camera = createCameraWithDefaultParameters();

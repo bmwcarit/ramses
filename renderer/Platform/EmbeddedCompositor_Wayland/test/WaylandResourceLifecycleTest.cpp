@@ -40,7 +40,7 @@ namespace ramses_internal
     class AWaylandResourceLifecycleTest : public ::testing::Test
     {
     protected:
-        virtual void SetUp() override
+        void SetUp() override
         {
             //used for simulating cases where a Mock object is not enough, then a fake wl_resource object is used
             createFakeWaylandFixtures();
@@ -58,7 +58,7 @@ namespace ramses_internal
             wl_resource_set_user_data(m_fakeWaylandResource, m_resourceWithImplementation);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             destroyFakeWaylandFixtures();
         }

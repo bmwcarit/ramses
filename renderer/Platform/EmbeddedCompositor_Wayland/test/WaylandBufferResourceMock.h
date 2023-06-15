@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         MOCK_METHOD(int, getVersion, (), (override));
-        MOCK_METHOD(void, postError, (uint32_t code, const String& message), (override));
+        MOCK_METHOD(void, postError, (uint32_t code, const std::string& message), (override));
         MOCK_METHOD(void*, getUserData, (), (override));
         MOCK_METHOD(void, setImplementation, (const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback), (override));
         MOCK_METHOD(void, addDestroyListener, (wl_listener* listener), (override));

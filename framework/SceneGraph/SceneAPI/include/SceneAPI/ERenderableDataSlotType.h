@@ -22,7 +22,7 @@ namespace ramses_internal
     };
 
 
-    static const char* RenderableDataSlotTypeNames[] =
+    const std::array RenderableDataSlotTypeNames =
     {
         "Geometry",
         "Uniforms",

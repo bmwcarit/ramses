@@ -52,10 +52,10 @@ namespace ramses_internal
     {
         QuadResources resources;
 
-        static const uint16_t indiceData[] = { 0, 1, 3, 2 };
-        resources.indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 4, indiceData);
+        const std::array<uint16_t, 4> indiceData = { 0, 1, 3, 2 };
+        resources.indices = m_scene.createArrayResource(4, indiceData.data());
 
-        Vector3 vertexPositionsData[] =
+        const std::array vertexPositionsData =
         {
             m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomLeft, 10u),
             m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::BottomRight, 10u),
@@ -63,20 +63,21 @@ namespace ramses_internal
             m_screenspaceQuad.getVertex(EScreenspaceQuadVertex::TopLeft, 10u)
         };
 
-        float vertexTexcoordsData[] = {
-            0.f, 0.f,
-            1.f, 0.f,
-            1.f, 1.f,
-            0.f, 1.f
+        std::array vertexTexcoordsData = {
+            ramses::vec2f{0.f, 0.f},
+            ramses::vec2f{1.f, 0.f},
+            ramses::vec2f{1.f, 1.f},
+            ramses::vec2f{0.f, 1.f}
         };
 
-        for (size_t t = 0; t < sizeof(vertexTexcoordsData) / sizeof(float); ++t)
+        for (auto& tc : vertexTexcoordsData)
         {
-            vertexTexcoordsData[t] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
+            tc[0] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
+            tc[1] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }
 
-        resources.texCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, vertexTexcoordsData);
-        resources.vertexPos = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, &vertexPositionsData[0].x);
+        resources.texCoords = m_scene.createArrayResource(4, vertexTexcoordsData.data());
+        resources.vertexPos = m_scene.createArrayResource(4, vertexPositionsData.data());
 
         return resources;
     }

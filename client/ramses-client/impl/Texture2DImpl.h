@@ -13,6 +13,8 @@
 #include "ResourceImpl.h"
 #include "ramses-client-api/TextureSwizzle.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class Texture2DResource;
@@ -26,14 +28,14 @@ namespace ramses
         // overrideType is required if another texture type is reusing the impl, but needs a different type ID
         Texture2DImpl(ramses_internal::ResourceHashUsage resource,
             SceneImpl& scene,
-            const char* name,
-            ERamsesObjectType overrideType = ERamsesObjectType_Texture2D);
+            std::string_view name,
+            ERamsesObjectType overrideType = ERamsesObjectType::Texture2D);
 
-        virtual ~Texture2DImpl() override;
+        ~Texture2DImpl() override;
 
         void initializeFromFrameworkData(uint32_t width, uint32_t height, ETextureFormat textureFormat, const TextureSwizzle& swizzle);
-        virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
-        virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
+        status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
+        status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         uint32_t       getWidth() const;
         uint32_t       getHeight() const;

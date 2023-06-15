@@ -18,7 +18,7 @@ namespace ramses_internal
         registerKeyword("scl");
     }
 
-    Bool SystemCompositorControllerListIviSurfaces::executeInput(const std::vector<std::string>& input)
+    bool SystemCompositorControllerListIviSurfaces::executeInput(const std::vector<std::string>& input)
     {
         UNUSED(input);
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCListIviSurfaces{});

@@ -30,7 +30,7 @@ namespace ramses_internal
 
             // hash metadata
             BinaryOutputStream metaDataStream(1024);
-            metaDataStream << static_cast<UInt32>(m_typeID);
+            metaDataStream << static_cast<uint32_t>(m_typeID);
             serializeResourceMetadataToStream(metaDataStream);
             metaDataStream << cityhash::Uint128Low64(cityHashBlob);
             metaDataStream << cityhash::Uint128High64(cityHashBlob);

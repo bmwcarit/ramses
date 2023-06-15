@@ -15,12 +15,10 @@
 #include "SceneAPI/RendererSceneState.h"
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/SceneVersionTag.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererLib/EMouseEventType.h"
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyCode.h"
 #include "RendererLib/DisplayConfig.h"
-#include "Math3d/Vector2i.h"
 #include "Utils/LoggingUtils.h"
 #include <chrono>
 
@@ -35,8 +33,6 @@ namespace ramses_internal
         DisplayDestroyFailed,
         ReadPixelsFromFramebuffer,
         ReadPixelsFromFramebufferFailed,
-        WarpingDataUpdated,
-        WarpingDataUpdateFailed,
         OffscreenBufferCreated,
         OffscreenBufferCreateFailed,
         OffscreenBufferDestroyed,
@@ -89,14 +85,12 @@ namespace ramses_internal
         WindowResizeEvent,
         StreamSurfaceAvailable,
         StreamSurfaceUnavailable,
-        StreamBufferEnabled,
-        StreamBufferDisabled,
         ObjectsPicked,
         FrameTimingReport,
         NUMBER_OF_ELEMENTS
     };
 
-    static const Char* RendererEventTypeNames[] =
+    const std::array RendererEventTypeNames =
     {
         "Invalid",
         "DisplayCreated",
@@ -105,8 +99,6 @@ namespace ramses_internal
         "DisplayDestroyFailed",
         "ReadPixelsFromFramebuffer",
         "ReadPixelsFromFramebufferFailed",
-        "WarpingDataUpdated",
-        "WarpingDataUpdateFailed",
         "OffscreenBufferCreated",
         "OffscreenBufferCreateFailed",
         "OffscreenBufferDestroyed",
@@ -156,8 +148,6 @@ namespace ramses_internal
         "WindowResizeEvent",
         "StreamSurfaceAvailable",
         "StreamSurfaceUnavailable",
-        "StreamBufferEnabled",
-        "StreamBufferDisabled",
         "ObjectsPicked",
         "FrameTimingReport",
     };
@@ -165,26 +155,26 @@ namespace ramses_internal
     struct MouseEvent
     {
         EMouseEventType type = EMouseEventType_Invalid;
-        Vector2i        pos;
+        glm::ivec2        pos;
     };
 
     struct WindowMoveEvent
     {
-        Int32        posX;
-        Int32        posY;
+        int32_t        posX;
+        int32_t        posY;
     };
 
     struct KeyEvent
     {
         EKeyEventType type = EKeyEventType_Invalid;
-        UInt32        modifier;
+        uint32_t        modifier;
         EKeyCode      keyCode;
     };
 
     struct ResizeEvent
     {
-        UInt32 width;
-        UInt32 height;
+        uint32_t width;
+        uint32_t height;
     };
 
     struct FrameTimings
@@ -222,7 +212,6 @@ namespace ramses_internal
         WaylandIviSurfaceId         streamSourceId;
         PickableObjectIds           pickedObjectIds;
         FrameTimings                frameTimings;
-        bool                        isFirstDisplay;
         int                         dmaBufferFD = -1;
         uint32_t                    dmaBufferStride = 0u;
         uint32_t                    textureGlId = 0u;

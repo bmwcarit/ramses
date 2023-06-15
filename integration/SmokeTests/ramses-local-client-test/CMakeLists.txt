@@ -6,11 +6,12 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(ramses-local-client-test
-    TYPE            BINARY
-    ENABLE_INSTALL  ON
-    FILES_SOURCE    src/*
-    RESOURCE_FOLDER ../../TestContent/res
-    DEPENDENCIES    TestContent
-                    ramses-renderer-lib
+createModuleWithRenderer(
+    NAME                ramses-local-client-test
+    TYPE                BINARY
+    ENABLE_INSTALL      ON
+    SRC_FILES           src/*
+    RESOURCE_FOLDERS    ../../TestContent/res
+    DEPENDENCIES        TestContent
+                        ramses-cli
 )

@@ -27,10 +27,10 @@ namespace ramses_internal
     {};
 
     // implementation base class
-    template<Int32 N,typename T0 = Unused,typename T1 = Unused,typename T2 = Unused,typename T3 = Unused, typename T4 = Unused>
+    template<int32_t N,typename T0 = Unused,typename T1 = Unused,typename T2 = Unused,typename T3 = Unused, typename T4 = Unused>
     class RamshCommandArgsBase;
 
-    template<Int32 N>
+    template<int32_t N>
     class RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>
         : protected RamshArgumentProvider, public RamshCommand
     {
@@ -39,9 +39,9 @@ namespace ramses_internal
 
         // from RamshCommand
         bool executeInput(const std::vector<std::string>& in) override;
-        std::string descriptionString() const override;
+        [[nodiscard]] std::string descriptionString() const override;
 
-        virtual ~RamshCommandArgsBase() override
+        ~RamshCommandArgsBase() override
         {
         }
 
@@ -52,7 +52,7 @@ namespace ramses_internal
         virtual void init();
     };
 
-    template<Int32 N, typename T0,typename T1,typename T2,typename T3,typename T4>
+    template<int32_t N, typename T0,typename T1,typename T2,typename T3,typename T4>
     class RamshCommandArgsBase
         : public RamshCommandArgsBase<N+1,T1,T2,T3,T4>
     {
@@ -70,7 +70,7 @@ namespace ramses_internal
         virtual bool executeInternal(const RamshArgumentDataProvider&,T0&,T1&,T2&,T3&,T4&) const = 0;
 
         // initializes the current (N-th) argument and call the base class' implementation to initialize the next argument
-        virtual void init() override;
+        void init() override;
     };
 
     // -------------------------------------------------------
@@ -83,7 +83,7 @@ namespace ramses_internal
     // {
     //     using RamshCommandArgsBase<0,T0, ... TN>::RamshArgumentProvider::getArgument;
     //
-    //     template<Int32 n>
+    //     template<int32_t n>
     //     inline TypedRamshArgument<typename ramsh_utils::SelectType<n,T0, ... TN>::type>& getArgument()
     //     {
     //         return *static_cast<TypedRamshArgument<typename ramsh_utils::SelectType<n,T0, ... TN>::type*>(RamshCommandArgsBase<0,T0, ... TN>::RamshArgumentProvider::m_arguments[n]);
@@ -130,7 +130,7 @@ struct RamshCommandArgs \
     RAMSH_REPEAT(N, ECHO_SPEC_TYPE) \
     >::executeInput;\
     \
-    template<Int32 n>\
+    template<int32_t n>\
     inline TypedRamshArgument<typename ramsh_utils::SelectType<n,T0\
     RAMSH_REPEAT(N, ECHO_SPEC_TYPE)\
     >::type>& getArgument()\
@@ -176,14 +176,14 @@ struct RamshCommandArgs \
     // RamshCommandArgsBase
     // --------------------
 
-    template<Int32 N, typename T0,typename T1,typename T2, typename T3, typename T4>
+    template<int32_t N, typename T0,typename T1,typename T2, typename T3, typename T4>
     inline RamshCommandArgsBase<N,T0,T1,T2,T3,T4>::RamshCommandArgsBase()
     {
         if(0 == N) // initialize on lowest level
             init();
     }
 
-    template<Int32 N, typename T0,typename T1,typename T2, typename T3, typename T4>
+    template<int32_t N, typename T0,typename T1,typename T2, typename T3, typename T4>
     inline bool RamshCommandArgsBase<N,T0,T1,T2,T3,T4>::executeInternal(const RamshArgumentDataProvider& args,T1& a1,T2& a2,T3& a3,T4& a4,Unused&) const
     {
         T0 val;
@@ -195,7 +195,7 @@ struct RamshCommandArgs \
         return false;
     }
 
-    template<Int32 N, typename T0,typename T1,typename T2, typename T3, typename T4>
+    template<int32_t N, typename T0,typename T1,typename T2, typename T3, typename T4>
     inline void RamshCommandArgsBase<N,T0,T1,T2,T3,T4>::init()
     {
         // add the current (empty) argument definition
@@ -204,12 +204,12 @@ struct RamshCommandArgs \
         RamshCommandArgsBase<N+1,T1,T2,T3,T4>::init();
     }
 
-    template<Int32 N>
+    template<int32_t N>
     inline RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::RamshCommandArgsBase()
     {
     }
 
-    template<Int32 N>
+    template<int32_t N>
     inline bool RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::executeInput(const std::vector<std::string>& in)
     {
         // parse the raw input data and call downwards with it
@@ -218,7 +218,7 @@ struct RamshCommandArgs \
         return executeInternal(args,u,u,u,u,u);
     }
 
-    template<Int32 N>
+    template<int32_t N>
     inline std::string RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::descriptionString() const
     {
         return fmt::format("Usage: {} - {}",
@@ -226,7 +226,7 @@ struct RamshCommandArgs \
                            RamshCommand::descriptionString());
     }
 
-    template<Int32 N>
+    template<int32_t N>
     inline void RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::init()
     {
     }

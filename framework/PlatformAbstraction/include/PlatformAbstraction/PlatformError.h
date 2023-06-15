@@ -21,7 +21,7 @@ namespace ramses_internal
         Eof      = 3
     };
 
-    static constexpr const char* EStatusNames[] = {
+    const std::array EStatusNames = {
         "Ok",
         "Error",
         "NotExist",

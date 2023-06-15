@@ -36,8 +36,8 @@ namespace ramses_internal
         if (virtualKeyCode >= 0x70 && virtualKeyCode <= 0x87)
             return static_cast<EKeyCode>(virtualKeyCode - 0x70 + EKeyCode_F1);
 
-        const Bool isExtendedKey = (lParam & (1 << 24)) != 0;
-        const UInt8 nScanCode = (lParam >> 16) & 0xFF;
+        const bool isExtendedKey = (lParam & (1 << 24)) != 0;
+        const uint8_t nScanCode = (lParam >> 16) & 0xFF;
 
         // rest of keys
         switch (virtualKeyCode)
@@ -135,7 +135,7 @@ namespace ramses_internal
         }
     }
 
-    static Bool TrackMouse(HWND hwnd)
+    static bool TrackMouse(HWND hwnd)
     {
         TRACKMOUSEEVENT tme;
         tme.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -145,7 +145,7 @@ namespace ramses_internal
         return (TrackMouseEvent(&tme) == TRUE);
     }
 
-    Window_Windows::Window_Windows(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, UInt32 id)
+    Window_Windows::Window_Windows(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, uint32_t id)
         : Window_Base(displayConfig, eventHandler, id)
         , m_displayHandle(0)
         , m_windowHandle(WindowsWindowHandleToHWND(displayConfig.getWindowsWindowHandle()))
@@ -165,11 +165,11 @@ namespace ramses_internal
     void Window_Windows::generateUniqueClassname()
     {
         static int classnameCount = 0;
-        m_classname = String(fmt::format("{}{}", getTitle(), ++classnameCount));
+        m_classname = fmt::format("{}{}", getTitle(), ++classnameCount);
         assert(m_classname.size() < 255);
     }
 
-    Bool Window_Windows::init()
+    bool Window_Windows::init()
     {
         generateUniqueClassname();
 
@@ -301,8 +301,14 @@ namespace ramses_internal
             FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&messageBuffer), 0, NULL);
 
-            String errorMessage(messageBuffer);
-            LOG_ERROR(CONTEXT_RENDERER, "Windows API error: " << errorMessage);
+            if (messageBuffer)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Windows API error: " << messageBuffer);
+            }
+            else
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Windows API error ID: " << errorMessageID);
+            }
 
             //Free the buffer.
             LocalFree(messageBuffer);
@@ -323,7 +329,7 @@ namespace ramses_internal
         return m_windowHandle;
     }
 
-    Bool Window_Windows::setFullscreen(Bool fullscreen)
+    bool Window_Windows::setFullscreen(bool fullscreen)
     {
         assert(0 != m_windowHandle);
 
@@ -338,7 +344,7 @@ namespace ramses_internal
         return true;
     }
 
-    Bool Window_Windows::setVisibility(Bool visible)
+    bool Window_Windows::setVisibility(bool visible)
     {
         assert(0 != m_windowHandle);
 
@@ -367,10 +373,10 @@ namespace ramses_internal
         }
     }
 
-    void Window_Windows::handleKeyEvent(UInt32 windowsMsg, WPARAM wParam, LPARAM lParam)
+    void Window_Windows::handleKeyEvent(uint32_t windowsMsg, WPARAM wParam, LPARAM lParam)
     {
-        const Bool keyPressed = WM_KEYDOWN == windowsMsg || WM_SYSKEYDOWN == windowsMsg;
-        const Bool keyReleased = WM_KEYUP == windowsMsg || WM_SYSKEYUP == windowsMsg;
+        const bool keyPressed = WM_KEYDOWN == windowsMsg || WM_SYSKEYDOWN == windowsMsg;
+        const bool keyReleased = WM_KEYUP == windowsMsg || WM_SYSKEYUP == windowsMsg;
         if (!keyPressed && !keyReleased)
         {
             LOG_WARN(CONTEXT_RENDERER, "invalid handle key event: " << windowsMsg);
@@ -570,7 +576,7 @@ namespace ramses_internal
         return lRet;
     }
 
-    void Window_Windows::handleMouseEvent(EMouseEventType type, Int32 posX, Int32 posY)
+    void Window_Windows::handleMouseEvent(EMouseEventType type, int32_t posX, int32_t posY)
     {
         if (m_bLButtonDown || m_bMButtonDown || m_bRButtonDown)
         {
@@ -589,7 +595,7 @@ namespace ramses_internal
         m_eventHandler.onClose();
     }
 
-    void Window_Windows::setTitle(const String& title)
+    void Window_Windows::setTitle(std::string_view title)
     {
         Window_Base::setTitle(title);
         SetWindowText(m_windowHandle, m_windowName.c_str());
@@ -618,7 +624,7 @@ namespace ramses_internal
         return result;
     }
 
-    void Window_Windows::handleWindowMoveEvent(Int32 posX, Int32 posY)
+    void Window_Windows::handleWindowMoveEvent(int32_t posX, int32_t posY)
     {
         m_eventHandler.onWindowMove(posX, posY);
     }

@@ -56,10 +56,10 @@ namespace ramses_internal
 
         void draw();
 
-        bool isRunning() const;
+        [[nodiscard]] bool isRunning() const;
         ramses::Scene* getScene();
-        uint32_t getViewportWidth() const;
-        uint32_t getViewportHeight() const;
+        [[nodiscard]] uint32_t getViewportWidth() const;
+        [[nodiscard]] uint32_t getViewportHeight() const;
 
         bool saveScreenshot(const std::string& filename);
         bool saveScreenshot(const std::string& filename, ramses::displayBufferId_t screenshotBuf, uint32_t x, uint32_t y, uint32_t width, uint32_t height);

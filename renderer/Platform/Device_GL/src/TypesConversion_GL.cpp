@@ -259,7 +259,7 @@ namespace ramses_internal
         }
     }
 
-    GLenum TypesConversion_GL::GetIndexElementType(UInt32 indexElementSizeInBytes)
+    GLenum TypesConversion_GL::GetIndexElementType(uint32_t indexElementSizeInBytes)
     {
         return (indexElementSizeInBytes == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
     }
@@ -272,17 +272,17 @@ namespace ramses_internal
             return GL_GREATER;
         case EDepthFunc::GreaterEqual:
             return GL_GEQUAL;
-        case EDepthFunc::Smaller:
+        case EDepthFunc::Less:
             return GL_LESS;
-        case EDepthFunc::SmallerEqual:
+        case EDepthFunc::LessEqual:
             return GL_LEQUAL;
         case EDepthFunc::Equal:
             return GL_EQUAL;
         case EDepthFunc::NotEqual:
             return GL_NOTEQUAL;
-        case EDepthFunc::AlwaysPass:
+        case EDepthFunc::Always:
             return GL_ALWAYS;
-        case EDepthFunc::NeverPass:
+        case EDepthFunc::Never:
             return GL_NEVER;
         case EDepthFunc::Disabled:
         default:
@@ -373,7 +373,7 @@ namespace ramses_internal
     {
         switch (func)
         {
-        case EStencilFunc::NeverPass:
+        case EStencilFunc::Never:
             return GL_NEVER;
         case EStencilFunc::Equal:
             return GL_EQUAL;
@@ -387,7 +387,7 @@ namespace ramses_internal
             return GL_GEQUAL;
         case EStencilFunc::Greater:
             return GL_GREATER;
-        case EStencilFunc::AlwaysPass:
+        case EStencilFunc::Always:
             return GL_ALWAYS;
         case EStencilFunc::Disabled:
         default:

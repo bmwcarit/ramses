@@ -33,7 +33,7 @@ namespace ramses_internal
     TEST_F(TextureResourceTest, textureResourceStoresMetaInfo)
     {
         const ResourceCacheFlag flag(15u);
-        TextureResource texRes(EResourceType_Texture3D, this->m_texDesc, flag, String());
+        TextureResource texRes(EResourceType_Texture3D, this->m_texDesc, flag, {});
 
         // check properties
         EXPECT_EQ(texRes.getWidth(), this->m_texDesc.m_width);
@@ -51,7 +51,7 @@ namespace ramses_internal
     TEST_F(TextureResourceTest, textureResourceStoresMetaInfoWithCorrectSizeForCubeTexture)
     {
         const ResourceCacheFlag flag(15u);
-        TextureResource texRes(EResourceType_TextureCube, this->m_texDesc, flag, String());
+        TextureResource texRes(EResourceType_TextureCube, this->m_texDesc, flag, {});
 
         // check properties
         EXPECT_EQ(texRes.getWidth(), this->m_texDesc.m_width);

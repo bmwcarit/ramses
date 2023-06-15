@@ -67,7 +67,7 @@ namespace ramses_internal
 
         std::function<void(LinuxDmabufBufferData*)> m_destroyCallback;
 
-        PlaneData m_planeData[MAX_DMABUF_PLANES];
+        std::array<PlaneData, MAX_DMABUF_PLANES> m_planeData;
 
         int32_t m_width;
         int32_t m_height;

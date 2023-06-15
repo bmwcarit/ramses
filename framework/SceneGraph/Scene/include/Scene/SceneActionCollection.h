@@ -14,16 +14,19 @@
 #include "Common/StronglyTypedValue.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "Collections/Guid.h"
-#include "Collections/String.h"
 #include "Collections/Vector.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/Macros.h"
 #include "Utils/AssertMovable.h"
+#include "glm/gtx/range.hpp"
+
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
 #include <cassert>
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -31,27 +34,19 @@ namespace ramses_internal
     {
     public:
         SceneActionCollection();
-        SceneActionCollection(UInt initialDataCapacity, UInt initialNumberOfSceneActionsInformationCapacity);
+        SceneActionCollection(size_t initialDataCapacity, size_t initialNumberOfSceneActionsInformationCapacity);
 
         SceneActionCollection(const SceneActionCollection&) = delete;
         SceneActionCollection& operator=(const SceneActionCollection&) = delete;
 
-// C++14 does not require noexcept move constructor/assignments for std::vector moves
-// But with the exception of ghs compiler all std libs of our supported compilers guarantee
-// noexcept for this, so we can guarantee noexcept for SceneActionCollection moves as well.
-#ifdef __ghs__
-        SceneActionCollection(SceneActionCollection&&) = default;
-        SceneActionCollection& operator=(SceneActionCollection&&) = default;
-#else
         SceneActionCollection(SceneActionCollection&&) noexcept = default;
         SceneActionCollection& operator=(SceneActionCollection&&) noexcept = default;
-#endif
 
-        SceneActionCollection copy() const;
+        [[nodiscard]] SceneActionCollection copy() const;
 
         void clear();
-        bool empty() const;
-        void reserveAdditionalCapacity(UInt additionalDataCapacity, UInt additionalSceneActionsInformationCapacity);
+        [[nodiscard]] bool empty() const;
+        void reserveAdditionalCapacity(size_t additionalDataCapacity, size_t additionalSceneActionsInformationCapacity);
 
         void append(const SceneActionCollection& other);
 
@@ -65,108 +60,122 @@ namespace ramses_internal
         void beginWriteSceneAction(ESceneActionId type);
 
         // concrete types
-        void write(const String& str);
+        void write(std::string_view str);
         void write(const Guid& guid);
         void write(const ResourceContentHash& hash);
         template <typename T>
         void write(TypedMemoryHandle<T> handle);
         template <typename T, T D, typename U>
         void write(StronglyTypedValue<T, D, U> value);
+        template <int L, typename T, glm::qualifier Q>
+        void write(const glm::vec<L, T, Q>& value);
+        template <int C, int R, typename T, glm::qualifier Q>
+        void write(const glm::mat<C, R, T, Q>& value);
         template <typename E, typename = typename std::enable_if<std::is_enum<E>::value>::type>
         void write(E enumValue);
         // fixed size array
         template<typename T, int N, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-        void write(const T(&data)[N]);
+        void write(const T(&data)[N]); // NOLINT(modernize-avoid-c-arrays)
         // generic
         template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
         void write(const T& value);
         // generic array
         template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-        void write(const T* data, UInt32 numElements);
+        void write(const T* data, uint32_t numElements);
 
-        static const UInt8 MaxStringLength = std::numeric_limits<UInt8>::max();
+        static const uint8_t MaxStringLength = std::numeric_limits<uint8_t>::max();
 
         // blob write access
-        void appendRawData(const Byte* data, UInt dataSize);
+        void appendRawData(const Byte* data, size_t dataSize);
         std::vector<Byte>& getRawDataForDirectWriting();
-        void addRawSceneActionInformation(ESceneActionId type, UInt32 offset);
+        void addRawSceneActionInformation(ESceneActionId type, uint32_t offset);
 
         // blob read access
-        const std::vector<Byte>& collectionData() const;
+        [[nodiscard]] const std::vector<Byte>& collectionData() const;
 
         // reading
         class Iterator;
         class SceneActionReader;
 
-        UInt32 numberOfActions() const;
+        [[nodiscard]] uint32_t numberOfActions() const;
 
-        Iterator begin() const;
-        Iterator end() const;
+        [[nodiscard]] Iterator begin() const;
+        [[nodiscard]] Iterator end() const;
 
-        SceneActionReader front() const;
-        SceneActionReader back() const;
-        SceneActionReader operator[](UInt actionIndex) const;
+        [[nodiscard]] SceneActionReader front() const;
+        [[nodiscard]] SceneActionReader back() const;
+        SceneActionReader operator[](size_t actionIndex) const;
 
         // read classes
         class SceneActionReader
         {
         public:
-            ESceneActionId type() const;
-            UInt32 size() const;
-            const Byte* data() const;
-            UInt32 offsetInCollection() const;
+            [[nodiscard]] ESceneActionId type() const;
+            [[nodiscard]] uint32_t size() const;
+            [[nodiscard]] const Byte* data() const;
+            [[nodiscard]] uint32_t offsetInCollection() const;
 
             // concrete types
-            void read(String& str);
+            void read(std::string& str);
             void read(Guid& guid);
             void read(ResourceContentHash& hash);
             template <typename T>
             void read(TypedMemoryHandle<T>& handle);
             template <typename T, T D, typename U>
             void read(StronglyTypedValue<T, D, U>& value);
+            template<int L, typename T, glm::qualifier Q>
+            void read(glm::vec<L, T, Q>&);
+            template<int C, int R, typename T, glm::qualifier Q>
+            void read(glm::mat<C, R, T, Q>&);
             template<typename E, typename std::enable_if<std::is_enum<E>::value, int>::type = 0>
             void read(E& value);
             // fixed size array
             template<typename T, int N, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-            void read(T(&data)[N]);
+            void read(T(&data)[N]); // NOLINT(modernize-avoid-c-arrays)
             // generic
             template<typename T, typename std::enable_if<std::is_arithmetic<T>::value && !std::is_enum<T>::value, int>::type = 0>
             void read(T& value);
             // generic array
             template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-            void read(T* data, UInt32& numElements);
+            void read(T* data, uint32_t& numElements);
             // get pointer to written array of bytes and increment reader position
-            void readWithoutCopy(const Byte*& data, UInt32& size);
+            void readWithoutCopy(const Byte*& data, uint32_t& size);
 
-            bool isFullyRead() const;
+            [[nodiscard]] bool isFullyRead() const;
 
         private:
             friend SceneActionCollection;
             friend Iterator;
 
-            SceneActionReader(const SceneActionCollection* collection, UInt actionIndex);
+            SceneActionReader(const SceneActionCollection* collection, size_t actionIndex);
 
             template<typename T, typename = typename std::enable_if<std::is_trivial<T>::value>::type>
             void readFromByteBlob(T& value);
             void readFromByteBlob(void* data, size_t size);
 
-            UInt32 offsetForIndex(UInt idx) const;
+            [[nodiscard]] uint32_t offsetForIndex(size_t idx) const;
 
             const SceneActionCollection* m_collection;
-            UInt m_actionIndex;
-            UInt m_readPosition;
+            size_t m_actionIndex;
+            size_t m_readPosition;
         };
 
-        class Iterator : public std::iterator<std::forward_iterator_tag, SceneActionReader, UInt, SceneActionReader*, SceneActionReader&>
+        class Iterator
         {
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = SceneActionReader;
+            using difference_type = std::ptrdiff_t;
+            using pointer = SceneActionReader*;
+            using reference = SceneActionReader&;
+
             Iterator();
 
             bool operator!=(const Iterator& other) const;
             bool operator==(const Iterator& other) const;
 
             Iterator& operator++();
-            Iterator operator+(Int32 add);
+            Iterator operator+(int32_t add);
 
             SceneActionReader& operator*();
             const SceneActionReader& operator*() const;
@@ -186,7 +195,7 @@ namespace ramses_internal
         struct ActionInfo
         {
             ESceneActionId type;
-            UInt32 offset;
+            uint32_t offset;
 
             bool operator!=(const ActionInfo&) const;
             bool operator==(const ActionInfo&) const;
@@ -195,7 +204,7 @@ namespace ramses_internal
         template<typename T, typename = typename std::enable_if<std::is_trivial<T>::value>::type>
         void writeAsByteBlob(const T& value);
         void writeAsByteBlob(const void* value, size_t size);
-        void reserveAdditionalDataCapacity(UInt additionalCapacity);
+        void reserveAdditionalDataCapacity(size_t additionalCapacity);
 
         std::vector<Byte> m_data;
         std::vector<ActionInfo> m_actionInfo;
@@ -207,7 +216,7 @@ namespace ramses_internal
     {
     }
 
-    inline SceneActionCollection::SceneActionCollection(UInt initialDataCapacity, UInt initialNumberOfSceneActionsInformationCapacity)
+    inline SceneActionCollection::SceneActionCollection(size_t initialDataCapacity, size_t initialNumberOfSceneActionsInformationCapacity)
     {
         m_data.reserve(initialDataCapacity);
         m_actionInfo.reserve(initialNumberOfSceneActionsInformationCapacity);
@@ -221,7 +230,7 @@ namespace ramses_internal
         return ret;
     }
 
-    inline void SceneActionCollection::reserveAdditionalDataCapacity(UInt additionalCapacity)
+    inline void SceneActionCollection::reserveAdditionalDataCapacity(size_t additionalCapacity)
     {
         m_data.reserve(m_data.size() + additionalCapacity);
     }
@@ -237,7 +246,7 @@ namespace ramses_internal
         return m_actionInfo.empty();
     }
 
-    inline void SceneActionCollection::reserveAdditionalCapacity(UInt additionalDataCapacity, UInt additionalSceneActionsInformationCapacity)
+    inline void SceneActionCollection::reserveAdditionalCapacity(size_t additionalDataCapacity, size_t additionalSceneActionsInformationCapacity)
     {
         reserveAdditionalDataCapacity(additionalDataCapacity);
         m_actionInfo.reserve(m_actionInfo.size() + additionalSceneActionsInformationCapacity);
@@ -258,7 +267,7 @@ namespace ramses_internal
             m_actionInfo.back().type = other.m_actionInfo.front().type;
 
             // skip first because was already merged
-            const UInt32 offsetBase = m_actionInfo.back().offset;
+            const uint32_t offsetBase = m_actionInfo.back().offset;
             for (auto it = other.m_actionInfo.begin() + 1; it != other.m_actionInfo.end(); ++it)
             {
                 m_actionInfo.push_back({ it->type, it->offset + offsetBase});
@@ -267,7 +276,7 @@ namespace ramses_internal
         else
         {
             // normal append
-            const UInt32 offsetBase = static_cast<UInt32>(m_data.size());
+            const uint32_t offsetBase = static_cast<uint32_t>(m_data.size());
             m_actionInfo.reserve(m_actionInfo.size() + other.m_actionInfo.size());
             for (const auto info : other.m_actionInfo)
             {
@@ -302,17 +311,17 @@ namespace ramses_internal
     // writing
     inline void SceneActionCollection::beginWriteSceneAction(ESceneActionId type)
     {
-        m_actionInfo.push_back(ActionInfo{ type, static_cast<UInt32>(m_data.size()) });
+        m_actionInfo.push_back(ActionInfo{ type, static_cast<uint32_t>(m_data.size()) });
     }
 
-    inline void SceneActionCollection::write(const String& str)
+    inline void SceneActionCollection::write(std::string_view str)
     {
         // check for MaxStringLength
-        const UInt8 truncatedLength = static_cast<UInt8>(std::min(static_cast<UInt>(MaxStringLength), str.size()));
+        const uint8_t truncatedLength = static_cast<uint8_t>(std::min(static_cast<size_t>(MaxStringLength), str.size()));
 
-        reserveAdditionalDataCapacity(sizeof(UInt8) + truncatedLength);
+        reserveAdditionalDataCapacity(sizeof(uint8_t) + truncatedLength);
         writeAsByteBlob(truncatedLength);
-        writeAsByteBlob(str.c_str(), truncatedLength);
+        writeAsByteBlob(str.data(), truncatedLength);
     }
 
     inline void SceneActionCollection::write(const Guid& guid)
@@ -337,6 +346,18 @@ namespace ramses_internal
         writeAsByteBlob(value.getValue());
     }
 
+    template <int L, typename T, glm::qualifier Q>
+    void SceneActionCollection::write(const glm::vec<L, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { write(val); });
+    }
+
+    template <int C, int R, typename T, glm::qualifier Q>
+    void SceneActionCollection::write(const glm::mat<C, R, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { write(val); });
+    }
+
     template <typename E, typename>
     void SceneActionCollection::write(E enumValue)
     {
@@ -345,16 +366,16 @@ namespace ramses_internal
     }
 
     template<typename T, int N, typename>
-    void SceneActionCollection::write(const T(&data)[N])
+    void SceneActionCollection::write(const T(&data)[N])  // NOLINT(modernize-avoid-c-arrays)
     {
         writeAsByteBlob(data, sizeof(data));
     }
 
     template<typename T, typename>
-    void SceneActionCollection::write(const T* data, UInt32 numElements)
+    void SceneActionCollection::write(const T* data, uint32_t numElements)
     {
-        const UInt32 byteSize = numElements * sizeof(T);
-        reserveAdditionalDataCapacity(sizeof(UInt32) + byteSize);
+        const uint32_t byteSize = numElements * sizeof(T);
+        reserveAdditionalDataCapacity(sizeof(uint32_t) + byteSize);
         writeAsByteBlob(numElements);
         writeAsByteBlob(data, byteSize);
     }
@@ -378,7 +399,7 @@ namespace ramses_internal
     }
 
     // blob write access
-    inline void SceneActionCollection::appendRawData(const Byte* data, UInt dataSize)
+    inline void SceneActionCollection::appendRawData(const Byte* data, size_t dataSize)
     {
         writeAsByteBlob(data, dataSize);
     }
@@ -388,7 +409,7 @@ namespace ramses_internal
         return m_data;
     }
 
-    inline void SceneActionCollection::addRawSceneActionInformation(ESceneActionId type, UInt32 offset)
+    inline void SceneActionCollection::addRawSceneActionInformation(ESceneActionId type, uint32_t offset)
     {
         m_actionInfo.push_back({ type, offset });
     }
@@ -400,9 +421,9 @@ namespace ramses_internal
     }
 
     // reading
-    inline UInt32 SceneActionCollection::numberOfActions() const
+    inline uint32_t SceneActionCollection::numberOfActions() const
     {
-        return static_cast<UInt32>(m_actionInfo.size());
+        return static_cast<uint32_t>(m_actionInfo.size());
     }
 
     inline SceneActionCollection::Iterator SceneActionCollection::begin() const
@@ -427,14 +448,14 @@ namespace ramses_internal
         return SceneActionCollection::SceneActionReader(this, m_actionInfo.size() - 1);
     }
 
-    inline SceneActionCollection::SceneActionReader SceneActionCollection::operator[](UInt actionIndex) const
+    inline SceneActionCollection::SceneActionReader SceneActionCollection::operator[](size_t actionIndex) const
     {
         assert(actionIndex < m_actionInfo.size());
         return SceneActionCollection::SceneActionReader(this, actionIndex);
     }
 
     // class Reader
-    inline SceneActionCollection::SceneActionReader::SceneActionReader(const SceneActionCollection* collection, UInt actionIndex)
+    inline SceneActionCollection::SceneActionReader::SceneActionReader(const SceneActionCollection* collection, size_t actionIndex)
         : m_collection(collection)
         , m_actionIndex(actionIndex)
         , m_readPosition(offsetForIndex(actionIndex))
@@ -447,13 +468,13 @@ namespace ramses_internal
         return m_collection->m_actionInfo[m_actionIndex].type;
     }
 
-    inline UInt32 SceneActionCollection::SceneActionReader::offsetInCollection() const
+    inline uint32_t SceneActionCollection::SceneActionReader::offsetInCollection() const
     {
         assert(m_collection && m_actionIndex < m_collection->m_actionInfo.size());
         return m_collection->m_actionInfo[m_actionIndex].offset;
     }
 
-    inline UInt32 SceneActionCollection::SceneActionReader::size() const
+    inline uint32_t SceneActionCollection::SceneActionReader::size() const
     {
         assert(m_collection && m_actionIndex < m_collection->m_actionInfo.size());
         return offsetForIndex(m_actionIndex + 1) - m_collection->m_actionInfo[m_actionIndex].offset;
@@ -465,22 +486,21 @@ namespace ramses_internal
         return m_collection->m_data.data() + m_collection->m_actionInfo[m_actionIndex].offset;
     }
 
-    inline void SceneActionCollection::SceneActionReader::read(String& str)
+    inline void SceneActionCollection::SceneActionReader::read(std::string& str)
     {
         // read string length
-        UInt8 length = 0;
+        uint8_t length = 0;
         readFromByteBlob(length);
 
         if (length > 0)
         {
             // read string
-            String tmp(length, 0);
-            readFromByteBlob(tmp.data(), length);
-            str.swap(tmp);
+            str.resize(length);
+            readFromByteBlob(str.data(), length);
         }
         else
         {
-            str = String();
+            str.clear();
         }
     }
 
@@ -490,16 +510,16 @@ namespace ramses_internal
     }
 
     template<typename T, typename>
-    void SceneActionCollection::SceneActionReader::read(T* data, UInt32& numElements)
+    void SceneActionCollection::SceneActionReader::read(T* data, uint32_t& numElements)
     {
         // read array size
         readFromByteBlob(numElements);
-        const UInt32 byteSize = numElements * sizeof(T);
+        const uint32_t byteSize = numElements * sizeof(T);
         PlatformMemory::Copy(data, m_collection->m_data.data() + m_readPosition, byteSize);
         m_readPosition += byteSize;
     }
 
-    inline void SceneActionCollection::SceneActionReader::readWithoutCopy(const Byte*& data, UInt32& size)
+    inline void SceneActionCollection::SceneActionReader::readWithoutCopy(const Byte*& data, uint32_t& size)
     {
         // read array size
         readFromByteBlob(size);
@@ -538,8 +558,20 @@ namespace ramses_internal
         readFromByteBlob(value.getReference());
     }
 
+    template<int L, typename T, glm::qualifier Q>
+    void SceneActionCollection::SceneActionReader::read(glm::vec<L, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { read(val); });
+    }
+
+    template<int C, int R, typename T, glm::qualifier Q>
+    void SceneActionCollection::SceneActionReader::read(glm::mat<C, R, T, Q>& value)
+    {
+        std::for_each(glm::begin(value), glm::end(value), [&](auto& val) { read(val); });
+    }
+
     template<typename T, int N, typename>
-    void SceneActionCollection::SceneActionReader::read(T(&data)[N])
+    void SceneActionCollection::SceneActionReader::read(T(&data)[N])  // NOLINT(modernize-avoid-c-arrays)
     {
         readFromByteBlob(data, sizeof(data));
     }
@@ -556,7 +588,7 @@ namespace ramses_internal
         readFromByteBlob(&value, sizeof(value));
     }
 
-    inline void SceneActionCollection::SceneActionReader::readFromByteBlob(void* data, UInt size)
+    inline void SceneActionCollection::SceneActionReader::readFromByteBlob(void* data, size_t size)
     {
         PlatformMemory::Copy(static_cast<Byte*>(data), m_collection->m_data.data() + m_readPosition, size);
         m_readPosition += size;
@@ -567,10 +599,10 @@ namespace ramses_internal
         return m_readPosition == offsetForIndex(m_actionIndex + 1);
     }
 
-    inline UInt32 SceneActionCollection::SceneActionReader::offsetForIndex(UInt idx) const
+    inline uint32_t SceneActionCollection::SceneActionReader::offsetForIndex(size_t idx) const
     {
         return (idx >= m_collection->m_actionInfo.size()) ? // is > last index?
-            static_cast<UInt32>(m_collection->m_data.size()) : m_collection->m_actionInfo[idx].offset;
+            static_cast<uint32_t>(m_collection->m_data.size()) : m_collection->m_actionInfo[idx].offset;
     }
 
     // class Iterator
@@ -602,7 +634,7 @@ namespace ramses_internal
         return *this;
     }
 
-    inline SceneActionCollection::Iterator SceneActionCollection::Iterator::operator+(Int32 add)
+    inline SceneActionCollection::Iterator SceneActionCollection::Iterator::operator+(int32_t add)
     {
         return Iterator(SceneActionReader(m_reader.m_collection, m_reader.m_actionIndex + add));
     }

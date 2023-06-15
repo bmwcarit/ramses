@@ -20,10 +20,10 @@ namespace ramses_internal
     {
         assert(scene.isRenderTargetAllocated(renderTarget));
 
-        const UInt32 bufferCount = scene.getRenderTargetRenderBufferCount(renderTarget);
+        const uint32_t bufferCount = scene.getRenderTargetRenderBufferCount(renderTarget);
         RenderBufferHandleVector renderBufferHandles;
         renderBufferHandles.reserve(bufferCount);
-        for (UInt32 bufferIdx = 0u; bufferIdx < bufferCount; ++bufferIdx)
+        for (uint32_t bufferIdx = 0u; bufferIdx < bufferCount; ++bufferIdx)
         {
             const RenderBufferHandle buffer = scene.getRenderTargetRenderBuffer(renderTarget, bufferIdx);
             renderBufferHandles.push_back(buffer);
@@ -50,14 +50,14 @@ namespace ramses_internal
         const TextureBuffer& texBuffer = scene.getTextureBuffer(textureBuffer);
         const auto& mipMaps = texBuffer.mipMaps;
         const auto& mip0 = mipMaps[0];
-        resourceManager.uploadTextureBuffer(textureBuffer, mip0.width, mip0.height, texBuffer.textureFormat, static_cast<UInt32>(mipMaps.size()), scene.getSceneId());
+        resourceManager.uploadTextureBuffer(textureBuffer, mip0.width, mip0.height, texBuffer.textureFormat, static_cast<uint32_t>(mipMaps.size()), scene.getSceneId());
     }
 
     void SceneResourceUploader::UpdateTextureBuffer(const IScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager)
     {
         const TextureBuffer& texBuffer = scene.getTextureBuffer(textureBuffer);
         const auto& mipMaps = texBuffer.mipMaps;
-        for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipMaps.size()); ++mipLevel)
+        for (uint32_t mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipMaps.size()); ++mipLevel)
         {
             const auto& mip = mipMaps[mipLevel];
             resourceManager.updateTextureBuffer(textureBuffer, mipLevel, 0u, 0u, mip.width, mip.height, texBuffer.mipMaps[mipLevel].data.data(), scene.getSceneId());
@@ -74,7 +74,7 @@ namespace ramses_internal
         VertexArrayInfo vertexArrayInfo;
         vertexArrayInfo.shader = resourceManager.getResourceDeviceHandle(effectHash);
 
-        const UInt attributesCount = geometryLayout.getFieldCount();
+        const size_t attributesCount = geometryLayout.getFieldCount();
         for (DataFieldHandle attributeField(0u); attributeField < attributesCount; ++attributeField)
         {
             const auto& dataField = geometryLayout.getField(attributeField);

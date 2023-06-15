@@ -30,7 +30,7 @@ namespace ramses_internal
         {
         }
 
-        ~AWaylandSurface()
+        ~AWaylandSurface() override
         {
         }
 
@@ -438,7 +438,7 @@ namespace ramses_internal
         createWaylandSurface();
         m_waylandSurface->setShellSurface(&m_shellSurface);
 
-        String title("A Title");
+        std::string title("A Title");
 
         RendererLogContext logContext(ERendererLogLevelFlag_Details);
         EXPECT_CALL(m_shellSurface, getTitle()).WillOnce(ReturnRef(title));
@@ -456,7 +456,7 @@ namespace ramses_internal
         m_waylandSurface->setShellSurface(&m_shellSurface);
 
         WaylandIviSurfaceId iviId(123);
-        String              title("A Title");
+        std::string         title("A Title");
 
         RendererLogContext logContext(ERendererLogLevelFlag_Details);
         EXPECT_CALL(m_iviSurface, getIviId()).WillOnce(Return(iviId));

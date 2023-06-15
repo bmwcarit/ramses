@@ -10,14 +10,14 @@
 #define RAMSES_GEOMETRYSHADERSCENE_H
 
 #include "IntegrationScene.h"
-#include "ramses-client-api/AppearanceEnums.h"
+#include "ramses-framework-api/AppearanceEnums.h"
 
 namespace ramses_internal
 {
     class GeometryShaderScene : public IntegrationScene
     {
     public:
-        GeometryShaderScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        GeometryShaderScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -34,11 +34,11 @@ namespace ramses_internal
         };
 
     private:
-        const ramses::Effect& createTestEffect(UInt32 state);
-        std::string getGeometryShaderLayout(UInt32 state);
-        std::string getShaderVersion(UInt32 state);
-        std::string getGeometryShaderExtensions(UInt32 state);
-        ramses::EDrawMode getDrawMode(UInt32 state);
+        const ramses::Effect& createTestEffect(uint32_t state);
+        std::string getGeometryShaderLayout(uint32_t state);
+        std::string getShaderVersion(uint32_t state);
+        std::string getGeometryShaderExtensions(uint32_t state);
+        ramses::EDrawMode getDrawMode(uint32_t state);
 
         const ramses::Effect& m_effect;
     };

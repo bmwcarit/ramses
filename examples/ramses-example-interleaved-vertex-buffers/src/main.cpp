@@ -15,10 +15,11 @@
  * @brief Interleaved vertex buffers Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel_Latest};
+    ramses::RamsesFramework framework(config);
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-interleaved-vertex-buffers"));
     framework.connect();
 
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
     auto* camera = scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -41,7 +42,7 @@ int main(int argc, char* argv[])
     //                 This should not be the case for real applications.
 
     // prepare triangle geometry: interleaved position and color data for each vertex
-    const float vertexData[] = {
+    const std::array vertexData = {
         -1.f, 0.f, -1.f, 1.f,   //vertex 1 position vec4
         1.f, 0.f, 0.f,          //vertex 1 color vec3
 
@@ -51,8 +52,9 @@ int main(int argc, char* argv[])
         0.f, 1.f, -1.f, 1.f,    //vertex 3 position vec4
         0.f, 0.f, 1.f,          //vertex 3 color vec3
     };
+    // interleaved data must be created as ByteBlob and passed as byte array
     ramses::ArrayBuffer* vertexDataBuffer = scene->createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertexData));
-    vertexDataBuffer->updateData(0u, sizeof(vertexData), vertexData);
+    vertexDataBuffer->updateData(0u, sizeof(vertexData), reinterpret_cast<const ramses::Byte*>(vertexData.data()));
 
     // create an appearance for triangle
     ramses::EffectDescription effectDesc;

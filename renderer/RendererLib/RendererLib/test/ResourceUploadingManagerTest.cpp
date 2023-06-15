@@ -29,7 +29,7 @@ namespace ramses_internal
 
 namespace
 {
-    DisplayConfig makeConfig(bool keepEffects, UInt64 resourceCacheSize, SceneId preferredScene, SceneId deprivedScene)
+    DisplayConfig makeConfig(bool keepEffects, uint64_t resourceCacheSize, SceneId preferredScene, SceneId deprivedScene)
     {
         DisplayConfig cfg;
         cfg.setKeepEffectsUploaded(keepEffects);
@@ -50,11 +50,11 @@ class AResourceUploadingManager : public ::testing::Test
 {
 public:
     explicit AResourceUploadingManager(const DisplayConfig& cfg = DisplayConfig())
-        : dummyResource(EResourceType_IndexArray, 5, EDataType::UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, String())
-        , dummyEffectResource("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
+        : dummyResource(EResourceType_IndexArray, 5, EDataType::UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, {})
+        , dummyEffectResource("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
         , dummyManagedResourceCallback(managedResourceDeleter)
         , sceneId(66u)
-        , uploader{ new StrictMock<ResourceUploaderMock> }
+        , uploader(new StrictMock<ResourceUploaderMock>)
         , asyncEffectUploader(platformMock, platformMock.renderBackendMock, notifier, 1)
         , rendererResourceUploader(resourceRegistry, std::unique_ptr<IResourceUploader>{ uploader }, platformMock.renderBackendMock, asyncEffectUploader, cfg, frameTimer, stats)
     {
@@ -69,7 +69,7 @@ public:
         EXPECT_TRUE(status);
     }
 
-    ~AResourceUploadingManager()
+    ~AResourceUploadingManager() override
     {
         EXPECT_CALL(platformMock, destroyResourceUploadRenderBackend());
         asyncEffectUploader.destroyResourceUploadRenderBackendAndStopThread();
@@ -135,7 +135,7 @@ public:
 
     void uploadShader(const  ResourceContentHash& hash, bool expectSuccess = true)
     {
-        const absl::optional<DeviceResourceHandle> unsetDeviceHandle;
+        const std::optional<DeviceResourceHandle> unsetDeviceHandle;
         EXPECT_CALL(*uploader, uploadResource(_, _, _)).WillOnce(Return(unsetDeviceHandle));
 
         if (expectSuccess)
@@ -167,7 +167,7 @@ public:
     }
 
 protected:
-    static const UInt16 m_dummyData[5];
+    static const uint16_t m_dummyData[5];
 
     RendererResourceRegistry resourceRegistry;
     StrictMock<PlatformStrictMock> platformMock;
@@ -187,7 +187,7 @@ protected:
     ResourceUploadingManager rendererResourceUploader;
 };
 
-const UInt16 AResourceUploadingManager::m_dummyData[5] = { 0x1C };
+const uint16_t AResourceUploadingManager::m_dummyData[5] = { 0x1C };
 
 class AResourceUploadingManager_KeepingEffects : public AResourceUploadingManager
 {
@@ -440,7 +440,7 @@ TEST_F(AResourceUploadingManager, uploadsBatchOfResourceBeforeCheckingIfOutOfTim
     const auto numResourcesInBatch = static_cast<int>(rendererResourceUploader.getResourceUploadBatchSize()) + 1;
     // create resources to fill one batch and extra resource in addition
     std::vector<ResourceContentHash> resList(numResourcesInBatch + 1);
-    UInt64 hash = 1234u;
+    uint64_t hash = 1234u;
     for (auto& res : resList)
     {
         res = ResourceContentHash(hash++, 0u);
@@ -450,7 +450,7 @@ TEST_F(AResourceUploadingManager, uploadsBatchOfResourceBeforeCheckingIfOutOfTim
     // set budget to infinite to make sure the batch gets to be processed
     // then right after set budget to 0 and expect rest of batch to be uploaded till next budget check
     EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(numResourcesInBatch)
-        .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max()); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
+        .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<uint64_t>::max()); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, 0u); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
         .WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
 
@@ -474,8 +474,8 @@ TEST_F(AResourceUploadingManager, checksTimeBudgetForEachLargeResourceWhenUpload
     const ResourceContentHash res2(1235u, 0u);
     const ResourceContentHash res3(1236u, 0u);
 
-    const std::vector<UInt32> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
-    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
+    const std::vector<uint32_t> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
+    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<uint32_t>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
 
     registerAndProvideResource(res1, false, &largeResource);
     registerAndProvideResource(res2, false, &largeResource);
@@ -484,7 +484,7 @@ TEST_F(AResourceUploadingManager, checksTimeBudgetForEachLargeResourceWhenUpload
     // set budget to infinite to make sure more than just first resource is processed
     // then right after set budget to 0 and test if the other resources were uploaded
     EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(2)
-        .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max()); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
+        .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<uint64_t>::max()); return ResourceUploaderMock::FakeResourceDeviceHandle; }))
         .WillOnce(InvokeWithoutArgs([this]() { frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, 0u); return ResourceUploaderMock::FakeResourceDeviceHandle; }));
 
     frameTimer.startFrame();
@@ -503,8 +503,8 @@ TEST_F(AResourceUploadingManager, checksTimeBudgetForEachLargeResourceWhenUpload
 
 TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOneUpdate_uploadSlow)
 {
-    const std::vector<UInt32> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
-    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
+    const std::vector<uint32_t> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
+    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<uint32_t>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
 
     // using large resources so that time budget checks happen on every resources, not just once per batch
     const ResourceContentHash res1(1234u, 0u);
@@ -518,7 +518,7 @@ TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOne
     registerAndProvideResource(res4, false, &largeResource);
 
     //set section time budget so that to be enough for upload of several resources
-    const UInt32 sectionTimeBudgetMiillis = 10u;
+    const uint32_t sectionTimeBudgetMiillis = 10u;
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, sectionTimeBudgetMiillis * 1000u);
 
     //make sure that not all resources will be uploaded
@@ -531,7 +531,7 @@ TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOne
     expectResourceStatus(res4, EResourceStatus::Provided);
 
     // upload rest
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max());
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<uint64_t>::max());
     EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
     frameTimer.startFrame();
     rendererResourceUploader.uploadAndUnloadPendingResources();
@@ -574,7 +574,7 @@ TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOne
     registerAndProvideResource(res3, false, &resource3);
     registerAndProvideResource(res4, false, &resource4);
 
-    const UInt32 sectionTimeBudgetMiillis = 10u;
+    const uint32_t sectionTimeBudgetMiillis = 10u;
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, sectionTimeBudgetMiillis * 1000u);
 
     //make sure that not all resources will be uploaded
@@ -589,7 +589,7 @@ TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOne
     expectResourceStatus(res4, EResourceStatus::Provided);
 
     // upload rest
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max());
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<uint64_t>::max());
     frameTimer.startFrame();
     EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
     rendererResourceUploader.uploadAndUnloadPendingResources();
@@ -832,8 +832,8 @@ TEST_F(AResourceUploadingManager_WithVRAMCache, willUnloadResourcesOfSameOrGreat
 
 TEST_F(AResourceUploadingManager_ScenePriority, uploadsPreferredResourcesFirst)
 {
-    const std::vector<UInt32> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
-    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
+    const std::vector<uint32_t> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
+    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<uint32_t>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
 
     // using large resources so that time budget checks happen on every resource, not just once per batch
     const ResourceContentHash res1(1234u, 0u);
@@ -847,7 +847,7 @@ TEST_F(AResourceUploadingManager_ScenePriority, uploadsPreferredResourcesFirst)
     registerAndProvideResource(res4, false, &largeResource);
 
     //set section time budget so the first resource upload will exceed it
-    const UInt32 sectionTimeBudgetMillis = 10u;
+    const uint32_t sectionTimeBudgetMillis = 10u;
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, sectionTimeBudgetMillis * 1000u);
 
     //make sure that only 1 resource will be uploaded
@@ -872,7 +872,7 @@ TEST_F(AResourceUploadingManager_ScenePriority, uploadsPreferredResourcesFirst)
     expectResourceStatus(res2, EResourceStatus::Provided);
 
     // upload rest
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max());
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<uint64_t>::max());
     EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(2).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
     frameTimer.startFrame();
     rendererResourceUploader.uploadAndUnloadPendingResources();

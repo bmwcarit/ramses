@@ -30,19 +30,19 @@ namespace ramses_internal
         const typename T::handle_type allocatedObject;
         const typename T::handle_type unallocatedObject;
 
-        static const UInt32 InitialSize = 100u;
+        static const uint32_t InitialSize = 100u;
     };
 
     using MemoryPoolTypes = ::testing::Types <
-        MemoryPoolExplicit<int, UInt32>,
-        MemoryPoolExplicit<int, UInt16>
+        MemoryPoolExplicit<int, uint32_t>,
+        MemoryPoolExplicit<int, uint16_t>
     >;
 
     TYPED_TEST_SUITE(AMemoryPoolExplicit, MemoryPoolTypes);
 
     TYPED_TEST(AMemoryPoolExplicit, HasInitialSize)
     {
-        EXPECT_EQ(UInt32(this->InitialSize), this->memoryPool.getTotalCount());
+        EXPECT_EQ(uint32_t(this->InitialSize), this->memoryPool.getTotalCount());
     }
 
     TYPED_TEST(AMemoryPoolExplicit, ReportsUnallocatedObject)
@@ -87,7 +87,7 @@ namespace ramses_internal
 
     TYPED_TEST(AMemoryPoolExplicit, AllocateUsingSpecificHandle)
     {
-        const UInt32 totalObjects = this->memoryPool.getTotalCount();
+        const uint32_t totalObjects = this->memoryPool.getTotalCount();
 
         const typename TypeParam::handle_type desiredHandle = static_cast<typename TypeParam::handle_type>(this->InitialSize - 10u);
         const typename TypeParam::handle_type someObject = this->memoryPool.allocate(desiredHandle);
@@ -98,9 +98,9 @@ namespace ramses_internal
 
     TYPED_TEST(AMemoryPoolExplicit, CanAllocateFullCapacity)
     {
-        const UInt32 totalCapacity = this->memoryPool.getTotalCount();
+        const uint32_t totalCapacity = this->memoryPool.getTotalCount();
 
-        for (UInt32 i = 0u; i < totalCapacity; ++i)
+        for (uint32_t i = 0u; i < totalCapacity; ++i)
         {
             const typename TypeParam::handle_type handle = static_cast<typename TypeParam::handle_type>(i);
             if (handle != this->allocatedObject)
@@ -109,7 +109,7 @@ namespace ramses_internal
             }
         }
 
-        for (UInt32 i = 0u; i < totalCapacity; ++i)
+        for (uint32_t i = 0u; i < totalCapacity; ++i)
         {
             const typename TypeParam::handle_type handle = static_cast<typename TypeParam::handle_type>(i);
             EXPECT_TRUE(this->memoryPool.isAllocated(handle));

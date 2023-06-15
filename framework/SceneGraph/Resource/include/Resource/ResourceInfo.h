@@ -19,10 +19,10 @@ namespace ramses_internal
     {
         EResourceType type;
         ResourceContentHash hash;
-        UInt32 decompressedSize;
-        UInt32 compressedSize;
+        uint32_t decompressedSize;
+        uint32_t compressedSize;
 
-        ResourceInfo(const EResourceType type_, const ResourceContentHash& hash_, const UInt32 decompressedSize_, const UInt32 compressedSize_)
+        ResourceInfo(const EResourceType type_, const ResourceContentHash& hash_, const uint32_t decompressedSize_, const uint32_t compressedSize_)
             : type(type_)
             , hash(hash_)
             , decompressedSize(decompressedSize_)

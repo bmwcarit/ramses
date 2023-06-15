@@ -9,41 +9,46 @@
 #ifndef RAMSES_STRINGUTILS_H
 #define RAMSES_STRINGUTILS_H
 
-#include "Collections/String.h"
 #include "Collections/HashSet.h"
 #include "Collections/Vector.h"
-#include "absl/strings/string_view.h"
+
+#include <string_view>
+#include <string>
 
 namespace ramses_internal
 {
-    using StringVector = std::vector<String>;
-    using StringSet = HashSet<String>;
-
     class StringUtils
     {
     public:
         /**
         * Return a trimmed string without leading and ending spaces
-        * @param string string to trim
+        * @param string string view to trim
         * @return trimmed String
         */
-        static String Trim(absl::string_view string);
+        static std::string Trim(std::string_view string);
+
+        /**
+        * Return a trimmed string view without leading and ending spaces
+        * @warning Returns dangling std::string_view if used with temporaries.
+        * For ex. TrimView(string + "some text") or TrimView(std::string{"Hello world"})
+        * @param string string view to trim
+        * @return trimmed string view
+        */
+        static std::string_view TrimView(std::string_view string);
 
         /**
         * Split a string into separate tokens
         * @param[in] string string to split
         * @param[out] tokens set of token strings
         */
-        static std::vector<String> Tokenize(const String& string, const char split = ' ');
+        static std::vector<std::string> Tokenize(std::string_view string, const char split = ' ');
 
         /**
         * Split a string into separate tokens
         * @param[in] string string to split
         * @param[out] tokens set of token strings
         */
-        static HashSet<String> TokenizeToSet(const String& string, const char split = ' ');
-
-        static std::vector<String> TokenizeTrimmed(const ramses_internal::String& line, char split);
+        static HashSet<std::string> TokenizeToSet(std::string_view string, const char split = ' ');
     };
 }
 

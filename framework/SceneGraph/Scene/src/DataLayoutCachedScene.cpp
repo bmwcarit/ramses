@@ -32,7 +32,7 @@ namespace ramses_internal
 
     void DataLayoutCachedScene::releaseDataLayout(DataLayoutHandle handle)
     {
-        const UInt fieldCount = ActionCollectingScene::getDataLayout(handle).getFieldCount();
+        const size_t fieldCount = ActionCollectingScene::getDataLayout(handle).getFieldCount();
         assert(fieldCount < m_dataLayoutCache.size());
 
         DataLayoutCacheGroup& dataLayouts = m_dataLayoutCache[fieldCount];
@@ -52,7 +52,7 @@ namespace ramses_internal
     {
         const DataLayoutHandle actualHandle = ActionCollectingScene::allocateDataLayout(dataFields, effectHash, handle);
 
-        const UInt fieldCount = dataFields.size();
+        const size_t fieldCount = dataFields.size();
         if (m_dataLayoutCache.size() <= fieldCount)
         {
             m_dataLayoutCache.resize(fieldCount + 1u);
@@ -70,7 +70,7 @@ namespace ramses_internal
 
     DataLayoutHandle DataLayoutCachedScene::findDataLayoutEntry(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutCacheEntry*& entryOut)
     {
-        const UInt fieldCount = dataFields.size();
+        const size_t fieldCount = dataFields.size();
         if (fieldCount >= m_dataLayoutCache.size())
         {
             return DataLayoutHandle::Invalid();
@@ -90,7 +90,7 @@ namespace ramses_internal
         return DataLayoutHandle::Invalid();
     }
 
-    UInt32 DataLayoutCachedScene::getNumDataLayoutReferences(DataLayoutHandle handle) const
+    uint32_t DataLayoutCachedScene::getNumDataLayoutReferences(DataLayoutHandle handle) const
     {
         const auto it = std::find_if(m_dataLayoutCache.cbegin(), m_dataLayoutCache.cend(), [handle](const DataLayoutCacheGroup& a) { return a.contains(handle); });
         assert(it != m_dataLayoutCache.cend());

@@ -12,16 +12,16 @@
 
 namespace ramses_internal
 {
-    Float RendererStatistics::getFps() const
+    float RendererStatistics::getFps() const
     {
-        const UInt64 reportTimeInterval = PlatformTime::GetMillisecondsMonotonic() - m_timeBase;
+        const uint64_t reportTimeInterval = PlatformTime::GetMillisecondsMonotonic() - m_timeBase;
         if (reportTimeInterval > 0u)
             return (1000.f * m_frameNumber) / reportTimeInterval;
 
         return 0.f;
     }
 
-    UInt32 RendererStatistics::getDrawCallsPerFrame() const
+    uint32_t RendererStatistics::getDrawCallsPerFrame() const
     {
         return m_frameNumber <= 0 ? 0u : m_drawCalls / m_frameNumber;
     }
@@ -50,20 +50,20 @@ namespace ramses_internal
         m_displayStatistics.numFrameBufferSwapped++;
     }
 
-    void RendererStatistics::resourceUploaded(UInt byteSize)
+    void RendererStatistics::resourceUploaded(size_t byteSize)
     {
         m_resourcesUploaded++;
         m_resourcesBytesUploaded += byteSize;
     }
 
-    void RendererStatistics::sceneResourceUploaded(SceneId sceneId, UInt byteSize)
+    void RendererStatistics::sceneResourceUploaded(SceneId sceneId, size_t byteSize)
     {
         auto& sceneStats = m_sceneStatistics[sceneId];
         sceneStats.sceneResourcesUploaded++;
         sceneStats.sceneResourcesBytesUploaded += byteSize;
     }
 
-    void RendererStatistics::streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates)
+    void RendererStatistics::streamTextureUpdated(WaylandIviSurfaceId sourceId, size_t numUpdates)
     {
         auto& strTexStat = m_streamTextureStatistics[sourceId];
         strTexStat.numUpdates += numUpdates;
@@ -75,7 +75,7 @@ namespace ramses_internal
         strTexStat.maxUpdatesPerFrame = std::max(strTexStat.maxUpdatesPerFrame, numUpdates);
     }
 
-    void RendererStatistics::shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid)
+    void RendererStatistics::shaderCompiled(std::chrono::microseconds microsecondsUsed, std::string_view name, SceneId sceneid)
     {
         m_shadersCompiled++;
         m_microsecondsForShaderCompilation += microsecondsUsed.count();
@@ -93,7 +93,7 @@ namespace ramses_internal
         m_gpuCacheSize = gpuCacheSize;
     }
 
-    void RendererStatistics::trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency)
+    void RendererStatistics::trackArrivedFlush(SceneId sceneId, size_t numSceneActions, size_t numAddedResources, size_t numRemovedResources, size_t numSceneResourceActions, std::chrono::milliseconds latency)
     {
         auto& sceneStats = m_sceneStatistics[sceneId];
         sceneStats.numFlushesArrived++;
@@ -151,10 +151,10 @@ namespace ramses_internal
         m_streamTextureStatistics.erase(sourceId);
     }
 
-    void RendererStatistics::frameFinished(UInt32 drawCalls)
+    void RendererStatistics::frameFinished(uint32_t drawCalls)
     {
-        const UInt64 currTick = PlatformTime::GetMicrosecondsMonotonic();
-        const UInt32 frameDuration = static_cast<UInt32>(currTick - m_lastFrameTick);
+        const uint64_t currTick = PlatformTime::GetMicrosecondsMonotonic();
+        const uint32_t frameDuration = static_cast<uint32_t>(currTick - m_lastFrameTick);
         if (frameDuration < m_frameDurationMin)
             m_frameDurationMin = frameDuration;
         else if (frameDuration > m_frameDurationMax)
@@ -164,13 +164,13 @@ namespace ramses_internal
         for (auto& sceneStat : m_sceneStatistics)
         {
             if (m_frameNumber > sceneStat.second.lastFrameFlushApplied)
-                sceneStat.second.maxFramesWithNoFlushApplied = std::max<UInt>(sceneStat.second.maxFramesWithNoFlushApplied, m_frameNumber - sceneStat.second.lastFrameFlushApplied);
+                sceneStat.second.maxFramesWithNoFlushApplied = std::max<size_t>(sceneStat.second.maxFramesWithNoFlushApplied, m_frameNumber - sceneStat.second.lastFrameFlushApplied);
         }
 
         for (auto& strTexStat : m_streamTextureStatistics)
         {
             if (m_frameNumber > strTexStat.second.lastFrameUpdated)
-                strTexStat.second.maxFramesWithNoUpdate = std::max<UInt>(strTexStat.second.maxFramesWithNoUpdate, m_frameNumber - strTexStat.second.lastFrameUpdated);
+                strTexStat.second.maxFramesWithNoUpdate = std::max<size_t>(strTexStat.second.maxFramesWithNoUpdate, m_frameNumber - strTexStat.second.lastFrameUpdated);
         }
 
         m_frameNumber++;
@@ -192,7 +192,7 @@ namespace ramses_internal
         m_timeBase = PlatformTime::GetMillisecondsMonotonic();
         m_frameNumber = 0;
         m_drawCalls = 0u;
-        m_frameDurationMin = std::numeric_limits<UInt32>::max();
+        m_frameDurationMin = std::numeric_limits<uint32_t>::max();
         m_frameDurationMax = 0u;
         m_resourcesUploaded = 0u;
         m_resourcesBytesUploaded = 0u;
@@ -214,7 +214,7 @@ namespace ramses_internal
             sceneStat.maxConsecutiveFramesBlocked = 0u;
             sceneStat.lastFrameFlushArrived = -1; // treat as if arrived in previous period's last frame (ie. do not measure 'arrive gaps' across periods)
             sceneStat.lastFrameFlushApplied = -1; // treat as if applied in previous period's last frame (ie. do not measure 'apply gaps' across periods)
-            sceneStat.lastFrameFlushBlocked = std::numeric_limits<Int32>::min(); // treat as if previous period did not end with blocked flush (ie. do not measure 'consecutive blocks' across periods)
+            sceneStat.lastFrameFlushBlocked = std::numeric_limits<int32_t>::min(); // treat as if previous period did not end with blocked flush (ie. do not measure 'consecutive blocks' across periods)
             sceneStat.numSceneActionsPerFlush.reset();
             sceneStat.numResourcesAddedPerFlush.reset();
             sceneStat.numResourcesRemovedPerFlush.reset();

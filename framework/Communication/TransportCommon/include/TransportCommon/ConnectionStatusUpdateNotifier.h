@@ -24,10 +24,10 @@ namespace ramses_internal
     {
     public:
         ConnectionStatusUpdateNotifier(const std::string& participantName, const LogContext& logContext, const std::string& usage, PlatformLock& frameworkLock);
-        virtual ~ConnectionStatusUpdateNotifier() override;
+        ~ConnectionStatusUpdateNotifier() override;
 
-        virtual void registerForConnectionUpdates(IConnectionStatusListener* listener) override;
-        virtual void unregisterForConnectionUpdates(IConnectionStatusListener* listener) override;
+        void registerForConnectionUpdates(IConnectionStatusListener* listener) override;
+        void unregisterForConnectionUpdates(IConnectionStatusListener* listener) override;
 
         void triggerNotification(const Guid& participant, EConnectionStatus status);
 

@@ -15,11 +15,12 @@
  * @brief Minimal Example
  */
 
-int main(int argc, char* argv[])
+int main()
 {
     /// [Minimal Example]
     // register at RAMSES daemon
-    ramses::RamsesFramework framework(argc, argv);
+    ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel_Latest};
+    ramses::RamsesFramework framework(config);
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-minimal"));
     framework.connect();
 

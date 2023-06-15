@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    enum class EDataBufferType : UInt8
+    enum class EDataBufferType : uint8_t
     {
         Invalid = 0,
         IndexBuffer,
@@ -23,7 +23,7 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS
     };
 
-    static const char* DataBufferTypeNames[] =
+    const std::array DataBufferTypeNames =
     {
         "EDataBufferType::Invalid",
         "EDataBufferType::IndexBuffer",

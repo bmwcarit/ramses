@@ -11,6 +11,8 @@
 
 #include "SceneAPI/SceneId.h"
 
+#include <string_view>
+
 namespace ramses_internal
 {
     class Guid;
@@ -21,7 +23,7 @@ namespace ramses_internal
     {
     public:
         virtual ~ISceneGraphSender() {}
-        virtual void sendPublishScene        (SceneId sceneId, EScenePublicationMode publicationMode, const String& name) = 0;
+        virtual void sendPublishScene        (SceneId sceneId, EScenePublicationMode publicationMode, std::string_view name) = 0;
         virtual void sendUnpublishScene      (SceneId sceneId, EScenePublicationMode publicationMode) = 0;
         virtual void sendCreateScene         (const Guid& to, const SceneId& sceneId, EScenePublicationMode publicationMode) = 0;
         virtual void sendSceneUpdate         (const std::vector<Guid>& to, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode, StatisticCollectionScene& sceneStatistics) = 0;

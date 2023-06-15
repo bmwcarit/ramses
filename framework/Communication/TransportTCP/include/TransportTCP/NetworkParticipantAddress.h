@@ -11,6 +11,9 @@
 
 #include "Common/ParticipantIdentifier.h"
 
+#include <string>
+#include <string_view>
+
 namespace ramses_internal
 {
     class NetworkParticipantAddress : public ParticipantIdentifier
@@ -23,19 +26,19 @@ namespace ramses_internal
         {
         };
 
-        NetworkParticipantAddress(const Guid& id, const String& name, const String& ip, UInt16 port)
+        NetworkParticipantAddress(const Guid& id, std::string_view name, std::string_view ip, uint16_t port)
             : ParticipantIdentifier(id, name)
             , m_ip(ip)
             , m_port(port)
         {
         }
 
-        const String& getIp() const
+        [[nodiscard]] const std::string& getIp() const
         {
             return m_ip;
         }
 
-        UInt16 getPort() const
+        [[nodiscard]] uint16_t getPort() const
         {
             return m_port;
         }
@@ -53,8 +56,8 @@ namespace ramses_internal
         }
 
     private:
-        String m_ip;
-        UInt16 m_port;
+        std::string m_ip;
+        uint16_t m_port;
     };
 }
 

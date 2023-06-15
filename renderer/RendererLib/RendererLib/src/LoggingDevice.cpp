@@ -11,6 +11,7 @@
 #include "SceneAPI/RenderBuffer.h"
 #include "Resource/EffectResource.h"
 #include "SceneAPI/TextureSamplerStates.h"
+#include "AppearanceEnumsImpl.h"
 
 namespace ramses_internal
 {
@@ -20,67 +21,62 @@ namespace ramses_internal
     {
     }
 
-    EDeviceTypeId LoggingDevice::getDeviceTypeId() const
-    {
-        return EDeviceTypeId_INVALID;
-    }
-
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Matrix22f* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::mat2* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Matrix33f* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::mat3* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Matrix44f* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::mat4* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector4i* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::ivec4* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector3i* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::ivec3* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector2i* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::ivec2* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Int32* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const int32_t* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector4* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::vec4* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector3* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::vec3* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Vector2* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const glm::vec2* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::setConstant(DataFieldHandle field, UInt32 count, const Float* value)
+    void LoggingDevice::setConstant(DataFieldHandle field, uint32_t count, const float* value)
     {
         ConstantLogger::LogValueArray(field, value, count, m_logContext);
     }
 
-    void LoggingDevice::colorMask(Bool r, Bool g, Bool b, Bool a)
+    void LoggingDevice::colorMask(bool r, bool g, bool b, bool a)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
@@ -88,7 +84,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::clearColor(const Vector4& clearColor)
+    void LoggingDevice::clearColor(const glm::vec4& clearColor)
     {
         m_logContext << "clear color to [" << clearColor.x << "; " << clearColor.y << "; " << clearColor.z << "; " << clearColor.w << "]" << RendererLogContext::NewLine;
     }
@@ -113,7 +109,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::blendColor(const Vector4& color)
+    void LoggingDevice::blendColor(const glm::vec4& color)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
@@ -153,7 +149,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::stencilFunc(EStencilFunc func, UInt8 ref, UInt8 mask)
+    void LoggingDevice::stencilFunc(EStencilFunc func, uint8_t ref, uint8_t mask)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
@@ -179,13 +175,13 @@ namespace ramses_internal
         m_logContext << "set draw mode: " << EnumToString(mode) << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::allocateVertexBuffer(UInt32 totalSizeInBytes)
+    DeviceResourceHandle LoggingDevice::allocateVertexBuffer(uint32_t totalSizeInBytes)
     {
         m_logContext << "allocate vertex buffer [total size: " << totalSizeInBytes << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
-    void LoggingDevice::uploadVertexBufferData(DeviceResourceHandle handle, const Byte*, UInt32 dataSize)
+    void LoggingDevice::uploadVertexBufferData(DeviceResourceHandle handle, const Byte*, uint32_t dataSize)
     {
         m_logContext << "upload vertex buffer data [device handle: " << handle << " size: " << dataSize << "]" << RendererLogContext::NewLine;
     }
@@ -211,13 +207,13 @@ namespace ramses_internal
         m_logContext << "delete vertex array [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::allocateIndexBuffer(EDataType dataType, UInt32 sizeInBytes)
+    DeviceResourceHandle LoggingDevice::allocateIndexBuffer(EDataType dataType, uint32_t sizeInBytes)
     {
         m_logContext << "allocate index buffer [type: " << EnumToString(dataType) << " size: " << sizeInBytes << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
-    void LoggingDevice::uploadIndexBufferData(DeviceResourceHandle handle, const Byte*, UInt32 dataSize)
+    void LoggingDevice::uploadIndexBufferData(DeviceResourceHandle handle, const Byte*, uint32_t dataSize)
     {
         m_logContext << "upload index buffer data [device handle: " << handle << " size: " << dataSize << "]" << RendererLogContext::NewLine;
     }
@@ -239,7 +235,7 @@ namespace ramses_internal
         return {};
     }
 
-    DeviceResourceHandle LoggingDevice::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
+    DeviceResourceHandle LoggingDevice::uploadBinaryShader(const EffectResource& effect, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
     {
         UNUSED(binaryShaderData);
 
@@ -247,7 +243,7 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    Bool LoggingDevice::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
+    bool LoggingDevice::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
     {
         UNUSED(binaryShader);
         UNUSED(binaryShaderFormat);
@@ -266,7 +262,7 @@ namespace ramses_internal
         m_logContext << "activate shader [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat format, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
+    DeviceResourceHandle LoggingDevice::allocateTexture2D(uint32_t width, uint32_t height, ETextureFormat format, const TextureSwizzleArray& swizzle, uint32_t mipLevelCount, uint32_t totalSizeInBytes)
     {
         m_logContext << "allocate texture2d [ (w,h):(" << width << "," << height << ") mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format)
                      << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3])
@@ -274,13 +270,13 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    DeviceResourceHandle LoggingDevice::allocateTexture3D(UInt32 width, UInt32 height, UInt32 depth, ETextureFormat format, UInt32 mipLevelCount, UInt32)
+    DeviceResourceHandle LoggingDevice::allocateTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipLevelCount, uint32_t)
     {
         m_logContext << "allocate texture3d [ (w,h,d):(" << width << "," << height << "," << depth << ") mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
-    DeviceResourceHandle LoggingDevice::allocateTextureCube(UInt32 faceSize, ETextureFormat format, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32)
+    DeviceResourceHandle LoggingDevice::allocateTextureCube(uint32_t faceSize, ETextureFormat format, const TextureSwizzleArray& swizzle, uint32_t mipLevelCount, uint32_t)
     {
         m_logContext << "allocate textureCube [ faceSize:" << faceSize << " mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format)
                      << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3]) <<  "]" << RendererLogContext::NewLine;
@@ -309,12 +305,12 @@ namespace ramses_internal
         m_logContext << "generate mipmaps for texture [handle:" << handle << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte*, UInt32 dataSize)
+    void LoggingDevice::uploadTextureData(DeviceResourceHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height, uint32_t depth, const Byte*, uint32_t dataSize)
     {
         m_logContext << "update texture data [handle:" << handle << " mipLevel:" << mipLevel << " (x,y,z):(" << x << "," << y << "," << z << ") (w,h,d):(" << width << "," << height << "," << depth << ") dataSize:" << dataSize << "]" << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat, const UInt8*, const TextureSwizzleArray& swizzle)
+    DeviceResourceHandle LoggingDevice::uploadStreamTexture2D(DeviceResourceHandle handle, uint32_t width, uint32_t height, ETextureFormat, const uint8_t*, const TextureSwizzleArray& swizzle)
     {
         m_logContext << "upload stream texture2d [textureHandle: " << handle << " (w,h):(" << width << "," << height << ") " << "textureSwizzle: " << EnumToString(swizzle[0]) << "," << EnumToString(swizzle[1]) << "," << EnumToString(swizzle[2]) << "," << EnumToString(swizzle[3])    << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
@@ -354,7 +350,7 @@ namespace ramses_internal
             << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::uploadDmaRenderBuffer(UInt32 width, UInt32 height, DmaBufferFourccFormat format, DmaBufferUsageFlags bufferUsage, DmaBufferModifiers bufferModifiers)
+    DeviceResourceHandle LoggingDevice::uploadDmaRenderBuffer(uint32_t width, uint32_t height, DmaBufferFourccFormat format, DmaBufferUsageFlags bufferUsage, DmaBufferModifiers bufferModifiers)
     {
         m_logContext << "upload dma render buffer [width: " << width << " height: " << height << "format: " << format.getValue()  << " usage: " << bufferUsage.getValue() << " modifiers: " << bufferModifiers.getValue() << "]" << RendererLogContext::NewLine;
         return {};
@@ -403,27 +399,27 @@ namespace ramses_internal
         m_logContext << "discard depthstencil buffer" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& /*srcRect*/, const PixelRectangle& /*dstRect*/, Bool /*colorOnly*/)
+    void LoggingDevice::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& /*srcRect*/, const PixelRectangle& /*dstRect*/, bool /*colorOnly*/)
     {
         m_logContext << "blit render pass [RT src device handle:  " << rtSrc << ", RT dst device handle: " << rtDst << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
+    void LoggingDevice::drawIndexedTriangles(int32_t startOffset, int32_t elementCount, uint32_t instanceCount)
     {
         m_logContext << "draw " << instanceCount << " instances with " << elementCount << " indexed vertices starting from " << startOffset << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::drawTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
+    void LoggingDevice::drawTriangles(int32_t startOffset, int32_t elementCount, uint32_t instanceCount)
     {
         m_logContext << "draw " << instanceCount << " instances with " << elementCount << " vertices starting from " << startOffset << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::clear(UInt32 clearFlags)
+    void LoggingDevice::clear(uint32_t clearFlags)
     {
         m_logContext << "clear buffer [flags: " << clearFlags << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::pairRenderTargetsForDoubleBuffering(DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2])
+    void LoggingDevice::pairRenderTargetsForDoubleBuffering(const std::array<DeviceResourceHandle, 2>& renderTargets, const std::array<DeviceResourceHandle, 2>& colorBuffers)
     {
         m_logContext << "pair render targets [render targets: (" << renderTargets[0] << ", " << renderTargets[1] << "), render buffers: (" << colorBuffers[0] << ", " << colorBuffers[1] << ")]" << RendererLogContext::NewLine;
     }
@@ -438,16 +434,16 @@ namespace ramses_internal
         m_logContext << "swap render targets [render target: " << renderTarget << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::readPixels(UInt8* /*buffer*/, UInt32 /*x*/, UInt32 /*y*/, UInt32 /*width*/, UInt32 /*height*/)
+    void LoggingDevice::readPixels(uint8_t* /*buffer*/, uint32_t /*x*/, uint32_t /*y*/, uint32_t /*width*/, uint32_t /*height*/)
     {
     }
 
-    UInt32 LoggingDevice::getTotalGpuMemoryUsageInKB() const
+    uint32_t LoggingDevice::getTotalGpuMemoryUsageInKB() const
     {
         return m_deviceDelegate.getTotalGpuMemoryUsageInKB();
     }
 
-    void LoggingDevice::logResourceActivation(const String& resourceTypeName, DeviceResourceHandle handle, DataFieldHandle field)
+    void LoggingDevice::logResourceActivation(std::string_view resourceTypeName, DeviceResourceHandle handle, DataFieldHandle field)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
@@ -462,17 +458,17 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::clearDepth(Float d)
+    void LoggingDevice::clearDepth(float d)
     {
         m_logContext << "clear depth to [ " << d << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::clearStencil(Int32 s)
+    void LoggingDevice::clearStencil(int32_t s)
     {
         m_logContext << "clear stencil to [ " << s << "]" << RendererLogContext::NewLine;
     }
 
-    Int32 LoggingDevice::getTextureAddress(DeviceResourceHandle) const
+    int32_t LoggingDevice::getTextureAddress(DeviceResourceHandle) const
     {
         return 0;
     }
@@ -481,7 +477,7 @@ namespace ramses_internal
     {
     }
 
-    Bool LoggingDevice::isDeviceStatusHealthy() const
+    bool LoggingDevice::isDeviceStatusHealthy() const
     {
         return true;
     }

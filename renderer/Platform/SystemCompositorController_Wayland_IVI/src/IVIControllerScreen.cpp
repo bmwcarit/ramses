@@ -33,7 +33,7 @@ namespace ramses_internal
         return m_screenId;
     }
 
-    void IVIControllerScreen::takeScreenshot(const String& fileName)
+    void IVIControllerScreen::takeScreenshot(const std::string& fileName)
     {
         ivi_controller_screen_screenshot(&m_controllerScreen, fileName.c_str());
     }

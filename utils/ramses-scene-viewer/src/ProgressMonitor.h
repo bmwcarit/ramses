@@ -21,7 +21,7 @@ namespace ramses_internal
     public:
         using FutureList = std::vector<std::future<std::vector<std::string>>>;
 
-        bool isRunning() const
+        [[nodiscard]] bool isRunning() const
         {
             for (auto& f : m_futures)
             {
@@ -40,17 +40,17 @@ namespace ramses_internal
             m_futures     = std::move(futures);
         }
 
-        const std::string& getDescription() const
+        [[nodiscard]] const std::string& getDescription() const
         {
             return m_description;
         }
 
-        uint32_t getTotal() const
+        [[nodiscard]] uint32_t getTotal() const
         {
             return m_total;
         }
 
-        std::vector<std::string> getResult()
+        [[nodiscard]] std::vector<std::string> getResult()
         {
             std::vector<std::string> result;
             for (auto& f : m_futures)

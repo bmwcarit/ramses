@@ -25,7 +25,7 @@ namespace ramses_internal
         deinit();
     }
 
-    void TaskExecutingThreadPool::init(UInt16 threadCount, IThreadAliveNotifier& threadAliveHandler)
+    void TaskExecutingThreadPool::init(uint16_t threadCount, IThreadAliveNotifier& threadAliveHandler)
     {
         std::lock_guard<std::mutex> mutexGuard(m_mutex);
 
@@ -39,7 +39,7 @@ namespace ramses_internal
                 threadCount = MAXIMUM_THREAD_COUNT;
             }
 
-            for (UInt16 index = 0; index < threadCount; ++index)
+            for (uint16_t index = 0; index < threadCount; ++index)
             {
                 m_threads.push_back(std::make_unique<TaskExecutingThread>(threadAliveHandler));
             }

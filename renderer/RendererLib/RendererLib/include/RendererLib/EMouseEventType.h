@@ -36,7 +36,7 @@ namespace ramses_internal
         EMouseEventType_NUMBER_OF_ELEMENTS
     };
 
-    static const char* MouseEventTypeNames[] =
+    const std::array MouseEventTypeNames =
     {
         "EMouseEventType_Invalid",
         "EMouseEventType_LeftButtonDown",

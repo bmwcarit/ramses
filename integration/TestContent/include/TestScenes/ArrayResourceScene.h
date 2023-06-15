@@ -24,7 +24,7 @@ namespace ramses_internal
     class ArrayResourceScene : public IntegrationScene
     {
     public:
-        ArrayResourceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        ArrayResourceScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -35,8 +35,8 @@ namespace ramses_internal
         };
 
     private:
-        void createGeometry(ramses::Effect& effect, UInt32 state);
-        ramses::Effect* createEffect(UInt32 state);
+        void createGeometry(ramses::Effect& effect, uint32_t state);
+        ramses::Effect* createEffect(uint32_t state);
 
         void createVertexArrayInterleaved();
         void createVertexArrayInterleavedTwoStrides();

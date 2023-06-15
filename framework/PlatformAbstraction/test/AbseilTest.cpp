@@ -7,14 +7,15 @@
 //  -------------------------------------------------------------------------
 
 #include "gtest/gtest.h"
-#include "PlatformAbstraction/VariantWrapper.h"
+#include "absl/types/variant.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "absl/strings/string_view.h"
 #include "absl/algorithm/container.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
-#include "Collections/String.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -69,14 +70,12 @@ namespace ramses_internal
     TEST(AAbseil, stringToLower)
     {
         EXPECT_EQ("ascdef!123", absl::AsciiStrToLower("ascDEF!123"));
-        EXPECT_EQ("ascdef!123", absl::AsciiStrToLower(String("ascDEF!123")));
         EXPECT_EQ("ascdef!123", absl::AsciiStrToLower(std::string("ascDEF!123")));
     }
 
     TEST(AAbseil, stringToUpper)
     {
         EXPECT_EQ("ASCDEF!123", absl::AsciiStrToUpper("ascDEF!123"));
-        EXPECT_EQ("ASCDEF!123", absl::AsciiStrToUpper(String("ascDEF!123")));
         EXPECT_EQ("ASCDEF!123", absl::AsciiStrToUpper(std::string("ascDEF!123")));
     }
 

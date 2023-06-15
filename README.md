@@ -10,13 +10,9 @@
 
 RAMSES is 3D rendering engine with focus on bandwidth and resource efficiency.
 For a broader overview and introduction to the ecosystem and tools, visit our
-[SDK docs](https://ramses-sdk.readthedocs.io/).
+[homepage](https://ramses3d.org/).
 
 Have a look at our showcase video: [![RAMSES Distributed Rendering Engine Showcase Video](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
-
-You can find additional resources here:
-* [The Github wiki pages](https://github.com/bmwcarit/ramses/wiki)
-* [The doxygen API docs](https://bmwcarit.github.io/ramses)
 
 ## Obtaining the source code
 RAMSES can be cloned from its BMW Car IT repository using git:
@@ -100,16 +96,17 @@ Some of these are shipped directly with the sourcecode, others are included as g
 RAMSES also includes some assets (e.g. font files) which are licensed under different open source licenses.
 
 Directly included:
-- ACME2 (Licensed under Apache 2.0)
 - cityhash (Licensed under MIT License)
 - Khronos Headers (Licensed under Khronos Group License)
 - lodepng (Licensed under zlib License)
 - Wayland-IVI Extension (Licensed under MIT License)
+- wayland-zwp-linux-dmabuf-v1-extension (Licensed under MIT License)
 - Wayland-IVI example client (Licensed under MIT License)
 
 Submodule reference:
 - Freetype 2 (Licensed under FTL, also containing code under BSD and ZLib)
 - GLSLang (Licensed under BSD-3 and Khronos Group License)
+- OpenGL Mathematics (Licensed under MIT License)
 - Googletest (Licensed under BSD-3)
 - Harfbuzz (Licensed under MIT and ISC; see external/harfbuzz/COPYING)
 - Asio (Boost Software License - Version 1.0)
