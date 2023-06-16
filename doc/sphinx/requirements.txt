@@ -16,7 +16,7 @@ docutils==0.16
 idna==2.10
 imagesize==1.2.0
 Jinja2==3.0.0
-markdown-it-py==1.1.0
+markdown-it-py==2.2.0
 MarkupSafe==2.0.0
 mdit-py-plugins==0.2.8
 myst-parser==0.14.0
