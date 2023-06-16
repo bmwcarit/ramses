@@ -100,7 +100,7 @@ protected:
             ASSERT_EQ(2u, events.size());
         }
 
-        UInt32 eventIdx = 0u;
+        uint32_t eventIdx = 0u;
 
         EXPECT_EQ(ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange, events[eventIdx].eventType);
         EXPECT_EQ(consumerSId, events[eventIdx].consumerSceneId);

@@ -12,11 +12,11 @@
 
 namespace ramses_internal
 {
-    String TestSignalHandler::ProcessName;
+    std::string TestSignalHandler::ProcessName;
 
-    void TestSignalHandler::RegisterSignalHandlersForCurrentProcess(String processName)
+    void TestSignalHandler::RegisterSignalHandlersForCurrentProcess(std::string_view processName)
     {
-        ProcessName = std::move(processName);
+        ProcessName = processName;
 
         PlatformSignal::SetSignalHandler(ESignal::ABRT, HandleSignalCallback, true);
         PlatformSignal::SetSignalHandler(ESignal::FPE, HandleSignalCallback, true);

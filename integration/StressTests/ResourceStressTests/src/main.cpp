@@ -6,38 +6,46 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Utils/CommandLineParser.h"
-#include "Utils/Argument.h"
-#include "Utils/StringUtils.h"
 #include "ResourceStressTests.h"
+#include "ramses-cli.h"
 
 using namespace ramses_internal;
 
 int main(int argc, const char *argv[])
 {
-    CommandLineParser parser(argc, argv);
-    const Int32 testNumber          = ArgumentInt32 (parser, "tn"       , "test-number"                 , -1);
-    const UInt32 displayCountNumber = ArgumentUInt32(parser, "d"        , "display-count"               , 2);
-    const UInt32 scenesPerDisplay   = ArgumentUInt32(parser, "sspd"     , "scenes-sets-per-display"     , 1);
-    const bool disableSkipping      = ArgumentBool  (parser, "noskip"   , "never-skip-rendering");
-    const UInt32 limitClientRes     = ArgumentUInt32(parser, "lc"       , "res-upload-limit"            , 10000);
-    const UInt32 limitRendering     = ArgumentUInt32(parser, "lr"       , "rendering-limit"             , 16000);
-    const UInt32 renderablePerLoop  = ArgumentUInt32(parser, "rpl"      , "renderable-per-loop"         , 1);
-    // Some tests don't work with duration < 15 seconds
-    // TODO Violin refactor stress tests to be similar to other sandwich tests
-    const UInt32 durationEachTest   = ArgumentUInt32(parser, "dur"      , "duration-each-test-seconds"  , 20);
+    CLI::App cli;
 
-    const StressTestConfig testConfig = {
-        argc,
-        argv,
-        durationEachTest,
-        displayCountNumber,
-        scenesPerDisplay,
-        disableSkipping,
-        limitClientRes,
-        limitRendering,
-        renderablePerLoop
-    };
+    StressTestConfig testConfig;
+
+    int32_t testNumber = -1;
+    testConfig.durationEachTestSeconds = 20;
+    testConfig.displayCount                                 = 2;
+    testConfig.sceneSetsPerDisplay                          = 1;
+    testConfig.disableSkippingOfFrames                      = false;
+    testConfig.perFrameBudgetMSec_ClientRes                 = 10000;
+    testConfig.perFrameBudgetMSec_Rendering                 = 16000;
+    testConfig.renderablesBatchSizeForRenderingInterruption = 1;
+
+    try
+    {
+        cli.add_option("--tn,--test-nr", testNumber);
+        cli.add_option("-d,--displays", testConfig.displayCount);
+        cli.add_option("--sspd,--scenes-per-display", testConfig.sceneSetsPerDisplay);
+        cli.add_flag("--no-skip", testConfig.disableSkippingOfFrames);
+        cli.add_option("--lc,--res-upload-limit", testConfig.perFrameBudgetMSec_ClientRes);
+        cli.add_option("--lr,--rendering-limit", testConfig.perFrameBudgetMSec_Rendering);
+        cli.add_option("--rpl,--renderable-per-loop", testConfig.renderablesBatchSizeForRenderingInterruption);
+        cli.add_option("--duration", testConfig.durationEachTestSeconds, "test duration in seconds");
+        ramses::registerOptions(cli, testConfig.frameworkConfig);
+        ramses::registerOptions(cli, testConfig.rendererConfig);
+        ramses::registerOptions(cli, testConfig.displayConfig);
+    }
+    catch (const CLI::Error& error)
+    {
+        std::cerr << error.what();
+        return -1;
+    }
+    CLI11_PARSE(cli, argc, argv);
 
     if (testNumber == -1)
     {

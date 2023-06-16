@@ -21,9 +21,9 @@ namespace ramses_internal
     {
         ResourceContentHash hash;
         DataBufferHandle dataBuffer;
-        UInt32 instancingDivisor;
-        UInt16 offsetWithinElementInBytes;
-        UInt16 stride;
+        uint32_t instancingDivisor;
+        uint16_t offsetWithinElementInBytes;
+        uint16_t stride;
     };
 }
 

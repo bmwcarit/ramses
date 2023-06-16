@@ -10,11 +10,13 @@
 #define RAMSES_WGLEXTENSIONS_H
 
 #include "RendererAPI/Types.h"
-#include "Utils/StringUtils.h"
+#include "Collections/HashSet.h"
 
 #include "PlatformAbstraction/MinimalWindowsH.h"
 #include "GL/GL.h"
 #include "GL/wgl.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -34,14 +36,14 @@ namespace ramses_internal
     public:
         WglExtensions();
 
-        Bool areLoaded() const;
-        Bool isExtensionAvailable(const String& extensionName);
+        bool areLoaded() const;
+        bool isExtensionAvailable(const std::string& extensionName);
 
         Procs procs;
 
     private:
-        StringSet m_extensionNames;
-        Bool m_loaded;
+        HashSet<std::string> m_extensionNames;
+        bool m_loaded;
     };
 }
 

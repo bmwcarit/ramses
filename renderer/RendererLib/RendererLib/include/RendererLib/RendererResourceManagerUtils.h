@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
 
-        static ManagedResource TryLoadResource(ResourceContentHash resourceId, UInt32 resourceSize, const IRendererResourceCache* cache);
+        static ManagedResource TryLoadResource(ResourceContentHash resourceId, uint32_t resourceSize, const IRendererResourceCache* cache);
         static void StoreResource(IRendererResourceCache* cache, const IResource* resource, SceneId sceneId);
     };
 }

@@ -109,7 +109,7 @@ namespace ramses_internal
         return m_shellSurface != nullptr;
     }
 
-    const String& WaylandSurface::getSurfaceTitle() const
+    const std::string& WaylandSurface::getSurfaceTitle() const
     {
         if (m_shellSurface)
         {
@@ -117,7 +117,7 @@ namespace ramses_internal
         }
         else
         {
-            static String emptyString;
+            static std::string emptyString;
             return emptyString;
         }
     }
@@ -145,7 +145,7 @@ namespace ramses_internal
         }
     }
 
-    UInt32 WaylandSurface::getNumberOfCommitedFrames() const
+    uint32_t WaylandSurface::getNumberOfCommitedFrames() const
     {
         return m_numberOfCommitedFrames;
     }
@@ -483,7 +483,7 @@ namespace ramses_internal
         setWaylandBuffer(nullptr);
     }
 
-    void WaylandSurface::sendFrameCallbacks(UInt32 time)
+    void WaylandSurface::sendFrameCallbacks(uint32_t time)
     {
         for (auto callback: m_frameCallbacks)
         {

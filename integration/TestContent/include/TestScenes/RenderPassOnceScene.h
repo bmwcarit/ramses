@@ -23,9 +23,9 @@ namespace ramses_internal
     class RenderPassOnceScene : public IntegrationScene
     {
     public:
-        RenderPassOnceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        RenderPassOnceScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
-        void setState(UInt32 state);
+        void setState(uint32_t state);
 
         enum
         {

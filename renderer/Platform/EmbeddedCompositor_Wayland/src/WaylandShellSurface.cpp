@@ -82,7 +82,7 @@ namespace ramses_internal
         m_surface = nullptr;
     }
 
-    const String& WaylandShellSurface::getTitle() const
+    const std::string& WaylandShellSurface::getTitle() const
     {
         return m_title;
     }

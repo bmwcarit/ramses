@@ -9,7 +9,6 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/MessagePool.h"
-#include "Collections/String.h"
 
 using namespace testing;
 
@@ -33,48 +32,48 @@ namespace ramses_internal
 
     TEST_F(MessagePoolTest, addMessage)
     {
-        const UInt32 id = m_messagePool.addMessage("msg 1");
+        const uint32_t id = m_messagePool.addMessage("msg 1");
         EXPECT_STREQ("msg 1", m_messagePool.getMessage(id));
     }
 
     TEST_F(MessagePoolTest, fillCache)
     {
-        const ramses_internal::String msgBase("msg ");
-        for (UInt32 i = 0u; i < m_messagePool.MaxMessageEntries; ++i)
+        const std::string msgBase("msg ");
+        for (uint32_t i = 0u; i < m_messagePool.MaxMessageEntries; ++i)
         {
-            ramses_internal::String msg = msgBase;
-            msg += ('0' + static_cast<Char>(i));
+            std::string msg = msgBase;
+            msg += ('0' + static_cast<char>(i));
             m_messagePool.addMessage(msg.c_str());
         }
 
         EXPECT_STREQ(m_messagePool.getSuccessText(), m_messagePool.getMessage(m_messagePool.SuccessMessageID));
 
-        for (UInt32 i = 0u; i < m_messagePool.MaxMessageEntries; ++i)
+        for (uint32_t i = 0u; i < m_messagePool.MaxMessageEntries; ++i)
         {
-            ramses_internal::String msg = msgBase;
-            msg += ('0' + static_cast<Char>(i));
+            std::string msg = msgBase;
+            msg += ('0' + static_cast<char>(i));
             EXPECT_STREQ(msg.c_str(), m_messagePool.getMessage(m_messagePool.SuccessMessageID + 1u + i));
         }
     }
 
     TEST_F(MessagePoolTest, floodCache)
     {
-        const UInt32 maxMessages = m_messagePool.MaxMessageEntries;
-        for (UInt32 i = 0u; i < maxMessages * 10; ++i)
+        const uint32_t maxMessages = m_messagePool.MaxMessageEntries;
+        for (uint32_t i = 0u; i < maxMessages * 10; ++i)
         {
             m_messagePool.addMessage("message");
         }
 
         EXPECT_STREQ(m_messagePool.getSuccessText(), m_messagePool.getMessage(m_messagePool.SuccessMessageID));
 
-        const UInt32 id = m_messagePool.addMessage("msg X");
+        const uint32_t id = m_messagePool.addMessage("msg X");
         EXPECT_STREQ("msg X", m_messagePool.getMessage(id));
     }
 
     TEST_F(MessagePoolTest, tooOldEntryGivesUnknownMessage)
     {
-        const UInt32 maxMessages = m_messagePool.MaxMessageEntries;
-        for (UInt32 i = 0u; i < maxMessages * 3; ++i)
+        const uint32_t maxMessages = m_messagePool.MaxMessageEntries;
+        for (uint32_t i = 0u; i < maxMessages * 3; ++i)
         {
             m_messagePool.addMessage("message");
         }
@@ -85,8 +84,8 @@ namespace ramses_internal
 
     TEST_F(MessagePoolTest, willNotReturnSuccessMessageIdIfFilled)
     {
-        const String msg("msg");
-        for (UInt32 i = 0u; i < 2 * m_messagePool.MaxMessageEntries; ++i)
+        const std::string msg("msg");
+        for (uint32_t i = 0u; i < 2 * m_messagePool.MaxMessageEntries; ++i)
         {
             const auto id = m_messagePool.addMessage(msg.c_str());
             EXPECT_NE(uint32_t(m_messagePool.SuccessMessageID), id);

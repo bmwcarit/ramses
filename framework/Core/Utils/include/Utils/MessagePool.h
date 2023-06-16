@@ -12,58 +12,59 @@
 #include "Collections/Vector.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "PlatformAbstraction/PlatformMemory.h"
+#include <array>
 
 namespace ramses_internal
 {
     struct MessageEntry final
     {
-        static const UInt32 MaxMessageLength = 128u;
+        static const uint32_t MaxMessageLength = 128u;
 
-        Char m_text[MaxMessageLength];
+        std::array<char, MaxMessageLength> m_text;
     };
 
-    template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
+    template <uint32_t MaxEntries, uint32_t SuccessMessageEntryID>
     class MessagePool final
     {
     public:
         MessagePool();
 
-        UInt32      addMessage(const Char* message);
-        const Char* getMessage(UInt32 id) const;
-        bool        isMessageCached(UInt32 id) const;
+        uint32_t      addMessage(const char* message);
+        [[nodiscard]] const char* getMessage(uint32_t id) const;
+        [[nodiscard]] bool        isMessageCached(uint32_t id) const;
 
-        static const Char* getSuccessText();
-        static const Char* getUnknownText();
+        static const char* getSuccessText();
+        static const char* getUnknownText();
 
-        static const UInt32 MaxMessageEntries = MaxEntries;
-        static const UInt32 SuccessMessageID = SuccessMessageEntryID;
+        static const uint32_t MaxMessageEntries = MaxEntries;
+        static const uint32_t SuccessMessageID = SuccessMessageEntryID;
 
     private:
-        UInt32          m_nextIndex;
+        uint32_t          m_nextIndex;
         std::vector<MessageEntry> m_messages;
     };
 
-    template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
+    template <uint32_t MaxEntries, uint32_t SuccessMessageEntryID>
     MessagePool<MaxEntries, SuccessMessageEntryID>::MessagePool()
         : m_nextIndex(SuccessMessageEntryID + 1u)
     {
         m_messages.resize(MaxEntries);
     }
 
-    template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
-    UInt32 MessagePool<MaxEntries, SuccessMessageEntryID>::addMessage(const Char* message)
+    template <uint32_t MaxEntries, uint32_t SuccessMessageEntryID>
+    uint32_t MessagePool<MaxEntries, SuccessMessageEntryID>::addMessage(const char* message)
     {
-        const UInt32 arrayIndex = (m_nextIndex % MaxEntries);
-        PlatformMemory::Set(m_messages[arrayIndex].m_text, 0, MessageEntry::MaxMessageLength);
-        PlatformStringUtils::Copy(m_messages[arrayIndex].m_text, MessageEntry::MaxMessageLength, message);
-        const UInt32 id = m_nextIndex;
+        const uint32_t arrayIndex = (m_nextIndex % MaxEntries);
+        PlatformMemory::Set(m_messages[arrayIndex].m_text.data(), 0, MessageEntry::MaxMessageLength);
+        PlatformStringUtils::Copy(m_messages[arrayIndex].m_text.data(), MessageEntry::MaxMessageLength, message);
+        const uint32_t id = m_nextIndex;
         ++m_nextIndex;
 
         return id;
     }
 
-    template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
-    const Char* MessagePool<MaxEntries, SuccessMessageEntryID>::getMessage(UInt32 id) const
+    template <uint32_t MaxEntries, uint32_t SuccessMessageEntryID>
+    const char* MessagePool<MaxEntries, SuccessMessageEntryID>::getMessage(uint32_t id) const
     {
         if (id == SuccessMessageEntryID)
         {
@@ -75,24 +76,24 @@ namespace ramses_internal
             return getUnknownText();
         }
 
-        return m_messages[id % MaxEntries].m_text;
+        return m_messages[id % MaxEntries].m_text.data();
     }
 
-    template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
-    bool MessagePool<MaxEntries, SuccessMessageEntryID>::isMessageCached(UInt32 id) const
+    template <uint32_t MaxEntries, uint32_t SuccessMessageEntryID>
+    bool MessagePool<MaxEntries, SuccessMessageEntryID>::isMessageCached(uint32_t id) const
     {
-        const UInt32 oldestCachedIndex = (m_nextIndex < MaxEntries ? 0u : m_nextIndex - MaxEntries);
+        const uint32_t oldestCachedIndex = (m_nextIndex < MaxEntries ? 0u : m_nextIndex - MaxEntries);
         return (id >= oldestCachedIndex && id < m_nextIndex);
     }
 
-    template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
-    const Char* MessagePool<MaxEntries, SuccessMessageEntryID>::getSuccessText()
+    template <uint32_t MaxEntries, uint32_t SuccessMessageEntryID>
+    const char* MessagePool<MaxEntries, SuccessMessageEntryID>::getSuccessText()
     {
         return "OK";
     }
 
-    template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
-    const Char* MessagePool<MaxEntries, SuccessMessageEntryID>::getUnknownText()
+    template <uint32_t MaxEntries, uint32_t SuccessMessageEntryID>
+    const char* MessagePool<MaxEntries, SuccessMessageEntryID>::getUnknownText()
     {
         return "Unknown";
     }

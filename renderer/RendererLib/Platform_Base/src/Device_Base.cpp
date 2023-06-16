@@ -23,12 +23,12 @@ namespace ramses_internal
         return m_limits;
     }
 
-    void Device_Base::drawIndexedTriangles(Int32, Int32, UInt32)
+    void Device_Base::drawIndexedTriangles(int32_t, int32_t, uint32_t)
     {
         ++m_drawCalls;
     }
 
-    void Device_Base::drawTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
+    void Device_Base::drawTriangles(int32_t startOffset, int32_t elementCount, uint32_t instanceCount)
     {
         UNUSED(startOffset);
         UNUSED(elementCount);

@@ -31,7 +31,7 @@ namespace ramses_internal
         DynamicQuad_Resources(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
         ~DynamicQuad_Resources() override;
 
-        virtual void recreate() override final;
+        void recreate() final override;
 
         // Needed for proper clean-up upon destruction (destroy scene -> mark objects destroyed -> destroy resources)
         void markSceneObjectsDestroyed();

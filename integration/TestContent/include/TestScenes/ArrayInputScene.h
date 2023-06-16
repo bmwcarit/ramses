@@ -17,12 +17,10 @@
 
 namespace ramses_internal
 {
-    class Vector4;
-
     class ArrayInputScene : public IntegrationScene
     {
     public:
-        ArrayInputScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        ArrayInputScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {

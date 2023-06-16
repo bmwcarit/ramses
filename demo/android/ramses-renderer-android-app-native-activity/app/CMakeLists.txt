@@ -19,7 +19,7 @@ if((TARGET DemoRamsesJNIInterface) AND ANDROID_NDK)
         android
         native_app_glue
         log
-        ramses-shared-lib-android-egl-es-3-0
+        ramses-shared-lib
         DemoRamsesJNIInterface
     )
 endif()

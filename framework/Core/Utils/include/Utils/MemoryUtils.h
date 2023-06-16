@@ -17,13 +17,13 @@ namespace ramses_internal
     {
     public:
         template<typename T>
-        static bool AreAllBytesZero(const T* elements, UInt32 elementCount)
+        static bool AreAllBytesZero(const T* elements, uint32_t elementCount)
         {
             assert(elementCount > 0u);
 
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) safe to get Byte*
             const Byte* data = reinterpret_cast<const Byte*>(elements);
-            const UInt32 dataSize = sizeof(T) * elementCount;
+            const uint32_t dataSize = sizeof(T) * elementCount;
 
             return (*data == 0) && (PlatformMemory::Compare(data, data + 1u, dataSize - 1u) == 0);
         }

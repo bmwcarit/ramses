@@ -27,7 +27,7 @@ namespace ramses_internal
         FlushInformation(FlushInformation const&) = delete;
         FlushInformation& operator=(FlushInformation const&) = delete;
 
-        FlushInformation copy() const
+        [[nodiscard]] FlushInformation copy() const
         {
             FlushInformation ret;
             ret.flushCounter = flushCounter;
@@ -42,7 +42,7 @@ namespace ramses_internal
             return ret;
         }
 
-        UInt64 flushCounter = 0;
+        uint64_t flushCounter = 0;
         SceneVersionTag versionTag;
         SceneSizeInformation sizeInfo;
         ResourceChanges resourceChanges;

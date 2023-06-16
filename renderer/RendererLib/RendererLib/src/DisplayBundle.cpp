@@ -20,9 +20,7 @@ namespace ramses_internal
         IRendererSceneEventSender& rendererSceneSender,
         IPlatform& platform,
         IThreadAliveNotifier& notifier,
-        std::chrono::milliseconds timingReportingPeriod,
-        bool isFirstDisplay,
-        const String& kpiFilename)
+        std::chrono::milliseconds timingReportingPeriod)
         : m_display(display)
         , m_rendererScenes(m_rendererEventCollector)
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector, m_rendererStatistics)
@@ -33,13 +31,11 @@ namespace ramses_internal
         , m_rendererCommandExecutor(m_renderer, m_pendingCommands, m_rendererSceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
         , m_sceneReferenceLogic(m_rendererScenes, m_sceneControlLogic, m_rendererSceneUpdater, rendererSceneSender, m_sceneReferenceOwnership)
         , m_timingReportingPeriod{ timingReportingPeriod }
-        , m_isFirstDisplay(isFirstDisplay)
-        , m_kpiMonitor(kpiFilename.empty() ? nullptr : new Monitor(kpiFilename))
     {
         m_rendererSceneUpdater.setSceneReferenceLogicHandler(m_sceneReferenceLogic);
     }
 
-    void DisplayBundle::doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime)
+    void DisplayBundle::doOneLoop(ELoopMode loopMode, std::chrono::microseconds prevFrameSleepTime)
     {
         m_renderer.m_traceId = 1000;
         updateTiming();
@@ -57,7 +53,7 @@ namespace ramses_internal
 
         collectEvents();
         m_renderer.m_traceId = 1100;
-        finishFrameStatistics(sleepTime);
+        finishFrameStatistics(prevFrameSleepTime);
     }
 
     void DisplayBundle::pushAndConsumeCommands(RendererCommands& cmds)
@@ -95,34 +91,14 @@ namespace ramses_internal
         m_sceneReferenceLogic.extractAndSendSceneReferenceEvents(m_sceneControlEvents);
     }
 
-    void DisplayBundle::finishFrameStatistics(std::chrono::microseconds sleepTime)
+    void DisplayBundle::finishFrameStatistics(std::chrono::microseconds prevFrameSleepTime)
     {
-        const UInt32 drawCalls = static_cast<UInt32>(m_renderer.getProfilerStatistics().getCounterValues(FrameProfilerStatistics::ECounter::DrawCalls)[m_renderer.getProfilerStatistics().getCurrentFrameId()]);
-        m_renderer.getStatistics().frameFinished(drawCalls);
-        m_renderer.getProfilerStatistics().markFrameFinished(sleepTime);
-
+        uint32_t drawCalls = 0u;
         if (m_renderer.hasDisplayController())
-        {
-            auto& device = m_renderer.getDisplayController().getRenderBackend().getDevice();
-            const auto drawCallCount = device.getAndResetDrawCallCount();
-            const auto usedGPUMemory = device.getTotalGpuMemoryUsageInKB();
+            drawCalls = m_renderer.getDisplayController().getRenderBackend().getDevice().getAndResetDrawCallCount();
 
-            m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::DrawCalls, drawCallCount);
-            m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::UsedGPUMemory, usedGPUMemory / 1024);
-
-            if (m_kpiMonitor)
-            {
-                const auto timeNowMs = PlatformTime::GetMillisecondsMonotonic();
-                if (timeNowMs > m_lastUpdateTimeStampMilliSec + MonitorUpdateIntervalInMilliSec)
-                {
-                    const auto& stats = m_renderer.getStatistics();
-                    const GpuMemorySample memorySample(m_rendererSceneUpdater);
-                    m_renderer.getMemoryStatistics().addMemorySample(memorySample);
-                    m_kpiMonitor->recordFrameInfo({ PlatformTime::GetMillisecondsAbsolute(), stats.getFps(), stats.getDrawCallsPerFrame(), usedGPUMemory });
-                    m_lastUpdateTimeStampMilliSec = timeNowMs;
-                }
-            }
-        }
+        m_renderer.getStatistics().frameFinished(drawCalls);
+        m_renderer.getProfilerStatistics().markFrameFinished(prevFrameSleepTime);
     }
 
     void DisplayBundle::updateSceneControlLogic()
@@ -196,7 +172,7 @@ namespace ramses_internal
             m_sumFrameTimes += frameTime;
             if (m_sumFrameTimes >= m_timingReportingPeriod && m_loopsWithinMeasurePeriod > 0)
             {
-                m_rendererEventCollector.addFrameTimingReport(m_display, m_isFirstDisplay, m_maxFrameTime, m_sumFrameTimes / m_loopsWithinMeasurePeriod);
+                m_rendererEventCollector.addFrameTimingReport(m_display, m_maxFrameTime, m_sumFrameTimes / m_loopsWithinMeasurePeriod);
                 m_maxFrameTime = std::chrono::microseconds{ 0 };
                 m_sumFrameTimes = std::chrono::microseconds{ 0 };
                 m_loopsWithinMeasurePeriod = 0u;

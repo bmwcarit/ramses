@@ -9,7 +9,7 @@
 #ifndef RAMSES_PLATFORMENVIRONMENTVARIABLES_H
 #define RAMSES_PLATFORMENVIRONMENTVARIABLES_H
 
-#include "Collections/String.h"
+#include <string>
 #include <cstdlib>
 
 namespace ramses_internal
@@ -17,29 +17,35 @@ namespace ramses_internal
     namespace PlatformEnvironmentVariables
     {
         inline
-        bool get(const String& key, String& value)
+        bool get(const std::string& key, std::string& value)
         {
 #ifdef _MSC_VER
-            char* envValue = 0;
+            char* envValue = nullptr;
             errno_t err = _dupenv_s(&envValue, 0, key.c_str());
             bool found = (err == 0 && envValue != 0);
-            value = envValue;
+            if (found)
+            {
+                value = envValue;
+            }
             free(envValue);
             return found;
 #else
             char * env = getenv(key.c_str());
-            value = env;
+            if (nullptr != env)
+            {
+                value = env;
+            }
             return (nullptr != env);
 #endif
         }
 
-        inline bool HasEnvVar(const String& key)
+        inline bool HasEnvVar(const std::string& key)
         {
             return getenv(key.c_str()) != nullptr;
         }
 
         inline
-        void SetEnvVar(const String& key, const String& value)
+        void SetEnvVar(const std::string& key, const std::string& value)
         {
 #ifdef _WIN32
             _putenv_s(key.c_str(), value.c_str());
@@ -49,7 +55,7 @@ namespace ramses_internal
         }
 
         inline
-        void UnsetEnvVar(const String& key)
+        void UnsetEnvVar(const std::string& key)
         {
 #ifdef _WIN32
             _putenv_s(key.c_str(), "");

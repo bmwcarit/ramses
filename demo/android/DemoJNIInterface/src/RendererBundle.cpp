@@ -17,14 +17,19 @@
 #include "ramses-framework-api/RamsesFramework.h"
 
 
-RendererBundle::RendererBundle(ANativeWindow* nativeWindow, int width, int height,
-                                                 const char* interfaceSelectionIP, const char* daemonIP)
+RendererBundle::RendererBundle(
+    ANativeWindow* nativeWindow,
+    int width,
+    int height,
+    const char* interfaceSelectionIP,
+    const char* daemonIP)
     : m_nativeWindow(nativeWindow)
     , m_cancelDispatchLoop(false)
 {
+    ramses::RamsesFrameworkConfig frameworkConfig{ramses::EFeatureLevel_Latest};
     //workaround to ensure that the socket connection is always initiated outbound from Android, inbound connections might be blocked
-    const char* argv[] = {"", "--guid", "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"};
-    ramses::RamsesFrameworkConfig frameworkConfig(3, argv);
+    frameworkConfig.setParticipantGuid(0xffffffffffffffffu);
+
     frameworkConfig.setInterfaceSelectionIPForTCPCommunication(interfaceSelectionIP);
     frameworkConfig.setDaemonIPForTCPCommunication(daemonIP);
     m_framework.reset(new ramses::RamsesFramework(frameworkConfig));
@@ -38,7 +43,7 @@ RendererBundle::RendererBundle(ANativeWindow* nativeWindow, int width, int heigh
 
     m_autoShowHandler.reset(new SceneStateAutoShowEventHandler(*m_renderer, displayId));
 
-    m_renderer->setMaximumFramerate(60);
+    m_renderer->setFramerateLimit(displayId, 60);
     m_renderer->flush();
 }
 

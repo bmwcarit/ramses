@@ -8,5 +8,5 @@
 
 ext.globalRepositoryDefinition = {
     google()
-    jcenter()
+    mavenCentral()
 }

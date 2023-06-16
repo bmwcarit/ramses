@@ -10,36 +10,25 @@
 #include "SceneObjectImpl.h"
 #include "Scene/ClientScene.h"
 #include "SceneUtils/ISceneDataArrayAccessor.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include "DataTypeUtils.h"
 
 namespace ramses
 {
-    DataObjectImpl::DataObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name)
-        : SceneObjectImpl(scene, type, name)
-        , m_dataType(GetDataTypeForDataObjectType(type))
+    DataObjectImpl::DataObjectImpl(SceneImpl& scene, ERamsesObjectType ramsesType, EDataType dataType, std::string_view name)
+        : SceneObjectImpl{ scene, ramsesType, name }
+        , m_dataType{ dataType }
     {
     }
 
-    DataObjectImpl::~DataObjectImpl()
-    {
-        //done on deinitialization
-    }
+    DataObjectImpl::~DataObjectImpl() = default;
 
     void DataObjectImpl::initializeFrameworkData()
     {
         ramses_internal::ClientScene& scene = getIScene();
 
         // create data layout on scene
-        m_layoutHandle = scene.allocateDataLayout({ ramses_internal::DataFieldInfo(m_dataType) }, ramses_internal::ResourceContentHash::Invalid());
+        m_layoutHandle = scene.allocateDataLayout({ ramses_internal::DataFieldInfo(DataTypeUtils::ConvertDataTypeToInternal(m_dataType)) }, ramses_internal::ResourceContentHash::Invalid());
 
         // allocate data instance based on created layout
         m_dataReference = scene.allocateDataInstance(m_layoutHandle);
@@ -73,49 +62,19 @@ namespace ramses
 
         uint32_t enumType = 0u;
         inStream >> enumType;
-        m_dataType = static_cast<ramses_internal::EDataType>(enumType);
+        m_dataType = static_cast<EDataType>(enumType);
         inStream >> m_layoutHandle;
         inStream >> m_dataReference;
 
         return StatusOK;
     }
 
-    ramses_internal::EDataType DataObjectImpl::GetDataTypeForDataObjectType(ERamsesObjectType type)
-    {
-        switch (type)
-        {
-        case ERamsesObjectType_DataFloat:
-            return ramses_internal::EDataType::Float;
-        case ERamsesObjectType_DataVector2f:
-            return ramses_internal::EDataType::Vector2F;
-        case ERamsesObjectType_DataVector3f:
-            return ramses_internal::EDataType::Vector3F;
-        case ERamsesObjectType_DataVector4f:
-            return ramses_internal::EDataType::Vector4F;
-        case ERamsesObjectType_DataMatrix22f:
-            return ramses_internal::EDataType::Matrix22F;
-        case ERamsesObjectType_DataMatrix33f:
-            return ramses_internal::EDataType::Matrix33F;
-        case ERamsesObjectType_DataMatrix44f:
-            return ramses_internal::EDataType::Matrix44F;
-        case ERamsesObjectType_DataInt32:
-            return ramses_internal::EDataType::Int32;
-        case ERamsesObjectType_DataVector2i:
-            return ramses_internal::EDataType::Vector2I;
-        case ERamsesObjectType_DataVector3i:
-            return ramses_internal::EDataType::Vector3I;
-        case ERamsesObjectType_DataVector4i:
-            return ramses_internal::EDataType::Vector4I;
-        default:
-            assert(false);
-            return ramses_internal::EDataType::Invalid;
-        }
-    }
-
     template <typename T>
     status_t DataObjectImpl::setValue(const T& value)
     {
-        assert(ramses_internal::TypeToEDataTypeTraits<T>::DataType == m_dataType);
+        if (ramses_internal::TypeToEDataTypeTraits<T>::DataType != DataTypeUtils::ConvertDataTypeToInternal(m_dataType))
+            return addErrorEntry("DataObject::setValue failed, value type does not match DataObject data type");
+
         ramses_internal::ISceneDataArrayAccessor::SetDataArray<T>(&getIScene(), m_dataReference, ramses_internal::DataFieldHandle(0u), 1u, &value);
         return StatusOK;
     }
@@ -123,7 +82,9 @@ namespace ramses
     template <typename T>
     status_t DataObjectImpl::getValue(T& value) const
     {
-        assert(ramses_internal::TypeToEDataTypeTraits<T>::DataType == m_dataType);
+        if (ramses_internal::TypeToEDataTypeTraits<T>::DataType != DataTypeUtils::ConvertDataTypeToInternal(m_dataType))
+            return addErrorEntry("DataObject::getValue failed, value type does not match DataObject data type");
+
         const T* data = ramses_internal::ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), m_dataReference, ramses_internal::DataFieldHandle(0u));
         assert(data != nullptr);
         value = data[0];
@@ -131,7 +92,7 @@ namespace ramses
         return StatusOK;
     }
 
-    ramses_internal::EDataType DataObjectImpl::getDataType() const
+    EDataType DataObjectImpl::getDataType() const
     {
         return m_dataType;
     }
@@ -143,25 +104,25 @@ namespace ramses
 
     template status_t DataObjectImpl::setValue<int32_t>(const int32_t&);
     template status_t DataObjectImpl::setValue<float>(const float&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector2>(const ramses_internal::Vector2&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector3>(const ramses_internal::Vector3&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector4>(const ramses_internal::Vector4&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector2i>(const ramses_internal::Vector2i&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector3i>(const ramses_internal::Vector3i&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Vector4i>(const ramses_internal::Vector4i&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Matrix22f>(const ramses_internal::Matrix22f&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Matrix33f>(const ramses_internal::Matrix33f&);
-    template status_t DataObjectImpl::setValue<ramses_internal::Matrix44f>(const ramses_internal::Matrix44f&);
+    template status_t DataObjectImpl::setValue<glm::vec2>(const glm::vec2&);
+    template status_t DataObjectImpl::setValue<glm::vec3>(const glm::vec3&);
+    template status_t DataObjectImpl::setValue<glm::vec4>(const glm::vec4&);
+    template status_t DataObjectImpl::setValue<glm::ivec2>(const glm::ivec2&);
+    template status_t DataObjectImpl::setValue<glm::ivec3>(const glm::ivec3&);
+    template status_t DataObjectImpl::setValue<glm::ivec4>(const glm::ivec4&);
+    template status_t DataObjectImpl::setValue<glm::mat2>(const glm::mat2&);
+    template status_t DataObjectImpl::setValue<glm::mat3>(const glm::mat3&);
+    template status_t DataObjectImpl::setValue<glm::mat4>(const glm::mat4&);
 
     template status_t DataObjectImpl::getValue<int32_t>(int32_t&) const;
     template status_t DataObjectImpl::getValue<float>(float&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector2>(ramses_internal::Vector2&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector3>(ramses_internal::Vector3&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector4>(ramses_internal::Vector4&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector2i>(ramses_internal::Vector2i&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector3i>(ramses_internal::Vector3i&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Vector4i>(ramses_internal::Vector4i&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Matrix22f>(ramses_internal::Matrix22f&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Matrix33f>(ramses_internal::Matrix33f&) const;
-    template status_t DataObjectImpl::getValue<ramses_internal::Matrix44f>(ramses_internal::Matrix44f&) const;
+    template status_t DataObjectImpl::getValue<glm::vec2>(glm::vec2&) const;
+    template status_t DataObjectImpl::getValue<glm::vec3>(glm::vec3&) const;
+    template status_t DataObjectImpl::getValue<glm::vec4>(glm::vec4&) const;
+    template status_t DataObjectImpl::getValue<glm::ivec2>(glm::ivec2&) const;
+    template status_t DataObjectImpl::getValue<glm::ivec3>(glm::ivec3&) const;
+    template status_t DataObjectImpl::getValue<glm::ivec4>(glm::ivec4&) const;
+    template status_t DataObjectImpl::getValue<glm::mat2>(glm::mat2&) const;
+    template status_t DataObjectImpl::getValue<glm::mat3>(glm::mat3&) const;
+    template status_t DataObjectImpl::getValue<glm::mat4>(glm::mat4&) const;
 }

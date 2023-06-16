@@ -25,24 +25,24 @@ namespace ramses_internal
         {}
 
         MOCK_METHOD(RenderableHandle, allocateRenderable, (NodeHandle, RenderableHandle), (override));
-        MOCK_METHOD(void , setRenderableStartIndex, (RenderableHandle, UInt32), (override));
-        MOCK_METHOD(void , setRenderableIndexCount, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableStartIndex, (RenderableHandle, uint32_t), (override));
+        MOCK_METHOD(void , setRenderableIndexCount, (RenderableHandle, uint32_t), (override));
         MOCK_METHOD(void , setRenderableRenderState, (RenderableHandle, RenderStateHandle), (override));
         MOCK_METHOD(void , setRenderableVisibility, (RenderableHandle, EVisibilityMode), (override));
-        MOCK_METHOD(void , setRenderableInstanceCount, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void , setRenderableInstanceCount, (RenderableHandle, uint32_t), (override));
         MOCK_METHOD(void , setRenderableDataInstance, (RenderableHandle, ERenderableDataSlotType, DataInstanceHandle), (override));
-        MOCK_METHOD(void, setRenderableStartVertex, (RenderableHandle, UInt32), (override));
+        MOCK_METHOD(void, setRenderableStartVertex, (RenderableHandle, uint32_t), (override));
 
         MOCK_METHOD(RenderStateHandle, allocateRenderState, (RenderStateHandle), (override));
         MOCK_METHOD(void , setRenderStateBlendFactors, (RenderStateHandle, EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
         MOCK_METHOD(void , setRenderStateBlendOperations, (RenderStateHandle, EBlendOperation, EBlendOperation), (override));
-        MOCK_METHOD(void , setRenderStateBlendColor, (RenderStateHandle, const Vector4&), (override));
+        MOCK_METHOD(void , setRenderStateBlendColor, (RenderStateHandle, const glm::vec4&), (override));
         MOCK_METHOD(void , setRenderStateCullMode, (RenderStateHandle, ECullMode), (override));
         MOCK_METHOD(void , setRenderStateDrawMode, (RenderStateHandle, EDrawMode), (override));
         MOCK_METHOD(void , setRenderStateDepthWrite, (RenderStateHandle, EDepthWrite), (override));
         MOCK_METHOD(void , setRenderStateDepthFunc, (RenderStateHandle, EDepthFunc), (override));
         MOCK_METHOD(void, setRenderStateScissorTest, (RenderStateHandle, EScissorTest, const RenderState::ScissorRegion&), (override));
-        MOCK_METHOD(void , setRenderStateStencilFunc, (RenderStateHandle, EStencilFunc, UInt8, UInt8), (override));
+        MOCK_METHOD(void , setRenderStateStencilFunc, (RenderStateHandle, EStencilFunc, uint8_t, uint8_t), (override));
         MOCK_METHOD(void , setRenderStateStencilOps, (RenderStateHandle, EStencilOp, EStencilOp, EStencilOp), (override));
         MOCK_METHOD(void , setRenderStateColorWriteMask, (RenderStateHandle, ColorWriteMask), (override));
 
@@ -76,14 +76,14 @@ namespace ramses_internal
         renderable.dataInstances[ERenderableDataSlotType_Geometry] = DataInstanceHandle{ 12u };
         renderable.dataInstances[ERenderableDataSlotType_Uniforms] = DataInstanceHandle{ 32u };
 
-        const UInt32 sizeOfActionData(sizeof(RenderableHandle)
+        const uint32_t sizeOfActionData(sizeof(RenderableHandle)
                                     + sizeof(NodeHandle)
-                                    + sizeof(UInt32)
-                                    + sizeof(UInt32)
+                                    + sizeof(uint32_t)
+                                    + sizeof(uint32_t)
                                     + sizeof(RenderStateHandle)
                                     + sizeof(EVisibilityMode)
-                                    + sizeof(UInt32)
-                                    + sizeof(UInt32)
+                                    + sizeof(uint32_t)
+                                    + sizeof(uint32_t)
                                     + sizeof(DataInstanceHandle)
                                     + sizeof(DataInstanceHandle));
 
@@ -119,14 +119,14 @@ namespace ramses_internal
         renderable.dataInstances[ERenderableDataSlotType_Geometry] = DataInstanceHandle{ 12u };
         renderable.dataInstances[ERenderableDataSlotType_Uniforms] = DataInstanceHandle{ 32u };
 
-        const UInt32 sizeOfActionData(sizeof(RenderableHandle)
+        const uint32_t sizeOfActionData(sizeof(RenderableHandle)
                                     + sizeof(NodeHandle)
-                                    + sizeof(UInt32)
-                                    + sizeof(UInt32)
+                                    + sizeof(uint32_t)
+                                    + sizeof(uint32_t)
                                     + sizeof(RenderStateHandle)
                                     + sizeof(EVisibilityMode)
-                                    + sizeof(UInt32)
-                                    + sizeof(UInt32)
+                                    + sizeof(uint32_t)
+                                    + sizeof(uint32_t)
                                     + sizeof(DataInstanceHandle)
                                     + sizeof(DataInstanceHandle));
 
@@ -154,7 +154,7 @@ namespace ramses_internal
         const RenderStateHandle stateHandle(33u);
         const DataInstanceHandle uniformInstanceHandle(32u);
 
-        const UInt32 sizeOfActionData(sizeof(RenderableHandle)
+        const uint32_t sizeOfActionData(sizeof(RenderableHandle)
             + sizeof(RenderStateHandle)
             + sizeof(DataInstanceHandle));
 
@@ -182,7 +182,7 @@ namespace ramses_internal
         rs.cullMode = ECullMode::BackFacing;
         rs.drawMode = EDrawMode::Lines;
         rs.depthWrite = EDepthWrite::Enabled;
-        rs.depthFunc = EDepthFunc::SmallerEqual;
+        rs.depthFunc = EDepthFunc::LessEqual;
         rs.scissorTest = EScissorTest::Enabled;
         rs.scissorRegion = { 1, 2, 3, 4 };
         rs.stencilFunc = EStencilFunc::NotEqual;
@@ -201,7 +201,7 @@ namespace ramses_internal
         EXPECT_CALL(scene, allocateRenderState(state)).WillOnce(Return(state));
         EXPECT_CALL(scene, setRenderStateBlendFactors(state, rs.blendFactorSrcColor, rs.blendFactorDstColor, rs.blendFactorSrcAlpha, rs.blendFactorDstAlpha));
         EXPECT_CALL(scene, setRenderStateBlendOperations(state, rs.blendOperationColor, rs.blendOperationAlpha));
-        EXPECT_CALL(scene, setRenderStateBlendColor(state, Vector4(0.1f, 0.2f, 0.3f, 0.4f)));
+        EXPECT_CALL(scene, setRenderStateBlendColor(state, glm::vec4(0.1f, 0.2f, 0.3f, 0.4f)));
         EXPECT_CALL(scene, setRenderStateCullMode(state, rs.cullMode));
         EXPECT_CALL(scene, setRenderStateDrawMode(state, rs.drawMode));
         EXPECT_CALL(scene, setRenderStateDepthWrite(state, rs.depthWrite));

@@ -6,9 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_DYNAMIC(ramses-example-local-displays
+createModule(
+    NAME                ramses-example-local-displays
     TYPE                BINARY
     ENABLE_INSTALL      ON
-    FILES_SOURCE        src/*
-    RESOURCE_FOLDER         res
+    SRC_FILES           src/*
+    RESOURCE_FOLDERS    res
+    DEPENDENCIES        ramses-shared-lib
 )

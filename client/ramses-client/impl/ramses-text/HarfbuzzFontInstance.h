@@ -20,9 +20,9 @@ namespace ramses
     {
     public:
         HarfbuzzFontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting);
-        virtual ~HarfbuzzFontInstance() override;
+        ~HarfbuzzFontInstance() override;
 
-        virtual void loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override final;
+        void loadAndAppendGlyphMetrics(std::u32string::const_iterator charsBegin, std::u32string::const_iterator charsEnd, GlyphMetricsVector& positionedGlyphs) override;
 
         HarfbuzzFontInstance(const HarfbuzzFontInstance&) = delete;
         HarfbuzzFontInstance(HarfbuzzFontInstance&&) = delete;

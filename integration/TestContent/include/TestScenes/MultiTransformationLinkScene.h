@@ -18,7 +18,7 @@ namespace ramses_internal
     class MultiTransformationLinkScene : public IntegrationScene
     {
     public:
-        MultiTransformationLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultiTransformationLinkScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -27,18 +27,18 @@ namespace ramses_internal
             CONSUMER_SCENE
         };
 
-        static const UInt32 NumMeshes = 16u;
-        static const UInt32 NumRows   = 4u;
+        static const uint32_t NumMeshes = 16u;
+        static const uint32_t NumRows   = 4u;
 
-        static const UInt32 DataIdRowStart = 0u;
-        static const UInt32 DataIdMeshStart = 1000u;
+        static const uint32_t DataIdRowStart = 0u;
+        static const uint32_t DataIdMeshStart = 1000u;
 
     private:
         void createSceneProvider();
         void createSceneProviderConsumer();
         void createSceneConsumer();
 
-        const Float m_scaleFactor;
+        const float m_scaleFactor;
 
         ramses::Effect& m_dummyEffect;
         ramses::Triangle m_redTriangle;

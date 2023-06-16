@@ -10,13 +10,12 @@
 
 #include "ramses-renderer-api/RendererConfig.h"
 
-#include "Utils/Argument.h"
 #include "ResourceStressTestSceneArray.h"
 #include "RenderExecutor.h"
 
 namespace ramses_internal
 {
-    const char* StressTestCaseNames[] = {
+    const std::array StressTestCaseNames = {
         "EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush",
         "EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_LowRendererFPS",
         "EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_ExtremelyLowRendererFPS",
@@ -29,9 +28,9 @@ namespace ramses_internal
 
     ResourceStressTests::ResourceStressTests(const StressTestConfig& config)
         : m_testConfig(config)
-        , m_framework(config.argc, config.argv)
+        , m_framework{config.frameworkConfig}
         , m_client(*m_framework.createClient("resource-stress-tests"))
-        , m_testRenderer(m_framework, ramses::RendererConfig(config.argc, config.argv))
+        , m_testRenderer(m_framework, config.rendererConfig)
         , m_displays(config.displayCount)
         , m_sceneSetsPerDisplay(config.sceneSetsPerDisplay)
     {
@@ -46,11 +45,11 @@ namespace ramses_internal
         m_testRenderer.setFrameTimerLimits(config.perFrameBudgetMSec_ClientRes, config.perFrameBudgetMSec_Rendering);
 
         uint32_t displayOffset = 0;
-        for (UInt i = 0; i < config.displayCount; ++i)
+        for (size_t i = 0; i < config.displayCount; ++i)
         {
             const auto displayWidth = FirstDisplayWidth >> i;
             const auto displayHeight = FirstDisplayHeight >> i;
-            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, uint32_t(i), config.argc, config.argv);
+            const auto displayId = m_testRenderer.createDisplay(displayOffset, displayWidth, displayHeight, uint32_t(i), config.displayConfig);
 
             // Offscreen buffers can be smaller, to make the tests run faster
             const auto obWidth = displayWidth / 10;
@@ -69,9 +68,9 @@ namespace ramses_internal
         }
     }
 
-    Int32 ResourceStressTests::runTest(EStressTestCaseId testToRun)
+    int32_t ResourceStressTests::runTest(EStressTestCaseId testToRun)
     {
-        static const UInt32 MinDurationPerTestSeconds[] =
+        const std::array<uint32_t, 7> MinDurationPerTestSeconds =
         {
             1, //"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush",
             1, //"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_LowRendererFPS",
@@ -81,7 +80,7 @@ namespace ramses_internal
             5, //"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_MapSceneAfterAWhile_ExtremelyLowRendererFPS",
             15,//"EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush_RemapSceneAllTheTime",
         };
-        static_assert(static_cast<std::size_t>(EStressTestCaseId_NUMBER_OF_ELEMENTS) == sizeof(MinDurationPerTestSeconds)/sizeof(MinDurationPerTestSeconds[0]), "Size mismatch");
+        static_assert(static_cast<std::size_t>(EStressTestCaseId_NUMBER_OF_ELEMENTS) == MinDurationPerTestSeconds.size(), "Size mismatch");
 
         if (m_testConfig.durationEachTestSeconds < MinDurationPerTestSeconds[testToRun])
         {
@@ -93,7 +92,7 @@ namespace ramses_internal
         const uint32_t Scene10FPS = 10;
         const uint32_t Scene20FPS = 20;
         const uint32_t Scene60FPS = 60;
-        Int32 returnValue = -1;
+        int32_t returnValue = -1;
         switch (testToRun)
         {
         case EStressTestCaseId_recreateResourcesEveryFrameWithSyncFlush:
@@ -204,15 +203,16 @@ namespace ramses_internal
 
     void ResourceStressTests::setRendererFPS(uint32_t rendererFPS)
     {
-        m_testRenderer.setFPS(rendererFPS);
+        for (const auto& display : m_displays)
+            m_testRenderer.setFPS(display.displayId, rendererFPS);
     }
 
-    Int32 ResourceStressTests::recreateResourcesEveryFrame(uint32_t sceneFpsLimit)
+    int32_t ResourceStressTests::recreateResourcesEveryFrame(uint32_t sceneFpsLimit)
     {
         ResourceStressTestSceneArray scenes(m_client, m_testRenderer, generateStressSceneConfig());
         scenes.getAllToState(ramses::RendererSceneState::Rendered);
 
-        const UInt64 startTimeMs = PlatformTime::GetMillisecondsMonotonic();
+        const uint64_t startTimeMs = PlatformTime::GetMillisecondsMonotonic();
         ramses::sceneVersionTag_t flushName = 0;
 
         while ((PlatformTime::GetMillisecondsMonotonic() - startTimeMs) / 1000 < m_testConfig.durationEachTestSeconds)
@@ -227,12 +227,12 @@ namespace ramses_internal
         return 0;
     }
 
-    Int32 ResourceStressTests::recreateResourcesEveryFrame_MapSceneAfterAWhile(uint32_t sceneFpsLimit, uint32_t mapSceneDelayMSec)
+    int32_t ResourceStressTests::recreateResourcesEveryFrame_MapSceneAfterAWhile(uint32_t sceneFpsLimit, uint32_t mapSceneDelayMSec)
     {
         ResourceStressTestSceneArray scenes(m_client, m_testRenderer, generateStressSceneConfig());
         scenes.getAllToState(ramses::RendererSceneState::Available);
 
-        const UInt64 startTimeMs = PlatformTime::GetMillisecondsMonotonic();
+        const uint64_t startTimeMs = PlatformTime::GetMillisecondsMonotonic();
         ramses::sceneVersionTag_t flushName = 0;
         bool scenesMapped = false;
 
@@ -259,12 +259,12 @@ namespace ramses_internal
         return 0;
     }
 
-    Int32 ResourceStressTests::recreateResourcesEveryFrame_RemapSceneAllTheTime(uint32_t remapCycleDurationMSec)
+    int32_t ResourceStressTests::recreateResourcesEveryFrame_RemapSceneAllTheTime(uint32_t remapCycleDurationMSec)
     {
         ResourceStressTestSceneArray scenes(m_client, m_testRenderer, generateStressSceneConfig());
         scenes.getAllToState(ramses::RendererSceneState::Available);
 
-        const UInt64 startTimeMs = PlatformTime::GetMillisecondsMonotonic();
+        const uint64_t startTimeMs = PlatformTime::GetMillisecondsMonotonic();
         ramses::sceneVersionTag_t flushName = 0;
         bool scenesMapped = false;
 
@@ -314,10 +314,10 @@ namespace ramses_internal
         ++m_consumeRendererEventsCounter;
     }
 
-    Int32 ResourceStressTests::RunTest(EStressTestCaseId testToRun, const StressTestConfig& config)
+    int32_t ResourceStressTests::RunTest(EStressTestCaseId testToRun, const StressTestConfig& config)
     {
         ResourceStressTests resourceStressTests(config);
-        const Int32 testResult = resourceStressTests.runTest(testToRun);
+        const int32_t testResult = resourceStressTests.runTest(testToRun);
 
         if (testResult != 0)
         {
@@ -325,20 +325,20 @@ namespace ramses_internal
         }
         else
         {
-            LOG_INFO(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished successfully.");
+            LOG_DEBUG(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished successfully.");
         }
         return testResult;
     }
 
-    Int32 ResourceStressTests::RunAllTests(const StressTestConfig& config)
+    int32_t ResourceStressTests::RunAllTests(const StressTestConfig& config)
     {
         StringOutputStream verboseTestResults;
-        Int32 testResult = 0;
-        for (Int32 currentTest = 0; currentTest < static_cast<Int32>(EStressTestCaseId_NUMBER_OF_ELEMENTS); ++currentTest)
+        int32_t testResult = 0;
+        for (uint32_t currentTest = 0; currentTest < static_cast<uint32_t>(EStressTestCaseId_NUMBER_OF_ELEMENTS); ++currentTest)
         {
             if (RunTest(static_cast<EStressTestCaseId>(currentTest), config) != 0)
             {
-                testResult -= (1 << currentTest);
+                testResult -= static_cast<int32_t>(1u << currentTest);
                 verboseTestResults << "Test " << currentTest << " [" << EnumToString(static_cast<EStressTestCaseId>(currentTest)) << "] failed!\n";
             }
             else

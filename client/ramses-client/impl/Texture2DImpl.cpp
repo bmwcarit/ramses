@@ -12,16 +12,18 @@
 #include "ResourceImpl.h"
 #include "ClientApplicationLogic.h"
 
+#include <string_view>
+
 namespace ramses
 {
     Texture2DImpl::Texture2DImpl(ramses_internal::ResourceHashUsage resource,
         SceneImpl& scene,
-        const char* name,
+        std::string_view name,
         ERamsesObjectType overrideType /* = ERamsesObjectType_Texture2D*/)
         : ResourceImpl(overrideType, std::move(resource), scene, name)
         , m_width(0)
         , m_height(0)
-        , m_textureFormat(ETextureFormat::NUMBER_OF_ELEMENTS)
+        , m_textureFormat(ETextureFormat::Invalid)
     {
     }
 

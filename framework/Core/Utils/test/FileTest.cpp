@@ -27,14 +27,14 @@ namespace ramses_internal
             m_cleanupFiles.insert(m_cleanupFiles.end(), lst.begin(), lst.end());
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             for (const auto& f : m_cleanupFiles)
                 File(f).remove();
         }
 
     private:
-        std::vector<String> m_cleanupFiles;
+        std::vector<std::string> m_cleanupFiles;
     };
 
     TEST_F(AFile, ConstructorTest)
@@ -45,7 +45,7 @@ namespace ramses_internal
         EXPECT_FALSE(f1.open(File::Mode::ReadOnly));
         EXPECT_FALSE(f1.isOpen());
 
-        File f2(String("test.txt"));
+        File f2("test.txt");
         EXPECT_TRUE(f2.open(File::Mode::WriteOverWriteOld));
         EXPECT_TRUE(f2.isOpen());
     }

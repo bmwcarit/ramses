@@ -24,7 +24,6 @@ namespace ramses_internal
                 to effect, but *actually* from a non-linear, non-subjective \
                 viewpoint - it's more like a big ball of wibbly wobbly... \
                 time-y wimey... stuff.")
-            , strEmpty("")
             , strLong(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing \
                 elit. Aliquam augue tortor, vehicula quis massa eget, viverra \
@@ -46,17 +45,17 @@ namespace ramses_internal
         SceneActionCollection collection;
         SceneActionCollection otherCollection;
 
-        const String str;
-        const String strEmpty;
-        const String strLong;
+        const std::string str;
+        const std::string strEmpty;
+        const std::string strLong;
         const Guid guid;
 
-        const UInt32 bufferSize;
+        const uint32_t bufferSize;
         const std::vector<Byte> buffer;
         const float staticBuffer[5] = { 1.f, 2.f, 3.f, 4.f, 5.f };
 
-        const Float fval;
-        const UInt32 uival;
+        const float fval;
+        const uint32_t uival;
     };
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteStringAndCheckBufferSize)
@@ -65,7 +64,7 @@ namespace ramses_internal
         collection.write(str);
 
         const size_t expectedSize =
-            sizeof(UInt8) + str.size();
+            sizeof(uint8_t) + str.size();
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -75,7 +74,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(strEmpty);
 
-        const size_t expectedSize = sizeof(UInt8);
+        const size_t expectedSize = sizeof(uint8_t);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -85,7 +84,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(strLong);
 
-        const size_t expectedSize = sizeof(UInt8) + SceneActionCollection::MaxStringLength;
+        const size_t expectedSize = sizeof(uint8_t) + SceneActionCollection::MaxStringLength;
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -95,7 +94,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(buffer.data(), bufferSize);
 
-        const UInt32 expectedSize = sizeof(UInt32) + bufferSize;
+        const uint32_t expectedSize = sizeof(uint32_t) + bufferSize;
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -105,7 +104,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(buffer.data(), 0u);
 
-        const UInt32 expectedSize = sizeof(UInt32);
+        const uint32_t expectedSize = sizeof(uint32_t);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -115,7 +114,7 @@ namespace ramses_internal
         collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(guid);
 
-        const UInt32 expectedSize = sizeof(Guid::value_type);
+        const uint32_t expectedSize = sizeof(Guid::value_type);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
@@ -126,11 +125,11 @@ namespace ramses_internal
         collection.write(str);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        String readString;
+        std::string readString;
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const size_t expectedSize = str.size() + sizeof(UInt8);
+        const size_t expectedSize = str.size() + sizeof(uint8_t);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -144,11 +143,11 @@ namespace ramses_internal
         collection.write(strEmpty);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        String readString;
+        std::string readString;
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const size_t expectedSize = sizeof(UInt8);
+        const size_t expectedSize = sizeof(uint8_t);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -162,11 +161,11 @@ namespace ramses_internal
         collection.write(strLong);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        String readString;
+        std::string readString;
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const size_t expectedSize = SceneActionCollection::MaxStringLength + sizeof(UInt8);
+        const size_t expectedSize = SceneActionCollection::MaxStringLength + sizeof(uint8_t);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -184,7 +183,7 @@ namespace ramses_internal
         reader.read(readBuffer);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = sizeof(staticBuffer);
+        const uint32_t expectedSize = sizeof(staticBuffer);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -198,11 +197,11 @@ namespace ramses_internal
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
         const Byte* data = nullptr;
-        UInt32 size;
+        uint32_t size;
         reader.readWithoutCopy(data, size);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = bufferSize + sizeof(UInt32);
+        const uint32_t expectedSize = bufferSize + sizeof(uint32_t);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -216,11 +215,11 @@ namespace ramses_internal
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
         const Byte* data = nullptr;
-        UInt32 size;
+        uint32_t size;
         reader.readWithoutCopy(data, size);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = sizeof(UInt32);
+        const uint32_t expectedSize = sizeof(uint32_t);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -237,7 +236,7 @@ namespace ramses_internal
         reader.read(readGuid);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = sizeof(Guid::value_type);
+        const uint32_t expectedSize = sizeof(Guid::value_type);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -258,21 +257,21 @@ namespace ramses_internal
         ASSERT_EQ(1u, collection.numberOfActions());
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
-        Float readFval;
+        float readFval;
         reader.read(readFval);
         EXPECT_EQ(fval, readFval);
 
-        String readStr1;
+        std::string readStr1;
         reader.read(readStr1);
         EXPECT_EQ(str, readStr1);
 
         const Byte* data = nullptr;
-        UInt32 size;
+        uint32_t size;
         reader.readWithoutCopy(data, size);
 
         EXPECT_EQ(buffer, absl::MakeSpan(data, size));
 
-        String readStr2;
+        std::string readStr2;
         reader.read(readStr2);
         EXPECT_EQ(strLong.substr(0, SceneActionCollection::MaxStringLength), readStr2);
 
@@ -280,11 +279,11 @@ namespace ramses_internal
         reader.read(readGuid);
         EXPECT_EQ(guid, readGuid);
 
-        String readStr3;
+        std::string readStr3;
         reader.read(readStr3);
         EXPECT_EQ(strEmpty, readStr3);
 
-        UInt32 readUival;
+        uint32_t readUival;
         reader.read(readUival);
         EXPECT_EQ(uival, readUival);
 

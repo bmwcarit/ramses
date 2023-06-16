@@ -22,7 +22,7 @@ namespace ramses_internal
         Broken            ///< Resource failed to be uploaded, it is freed from system memory and will not be attempted to upload again
     };
 
-    static constexpr const char* ResourceStatusNames[] =
+    const std::array ResourceStatusNames =
     {
         "Registered",
         "Provided",

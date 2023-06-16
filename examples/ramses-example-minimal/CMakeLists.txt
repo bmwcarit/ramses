@@ -6,18 +6,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-MODULE_WITH_SHARED_LIBRARY(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    ramses-example-minimal
     TYPE                    BINARY
     ENABLE_INSTALL          ON
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/*.h
-    FILES_SOURCE            src/*.cpp
+    SRC_FILES               include/*.h
+                            src/*.cpp
+    DEPENDENCIES            ramses-shared-lib
 )

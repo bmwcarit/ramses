@@ -14,19 +14,19 @@
 namespace ramses_internal
 {
     TextureLinkCachedScene::TextureLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
-        : ResourceCachedScene(sceneLinksManager, sceneInfo)
+        : DataReferenceLinkCachedScene(sceneLinksManager, sceneInfo)
     {
     }
 
     DataSlotHandle TextureLinkCachedScene::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle)
     {
-        const DataSlotHandle actualHandle = ResourceCachedScene::allocateDataSlot(dataSlot, handle);
+        const DataSlotHandle actualHandle = DataReferenceLinkCachedScene::allocateDataSlot(dataSlot, handle);
 
         if (dataSlot.type == EDataSlotType_TextureConsumer)
         {
             const auto sampler = dataSlot.attachedTextureSampler;
             assert(sampler.isValid() && isTextureSamplerAllocated(sampler));
-            m_fallbackTextureSamplers[sampler] = ResourceCachedScene::getTextureSampler(sampler);
+            m_fallbackTextureSamplers[sampler] = DataReferenceLinkCachedScene::getTextureSampler(sampler);
         }
 
         return actualHandle;
@@ -35,7 +35,7 @@ namespace ramses_internal
     void TextureLinkCachedScene::releaseDataSlot(DataSlotHandle handle)
     {
         const TextureSamplerHandle sampler = getDataSlot(handle).attachedTextureSampler;
-        ResourceCachedScene::releaseDataSlot(handle);
+        DataReferenceLinkCachedScene::releaseDataSlot(handle);
 
         auto it = m_fallbackTextureSamplers.find(sampler);
         if (it != m_fallbackTextureSamplers.end())
@@ -44,7 +44,7 @@ namespace ramses_internal
 
     void TextureLinkCachedScene::setDataSlotTexture(DataSlotHandle handle, const ResourceContentHash& texture)
     {
-        ResourceCachedScene::setDataSlotTexture(handle, texture);
+        DataReferenceLinkCachedScene::setDataSlotTexture(handle, texture);
         m_sceneLinksManager.getTextureLinkManager().setTextureToConsumers(getSceneId(), handle, texture);
     }
 
@@ -56,7 +56,6 @@ namespace ramses_internal
         samplerData.contentType = TextureSampler::ContentType::ClientTexture;
         samplerData.textureResource = hash;
         samplerData.contentHandle = {};
-        setRenderableResourcesDirtyByTextureSampler(sampler);
     }
 
     void TextureLinkCachedScene::setTextureSamplerContentSource(TextureSamplerHandle sampler, OffscreenBufferHandle offscreenBuffer)
@@ -67,7 +66,6 @@ namespace ramses_internal
         samplerData.contentType = TextureSampler::ContentType::OffscreenBuffer;
         samplerData.textureResource = ResourceContentHash::Invalid();
         samplerData.contentHandle = offscreenBuffer.asMemoryHandle();
-        setRenderableResourcesDirtyByTextureSampler(sampler);
     }
 
     void TextureLinkCachedScene::setTextureSamplerContentSource(TextureSamplerHandle sampler, StreamBufferHandle streamBuffer)
@@ -78,7 +76,6 @@ namespace ramses_internal
         samplerData.contentType = TextureSampler::ContentType::StreamBuffer;
         samplerData.textureResource = ResourceContentHash::Invalid();
         samplerData.contentHandle = streamBuffer.asMemoryHandle();
-        setRenderableResourcesDirtyByTextureSampler(sampler);
     }
 
     void TextureLinkCachedScene::setTextureSamplerContentSource(TextureSamplerHandle sampler, ExternalBufferHandle externalTexture)
@@ -89,7 +86,6 @@ namespace ramses_internal
         samplerData.contentType = TextureSampler::ContentType::ExternalTexture;
         samplerData.textureResource = ResourceContentHash::Invalid();
         samplerData.contentHandle = externalTexture.asMemoryHandle();
-        setRenderableResourcesDirtyByTextureSampler(sampler);
     }
 
     void TextureLinkCachedScene::restoreTextureSamplerFallbackValue(TextureSamplerHandle sampler)
@@ -97,6 +93,12 @@ namespace ramses_internal
         assert(sampler.isValid() && isTextureSamplerAllocated(sampler));
         assert(m_fallbackTextureSamplers.contains(sampler));
         getTextureSamplerInternal(sampler) = m_fallbackTextureSamplers.find(sampler)->value;
-        setRenderableResourcesDirtyByTextureSampler(sampler);
+    }
+
+    const TextureSampler& TextureLinkCachedScene::getFallbackTextureSampler(TextureSamplerHandle sampler) const
+    {
+        assert(sampler.isValid() && isTextureSamplerAllocated(sampler));
+        assert(m_fallbackTextureSamplers.contains(sampler));
+        return m_fallbackTextureSamplers.find(sampler)->value;
     }
 }

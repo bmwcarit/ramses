@@ -16,7 +16,7 @@
 
 namespace ramses_internal
 {
-    ManagedResource RendererResourceManagerUtils::TryLoadResource(ResourceContentHash resourceId, UInt32 resourceSize, const IRendererResourceCache* cache)
+    ManagedResource RendererResourceManagerUtils::TryLoadResource(ResourceContentHash resourceId, uint32_t resourceSize, const IRendererResourceCache* cache)
     {
         std::vector<Byte> readBuffer(resourceSize);
 
@@ -35,7 +35,7 @@ namespace ramses_internal
         assert(cache);
         assert(resource);
 
-        const UInt32 serializedSize = SingleResourceSerialization::SizeOfSerializedResource(*resource);
+        const uint32_t serializedSize = SingleResourceSerialization::SizeOfSerializedResource(*resource);
         const ResourceContentHash resHash = resource->getHash();
         const ResourceCacheFlag cacheFlag = resource->getCacheFlag();
 

@@ -22,7 +22,7 @@
 #include "RendererMock.h"
 #include "ComponentMocks.h"
 #include "TestSceneHelper.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 #include "Utils/ThreadLocalLog.h"
 
 using namespace ramses_internal;
@@ -47,7 +47,7 @@ public:
             ON_CALL(renderer.m_platform, getSystemCompositorController()).WillByDefault(Return(&renderer.m_platform.systemCompositorControllerMock));
     }
 
-    virtual ~ARenderer()
+    ~ARenderer() override
     {
         if (renderer.hasDisplayController())
             destroyDisplayController();
@@ -74,7 +74,7 @@ public:
         renderer.destroyDisplayContext();
     }
 
-    void expectOffscreenBufferCleared(DeviceResourceHandle buffer, uint32_t clearFlags = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectOffscreenBufferCleared(DeviceResourceHandle buffer, uint32_t clearFlags = EClearFlags_All, const glm::vec4& clearColor = Renderer::DefaultClearColor)
     {
         EXPECT_CALL(*renderer.m_displayController, clearBuffer(buffer, clearFlags, clearColor)).InSequence(SeqRender);
     }
@@ -87,7 +87,7 @@ public:
         EXPECT_CALL(*renderer.m_displayController, getRenderBackend()).Times(AnyNumber());
     }
 
-    void expectFrameBufferRendered(bool expectRerender = true, uint32_t expectRendererClear = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectFrameBufferRendered(bool expectRerender = true, uint32_t expectRendererClear = EClearFlags_All, const glm::vec4& clearColor = Renderer::DefaultClearColor)
     {
         EXPECT_CALL(*renderer.m_displayController, handleWindowEvents()).InSequence(SeqPreRender);
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).InSequence(SeqPreRender).WillOnce(Return(true));
@@ -97,7 +97,6 @@ public:
             // normally render executor clears, in some cases (no scene assigned) renderer clears instead
             if (expectRendererClear != EClearFlags_None)
                 EXPECT_CALL(*renderer.m_displayController, clearBuffer(DisplayControllerMock::FakeFrameBufferHandle, expectRendererClear, clearColor));
-            EXPECT_CALL(*renderer.m_displayController, executePostProcessing()).InSequence(SeqRender);
         }
         else
         {
@@ -129,7 +128,7 @@ public:
         SceneId sceneId,
         DeviceResourceHandle buffer,
         uint32_t dispBufferClearFlags,
-        const Vector4& dispBufferClearColor,
+        const glm::vec4& dispBufferClearColor,
         SceneRenderExecutionIterator expectedRenderBegin,
         SceneRenderExecutionIterator iteratorToReturn,
         uint32_t clearFlagsToModify,
@@ -152,7 +151,7 @@ public:
     }
 
     void expectSceneRendered(SceneId sceneId, DeviceResourceHandle buffer = DisplayControllerMock::FakeFrameBufferHandle,
-        uint32_t dispBufferClearFlags = EClearFlags_All, const Vector4& dispBufferClearColor = Renderer::DefaultClearColor)
+        uint32_t dispBufferClearFlags = EClearFlags_All, const glm::vec4& dispBufferClearColor = Renderer::DefaultClearColor)
     {
         expectSceneRenderedExt(sceneId, buffer, dispBufferClearFlags, dispBufferClearColor, sceneRenderBegin, sceneRenderBegin, dispBufferClearFlags, EDiscardDepth::Disallowed);
     }
@@ -168,7 +167,7 @@ public:
         expectSceneRenderedExt(sceneId, buffer, EClearFlags_All, Renderer::DefaultClearColor, sceneRenderBegin, sceneRenderBegin, EClearFlags_All, discardAllowed);
     }
 
-    void expectDisplayControllerReadPixels(DeviceResourceHandle deviceHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
+    void expectDisplayControllerReadPixels(DeviceResourceHandle deviceHandle, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
         EXPECT_CALL(*renderer.m_displayController, readPixels(deviceHandle, x, y, width, height, _)).WillOnce(Invoke(
             [](auto, auto, auto, auto w, auto h, auto& dataOut) {
@@ -183,7 +182,7 @@ public:
         return rendererScenes.getScene(sceneId);
     }
 
-    void assignSceneToDisplayBuffer(SceneId sceneId, Int32 sceneRenderOrder, DeviceResourceHandle displayBuffer = DisplayControllerMock::FakeFrameBufferHandle)
+    void assignSceneToDisplayBuffer(SceneId sceneId, int32_t sceneRenderOrder, DeviceResourceHandle displayBuffer = DisplayControllerMock::FakeFrameBufferHandle)
     {
         renderer.assignSceneToDisplayBuffer(sceneId, displayBuffer, sceneRenderOrder);
         EXPECT_EQ(displayBuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
@@ -274,7 +273,7 @@ TEST_P(ARenderer, SetsVisibilityInSystemCompositorController)
 
 TEST_P(ARenderer, TakesScreenshotFromSystemCompositorController)
 {
-    String fileName("screenshot.png");
+    std::string_view fileName("screenshot.png");
     const int32_t screenIviId = 3;
     if (GetParam())
         EXPECT_CALL(renderer.m_platform.systemCompositorControllerMock, doScreenshot(fileName, screenIviId));
@@ -422,7 +421,7 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToItAndNotShown)
 
 TEST_P(ARenderer, clearsOffscreenBufferAndFramebufferWithRelatedColors)
 {
-    const Vector4 displayClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 displayClearColor(.1f, .2f, .3f, .4f);
     createDisplayController();
     renderer.setClearColor(DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
 
@@ -443,7 +442,7 @@ TEST_P(ARenderer, clearsOffscreenBufferAndFramebufferWithRelatedColors)
 
 TEST_P(ARenderer, clearsFramebufferWithCustomClearColor)
 {
-    const Vector4 displayClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 displayClearColor(.1f, .2f, .3f, .4f);
     createDisplayController();
     renderer.setClearColor(DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
     expectFrameBufferRendered(true, EClearFlags_All, displayClearColor);
@@ -455,7 +454,7 @@ TEST_P(ARenderer, clearsOffscreenBufferWithCustomClearColor)
 {
     createDisplayController();
 
-    const Vector4 obClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 obClearColor(.1f, .2f, .3f, .4f);
     const SceneId sceneId(12u);
     createScene(sceneId);
 
@@ -476,10 +475,10 @@ TEST_P(ARenderer, clearsOffscreenBufferWithCustomClearColor)
 TEST_P(ARenderer, clearsBothFramebufferAndOffscreenBufferWithDifferentClearColors)
 {
     createDisplayController();
-    const Vector4 displayClearColor(.4f, .3f, .2f, .1f);
+    const glm::vec4 displayClearColor(.4f, .3f, .2f, .1f);
     renderer.setClearColor(DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
 
-    const Vector4 obClearColor(.1f, .2f, .3f, .4f);
+    const glm::vec4 obClearColor(.1f, .2f, .3f, .4f);
     const SceneId sceneId(12u);
     createScene(sceneId);
 
@@ -543,14 +542,14 @@ TEST_P(ARenderer, clearsOBOnRerenderIfNoSceneAssigned)
     // use some non-default clear flags
     EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth));
     EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth));
-    EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer1, Vector4{ 1,2,3,4 }));
+    EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer1, glm::vec4{ 1,2,3,4 }));
     EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer2, Renderer::DefaultClearColor));
     renderer.setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth);
     renderer.setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth);
-    renderer.setClearColor(fakeOffscreenBuffer1, Vector4{ 1,2,3,4 });
+    renderer.setClearColor(fakeOffscreenBuffer1, glm::vec4{ 1,2,3,4 });
     renderer.setClearColor(fakeOffscreenBuffer2, Renderer::DefaultClearColor);
 
-    expectOffscreenBufferCleared(fakeOffscreenBuffer1, EClearFlags_Depth, Vector4{ 1,2,3,4 });
+    expectOffscreenBufferCleared(fakeOffscreenBuffer1, EClearFlags_Depth, glm::vec4{ 1,2,3,4 });
     expectFrameBufferRendered();
     expectOffscreenBufferCleared(fakeOffscreenBuffer2, EClearFlags_Depth);
     expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer2);
@@ -998,7 +997,7 @@ TEST_P(ARenderer, takeMultipleScreenshotsOfADisplayOverritesPreviousScreenshot)
 
     auto screenshots1 = renderer.dispatchProcessedScreenshots();
     ASSERT_EQ(1u, screenshots1.size());
-    const auto& screenshots1FB = absl::c_find_if(screenshots1, [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
+    const auto& screenshots1FB = std::find_if(std::cbegin(screenshots1), std::cend(screenshots1), [&](const auto& p) {return p.first == DisplayControllerMock::FakeFrameBufferHandle; });
     ASSERT_NE(screenshots1.cend(), screenshots1FB);
 
     // check that screenshot request got deleted
@@ -1027,7 +1026,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.setRenderPassCamera(pass, camera);
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
@@ -1043,7 +1042,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.setRenderPassRenderOnce(pass, true);
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
@@ -1055,7 +1054,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     EXPECT_EQ(pass, passesToRender[0].getRenderPassHandle());
 
     // render
-    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
+    scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
     expectFrameBufferRendered(true, EClearFlags_None);
@@ -1312,7 +1311,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     const SceneId sceneId(12u);
     createScene(sceneId);
 
-    const Vector4 obClearColor1(.1f, .2f, .3f, .4f);
+    const glm::vec4 obClearColor1(.1f, .2f, .3f, .4f);
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
     renderer.setClearColor(fakeOffscreenBuffer, obClearColor1);
@@ -1331,7 +1330,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     doOneRendererLoop();
 
     // change clear color
-    const Vector4 obClearColor2(.2f, .3f, .4f, .5f);
+    const glm::vec4 obClearColor2(.2f, .3f, .4f, .5f);
     renderer.setClearColor(fakeOffscreenBuffer, obClearColor2);
     expectFrameBufferRendered(true);
     expectSceneRenderedExt(sceneId, fakeOffscreenBuffer, EClearFlags_All, obClearColor2, {}, {}, EClearFlags_All, EDiscardDepth::Allowed);
@@ -1493,31 +1492,6 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
     // no change
     expectFrameBufferRendered(false);
     doOneRendererLoop();
-    expectFrameBufferRendered(false);
-    doOneRendererLoop();
-}
-
-TEST_P(ARenderer, rerendersFramebufferIfWarpingDataChanged)
-{
-    createDisplayController();
-    EXPECT_CALL(*renderer.m_displayController, isWarpingEnabled()).WillRepeatedly(Return(true));
-
-    expectFrameBufferRendered(true);
-    expectSwapBuffers();
-    doOneRendererLoop();
-
-    // no change
-    expectFrameBufferRendered(false);
-    doOneRendererLoop();
-
-    // changing warping data causes re-render
-    EXPECT_CALL(*renderer.m_displayController, setWarpingMeshData(_));
-    renderer.setWarpingMeshData({});
-    expectFrameBufferRendered(true);
-    expectSwapBuffers();
-    doOneRendererLoop();
-
-    // no change
     expectFrameBufferRendered(false);
     doOneRendererLoop();
 }

@@ -22,8 +22,8 @@
 
 namespace ramses
 {
-    RenderGroupImpl::RenderGroupImpl(SceneImpl& scene, const char* name)
-        : SceneObjectImpl(scene, ERamsesObjectType_RenderGroup, name)
+    RenderGroupImpl::RenderGroupImpl(SceneImpl& scene, std::string_view name)
+        : SceneObjectImpl(scene, ERamsesObjectType::RenderGroup, name)
     {
     }
 
@@ -110,8 +110,8 @@ namespace ramses
     {
         status_t status = SceneObjectImpl::validate();
 
-        if (m_meshes.size() == 0u)
-            status = addValidationMessage(EValidationSeverity_Warning, "rendergroup does not contain any meshes");
+        if (m_meshes.empty() && m_renderGroups.empty())
+            status = addValidationMessage(EValidationSeverity::Warning, "rendergroup does not contain any meshes");
 
         for (const auto& element : m_meshes)
             status = std::max(status, addValidationOfDependentObject(*element));

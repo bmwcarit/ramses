@@ -6,14 +6,17 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(ResourceStressTests
-    TYPE            TEST
-    TEST_SUFFIX     RNDSANDWICHTEST
+createModuleWithRenderer(
+    NAME            ResourceStressTests
+    TYPE            BINARY
+    ENABLE_INSTALL  ON
+    SRC_FILES           src/*.cpp
+                        src/*.h
+    RESOURCE_FOLDERS    ../../TestContent/res
+    DEPENDENCIES        TestContent FrameworkTestUtils RendererTestUtils ramses-cli
+)
 
-    FILES_SOURCE    src/*.cpp
-                    src/*.h
-
-    RESOURCE_FOLDER  ../../TestContent/res
-
-    DEPENDENCIES     TestContent FrameworkTestUtils RendererTestUtils
+makeTestPerWindowTypeFromTarget(
+    TARGET ResourceStressTests
+    SUFFIX RNDSANDWICHTEST
 )

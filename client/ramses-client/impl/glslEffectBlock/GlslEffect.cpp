@@ -10,7 +10,6 @@
 #include "Resource/EffectResource.h"
 #include "glslEffectBlock/GlslToEffectConverter.h"
 #include "GlslLimits.h"
-#include "absl/algorithm/container.h"
 #include <memory>
 
 namespace ramses_internal
@@ -39,12 +38,12 @@ namespace ramses_internal
     static GlslangInitAndFinalizeOnceHelper glslangInitializer;
 
 
-    GlslEffect::GlslEffect(const String& vertexShader,
-        const String& fragmentShader,
-        const String& geometryShader,
-        const std::vector<String>& compilerDefines,
-        const HashMap<String, EFixedSemantics>& semanticInputs,
-        const String& name)
+    GlslEffect::GlslEffect(std::string_view vertexShader,
+        std::string_view fragmentShader,
+        std::string_view geometryShader,
+        const std::vector<std::string>& compilerDefines,
+        const HashMap<std::string, EFixedSemantics>& semanticInputs,
+        std::string_view name)
         : m_vertexShader(vertexShader)
         , m_fragmentShader(fragmentShader)
         , m_geometryShader(geometryShader)
@@ -67,7 +66,7 @@ namespace ramses_internal
             return m_effectResource;
         }
 
-        String defineString = createDefineString();
+        std::string defineString = createDefineString();
 
         ShaderParts vertexShaderParts;
         ShaderParts fragmentShaderParts;
@@ -123,30 +122,30 @@ namespace ramses_internal
 
         const EffectInputInformationVector& uniformInputs = glslToEffectConverter.getUniformInputs();
         const EffectInputInformationVector& attributeInputs = glslToEffectConverter.getAttributeInputs();
-        absl::optional<EDrawMode> geomInputType = glslToEffectConverter.getGeometryShaderInputType();
+        const auto geomInputType = glslToEffectConverter.getGeometryShaderInputType();
 
         m_effectResource = new EffectResource(mergeShaderParts(vertexShaderParts), mergeShaderParts(fragmentShaderParts), mergeShaderParts(geometryShaderParts), geomInputType, uniformInputs, attributeInputs, m_name, cacheFlag);
         return m_effectResource;
     }
 
-    String GlslEffect::createDefineString() const
+    std::string GlslEffect::createDefineString() const
     {
         StringOutputStream result;
         for(const auto& defineString : m_compilerDefines)
         {
             result << "#define " << defineString << "\n";
         }
-        return String(result.release());
+        return result.release();
     }
 
-    bool GlslEffect::createShaderParts(ShaderParts& outParts, const String& defineString, const String& userShader) const
+    bool GlslEffect::createShaderParts(ShaderParts& outParts, const std::string& defineString, const std::string& userShader) const
     {
         size_t versionStringStart;
-        String versionString;
-        if ((versionStringStart = userShader.find("#version")) != String::npos)
+        std::string versionString;
+        if ((versionStringStart = userShader.find("#version")) != std::string::npos)
         {
             size_t versionStringEnd = userShader.find('\n', versionStringStart);
-            if (versionStringEnd == String::npos)
+            if (versionStringEnd == std::string::npos)
             {
                 m_errorMessages << "[GLSL Compiler] " << m_name << " Shader contains #version without newline \n";
                 return false;
@@ -165,17 +164,17 @@ namespace ramses_internal
         return true;
     }
 
-    String GlslEffect::mergeShaderParts(const ShaderParts& shaderParts) const
+    std::string GlslEffect::mergeShaderParts(const ShaderParts& shaderParts) const
     {
         StringOutputStream str;
         str << shaderParts.version << shaderParts.defines << shaderParts.userCode;
-        return String(str.release());
+        return str.release();
     }
 
-    bool GlslEffect::parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const String& shaderName)
+    bool GlslEffect::parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const std::string& shaderName)
     {
-        const char* fragmentShaderCodeCString[] = { shaderParts.version.c_str(), shaderParts.defines.c_str(), shaderParts.userCode.c_str() };
-        tShader.setStrings(fragmentShaderCodeCString, 3);
+        const std::array fragmentShaderCodeCString = { shaderParts.version.c_str(), shaderParts.defines.c_str(), shaderParts.userCode.c_str() };
+        tShader.setStrings(fragmentShaderCodeCString.data(), 3);
         bool parsingSuccessful = tShader.parse(&glslCompilationResources, 100, false, EShMsgDefault);
         if (!parsingSuccessful)
         {
@@ -222,9 +221,9 @@ namespace ramses_internal
             return false;
         }
 
-        const UInt32 vertexShaderVersion = program->getIntermediate(EShLangVertex)->getVersion();
-        const UInt32 fragmentShaderVersion = program->getIntermediate(EShLangFragment)->getVersion();
-        const UInt32 geometryShaderVersion = hasGeometryShader ? geometryShaderIntermediate->getVersion() : 0u;
+        const uint32_t vertexShaderVersion = program->getIntermediate(EShLangVertex)->getVersion();
+        const uint32_t fragmentShaderVersion = program->getIntermediate(EShLangFragment)->getVersion();
+        const uint32_t geometryShaderVersion = hasGeometryShader ? geometryShaderIntermediate->getVersion() : 0u;
 
         const uint32_t maximumSupportedVersion = 320u;
 
@@ -275,21 +274,21 @@ namespace ramses_internal
         return success;
     }
 
-    UInt32 GlslEffect::getShadingLanguageVersion() const
+    uint32_t GlslEffect::getShadingLanguageVersion() const
     {
         assert(m_effectResource);
         return m_shadingLanguageVersion;
     }
 
-    ramses_internal::String GlslEffect::getEffectErrorMessages() const
+    std::string GlslEffect::getEffectErrorMessages() const
     {
-        return ramses_internal::String(m_errorMessages.c_str());
+        return m_errorMessages.data();
     }
 
-    bool GlslEffect::isSupportedExtension(const String& extension) const
+    bool GlslEffect::isSupportedExtension(const std::string& extension) const
     {
-        if (String("GL_OES_EGL_image_external") == extension
-            || String("GL_OES_EGL_image_external_essl3") == extension)
+        if (extension == "GL_OES_EGL_image_external"
+            || extension == "GL_OES_EGL_image_external_essl3")
         {
             return true;
         }

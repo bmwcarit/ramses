@@ -30,7 +30,7 @@ namespace ramses_internal
         NUMBER_OF_ELEMENTS
     };
 
-    static const char* SceneStateNames[] =
+    const std::array SceneStateNames =
     {
         "Unknown",
         "Published",

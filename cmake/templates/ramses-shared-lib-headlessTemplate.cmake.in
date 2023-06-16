@@ -1,0 +1,88 @@
+#  -------------------------------------------------------------------------
+#  Copyright (C) 2018 BMW Car IT GmbH
+#  -------------------------------------------------------------------------
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  -------------------------------------------------------------------------
+
+# Use like this with find_package:
+# find_package(ramses-shared-lib-headless <RAMSES-VERSION> [REQUIRED])
+
+INCLUDE(FindPackageHandleStandardArgs)
+INCLUDE(CMakeFindDependencyMacro)
+SET(ramses-shared-lib-headless_VERSION @RAMSES_VERSION@)
+
+@PACKAGE_INIT@
+
+
+#find include dir
+FIND_PATH(ramses-shared-lib-headless_INCLUDE_DIRS ramses-client.h
+    HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
+)
+
+if(IS_DIRECTORY "${ramses-shared-lib-headless_INCLUDE_DIRS}/glm")
+    add_library(glm::glm INTERFACE IMPORTED)
+    set_target_properties(glm::glm PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${ramses-shared-lib-headless_INCLUDE_DIRS})
+else()
+    find_dependency(glm REQUIRED)
+
+    if(NOT TARGET glm::glm)
+        add_library(glm::glm ALIAS glm)
+    endif()
+endif()
+
+
+IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+
+    # no shlib versioning support on windows
+    FIND_LIBRARY(ramses-shared-lib-headless_LIBRARIES
+        NAMES "ramses-shared-lib-headless"
+        HINTS @PACKAGE_RAMSES_INSTALL_RUNTIME_PATH@
+    )
+
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+    # require exact shlib version
+    FIND_LIBRARY(ramses-shared-lib-headless_LIBRARIES
+        NAMES "libramses-shared-lib-headless.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
+        HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
+    )
+
+ELSE()
+    MESSAGE(FATAL_ERROR "Can't detect system type from within CMake. Expect further issues!")
+ENDIF()
+
+
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(ramses-shared-lib-headless
+    FOUND_VAR ramses-shared-lib-headless_FOUND
+    REQUIRED_VARS ramses-shared-lib-headless_LIBRARIES ramses-shared-lib-headless_INCLUDE_DIRS
+    VERSION_VAR ramses-shared-lib-headless_VERSION)
+
+set(ramses-sdk_VERSION "@ramses-sdk_VERSION@" CACHE STRING "Ramses version" FORCE)
+
+message(STATUS "Found ramses-shared-lib-headless libs: ${ramses-shared-lib-headless_LIBRARIES}")
+message(STATUS "Found ramses-shared-lib-headless includes: ${ramses-shared-lib-headless_INCLUDE_DIRS}")
+
+MARK_AS_ADVANCED(
+    ramses-shared-lib-headless_INCLUDE_DIRS
+    ramses-shared-lib-headless_LIBRARIES
+    ramses-shared-lib-headless_FOUND
+    )
+
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
+    if (NOT TARGET ramses-ramses-shared-lib-headless)
+        add_library(ramses-ramses-shared-lib-headless SHARED IMPORTED GLOBAL)
+        set_target_properties(ramses-ramses-shared-lib-headless PROPERTIES IMPORTED_LOCATION ${ramses-shared-lib-headless_LIBRARIES})
+        if (MSVC)
+            set_target_properties(ramses-ramses-shared-lib-headless PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib-headless_LIBRARIES})
+        endif()
+        target_include_directories(ramses-ramses-shared-lib-headless INTERFACE ${ramses-shared-lib-headless_INCLUDE_DIRS})
+        target_link_libraries(ramses-ramses-shared-lib-headless INTERFACE glm::glm)
+
+        if (NOT TARGET ramses::headless)
+            add_library(ramses::headless ALIAS ramses-ramses-shared-lib-headless)
+            message(STATUS "Created ramses-shared-lib-headless import target ramses::headless")
+        endif()
+    endif()
+endif()

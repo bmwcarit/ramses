@@ -21,8 +21,8 @@ namespace ramses_internal
 {
     struct MipMap
     {
-        UInt32              width = 0u;
-        UInt32              height = 0u;
+        uint32_t              width = 0u;
+        uint32_t              height = 0u;
         Quad                usedRegion;
         std::vector<Byte>   data;
     };
@@ -33,9 +33,9 @@ namespace ramses_internal
         ETextureFormat      textureFormat = ETextureFormat::Invalid;
         MipMaps             mipMaps;
 
-        static UInt32 GetMipMapDataSizeInBytes(const TextureBuffer& buffer)
+        static uint32_t GetMipMapDataSizeInBytes(const TextureBuffer& buffer)
         {
-            return std::accumulate(buffer.mipMaps.cbegin(), buffer.mipMaps.cend(), 0u, [](UInt32 val, const MipMap& mip) { return val + static_cast<UInt32>(mip.data.size()); });
+            return std::accumulate(buffer.mipMaps.cbegin(), buffer.mipMaps.cend(), 0u, [](uint32_t val, const MipMap& mip) { return val + static_cast<uint32_t>(mip.data.size()); });
         }
     };
 

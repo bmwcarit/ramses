@@ -12,8 +12,8 @@
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/Viewport.h"
-#include "Math3d/Vector4.h"
 #include "Collections/Vector.h"
+#include "DataTypesImpl.h"
 #include <map>
 
 namespace ramses_internal
@@ -21,8 +21,8 @@ namespace ramses_internal
     struct AssignedSceneInfo
     {
         SceneId sceneId;
-        Int32 globalSceneOrder;
-        Bool shown;
+        int32_t globalSceneOrder;
+        bool shown;
     };
     using AssignedScenes = std::vector<AssignedSceneInfo>;
 
@@ -32,7 +32,7 @@ namespace ramses_internal
         bool isInterruptible;
         Viewport viewport;
         uint32_t clearFlags;
-        Vector4 clearColor;
+        glm::vec4 clearColor;
         AssignedScenes scenes;
         bool needsRerender;
     };
@@ -41,25 +41,25 @@ namespace ramses_internal
     class DisplaySetup
     {
     public:
-        void registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const Vector4& clearColor, Bool isOffscreenBuffer, Bool isInterruptible);
+        void registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const glm::vec4& clearColor, bool isOffscreenBuffer, bool isInterruptible);
         void unregisterDisplayBuffer(DeviceResourceHandle displayBuffer);
 
-        const DisplayBufferInfo& getDisplayBuffer(DeviceResourceHandle displayBuffer) const;
+        [[nodiscard]] const DisplayBufferInfo& getDisplayBuffer(DeviceResourceHandle displayBuffer) const;
 
-        void setDisplayBufferToBeRerendered(DeviceResourceHandle displayBuffer, Bool rerender);
+        void setDisplayBufferToBeRerendered(DeviceResourceHandle displayBuffer, bool rerender);
 
-        void                 assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, Int32 sceneOrder);
+        void                 assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle displayBuffer, int32_t sceneOrder);
         void                 unassignScene(SceneId sceneId);
-        DeviceResourceHandle findDisplayBufferSceneIsAssignedTo(SceneId sceneId) const;
-        void                 setSceneShown(SceneId sceneId, Bool show);
+        [[nodiscard]] DeviceResourceHandle findDisplayBufferSceneIsAssignedTo(SceneId sceneId) const;
+        void                 setSceneShown(SceneId sceneId, bool show);
         void                 setClearFlags(DeviceResourceHandle displayBuffer, uint32_t clearFlags);
-        void                 setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor);
+        void                 setClearColor(DeviceResourceHandle displayBuffer, const glm::vec4& clearColor);
         void                 setDisplayBufferSize(DeviceResourceHandle displayBuffer, uint32_t width, uint32_t height);
 
-        const DeviceHandleVector& getNonInterruptibleOffscreenBuffersToRender() const;
-        const DeviceHandleVector& getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle interruptedDisplayBuffer) const;
+        [[nodiscard]] const DeviceHandleVector& getNonInterruptibleOffscreenBuffersToRender() const;
+        [[nodiscard]] const DeviceHandleVector& getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle interruptedDisplayBuffer) const;
 
-        const DisplayBuffersMap& getDisplayBuffers() const;
+        [[nodiscard]] const DisplayBuffersMap& getDisplayBuffers() const;
 
     private:
         AssignedSceneInfo& findSceneInfo(SceneId sceneId, DeviceResourceHandle displayBuffer);

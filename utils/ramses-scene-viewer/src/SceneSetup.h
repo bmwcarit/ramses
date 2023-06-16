@@ -26,13 +26,13 @@ public:
 
     virtual void apply() = 0;
 
-    virtual uint32_t getWidth() const = 0;
+    [[nodiscard]] virtual uint32_t getWidth() const = 0;
 
-    virtual uint32_t getHeight() const = 0;
+    [[nodiscard]] virtual uint32_t getHeight() const = 0;
 
-    virtual ramses::displayBufferId_t getOffscreenBuffer() const = 0;
+    [[nodiscard]] virtual ramses::displayBufferId_t getOffscreenBuffer() const = 0;
 
-    virtual ramses::TextureSampler* getTextureSampler() = 0;
+    [[nodiscard]] virtual ramses::TextureSampler* getTextureSampler() = 0;
 };
 
 class OffscreenSetup : public ISceneSetup
@@ -52,7 +52,7 @@ public:
         ramses::MipLevelData mipLevelData(4, imgbuf.data());
         auto* texture = imguiHelper.getScene()->createTexture2D(ramses::ETextureFormat::RGBA8, 1, 1, 1, &mipLevelData);
         m_sampler = imguiHelper.getScene()->createTextureSampler(
-            ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Linear, ramses::ETextureSamplingMethod_Linear, *texture);
+            ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp, ramses::ETextureSamplingMethod::Linear, ramses::ETextureSamplingMethod::Linear, *texture);
 
         const auto guiSceneId = imguiHelper.getScene()->getSceneId();
         m_sceneControl->setSceneMapping(scene->getSceneId(), display);
@@ -87,22 +87,22 @@ public:
         m_imguiHelper.waitForSceneState(guiSceneId, ramses::RendererSceneState::Rendered);
     }
 
-    uint32_t getWidth() const override
+    [[nodiscard]] uint32_t getWidth() const override
     {
         return m_width;
     }
 
-    uint32_t getHeight() const override
+    [[nodiscard]] uint32_t getHeight() const override
     {
         return m_height;
     }
 
-    ramses::displayBufferId_t getOffscreenBuffer() const override
+    [[nodiscard]] ramses::displayBufferId_t getOffscreenBuffer() const override
     {
         return m_ob;
     }
 
-    ramses::TextureSampler* getTextureSampler() override
+    [[nodiscard]] ramses::TextureSampler* getTextureSampler() override
     {
         return m_sampler;
     }
@@ -149,22 +149,22 @@ public:
         m_sceneControl->flush();
     }
 
-    uint32_t getWidth() const override
+    [[nodiscard]] uint32_t getWidth() const override
     {
         return m_imguiHelper.getViewportWidth();
     }
 
-    uint32_t getHeight() const override
+    [[nodiscard]] uint32_t getHeight() const override
     {
         return m_imguiHelper.getViewportHeight();
     }
 
-    ramses::displayBufferId_t getOffscreenBuffer() const override
+    [[nodiscard]] ramses::displayBufferId_t getOffscreenBuffer() const override
     {
         return ramses::displayBufferId_t();
     }
 
-    ramses::TextureSampler* getTextureSampler() override
+    [[nodiscard]] ramses::TextureSampler* getTextureSampler() override
     {
         return nullptr;
     }

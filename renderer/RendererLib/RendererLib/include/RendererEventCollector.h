@@ -19,8 +19,8 @@ namespace ramses_internal
     public:
         void appendAndConsumePendingEvents(RendererEventVector& rendererEvents, RendererEventVector& sceneControlEvents);
         void dispatchInternalSceneStateEvents(InternalSceneStateEvents& resultEvents);
-        RendererEventVector getRendererEvents() const;
-        RendererEventVector getSceneControlEvents() const;
+        [[nodiscard]] RendererEventVector getRendererEvents() const;
+        [[nodiscard]] RendererEventVector getSceneControlEvents() const;
 
         void addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config = {});
         void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, OffscreenBufferHandle offscreenBufferHandle, UInt8Vector&& pixelData);
@@ -40,7 +40,7 @@ namespace ramses_internal
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, WindowMoveEvent moveEvent);
         void addStreamSourceEvent(ERendererEventType eventType, WaylandIviSurfaceId streamSourceId);
         void addPickedEvent(ERendererEventType eventType, const SceneId& sceneId, PickableObjectIds&& pickedObjectIds);
-        void addFrameTimingReport(DisplayHandle display, bool isFirstDisplay, std::chrono::microseconds maxLoopTime, std::chrono::microseconds avgLooptime);
+        void addFrameTimingReport(DisplayHandle display, std::chrono::microseconds maxLoopTime, std::chrono::microseconds avgLooptime);
 
     private:
         void pushToRendererEventQueue(RendererEvent&& newEvent);

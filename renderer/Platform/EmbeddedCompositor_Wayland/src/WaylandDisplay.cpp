@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     }
 
-    bool WaylandDisplay::init(const String& socketName,  const String& socketGroupName, uint32_t socketPermissions, int socketFD)
+    bool WaylandDisplay::init(const std::string& socketName,  const std::string& socketGroupName, uint32_t socketPermissions, int socketFD)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandDisplay::init");
 
@@ -53,10 +53,10 @@ namespace ramses_internal
         }
     }
 
-    bool WaylandDisplay::addSocketToDisplay(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD)
+    bool WaylandDisplay::addSocketToDisplay(const std::string& socketName, const std::string& socketGroupName, uint32_t socketPermissions, int socketFD)
     {
-        const Bool socketNameProvided = socketName.size() > 0u;
-        const Bool socketFDProvided   = socketFD >= 0;
+        const bool socketNameProvided = socketName.size() > 0u;
+        const bool socketFDProvided   = socketFD >= 0;
 
         if (socketFDProvided && !socketNameProvided)
         {
@@ -105,7 +105,7 @@ namespace ramses_internal
         }
     }
 
-    bool WaylandDisplay::addSocketToDisplayWithName(const String& socketName, const String& socketGroupName, uint32_t socketPermissions)
+    bool WaylandDisplay::addSocketToDisplayWithName(const std::string& socketName, const std::string& socketGroupName, uint32_t socketPermissions)
     {
         if (wl_display_add_socket(m_display, socketName.c_str()) < 0)
         {
@@ -116,7 +116,7 @@ namespace ramses_internal
             return false;
         }
 
-        const String socketFullPath = getSocketFullPath(socketName);
+        const std::string socketFullPath = getSocketFullPath(socketName);
         if (!applyGroupToEmbeddedCompositingSocket(socketFullPath, socketGroupName))
         {
             LOG_ERROR(CONTEXT_RENDERER,
@@ -140,25 +140,25 @@ namespace ramses_internal
         return true;
     }
 
-    String WaylandDisplay::getSocketFullPath(const String& socketName) const
+    std::string WaylandDisplay::getSocketFullPath(const std::string& socketName) const
     {
-        String      XDGRuntimeDir;
+        std::string XDGRuntimeDir;
         PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", XDGRuntimeDir);
-        return String(fmt::format("{}/{}", XDGRuntimeDir, socketName));
+        return std::string(fmt::format("{}/{}", XDGRuntimeDir, socketName));
     }
 
-    bool WaylandDisplay::applyGroupToEmbeddedCompositingSocket(const String& socketFullPath, const String& socketGroupName)
+    bool WaylandDisplay::applyGroupToEmbeddedCompositingSocket(const std::string& socketFullPath, const std::string& socketGroupName)
     {
         if (socketGroupName.size() > 0u)
         {
             group  permissionGroup;
             group* permissionGroupResult = nullptr;
-            char   bufferForStringFields[10000];
+            std::array<char, 10000> bufferForStringFields;
 
             const int status = getgrnam_r(socketGroupName.c_str(),
                                           &permissionGroup,
-                                          bufferForStringFields,
-                                          sizeof(bufferForStringFields),
+                                          bufferForStringFields.data(),
+                                          bufferForStringFields.size(),
                                           &permissionGroupResult);
             if (0 != status)
             {
@@ -178,7 +178,7 @@ namespace ramses_internal
             }
 
             const gid_t groupID = permissionGroup.gr_gid;
-            const String fullSocketLockFilePath = socketFullPath + String(".lock");
+            const std::string fullSocketLockFilePath = socketFullPath + ".lock";
             const int    chownStatusSocket      = chown(socketFullPath.c_str(), -1, groupID);
             if (0 != chownStatusSocket)
             {
@@ -213,7 +213,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool WaylandDisplay::applyPermissionsToEmbeddedCompositingSocket(const String& socketFullPath, uint32_t socketPermissions)
+    bool WaylandDisplay::applyPermissionsToEmbeddedCompositingSocket(const std::string& socketFullPath, uint32_t socketPermissions)
     {
         // if none given use default ug+rw
         if (socketPermissions == 0)

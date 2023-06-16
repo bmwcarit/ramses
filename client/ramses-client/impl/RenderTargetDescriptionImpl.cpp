@@ -28,14 +28,14 @@ namespace ramses
         status_t status = StatusObjectImpl::validate();
 
         if (m_renderBuffers.empty())
-            status = addValidationMessage(EValidationSeverity_Warning, "there is no RenderBuffer added");
+            status = addValidationMessage(EValidationSeverity::Warning, "there is no RenderBuffer added");
         else
         {
             assert(m_scene != nullptr);
             for(const auto& rb : m_renderBuffers)
             {
                 if (!m_scene->getIScene().isRenderBufferAllocated(rb))
-                    status = addValidationMessage(EValidationSeverity_Error, "referencing one or more RenderBuffers that do not exist in scene anymore");
+                    status = addValidationMessage(EValidationSeverity::Error, "referencing one or more RenderBuffers that do not exist in scene anymore");
             }
         }
 

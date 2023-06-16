@@ -17,12 +17,11 @@
 #include "SceneAPI/DataFieldInfo.h"
 #include "SceneAPI/MipMapSize.h"
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
     class IScene;
-    enum class EDataBufferType : UInt8;
+    enum class EDataBufferType : uint8_t;
     struct TextureSampler;
     struct RenderBuffer;
 
@@ -34,19 +33,18 @@ namespace ramses_internal
         RenderableHandle            allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid());
         RenderStateHandle           allocateRenderState(RenderStateHandle handle = RenderStateHandle::Invalid());
         CameraHandle                allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle = CameraHandle::Invalid());
-        NodeHandle                  allocateNode(UInt32 childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid());
+        NodeHandle                  allocateNode(uint32_t childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid());
         TransformHandle             allocateTransform(NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid());
         DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid());
         DataInstanceHandle          allocateDataInstance(DataLayoutHandle finishedLayoutHandle, DataInstanceHandle handle = DataInstanceHandle::Invalid());
         TextureSamplerHandle        allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid());
         RenderGroupHandle           allocateRenderGroup(RenderGroupHandle handle = RenderGroupHandle::Invalid());
-        RenderPassHandle            allocateRenderPass(UInt32 renderGroupCount = 0u, RenderPassHandle handle = RenderPassHandle::Invalid());
+        RenderPassHandle            allocateRenderPass(uint32_t renderGroupCount = 0u, RenderPassHandle handle = RenderPassHandle::Invalid());
         BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle handle = BlitPassHandle::Invalid());
         RenderTargetHandle          allocateRenderTarget(RenderTargetHandle handle = RenderTargetHandle::Invalid());
         RenderBufferHandle          allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid());
-        StreamTextureHandle         allocateStreamTexture(WaylandIviSurfaceId streamSource, ResourceContentHash fallbackTextureHash, StreamTextureHandle handle = StreamTextureHandle::Invalid());
         DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid());
-        DataBufferHandle            allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid());
+        DataBufferHandle            allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid());
         TextureBufferHandle         allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid());
         PickableObjectHandle        allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid());
         SceneReferenceHandle        allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle = {});

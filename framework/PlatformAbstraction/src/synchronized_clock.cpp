@@ -8,29 +8,6 @@
 
 #include "PlatformAbstraction/synchronized_clock.h"
 
-#if defined(__INTEGRITY)
-#include "gptp_client_api.h"
-#include "Utils/LogMacros.h"
-#include "PlatformAbstraction/internal/GPTPHelper.h"
-
-namespace ramses_internal
-{
-    synchronized_clock::time_point synchronized_clock::now()
-    {
-        static GPTPHelper helper;
-        GPTP_SyncState syncState;
-        uint64_t ptpTime;
-        Error gptpError = GPTPv_GetTime(&syncState, &ptpTime);
-        if (gptpError != Success)
-        {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "synchronized_clock::now: cannot get gptp time, error: " << gptpError);
-            return time_point(std::chrono::nanoseconds(0));
-        }
-        return helper.evaluate(syncState, ptpTime);
-    }
-}
-#endif
-
 #ifdef RAMSES_LINUX_USE_DEV_PTP
 #include "Utils/LogMacros.h"
 #include <sys/types.h>

@@ -21,7 +21,7 @@ namespace ramses_internal
         getArgument<1>().setDescription("scene id");
     }
 
-    Bool FlushSceneVersion::execute(ramses::sceneVersionTag_t& sceneVersion, uint64_t& sceneId) const
+    bool FlushSceneVersion::execute(ramses::sceneVersionTag_t& sceneVersion, uint64_t& sceneId) const
     {
         SceneCommandFlushSceneVersion command;
         command.sceneVersion = sceneVersion;

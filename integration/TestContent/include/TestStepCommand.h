@@ -18,10 +18,10 @@ namespace ramses_internal
     {
     public:
         explicit TestStepCommand();
-        virtual Bool execute(Int& testStep) const override;
+        bool execute(Int& testStep) const override;
 
         Int getCurrentTestStep();
-        void waitForTestStepSetEvent(UInt32 timeoutMillisec = 0u);
+        void waitForTestStepSetEvent(uint32_t timeoutMillisec = 0u);
 
     private:
         mutable std::atomic<Int> m_testStep;

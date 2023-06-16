@@ -29,7 +29,7 @@ namespace ramses_internal
             return false;
 
         ELogLevel level;
-        if (!LogHelper::StringToLogLevel(String(input[1]), level))
+        if (!LogHelper::StringToLogLevel(input[1], level))
             return false;
 
         RamsesLogger& logger = GetRamsesLogger();
@@ -39,7 +39,7 @@ namespace ramses_internal
         {
             LOG_INFO(CONTEXT_RAMSH, info.id << " | " << info.name
                         << " | "
-                        << static_cast<Int32>(info.logLevel)
+                        << static_cast<int32_t>(info.logLevel)
                         << " | "
                         << RamsesLogger::GetLogLevelText(info.logLevel));
         }

@@ -41,7 +41,7 @@ namespace ramses_internal
             update.actions.write(static_cast<uint32_t>(123));
             update.actions.write(static_cast<uint32_t>(456));
             update.actions.beginWriteSceneAction(ESceneActionId::AllocateNode);
-            update.actions.write(String("foobar"));
+            update.actions.write("foobar");
         }
 
         void addFlushInformation()
@@ -58,7 +58,7 @@ namespace ramses_internal
             update.flushInfos.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
             SceneReferenceAction refAction;
             update.flushInfos.sceneReferences.push_back(refAction);
-            update.flushInfos.sizeInfo = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+            update.flushInfos.sizeInfo = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18};
             update.flushInfos.versionTag = SceneVersionTag(2);
         }
 

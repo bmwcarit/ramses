@@ -17,7 +17,7 @@
 
 namespace ramses
 {
-    RamsesObjectImpl::RamsesObjectImpl(ERamsesObjectType type, const char* name)
+    RamsesObjectImpl::RamsesObjectImpl(ERamsesObjectType type, std::string_view name)
         : m_type(type)
         , m_name(name)
     {
@@ -52,18 +52,20 @@ namespace ramses
         return RamsesObjectTypeUtils::IsTypeMatchingBaseType(m_type, type);
     }
 
-    const ramses_internal::String& RamsesObjectImpl::getName() const
+    const std::string& RamsesObjectImpl::getName() const
     {
         return m_name;
     }
 
-    status_t RamsesObjectImpl::setName(RamsesObject& object, const char* name)
+    status_t RamsesObjectImpl::setName(RamsesObject& object, std::string_view name)
     {
+        std::string newName{name};
         if (m_objectRegistry)
         {
-            m_objectRegistry->updateName(object, name);
+            // updateName must be called before m_name is changed
+            m_objectRegistry->updateName(object, newName);
         }
-        m_name = name;
+        std::swap(m_name, newName);
 
         return StatusOK;
     }
@@ -111,15 +113,15 @@ namespace ramses
     status_t RamsesObjectImpl::validate() const
     {
         const status_t status = StatusObjectImpl::validate();
-        ramses_internal::String message{ fmt::format("{} '{}'", RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()), getName()) };
-        StatusObjectImpl::addValidationMessage(EValidationSeverity_Info, std::move(message));
+        std::string message{ fmt::format("{} '{}'", RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()), getName()) };
+        StatusObjectImpl::addValidationMessage(EValidationSeverity::Info, std::move(message));
 
         return status;
     }
 
-    status_t RamsesObjectImpl::addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const
+    status_t RamsesObjectImpl::addValidationMessage(EValidationSeverity severity, std::string message) const
     {
-        message = fmt::format("{} '{}': {}", RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()), getName(), message.stdRef());
+        message = fmt::format("{} '{}': {}", RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()), getName(), message);
         return StatusObjectImpl::addValidationMessage(severity, std::move(message));
     }
 }

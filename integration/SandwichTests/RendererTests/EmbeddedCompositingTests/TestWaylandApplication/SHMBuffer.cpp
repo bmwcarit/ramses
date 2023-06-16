@@ -107,7 +107,7 @@ namespace ramses_internal
         static_cast<SHMBuffer*>(data)->release();
     }
 
-    int SHMBuffer::CreateTmpFileCloexec(const String& tmpname)
+    int SHMBuffer::CreateTmpFileCloexec(const std::string& tmpname)
     {
         int32_t fd = mkostemp(const_cast<char*>(tmpname.c_str()), O_CLOEXEC);
         if (fd >= 0)
@@ -132,9 +132,9 @@ namespace ramses_internal
             return -1;
         }
 
-        String name = String(path) + "/SHMBuffer-XXXXXX";
+        std::string name = std::string(path) + "/SHMBuffer-XXXXXX";
 
-        int fd = CreateTmpFileCloexec(name.c_str());
+        int fd = CreateTmpFileCloexec(name);
 
         if (fd < 0)
         {

@@ -16,7 +16,7 @@ namespace ramses_internal
     class MsaaRenderBufferScene : public CommonRenderBufferTestScene
     {
     public:
-        MsaaRenderBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MsaaRenderBufferScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -26,9 +26,9 @@ namespace ramses_internal
         };
 
     private:
-        ramses::RenderTarget&   createRenderTarget(UInt32 state);
-        void                    initRenderPass(UInt32 state);
-        void                    initBlittingPass(UInt32 state);
+        ramses::RenderTarget&   createRenderTarget(uint32_t state);
+        void                    initRenderPass(uint32_t state);
+        void                    initBlittingPass(uint32_t state);
         ramses::MeshNode&       createMesh();
         const ramses::MeshNode& createQuadWithTextureMS(const ramses::RenderBuffer& renderBuffer);
 

@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         virtual ~IWaylandClient() {}
-        virtual WaylandClientCredentials getCredentials() const = 0;
+        [[nodiscard]] virtual WaylandClientCredentials getCredentials() const = 0;
         virtual void postNoMemory()                                                  = 0;
         virtual INativeWaylandResource* resourceCreate(const wl_interface* interface, int version, uint32_t id)       = 0;
         virtual WaylandCallbackResource* callbackResourceCreate(const wl_interface* interface, int version, uint32_t id) = 0;

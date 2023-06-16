@@ -11,16 +11,7 @@
 
 #include "RendererLogContext.h"
 #include "SceneAPI/Handles.h"
-
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
+#include "DataTypesImpl.h"
 
 namespace ramses_internal
 {
@@ -30,11 +21,11 @@ namespace ramses_internal
     {
     public:
         template <typename DATATYPE>
-        static void LogValueArray(DataFieldHandle field, const DATATYPE* values, UInt32 count, RendererLogContext& context)
+        static void LogValueArray(DataFieldHandle field, const DATATYPE* values, uint32_t count, RendererLogContext& context)
         {
             if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
             {
-                for (UInt32 i = 0; i < count; ++i)
+                for (uint32_t i = 0; i < count; ++i)
                 {
                     LogValue(field, values[i], context);
                 }
@@ -46,17 +37,17 @@ namespace ramses_internal
         static void LogValue(DataFieldHandle field, const DATATYPE& value, RendererLogContext& context);
     };
 
-    template <> void ConstantLogger::LogValue<Float>    (DataFieldHandle field, const Float    & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Vector2>  (DataFieldHandle field, const Vector2  & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Vector3>  (DataFieldHandle field, const Vector3  & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Vector4>  (DataFieldHandle field, const Vector4  & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Int32>    (DataFieldHandle field, const Int32    & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Vector2i> (DataFieldHandle field, const Vector2i & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Vector3i> (DataFieldHandle field, const Vector3i & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Vector4i> (DataFieldHandle field, const Vector4i & value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Matrix22f>(DataFieldHandle field, const Matrix22f& value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Matrix33f>(DataFieldHandle field, const Matrix33f& value, RendererLogContext& context);
-    template <> void ConstantLogger::LogValue<Matrix44f>(DataFieldHandle field, const Matrix44f& value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<float>    (DataFieldHandle field, const float    & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::vec2>  (DataFieldHandle field, const glm::vec2  & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::vec3>  (DataFieldHandle field, const glm::vec3  & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::vec4>  (DataFieldHandle field, const glm::vec4  & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<int32_t>    (DataFieldHandle field, const int32_t    & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::ivec2> (DataFieldHandle field, const glm::ivec2 & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::ivec3> (DataFieldHandle field, const glm::ivec3 & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::ivec4> (DataFieldHandle field, const glm::ivec4 & value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::mat2>(DataFieldHandle field, const glm::mat2& value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::mat3>(DataFieldHandle field, const glm::mat3& value, RendererLogContext& context);
+    template <> void ConstantLogger::LogValue<glm::mat4>(DataFieldHandle field, const glm::mat4& value, RendererLogContext& context);
 }
 
 #endif

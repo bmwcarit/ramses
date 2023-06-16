@@ -14,7 +14,7 @@ namespace ramses_internal
 {
     TEST(PeriodicLoggerHelper, SummaryEntry_UInt32)
     {
-        SummaryEntry<UInt32> summary;
+        SummaryEntry<uint32_t> summary;
 
         {
             StringOutputStream stream{std::string{}};
@@ -49,7 +49,7 @@ namespace ramses_internal
 
     TEST(PeriodicLoggerHelper, FirstFiveElements_UInt64)
     {
-        FirstFiveElements<UInt64> summary;
+        FirstFiveElements<uint64_t> summary;
 
         {
             StringOutputStream stream{std::string{}};

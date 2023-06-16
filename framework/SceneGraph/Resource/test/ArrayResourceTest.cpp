@@ -9,14 +9,13 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Resource/ArrayResource.h"
-#include "Math3d/Vector2.h"
 
 namespace ramses_internal
 {
     TEST(AArrayResource, hasCorrectArrayType)
     {
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), String());
-        ArrayResource indArray(EResourceType_IndexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), {});
+        ArrayResource indArray(EResourceType_IndexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), {});
 
         EXPECT_EQ(EResourceType_VertexArray, vertArray.getTypeID());
         EXPECT_EQ(EResourceType_IndexArray, indArray.getTypeID());
@@ -24,14 +23,14 @@ namespace ramses_internal
 
     TEST(AArrayResource, hasCorrectElementCount)
     {
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), {});
 
         EXPECT_EQ(5u, vertArray.getElementCount());
     }
 
     TEST(AArrayResource, hasCorrectElementType)
     {
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, ResourceCacheFlag(0u), {});
 
         EXPECT_EQ(EDataType::Vector3F, vertArray.getElementType());
     }
@@ -39,7 +38,7 @@ namespace ramses_internal
     TEST(AArrayResource, hasCorrectCacheFlag)
     {
         const ResourceCacheFlag flag(15u);
-        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, flag, String());
+        ArrayResource vertArray(EResourceType_VertexArray, 5, EDataType::Vector3F, nullptr, flag, {});
         EXPECT_EQ(flag, vertArray.getCacheFlag());
     }
 }

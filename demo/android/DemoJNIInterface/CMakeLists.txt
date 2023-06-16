@@ -6,21 +6,15 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-MODULE_WITH_SHARED_LIBRARY(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
+createModule(
     NAME                    DemoRamsesJNIInterface
-    TYPE                    SHARED_LIBRARY
     ENABLE_INSTALL          ON
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/*.h
-    FILES_SOURCE            src/*.cpp
+    TYPE                    SHARED_LIBRARY
+    INCLUDE_PATHS           include
+    SRC_FILES               include/*.h
+                            src/*.cpp
 
     DEPENDENCIES            AndroidSDK
+                            ramses-shared-lib
 )
 

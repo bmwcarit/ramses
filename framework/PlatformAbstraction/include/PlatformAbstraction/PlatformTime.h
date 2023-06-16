@@ -17,14 +17,14 @@ namespace ramses_internal
 {
     namespace PlatformTime
     {
-        UInt64 GetMillisecondsAbsolute();
-        UInt64 GetMicrosecondsAbsolute();
+        uint64_t GetMillisecondsAbsolute();
+        uint64_t GetMicrosecondsAbsolute();
 
-        UInt64 GetMillisecondsMonotonic();
-        UInt64 GetMicrosecondsMonotonic();
+        uint64_t GetMillisecondsMonotonic();
+        uint64_t GetMicrosecondsMonotonic();
 
-        UInt64 GetMillisecondsSynchronized();
-        UInt64 GetMicrosecondsSynchronized();
+        uint64_t GetMillisecondsSynchronized();
+        uint64_t GetMicrosecondsSynchronized();
 
         // Due to std::chrono not having overflow protection it is very prone to issues
         // whenever using min/max from chrono because these are likely to overflow when
@@ -57,37 +57,37 @@ namespace ramses_internal
         return std::chrono::time_point_cast<std::chrono::microseconds>(tp).time_since_epoch().count();
     }
 
-    inline UInt64 PlatformTime::GetMillisecondsAbsolute()
+    inline uint64_t PlatformTime::GetMillisecondsAbsolute()
     {
         auto now = std::chrono::system_clock::now();
         return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
     }
 
-    inline UInt64 PlatformTime::GetMicrosecondsAbsolute()
+    inline uint64_t PlatformTime::GetMicrosecondsAbsolute()
     {
         auto now = std::chrono::system_clock::now();
         return std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count();
     }
 
-    inline UInt64 PlatformTime::GetMillisecondsSynchronized()
+    inline uint64_t PlatformTime::GetMillisecondsSynchronized()
     {
         auto now = synchronized_clock::now();
         return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
     }
 
-    inline UInt64 PlatformTime::GetMicrosecondsSynchronized()
+    inline uint64_t PlatformTime::GetMicrosecondsSynchronized()
     {
         auto now = synchronized_clock::now();
         return std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count();
     }
 
-    inline UInt64 PlatformTime::GetMillisecondsMonotonic()
+    inline uint64_t PlatformTime::GetMillisecondsMonotonic()
     {
         auto now = std::chrono::steady_clock::now();
         return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
     }
 
-    inline UInt64 PlatformTime::GetMicrosecondsMonotonic()
+    inline uint64_t PlatformTime::GetMicrosecondsMonotonic()
     {
         auto now = std::chrono::steady_clock::now();
         return std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count();

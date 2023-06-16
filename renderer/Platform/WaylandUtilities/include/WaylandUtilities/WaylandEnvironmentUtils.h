@@ -9,11 +9,13 @@
 #ifndef RAMSES_WAYLANDENVIRONMENTUTILS_H
 #define RAMSES_WAYLANDENVIRONMENTUTILS_H
 
-#include "Collections/String.h"
+#include <PlatformAbstraction/PlatformTypes.h>
+
+#include <string>
 
 namespace ramses_internal
 {
-    enum class WaylandEnvironmentVariable : UInt8
+    enum class WaylandEnvironmentVariable : uint8_t
     {
         XDGRuntimeDir = 0,
         WaylandSocket,
@@ -24,10 +26,10 @@ namespace ramses_internal
 
     namespace WaylandEnvironmentUtils
     {
-        void    SetVariable(WaylandEnvironmentVariable variableName, const String& value);
-        void    UnsetVariable(WaylandEnvironmentVariable variableName);
-        String  GetVariable(WaylandEnvironmentVariable variableName);
-        void    LogEnvironmentState(const String& waylandDisplayName);
+        void         SetVariable(WaylandEnvironmentVariable variableName, const std::string& value);
+        void         UnsetVariable(WaylandEnvironmentVariable variableName);
+        std::string  GetVariable(WaylandEnvironmentVariable variableName);
+        void         LogEnvironmentState(const std::string& waylandDisplayName);
     };
 }
 

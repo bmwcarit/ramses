@@ -15,21 +15,7 @@
 
 namespace ramses_internal
 {
-    using Int8 = int8_t;
-    using Int16 = int16_t;
-    using Int32 = int32_t;
-    using Int64 = int64_t;
-    using UInt8 = uint8_t;
-    using UInt16 = uint16_t;
-    using UInt32 = uint32_t;
-    using UInt64 = uint64_t;
-    using UInt = std::uintptr_t;
     using Int = std::intptr_t;
-    using UChar = unsigned char;
-    using Float = float;
-    using Double = double;
-    using Char = char;
-    using Bool = bool;
     using Byte = unsigned char;
 }
 

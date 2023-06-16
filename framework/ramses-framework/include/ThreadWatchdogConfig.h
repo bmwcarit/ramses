@@ -10,7 +10,6 @@
 #define RAMSES_THREADWATCHDOGCONFIG_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "Collections/String.h"
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
 
 namespace ramses_internal
@@ -28,13 +27,13 @@ namespace ramses_internal
         {
             switch(thread)
             {
-            case ramses::ERamsesThreadIdentifier_Workers:
+            case ramses::ERamsesThreadIdentifier::Workers:
                 m_workerThreadsWatchdogInterval = interval;
                 break;
-            case ramses::ERamsesThreadIdentifier_Renderer:
+            case ramses::ERamsesThreadIdentifier::Renderer:
                 m_rendererThreadWatchdogInterval = interval;
                 break;
-            default:
+            case ramses::ERamsesThreadIdentifier::Unknown:
                 break;
             }
         }
@@ -44,20 +43,21 @@ namespace ramses_internal
             m_callback = callback;
         }
 
-        uint32_t getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread) const
+        [[nodiscard]] uint32_t getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread) const
         {
             switch (thread)
             {
-            case ramses::ERamsesThreadIdentifier_Workers:
+            case ramses::ERamsesThreadIdentifier::Workers:
                 return m_workerThreadsWatchdogInterval;
-            case ramses::ERamsesThreadIdentifier_Renderer:
+            case ramses::ERamsesThreadIdentifier::Renderer:
                 return m_rendererThreadWatchdogInterval;
-            default:
+            case ramses::ERamsesThreadIdentifier::Unknown:
                 return 0;
             }
+            return 0;
         }
 
-        ramses::IThreadWatchdogNotification* getCallBack() const
+        [[nodiscard]] ramses::IThreadWatchdogNotification* getCallBack() const
         {
             return m_callback;
         }

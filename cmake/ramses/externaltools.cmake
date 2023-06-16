@@ -11,7 +11,7 @@
 # ensure python3 can be found (when python2 was searched before)
 unset(PYTHONINTERP_FOUND CACHE)
 unset(PYTHON_EXECUTABLE CACHE)
-FIND_PACKAGE(PythonInterp 3.6)
+find_package(PythonInterp 3.6)
 
 if (PYTHONINTERP_FOUND AND PYTHON_EXECUTABLE)
     message(STATUS "+ python3")
@@ -19,10 +19,6 @@ if (PYTHONINTERP_FOUND AND PYTHON_EXECUTABLE)
 else()
     message(STATUS "- python3")
 endif()
-
-
-### enable ccache when configured and available
-OPTION(ramses-sdk_USE_CCACHE "Enable ccache for build" OFF)
 
 if(ramses-sdk_USE_CCACHE)
     find_program(CCACHE_EXECUTABLE ccache)

@@ -22,7 +22,7 @@ public:
     {
     }
 
-    ~ARendererLogContext()
+    ~ARendererLogContext() override
     {
     }
 

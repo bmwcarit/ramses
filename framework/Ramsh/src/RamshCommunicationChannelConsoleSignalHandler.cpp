@@ -50,9 +50,9 @@ namespace ramses_internal
     void RamshCommunicationChannelConsoleSignalHandler::handleSignal(int sig)
     {
         ESignal enumSignal = static_cast<ESignal>(sig);
-        String signal = PlatformSignal::SignalToString(enumSignal);
+        const auto signal = PlatformSignal::SignalToString(enumSignal);
 
-        LOG_WARN(CONTEXT_RAMSH, "Received signal " + signal);
+        LOG_WARN_P(CONTEXT_RAMSH, "Received signal {}", signal);
         for (auto c : m_consoles)
         {
             c->stopThread();

@@ -14,13 +14,13 @@ namespace ramses_internal
 {
     using namespace ::testing;
 
-    static std::vector<String> CollectTokens(const char* str, UInt maxStringLength, Char splitToken)
+    static std::vector<std::string> CollectTokens(const char* str, size_t maxStringLength, char splitToken)
     {
-        std::vector<String> res;
-        String in(str);
+        std::vector<std::string> res;
+        std::string in(str);
         InplaceStringTokenizer::TokenizeToCStrings(in, maxStringLength, splitToken,
             [&res](const char* s) { res.push_back(s); });
-        EXPECT_EQ(String(str), in);
+        EXPECT_EQ(std::string(str), in);
         return res;
     }
 

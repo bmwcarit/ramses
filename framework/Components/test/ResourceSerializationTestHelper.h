@@ -23,14 +23,14 @@ namespace ramses_internal
     {
     public:
         template <typename T>
-        static IResource* CreateTestResource(UInt32 blobSize);
+        static IResource* CreateTestResource(uint32_t blobSize);
 
         template <typename T>
         static void CompareTypedResources(const T& a, const T& b);
 
         static void CompareResourceValues(const IResource& a, const IResource& b);
 
-        static void SetResourceDataRandom(IResource& res, UInt32 blobSize);
+        static void SetResourceDataRandom(IResource& res, uint32_t blobSize);
 
         using Types = ::testing::Types<TextureResource, ArrayResource, EffectResource>;
     };
@@ -58,11 +58,11 @@ namespace ramses_internal
         }
     }
 
-    inline void ResourceSerializationTestHelper::SetResourceDataRandom(IResource& res, UInt32 blobSize)
+    inline void ResourceSerializationTestHelper::SetResourceDataRandom(IResource& res, uint32_t blobSize)
     {
         if (!blobSize)
             return;
-        const uint8_t seed = static_cast<UInt8>(TestRandom::Get(0, 256));
+        const uint8_t seed = static_cast<uint8_t>(TestRandom::Get(0, 256));
         ResourceBlob data(blobSize);
         for (size_t i = 0; i < data.size(); ++i)
         {
@@ -73,7 +73,7 @@ namespace ramses_internal
 
     // TextureResource
     template <>
-    inline IResource* ResourceSerializationTestHelper::CreateTestResource<TextureResource>(UInt32 blobSize)
+    inline IResource* ResourceSerializationTestHelper::CreateTestResource<TextureResource>(uint32_t blobSize)
     {
         const TextureMetaInfo texDesc{ 16u, 17u, 1u, ETextureFormat::RGBA16, false, {}, { 18u, 19u} };
         TextureResource* resource = new TextureResource(EResourceType_Texture3D, texDesc, ResourceCacheFlag(15u), "resName");
@@ -94,7 +94,7 @@ namespace ramses_internal
 
     // ArrayResource
     template <>
-    inline IResource* ResourceSerializationTestHelper::CreateTestResource<ArrayResource>(UInt32 blobSize)
+    inline IResource* ResourceSerializationTestHelper::CreateTestResource<ArrayResource>(uint32_t blobSize)
     {
         ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 0, EDataType::Vector3F, nullptr, ResourceCacheFlag(15u), "resName");
         SetResourceDataRandom(*resource, blobSize);
@@ -110,21 +110,21 @@ namespace ramses_internal
 
     // EffectResource
     template <>
-    inline IResource* ResourceSerializationTestHelper::CreateTestResource<EffectResource>(UInt32 blobSize)
+    inline IResource* ResourceSerializationTestHelper::CreateTestResource<EffectResource>(uint32_t blobSize)
     {
-        String vert;
-        String frag;
-        String geom;
+        std::string vert;
+        std::string frag;
+        std::string geom;
         vert.resize(blobSize / 3);
         frag.resize(blobSize / 3);
         geom.resize(blobSize / 3);
-        for (UInt32 i = 0; i < blobSize / 3; ++i)
+        for (uint32_t i = 0; i < blobSize / 3; ++i)
         {
             vert[i] = 'a';
             frag[i] = 'b';
             geom[i] = 'c';
         }
-        EffectResource* resource = new EffectResource(vert, frag, geom, absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
+        EffectResource* resource = new EffectResource(vert, frag, geom, EDrawMode::Points, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
         return resource;
     }
 
@@ -134,6 +134,7 @@ namespace ramses_internal
         EXPECT_STREQ(a.getVertexShader(), b.getVertexShader());
         EXPECT_STREQ(a.getFragmentShader(), b.getFragmentShader());
         EXPECT_STREQ(a.getGeometryShader(), b.getGeometryShader());
+        EXPECT_EQ(a.getGeometryShaderInputType(), b.getGeometryShaderInputType());
     }
 }
 

@@ -14,6 +14,8 @@
 #include "TestEqualHelper.h"
 #include "SceneAllocateHelper.h"
 #include "Utils/ThreadLocalLog.h"
+#include "Math3d/Rotation.h"
+#include "glm/gtx/transform.hpp"
 
 using namespace testing;
 
@@ -188,13 +190,13 @@ namespace ramses_internal
 
         void expectIdentityMatrix(const NodeHandle nodeToCheck, const TransformationLinkCachedScene& scene) const
         {
-            expectCorrectMatrix(nodeToCheck, Matrix44f::Identity, scene);
+            expectCorrectMatrix(nodeToCheck, glm::identity<glm::mat4>(), scene);
         }
 
-        void expectCorrectMatrix(const NodeHandle nodeToCheck, const Matrix44f& worldMatrix, const TransformationLinkCachedScene& scene) const
+        void expectCorrectMatrix(const NodeHandle nodeToCheck, const glm::mat4& worldMatrix, const TransformationLinkCachedScene& scene) const
         {
             expectMatrixFloatEqual(worldMatrix, scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, nodeToCheck));
-            expectMatrixFloatEqual(worldMatrix.inverse(), scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, nodeToCheck));
+            expectMatrixFloatEqual(glm::inverse(worldMatrix), scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, nodeToCheck));
         }
 
         RendererEventVector consumeSceneControlEvents()
@@ -253,15 +255,15 @@ namespace ramses_internal
         const TransformHandle consumerWithoutTransformsTransform2;
         const NodeHandle      consumerWithoutTransformsNode3;
 
-        const Vector3 providerSceneRootTranslation;
-        const Vector3 providerSceneNodeTranslation;
-        const Vector3 consumer1SceneRootTranslation;
-        const Vector3 consumer1SceneNodeTranslation;
-        const Vector3 consumer1SceneNode2Translation;
-        const Vector3 consumer2SceneRootTranslation;
-        const Vector3 consumer2SceneNodeTranslation;
-        const Vector3 consumer2ndLevelSceneNodeTranslation;
-        const Vector3 consumerWithoutTransformsTransform2Translation;
+        const glm::vec3 providerSceneRootTranslation;
+        const glm::vec3 providerSceneNodeTranslation;
+        const glm::vec3 consumer1SceneRootTranslation;
+        const glm::vec3 consumer1SceneNodeTranslation;
+        const glm::vec3 consumer1SceneNode2Translation;
+        const glm::vec3 consumer2SceneRootTranslation;
+        const glm::vec3 consumer2SceneNodeTranslation;
+        const glm::vec3 consumer2ndLevelSceneNodeTranslation;
+        const glm::vec3 consumerWithoutTransformsTransform2Translation;
 
         const DataSlotHandle providerSceneProviderSlotHandle;
         const DataSlotHandle consumer1SceneConsumerSlotHandle;
@@ -278,65 +280,65 @@ namespace ramses_internal
     TEST_F(ATransformationLinkCachedScene, resolvesSingleDataDependency)
     {
         linkConsumer1SceneToProviderScene();
-        const Vector3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, resolvesSingleDataDependencyForChildNodeOfConsumer)
     {
         linkConsumer1SceneToProviderScene();
-        const Vector3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation + consumer1SceneNode2Translation;
-        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation + consumer1SceneNode2Translation;
+        expectCorrectMatrix(consumer1SceneNode2, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, resolvesSingleDataDependencyWithLinkToSceneWithRoot)
     {
         linkConsumer2SceneToProviderScene();
-        const Vector3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation;
-        expectCorrectMatrix(consumer2SceneRoot, Matrix44f::Translation(expectedTranslation), consumer2Scene);
+        const glm::vec3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation;
+        expectCorrectMatrix(consumer2SceneRoot, glm::translate(expectedTranslation), consumer2Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, doesNotAffectSceneWhenLinkingItsChildAsConsumer)
     {
         linkConsumer1SceneToProviderScene();
-        const Vector3 expectedTranslation = consumer1SceneRootTranslation;
-        expectCorrectMatrix(consumer1SceneRootNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = consumer1SceneRootTranslation;
+        expectCorrectMatrix(consumer1SceneRootNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, doesNotAffectSceneWithConsumerWhenLinkingItsChildAsProvider)
     {
         linkConsumer1SceneToProviderScene();
         linkConsumer2ndLevelSceneToConsumer1Scene();
-        const Vector3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation + consumer1SceneNode2Translation;
-        expectCorrectMatrix(consumer2ndLevelSceneNode, Matrix44f::Translation(expectedTranslation), consumer2ndLevelScene);
+        const glm::vec3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation + consumer1SceneNode2Translation;
+        expectCorrectMatrix(consumer2ndLevelSceneNode, glm::translate(expectedTranslation), consumer2ndLevelScene);
     }
 
     TEST_F(ATransformationLinkCachedScene, resolvesTransformationAcrossTwoLinks)
     {
         linkConsumer1SceneToProviderScene();
         linkConsumer2ndLevelSceneToConsumer1Scene();
-        const Vector3 expectedTranslation1 = providerSceneRootTranslation + providerSceneNodeTranslation;
-        const Vector3 expectedTranslation2 = providerSceneRootTranslation + providerSceneNodeTranslation + consumer1SceneNode2Translation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation1), consumer1Scene);
-        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::Translation(expectedTranslation2), consumer1Scene);
+        const glm::vec3 expectedTranslation1 = providerSceneRootTranslation + providerSceneNodeTranslation;
+        const glm::vec3 expectedTranslation2 = providerSceneRootTranslation + providerSceneNodeTranslation + consumer1SceneNode2Translation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation1), consumer1Scene);
+        expectCorrectMatrix(consumer1SceneNode2, glm::translate(expectedTranslation2), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, resolvesTransformationAndPropagatesToChild)
     {
         linkConsumer2SceneToProviderScene();
-        const Vector3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation + consumer2SceneNodeTranslation;
-        expectCorrectMatrix(consumer2SceneNode, Matrix44f::Translation(expectedTranslation), consumer2Scene);
+        const glm::vec3 expectedTranslation = providerSceneRootTranslation + providerSceneNodeTranslation + consumer2SceneNodeTranslation;
+        expectCorrectMatrix(consumer2SceneNode, glm::translate(expectedTranslation), consumer2Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, resolvesTransformationAndPropagatesToSceneWithNoTransforms)
     {
         linkConsumerWithoutTransformsSceneToProviderScene();
-        const Vector3 expectedTranslation1 = providerSceneRootTranslation + providerSceneNodeTranslation;
-        expectCorrectMatrix(consumerWithoutTransformsNode1, Matrix44f::Translation(expectedTranslation1), consumerWithoutTransformsScene);
+        const glm::vec3 expectedTranslation1 = providerSceneRootTranslation + providerSceneNodeTranslation;
+        expectCorrectMatrix(consumerWithoutTransformsNode1, glm::translate(expectedTranslation1), consumerWithoutTransformsScene);
 
-        const Vector3 expectedTranslation2 = providerSceneRootTranslation + providerSceneNodeTranslation + consumerWithoutTransformsTransform2Translation;
-        expectCorrectMatrix(consumerWithoutTransformsNode2, Matrix44f::Translation(expectedTranslation2), consumerWithoutTransformsScene);
-        expectCorrectMatrix(consumerWithoutTransformsNode3, Matrix44f::Translation(expectedTranslation2), consumerWithoutTransformsScene);
+        const glm::vec3 expectedTranslation2 = providerSceneRootTranslation + providerSceneNodeTranslation + consumerWithoutTransformsTransform2Translation;
+        expectCorrectMatrix(consumerWithoutTransformsNode2, glm::translate(expectedTranslation2), consumerWithoutTransformsScene);
+        expectCorrectMatrix(consumerWithoutTransformsNode3, glm::translate(expectedTranslation2), consumerWithoutTransformsScene);
     }
 
     TEST_F(ATransformationLinkCachedScene, resolvesTransformationAndPropagatesToSceneWithDifferentRotationConventions)
@@ -346,93 +348,110 @@ namespace ramses_internal
         //reset translations
         setAllTranslations(true);
 
-        providerScene.setRotation(providerSceneTransform, { 10.f, 0.f, 0.f }, ERotationConvention::ZYX); //only X-Axis
+        providerScene.setRotation(providerSceneTransform, { 10.f, 0.f, 0.f, 1.f }, ERotationType::Euler_XYZ); //only X-Axis
 
-        consumer1Scene.setRotation(consumer1SceneTransform2, { 0.f, 10.f, 0.f }, ERotationConvention::XYZ); //only Y-Axis
-        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::RotationEuler({ 10.f, 10.f, 0.f }, ERotationConvention::XYZ), consumer1Scene);
+        consumer1Scene.setRotation(consumer1SceneTransform2, { 0.f, 10.f, 0.f, 1.f }, ERotationType::Euler_ZYX); //only Y-Axis
+        expectCorrectMatrix(consumer1SceneNode2, Math3d::Rotation({ 10.f, 10.f, 0.f, 1.f }, ERotationType::Euler_ZYX), consumer1Scene);
+    }
+
+    TEST_F(ATransformationLinkCachedScene, providerOverridesEulerWithQuaternion)
+    {
+        const glm::vec4 rProvider = {0.5f, 0.5f, 0.5f, 0.5f};
+        const glm::vec4 rConsumer = {30.f, 0.f, 0.f, 1.f};
+
+        // reset translations
+        setAllTranslations(true);
+        consumer1Scene.setRotation(consumer1SceneTransform, rConsumer, ERotationType::Euler_XYZ);
+        providerScene.setRotation(providerSceneTransform, rProvider, ERotationType::Quaternion);
+
+        linkConsumer1SceneToProviderScene();
+        expectCorrectMatrix(consumer1SceneNode2, Math3d::Rotation(rProvider, ERotationType::Quaternion), consumer1Scene);
+
+        sceneLinksManager.removeDataLink(consumer1Scene.getSceneId(), consumer1SceneConsumerId);
+        expectCorrectMatrix(consumer1SceneNode2, Math3d::Rotation(rConsumer, ERotationType::Euler_XZY), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, fallsBackToOriginalTransformationWhenProviderSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
         providerScene.releaseDataSlot(providerSceneProviderSlotHandle);
-        const Vector3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, fallsBackToOriginalTransformationWhenConsumerSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
         consumer1Scene.releaseDataSlot(consumer1SceneConsumerSlotHandle);
-        const Vector3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         providerScene.releaseDataSlot(providerSceneProviderSlotHandle);
 
-        const Vector3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenConsumerSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         consumer1Scene.releaseDataSlot(consumer1SceneConsumerSlotHandle);
 
-        const Vector3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderTransformationChanges)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
-        const Vector3 newRootTranslation(1.f);
+        const glm::vec3 newRootTranslation(1.f);
         providerScene.setTranslation(providerSceneRootTransform, newRootTranslation);
 
-        const Vector3 expectedTranslation = newRootTranslation + providerSceneNodeTranslation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = newRootTranslation + providerSceneNodeTranslation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderRotationConventionChanges)
     {
         linkConsumer1SceneToProviderScene();
 
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         setAllTranslations(true);
-        const Vector3 rotation{ 10.f, 20.f, 30.f };
-        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::ZYX);
+        const glm::vec4 rotation{ 10.f, 20.f, 30.f, 1.f };
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationType::Euler_XYZ);
 
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::RotationEuler(rotation, ERotationConvention::ZYX), consumer1Scene);
+        expectCorrectMatrix(consumer1SceneNode, Math3d::Rotation(rotation, ERotationType::Euler_XYZ), consumer1Scene);
 
-        //change convention
-        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::XYZ);
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ), consumer1Scene);
+        //change rotationType
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationType::Euler_ZYX);
+        expectCorrectMatrix(consumer1SceneNode, Math3d::Rotation(rotation, ERotationType::Euler_ZYX), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSceneRemoved)
     {
         linkConsumer1SceneToProviderScene();
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
-        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        std::ignore = consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
 
         rendererScenes.destroyScene(providerScene.getSceneId());
 
-        const Vector3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
-        expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+        const glm::vec3 expectedTranslation = consumer1SceneRootTranslation + consumer1SceneNodeTranslation;
+        expectCorrectMatrix(consumer1SceneNode, glm::translate(expectedTranslation), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, canreleaseDataSlotOnUnlinkedProvider)

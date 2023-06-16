@@ -10,9 +10,50 @@
 #include "gtest/gtest.h"
 #include "Utils/StringUtils.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
+    TEST(StringUtilsTest, trimStringLiterals)
+    {
+        {
+            using namespace  std::literals::string_view_literals;
+            EXPECT_STREQ("char A", StringUtils::Trim(" char A   "sv).c_str());
+        }
+        {
+            using namespace std::literals::string_literals;
+            EXPECT_STREQ("char A", StringUtils::Trim(" char A   "s).c_str());
+        }
+    }
+
+    TEST(StringUtilsTest, trimViewString)
+    {
+        using namespace  std::literals::string_view_literals;
+        {
+            auto sv = " char A   "sv;
+            EXPECT_EQ("char A"sv, StringUtils::TrimView(sv));
+        }
+        {
+            std::string s = "hello";
+            [[maybe_unused]] auto danglingStringView = StringUtils::TrimView(s + " world ");
+            // May fail or pass, depending on the compiler
+            // EXPECT_NE("hello world"sv, danglingStringView);
+            EXPECT_EQ("hello world"sv, StringUtils::Trim(s + " world "));
+        }
+        {
+            auto string = new std::string(" Hello ");
+            auto trimmedStringView = StringUtils::TrimView(*string);
+            auto trimmedString = StringUtils::Trim(*string);
+            EXPECT_EQ("Hello"sv, trimmedStringView);
+            EXPECT_EQ("Hello"sv, trimmedString);
+            delete string;
+            // May fail or pass, depending on the compiler
+            // EXPECT_NE("Hello"sv, trimmedStringView);
+            EXPECT_EQ("Hello"sv, trimmedString);
+        }
+    }
+
     TEST(StringUtilsTest, trimString)
     {
         EXPECT_STREQ("te st", StringUtils::Trim("  te st ").c_str());
@@ -26,8 +67,8 @@ namespace ramses_internal
 
     TEST(StringUtilsTest, tokenizeStringToSet)
     {
-        const String testString(" test1 test2   test3");
-        StringSet tokens = StringUtils::TokenizeToSet(testString);
+        const std::string testString(" test1 test2   test3");
+        HashSet<std::string> tokens = StringUtils::TokenizeToSet(testString);
         EXPECT_EQ(3u, tokens.size());
         EXPECT_TRUE(tokens.contains("test1"));
         EXPECT_TRUE(tokens.contains("test2"));
@@ -37,29 +78,29 @@ namespace ramses_internal
 
     TEST(StringUtilsTest, tokenizeString)
     {
-        const String testString(" test1 test2   test3");
-        std::vector<String> tokens = StringUtils::Tokenize(testString);
-        EXPECT_EQ(tokens, std::vector<String>({"test1", "test2", "test3"}));
+        const std::string testString(" test1 test2   test3");
+        std::vector<std::string> tokens = StringUtils::Tokenize(testString);
+        EXPECT_EQ(tokens, std::vector<std::string>({"test1", "test2", "test3"}));
     }
 
     TEST(StringUtilsTest, tokenizeEmptyString)
     {
-        const String testString("");
-        std::vector<String> tokens = StringUtils::Tokenize(testString);
+        const std::string testString;
+        std::vector<std::string> tokens = StringUtils::Tokenize(testString);
         EXPECT_EQ(0u, tokens.size());
     }
 
     TEST(StringUtilsTest, WithNonDefaultSplitChar)
     {
-        const String testString(",test1,,test2,test3");
-        std::vector<String> tokens = StringUtils::Tokenize(testString, ',');
-        EXPECT_EQ(tokens, std::vector<String>({"test1", "test2", "test3"}));
+        const std::string testString(",test1,,test2,test3");
+        std::vector<std::string> tokens = StringUtils::Tokenize(testString, ',');
+        EXPECT_EQ(tokens, std::vector<std::string>({"test1", "test2", "test3"}));
     }
 
     TEST(StringUtilsTest, tokenizeStringToSetWithNonDefaultSplitChar)
     {
-        const String testString(",test1,,test2,test3,,");
-        StringSet tokens = StringUtils::TokenizeToSet(testString, ',');
+        const std::string testString(",test1,,test2,test3,,");
+        HashSet<std::string> tokens = StringUtils::TokenizeToSet(testString, ',');
         EXPECT_EQ(3u, tokens.size());
         EXPECT_TRUE(tokens.contains("test1"));
         EXPECT_TRUE(tokens.contains("test2"));
@@ -69,8 +110,8 @@ namespace ramses_internal
 
     TEST(StringUtilsTest, tokenizeStringWithSingleCharElements)
     {
-        const String testString(",1,,2,3");
-        StringSet tokens = StringUtils::TokenizeToSet(testString, ',');
+        const std::string testString(",1,,2,3");
+        HashSet<std::string> tokens = StringUtils::TokenizeToSet(testString, ',');
         EXPECT_EQ(3u, tokens.size());
         EXPECT_TRUE(tokens.contains("1"));
         EXPECT_TRUE(tokens.contains("2"));

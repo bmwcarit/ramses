@@ -19,21 +19,21 @@ namespace ramses_internal
     class DebugOutput final
     {
     public:
-        Bool enable(const IContext& context);
-        Bool isAvailable() const;
-        Bool checkAndResetError() const;
+        bool enable(const IContext& context);
+        bool isAvailable() const;
+        bool checkAndResetError() const;
 
     private:
-        Bool loadExtensionFunctionPointer(const IContext& context);
+        bool loadExtensionFunctionPointer(const IContext& context);
 
-#if defined(__linux__) || defined(__ghs__)
+#if defined(__linux__)
         PFNGLDEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback = nullptr;
         PFNGLDEBUGMESSAGECONTROLKHRPROC  glDebugMessageControl  = nullptr;
 #else
         PFNGLDEBUGMESSAGECALLBACKPROC glDebugMessageCallback = 0;
         PFNGLDEBUGMESSAGECONTROLPROC  glDebugMessageControl  = 0;
 #endif
-        mutable Bool m_errorOccured = false;
+        mutable bool m_errorOccured = false;
     };
 }
 

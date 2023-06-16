@@ -35,22 +35,10 @@ namespace ramses_internal
         // scene
         CreateScene,
 
-        // dcsm
-        DcsmRegisterContent,
-        DcsmCanvasSizeChange,
-        DcsmContentStateChange,
-        DcsmContentAvailable,
-        DcsmContentDescription,
-        DcsmCategoryContentSwitchRequest,
-        DcsmRequestUnregisterContent,
-        DcsmForceUnregisterContent,
-        DcsmUpdateContentMetadata,
-        DcsmContentStatus,
-
         NUM_ELEMENTS
     };
 
-    static constexpr const char* const EMessageIdNames[] = {
+    const std::array EMessageIdNames = {
         "INVALID_0",  // needed because EMessageId starts at 1
 
         "PublishScene",
@@ -64,16 +52,6 @@ namespace ramses_internal
         "RendererEvent",
         "Alive",
         "CreateScene",
-        "DcsmRegisterContent",
-        "DcsmCanvasSizeChange",
-        "DcsmContentStatusChange",
-        "DcsmContentAvailable",
-        "DcsmContentDescription",
-        "DcsmCategoryContentSwitchRequest",
-        "DcsmRequestUnregisterContent",
-        "DcsmForceUnregisterContent",
-        "DcsmUpdateContentMetadata",
-        "DcsmContentStatus",
     };
 
     inline IOutputStream& operator<<(IOutputStream& outputStream, EMessageId messageId)

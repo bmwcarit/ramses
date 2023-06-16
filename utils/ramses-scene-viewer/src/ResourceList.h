@@ -37,22 +37,22 @@ namespace ramses_internal
             return m_objects.size();
         }
 
-        uint32_t unavailable() const
+        [[nodiscard]] uint32_t unavailable() const
         {
             return m_unavailable;
         }
 
-        uint32_t compressedSize() const
+        [[nodiscard]] uint32_t compressedSize() const
         {
             return m_compressedSize;
         }
 
-        uint32_t decompressedSize() const
+        [[nodiscard]] uint32_t decompressedSize() const
         {
             return m_decompressedSize;
         }
 
-        int getDisplayLimit() const
+        [[nodiscard]] int getDisplayLimit() const
         {
             return m_displayLimit;
         }
@@ -68,7 +68,7 @@ namespace ramses_internal
          * Returns the index of the current order criteria.
          * The returned index can be used to access an item in #ramses_internal::ResourceList::orderCriteriaItems
          */
-        int getOrderCriteriaIndex() const
+        [[nodiscard]] int getOrderCriteriaIndex() const
         {
             return static_cast<int>(m_orderCriteria);
         }
@@ -101,7 +101,7 @@ namespace ramses_internal
             return m_hashLookup.equal_range(hash);
         }
 
-        uint32_t getDisplayedSize() const
+        [[nodiscard]] uint32_t getDisplayedSize() const
         {
             return m_displayedSize;
         }
@@ -116,7 +116,7 @@ namespace ramses_internal
             Compressed = 1,
         };
 
-        static UInt32 GetCompressedSize(const ramses_internal::ManagedResource& resource)
+        static uint32_t GetCompressedSize(const ramses_internal::ManagedResource& resource)
         {
             const auto compressed = resource->getCompressedDataSize();
             return (compressed == 0) ? resource->getDecompressedDataSize() : compressed;
@@ -146,8 +146,8 @@ namespace ramses_internal
     inline void ResourceList::sort()
     {
         auto cmp = [&](ramses::RamsesObject* a, ramses::RamsesObject* b) {
-            ManagedResource resourceA = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(a)->impl.getLowlevelResourceHash());
-            ManagedResource resourceB = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(b)->impl.getLowlevelResourceHash());
+            ManagedResource resourceA = m_scene.getRamsesClient().m_impl.getResource(static_cast<ramses::Resource*>(a)->m_impl.getLowlevelResourceHash());
+            ManagedResource resourceB = m_scene.getRamsesClient().m_impl.getResource(static_cast<ramses::Resource*>(b)->m_impl.getLowlevelResourceHash());
             if (m_orderCriteria == OrderCriteria::Compressed)
             {
                 const auto sizeA = resourceA ? GetCompressedSize(resourceA) : 0u;
@@ -168,8 +168,8 @@ namespace ramses_internal
     {
         if (m_objects.empty())
         {
-            const auto& reg = m_scene.impl.getObjectRegistry();
-            reg.getObjectsOfType(m_objects, ramses::ERamsesObjectType_Resource);
+            const auto& reg = m_scene.m_impl.getObjectRegistry();
+            reg.getObjectsOfType(m_objects, ramses::ERamsesObjectType::Resource);
             m_displayLimit = std::min(m_displayLimit, static_cast<int>(m_objects.size()));
 
             sort();
@@ -177,11 +177,11 @@ namespace ramses_internal
             for (auto it : m_objects)
             {
                 auto hlResource = static_cast<ramses::Resource*>(it);
-                auto resource   = m_scene.getRamsesClient().impl.getResource(hlResource->impl.getLowlevelResourceHash());
-                m_hashLookup.insert({hlResource->impl.getLowlevelResourceHash(), hlResource});
+                auto resource   = m_scene.getRamsesClient().m_impl.getResource(hlResource->m_impl.getLowlevelResourceHash());
+                m_hashLookup.insert({hlResource->m_impl.getLowlevelResourceHash(), hlResource});
                 if (resource)
                 {
-                    if (m_usedObjects.contains(&hlResource->impl))
+                    if (m_usedObjects.contains(&hlResource->m_impl))
                     {
                         // don't count duplicates
                         m_compressedSize += GetCompressedSize(resource);
@@ -200,8 +200,8 @@ namespace ramses_internal
         m_displayedSize = 0u;
         std::for_each(begin(), end(), [&](ramses::RamsesObject* obj) {
             auto hlResource = static_cast<ramses::Resource*>(obj);
-            auto resource   = m_scene.getRamsesClient().impl.getResource(hlResource->impl.getLowlevelResourceHash());
-            if (resource && m_usedObjects.contains(&hlResource->impl))
+            auto resource   = m_scene.getRamsesClient().m_impl.getResource(hlResource->m_impl.getLowlevelResourceHash());
+            if (resource && m_usedObjects.contains(&hlResource->m_impl))
             {
                 // don't count duplicates
                 m_displayedSize += (m_orderCriteria == OrderCriteria::Compressed) ? GetCompressedSize(resource) : resource->getDecompressedDataSize();

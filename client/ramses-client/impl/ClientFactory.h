@@ -12,6 +12,8 @@
 #include "ramses-client-api/RamsesClient.h"
 #include "RamsesObjectFactoryInterfaces.h"
 
+#include <string_view>
+
 namespace ramses
 {
     class ClientFactory : public IClientFactory
@@ -19,7 +21,7 @@ namespace ramses
     public:
         static bool RegisterClientFactory();
 
-        virtual ClientUniquePtr createClient(RamsesFrameworkImpl* impl, const char* applicationName) const override;
+        ClientUniquePtr createClient(RamsesFrameworkImpl& framework, std::string_view applicationName) const override;
     };
 }
 #endif

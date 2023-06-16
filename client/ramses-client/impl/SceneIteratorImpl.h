@@ -10,6 +10,7 @@
 #define RAMSES_SCENEITERATORIMPL_H
 
 #include "IteratorImpl.h"
+#include "RamsesClientImpl.h"
 #include "ramses-client-api/RamsesObjectTypes.h"
 #include "Collections/Vector.h"
 
@@ -20,9 +21,20 @@ namespace ramses
     class SceneIteratorImpl : public IteratorImpl<Scene*>
     {
     public:
-        explicit SceneIteratorImpl(const std::vector<Scene*>& scenes)
-            : IteratorImpl(scenes)
+        explicit SceneIteratorImpl(const SceneVector& scenes)
+            : IteratorImpl{ TransformToScenePtrs(scenes) }
         {
+        }
+
+    private:
+        static std::vector<Scene*> TransformToScenePtrs(const SceneVector& scenes)
+        {
+            std::vector<Scene*> scenePtrs;
+            scenePtrs.reserve(scenes.size());
+            for (auto& s : scenes)
+                scenePtrs.push_back(s.get());
+
+            return scenePtrs;
         }
     };
 }

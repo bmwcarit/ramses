@@ -13,8 +13,8 @@
 // test for different data sizes inspired by internal cityhash test (city-test.cc)
 namespace ramses_internal
 {
-    static const UInt32 numTests = 20;
-    static const UInt32 dataSize = 1 << numTests;
+    static const uint32_t numTests = 20;
+    static const uint32_t dataSize = 1 << numTests;
     static char testData[dataSize];
     static const cityhash::uint128 expectedHashs[numTests] = {
         {0x132a6150371ba800, 0xf37a02a3a52349fb},
@@ -42,16 +42,16 @@ namespace ramses_internal
     // Initialize data to pseudorandom values.
     static void setupTestData()
     {
-        const UInt64 k0 = 0xc3a5c85c97cb3127ULL;
-        UInt64 a = 9;
-        UInt64 b = 777;
-        for (UInt32 i = 0; i < dataSize; i++)
+        const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
+        uint64_t a = 9;
+        uint64_t b = 777;
+        for (uint32_t i = 0; i < dataSize; i++)
         {
             a += b;
             b += a;
-            a = (a ^ (a >> 41)) * k0;
-            b = (b ^ (b >> 41)) * k0 + i;
-            UInt8 u = (b >> 37) & 0xff;
+            a = (a ^ (a >> 41u)) * k0;
+            b = (b ^ (b >> 41u)) * k0 + i;
+            const auto u = static_cast<uint8_t>((b >> 37u) & 0xffu);
             memcpy(testData + i, &u, 1);
         }
     }
@@ -60,11 +60,11 @@ namespace ramses_internal
     {
         setupTestData();
 
-        UInt32 offset = 0;
-        UInt32 l = 0;
+        uint32_t offset = 0;
+        uint32_t l = 0;
         for (; l < numTests - 1; l++)
         {
-            const UInt32 length = 1 << l;
+            const uint32_t length = 1 << l;
             SCOPED_TRACE(testing::Message("hash error with data size of ") << length << " byte");
             {
                 EXPECT_EQ(expectedHashs[l], cityhash::CityHash128(testData + offset, length));

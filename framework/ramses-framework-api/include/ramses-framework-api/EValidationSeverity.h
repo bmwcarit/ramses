@@ -14,11 +14,11 @@ namespace ramses
     /**
     * @brief The EValidationSeverity defines severity of validation results
     */
-    enum EValidationSeverity
+    enum class EValidationSeverity
     {
-        EValidationSeverity_Info = 0,
-        EValidationSeverity_Warning,
-        EValidationSeverity_Error
+        Info,
+        Warning,
+        Error
     };
 }
 

@@ -14,6 +14,9 @@
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include <unordered_set>
 #include <thread>
+#include <cmath>
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 /**
  * @example ramses-example-local-client/src/main.cpp
@@ -28,7 +31,7 @@ public:
         m_windowClosed = true;
     }
 
-    bool isWindowClosed() const
+    [[nodiscard]] bool isWindowClosed() const
     {
         return m_windowClosed;
     }
@@ -37,20 +40,20 @@ private:
     bool m_windowClosed = false;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
-    config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
+    ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel_Latest};
+    config.setRequestedRamsesShellType(ramses::ERamsesShellType::Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     ramses::RendererSceneControl& sceneControlAPI = *renderer.getSceneControlAPI();
     renderer.startThread();
 
-    ramses::DisplayConfig displayConfig(argc, argv);
+    ramses::DisplayConfig displayConfig;
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 
@@ -69,10 +72,10 @@ int main(int argc, char* argv[])
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -6.f}, ramses::vec3f{1.f, 0.f, -6.f}, ramses::vec3f{0.f, 1.f, -6.f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -94,40 +97,15 @@ int main(int argc, char* argv[])
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
-    meshNode->setTranslation(0.0f, 0.0f, -5.0f);
+    meshNode->setTranslation({0.0f, 0.0f, -5.0f});
     meshNode->setAppearance(*appearance);
     meshNode->setGeometryBinding(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
 
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(4000u, 360.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(0.5f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime();
-    sequence->start();
-
-    appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
-
-    clientScene->publish(ramses::EScenePublicationMode_LocalOnly);
+    clientScene->publish(ramses::EScenePublicationMode::LocalOnly);
     clientScene->flush();
 
     // show the scene on the renderer
@@ -136,9 +114,17 @@ int main(int argc, char* argv[])
     sceneControlAPI.flush();
 
     RendererEventHandler eventHandler;
+    float factor = 0.f;
+    float step = 0.002f;
+    auto q1 = glm::angleAxis(glm::radians(-90.f), glm::vec3(0, 0, 1));
+    auto q2 = glm::angleAxis(glm::radians(90.f), glm::vec3(0, 0, 1));
+
     while (!eventHandler.isWindowClosed())
     {
-        renderer.dispatchEvents(eventHandler);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+        factor += step;
+        meshNode->setRotation(glm::mix(q1, q2, factor));
+        clientScene->flush();
+        if (factor >= 1.f || factor <= 0.f) step = -step;
     }
 }

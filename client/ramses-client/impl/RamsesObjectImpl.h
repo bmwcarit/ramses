@@ -16,9 +16,8 @@
 #include "StatusObjectImpl.h"
 #include "RamsesObjectHandle.h"
 
-// framework
-#include "Collections/String.h"
-
+#include <string_view>
+#include <string>
 
 namespace ramses_internal
 {
@@ -36,8 +35,8 @@ namespace ramses
     class RamsesObjectImpl : public StatusObjectImpl
     {
     public:
-        explicit RamsesObjectImpl(ERamsesObjectType type, const char* name);
-        virtual ~RamsesObjectImpl() override;
+        explicit RamsesObjectImpl(ERamsesObjectType type, std::string_view name);
+        ~RamsesObjectImpl() override;
 
         void setObjectRegistry(IRamsesObjectRegistry& objectRegistry);
         void setObjectRegistryHandle(RamsesObjectHandle handle);
@@ -45,8 +44,8 @@ namespace ramses
 
         ERamsesObjectType      getType() const;
         bool                   isOfType(ERamsesObjectType type) const;
-        const ramses_internal::String& getName() const;
-        virtual status_t       setName(RamsesObject& object, const char* name);
+        const std::string&     getName() const;
+        virtual status_t       setName(RamsesObject& object, std::string_view name);
         const RamsesObject&    getRamsesObject() const;
         RamsesObject&          getRamsesObject();
         void                   setRamsesObject(RamsesObject& ramsesObject);
@@ -57,14 +56,14 @@ namespace ramses
 
         virtual void deinitializeFrameworkData() = 0;
 
-        virtual status_t validate() const override;
+        status_t validate() const override;
 
     protected:
-        virtual status_t addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const override;
+        status_t addValidationMessage(EValidationSeverity severity, std::string message) const override;
 
     private:
         ERamsesObjectType       m_type;
-        ramses_internal::String m_name;
+        std::string m_name;
 
         RamsesObject*           m_ramsesObject = nullptr;
         IRamsesObjectRegistry*  m_objectRegistry = nullptr;

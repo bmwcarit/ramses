@@ -21,7 +21,7 @@ namespace ramses_internal
         {
         }
 
-        DataInstance(DataLayoutHandle dataLayoutHandle, UInt32 size)
+        DataInstance(DataLayoutHandle dataLayoutHandle, uint32_t size)
             : m_dataLayoutHandle(dataLayoutHandle)
             , m_data(size)
         {
@@ -33,16 +33,16 @@ namespace ramses_internal
         DataInstance& operator=(DataInstance&&) noexcept = default;
 
         template <typename DATATYPE>
-        const DATATYPE* getTypedDataPointer(UInt32 fieldOffset) const
+        [[nodiscard]] const DATATYPE* getTypedDataPointer(uint32_t fieldOffset) const
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(tobias) questionable if correct because because objects have no lifetime
             return reinterpret_cast<const DATATYPE*>(&m_data[fieldOffset]);
         }
 
         template <typename DATATYPE>
-        void setTypedData(UInt32 fieldOffset, UInt32 elementCount, const DATATYPE* value)
+        void setTypedData(uint32_t fieldOffset, uint32_t elementCount, const DATATYPE* value)
         {
-            const UInt32 fieldSizeInByte = sizeof(DATATYPE) * elementCount;
+            const uint32_t fieldSizeInByte = sizeof(DATATYPE) * elementCount;
             assert(fieldOffset + fieldSizeInByte <= m_data.size());
             void* dest = &m_data[fieldOffset];
             if (dest != value)
@@ -51,7 +51,7 @@ namespace ramses_internal
             }
         }
 
-        DataLayoutHandle getLayoutHandle() const
+        [[nodiscard]] DataLayoutHandle getLayoutHandle() const
         {
             return m_dataLayoutHandle;
         }

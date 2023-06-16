@@ -20,13 +20,12 @@
 
 namespace ramses_internal
 {
-    const String EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName = "ramses-ec-display";
-    const String EmbeddedCompositingTestsFramework::TestAlternateEmbeddedCompositingDisplayName = "ramses-ec-alternate-display";
+    const std::string EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName = "ramses-ec-display";
+    const std::string EmbeddedCompositingTestsFramework::TestAlternateEmbeddedCompositingDisplayName = "ramses-ec-alternate-display";
 
-    EmbeddedCompositingTestsFramework::EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName)
+    EmbeddedCompositingTestsFramework::EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config)
         : RendererTestsFramework(generateScreenshots, config)
         , m_testForkingController(testForkingController)
-        , m_embeddedCompositingSocketGroupName(embeddedCompositingSocketGroupName)
     {
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("EmbeddedCompositingTestsFramework");
     }
@@ -106,19 +105,19 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture(): no content on stream source id :" << sourceId.getValue());
     }
 
-    Bool EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds)
+    bool EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, uint64_t numberOfComittedBuffers, uint32_t timeoutMilliseconds)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager();
 
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): waiting for number of commited buffers for ivi surface " << waylandSurfaceId.getValue() << " reaching " << numberOfComittedBuffers);
 
-        const UInt64 startTime = PlatformTime::GetMillisecondsMonotonic();
+        const uint64_t startTime = PlatformTime::GetMillisecondsMonotonic();
         while (embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(waylandSurfaceId) != numberOfComittedBuffers)
         {
             embeddedCompositingManager.processClientRequests();
 
-            const UInt32 timeElapsed = static_cast<UInt32>(PlatformTime::GetMillisecondsMonotonic() - startTime);
+            const uint32_t timeElapsed = static_cast<uint32_t>(PlatformTime::GetMillisecondsMonotonic() - startTime);
             if(timeElapsed > timeoutMilliseconds)
             {
                 LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurfaceWithTimeout(): timed out after " << timeElapsed << " ms");
@@ -129,7 +128,7 @@ namespace ramses_internal
         return true;
     }
 
-    String EmbeddedCompositingTestsFramework::getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId)
+    std::string EmbeddedCompositingTestsFramework::getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         return embeddedCompositor.getTitleOfWaylandIviSurface(waylandSurfaceId);
@@ -138,11 +137,6 @@ namespace ramses_internal
     void EmbeddedCompositingTestsFramework::logEmbeddedCompositor(RendererLogContext& logContext)
     {
         getEmbeddedCompositor().logInfos(logContext);
-    }
-
-    const String& EmbeddedCompositingTestsFramework::getEmbeddedCompositingSocketGroupName() const
-    {
-        return m_embeddedCompositingSocketGroupName;
     }
 
     void EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(uint32_t numberOfConnections, bool doResourceUpdate, uint32_t displayIdx)
@@ -248,17 +242,17 @@ namespace ramses_internal
         m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, uint32_t testAppIdx)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithEGLContextToTestApplication(uint32_t width, uint32_t height, uint32_t swapInterval, uint32_t testAppIdx)
     {
         return sendCreateSurfaceToTestApplication(width, height, swapInterval, true, testAppIdx);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height, uint32_t testAppIdx)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithoutEGLContextToTestApplication(uint32_t width, uint32_t height, uint32_t testAppIdx)
     {
         return sendCreateSurfaceToTestApplication(width, height, 0, false, testAppIdx);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL, uint32_t testAppIdx)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceToTestApplication(uint32_t width, uint32_t height, uint32_t swapInterval, bool useEGL, uint32_t testAppIdx)
     {
         const auto surfaceId = m_nextSurfaceId;
 
@@ -291,7 +285,7 @@ namespace ramses_internal
         m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, const String& title, uint32_t testAppIdx)
+    void EmbeddedCompositingTestsFramework::sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, std::string_view title, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::SetShellSurfaceTitle << shellSurfaceId.getValue() << title;
@@ -394,7 +388,7 @@ namespace ramses_internal
         getTestRenderer().setSurfaceVisibility(surfaceId, visibility);
     }
 
-    void EmbeddedCompositingTestsFramework::sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, UInt32 width, UInt32 height, uint32_t testAppIdx)
+    void EmbeddedCompositingTestsFramework::sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, uint32_t width, uint32_t height, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::SetSurfaceSize << surfaceId.getValue() << width << height;
@@ -413,7 +407,7 @@ namespace ramses_internal
         const auto& displays = getDisplays();
 
         const ramses::waylandIviLayerId_t waylandIviLayerId = displays[0].config.getWaylandIviLayerID();
-        const UInt32 iviSurfaceOffset = 10u;
+        const uint32_t iviSurfaceOffset = 10u;
 
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::StartRamsesRendererAndRunRenderingTest << waylandIviLayerId.getValue() << iviSurfaceOffset;
@@ -437,18 +431,18 @@ namespace ramses_internal
         m_testForkingController.killTestApplication(testAppIdx);
     }
 
-    UInt32 EmbeddedCompositingTestsFramework::getNumberOfAllocatedSHMBufferFromTestApplication(uint32_t testAppIdx)
+    uint32_t EmbeddedCompositingTestsFramework::getNumberOfAllocatedSHMBufferFromTestApplication(uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetNumberOfAllocatedSHMBuffer;
         m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
 
-        UInt32 numberOfAllocatedSHMBuffer(0);
+        uint32_t numberOfAllocatedSHMBuffer(0);
         m_testForkingController.getAnswerFromTestApplication(numberOfAllocatedSHMBuffer, getEmbeddedCompositorManager(), testAppIdx);
         return numberOfAllocatedSHMBuffer;
     }
 
-    Bool EmbeddedCompositingTestsFramework::getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx)
+    bool EmbeddedCompositingTestsFramework::getIsBufferFreeFromTestApplication(uint32_t buffer, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetIsBufferFree << buffer;
@@ -459,7 +453,7 @@ namespace ramses_internal
         return isBufferFree;
     }
 
-    Bool EmbeddedCompositingTestsFramework::getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx)
+    bool EmbeddedCompositingTestsFramework::getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetWaylandOutputParams;

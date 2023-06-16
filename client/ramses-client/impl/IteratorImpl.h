@@ -19,13 +19,17 @@ namespace ramses
     public:
         using ObjectVector = std::vector<T>;
 
-        IteratorImpl()
+        IteratorImpl() = default;
+
+        explicit IteratorImpl(ObjectVector&& objects)
+            : m_objects{ std::move(objects) }
+            , m_objectIterator{ m_objects.begin() }
         {
         }
 
         explicit IteratorImpl(const ObjectVector& objects)
-            : m_objects(objects)
-            , m_objectIterator(m_objects.begin())
+            : m_objects{ objects }
+            , m_objectIterator{ m_objects.begin() }
         {
         }
 

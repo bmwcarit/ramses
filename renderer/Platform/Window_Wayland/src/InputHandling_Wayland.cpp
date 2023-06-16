@@ -57,7 +57,7 @@ namespace ramses_internal
 
     EKeyCode InputHandling_Wayland::RamsesKeyCodeFromWaylandKey(uint32_t waylandKey)
     {
-        static const EKeyCode waylandKeyToRamsesKeyCodeTable[] =
+        const std::array waylandKeyToRamsesKeyCodeTable =
         {
             /*   0-9 */   EKeyCode_Unknown,    EKeyCode_Escape,     EKeyCode_1,              EKeyCode_2,               EKeyCode_3,               EKeyCode_4,                EKeyCode_5,            EKeyCode_6,            EKeyCode_7,             EKeyCode_8,
             /*  10-19 */  EKeyCode_9,          EKeyCode_0,          EKeyCode_Minus,          EKeyCode_Equals,          EKeyCode_Backspace,       EKeyCode_Tab,              EKeyCode_Q,            EKeyCode_W,            EKeyCode_E,             EKeyCode_R,
@@ -74,7 +74,7 @@ namespace ramses_internal
             /* 120-129 */ EKeyCode_Unknown,    EKeyCode_Unknown,    EKeyCode_Unknown,        EKeyCode_Unknown,         EKeyCode_Unknown,         EKeyCode_WindowsLeft,      EKeyCode_WindowsRight, EKeyCode_Menu,         EKeyCode_Unknown,       EKeyCode_Unknown
         };
 
-        static const uint32_t numKeys = sizeof(waylandKeyToRamsesKeyCodeTable)/sizeof(waylandKeyToRamsesKeyCodeTable[0]);
+        const uint32_t numKeys = waylandKeyToRamsesKeyCodeTable.size();
         if (waylandKey >= numKeys)
         {
             return EKeyCode_Unknown;
@@ -266,7 +266,7 @@ namespace ramses_internal
     {
         InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
 
-        const Bool hasPointerCapability = (caps & WL_SEAT_CAPABILITY_POINTER) != 0;
+        const bool hasPointerCapability = (caps & WL_SEAT_CAPABILITY_POINTER) != 0;
 
         if (hasPointerCapability)
         {
@@ -287,7 +287,7 @@ namespace ramses_internal
             }
         }
 
-        const Bool hasKeyboardCapability = (caps & WL_SEAT_CAPABILITY_KEYBOARD) != 0;
+        const bool hasKeyboardCapability = (caps & WL_SEAT_CAPABILITY_KEYBOARD) != 0;
 
         if (hasKeyboardCapability)
         {

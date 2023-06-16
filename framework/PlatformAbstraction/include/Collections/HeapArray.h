@@ -24,8 +24,8 @@ namespace ramses_internal
         static_assert(std::is_integral<T>::value, "only integral types allowed");
 
     public:
-        explicit HeapArray(UInt size = 0, const T* data = nullptr);
-        HeapArray(UInt size, HeapArray&& other);
+        explicit HeapArray(size_t size = 0, const T* data = nullptr);
+        HeapArray(size_t size, HeapArray&& other);
 
         HeapArray(const HeapArray&) = delete;
         HeapArray& operator=(const HeapArray&) = delete;
@@ -33,7 +33,7 @@ namespace ramses_internal
         HeapArray(HeapArray&&) noexcept;
         HeapArray& operator=(HeapArray&&) noexcept;
 
-        RNODISCARD UInt size() const;
+        RNODISCARD size_t size() const;
         RNODISCARD T* data();
         RNODISCARD const T* data() const;
         RNODISCARD absl::Span<const T> span() const;
@@ -41,13 +41,14 @@ namespace ramses_internal
         void setZero();
 
     private:
-        UInt m_size;
+        size_t m_size;
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         std::unique_ptr<T[]> m_data;
     };
 
     template <typename T, typename UniqueIdT>
     inline
-    HeapArray<T, UniqueIdT>::HeapArray(UInt size, const T* data)
+    HeapArray<T, UniqueIdT>::HeapArray(size_t size, const T* data)
         : m_size(size)
         , m_data(m_size > 0 ? new T[m_size] : nullptr)
     {
@@ -59,7 +60,7 @@ namespace ramses_internal
 
     template <typename T, typename UniqueIdT>
     inline
-    HeapArray<T, UniqueIdT>::HeapArray(UInt size, HeapArray&& other)
+    HeapArray<T, UniqueIdT>::HeapArray(size_t size, HeapArray&& other)
         : m_size(size)
         , m_data(std::move(other.m_data))
     {
@@ -92,7 +93,7 @@ namespace ramses_internal
 
     template <typename T, typename UniqueIdT>
     inline
-    UInt HeapArray<T, UniqueIdT>::size() const
+    size_t HeapArray<T, UniqueIdT>::size() const
     {
         return m_size;
     }

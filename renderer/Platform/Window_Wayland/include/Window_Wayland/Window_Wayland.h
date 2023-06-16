@@ -12,26 +12,28 @@
 #include "Platform_Base/Window_Base.h"
 #include "Window_Wayland/WlContext.h"
 #include "InputHandling_Wayland.h"
+
 #include <chrono>
+#include <string>
 
 namespace ramses_internal
 {
     class Window_Wayland : public Window_Base
     {
     public:
-        Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id, std::chrono::microseconds frameCallbackMaxPollTime);
+        Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id, std::chrono::microseconds frameCallbackMaxPollTime);
         ~Window_Wayland() override;
 
-        virtual bool init() override;
+        bool init() override;
 
-        Bool canRenderNewFrame() const override;
+        [[nodiscard]] bool canRenderNewFrame() const override;
         void handleEvents() override;
         void frameRendered() override;
 
-        wl_display* getNativeDisplayHandle() const;
-        wl_egl_window* getNativeWindowHandle() const;
+        [[nodiscard]] wl_display* getNativeDisplayHandle() const;
+        [[nodiscard]] wl_egl_window* getNativeWindowHandle() const;
 
-        bool hasTitle() const override
+        [[nodiscard]] bool hasTitle() const override
         {
             return false;
         }
@@ -44,7 +46,7 @@ namespace ramses_internal
     private:
 
         void registerFrameRenderingDoneCallback();
-        Bool setFullscreen(Bool fullscreen) override;
+        bool setFullscreen(bool fullscreen) override;
         void dispatchWaylandDisplayEvents(std::chrono::milliseconds pollTime) const;
 
         static void RegistryGlobalCreated(void* data, wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version);
@@ -55,7 +57,7 @@ namespace ramses_internal
         WlContext m_wlContext;
 
     private:
-        const String m_waylandDisplay;
+        const std::string m_waylandDisplay;
         InputHandling_Wayland m_inputHandling;
 
         const struct FrameRenderingDoneCallback_Listener : public wl_callback_listener

@@ -16,7 +16,7 @@ namespace ramses_internal
     struct RenderBuffer
     {
         RenderBuffer() = default;
-        RenderBuffer(UInt32 _width, UInt32 _height, ERenderBufferType _type, ETextureFormat _format, ERenderBufferAccessMode _accessMode, UInt32 _sampleCount)
+        RenderBuffer(uint32_t _width, uint32_t _height, ERenderBufferType _type, ETextureFormat _format, ERenderBufferAccessMode _accessMode, uint32_t _sampleCount)
             : width(_width)
             , height(_height)
             , type(_type)
@@ -41,12 +41,12 @@ namespace ramses_internal
             return !this->operator==(other);
         }
 
-        UInt32                  width = 0u;
-        UInt32                  height = 0u;
+        uint32_t                  width = 0u;
+        uint32_t                  height = 0u;
         ERenderBufferType       type = ERenderBufferType_InvalidBuffer;
         ETextureFormat          format = ETextureFormat::Invalid;
         ERenderBufferAccessMode accessMode = ERenderBufferAccessMode_Invalid;
-        UInt32                  sampleCount = 0u;
+        uint32_t                  sampleCount = 0u;
     };
 }
 

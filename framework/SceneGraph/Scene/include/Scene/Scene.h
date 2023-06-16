@@ -19,13 +19,11 @@
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/TextureBuffer.h"
 #include "SceneAPI/GeometryDataBuffer.h"
-#include "SceneAPI/StreamTexture.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/RenderTarget.h"
 #include "SceneAPI/BlitPass.h"
 #include "SceneAPI/PickableObject.h"
 #include "SceneAPI/SceneReference.h"
-#include "AnimationAPI/IAnimationSystem.h"
 
 #include "Scene/TopologyNode.h"
 #include "Scene/TopologyTransform.h"
@@ -48,7 +46,6 @@ namespace ramses_internal
     {
     public:
         using RenderableMemoryPool      = MEMORYPOOL<Renderable         , RenderableHandle>;
-        using StreamTextureMemoryPool   = MEMORYPOOL<StreamTexture      , StreamTextureHandle>;
         using NodeMemoryPool            = MEMORYPOOL<TopologyNode       , NodeHandle>;
         using CameraMemoryPool          = MEMORYPOOL<Camera             , CameraHandle>;
         using RenderStateMemoryPool     = MEMORYPOOL<RenderState        , RenderStateHandle>;
@@ -66,304 +63,284 @@ namespace ramses_internal
         using TextureBufferMemoryPool   = MEMORYPOOL<TextureBuffer      , TextureBufferHandle>;
         using DataSlotMemoryPool        = MEMORYPOOL<DataSlot           , DataSlotHandle>;
         using SceneReferenceMemoryPool  = MEMORYPOOL<SceneReference     , SceneReferenceHandle>;
-        using AnimationSystemMemoryPool = MEMORYPOOL<IAnimationSystem*  , AnimationSystemHandle>;
 
         explicit SceneT(const SceneInfo& sceneInfo = SceneInfo());
-        virtual ~SceneT() override;
+        ~SceneT() override;
 
-        virtual void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) override;
+        void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) override;
 
-        virtual SceneId                     getSceneId                      () const final override;
-        virtual const String&               getName                         () const final override;
+        [[nodiscard]] SceneId                     getSceneId                      () const final override;
+        [[nodiscard]] const std::string&          getName                         () const final override;
 
-        virtual void setEffectTimeSync(FlushTime::Clock::time_point t) override;
-        virtual FlushTime::Clock::time_point getEffectTimeSync() const override;
+        void setEffectTimeSync(FlushTime::Clock::time_point t) override;
+        [[nodiscard]] FlushTime::Clock::time_point getEffectTimeSync() const override;
 
         // Renderables
-        virtual RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
-        virtual void                        releaseRenderable               (RenderableHandle renderableHandle) override;
-        virtual bool                        isRenderableAllocated           (RenderableHandle renderableHandle) const override final;
-        virtual UInt32                      getRenderableCount              () const override final;
-        virtual void                        setRenderableDataInstance       (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
-        virtual void                        setRenderableStartIndex         (RenderableHandle renderableHandle, UInt32 startIndex) override;
-        virtual void                        setRenderableIndexCount         (RenderableHandle renderableHandle, UInt32 indexCount) override;
-        virtual void                        setRenderableRenderState        (RenderableHandle renderableHandle, RenderStateHandle stateHandle) override;
-        virtual void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visibility) override;
-        virtual void                        setRenderableInstanceCount      (RenderableHandle renderableHandle, UInt32 instanceCount) override;
-        virtual void                        setRenderableStartVertex        (RenderableHandle renderableHandle, UInt32 startVertex) override;
-        virtual const Renderable&           getRenderable                   (RenderableHandle renderableHandle) const override final;
-        const RenderableMemoryPool&         getRenderables                  () const;
+        RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
+        void                        releaseRenderable               (RenderableHandle renderableHandle) override;
+        [[nodiscard]] bool                        isRenderableAllocated           (RenderableHandle renderableHandle) const final override;
+        [[nodiscard]] uint32_t                      getRenderableCount              () const final override;
+        void                        setRenderableDataInstance       (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
+        void                        setRenderableStartIndex         (RenderableHandle renderableHandle, uint32_t startIndex) override;
+        void                        setRenderableIndexCount         (RenderableHandle renderableHandle, uint32_t indexCount) override;
+        void                        setRenderableRenderState        (RenderableHandle renderableHandle, RenderStateHandle stateHandle) override;
+        void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visibility) override;
+        void                        setRenderableInstanceCount      (RenderableHandle renderableHandle, uint32_t instanceCount) override;
+        void                        setRenderableStartVertex        (RenderableHandle renderableHandle, uint32_t startVertex) override;
+        [[nodiscard]] const Renderable&           getRenderable                   (RenderableHandle renderableHandle) const final override;
+        [[nodiscard]] const RenderableMemoryPool&         getRenderables                  () const;
 
         // Render state
-        virtual RenderStateHandle           allocateRenderState             (RenderStateHandle stateHandle = RenderStateHandle::Invalid()) override;
-        virtual void                        releaseRenderState              (RenderStateHandle stateHandle) override;
-        virtual bool                        isRenderStateAllocated          (RenderStateHandle stateHandle) const override final;
-        virtual UInt32                      getRenderStateCount             () const override final;
-        virtual void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
-        virtual void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
-        virtual void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const Vector4& color) override;
-        virtual void                        setRenderStateCullMode          (RenderStateHandle stateHandle, ECullMode cullMode) override;
-        virtual void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) override;
-        virtual void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) override;
-        virtual void                        setRenderStateDepthWrite        (RenderStateHandle stateHandle, EDepthWrite flag) override;
-        virtual void                        setRenderStateScissorTest       (RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region) override;
-        virtual void                        setRenderStateStencilFunc       (RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask) override;
-        virtual void                        setRenderStateStencilOps        (RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
-        virtual void                        setRenderStateColorWriteMask    (RenderStateHandle stateHandle, ColorWriteMask colorMask) override;
-        virtual const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const override final;
-        const RenderStateMemoryPool&              getRenderStates                 () const;
+        RenderStateHandle           allocateRenderState             (RenderStateHandle stateHandle = RenderStateHandle::Invalid()) override;
+        void                        releaseRenderState              (RenderStateHandle stateHandle) override;
+        [[nodiscard]] bool                        isRenderStateAllocated          (RenderStateHandle stateHandle) const final override;
+        [[nodiscard]] uint32_t                      getRenderStateCount             () const final override;
+        void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
+        void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
+        void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const glm::vec4& color) override;
+        void                        setRenderStateCullMode          (RenderStateHandle stateHandle, ECullMode cullMode) override;
+        void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) override;
+        void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) override;
+        void                        setRenderStateDepthWrite        (RenderStateHandle stateHandle, EDepthWrite flag) override;
+        void                        setRenderStateScissorTest       (RenderStateHandle stateHandle, EScissorTest flag, const RenderState::ScissorRegion& region) override;
+        void                        setRenderStateStencilFunc       (RenderStateHandle stateHandle, EStencilFunc func, uint8_t ref, uint8_t mask) override;
+        void                        setRenderStateStencilOps        (RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
+        void                        setRenderStateColorWriteMask    (RenderStateHandle stateHandle, ColorWriteMask colorMask) override;
+        [[nodiscard]] const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const final override;
+        [[nodiscard]] const RenderStateMemoryPool&              getRenderStates                 () const;
 
         // Camera
-        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
-        virtual void                        releaseCamera                   (CameraHandle cameraHandle) override;
-        virtual bool                        isCameraAllocated               (CameraHandle handle) const override final;
-        virtual UInt32                      getCameraCount                  () const override final;
-        virtual const Camera&               getCamera                       (CameraHandle cameraHandle) const override final;
-        const CameraMemoryPool&             getCameras                      () const;
+        CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
+        void                        releaseCamera                   (CameraHandle cameraHandle) override;
+        [[nodiscard]] bool                        isCameraAllocated               (CameraHandle handle) const final override;
+        [[nodiscard]] uint32_t                      getCameraCount                  () const final override;
+        [[nodiscard]] const Camera&               getCamera                       (CameraHandle cameraHandle) const final override;
+        [[nodiscard]] const CameraMemoryPool&             getCameras                      () const;
 
         // Nodes
-        virtual NodeHandle                  allocateNode                    (UInt32 childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid()) override;
-        virtual void                        releaseNode                     (NodeHandle nodeHandle) override;
-        virtual bool                        isNodeAllocated                 (NodeHandle node) const override final;
-        virtual UInt32                      getNodeCount                    () const override final;
-        virtual NodeHandle                  getParent                       (NodeHandle nodeHandle) const override final;
-        virtual void                        addChildToNode                  (NodeHandle parent, NodeHandle child) override;
-        virtual void                        removeChildFromNode             (NodeHandle parent, NodeHandle child) override;
-        virtual UInt32                      getChildCount                   (NodeHandle parent) const override final;
-        virtual NodeHandle                  getChild                        (NodeHandle parent, UInt32 childNumber) const override final;
-        const NodeMemoryPool&                   getNodes                        () const;
+        NodeHandle                  allocateNode                    (uint32_t childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid()) override;
+        void                        releaseNode                     (NodeHandle nodeHandle) override;
+        [[nodiscard]] bool                        isNodeAllocated                 (NodeHandle node) const final override;
+        [[nodiscard]] uint32_t                      getNodeCount                    () const final override;
+        [[nodiscard]] NodeHandle                  getParent                       (NodeHandle nodeHandle) const final override;
+        void                        addChildToNode                  (NodeHandle parent, NodeHandle child) override;
+        void                        removeChildFromNode             (NodeHandle parent, NodeHandle child) override;
+        [[nodiscard]] uint32_t                      getChildCount                   (NodeHandle parent) const final override;
+        [[nodiscard]] NodeHandle                  getChild                        (NodeHandle parent, uint32_t childNumber) const final override;
+        [[nodiscard]] const NodeMemoryPool&                   getNodes                        () const;
 
         // Transformation
-        virtual TransformHandle             allocateTransform               (NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) override;
-        virtual void                        releaseTransform                (TransformHandle transform) override;
-        virtual UInt32                      getTransformCount               () const override final;
-        virtual bool                        isTransformAllocated            (TransformHandle transformHandle) const override final;
-        virtual NodeHandle                  getTransformNode                (TransformHandle handle) const override final;
-        virtual const Vector3&              getTranslation                  (TransformHandle handle) const override final;
-        virtual const Vector3&              getRotation                     (TransformHandle handle) const override final;
-        virtual ERotationConvention         getRotationConvention           (TransformHandle handle) const override final;
-        virtual const Vector3&              getScaling                      (TransformHandle handle) const override final;
-        virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation, ERotationConvention convention) override;
-        virtual void                        setRotationForAnimation         (TransformHandle handle, const Vector3& rotation) override final;
-        virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
-        const TransformMemoryPool&              getTransforms                   () const;
+        TransformHandle             allocateTransform               (NodeHandle nodeHandle, TransformHandle handle = TransformHandle::Invalid()) override;
+        void                        releaseTransform                (TransformHandle transform) override;
+        [[nodiscard]] uint32_t                      getTransformCount               () const final override;
+        [[nodiscard]] bool                        isTransformAllocated            (TransformHandle transformHandle) const final override;
+        [[nodiscard]] NodeHandle                  getTransformNode                (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec3&              getTranslation                  (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec4&              getRotation                     (TransformHandle handle) const final override;
+        [[nodiscard]] ERotationType         getRotationType           (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec3&              getScaling                      (TransformHandle handle) const final override;
+        void                        setTranslation                  (TransformHandle handle, const glm::vec3& translation) override;
+        void                        setRotation                     (TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType) override;
+        void                        setScaling                      (TransformHandle handle, const glm::vec3& scaling) override;
+        [[nodiscard]] const TransformMemoryPool&              getTransforms                   () const;
 
-        virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
-        virtual void                        releaseDataLayout               (DataLayoutHandle layoutHandle) override;
-        virtual bool                        isDataLayoutAllocated           (DataLayoutHandle layoutHandle) const override final;
-        virtual UInt32                      getDataLayoutCount              () const override final;
-        virtual const DataLayout&           getDataLayout                   (DataLayoutHandle layoutHandle) const override final;
-        const DataLayoutMemoryPool&             getDataLayouts                  () const;
+        DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
+        void                        releaseDataLayout               (DataLayoutHandle layoutHandle) override;
+        [[nodiscard]] bool                        isDataLayoutAllocated           (DataLayoutHandle layoutHandle) const final override;
+        [[nodiscard]] uint32_t                      getDataLayoutCount              () const final override;
+        [[nodiscard]] const DataLayout&           getDataLayout                   (DataLayoutHandle layoutHandle) const final override;
+        [[nodiscard]] const DataLayoutMemoryPool&             getDataLayouts                  () const;
 
-        virtual DataInstanceHandle          allocateDataInstance            (DataLayoutHandle finishedLayoutHandle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
-        virtual void                        releaseDataInstance             (DataInstanceHandle containerHandle) override;
-        virtual bool                        isDataInstanceAllocated         (DataInstanceHandle containerHandle) const override final;
-        virtual UInt32                      getDataInstanceCount            () const override final;
-        virtual DataLayoutHandle            getLayoutOfDataInstance         (DataInstanceHandle containerHandle) const override final;
-        const DataInstanceMemoryPool&           getDataInstances                () const;
+        DataInstanceHandle          allocateDataInstance            (DataLayoutHandle finishedLayoutHandle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
+        void                        releaseDataInstance             (DataInstanceHandle containerHandle) override;
+        [[nodiscard]] bool                        isDataInstanceAllocated         (DataInstanceHandle containerHandle) const final override;
+        [[nodiscard]] uint32_t                      getDataInstanceCount            () const final override;
+        [[nodiscard]] DataLayoutHandle            getLayoutOfDataInstance         (DataInstanceHandle containerHandle) const final override;
+        [[nodiscard]] const DataInstanceMemoryPool&           getDataInstances                () const;
 
-        virtual const Float*                getDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector2*              getDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector3*              getDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector4*              getDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Int32*                getDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Matrix22f*            getDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Matrix33f*            getDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Matrix44f*            getDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector2i*             getDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector3i*             getDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector4i*             getDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const ResourceField&        getDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual TextureSamplerHandle        getDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual DataInstanceHandle          getDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
+        [[nodiscard]] const float*                getDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec2*              getDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec3*              getDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec4*              getDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const int32_t*                getDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat2*            getDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat3*            getDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat4*            getDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec2*             getDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec3*             getDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec4*             getDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const ResourceField&        getDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] TextureSamplerHandle        getDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] DataInstanceHandle          getDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
 
-        virtual void                        setDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data) override;
-        virtual void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data) override;
-        virtual void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data) override;
-        virtual void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data) override;
-        virtual void                        setDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data) override;
-        virtual void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data) override;
-        virtual void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data) override;
-        virtual void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data) override;
-        virtual void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data) override;
-        virtual void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data) override;
-        virtual void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data) override;
-        virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
-        virtual void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
-        virtual void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
+        void                        setDataFloatArray               (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const float* data) override;
+        void                        setDataVector2fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec2* data) override;
+        void                        setDataVector3fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec3* data) override;
+        void                        setDataVector4fArray            (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec4* data) override;
+        void                        setDataIntegerArray             (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const int32_t* data) override;
+        void                        setDataVector2iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec2* data) override;
+        void                        setDataVector3iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec3* data) override;
+        void                        setDataVector4iArray            (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec4* data) override;
+        void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat2* data) override;
+        void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat3* data) override;
+        void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat4* data) override;
+        void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride) override;
+        void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
+        void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
 
         // get/setData*Array wrappers for elementCount == 1
-        virtual Float                       getDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector2&              getDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector3&              getDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector4&              getDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual Int32                       getDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Matrix22f&            getDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Matrix33f&            getDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Matrix44f&            getDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector2i&             getDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector3i&             getDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
-        virtual const Vector4i&             getDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field) const override final;
+        [[nodiscard]] float                       getDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec2&              getDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec3&              getDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::vec4&              getDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] int32_t                       getDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat2&            getDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat3&            getDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::mat4&            getDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec2&             getDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec3&             getDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] const glm::ivec4&             getDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
 
-        virtual void                        setDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field, Float data) override;
-        virtual void                        setDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2& data) override;
-        virtual void                        setDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3& data) override;
-        virtual void                        setDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4& data) override;
-        virtual void                        setDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field, Int32 data) override;
-        virtual void                        setDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2i& data) override;
-        virtual void                        setDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3i& data) override;
-        virtual void                        setDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4i& data) override;
-        virtual void                        setDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix22f& data) override;
-        virtual void                        setDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix33f& data) override;
-        virtual void                        setDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix44f& data) override;
+        void                        setDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field, float data) override;
+        void                        setDataSingleVector2f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec2& data) override;
+        void                        setDataSingleVector3f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec3& data) override;
+        void                        setDataSingleVector4f           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec4& data) override;
+        void                        setDataSingleInteger            (DataInstanceHandle containerHandle, DataFieldHandle field, int32_t data) override;
+        void                        setDataSingleVector2i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec2& data) override;
+        void                        setDataSingleVector3i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec3& data) override;
+        void                        setDataSingleVector4i           (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec4& data) override;
+        void                        setDataSingleMatrix22f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat2& data) override;
+        void                        setDataSingleMatrix33f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat3& data) override;
+        void                        setDataSingleMatrix44f          (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat4& data) override;
 
         // Texture sampler
-        virtual TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
-        virtual void                        releaseTextureSampler           (TextureSamplerHandle handle) override;
-        virtual bool                        isTextureSamplerAllocated       (TextureSamplerHandle handle) const override final;
-        virtual UInt32                      getTextureSamplerCount          () const override final;
-        virtual const TextureSampler&       getTextureSampler               (TextureSamplerHandle handle) const override final;
-        const TextureSamplerMemoryPool&         getTextureSamplers              () const;
-
-        //Animation system
-        virtual AnimationSystemHandle       addAnimationSystem              (IAnimationSystem* animationSystem, AnimationSystemHandle externalHandle = AnimationSystemHandle::Invalid()) override;
-        virtual void                        removeAnimationSystem           (AnimationSystemHandle animSystemHandle) override;
-        virtual IAnimationSystem*           getAnimationSystem              (AnimationSystemHandle animSystemHandle) override final;
-        virtual const IAnimationSystem*     getAnimationSystem              (AnimationSystemHandle animSystemHandle) const override final;
-        virtual bool                        isAnimationSystemAllocated      (AnimationSystemHandle animSystemHandle) const override final;
-        virtual UInt32                      getAnimationSystemCount         () const override final;
-        const AnimationSystemMemoryPool&    getAnimationSystems             () const;
+        TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
+        void                        releaseTextureSampler           (TextureSamplerHandle handle) override;
+        [[nodiscard]] bool                        isTextureSamplerAllocated       (TextureSamplerHandle handle) const final override;
+        [[nodiscard]] uint32_t                      getTextureSamplerCount          () const final override;
+        [[nodiscard]] const TextureSampler&       getTextureSampler               (TextureSamplerHandle handle) const final override;
+        [[nodiscard]] const TextureSamplerMemoryPool&         getTextureSamplers              () const;
 
         // Render groups
-        virtual RenderGroupHandle       allocateRenderGroup             (UInt32 renderableCount = 0u, UInt32 nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
-        virtual void                    releaseRenderGroup              (RenderGroupHandle groupHandle) override;
-        virtual bool                    isRenderGroupAllocated          (RenderGroupHandle groupHandle) const override final;
-        virtual UInt32                  getRenderGroupCount             () const override final;
-        virtual void                    addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order) override;
-        virtual void                    removeRenderableFromRenderGroup (RenderGroupHandle groupHandle, RenderableHandle renderableHandle) override;
-        virtual void                    addRenderGroupToRenderGroup     (RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, Int32 order) override;
-        virtual void                    removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild) override;
-        virtual const RenderGroup&      getRenderGroup                  (RenderGroupHandle groupHandle) const override final;
-        const RenderGroupMemoryPool&    getRenderGroups                 () const;
+        RenderGroupHandle       allocateRenderGroup             (uint32_t renderableCount = 0u, uint32_t nestedGroupCount = 0u, RenderGroupHandle groupHandle = RenderGroupHandle::Invalid()) override;
+        void                    releaseRenderGroup              (RenderGroupHandle groupHandle) override;
+        [[nodiscard]] bool                    isRenderGroupAllocated          (RenderGroupHandle groupHandle) const final override;
+        [[nodiscard]] uint32_t                  getRenderGroupCount             () const final override;
+        void                    addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, int32_t order) override;
+        void                    removeRenderableFromRenderGroup (RenderGroupHandle groupHandle, RenderableHandle renderableHandle) override;
+        void                    addRenderGroupToRenderGroup     (RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, int32_t order) override;
+        void                    removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild) override;
+        [[nodiscard]] const RenderGroup&      getRenderGroup                  (RenderGroupHandle groupHandle) const final override;
+        [[nodiscard]] const RenderGroupMemoryPool&    getRenderGroups                 () const;
 
         //Render pass
-        virtual RenderPassHandle        allocateRenderPass              (UInt32 renderGroupCount = 0u, RenderPassHandle passHandle = RenderPassHandle::Invalid()) override;
-        virtual void                    releaseRenderPass               (RenderPassHandle passHandle) override;
-        virtual bool                    isRenderPassAllocated           (RenderPassHandle pass) const override final;
-        virtual UInt32                  getRenderPassCount              () const override final;
-        virtual void                    setRenderPassClearColor         (RenderPassHandle passHandle, const Vector4& clearColor) override;
-        virtual void                    setRenderPassClearFlag          (RenderPassHandle passHandle, UInt32 clearFlag) override;
-        virtual void                    setRenderPassCamera             (RenderPassHandle passHandle, CameraHandle cameraHandle) override;
-        virtual void                    setRenderPassRenderTarget       (RenderPassHandle passHandle, RenderTargetHandle targetHandle) override;
-        virtual void                    setRenderPassRenderOrder        (RenderPassHandle passHandle, Int32 renderOrder) override;
-        virtual void                    setRenderPassEnabled            (RenderPassHandle passHandle, bool isEnabled) override;
-        virtual void                    setRenderPassRenderOnce         (RenderPassHandle passHandle, bool enable) override;
-        virtual void                    retriggerRenderPassRenderOnce   (RenderPassHandle passHandle) override;
-        virtual void                    addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order) override;
-        virtual void                    removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
-        virtual const RenderPass&       getRenderPass                   (RenderPassHandle passHandle) const override final;
-        const RenderPassMemoryPool&     getRenderPasses                 () const;
+        RenderPassHandle        allocateRenderPass              (uint32_t renderGroupCount = 0u, RenderPassHandle passHandle = RenderPassHandle::Invalid()) override;
+        void                    releaseRenderPass               (RenderPassHandle passHandle) override;
+        [[nodiscard]] bool                    isRenderPassAllocated           (RenderPassHandle pass) const final override;
+        [[nodiscard]] uint32_t                  getRenderPassCount              () const final override;
+        void                    setRenderPassClearColor         (RenderPassHandle passHandle, const glm::vec4& clearColor) override;
+        void                    setRenderPassClearFlag          (RenderPassHandle passHandle, uint32_t clearFlag) override;
+        void                    setRenderPassCamera             (RenderPassHandle passHandle, CameraHandle cameraHandle) override;
+        void                    setRenderPassRenderTarget       (RenderPassHandle passHandle, RenderTargetHandle targetHandle) override;
+        void                    setRenderPassRenderOrder        (RenderPassHandle passHandle, int32_t renderOrder) override;
+        void                    setRenderPassEnabled            (RenderPassHandle passHandle, bool isEnabled) override;
+        void                    setRenderPassRenderOnce         (RenderPassHandle passHandle, bool enable) override;
+        void                    retriggerRenderPassRenderOnce   (RenderPassHandle passHandle) override;
+        void                    addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, int32_t order) override;
+        void                    removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
+        [[nodiscard]] const RenderPass&       getRenderPass                   (RenderPassHandle passHandle) const final override;
+        [[nodiscard]] const RenderPassMemoryPool&     getRenderPasses                 () const;
 
         //Blit pass
-        virtual BlitPassHandle          allocateBlitPass                (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
-        virtual void                    releaseBlitPass                 (BlitPassHandle passHandle) override;
-        virtual bool                    isBlitPassAllocated             (BlitPassHandle passHandle) const override final;
-        virtual UInt32                  getBlitPassCount                () const override final;
-        virtual void                    setBlitPassRenderOrder          (BlitPassHandle passHandle, Int32 renderOrder) override;
-        virtual void                    setBlitPassEnabled              (BlitPassHandle passHandle, bool isEnabled) override;
-        virtual void                    setBlitPassRegions              (BlitPassHandle passHandle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion) override;
-        virtual const BlitPass&         getBlitPass                     (BlitPassHandle passHandle) const override final;
-        const BlitPassMemoryPool&       getBlitPasses                   () const;
+        BlitPassHandle          allocateBlitPass                (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle = BlitPassHandle::Invalid()) override;
+        void                    releaseBlitPass                 (BlitPassHandle passHandle) override;
+        [[nodiscard]] bool                    isBlitPassAllocated             (BlitPassHandle passHandle) const final override;
+        [[nodiscard]] uint32_t                  getBlitPassCount                () const final override;
+        void                    setBlitPassRenderOrder          (BlitPassHandle passHandle, int32_t renderOrder) override;
+        void                    setBlitPassEnabled              (BlitPassHandle passHandle, bool isEnabled) override;
+        void                    setBlitPassRegions              (BlitPassHandle passHandle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion) override;
+        [[nodiscard]] const BlitPass&         getBlitPass                     (BlitPassHandle passHandle) const final override;
+        [[nodiscard]] const BlitPassMemoryPool&       getBlitPasses                   () const;
 
         //Pickable object
-        virtual PickableObjectHandle    allocatePickableObject          (DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid()) override;
-        virtual void                    releasePickableObject           (PickableObjectHandle pickableHandle) override;
-        virtual bool                    isPickableObjectAllocated       (PickableObjectHandle pickableHandle) const override final;
-        virtual UInt32                  getPickableObjectCount          () const override final;
-        virtual void                    setPickableObjectId             (PickableObjectHandle pickableHandle, PickableObjectId id) override;
-        virtual void                    setPickableObjectCamera         (PickableObjectHandle pickableHandle, CameraHandle cameraHandle) override;
-        virtual void                    setPickableObjectEnabled        (PickableObjectHandle pickableHandle, bool isEnabled) override;
-        virtual const PickableObject&   getPickableObject               (PickableObjectHandle pickableHandle) const override final;
-        const PickableObjectMemoryPool& getPickableObjects              () const;
+        PickableObjectHandle    allocatePickableObject          (DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid()) override;
+        void                    releasePickableObject           (PickableObjectHandle pickableHandle) override;
+        [[nodiscard]] bool                    isPickableObjectAllocated       (PickableObjectHandle pickableHandle) const final override;
+        [[nodiscard]] uint32_t                  getPickableObjectCount          () const final override;
+        void                    setPickableObjectId             (PickableObjectHandle pickableHandle, PickableObjectId id) override;
+        void                    setPickableObjectCamera         (PickableObjectHandle pickableHandle, CameraHandle cameraHandle) override;
+        void                    setPickableObjectEnabled        (PickableObjectHandle pickableHandle, bool isEnabled) override;
+        [[nodiscard]] const PickableObject&   getPickableObject               (PickableObjectHandle pickableHandle) const final override;
+        [[nodiscard]] const PickableObjectMemoryPool& getPickableObjects              () const;
 
         // Render targets
-        virtual RenderTargetHandle      allocateRenderTarget            (RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
-        virtual void                    releaseRenderTarget             (RenderTargetHandle targetHandle) override;
-        virtual bool                    isRenderTargetAllocated         (RenderTargetHandle targetHandle) const override final;
-        virtual UInt32                  getRenderTargetCount            () const override final;
-        virtual void                    addRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, RenderBufferHandle bufferHandle) override;
-        virtual UInt32                  getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const override final;
-        virtual RenderBufferHandle      getRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, UInt32 bufferIndex) const override final;
-        const RenderTargetMemoryPool&   getRenderTargets                () const;
+        RenderTargetHandle      allocateRenderTarget            (RenderTargetHandle targetHandle = RenderTargetHandle::Invalid()) override;
+        void                    releaseRenderTarget             (RenderTargetHandle targetHandle) override;
+        [[nodiscard]] bool                    isRenderTargetAllocated         (RenderTargetHandle targetHandle) const final override;
+        [[nodiscard]] uint32_t                  getRenderTargetCount            () const final override;
+        void                    addRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, RenderBufferHandle bufferHandle) override;
+        [[nodiscard]] uint32_t                  getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const final override;
+        [[nodiscard]] RenderBufferHandle      getRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, uint32_t bufferIndex) const final override;
+        [[nodiscard]] const RenderTargetMemoryPool&   getRenderTargets                () const;
 
         // Render buffers
-        virtual RenderBufferHandle      allocateRenderBuffer            (const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid()) override;
-        virtual void                    releaseRenderBuffer             (RenderBufferHandle handle) override;
-        virtual bool                    isRenderBufferAllocated         (RenderBufferHandle handle) const override final;
-        virtual UInt32                  getRenderBufferCount            () const override final;
-        virtual const RenderBuffer&     getRenderBuffer                 (RenderBufferHandle handle) const override final;
-        const RenderBufferMemoryPool&   getRenderBuffers                () const;
-
-        // Stream textures
-        virtual StreamTextureHandle     allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
-        virtual void                    releaseStreamTexture            (StreamTextureHandle streamTextureHandle) override;
-        virtual bool                    isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const override final;
-        virtual UInt32                  getStreamTextureCount           () const override final;
-        virtual void                    setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) override;
-        virtual const StreamTexture&    getStreamTexture                (StreamTextureHandle streamTextureHandle) const override final;
-        const StreamTextureMemoryPool&  getStreamTextures               () const;
+        RenderBufferHandle      allocateRenderBuffer            (const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid()) override;
+        void                    releaseRenderBuffer             (RenderBufferHandle handle) override;
+        [[nodiscard]] bool                    isRenderBufferAllocated         (RenderBufferHandle handle) const final override;
+        [[nodiscard]] uint32_t                  getRenderBufferCount            () const final override;
+        [[nodiscard]] const RenderBuffer&     getRenderBuffer                 (RenderBufferHandle handle) const final override;
+        [[nodiscard]] const RenderBufferMemoryPool&   getRenderBuffers                () const;
 
         // Data buffers
-        virtual DataBufferHandle        allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) override;
-        virtual void                    releaseDataBuffer               (DataBufferHandle handle) override;
-        virtual UInt32                  getDataBufferCount              () const override final;
-        virtual void                    updateDataBuffer                (DataBufferHandle handle, UInt32 offsetInBytes, UInt32 dataSizeInBytes, const Byte* data) override;
-        virtual bool                    isDataBufferAllocated           (DataBufferHandle handle) const override final;
-        virtual const GeometryDataBuffer& getDataBuffer                 (DataBufferHandle handle) const override final;
-        const DataBufferMemoryPool&      getDataBuffers                  () const;
+        DataBufferHandle        allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) override;
+        void                    releaseDataBuffer               (DataBufferHandle handle) override;
+        [[nodiscard]] uint32_t                  getDataBufferCount              () const final override;
+        void                    updateDataBuffer                (DataBufferHandle handle, uint32_t offsetInBytes, uint32_t dataSizeInBytes, const Byte* data) override;
+        [[nodiscard]] bool                    isDataBufferAllocated           (DataBufferHandle handle) const final override;
+        [[nodiscard]] const GeometryDataBuffer& getDataBuffer                 (DataBufferHandle handle) const final override;
+        [[nodiscard]] const DataBufferMemoryPool&      getDataBuffers                  () const;
 
         //Texture buffers
-        virtual TextureBufferHandle     allocateTextureBuffer           (ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid()) override;
-        virtual void                    releaseTextureBuffer            (TextureBufferHandle handle) override;
-        virtual bool                    isTextureBufferAllocated        (TextureBufferHandle handle) const override final;
-        virtual UInt32                  getTextureBufferCount           () const override final;
-        virtual void                    updateTextureBuffer             (TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data) override;
-        virtual const TextureBuffer&    getTextureBuffer                (TextureBufferHandle handle) const override final;
-        const TextureBufferMemoryPool&      getTextureBuffers               () const;
+        TextureBufferHandle     allocateTextureBuffer           (ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid()) override;
+        void                    releaseTextureBuffer            (TextureBufferHandle handle) override;
+        [[nodiscard]] bool                    isTextureBufferAllocated        (TextureBufferHandle handle) const final override;
+        [[nodiscard]] uint32_t                  getTextureBufferCount           () const final override;
+        void                    updateTextureBuffer             (TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const Byte* data) override;
+        [[nodiscard]] const TextureBuffer&    getTextureBuffer                (TextureBufferHandle handle) const final override;
+        [[nodiscard]] const TextureBufferMemoryPool&      getTextureBuffers               () const;
 
-        virtual DataSlotHandle          allocateDataSlot                (const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
-        virtual void                    releaseDataSlot                 (DataSlotHandle handle) override;
-        virtual void                    setDataSlotTexture              (DataSlotHandle handle, const ResourceContentHash& texture) override;
-        virtual bool                    isDataSlotAllocated             (DataSlotHandle handle) const override final;
-        virtual UInt32                  getDataSlotCount                () const override final;
-        virtual const DataSlot&         getDataSlot                     (DataSlotHandle handle) const override final;
-        const DataSlotMemoryPool&       getDataSlots                    () const;
+        DataSlotHandle          allocateDataSlot                (const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
+        void                    releaseDataSlot                 (DataSlotHandle handle) override;
+        void                    setDataSlotTexture              (DataSlotHandle handle, const ResourceContentHash& texture) override;
+        [[nodiscard]] bool                    isDataSlotAllocated             (DataSlotHandle handle) const final override;
+        [[nodiscard]] uint32_t                  getDataSlotCount                () const final override;
+        [[nodiscard]] const DataSlot&         getDataSlot                     (DataSlotHandle handle) const final override;
+        [[nodiscard]] const DataSlotMemoryPool&       getDataSlots                    () const;
 
-        virtual SceneReferenceHandle    allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle = {}) override;
-        virtual void                    releaseSceneReference           (SceneReferenceHandle handle) override;
-        virtual void                    requestSceneReferenceState      (SceneReferenceHandle handle, RendererSceneState state) override;
-        virtual void                    requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) override;
-        virtual void                    setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) override;
-        virtual bool                    isSceneReferenceAllocated       (SceneReferenceHandle handle) const override final;
-        virtual UInt32                  getSceneReferenceCount          () const override final;
-        virtual const SceneReference&   getSceneReference               (SceneReferenceHandle handle) const override final;
-        const SceneReferenceMemoryPool& getSceneReferences              () const;
+        SceneReferenceHandle    allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle = {}) override;
+        void                    releaseSceneReference           (SceneReferenceHandle handle) override;
+        void                    requestSceneReferenceState      (SceneReferenceHandle handle, RendererSceneState state) override;
+        void                    requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) override;
+        void                    setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) override;
+        [[nodiscard]] bool                    isSceneReferenceAllocated       (SceneReferenceHandle handle) const final override;
+        [[nodiscard]] uint32_t                  getSceneReferenceCount          () const final override;
+        [[nodiscard]] const SceneReference&   getSceneReference               (SceneReferenceHandle handle) const final override;
+        [[nodiscard]] const SceneReferenceMemoryPool& getSceneReferences              () const;
 
-        virtual SceneSizeInformation    getSceneSizeInformation         () const final override;
+        [[nodiscard]] SceneSizeInformation    getSceneSizeInformation         () const final  override;
 
     protected:
-        const TopologyNode&             getNode                         (NodeHandle handle) const;
+        [[nodiscard]] const TopologyNode&             getNode                         (NodeHandle handle) const;
         TextureSampler&                 getTextureSamplerInternal       (TextureSamplerHandle handle);
         RenderPass&                     getRenderPassInternal           (RenderPassHandle handle);
         RenderGroup&                    getRenderGroupInternal          (RenderGroupHandle handle);
-        const TopologyTransform&        getTransform                    (TransformHandle handle) const;
+        [[nodiscard]] const TopologyTransform&        getTransform                    (TransformHandle handle) const;
 
     private:
         template <typename TYPE>
         const TYPE* getInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId) const;
         template <typename TYPE>
-        void setInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId, UInt32 elementCount, const TYPE* newValue);
+        void setInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId, uint32_t elementCount, const TYPE* newValue);
 
         NodeMemoryPool              m_nodes;
         CameraMemoryPool            m_cameras;
@@ -379,14 +356,12 @@ namespace ramses_internal
         RenderTargetMemoryPool      m_renderTargets;
         RenderBufferMemoryPool      m_renderBuffers;
         TextureSamplerMemoryPool    m_textureSamplers;
-        StreamTextureMemoryPool     m_streamTextures;
         DataBufferMemoryPool        m_dataBuffers;
         TextureBufferMemoryPool     m_textureBuffers;
         DataSlotMemoryPool          m_dataSlots;
         SceneReferenceMemoryPool    m_sceneReferences;
-        AnimationSystemMemoryPool   m_animationSystems;
 
-        const String                m_name;
+        const std::string           m_name;
         const SceneId               m_sceneId;
 
         FlushTime::Clock::time_point m_effectTimeSync;
@@ -406,7 +381,7 @@ namespace ramses_internal
 
     template <template<typename, typename> class MEMORYPOOL>
     template <typename TYPE>
-    const TYPE* SceneT<MEMORYPOOL>::getInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId) const
+    [[nodiscard]] const TYPE* SceneT<MEMORYPOOL>::getInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId) const
     {
         const DataInstance* dataInstance = m_dataInstanceMemory.getMemory(dataInstanceHandle);
         const DataLayout* dataLayout = m_dataLayoutMemory.getMemory(dataInstance->getLayoutHandle());
@@ -416,7 +391,7 @@ namespace ramses_internal
 
     template <template<typename, typename> class MEMORYPOOL>
     template <typename TYPE>
-    void SceneT<MEMORYPOOL>::setInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId, UInt32 elementCount, const TYPE* newValue)
+    void SceneT<MEMORYPOOL>::setInstanceDataInternal(DataInstanceHandle dataInstanceHandle, DataFieldHandle fieldId, uint32_t elementCount, const TYPE* newValue)
     {
         DataInstance* dataInstance = m_dataInstanceMemory.getMemory(dataInstanceHandle);
         const DataLayout* dataLayout = m_dataLayoutMemory.getMemory(dataInstance->getLayoutHandle());
@@ -451,12 +426,6 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline bool SceneT<MEMORYPOOL>::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_streamTextures.isAllocated(streamTextureHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
     inline bool SceneT<MEMORYPOOL>::isDataBufferAllocated(DataBufferHandle handle) const
     {
         return m_dataBuffers.isAllocated(handle);
@@ -484,12 +453,6 @@ namespace ramses_internal
     inline bool SceneT<MEMORYPOOL>::isPickableObjectAllocated(PickableObjectHandle pickableHandle) const
     {
         return m_pickableObjects.isAllocated(pickableHandle);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    inline bool SceneT<MEMORYPOOL>::isAnimationSystemAllocated(AnimationSystemHandle handle) const
-    {
-        return m_animationSystems.isAllocated(handle);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -625,13 +588,6 @@ namespace ramses_internal
 
     template <template<typename, typename> class MEMORYPOOL>
     inline
-    const typename SceneT<MEMORYPOOL>::AnimationSystemMemoryPool& SceneT<MEMORYPOOL>::getAnimationSystems() const
-    {
-        return m_animationSystems;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    inline
     const typename SceneT<MEMORYPOOL>::RenderGroupMemoryPool& SceneT<MEMORYPOOL>::getRenderGroups() const
     {
         return m_renderGroups;
@@ -674,13 +630,6 @@ namespace ramses_internal
 
     template <template<typename, typename> class MEMORYPOOL>
     inline
-    const typename SceneT<MEMORYPOOL>::StreamTextureMemoryPool& SceneT<MEMORYPOOL>::getStreamTextures() const
-    {
-        return m_streamTextures;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    inline
     const typename SceneT<MEMORYPOOL>::DataBufferMemoryPool& SceneT<MEMORYPOOL>::getDataBuffers() const
     {
         return m_dataBuffers;
@@ -708,69 +657,69 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Float* SceneT<MEMORYPOOL>::getDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const float* SceneT<MEMORYPOOL>::getDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Float>(containerHandle, fieldId);
+        return getInstanceDataInternal<float>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Matrix22f* SceneT<MEMORYPOOL>::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::mat2* SceneT<MEMORYPOOL>::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Matrix22f>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::mat2>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Matrix33f* SceneT<MEMORYPOOL>::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::mat3* SceneT<MEMORYPOOL>::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Matrix33f>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::mat3>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Matrix44f* SceneT<MEMORYPOOL>::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::mat4* SceneT<MEMORYPOOL>::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Matrix44f>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::mat4>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector2* SceneT<MEMORYPOOL>::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::vec2* SceneT<MEMORYPOOL>::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector2>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::vec2>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector3* SceneT<MEMORYPOOL>::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::vec3* SceneT<MEMORYPOOL>::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector3>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::vec3>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector4* SceneT<MEMORYPOOL>::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::vec4* SceneT<MEMORYPOOL>::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector4>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::vec4>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Int32* SceneT<MEMORYPOOL>::getDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const int32_t* SceneT<MEMORYPOOL>::getDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Int32>(containerHandle, fieldId);
+        return getInstanceDataInternal<int32_t>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector2i* SceneT<MEMORYPOOL>::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::ivec2* SceneT<MEMORYPOOL>::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector2i>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::ivec2>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector3i* SceneT<MEMORYPOOL>::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::ivec3* SceneT<MEMORYPOOL>::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector3i>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::ivec3>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    inline const Vector4i* SceneT<MEMORYPOOL>::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    inline const glm::ivec4* SceneT<MEMORYPOOL>::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
-        return getInstanceDataInternal<Vector4i>(containerHandle, fieldId);
+        return getInstanceDataInternal<glm::ivec4>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>

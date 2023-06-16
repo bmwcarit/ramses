@@ -12,14 +12,16 @@
 #include "IRendererTest.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
+#include <string>
+
 class DataLinkingTests : public IRendererTest
 {
 public:
-    virtual void setUpTestCases(RendererTestsFramework& testFramework) final;
-    virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
+    void setUpTestCases(RendererTestsFramework& testFramework) final;
+    bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
 private:
-    bool renderAndCompareScreenshot(RendererTestsFramework& testFramework, const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx = 0u, float expectedPixelError = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
+    bool renderAndCompareScreenshot(RendererTestsFramework& testFramework, const std::string& expectedImageName, uint32_t testDisplayIdx = 0u, float expectedPixelError = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
 
     template <typename LINKSCENE>
     void createAndShowDataLinkScenes(RendererTestsFramework& testFramework);
@@ -61,9 +63,9 @@ private:
     ramses::sceneId_t m_sceneIdProviderConsumer;
     ramses::sceneId_t m_sceneIdConsumer;
 
-    const ramses_internal::Vector3 m_cameraLow{ -1.f, 2.f, 8.f };
-    const ramses_internal::Vector3 m_cameraHigh{ 1.f, -2.f, 8.f };
-    const ramses_internal::Vector3 m_cameraMid{ 0.f, 0.f, 8.f };
+    const glm::vec3 m_cameraLow{ -1.f, 2.f, 8.f };
+    const glm::vec3 m_cameraHigh{ 1.f, -2.f, 8.f };
+    const glm::vec3 m_cameraMid{ 0.f, 0.f, 8.f };
 };
 
 #endif

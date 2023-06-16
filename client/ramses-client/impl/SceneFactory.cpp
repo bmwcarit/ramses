@@ -12,41 +12,31 @@
 
 namespace ramses_internal
 {
-    SceneFactory::SceneFactory()
-    {
-    }
-
-    SceneFactory::~SceneFactory()
-    {
-        for (const auto& item : m_scenes)
-        {
-            delete item.value;
-        }
-    }
-
     ClientScene* SceneFactory::createScene(const SceneInfo& sceneInfo)
     {
-        if (m_scenes.contains(sceneInfo.sceneID))
+        if (m_scenes.count(sceneInfo.sceneID) != 0)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "SceneFactory::createScene: scene with id " << sceneInfo.sceneID << " already exists, scene ID must be unique!");
             return nullptr;
         }
 
-        ClientScene* newScene = new ClientScene(sceneInfo);
-        m_scenes.put(newScene->getSceneId(), newScene);
+        auto newScene = std::make_unique<ClientScene>(sceneInfo);
+        auto* newScenePtr = newScene.get();
+        m_scenes.insert({ newScene->getSceneId(), std::move(newScene) });
 
-        return newScene;
+        return newScenePtr;
     }
 
-    ClientScene* SceneFactory::releaseScene(SceneId id)
+    InternalSceneOwningPtr SceneFactory::releaseScene(SceneId id)
     {
-        ClientScene* ret = nullptr;
-        SceneMap::Iterator it = m_scenes.find(id);
+        InternalSceneOwningPtr ret;
+        auto it = m_scenes.find(id);
         if (it != m_scenes.end())
         {
-            ret = it->value;
-            m_scenes.remove(it);
+            ret = std::move(it->second);
+            m_scenes.erase(it);
         }
+
         return ret;
     }
 }

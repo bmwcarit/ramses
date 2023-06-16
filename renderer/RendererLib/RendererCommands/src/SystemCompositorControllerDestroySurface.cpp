@@ -20,7 +20,7 @@ namespace ramses_internal
         getArgument<0>().setDescription("surface ivi id");
     }
 
-    Bool SystemCompositorControllerDestroySurface::execute(UInt32& surfaceId) const
+    bool SystemCompositorControllerDestroySurface::execute(uint32_t& surfaceId) const
     {
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCDestroyIviSurface{ WaylandIviSurfaceId(surfaceId) });
         return true;

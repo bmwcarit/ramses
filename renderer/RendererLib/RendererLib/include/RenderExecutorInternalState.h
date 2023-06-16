@@ -9,7 +9,6 @@
 #ifndef RAMSES_RENDEREXECUTORINTERNALSTATE_H
 #define RAMSES_RENDEREXECUTORINTERNALSTATE_H
 
-#include "Math3d/Vector3.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/Viewport.h"
@@ -17,51 +16,18 @@
 #include "RendererAPI/RenderingContext.h"
 #include "RendererLib/FrameTimer.h"
 #include "RenderExecutorInternalRenderStates.h"
+#include <optional>
 
 namespace ramses_internal
 {
     class IDevice;
     class RendererCachedScene;
 
-    template <typename STATETYPE> inline static STATETYPE DefaultStateValue()
-    {
-        return STATETYPE();
-    }
-
-    template <> inline Vector4 DefaultStateValue<Vector4>()
-    {
-        return Vector4(std::numeric_limits<float>::max());
-    }
-
-    template <> inline ColorWriteMask DefaultStateValue<ColorWriteMask>()
-    {
-        return std::numeric_limits<ColorWriteMask>::max();
-    }
-
-    template <> inline EDepthFunc DefaultStateValue<EDepthFunc>()
-    {
-        return EDepthFunc::NUMBER_OF_ELEMENTS;
-    }
-
-    template <> inline EDepthWrite DefaultStateValue<EDepthWrite>()
-    {
-        return EDepthWrite::NUMBER_OF_ELEMENTS;
-    }
-
-    template <> inline ECullMode DefaultStateValue<ECullMode>()
-    {
-        return ECullMode::NUMBER_OF_ELEMENTS;
-    }
-
     template <typename STATETYPE>
     struct CachedState
     {
     public:
-        explicit CachedState(const STATETYPE& initialState = DefaultStateValue<STATETYPE>())
-            : m_state(initialState)
-            , m_changed(true)
-        {
-        }
+        CachedState() = default;
 
         void setState(const STATETYPE& state)
         {
@@ -73,12 +39,13 @@ namespace ramses_internal
             }
         }
 
-        const STATETYPE& getState() const
+        [[nodiscard]] const STATETYPE& getState() const
         {
-            return m_state;
+            assert(m_state.has_value());
+            return m_state.value();
         }
 
-        Bool hasChanged() const
+        [[nodiscard]] bool hasChanged() const
         {
             return m_changed;
         }
@@ -86,12 +53,12 @@ namespace ramses_internal
         void reset()
         {
             m_changed = true;
-            m_state = DefaultStateValue<STATETYPE>();
+            m_state.reset();
         }
 
     private:
-        STATETYPE m_state;
-        Bool      m_changed;
+        std::optional<STATETYPE> m_state{};
+        bool m_changed = true;
     };
 
     // RenderExecutor is _stateless_, this only keeps an internal state during execution
@@ -101,42 +68,42 @@ namespace ramses_internal
     public:
         RenderExecutorInternalState(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
 
-        IDevice&                   getDevice() const;
+        [[nodiscard]] IDevice& getDevice() const;
 
-        void                       setScene(const RendererCachedScene& scene);
-        const RendererCachedScene& getScene() const;
-        RenderingContext&          getRenderingContext();
+        void                                     setScene(const RendererCachedScene& scene);
+        [[nodiscard]] const RendererCachedScene& getScene() const;
+        RenderingContext&                        getRenderingContext();
 
-        const Matrix44f&           getProjectionMatrix() const;
-        const Vector3&             getCameraWorldPosition() const;
-        const Matrix44f&           getViewMatrix() const;
-        const Matrix44f&           getModelMatrix() const;
-        const Matrix44f&           getModelViewMatrix() const;
-        const Matrix44f&           getModelViewProjectionMatrix() const;
+        [[nodiscard]] const glm::mat4& getProjectionMatrix() const;
+        [[nodiscard]] const glm::vec3& getCameraWorldPosition() const;
+        [[nodiscard]] const glm::mat4& getViewMatrix() const;
+        [[nodiscard]] const glm::mat4& getModelMatrix() const;
+        [[nodiscard]] const glm::mat4& getModelViewMatrix() const;
+        [[nodiscard]] const glm::mat4& getModelViewProjectionMatrix() const;
 
-        void                       setCamera(CameraHandle camera);
+        void setCamera(CameraHandle camera);
 
-        void                       setRenderable(RenderableHandle renderable);
-        RenderableHandle           getRenderable() const;
+        void                           setRenderable(RenderableHandle renderable);
+        [[nodiscard]] RenderableHandle getRenderable() const;
 
-        Bool hasExceededTimeBudgetForRendering() const;
+        [[nodiscard]] bool hasExceededTimeBudgetForRendering() const;
 
-        CachedState < DeviceResourceHandle >    shaderDeviceHandle;
-        DeviceResourceHandle                    vertexArrayDeviceHandle;
-        bool                                    vertexArrayUsesIndices = false;
-        CachedState < ScissorState >            scissorState;
-        CachedState < EDepthFunc >              depthFuncState;
-        CachedState < EDepthWrite >             depthWriteState;
-        CachedState < StencilState >            stencilState;
-        CachedState < BlendOperationsState >    blendOperationsState;
-        CachedState < BlendFactorsState >       blendFactorsState;
-        CachedState < Vector4 >                 blendColorState;
-        CachedState < ColorWriteMask >          colorWriteMaskState;
-        CachedState < ECullMode >               cullModeState;
-        CachedState < RenderTargetHandle >      renderTargetState;
-        CachedState < RenderPassHandle >        renderPassState;
-        CachedState < Viewport >                viewportState;
-        EDrawMode                               drawMode = EDrawMode::NUMBER_OF_ELEMENTS;
+        CachedState<DeviceResourceHandle> shaderDeviceHandle;
+        DeviceResourceHandle              vertexArrayDeviceHandle;
+        bool                              vertexArrayUsesIndices = false;
+        CachedState<ScissorState>         scissorState;
+        CachedState<EDepthFunc>           depthFuncState;
+        CachedState<EDepthWrite>          depthWriteState;
+        CachedState<StencilState>         stencilState;
+        CachedState<BlendOperationsState> blendOperationsState;
+        CachedState<BlendFactorsState>    blendFactorsState;
+        CachedState<glm::vec4>            blendColorState;
+        CachedState<ColorWriteMask>       colorWriteMaskState;
+        CachedState<ECullMode>            cullModeState;
+        CachedState<RenderTargetHandle>   renderTargetState;
+        CachedState<RenderPassHandle>     renderPassState;
+        CachedState<Viewport>             viewportState;
+        EDrawMode                         drawMode{};
 
         SceneRenderExecutionIterator            m_currentRenderIterator;
 
@@ -147,12 +114,12 @@ namespace ramses_internal
 
         RenderableHandle            m_renderable;
 
-        Matrix44f                   m_projectionMatrix;
-        Matrix44f                   m_viewMatrix;
-        Matrix44f                   m_modelMatrix;
-        Matrix44f                   m_modelViewMatrix;
-        Matrix44f                   m_modelViewProjectionMatrix;
-        Vector3                     m_cameraWorldPosition;
+        glm::mat4                   m_projectionMatrix;
+        glm::mat4                   m_viewMatrix;
+        glm::mat4                   m_modelMatrix;
+        glm::mat4                   m_modelViewMatrix;
+        glm::mat4                   m_modelViewProjectionMatrix;
+        glm::vec3                   m_cameraWorldPosition;
 
         CachedState < CameraHandle >       m_camera;
 
@@ -185,32 +152,32 @@ namespace ramses_internal
         return m_renderContext;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getProjectionMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getProjectionMatrix() const
     {
         return m_projectionMatrix;
     }
 
-    inline const Vector3& RenderExecutorInternalState::getCameraWorldPosition() const
+    inline const glm::vec3& RenderExecutorInternalState::getCameraWorldPosition() const
     {
         return m_cameraWorldPosition;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getViewMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getViewMatrix() const
     {
         return m_viewMatrix;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getModelMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getModelMatrix() const
     {
         return m_modelMatrix;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getModelViewMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getModelViewMatrix() const
     {
         return m_modelViewMatrix;
     }
 
-    inline const Matrix44f& RenderExecutorInternalState::getModelViewProjectionMatrix() const
+    inline const glm::mat4& RenderExecutorInternalState::getModelViewProjectionMatrix() const
     {
         return m_modelViewProjectionMatrix;
     }

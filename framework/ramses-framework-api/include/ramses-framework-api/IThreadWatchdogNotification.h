@@ -16,11 +16,11 @@ namespace ramses
     /**
      * Specifies ramses threads
     */
-    enum ERamsesThreadIdentifier
+    enum class ERamsesThreadIdentifier
     {
-        ERamsesThreadIdentifier_Unknown = 0,
-        ERamsesThreadIdentifier_Workers,
-        ERamsesThreadIdentifier_Renderer
+        Unknown,
+        Workers,
+        Renderer
     };
 
     /**

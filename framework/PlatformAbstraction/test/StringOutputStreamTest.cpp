@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Collections/StringOutputStream.h"
-#include "Collections/String.h"
 #include "framework_common_gmock_header.h"
 #include "UnsafeTestMemoryHelpers.h"
 #include "gmock/gmock.h"
@@ -79,14 +78,6 @@ namespace ramses_internal
     }
 
     TEST(AStringOutputStream, WriteString)
-    {
-        StringOutputStream outputStream;
-        outputStream << String("Hello World");
-        EXPECT_STREQ("Hello World", outputStream.c_str());
-        EXPECT_EQ(11U, outputStream.size());
-    }
-
-    TEST(AStringOutputStream, WriteStdString)
     {
         StringOutputStream outputStream;
         outputStream << std::string("Hello World");
@@ -210,8 +201,8 @@ namespace ramses_internal
         StringOutputStream stream;
 
         stream << "foo";
-        String s1(stream.release());
-        EXPECT_EQ(String("foo"), s1);
+        std::string s1(stream.release());
+        EXPECT_EQ(std::string("foo"), s1);
         EXPECT_STREQ("", stream.c_str());
         EXPECT_EQ(0u, stream.size());
 

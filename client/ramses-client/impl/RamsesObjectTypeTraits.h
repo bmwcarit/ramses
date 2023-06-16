@@ -10,6 +10,7 @@
 #define RAMSES_RAMSESOBJECTTYPETRAITS_H
 
 #include "ramses-client-api/RamsesObjectTypes.h"
+#include <array>
 
 namespace ramses
 {
@@ -70,81 +71,37 @@ namespace ramses
     // - conversion from class type to type ID and vice versa
     // - provide info about closest base class type ID
     // - provide info whether type is concrete (can be instantiated) or a pure base type
-    DEFINE_RAMSES_OBJECT_TRAITS(RamsesClient, ERamsesObjectType_Client, ERamsesObjectType_RamsesObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Scene, ERamsesObjectType_Scene, ERamsesObjectType_ClientObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystem, ERamsesObjectType_AnimationSystem, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystemRealTime, ERamsesObjectType_AnimationSystemRealTime, ERamsesObjectType_AnimationSystem, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(MeshNode, ERamsesObjectType_MeshNode, ERamsesObjectType_Node, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(PerspectiveCamera, ERamsesObjectType_PerspectiveCamera, ERamsesObjectType_Camera, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(OrthographicCamera, ERamsesObjectType_OrthographicCamera, ERamsesObjectType_Camera, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Effect, ERamsesObjectType_Effect, ERamsesObjectType_Resource, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(AnimatedProperty, ERamsesObjectType_AnimatedProperty, ERamsesObjectType_AnimationObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Animation, ERamsesObjectType_Animation, ERamsesObjectType_AnimationObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(AnimationSequence, ERamsesObjectType_AnimationSequence, ERamsesObjectType_AnimationObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Appearance, ERamsesObjectType_Appearance, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(GeometryBinding, ERamsesObjectType_GeometryBinding, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(PickableObject, ERamsesObjectType_PickableObject, ERamsesObjectType_Node, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepBool, ERamsesObjectType_SplineStepBool, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepFloat, ERamsesObjectType_SplineStepFloat, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepInt32, ERamsesObjectType_SplineStepInt32, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector2f, ERamsesObjectType_SplineStepVector2f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector3f, ERamsesObjectType_SplineStepVector3f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector4f, ERamsesObjectType_SplineStepVector4f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector2i, ERamsesObjectType_SplineStepVector2i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector3i, ERamsesObjectType_SplineStepVector3i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineStepVector4i, ERamsesObjectType_SplineStepVector4i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearFloat, ERamsesObjectType_SplineLinearFloat, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearInt32, ERamsesObjectType_SplineLinearInt32, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector2f, ERamsesObjectType_SplineLinearVector2f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector3f, ERamsesObjectType_SplineLinearVector3f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector4f, ERamsesObjectType_SplineLinearVector4f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector2i, ERamsesObjectType_SplineLinearVector2i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector3i, ERamsesObjectType_SplineLinearVector3i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineLinearVector4i, ERamsesObjectType_SplineLinearVector4i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierFloat, ERamsesObjectType_SplineBezierFloat, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierInt32, ERamsesObjectType_SplineBezierInt32, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector2f, ERamsesObjectType_SplineBezierVector2f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector3f, ERamsesObjectType_SplineBezierVector3f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector4f, ERamsesObjectType_SplineBezierVector4f, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector2i, ERamsesObjectType_SplineBezierVector2i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector3i, ERamsesObjectType_SplineBezierVector3i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SplineBezierVector4i, ERamsesObjectType_SplineBezierVector4i, ERamsesObjectType_Spline, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Texture2D, ERamsesObjectType_Texture2D, ERamsesObjectType_Resource, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Texture3D, ERamsesObjectType_Texture3D, ERamsesObjectType_Resource, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(TextureCube, ERamsesObjectType_TextureCube, ERamsesObjectType_Resource, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(ArrayResource, ERamsesObjectType_ArrayResource, ERamsesObjectType_Resource, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(RenderGroup, ERamsesObjectType_RenderGroup, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(RenderPass, ERamsesObjectType_RenderPass, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(BlitPass, ERamsesObjectType_BlitPass, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(TextureSampler, ERamsesObjectType_TextureSampler, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerMS, ERamsesObjectType_TextureSamplerMS, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(RenderBuffer, ERamsesObjectType_RenderBuffer, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(RenderTarget, ERamsesObjectType_RenderTarget, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataFloat, ERamsesObjectType_DataFloat, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector2f, ERamsesObjectType_DataVector2f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector3f, ERamsesObjectType_DataVector3f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector4f, ERamsesObjectType_DataVector4f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataMatrix22f, ERamsesObjectType_DataMatrix22f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataMatrix33f, ERamsesObjectType_DataMatrix33f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataMatrix44f, ERamsesObjectType_DataMatrix44f, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataInt32, ERamsesObjectType_DataInt32, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector2i, ERamsesObjectType_DataVector2i, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector3i, ERamsesObjectType_DataVector3i, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataVector4i, ERamsesObjectType_DataVector4i, ERamsesObjectType_DataObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(StreamTexture, ERamsesObjectType_StreamTexture, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(RamsesObject, ERamsesObjectType_RamsesObject, ERamsesObjectType_Invalid, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(ClientObject, ERamsesObjectType_ClientObject, ERamsesObjectType_RamsesObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(SceneObject, ERamsesObjectType_SceneObject, ERamsesObjectType_ClientObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(AnimationObject, ERamsesObjectType_AnimationObject, ERamsesObjectType_SceneObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(Node, ERamsesObjectType_Node, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Camera, ERamsesObjectType_Camera, ERamsesObjectType_Node, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(Spline, ERamsesObjectType_Spline, ERamsesObjectType_AnimationObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(Resource, ERamsesObjectType_Resource, ERamsesObjectType_SceneObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(DataObject, ERamsesObjectType_DataObject, ERamsesObjectType_SceneObject, false);
-    DEFINE_RAMSES_OBJECT_TRAITS(ArrayBuffer, ERamsesObjectType_DataBufferObject, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(Texture2DBuffer, ERamsesObjectType_Texture2DBuffer, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(SceneReference, ERamsesObjectType_SceneReference, ERamsesObjectType_SceneObject, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerExternal, ERamsesObjectType_TextureSamplerExternal, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(RamsesClient, ERamsesObjectType::Client, ERamsesObjectType::RamsesObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Scene, ERamsesObjectType::Scene, ERamsesObjectType::ClientObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(MeshNode, ERamsesObjectType::MeshNode, ERamsesObjectType::Node, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(PerspectiveCamera, ERamsesObjectType::PerspectiveCamera, ERamsesObjectType::Camera, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(OrthographicCamera, ERamsesObjectType::OrthographicCamera, ERamsesObjectType::Camera, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Effect, ERamsesObjectType::Effect, ERamsesObjectType::Resource, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Appearance, ERamsesObjectType::Appearance, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(GeometryBinding, ERamsesObjectType::GeometryBinding, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(PickableObject, ERamsesObjectType::PickableObject, ERamsesObjectType::Node, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Texture2D, ERamsesObjectType::Texture2D, ERamsesObjectType::Resource, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Texture3D, ERamsesObjectType::Texture3D, ERamsesObjectType::Resource, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(TextureCube, ERamsesObjectType::TextureCube, ERamsesObjectType::Resource, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(ArrayResource, ERamsesObjectType::ArrayResource, ERamsesObjectType::Resource, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(RenderGroup, ERamsesObjectType::RenderGroup, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(RenderPass, ERamsesObjectType::RenderPass, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(BlitPass, ERamsesObjectType::BlitPass, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(TextureSampler, ERamsesObjectType::TextureSampler, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerMS, ERamsesObjectType::TextureSamplerMS, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(RenderBuffer, ERamsesObjectType::RenderBuffer, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(RenderTarget, ERamsesObjectType::RenderTarget, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(RamsesObject, ERamsesObjectType::RamsesObject, ERamsesObjectType::Invalid, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(ClientObject, ERamsesObjectType::ClientObject, ERamsesObjectType::RamsesObject, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(SceneObject, ERamsesObjectType::SceneObject, ERamsesObjectType::ClientObject, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(Node, ERamsesObjectType::Node, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Camera, ERamsesObjectType::Camera, ERamsesObjectType::Node, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(Resource, ERamsesObjectType::Resource, ERamsesObjectType::SceneObject, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(DataObject, ERamsesObjectType::DataObject, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(ArrayBuffer, ERamsesObjectType::ArrayBufferObject, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(Texture2DBuffer, ERamsesObjectType::Texture2DBuffer, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(SceneReference, ERamsesObjectType::SceneReference, ERamsesObjectType::SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerExternal, ERamsesObjectType::TextureSamplerExternal, ERamsesObjectType::SceneObject, true);
 
     struct RamsesObjectTraitsEntry
     {
@@ -154,12 +111,12 @@ namespace ramses
     };
 
 #define DEFINE_RAMSES_OBJECT_TRAITS_LIST_BEGIN() \
-    const RamsesObjectTraitsEntry RamsesObjectTraits[] = \
+    const std::array RamsesObjectTraits = \
         { \
-            { ERamsesObjectType_Invalid, ERamsesObjectType_Invalid, false },
+            RamsesObjectTraitsEntry{ ERamsesObjectType::Invalid, ERamsesObjectType::Invalid, false },
 #define DEFINE_RAMSES_OBJECT_TRAITS_LIST(_typeId) \
-            { _typeId, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::BaseTypeID, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::IsConcreteType },
-#define DATA_BIND_DEFINE_END() \
+            RamsesObjectTraitsEntry{ _typeId, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::BaseTypeID, CLASS_OF_RAMSES_OBJECT_TYPE<_typeId>::IsConcreteType },
+#define DEFINE_RAMSES_OBJECT_TRAITS_LIST_END() \
         };
 
     // Define dynamic traits for all RamsesObject types that allow:
@@ -167,82 +124,40 @@ namespace ramses
     // - provide info whether type is concrete (can be instantiated) or a pure base type
     // NOTE THAT ALL TYPES BELOW MUST BE PROVIDED IN ORDER OF ERamsesObjectType ENUMERATION
     DEFINE_RAMSES_OBJECT_TRAITS_LIST_BEGIN()
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_ClientObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RamsesObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Client)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Scene)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSystem)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSystemRealTime)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Node)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_MeshNode)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Camera)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_PerspectiveCamera)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_OrthographicCamera)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Effect)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimatedProperty)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Animation)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_AnimationSequence)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Appearance)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_GeometryBinding)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_PickableObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Spline)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepBool)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepFloat)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepInt32)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector2f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector3f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector4f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector2i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector3i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineStepVector4i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearFloat)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearInt32)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector2f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector3f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector4f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector2i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector3i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineLinearVector4i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierFloat)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierInt32)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector2f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector3f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector4f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector2i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector3i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SplineBezierVector4i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Resource)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture2D)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture3D)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureCube)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_ArrayResource)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderGroup)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderPass)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_BlitPass)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSampler)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerMS)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderBuffer)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderTarget)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataBufferObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Texture2DBuffer)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataObject)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataFloat)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector2f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector3f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataMatrix22f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataMatrix33f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataMatrix44f)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataInt32)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector2i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector3i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataVector4i)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_StreamTexture)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_SceneReference)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerExternal)
-        DATA_BIND_DEFINE_END()
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::ClientObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::RamsesObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::SceneObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Client)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Scene)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Node)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::MeshNode)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Camera)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::PerspectiveCamera)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::OrthographicCamera)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Effect)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Appearance)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::GeometryBinding)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::PickableObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Resource)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Texture2D)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Texture3D)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::TextureCube)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::ArrayResource)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::RenderGroup)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::RenderPass)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::BlitPass)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::TextureSampler)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::TextureSamplerMS)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::RenderBuffer)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::RenderTarget)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::ArrayBufferObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::Texture2DBuffer)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::DataObject)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::SceneReference)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType::TextureSamplerExternal)
+    DEFINE_RAMSES_OBJECT_TRAITS_LIST_END()
+
+    static_assert(static_cast<size_t>(ERamsesObjectType::NUMBER_OF_TYPES) == RamsesObjectTraits.size(), "Every RamsesObject type must register its traits!");
 }
 
 #endif

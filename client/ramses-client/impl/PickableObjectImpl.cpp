@@ -20,8 +20,8 @@
 
 namespace ramses
 {
-    PickableObjectImpl::PickableObjectImpl(SceneImpl& scene, const char* pickableObjectName)
-        : NodeImpl(scene, ERamsesObjectType_PickableObject, pickableObjectName)
+    PickableObjectImpl::PickableObjectImpl(SceneImpl& scene, std::string_view pickableObjectName)
+        : NodeImpl(scene, ERamsesObjectType::PickableObject, pickableObjectName)
     {
     }
 
@@ -89,14 +89,14 @@ namespace ramses
         const ramses_internal::PickableObject& pickableObject = getIScene().getPickableObject(m_pickableObjectHandle);
 
         if (!getIScene().isDataBufferAllocated(pickableObject.geometryHandle))
-            status = addValidationMessage(EValidationSeverity_Error, "pickable object references a deleted geometry buffer");
+            status = addValidationMessage(EValidationSeverity::Error, "pickable object references a deleted geometry buffer");
         else
             status = std::max(status, addValidationOfDependentObject(*m_geometryBufferImpl));
 
         if (!pickableObject.cameraHandle.isValid())
-            status = std::max(status, addValidationMessage(EValidationSeverity_Warning, "pickable object references no camera, a valid camera must be set"));
+            status = std::max(status, addValidationMessage(EValidationSeverity::Warning, "pickable object references no camera, a valid camera must be set"));
         else if (!getIScene().isCameraAllocated(pickableObject.cameraHandle))
-            status = addValidationMessage(EValidationSeverity_Error, "pickable object references a deleted camera");
+            status = addValidationMessage(EValidationSeverity::Error, "pickable object references a deleted camera");
 
         return status;
     }
@@ -122,10 +122,10 @@ namespace ramses
         }
         else
         {
-            ramses_internal::String str =
+            std::string str =
                 "PickableObject::setCamera failed - camera is not valid, maybe camera was not initialized:\n";
-            str += cameraImpl.getValidationReport(EValidationSeverity_Warning);
-            return addErrorEntry(str.c_str());
+            str += cameraImpl.getValidationReport(EValidationSeverity::Warning);
+            return addErrorEntry(str);
         }
 
         return cameraValidity;

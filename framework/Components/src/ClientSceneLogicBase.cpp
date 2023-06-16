@@ -28,7 +28,6 @@ namespace ramses_internal
         , m_sceneId(scene.getSceneId())
         , m_scene(scene)
         , m_scenePublicationMode(EScenePublicationMode_Unpublished)
-        , m_animationSystemFactory(ramses_internal::EAnimationSystemOwner_Scenemanager)
     {
         std::fill(m_resourceCount.begin(), m_resourceCount.end(), 0);
         std::fill(m_resourceMaxSize.begin(), m_resourceMaxSize.end(), 0);
@@ -139,7 +138,7 @@ namespace ramses_internal
         {
             m_scenegraphSender.sendCreateScene(subscriber, m_sceneId, m_scenePublicationMode);
         }
-        m_scene.getStatisticCollection().statSceneActionsSent.incCounter(sceneUpdate.actions.numberOfActions()*static_cast<UInt32>(m_subscribersWaitingForScene.size()));
+        m_scene.getStatisticCollection().statSceneActionsSent.incCounter(sceneUpdate.actions.numberOfActions()*static_cast<uint32_t>(m_subscribersWaitingForScene.size()));
         m_scenegraphSender.sendSceneUpdate(m_subscribersWaitingForScene, std::move(sceneUpdate), m_sceneId, m_scenePublicationMode, m_scene.getStatisticCollection());
 
         m_subscribersActive.insert(m_subscribersActive.end(), m_subscribersWaitingForScene.begin(), m_subscribersWaitingForScene.end());
@@ -155,8 +154,8 @@ namespace ramses_internal
 
         struct ActionInfo {
             ActionInfo() : count(0), size(0) {}
-            UInt32 count;
-            UInt32 size;
+            uint32_t count;
+            uint32_t size;
         };
         std::vector<ActionInfo> sceneActionCountPerType(NumOfSceneActionTypes);
         for (const auto& action : update.actions)
@@ -166,7 +165,7 @@ namespace ramses_internal
             info.size += action.size();
         }
 
-        for (UInt actionType = 0; actionType < NumOfSceneActionTypes; ++actionType)
+        for (size_t actionType = 0; actionType < NumOfSceneActionTypes; ++actionType)
         {
             const ActionInfo& info = sceneActionCountPerType[actionType];
             if (info.count > 0)

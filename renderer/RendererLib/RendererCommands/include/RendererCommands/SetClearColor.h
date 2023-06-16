@@ -15,11 +15,11 @@ namespace ramses_internal
 {
     class RendererCommandBuffer;
 
-    class SetClearColor : public RamshCommandArgs<UInt32, Float, Float, Float, Float>
+    class SetClearColor : public RamshCommandArgs<uint32_t, float, float, float, float>
     {
     public:
         explicit SetClearColor(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt32& displayId, Float& red, Float& green, Float& blue, Float& alpha) const override;
+        bool execute(uint32_t& displayId, float& red, float& green, float& blue, float& alpha) const override;
 
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;

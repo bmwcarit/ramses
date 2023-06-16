@@ -32,8 +32,8 @@ namespace ramses_internal
         ResourceContentHash hash(4711u, 0);
         ResourceTableOfContents toc;
         ResourceInfo resourceInfo(EResourceType_IndexArray, hash, 22u, 11u);
-        UInt32 offsetWithinFile = 123u;
-        UInt32 resourceSizeInBytes = 456u;
+        uint32_t offsetWithinFile = 123u;
+        uint32_t resourceSizeInBytes = 456u;
         toc.registerContents(resourceInfo, offsetWithinFile, resourceSizeInBytes);
         EXPECT_TRUE(toc.containsResource(hash));
 
@@ -52,13 +52,13 @@ namespace ramses_internal
         ResourceTableOfContents toc;
         ResourceContentHash hashA(4711u, 0);
         ResourceInfo resourceInfoA(EResourceType_IndexArray, hashA, 22u, 11u);
-        UInt32 offsetInBytesA = 123u;
-        UInt32 sizeInBytesA = 456u;
+        uint32_t offsetInBytesA = 123u;
+        uint32_t sizeInBytesA = 456u;
         toc.registerContents(resourceInfoA, offsetInBytesA, sizeInBytesA);
         ResourceContentHash hashB(234678u, 0);
         ResourceInfo resourceInfoB(EResourceType_Texture2D, hashB, 44u, 33u);
-        UInt32 offsetInBytesB = 987u;
-        UInt32 sizeInBytesB = 654u;
+        uint32_t offsetInBytesB = 987u;
+        uint32_t sizeInBytesB = 654u;
         toc.registerContents(resourceInfoB, offsetInBytesB, sizeInBytesB);
 
         {

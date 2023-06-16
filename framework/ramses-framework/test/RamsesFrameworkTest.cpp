@@ -19,35 +19,31 @@ using namespace testing;
 
 TEST(ARamsesFramework, canDefaultConstruct)
 {
-    RamsesFramework fw;
-    EXPECT_GT(fw.impl.getParticipantAddress().getParticipantId().get(), 0xFF);
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
+    EXPECT_GT(fw.m_impl.getParticipantAddress().getParticipantId().get(), 0xFF);
 }
 
 TEST(ARamsesFramework, canConstructFromConfig)
 {
-    const char* argv[] = {"", "-guid", "0000-000000000123"};
-    RamsesFrameworkConfig config(3, argv);
-    RamsesFramework fw(config);
-    EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x123);
-}
-
-
-TEST(ARamsesFramework, canConstructWithArgcArgv)
-{
-    const char* argv[] = {"", "-guid", "0000-000000000124"};
-    RamsesFramework fw(3, argv);
-    EXPECT_EQ(fw.impl.getParticipantAddress().getParticipantId().get(), 0x124);
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    config.setParticipantGuid(0x123);
+    RamsesFramework fw{config};
+    EXPECT_EQ(fw.m_impl.getParticipantAddress().getParticipantId().get(), 0x123);
 }
 
 TEST(ARamsesFramework, isNotConnectedInitially)
 {
-    RamsesFramework fw;
+
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
     EXPECT_FALSE(fw.isConnected());
 }
 
 TEST(ARamsesFramework, connectLifeCycleOK)
 {
-    RamsesFramework fw;
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
     EXPECT_EQ(ramses::StatusOK, fw.connect());
     EXPECT_TRUE(fw.isConnected());
     EXPECT_EQ(ramses::StatusOK, fw.disconnect());
@@ -55,7 +51,8 @@ TEST(ARamsesFramework, connectLifeCycleOK)
 
 TEST(ARamsesFramework, reportsErrorWhenConnectingSecondTime)
 {
-    RamsesFramework fw;
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
     fw.connect();
     EXPECT_NE(ramses::StatusOK, fw.connect());
     EXPECT_TRUE(fw.isConnected());
@@ -63,7 +60,8 @@ TEST(ARamsesFramework, reportsErrorWhenConnectingSecondTime)
 
 TEST(ARamsesFramework, reportsErrorWhenDisconnectingSecondTime)
 {
-    RamsesFramework fw;
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
     fw.connect();
     EXPECT_EQ(ramses::StatusOK, fw.disconnect());
     EXPECT_NE(ramses::StatusOK, fw.disconnect());
@@ -77,8 +75,8 @@ namespace
         explicit PartialApiRamshCommandMock(const std::string& kw_)
             : kw(kw_)
         {}
-        const std::string& keyword() const override { return kw; }
-        const std::string& help() const override { return helpText; }
+        [[nodiscard]] const std::string& keyword() const override { return kw; }
+        [[nodiscard]] const std::string& help() const override { return helpText; }
         std::string kw;
         std::string helpText{"text"};
     };
@@ -89,7 +87,8 @@ TEST(ARamsesFramework, canAddAndTriggerRamshCommands)
     auto cmd_a = std::make_shared<testing::StrictMock<PartialApiRamshCommandMock>>("foo");
     auto cmd_b = std::make_shared<testing::StrictMock<PartialApiRamshCommandMock>>("bar");
 
-    RamsesFramework fw;
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
     EXPECT_EQ(StatusOK, fw.addRamshCommand(cmd_a));
     EXPECT_EQ(StatusOK, fw.addRamshCommand(cmd_b));
 
@@ -107,7 +106,8 @@ TEST(ARamsesFramework, canAddAndTriggerRamshCommands)
 
 TEST(ARamsesFramwork, canExecuteExistingAndFailingInvalidRamshCommands)
 {
-    RamsesFramework fw;
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
     EXPECT_EQ(StatusOK, fw.executeRamshCommand("help"));
     EXPECT_EQ(StatusOK, fw.executeRamshCommand("setLogLevelConsole trace"));
     EXPECT_NE(StatusOK, fw.executeRamshCommand("invalid ramsh command"));
@@ -116,7 +116,8 @@ TEST(ARamsesFramwork, canExecuteExistingAndFailingInvalidRamshCommands)
 
 TEST(ARamsesFramework, failsToAddInvalidRamshCommands)
 {
-    RamsesFramework fw;
+    RamsesFrameworkConfig config{EFeatureLevel_Latest};
+    RamsesFramework fw{config};
     EXPECT_NE(StatusOK, fw.addRamshCommand({}));
     EXPECT_NE(StatusOK, fw.addRamshCommand(std::make_shared<testing::StrictMock<PartialApiRamshCommandMock>>("")));
     EXPECT_NE(StatusOK, fw.addRamshCommand(std::make_shared<testing::StrictMock<PartialApiRamshCommandMock>>("a b")));
@@ -158,4 +159,20 @@ TEST(ARamsesFramework, CanSetAndResetLogHandlerMultipleTimes)
     RamsesFramework::SetLogHandler([](auto /*level*/, auto& /*context*/, auto& /*message*/) {});
     RamsesFramework::SetLogHandler(nullptr);
     RamsesFramework::SetLogHandler(nullptr);
+}
+
+TEST(ARamsesFramework, multipleInstancesCanBeCreatedInParallel)
+{
+    // check stability of sensitive framework components (e.g. logger singleton) when used in multiple instances in parallel
+    std::vector<std::thread> threads;
+    threads.reserve(100);
+    for (size_t t = 0u; t < threads.capacity(); ++t)
+        threads.emplace_back([]() {
+            RamsesFrameworkConfig config{EFeatureLevel_Latest};
+            RamsesFramework fw{config};
+            std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+        });
+
+    for (auto& t : threads)
+        t.join();
 }

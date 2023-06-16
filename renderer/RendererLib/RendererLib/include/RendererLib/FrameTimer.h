@@ -41,14 +41,14 @@ namespace ramses_internal
             m_frameStartTimeStamp = Clock::now();
         }
 
-        void setSectionTimeBudget(EFrameTimerSectionBudget section, UInt64 timeBudgetInMicrosecs)
+        void setSectionTimeBudget(EFrameTimerSectionBudget section, uint64_t timeBudgetInMicrosecs)
         {
-            // clamp given time budget to InfiniteDuration to avoid potential overflow of chrono when using numeric max of UInt64 or chrono max
-            timeBudgetInMicrosecs = std::min<UInt64>(timeBudgetInMicrosecs, std::chrono::duration_cast<Duration>(PlatformTime::InfiniteDuration).count());
+            // clamp given time budget to InfiniteDuration to avoid potential overflow of chrono when using numeric max of uint64_t or chrono max
+            timeBudgetInMicrosecs = std::min<uint64_t>(timeBudgetInMicrosecs, std::chrono::duration_cast<Duration>(PlatformTime::InfiniteDuration).count());
             m_sectionBudgets[static_cast<size_t>(section)] = Duration(timeBudgetInMicrosecs);
         }
 
-        Bool isTimeBudgetExceededForSection(EFrameTimerSectionBudget section, std::chrono::milliseconds* duration = nullptr) const
+        bool isTimeBudgetExceededForSection(EFrameTimerSectionBudget section, std::chrono::milliseconds* duration = nullptr) const
         {
             const auto sectionDuration = Clock::now() - m_frameStartTimeStamp;
             if (duration)
@@ -56,12 +56,12 @@ namespace ramses_internal
             return sectionDuration >= m_sectionBudgets[static_cast<size_t>(section)];
         }
 
-        std::chrono::microseconds getTimeBudgetForSection(EFrameTimerSectionBudget section) const
+        [[nodiscard]] std::chrono::microseconds getTimeBudgetForSection(EFrameTimerSectionBudget section) const
         {
             return m_sectionBudgets[static_cast<size_t>(section)];
         }
 
-        Clock::time_point getFrameStartTime() const
+        [[nodiscard]] Clock::time_point getFrameStartTime() const
         {
             return m_frameStartTimeStamp;
         }

@@ -25,12 +25,12 @@ namespace ramses_internal
         {
         }
 
-        bool isValid() const
+        [[nodiscard]] bool isValid() const
         {
             return m_resource != nullptr;
         }
 
-        const ResourceContentHash& getHash() const
+        [[nodiscard]] const ResourceContentHash& getHash() const
         {
             return *m_resource;
         }

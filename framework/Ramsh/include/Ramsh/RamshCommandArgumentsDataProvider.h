@@ -31,10 +31,10 @@ namespace ramses_internal
     {
     public:
         // returns the description of the argument
-        std::string description() const;
+        [[nodiscard]] std::string description() const;
 
         // returns all the concatenated keywords of the argument
-        std::string keywords() const;
+        [[nodiscard]] std::string keywords() const;
 
     protected:
         explicit RamshArgumentBase(const RamshTypeInfo& typeinfo, void* defaultValue = nullptr);
@@ -44,21 +44,21 @@ namespace ramses_internal
         }
 
         // amount of data consumed by the argument - usually 2 for data arguments (parameter name + data)
-        virtual UInt32 amountConsumed() const;
+        [[nodiscard]] virtual uint32_t amountConsumed() const;
 
         // try to set the argument's data with a given keyword (doesn't modify the argument itself, just returns a data object or nullptr if keyword doesn't match)
-        const RamshArgumentData* set(const std::string& keyword, const std::string& data) const;
+        [[nodiscard]] const RamshArgumentData* set(const std::string& keyword, const std::string& data) const;
 
-        const RamshArgumentData* forceSet(const std::string& data) const;
+        [[nodiscard]] const RamshArgumentData* forceSet(const std::string& data) const;
 
         // tries to get the value of the argument (converts the data) with a data object previously retrieved by calling set/forceSet
         template<typename T> bool getValue(const RamshArgumentData* data, T& value) const;
 
-        virtual std::string typeString() const = 0;
+        [[nodiscard]] virtual std::string typeString() const = 0;
 
-        virtual std::string defaultValueString() const = 0;
+        [[nodiscard]] virtual std::string defaultValueString() const = 0;
 
-        template<typename T> std::string defaultValueStringInternal() const;
+        template<typename T> [[nodiscard]] std::string defaultValueStringInternal() const;
 
         void registerKeywordInternal(const std::string& keyword);
 
@@ -117,9 +117,9 @@ namespace ramses_internal
         }
 
     protected:
-        std::string defaultValueString() const override;
+        [[nodiscard]] std::string defaultValueString() const override;
 
-        std::string typeString() const override;
+        [[nodiscard]] std::string typeString() const override;
     };
 
     template<typename T>
@@ -147,7 +147,7 @@ namespace ramses_internal
             : RamshArgument<bool>()
         {}
 
-        UInt32 amountConsumed() const override;
+        [[nodiscard]] uint32_t amountConsumed() const override;
     };
 
     struct RamshArgumentDataProvider
@@ -156,7 +156,7 @@ namespace ramses_internal
         RamshArgumentDataProvider(const ArgumentVector& args, const std::vector<std::string>& input);
 
         // try to get the converted data of the argument with index
-        template<typename T> bool getValue(UInt32 index, T& value) const;
+        template<typename T> bool getValue(uint32_t index, T& value) const;
 
     private:
         const ArgumentVector& m_args;
@@ -174,13 +174,13 @@ namespace ramses_internal
         template<typename T> RamshArgument<T>& addArgument();
 
         // returns the argument definition with a given index
-        RamshArgument<void>& getArgument(UInt32 index) const;
+        [[nodiscard]] RamshArgument<void>& getArgument(uint32_t index) const;
 
         // returns the argument definitions in a readable format
-        std::string argumentString() const;
+        [[nodiscard]] std::string argumentString() const;
 
         // parses the given input according to the argument definitions
-        RamshArgumentDataProvider parse(const std::vector<std::string>& in) const;
+        [[nodiscard]] RamshArgumentDataProvider parse(const std::vector<std::string>& in) const;
 
         // delete created argmuents
         ~RamshArgumentProvider();
@@ -199,7 +199,7 @@ namespace ramses_internal
     {
     }
 
-    inline UInt32 RamshArgumentBase::amountConsumed() const
+    inline uint32_t RamshArgumentBase::amountConsumed() const
     {
         return 2; // default data amount consumed by an argument (flag + data)
     }
@@ -376,7 +376,7 @@ namespace ramses_internal
     // TypedRamshArgument<bool>
     // -------------------
 
-    inline UInt32 TypedRamshArgument<bool>::amountConsumed() const
+    inline uint32_t TypedRamshArgument<bool>::amountConsumed() const
     {
         return 1; // data amount consumed by a bool-argument (just flag)
     }
@@ -393,16 +393,16 @@ namespace ramses_internal
         m_data.resize(m_args.size());
 
         // initialize the list with references to input
-        for(UInt i = 1; i < input.size();i++)
+        for(size_t i = 1; i < input.size(); i++)
         {
             in.push_back(&input[i]);
         }
 
-        for(UInt j = 0; j < m_args.size(); j++)
+        for(size_t j = 0; j < m_args.size(); j++)
         {
             // initialize current argument's data with 0
             m_data[j] = nullptr;
-            for (UInt pos = 0; pos < in.size(); ++pos)
+            for (size_t pos = 0; pos < in.size(); ++pos)
             {
                 // determine if current raw data is a flag
                 if(in[pos]->find("-") == 0)
@@ -452,7 +452,7 @@ namespace ramses_internal
     }
 
     template<typename T>
-    inline bool RamshArgumentDataProvider::getValue(UInt32 index, T& value) const
+    inline bool RamshArgumentDataProvider::getValue(uint32_t index, T& value) const
     {
         // get the argument data of this index
         const RamshArgumentData* argData = m_data[index];
@@ -509,7 +509,7 @@ namespace ramses_internal
         return RamshArgumentDataProvider(m_arguments,in);
     }
 
-    inline RamshArgument<void>& RamshArgumentProvider::getArgument(UInt32 index) const
+    inline RamshArgument<void>& RamshArgumentProvider::getArgument(uint32_t index) const
     {
         return *static_cast<RamshArgument<void>*>(m_arguments[index]);
     }

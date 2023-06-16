@@ -11,7 +11,10 @@
 
 #include "Resource/ResourceBase.h"
 #include "Resource/EffectInputInformation.h"
-#include "absl/types/optional.h"
+#include <optional>
+
+#include <string_view>
+#include <string>
 
 namespace ramses_internal
 {
@@ -21,37 +24,37 @@ namespace ramses_internal
     class EffectResource : public ResourceBase
     {
     public:
-        EffectResource(const String& vertexShader, const String& fragmentShader, const String& geometryShader,
-            absl::optional<EDrawMode> geometryShaderInputType, const EffectInputInformationVector& uniformInputs,
-            const EffectInputInformationVector& attributeInputs, const String& name, ResourceCacheFlag cacheFlag);
+        EffectResource(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader,
+            std::optional<EDrawMode> geometryShaderInputType, const EffectInputInformationVector& uniformInputs,
+            const EffectInputInformationVector& attributeInputs, std::string_view name, ResourceCacheFlag cacheFlag);
 
         const char* getVertexShader() const;
         const char* getFragmentShader() const;
         const char* getGeometryShader() const;
 
-        absl::optional<EDrawMode> getGeometryShaderInputType() const;
+        std::optional<EDrawMode> getGeometryShaderInputType() const;
 
         const EffectInputInformationVector& getUniformInputs() const;
         const EffectInputInformationVector& getAttributeInputs() const;
 
-        DataFieldHandle getUniformDataFieldHandleByName(const String& name) const;
-        DataFieldHandle getAttributeDataFieldHandleByName(const String& name) const;
+        DataFieldHandle getUniformDataFieldHandleByName(std::string_view name) const;
+        DataFieldHandle getAttributeDataFieldHandleByName(std::string_view name) const;
 
-        virtual void serializeResourceMetadataToStream(IOutputStream& output) const override;
-        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name);
+        void serializeResourceMetadataToStream(IOutputStream& output) const override;
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, std::string_view name);
 
     private:
-        EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, absl::optional<EDrawMode> geometryShaderInputType,
-            const String& name, UInt32 fragmentShaderOffset, UInt32 geometryShaderOffset, ResourceCacheFlag cacheFlag);
+        EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, std::optional<EDrawMode> geometryShaderInputType,
+            std::string_view name, uint32_t fragmentShaderOffset, uint32_t geometryShaderOffset, ResourceCacheFlag cacheFlag);
 
         static void WriteInputVector(IOutputStream& stream, const EffectInputInformationVector& inputVector);
         static void ReadInputVector(IInputStream& stream, EffectInputInformationVector& inputVector);
 
         const EffectInputInformationVector m_uniformInputs;
         const EffectInputInformationVector m_attributeInputs;
-        const UInt32 m_fragmentShaderOffset;
-        const UInt32 m_geometryShaderOffset;
-        const absl::optional<EDrawMode> m_geometryShaderInputType;
+        const uint32_t m_fragmentShaderOffset;
+        const uint32_t m_geometryShaderOffset;
+        const std::optional<EDrawMode> m_geometryShaderInputType;
 
     };
 }

@@ -16,7 +16,7 @@ namespace ramses_internal
     class AntiAliasingScene : public IntegrationScene
     {
     public:
-        AntiAliasingScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        AntiAliasingScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {

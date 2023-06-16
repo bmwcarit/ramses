@@ -9,7 +9,8 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/BinaryFileOutputStream.h"
-#include "Math3d/Matrix44f.h"
+
+#include <string>
 
 namespace ramses_internal
 {
@@ -17,10 +18,10 @@ namespace ramses_internal
     {
     public:
         BinaryFileOutputStreamTest();
-        ~BinaryFileOutputStreamTest();
+        ~BinaryFileOutputStreamTest() override;
 
         File m_file;
-        String m_testString;
+        std::string m_testString;
     };
 
     BinaryFileOutputStreamTest::BinaryFileOutputStreamTest()
@@ -44,7 +45,7 @@ namespace ramses_internal
         EXPECT_TRUE(m_file.open(File::Mode::ReadOnlyBinary));
 
         {
-            UInt    numBytes = 0;
+            size_t  numBytes = 0;
             int32_t inValue  = 0;
             EXPECT_EQ(EStatus::Ok, m_file.read(&inValue, sizeof(int32_t), numBytes));
             ASSERT_EQ(sizeof(int32_t), numBytes);
@@ -52,15 +53,15 @@ namespace ramses_internal
         }
 
         {
-            UInt  numBytes = 0;
-            float inValue  = 0.f;
+            size_t numBytes = 0;
+            float  inValue  = 0.f;
             EXPECT_EQ(EStatus::Ok, m_file.read(&inValue, sizeof(float), numBytes));
             EXPECT_EQ(sizeof(float), numBytes);
         }
 
         {
-            UInt numBytes   = 0;
-            char buffer[40] = {0};
+            size_t numBytes   = 0;
+            char   buffer[40] = {0};
             EXPECT_EQ(EStatus::Ok, m_file.read(buffer, sizeof(uint32_t), numBytes));
             EXPECT_EQ(EStatus::Ok, m_file.read(buffer, sizeof(char) * m_testString.size(), numBytes));
             buffer[m_testString.size()] = 0;

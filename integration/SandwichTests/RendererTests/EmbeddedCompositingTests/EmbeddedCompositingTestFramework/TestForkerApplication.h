@@ -9,15 +9,17 @@
 #ifndef RAMSES_TESTFORKERAPPLICATION_H
 #define RAMSES_TESTFORKERAPPLICATION_H
 
-#include "Collections/String.h"
 #include "NamedPipe.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
     class TestForkerApplication
     {
     public:
-        TestForkerApplication(const String& testToForkerPipeName, const std::vector<std::pair<String,String>>& testPipeNames);
+        TestForkerApplication(std::string_view testToForkerPipeName, const std::vector<std::pair<std::string, std::string>>& testPipeNames);
         void run();
 
     private:
@@ -30,8 +32,8 @@ namespace ramses_internal
 
         struct TestApplicationInfo
         {
-            const String testToWaylandClientPipeName;
-            const String waylandClientToTestPipeName;
+            const std::string testToWaylandClientPipeName;
+            const std::string waylandClientToTestPipeName;
             pid_t testApplicationProcessId;
         };
         std::vector<TestApplicationInfo> m_testApplicationInfo;

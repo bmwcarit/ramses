@@ -28,33 +28,33 @@ namespace ramses_internal
         WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, int version, uint32_t id);
         ~WaylandSurface() override;
 
-        virtual IWaylandBuffer* getWaylandBuffer() const override;
-        virtual bool hasPendingBuffer() const override;
-        virtual void setShellSurface(IWaylandShellSurface* shellSurface) override;
-        virtual bool hasShellSurface() const override;
-        virtual const String& getSurfaceTitle() const override;
-        virtual void setIviSurface(IWaylandIVISurface* iviSurface) override;
-        virtual bool hasIviSurface() const override;
-        virtual WaylandIviSurfaceId getIviSurfaceId() const override;
-        virtual uint32_t getNumberOfCommitedFrames() const override;
-        virtual void resetNumberOfCommitedFrames() override;
-        virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const override;
-        virtual void sendFrameCallbacks(UInt32 time) override;
-        virtual void logInfos(RendererLogContext& context) const override;
-        virtual void bufferDestroyed(IWaylandBuffer& buffer) override;
-        virtual void resourceDestroyed() override;
-        virtual void surfaceAttach(IWaylandClient& client, WaylandBufferResource& bufferResource, int x, int y) override;
-        virtual void surfaceDetach(IWaylandClient& client) override;
-        virtual void surfaceDamage(IWaylandClient& client, int x, int y, int width, int height) override;
-        virtual void surfaceFrame(IWaylandClient& client, uint32_t id) override;
-        virtual void surfaceSetOpaqueRegion(IWaylandClient& client, INativeWaylandResource* regionResource) override;
-        virtual void surfaceSetInputRegion(IWaylandClient& client, INativeWaylandResource* regionResource) override;
-        virtual void surfaceCommit(IWaylandClient& client) override;
-        virtual void surfaceSetBufferTransform(IWaylandClient& client, int32_t transform) override;
-        virtual void surfaceSetBufferScale(IWaylandClient& client, int32_t scale) override;
-        virtual void surfaceDamageBuffer(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) override;
-        virtual WaylandClientCredentials getClientCredentials() const override;
-        virtual bool dispatchBufferTypeChanged() override;
+        [[nodiscard]] IWaylandBuffer* getWaylandBuffer() const override;
+        [[nodiscard]] bool hasPendingBuffer() const override;
+        void setShellSurface(IWaylandShellSurface* shellSurface) override;
+        [[nodiscard]] bool hasShellSurface() const override;
+        [[nodiscard]] const std::string& getSurfaceTitle() const override;
+        void setIviSurface(IWaylandIVISurface* iviSurface) override;
+        [[nodiscard]] bool hasIviSurface() const override;
+        [[nodiscard]] WaylandIviSurfaceId getIviSurfaceId() const override;
+        [[nodiscard]] uint32_t getNumberOfCommitedFrames() const override;
+        void resetNumberOfCommitedFrames() override;
+        [[nodiscard]] uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const override;
+        void sendFrameCallbacks(uint32_t time) override;
+        void logInfos(RendererLogContext& context) const override;
+        void bufferDestroyed(IWaylandBuffer& buffer) override;
+        void resourceDestroyed() override;
+        void surfaceAttach(IWaylandClient& client, WaylandBufferResource& bufferResource, int x, int y) override;
+        void surfaceDetach(IWaylandClient& client) override;
+        void surfaceDamage(IWaylandClient& client, int x, int y, int width, int height) override;
+        void surfaceFrame(IWaylandClient& client, uint32_t id) override;
+        void surfaceSetOpaqueRegion(IWaylandClient& client, INativeWaylandResource* regionResource) override;
+        void surfaceSetInputRegion(IWaylandClient& client, INativeWaylandResource* regionResource) override;
+        void surfaceCommit(IWaylandClient& client) override;
+        void surfaceSetBufferTransform(IWaylandClient& client, int32_t transform) override;
+        void surfaceSetBufferScale(IWaylandClient& client, int32_t scale) override;
+        void surfaceDamageBuffer(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) override;
+        [[nodiscard]] WaylandClientCredentials getClientCredentials() const override;
+        bool dispatchBufferTypeChanged() override;
 
     private:
         void setBufferToSurface(IWaylandBuffer& buffer);
@@ -83,8 +83,8 @@ namespace ramses_internal
         IWaylandShellSurface* m_shellSurface = nullptr;
         bool m_removeBufferOnNextCommit = false;
         IEmbeddedCompositor_Wayland& m_compositor;
-        UInt32 m_numberOfCommitedFrames = 0;
-        UInt64 m_numberOfCommitedFramesSinceBeginningOfTime = 0;
+        uint32_t m_numberOfCommitedFrames = 0;
+        uint64_t m_numberOfCommitedFramesSinceBeginningOfTime = 0;
         const WaylandClientCredentials m_clientCredentials;
 
         const struct Surface_Interface : private wl_surface_interface

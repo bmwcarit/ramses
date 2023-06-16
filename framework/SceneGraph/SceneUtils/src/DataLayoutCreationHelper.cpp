@@ -16,10 +16,10 @@ namespace ramses_internal
     {
         assert(referencedInputs.empty());
 
-        const UInt inputCount = uniformsInputInfo.size();
+        const size_t inputCount = uniformsInputInfo.size();
         DataFieldInfoVector dataFields;
         dataFields.reserve(inputCount);
-        for (UInt32 i = 0u; i < inputCount; ++i)
+        for (uint32_t i = 0u; i < inputCount; ++i)
         {
             const EffectInputInformation& inputInformation = uniformsInputInfo[i];
             if (IsBindableInput(inputInformation))

@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RamsesVersion.h"
-#include "Collections/String.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
 #include "Collections/StringOutputStream.h"
@@ -15,24 +14,26 @@
 #include "Utils/LogMacros.h"
 #include "ramses-sdk-build-config.h"
 
+#include <cctype>
+
 namespace ramses_internal
 {
     namespace RamsesVersion
     {
-        void WriteToStream(IOutputStream& stream, const String& versionString, const String& gitHash)
+        void WriteToStream(IOutputStream& stream, std::string_view versionString, std::string_view gitHash, ramses::EFeatureLevel featureLevel)
         {
-            LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: " << versionString << " Git Hash: " << gitHash);
+            LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: " << versionString << " Git Hash: " << gitHash << " Feature Level: " << featureLevel);
             StringOutputStream out;
-            out << "[RamsesVersion:" << versionString << "]\n[GitHash:" << gitHash << "]\n";
+            out << "[RamsesVersion:" << versionString << "]\n[GitHash:" << gitHash << "]\n[FeatureLevel:" << featureLevel << "]\n";
             stream.write(out.c_str(), out.size());
         }
 
-        static bool ReadUntilNewline(IInputStream& stream, UInt32 readLimit, String& out)
+        static bool ReadUntilNewline(IInputStream& stream, uint32_t readLimit, std::string& out)
         {
             out.reserve(readLimit);
-            for (UInt32 i = 0; i < readLimit; ++i)
+            for (uint32_t i = 0; i < readLimit; ++i)
             {
-                Char character = 0;
+                char character = 0;
                 stream.read(&character, 1);
                 if (stream.getState() != EStatus::Ok || character == 0)
                 {
@@ -47,13 +48,13 @@ namespace ramses_internal
             return false;
         }
 
-        static bool ExpectString(const String& inputString, UInt& matchIndexInOut, const char* expectedString)
+        static bool ExpectString(const std::string& inputString, size_t& matchIndexInOut, const char* expectedString)
         {
-            const UInt expectedLength = std::strlen(expectedString);
+            const size_t expectedLength = std::strlen(expectedString);
             if (expectedLength + matchIndexInOut > inputString.size())
                 return false;
 
-            for (UInt i = 0; i < expectedLength; ++i)
+            for (size_t i = 0; i < expectedLength; ++i)
             {
                 if (inputString[matchIndexInOut] != expectedString[i])
                     return false;
@@ -62,7 +63,7 @@ namespace ramses_internal
             return true;
         }
 
-        static bool ExpectAndGetNumber(const String& inputString, UInt& matchIndexInOut, UInt32& numberOut)
+        static bool ExpectAndGetNumber(const std::string& inputString, size_t& matchIndexInOut, uint32_t& numberOut)
         {
             const char* startptr = inputString.data() + matchIndexInOut;
             char* endptr = nullptr;
@@ -70,31 +71,31 @@ namespace ramses_internal
             if (startptr == endptr || readNumber < 0)
                 return false;
             matchIndexInOut += (endptr - startptr);
-            numberOut = static_cast<UInt32>(readNumber);
+            numberOut = static_cast<uint32_t>(readNumber);
             return true;
         }
 
-        static bool ExpectHexString(const String& inputString, UInt& matchIndexInOut)
+        static bool ExpectHexString(const std::string& inputString, size_t& matchIndexInOut)
         {
-            const UInt startIdx = matchIndexInOut;
+            const size_t startIdx = matchIndexInOut;
             while (matchIndexInOut < inputString.size() && std::isxdigit(inputString[matchIndexInOut]))
                 ++matchIndexInOut;
             return startIdx != matchIndexInOut;
         }
 
-        static bool ExpectRamsesVersion(const String& versionString, VersionInfo& outVersion)
+        static bool ExpectRamsesVersion(const std::string& versionString, VersionInfo& outVersion)
         {
-            UInt idx = 0;
+            size_t idx = 0;
             if (!ExpectString(versionString, idx, "[RamsesVersion:"))
                 return false;
-            const UInt versionStart = idx;
+            const size_t versionStart = idx;
             if (!ExpectAndGetNumber(versionString, idx, outVersion.major) ||
                 !ExpectString(versionString, idx, ".") ||
                 !ExpectAndGetNumber(versionString, idx, outVersion.minor) ||
                 !ExpectString(versionString, idx, "."))
                 return false;
 
-            const UInt trailingVersionStart = idx;
+            const size_t trailingVersionStart = idx;
             while (idx < versionString.size() && versionString[idx] != ']')
                 ++idx;
             if (idx == trailingVersionStart)  // may not be empty
@@ -108,12 +109,12 @@ namespace ramses_internal
             return true;
         }
 
-        static bool ExpectGitHash(const String& gitHashString, VersionInfo& outVersion)
+        static bool ExpectGitHash(const std::string& gitHashString, VersionInfo& outVersion)
         {
-            UInt idx = 0;
+            size_t idx = 0;
             if (!ExpectString(gitHashString, idx, "[GitHash:"))
                 return false;
-            const UInt hashStart = idx;
+            const size_t hashStart = idx;
             if (!ExpectString(gitHashString, idx, "(unknown)") &&
                 !ExpectHexString(gitHashString, idx))
                 return false;
@@ -126,25 +127,51 @@ namespace ramses_internal
             return true;
         }
 
-        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion)
+        static bool ExpectFeatureLevel(const std::string& featureLevelString, ramses::EFeatureLevel& outFeatureLevel)
         {
-            String versionString;
-            String gitHashString;
+            size_t idx = 0;
+            if (!ExpectString(featureLevelString, idx, "[FeatureLevel:"))
+                return false;
+
+            uint32_t num = 0;
+            if (!ExpectAndGetNumber(featureLevelString, idx, num))
+                return false;
+
+            if (std::find(ramses::AllFeatureLevels.cbegin(), ramses::AllFeatureLevels.cend(), num) == ramses::AllFeatureLevels.cend())
+            {
+                LOG_ERROR(CONTEXT_CLIENT, "RamsesVersion::ReadFromStream: Unknown feature level " << num << " in file, either file corrupt or file exported with future version");
+                return false;
+            }
+            outFeatureLevel = static_cast<ramses::EFeatureLevel>(num);
+
+            if (!ExpectString(featureLevelString, idx, "]") || idx != featureLevelString.size())
+                return false;
+
+            return true;
+        }
+
+        bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion, ramses::EFeatureLevel& outFeatureLevel)
+        {
+            std::string versionString;
+            std::string gitHashString;
+            std::string featureLevelString;
             if (!ReadUntilNewline(stream, 100, versionString) ||
-                !ReadUntilNewline(stream, 100, gitHashString))
+                !ReadUntilNewline(stream, 100, gitHashString) ||
+                !ReadUntilNewline(stream, 100, featureLevelString))
             {
                 LOG_ERROR(CONTEXT_CLIENT, "RamsesVersion::ReadFromStream: Can not read version information, file probably corrupt or invalid");
                 return false;
             }
 
             if (!ExpectRamsesVersion(versionString, outVersion) ||
-                !ExpectGitHash(gitHashString, outVersion))
+                !ExpectGitHash(gitHashString, outVersion) ||
+                !ExpectFeatureLevel(featureLevelString, outFeatureLevel))
                 return false;
 
             return true;
         }
 
-        bool MatchesMajorMinor(UInt32 currentMajor, UInt32 currentMinor, const VersionInfo& in)
+        bool MatchesMajorMinor(uint32_t currentMajor, uint32_t currentMinor, const VersionInfo& in)
         {
             return (in.major == currentMajor &&
                     in.minor == currentMinor) ||

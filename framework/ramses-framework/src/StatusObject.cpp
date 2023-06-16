@@ -15,29 +15,25 @@
 
 namespace ramses
 {
-    StatusObject::StatusObject(StatusObjectImpl& pimpl)
-        : impl(pimpl)
+    StatusObject::StatusObject(std::unique_ptr<StatusObjectImpl> impl)
+        : m_impl{ std::move(impl) }
     {
     }
 
-    StatusObject::~StatusObject()
-    {
-        delete &impl;
-    }
+    StatusObject::~StatusObject() = default;
 
     status_t StatusObject::validate() const
     {
-        return impl.validate();
+        return m_impl->validate();
     }
 
     const char* StatusObject::getValidationReport(EValidationSeverity minSeverity) const
     {
-        return impl.getValidationReport(minSeverity);
+        return m_impl->getValidationReport(minSeverity);
     }
 
     const char* StatusObject::getStatusMessage(status_t status) const
     {
-        return impl.getStatusMessage(status);
+        return m_impl->getStatusMessage(status);
     }
-
 }

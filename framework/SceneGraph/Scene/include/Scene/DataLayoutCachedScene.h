@@ -20,17 +20,17 @@ namespace ramses_internal
     public:
         explicit DataLayoutCachedScene(const SceneInfo& sceneInfo = SceneInfo());
 
-        virtual DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
-        virtual void                        releaseDataLayout(DataLayoutHandle handle) override;
+        DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
+        void                        releaseDataLayout(DataLayoutHandle handle) override;
 
-        UInt32                              getNumDataLayoutReferences(DataLayoutHandle handle) const;
+        [[nodiscard]] uint32_t                              getNumDataLayoutReferences(DataLayoutHandle handle) const;
 
     private:
         struct DataLayoutCacheEntry
         {
             ResourceContentHash m_effectHash;
             DataFieldInfoVector m_dataFields;
-            UInt32              m_usageCount = 0u;
+            uint32_t              m_usageCount = 0u;
         };
 
         DataLayoutHandle allocateAndCacheDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);

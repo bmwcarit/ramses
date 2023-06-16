@@ -15,11 +15,11 @@ namespace ramses_internal
 {
     class RendererCommandBuffer;
 
-    class TriggerPickEvent : public RamshCommandArgs<UInt64, Float, Float>
+    class TriggerPickEvent : public RamshCommandArgs<uint64_t, float, float>
     {
     public:
         explicit TriggerPickEvent(RendererCommandBuffer& rendererCommandBuffer);
-        virtual Bool execute(UInt64& sceneId, Float& pickCoordX, Float& pickCoordY) const override;
+        bool execute(uint64_t& sceneId, float& pickCoordX, float& pickCoordY) const override;
     private:
         RendererCommandBuffer& m_rendererCommandBuffer;
     };

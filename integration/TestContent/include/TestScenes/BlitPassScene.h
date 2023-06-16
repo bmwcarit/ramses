@@ -25,7 +25,7 @@ namespace ramses_internal
     class BlitPassScene : public CommonRenderBufferTestScene
     {
     public:
-        BlitPassScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        BlitPassScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -36,14 +36,14 @@ namespace ramses_internal
         };
 
     private:
-        ramses::RenderTarget& createRenderTarget(UInt32 state);
-        ramses::RenderTarget& createBlittingRenderTarget(UInt32 state);
+        ramses::RenderTarget& createRenderTarget(uint32_t state);
+        ramses::RenderTarget& createBlittingRenderTarget(uint32_t state);
 
-        void initClearPass(UInt32 state);
-        void initRenderingPass(UInt32 state);
-        void initClearPassForBlittingBuffers(UInt32 state);
-        void initBlittingPass(UInt32 state);
-        void initRenderPassFromBlittingResult(UInt32 state);
+        void initClearPass(uint32_t state);
+        void initRenderingPass(uint32_t state);
+        void initClearPassForBlittingBuffers(uint32_t state);
+        void initBlittingPass(uint32_t state);
+        void initRenderPassFromBlittingResult(uint32_t state);
 
         ramses::RenderBuffer& m_colorBuffer;
         ramses::RenderBuffer& m_depthBuffer;

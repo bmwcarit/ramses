@@ -11,7 +11,7 @@
 
 namespace ramses_internal
 {
-    RenderTargetGPUResource::RenderTargetGPUResource(UInt32 gpuAddress)
+    RenderTargetGPUResource::RenderTargetGPUResource(uint32_t gpuAddress)
         : GPUResource(gpuAddress, 0u)
     {
     }

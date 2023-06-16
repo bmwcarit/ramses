@@ -17,7 +17,7 @@ namespace ramses_internal
     struct BlitPass
     {
         bool               isEnabled = true;
-        Int32              renderOrder = 0;
+        int32_t              renderOrder = 0;
         RenderBufferHandle sourceRenderBuffer;
         RenderBufferHandle destinationRenderBuffer;
         PixelRectangle     sourceRegion;

@@ -210,6 +210,7 @@ namespace ramses
 
     int32_t Freetype2FontInstance::getKerningAdvance(GlyphId glyphIdentifier1, GlyphId glyphIdentifier2) const
     {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if (FT_HAS_KERNING(m_face))
         {
             if (glyphIdentifier1.getValue() != 0 && glyphIdentifier2.getValue() != 0)

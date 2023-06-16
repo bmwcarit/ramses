@@ -10,12 +10,12 @@
 #define RAMSES_IWAYLANDSHELLSURFACE_H
 
 #include <cstdint>
+#include <string>
 
 namespace ramses_internal
 {
     class IWaylandClient;
     class INativeWaylandResource;
-    class String;
 
     class IWaylandShellSurface
     {
@@ -33,7 +33,7 @@ namespace ramses_internal
         virtual void shellSurfaceSetTitle(IWaylandClient& client, const char* title) = 0;
         virtual void shellSurfaceSetClass(IWaylandClient& client, const char* className) = 0;
         virtual void surfaceWasDeleted() = 0;
-        virtual const String& getTitle() const = 0;
+        [[nodiscard]] virtual const std::string& getTitle() const = 0;
 
     };
 }

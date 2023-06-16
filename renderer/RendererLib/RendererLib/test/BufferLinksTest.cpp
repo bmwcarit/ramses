@@ -57,14 +57,14 @@ protected:
         expectLinkCount(this->consumerScene2, 0u);
     }
 
-    void expectLinkCount(SceneId sceneId, UInt32 providerScenesLinked)
+    void expectLinkCount(SceneId sceneId, uint32_t providerScenesLinked)
     {
         BufferLinkVector<BUFFERHANDLE> links;
         this->sceneLinks.getLinkedProviders(sceneId, links);
         EXPECT_EQ(providerScenesLinked, links.size());
     }
 
-    void expectLinkCount(BUFFERHANDLE providerBuffer, UInt32 consumerScenesLinked)
+    void expectLinkCount(BUFFERHANDLE providerBuffer, uint32_t consumerScenesLinked)
     {
         BufferLinkVector<BUFFERHANDLE> links;
         this->sceneLinks.getLinkedConsumers(providerBuffer, links);

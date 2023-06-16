@@ -22,7 +22,7 @@ namespace ramses_internal
     class SingleResourceSerialization
     {
     public:
-        static UInt32 SizeOfSerializedResource(const IResource& resource);
+        static uint32_t SizeOfSerializedResource(const IResource& resource);
         static void SerializeResource(IOutputStream& output, const IResource& resource);
 
         static std::unique_ptr<IResource> DeserializeResource(IInputStream& input, ResourceContentHash hash);

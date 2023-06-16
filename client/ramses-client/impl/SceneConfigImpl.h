@@ -23,7 +23,7 @@ namespace ramses
         EScenePublicationMode getPublicationMode() const;
 
     private:
-        EScenePublicationMode m_publicationMode = EScenePublicationMode_LocalAndRemote;
+        EScenePublicationMode m_publicationMode = EScenePublicationMode::LocalAndRemote;
     };
 }
 

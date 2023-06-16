@@ -34,7 +34,7 @@ namespace ramses_internal
         }
 
         template <typename COMMAND_TYPE>
-        const COMMAND_TYPE& convertTo() const
+        [[nodiscard]] const COMMAND_TYPE& convertTo() const
         {
             assert(COMMAND_TYPE::CommandType == this->commandType);
             return static_cast<const COMMAND_TYPE&>(*this);

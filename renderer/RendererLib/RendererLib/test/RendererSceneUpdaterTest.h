@@ -22,9 +22,6 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/SceneExpirationMonitor.h"
-#include "Animation/AnimationSystem.h"
-#include "Animation/ActionCollectingAnimationSystem.h"
-#include "Scene/SceneDataBinding.h"
 #include "ComponentMocks.h"
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererResourceCacheMock.h"
@@ -36,11 +33,13 @@
 #include "Collections/Pair.h"
 #include "RendererSceneEventSenderMock.h"
 #include "RendererSceneUpdaterFacade.h"
-#include <unordered_set>
-#include <memory>
 #include "Components/SceneUpdate.h"
 #include "Watchdog/ThreadAliveNotifierMock.h"
 #include "Utils/ThreadLocalLog.h"
+
+#include <unordered_set>
+#include <memory>
+#include <string_view>
 
 namespace ramses_internal {
 
@@ -69,7 +68,7 @@ public:
         EXPECT_CALL(rendererResourceCacheMock, hasResource(_, _)).Times(AnyNumber()).WillRepeatedly(Return(true));
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         expectNoEvent();
     }
@@ -85,21 +84,21 @@ protected:
         rendererSceneUpdater->updateScenes();
     }
 
-    UInt32 createStagingScene()
+    uint32_t createStagingScene()
     {
-        const UInt32 sceneIndex = static_cast<UInt32>(stagingScene.size());
+        const uint32_t sceneIndex = static_cast<uint32_t>(stagingScene.size());
         const SceneId sceneId(sceneIndex);
         stagingScene.emplace_back(new ActionCollectingScene(SceneInfo(sceneId)));
 
         return sceneIndex;
     }
 
-    SceneId getSceneId(UInt32 sceneIndex = 0u)
+    SceneId getSceneId(uint32_t sceneIndex = 0u)
     {
         return stagingScene[sceneIndex]->getSceneId();
     }
 
-    void publishScene(UInt32 sceneIndex = 0u)
+    void publishScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = getSceneId(sceneIndex);
         rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
@@ -107,7 +106,7 @@ protected:
         expectInternalSceneStateEvent(ERendererEventType::ScenePublished);
     }
 
-    void requestSceneSubscription(UInt32 sceneIndex = 0u)
+    void requestSceneSubscription(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = getSceneId(sceneIndex);
         EXPECT_CALL(sceneEventSender, sendSubscribeScene(sceneId));
@@ -115,7 +114,7 @@ protected:
         EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::SubscriptionRequested);
     }
 
-    void receiveScene(UInt32 sceneIndex = 0u)
+    void receiveScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = getSceneId(sceneIndex);
         rendererSceneUpdater->handleSceneReceived(SceneInfo(sceneId));
@@ -123,9 +122,9 @@ protected:
         EXPECT_TRUE(rendererScenes.hasScene(sceneId));
     }
 
-    UInt32 createPublishAndSubscribeScene(bool withInitialFlush = true)
+    uint32_t createPublishAndSubscribeScene(bool withInitialFlush = true)
     {
-        const UInt32 sceneIndex = createStagingScene();
+        const uint32_t sceneIndex = createStagingScene();
         const SceneId sceneId = getSceneId(sceneIndex);
 
         publishScene(sceneIndex);
@@ -208,14 +207,14 @@ protected:
         expectInternalSceneStateEvents({ eventType });
     }
 
-    void requestMapScene(UInt32 sceneIndex = 0u)
+    void requestMapScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneMappingRequest(sceneId);
         expectNoEvent();
     }
 
-    void mapScene(UInt32 sceneIndex = 0u)
+    void mapScene(uint32_t sceneIndex = 0u)
     {
         requestMapScene(sceneIndex);
         update(); // will set from map requested to being mapped and uploaded (if all pending flushes applied)
@@ -223,7 +222,7 @@ protected:
         expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
     }
 
-    bool assignSceneToDisplayBuffer(UInt32 sceneIndex, OffscreenBufferHandle buffer = {}, Int32 renderOrder = 0)
+    bool assignSceneToDisplayBuffer(uint32_t sceneIndex, OffscreenBufferHandle buffer = {}, int32_t renderOrder = 0)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         const bool result = rendererSceneUpdater->handleSceneDisplayBufferAssignmentRequest(sceneId, buffer, renderOrder);
@@ -235,7 +234,7 @@ protected:
         return result;
     }
 
-    void showScene(UInt32 sceneIndex = 0u)
+    void showScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneShowRequest(sceneId);
@@ -243,14 +242,14 @@ protected:
         expectInternalSceneStateEvent(ERendererEventType::SceneShown);
     }
 
-    void hideScene(UInt32 sceneIndex = 0u)
+    void hideScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneHideRequest(sceneId);
         expectInternalSceneStateEvent(ERendererEventType::SceneHidden);
     }
 
-    void unmapScene(UInt32 sceneIndex = 0u, bool expectResourcesUnload = true)
+    void unmapScene(uint32_t sceneIndex = 0u, bool expectResourcesUnload = true)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         if (expectResourcesUnload)
@@ -261,7 +260,7 @@ protected:
         expectNoResourceReferencedByScene(sceneIndex);
     }
 
-    void expectNoResourceReferencedByScene(UInt32 sceneIndex = 0u)
+    void expectNoResourceReferencedByScene(uint32_t sceneIndex = 0u)
     {
         rendererSceneUpdater->m_resourceManagerMock->expectNoResourceReferencesForScene(getSceneId(sceneIndex));
     }
@@ -271,14 +270,14 @@ protected:
         return rendererSceneUpdater->m_resourceManagerMock->getResourceRefCount(resource);
     }
 
-    void expectUnloadOfSceneResources(UInt32 sceneIndex = 0u)
+    void expectUnloadOfSceneResources(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadAllSceneResourcesForScene(sceneId));
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unreferenceAllResourcesForScene(sceneId));
     }
 
-    void unpublishMapRequestedScene(UInt32 sceneIndex = 0u)
+    void unpublishMapRequestedScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
@@ -287,7 +286,7 @@ protected:
         EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
     }
 
-    void unpublishMappedScene(UInt32 sceneIndex = 0u)
+    void unpublishMappedScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         expectUnloadOfSceneResources(sceneIndex);
@@ -297,7 +296,7 @@ protected:
         EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
     }
 
-    void unpublishShownScene(UInt32 sceneIndex = 0u)
+    void unpublishShownScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
@@ -307,7 +306,7 @@ protected:
         EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
     }
 
-    void unsubscribeMapRequestedScene(UInt32 sceneIndex = 0u)
+    void unsubscribeMapRequestedScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneUnsubscriptionRequest(sceneId, true);
@@ -317,7 +316,7 @@ protected:
         EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
     }
 
-    void unsubscribeMappedScene(UInt32 sceneIndex = 0u)
+    void unsubscribeMappedScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneUnsubscriptionRequest(sceneId, true);
@@ -327,7 +326,7 @@ protected:
         EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
     }
 
-    void unsubscribeShownScene(UInt32 sceneIndex = 0u)
+    void unsubscribeShownScene(uint32_t sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneUnsubscriptionRequest(sceneId, true);
@@ -336,7 +335,7 @@ protected:
         EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
     }
 
-    NodeHandle performFlushWithCreateNodeAction(UInt32 sceneIndex = 0u, size_t numNodes = 1u)
+    NodeHandle performFlushWithCreateNodeAction(uint32_t sceneIndex = 0u, size_t numNodes = 1u)
     {
         NodeHandle nodeHandle;
         IScene& scene = *stagingScene[sceneIndex];
@@ -368,18 +367,7 @@ protected:
 
     }
 
-    void expectStreamBufferEvent(StreamBufferHandle handle, bool expectedState)
-    {
-        RendererEventVector events;
-        RendererEventVector dummy;
-        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
-        ASSERT_EQ(events.size(), 1u);
-
-        EXPECT_EQ(events[0].streamBuffer, handle);
-        EXPECT_EQ(events[0].eventType, expectedState ? ERendererEventType::StreamBufferEnabled : ERendererEventType::StreamBufferDisabled);
-    }
-
-    void performFlush(UInt32 sceneIndex = 0u, SceneVersionTag version = SceneVersionTag::Invalid(), const SceneSizeInformation* sizeInfo = nullptr, const FlushTimeInformation& timeInfo = {}, const SceneReferenceActionVector& sceneRefActions = {})
+    void performFlush(uint32_t sceneIndex = 0u, SceneVersionTag version = SceneVersionTag::Invalid(), const SceneSizeInformation* sizeInfo = nullptr, const FlushTimeInformation& timeInfo = {}, const SceneReferenceActionVector& sceneRefActions = {})
     {
         ActionCollectingScene& scene = *stagingScene[sceneIndex];
         const SceneSizeInformation newSizeInfo = (sizeInfo ? *sizeInfo : scene.getSceneSizeInformation());
@@ -405,19 +393,19 @@ protected:
         rendererSceneUpdater->handleSceneUpdate(stagingScene[sceneIndex]->getSceneId(), std::move(update));
     }
 
-    void performFlushWithUniformTimeSync(UInt32 sceneIndex, UInt32 internalTS)
+    void performFlushWithUniformTimeSync(uint32_t sceneIndex, uint32_t internalTS)
     {
         const FlushTimeInformation timeInfo{ {}, FlushTime::Clock::time_point(std::chrono::milliseconds(internalTS)), FlushTime::Clock::getClockType(), true };
         performFlush(sceneIndex, {}, nullptr, timeInfo);
     }
 
-    void performFlushWithExpiration(UInt32 sceneIndex, UInt32 expirationTS)
+    void performFlushWithExpiration(uint32_t sceneIndex, uint32_t expirationTS)
     {
         const FlushTimeInformation timeInfo{ FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS)), {}, FlushTime::Clock::getClockType(), false };
         performFlush(sceneIndex, {}, nullptr, timeInfo);
     }
 
-    bool lastFlushWasAppliedOnRendererScene(UInt32 sceneIndex = 0u)
+    bool lastFlushWasAppliedOnRendererScene(uint32_t sceneIndex = 0u)
     {
         return !rendererSceneUpdater->hasPendingFlushes(stagingScene[sceneIndex]->getSceneId());
     }
@@ -471,13 +459,13 @@ protected:
         }
     }
 
-    void createRenderable(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
+    void createRenderable(uint32_t sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
     {
         createRenderableNoFlush(sceneIndex, withVertexArray, withTextureSampler, visibility);
         performFlush(sceneIndex);
     }
 
-    void createRenderableNoFlush(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
+    void createRenderableNoFlush(uint32_t sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
     {
         const NodeHandle renderableNode(1u);
         const RenderPassHandle renderPassHandle(2u);
@@ -523,7 +511,7 @@ protected:
         scene.setRenderableVisibility(renderableHandle, visibility);
     }
 
-    void destroyRenderable(UInt32 sceneIndex = 0u)
+    void destroyRenderable(uint32_t sceneIndex = 0u)
     {
         const RenderGroupHandle renderGroupHandle(3u);
         IScene& scene = *stagingScene[sceneIndex];
@@ -533,45 +521,42 @@ protected:
         performFlush(sceneIndex);
     }
 
-    void setRenderableResources(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = MockResourceHash::IndexArrayHash)
+    void setRenderableResources(uint32_t sceneIndex = 0u, ResourceContentHash indexArrayHash = MockResourceHash::IndexArrayHash)
     {
         setRenderableResourcesNoFlush(sceneIndex, indexArrayHash);
         performFlush(sceneIndex);
     }
 
-    void setRenderableResourcesNoFlush(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = MockResourceHash::IndexArrayHash)
+    void setRenderableResourcesNoFlush(uint32_t sceneIndex = 0u, ResourceContentHash indexArrayHash = MockResourceHash::IndexArrayHash)
     {
         IScene& scene = *stagingScene[sceneIndex];
         scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), 0u, 0u, 0u);
     }
 
-    void setRenderableStreamTexture(UInt32 sceneIndex = 0u)
+    DataSlotId createRenderableWithTextureConsumer(uint32_t sceneIndex = 0u)
     {
-        IScene& scene = *stagingScene[sceneIndex];
-        scene.setDataTextureSamplerHandle(uniformDataInstanceHandle, DataFieldHandle(0u), samplerHandle);
-        performFlush(sceneIndex);
-    }
-
-    void createSamplerWithStreamTexture(UInt32 sceneIndex = 0u)
-    {
-        IScene& scene = *stagingScene[sceneIndex];
-        scene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, ResourceContentHash::Invalid(), streamTextureHandle);
-        scene.allocateTextureSampler({ {}, streamTextureHandle }, samplerHandle);
-    }
-
-    void createRenderableAndResourcesWithStreamTexture(UInt32 sceneIndex = 0u)
-    {
+        expectVertexArrayUploaded(sceneIndex);
         expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, sceneIndex);
         createRenderable(sceneIndex, false, true);
         setRenderableResources(sceneIndex);
+        update();
 
-        createSamplerWithStreamTexture(sceneIndex);
-        setRenderableStreamTexture(sceneIndex);
+        IScene& scene = *stagingScene[sceneIndex];
+        scene.allocateTextureSampler({ {}, MockResourceHash::TextureHash }, samplerHandle);
+        scene.setDataTextureSamplerHandle(uniformDataInstanceHandle, DataFieldHandle(0u), samplerHandle);
+        const DataSlotId consumerId(getNextFreeDataSlotIdForDataLinking());
+        scene.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), samplerHandle });
 
-        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadStreamTexture(streamTextureHandle, _, getSceneId(sceneIndex)));
+        expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, sceneIndex);
+        performFlush(sceneIndex);
+        update();
+
+        expectSceneEvent(ERendererEventType::SceneDataSlotConsumerCreated);
+
+        return consumerId;
     }
 
-    void removeRenderableResources(UInt32 sceneIndex = 0u)
+    void removeRenderableResources(uint32_t sceneIndex = 0u)
     {
         IScene& scene = *stagingScene[sceneIndex];
         // it is not allowed to set both resource and data buffer as invalid, so for the purpose of the test cases here we set to non-existent data buffer with handle 0
@@ -580,7 +565,7 @@ protected:
         performFlush(sceneIndex);
     }
 
-    void expectResourcesReferenced(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u, int times = 1)
+    void expectResourcesReferenced(const ResourceContentHashVector& resources, uint32_t sceneIdx = 0u, int times = 1)
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, referenceResourcesForScene(getSceneId(sceneIdx), resources)).Times(times);
     }
@@ -590,7 +575,7 @@ protected:
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, provideResourceData(_)).Times(times);
     }
 
-    void expectResourcesReferencedAndProvided(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u)
+    void expectResourcesReferencedAndProvided(const ResourceContentHashVector& resources, uint32_t sceneIdx = 0u)
     {
         // most tests add 1 resource in 1 flush, referencing logic is executed per flush
         for (const auto& res : resources)
@@ -598,13 +583,13 @@ protected:
         expectResourcesProvided(int(resources.size()));
     }
 
-    void expectResourcesReferencedAndProvided_altogether(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u)
+    void expectResourcesReferencedAndProvided_altogether(const ResourceContentHashVector& resources, uint32_t sceneIdx = 0u)
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, referenceResourcesForScene(getSceneId(sceneIdx), resources));
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, provideResourceData(_)).Times(int(resources.size()));
     }
 
-    void expectResourcesUnreferenced(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u, int times = 1)
+    void expectResourcesUnreferenced(const ResourceContentHashVector& resources, uint32_t sceneIdx = 0u, int times = 1)
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unreferenceResourcesForScene(getSceneId(sceneIdx), resources)).Times(times);
     }
@@ -688,17 +673,17 @@ protected:
         EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillRepeatedly(Return(FakeStreamTextureDeviceHandle));
     }
 
-    void expectVertexArrayUploaded(UInt32 sceneIdx = 0u)
+    void expectVertexArrayUploaded(uint32_t sceneIdx = 0u)
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadVertexArray(_, _, getSceneId(sceneIdx)));
     }
 
-    void expectVertexArrayUnloaded(UInt32 sceneIdx = 0u)
+    void expectVertexArrayUnloaded(uint32_t sceneIdx = 0u)
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadVertexArray(_, getSceneId(sceneIdx)));
     }
 
-    void createRenderTargetWithBuffers(UInt32 sceneIndex = 0u, RenderTargetHandle renderTargetHandle = RenderTargetHandle{ 0u }, RenderBufferHandle bufferHandle = RenderBufferHandle{ 0u }, RenderBufferHandle depthHandle = RenderBufferHandle{ 1u })
+    void createRenderTargetWithBuffers(uint32_t sceneIndex = 0u, RenderTargetHandle renderTargetHandle = RenderTargetHandle{ 0u }, RenderBufferHandle bufferHandle = RenderBufferHandle{ 0u }, RenderBufferHandle depthHandle = RenderBufferHandle{ 1u })
     {
         IScene& scene = *stagingScene[sceneIndex];
         scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, bufferHandle);
@@ -709,13 +694,13 @@ protected:
         performFlush(sceneIndex);
     }
 
-    void expectRenderTargetUploaded(UInt32 sceneIdx = 0u)
+    void expectRenderTargetUploaded(uint32_t sceneIdx = 0u)
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadRenderTargetBuffer(_, getSceneId(sceneIdx), _)).Times(2);
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadRenderTarget(_, _, getSceneId(sceneIdx)));
     }
 
-    void expectRenderTargetUnloaded(UInt32 sceneIdx = 0u)
+    void expectRenderTargetUnloaded(uint32_t sceneIdx = 0u)
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadRenderTargetBuffer(_, getSceneId(sceneIdx))).Times(2);
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadRenderTarget(_, getSceneId(sceneIdx)));
@@ -731,7 +716,7 @@ protected:
         performFlush();
     }
 
-    void destroyRenderTargetWithBuffers(UInt32 sceneIndex = 0u)
+    void destroyRenderTargetWithBuffers(uint32_t sceneIndex = 0u)
     {
         const RenderTargetHandle renderTargetHandle(0u);
         const RenderBufferHandle bufferHandle(0u);
@@ -751,7 +736,7 @@ protected:
         performFlush();
     }
 
-    std::pair<DataSlotId, DataSlotId> createDataSlots(DataInstanceHandle& dataRefConsumer, float providedValue, DataInstanceHandle* dataRefProviderOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    std::pair<DataSlotId, DataSlotId> createDataSlots(DataInstanceHandle& dataRefConsumer, float providedValue, DataInstanceHandle* dataRefProviderOut = nullptr, uint32_t providerSceneIdx = 0u, uint32_t consumerSceneIdx = 1u)
     {
         DataInstanceHandle dataRefProvider;
 
@@ -781,19 +766,19 @@ protected:
         return{ providerId, consumerId };
     }
 
-    void createDataSlotsAndLinkThem(DataInstanceHandle& dataRefConsumer, float providedValue, DataInstanceHandle* dataRefProviderOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    void createDataSlotsAndLinkThem(DataInstanceHandle& dataRefConsumer, float providedValue, DataInstanceHandle* dataRefProviderOut = nullptr, uint32_t providerSceneIdx = 0u, uint32_t consumerSceneIdx = 1u)
     {
         const auto providerConsumer = createDataSlots(dataRefConsumer, providedValue, dataRefProviderOut, providerSceneIdx, consumerSceneIdx);
         linkProviderToConsumer(getSceneId(providerSceneIdx), providerConsumer.first, getSceneId(consumerSceneIdx), providerConsumer.second);
     }
 
-    void updateProviderDataSlot(UInt32 sceneIdx, DataInstanceHandle dataRefProvider, float newProvidedValue)
+    void updateProviderDataSlot(uint32_t sceneIdx, DataInstanceHandle dataRefProvider, float newProvidedValue)
     {
         IScene& scene = *stagingScene[sceneIdx];
         scene.setDataSingleFloat(dataRefProvider, DataFieldHandle(0u), newProvidedValue);
     }
 
-    std::pair<DataSlotId, DataSlotId> createTextureSlots(DataSlotHandle* providerDataSlotHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    std::pair<DataSlotId, DataSlotId> createTextureSlots(DataSlotHandle* providerDataSlotHandleOut = nullptr, uint32_t providerSceneIdx = 0u, uint32_t consumerSceneIdx = 1u)
     {
         IScene& scene1 = *stagingScene[providerSceneIdx];
         IScene& scene2 = *stagingScene[consumerSceneIdx];
@@ -815,13 +800,13 @@ protected:
         return{ providerId, consumerId };
     }
 
-    void createTextureSlotsAndLinkThem(DataSlotHandle* providerDataSlotHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u, bool expectSuccess = true)
+    void createTextureSlotsAndLinkThem(DataSlotHandle* providerDataSlotHandleOut = nullptr, uint32_t providerSceneIdx = 0u, uint32_t consumerSceneIdx = 1u, bool expectSuccess = true)
     {
         const auto providerConsumer = createTextureSlots(providerDataSlotHandleOut, providerSceneIdx, consumerSceneIdx);
         linkProviderToConsumer(getSceneId(providerSceneIdx), providerConsumer.first, getSceneId(consumerSceneIdx), providerConsumer.second, expectSuccess);
     }
 
-    DataSlotId createTextureConsumer(UInt32 sceneIndex, TextureSampler::ContentType contentType = TextureSampler::ContentType::RenderBuffer)
+    DataSlotId createTextureConsumer(uint32_t sceneIndex, TextureSampler::ContentType contentType = TextureSampler::ContentType::RenderBuffer)
     {
         IScene& scene = *stagingScene[sceneIndex];
         const TextureSamplerHandle sampler = scene.allocateTextureSampler({ {}, contentType, {}, MemoryHandle{999u} });
@@ -842,13 +827,13 @@ protected:
         expectSceneEvent(expectFail ? ERendererEventType::SceneDataBufferLinkFailed : ERendererEventType::SceneDataBufferLinked);
     }
 
-    void updateProviderTextureSlot(UInt32 sceneIdx, DataSlotHandle providerDataSlot, ResourceContentHash newProvidedValue)
+    void updateProviderTextureSlot(uint32_t sceneIdx, DataSlotHandle providerDataSlot, ResourceContentHash newProvidedValue)
     {
         IScene& scene = *stagingScene[sceneIdx];
         scene.setDataSlotTexture(providerDataSlot, newProvidedValue);
     }
 
-    std::pair<DataSlotId, DataSlotId> createTransformationSlots(TransformHandle* providerTransformHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    std::pair<DataSlotId, DataSlotId> createTransformationSlots(TransformHandle* providerTransformHandleOut = nullptr, uint32_t providerSceneIdx = 0u, uint32_t consumerSceneIdx = 1u)
     {
         IScene& scene1 = *stagingScene[providerSceneIdx];
         IScene& scene2 = *stagingScene[consumerSceneIdx];
@@ -874,7 +859,7 @@ protected:
         return { providerId, consumerId };
     }
 
-    void createTransformationSlotsAndLinkThem(TransformHandle* providerTransformHandleOut = nullptr, UInt32 providerSceneIdx = 0u, UInt32 consumerSceneIdx = 1u)
+    void createTransformationSlotsAndLinkThem(TransformHandle* providerTransformHandleOut = nullptr, uint32_t providerSceneIdx = 0u, uint32_t consumerSceneIdx = 1u)
     {
         const auto providerConsumer = createTransformationSlots(providerTransformHandleOut, providerSceneIdx, consumerSceneIdx);
         linkProviderToConsumer(getSceneId(providerSceneIdx), providerConsumer.first, getSceneId(consumerSceneIdx), providerConsumer.second);
@@ -899,19 +884,19 @@ protected:
         expectEvent(ERendererEventType::DisplayDestroyed);
     }
 
-    void expectRenderableResourcesClean(UInt32 sceneIndex = 0u)
+    void expectRenderableResourcesClean(uint32_t sceneIndex = 0u)
     {
         const RendererCachedScene& scene = rendererScenes.getScene(stagingScene[sceneIndex]->getSceneId());
         EXPECT_FALSE(scene.renderableResourcesDirty(renderableHandle));
     }
 
-    void expectRenderableResourcesDirty(UInt32 sceneIndex = 0u)
+    void expectRenderableResourcesDirty(uint32_t sceneIndex = 0u)
     {
         const RendererCachedScene& scene = rendererScenes.getScene(stagingScene[sceneIndex]->getSceneId());
         EXPECT_TRUE(scene.renderableResourcesDirty(renderableHandle));
     }
 
-    void expectModifiedScenesReportedToRenderer(std::initializer_list<UInt32> indices = {0u})
+    void expectModifiedScenesReportedToRenderer(std::initializer_list<uint32_t> indices = {0u})
     {
         for (auto idx : indices)
         {
@@ -925,65 +910,12 @@ protected:
         EXPECT_CALL(renderer, markBufferWithSceneForRerender(_)).Times(0u);
     }
 
-    AnimationHandle createRealTimeActiveAnimation(UInt32 sceneIndex = 0u)
-    {
-        const AnimationSystemHandle animationSystemHandle(10u);
-
-        ActionCollectingScene& scene = *stagingScene[sceneIndex];
-        IAnimationSystem* animationSystem = new ActionCollectingAnimationSystem(EAnimationSystemFlags_RealTime, scene.getSceneActionCollection(), AnimationSystemSizeInformation());
-        scene.addAnimationSystem(animationSystem, animationSystemHandle);
-
-        const NodeHandle nodeHandle1 = scene.allocateNode();
-        const TransformHandle transHandle1 = scene.allocateTransform(nodeHandle1);
-
-        const SplineHandle splineHandle1 = animationSystem->allocateSpline(ESplineKeyType_Basic, EDataTypeID_Vector3f);
-        animationSystem->setSplineKeyBasicVector3f(splineHandle1, 0u, Vector3(111.f, -999.f, 66.f));
-        animationSystem->setSplineKeyBasicVector3f(splineHandle1, 100000u, Vector3(11.f, -99.f, 666.f));
-
-        using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
-        const DataBindHandle dataBindHandle1 = animationSystem->allocateDataBinding(scene, ContainerTraitsClass::TransformNode_Rotation, transHandle1.asMemoryHandle(), InvalidMemoryHandle);
-
-        const AnimationInstanceHandle animInstHandle1 = animationSystem->allocateAnimationInstance(splineHandle1, EInterpolationType_Linear, EVectorComponent_All);
-        animationSystem->addDataBindingToAnimationInstance(animInstHandle1, dataBindHandle1);
-
-        const auto animationHandle = animationSystem->allocateAnimation(animInstHandle1);
-
-        const UInt64 systemTime = PlatformTime::GetMillisecondsAbsolute();
-        animationSystem->setAnimationStartTime(animationHandle, systemTime);
-        animationSystem->setAnimationStopTime(animationHandle, systemTime + 100000u);
-
-        performFlush();
-        update();
-
-        PlatformThread::Sleep(1u);
-        update();
-        EXPECT_TRUE(rendererScenes.getScene(scene.getSceneId()).getAnimationSystem(animationSystemHandle)->hasActiveAnimations());
-
-        return animationHandle;
-    }
-
-    void stopAnimation(AnimationHandle animationHandle, UInt32 sceneIndex = 0)
-    {
-        const AnimationSystemHandle animationSystemHandle(10u);
-
-        IScene& scene = *stagingScene[sceneIndex];
-        IAnimationSystem& animationSystem = *scene.getAnimationSystem(animationSystemHandle);
-
-        const UInt64 systemTime = PlatformTime::GetMillisecondsAbsolute();
-        animationSystem.setAnimationStopTime(animationHandle, systemTime);
-        performFlush();
-        PlatformThread::Sleep(1u);
-        update();
-
-        EXPECT_FALSE(rendererScenes.getScene(scene.getSceneId()).getAnimationSystem(animationSystemHandle)->hasActiveAnimations());
-    }
-
     DataSlotId getNextFreeDataSlotIdForDataLinking()
     {
         return DataSlotId(dataSlotIdForDataLinking.getReference()++);
     }
 
-    OffscreenBufferHandle showAndInitiateInterruptedRendering(UInt32 sceneIdx, UInt32 interruptedSceneIdx)
+    OffscreenBufferHandle showAndInitiateInterruptedRendering(uint32_t sceneIdx, uint32_t interruptedSceneIdx)
     {
         // assign scene to double buffered OB
         const OffscreenBufferHandle buffer(111u);
@@ -1004,7 +936,6 @@ protected:
 
         EXPECT_CALL(*renderer.m_displayController, handleWindowEvents());
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).WillOnce(Return(true));
-        EXPECT_CALL(*renderer.m_displayController, executePostProcessing());
         EXPECT_CALL(*renderer.m_displayController, swapBuffers());
 
         EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(getSceneId(sceneIdx))), _, nullptr)).WillOnce(
@@ -1037,14 +968,13 @@ protected:
 
         EXPECT_CALL(*renderer.m_displayController, handleWindowEvents());
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).WillOnce(Return(true));
-        EXPECT_CALL(*renderer.m_displayController, executePostProcessing()).Times(AnyNumber());
         EXPECT_CALL(*renderer.m_displayController, swapBuffers()).Times(AnyNumber());
         EXPECT_CALL(*renderer.m_displayController, renderScene(_, _, _)).Times(AnyNumber());
 
         renderer.doOneRenderLoop();
     }
 
-    void readPixels(OffscreenBufferHandle obHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool fullscreen, Bool sendViaDLT, const String& filename)
+    void readPixels(OffscreenBufferHandle obHandle, uint32_t x, uint32_t y, uint32_t width, uint32_t height, bool fullscreen, bool sendViaDLT, std::string_view filename)
     {
         ScreenshotInfo screenshotInfo;
         screenshotInfo.rectangle.x = x;
@@ -1058,7 +988,7 @@ protected:
         rendererSceneUpdater->handleReadPixels(obHandle, std::move(screenshotInfo));
     }
 
-    void expectDisplayControllerReadPixels(DeviceResourceHandle deviceHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
+    void expectDisplayControllerReadPixels(DeviceResourceHandle deviceHandle, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
         EXPECT_CALL(*renderer.m_displayController, readPixels(deviceHandle, x, y, width, height, _)).WillOnce(Invoke(
             [](auto, auto, auto, auto w, auto h, auto& dataOut) {
@@ -1074,13 +1004,12 @@ protected:
     const DataInstanceHandle geometryDataInstanceHandle{ 1 };
 
     const TextureSamplerHandle samplerHandle{ 2 };
-    const StreamTextureHandle streamTextureHandle{ 0 };
 
     std::vector<std::unique_ptr<ActionCollectingScene>> stagingScene;
     DataSlotId dataSlotIdForDataLinking{9911u};
 
-    static constexpr UInt ForceApplyFlushesLimit = 10u;
-    static constexpr UInt ForceUnsubscribeFlushLimit = 20u;
+    static constexpr size_t ForceApplyFlushesLimit = 10u;
+    static constexpr size_t ForceUnsubscribeFlushLimit = 20u;
 
     StrictMock<RendererResourceCacheMock> rendererResourceCacheMock;
     RendererEventCollector rendererEventCollector;
@@ -1095,7 +1024,7 @@ protected:
     NiceMock<ThreadAliveNotifierMock> notifier;
     std::unique_ptr<RendererSceneUpdaterFacade> rendererSceneUpdater;
 
-    std::unordered_map<UInt32, ResourceContentHashVector> previousResources;
+    std::unordered_map<uint32_t, ResourceContentHashVector> previousResources;
 };
 }
 

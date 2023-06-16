@@ -51,7 +51,7 @@ namespace ramses_internal
             m_sceneUpdater.setSceneReferenceLogicHandler(m_sceneRefLogic);
         }
 
-        virtual void SetUp() override
+        void SetUp() override
         {
             // get master scene to ready state
             m_sceneUpdater.createDisplayContext({}, nullptr);
@@ -148,11 +148,6 @@ namespace ramses_internal
         static constexpr SceneReferenceHandle RefSceneHandle{ 13 };
         static constexpr DisplayHandle DisplayId{ 0u };
     };
-
-    constexpr SceneId ASceneReferenceLogicWithSceneUpdater::MasterSceneId;
-    constexpr SceneId ASceneReferenceLogicWithSceneUpdater::RefSceneId;
-    constexpr SceneReferenceHandle ASceneReferenceLogicWithSceneUpdater::RefSceneHandle;
-    constexpr DisplayHandle ASceneReferenceLogicWithSceneUpdater::DisplayId;
 
     TEST_F(ASceneReferenceLogicWithSceneUpdater, requestsReferencedSceneStateChangeAlwaysInSameUpdateLoopWithFlushApplied)
     {

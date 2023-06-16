@@ -10,7 +10,6 @@
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/IContext.h"
-#include "SceneAPI/StreamTexture.h"
 #include "RendererLib/RendererLogger.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/RendererSceneUpdater.h"
@@ -38,12 +37,12 @@
 
 namespace ramses_internal
 {
-    void RendererLogger::StartSection(const String& name, RendererLogContext& context)
+    void RendererLogger::StartSection(std::string_view name, RendererLogContext& context)
     {
         context << RendererLogContext::NewLine << "+++ " << name << " +++" << RendererLogContext::NewLine << RendererLogContext::NewLine;
     }
 
-    void RendererLogger::EndSection(const String& name, RendererLogContext& context)
+    void RendererLogger::EndSection(std::string_view name, RendererLogContext& context)
     {
         context << RendererLogContext::NewLine << "--- " << name << " ---" << RendererLogContext::NewLine << RendererLogContext::NewLine;
     }
@@ -64,7 +63,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererLogger::LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter)
+    void RendererLogger::LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, bool verbose, NodeHandle nodeHandleFilter)
     {
         RendererLogContext context(verbose ? ERendererLogLevelFlag_Details : ERendererLogLevelFlag_Info);
         context.setNodeHandleFilter(nodeHandleFilter);
@@ -75,9 +74,6 @@ namespace ramses_internal
             break;
         case ERendererLogTopic::SceneStates:
             LogSceneStates(updater, context);
-            break;
-        case ERendererLogTopic::StreamTextures:
-            LogStreamTextures(updater, context);
             break;
         case ERendererLogTopic::Resources:
             LogClientResources(updater, context);
@@ -101,7 +97,6 @@ namespace ramses_internal
         case ERendererLogTopic::All:
             LogDisplays(updater, context);
             LogSceneStates(updater, context);
-            LogStreamTextures(updater, context);
             LogClientResources(updater, context);
             LogSceneResources(updater, context);
             LogRenderQueue(updater, context);
@@ -202,8 +197,8 @@ namespace ramses_internal
         StartSection("RENDERER DISPLAY", context);
 
         const auto& displayController = updater.m_renderer.getDisplayController();
-        const UInt32 height = displayController.getDisplayHeight();
-        const UInt32 width = displayController.getDisplayWidth();
+        const uint32_t height = displayController.getDisplayHeight();
+        const uint32_t width = displayController.getDisplayWidth();
         const WaylandIviSurfaceId surfaceId = displayController.getRenderBackend().getWindow().getWaylandIviSurfaceID();
 
         context.indent();
@@ -258,8 +253,8 @@ namespace ramses_internal
         context.indent();
         for (const auto& sceneInfo : dispBufferInfo.scenes)
         {
-            const String& sceneName = updater.m_rendererScenes.getScene(sceneInfo.sceneId).getName();
-            const Bool shown = ( updater.m_sceneStateExecutor.getSceneState(sceneInfo.sceneId) == ESceneState::Rendered );
+            const auto& sceneName = updater.m_rendererScenes.getScene(sceneInfo.sceneId).getName();
+            const bool shown = ( updater.m_sceneStateExecutor.getSceneState(sceneInfo.sceneId) == ESceneState::Rendered );
             context << "[ SceneId: " << sceneInfo.sceneId << "; order: " << sceneInfo.globalSceneOrder << "; shown: " << shown << "; name: \"" << sceneName << "\" ]" << RendererLogContext::NewLine;
         }
         context.unindent();
@@ -284,11 +279,11 @@ namespace ramses_internal
         // Infos by resource status
         context << "Status:" << RendererLogContext::NewLine;
         context.indent();
-        for (UInt32 i = 0; i < static_cast<uint32_t>(EResourceStatus::Broken) + 1u; i++)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(EResourceStatus::Broken) + 1u; i++)
         {
             const EResourceStatus status = static_cast<EResourceStatus>(i);
 
-            UInt32 count = 0;
+            uint32_t count = 0;
             for(const auto& descriptorIt : resourceManager->m_resourceRegistry.getAllResourceDescriptors())
             {
                 const ResourceDescriptor& resourceDescriptor = descriptorIt.value;
@@ -305,20 +300,20 @@ namespace ramses_internal
         context << "Overview:" << RendererLogContext::NewLine;
         context.indent();
         {
-            UInt32 totalCount = 0;
-            UInt32 totalCompressedSize = 0;
-            UInt32 totalDecompressedSize = 0;
-            UInt32 totalVRAMSize = 0;
+            uint32_t totalCount = 0;
+            uint32_t totalCompressedSize = 0;
+            uint32_t totalDecompressedSize = 0;
+            uint32_t totalVRAMSize = 0;
 
             //Infos by resource type
-            for (UInt32 i = 0; i < EResourceType_NUMBER_OF_ELEMENTS; i++)
+            for (uint32_t i = 0; i < EResourceType_NUMBER_OF_ELEMENTS; i++)
             {
                 const EResourceType type = static_cast<EResourceType>(i);
 
-                UInt32 count = 0;
-                UInt32 compressedSize = 0;
-                UInt32 decompressedSize = 0;
-                UInt32 VRAMSize = 0;
+                uint32_t count = 0;
+                uint32_t compressedSize = 0;
+                uint32_t decompressedSize = 0;
+                uint32_t VRAMSize = 0;
                 context << EnumToString(type) << RendererLogContext::NewLine;
 
                 ResourceContentHashVector resources;
@@ -402,7 +397,7 @@ namespace ramses_internal
             const auto renderBufferCount = std::count_if(renderBuffers.cbegin(), renderBuffers.cend(), [](const auto&) {return true; });
             context << "Render buffers: " << renderBufferCount << RendererLogContext::NewLine;
             {
-                UInt32 size = 0u;
+                uint32_t size = 0u;
                 context.indent();
                 for (const auto& rb : renderBuffers)
                 {
@@ -432,7 +427,7 @@ namespace ramses_internal
                     const auto deviceHandle = resRegistry.getRenderTargetDeviceHandle(rt.first);
                     context << rt.first << " (deviceHandle=" << deviceHandle << " GPUhandle=" << device.getGPUHandle(deviceHandle) << ") ";
                     context << "renderBuffer handles: [ ";
-                    for (UInt32 i = 0u; i < scene.getRenderTargetRenderBufferCount(rt.first); ++i)
+                    for (uint32_t i = 0u; i < scene.getRenderTargetRenderBufferCount(rt.first); ++i)
                         context << scene.getRenderTargetRenderBuffer(rt.first, i) << " ";
                     context << "]" << RendererLogContext::NewLine;
                 }
@@ -460,7 +455,7 @@ namespace ramses_internal
             const auto textureBufferCount = std::count_if(textureBuffers.cbegin(), textureBuffers.cend(), [](const auto&) {return true; });
             context << "Texture buffers: " << textureBufferCount << RendererLogContext::NewLine;
             {
-                UInt32 size = 0u;
+                uint32_t size = 0u;
                 context.indent();
                 for (const auto& tb : textureBuffers)
                 {
@@ -484,7 +479,7 @@ namespace ramses_internal
             const auto dataBufferCount = std::count_if(dataBuffers.cbegin(), dataBuffers.cend(), [](const auto&) {return true; });
             context << "Data buffers: " << dataBufferCount << RendererLogContext::NewLine;
             {
-                UInt32 size = 0u;
+                uint32_t size = 0u;
                 context.indent();
                 for (const auto& db : dataBuffers)
                 {
@@ -496,20 +491,9 @@ namespace ramses_internal
                         context << " size used/allocated in B: " << dbDesc.usedSize << "/" << dbDesc.data.size();
                         context << RendererLogContext::NewLine;
                     }
-                    size += UInt32(dbDesc.data.size());
+                    size += uint32_t(dbDesc.data.size());
                 }
                 context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
-                context.unindent();
-            }
-
-            const auto& streamTextures = scene.getStreamTextures();
-            const auto streamTextureCount = std::count_if(streamTextures.cbegin(), streamTextures.cend(), [](const auto&) {return true; });
-            context << "Stream textures: " << streamTextureCount << RendererLogContext::NewLine;
-            if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
-            {
-                context.indent();
-                for (const auto& st : streamTextures)
-                    context << st.first << " [sourceId " << st.second->source << "]" << RendererLogContext::NewLine;
                 context.unindent();
             }
 
@@ -695,145 +679,17 @@ namespace ramses_internal
                 const RendererCachedScene& renderScene = updater.m_renderer.m_rendererScenes.getScene(sceneInfo.sceneId);
                 LoggingDevice logDevice(displayController.getRenderBackend().getDevice(), context);
                 RenderingContext renderContext{
-                    displayController.m_postProcessing->getScenesRenderTarget(),
+                    displayController.m_device.getFramebufferRenderTarget(),
                     displayController.getDisplayWidth(), displayController.getDisplayHeight(),
                     SceneRenderExecutionIterator{},
                     EClearFlags_All,
-                    Vector4{ 0.f },
+                    glm::vec4{ 0.f },
                     false
                 };
                 RenderExecutorLogger executor(logDevice, renderContext, context);
                 executor.logScene(renderScene);
             }
         }
-    }
-
-    void RendererLogger::LogStreamTextures(const RendererSceneUpdater& updater, RendererLogContext& context)
-    {
-        if (!updater.m_renderer.hasDisplayController())
-        {
-            context << RendererLogContext::NewLine << "Skipping stream textures section due to missing display controller!" << RendererLogContext::NewLine;
-            return;
-        }
-
-        StartSection("RENDERER STREAM TEXTURES", context);
-        SceneIdVector knownSceneIds;
-        updater.m_sceneStateExecutor.m_scenesStateInfo.getKnownSceneIds(knownSceneIds);
-
-        for(const auto sceneId : knownSceneIds)
-        {
-            if (updater.m_rendererScenes.hasScene(sceneId))
-            {
-                RendererCachedScene& scene = updater.m_rendererScenes.getScene(sceneId);
-
-                context << "Scene [id: " << scene.getSceneId() << "; Name: " << scene.getName() << "]" << RendererLogContext::NewLine << RendererLogContext::NewLine;
-                context.indent();
-
-                const UInt32 numberOfStreamTextures = scene.getStreamTextureCount();
-                for (StreamTextureHandle streamTextureHandle(0); streamTextureHandle < numberOfStreamTextures; ++streamTextureHandle )
-                {
-                    if(scene.isStreamTextureAllocated(streamTextureHandle))
-                    {
-                        const StreamTexture& streamTex = scene.getStreamTexture(streamTextureHandle);
-                        const WaylandIviSurfaceId streamSource(streamTex.source);
-                        Bool contentAvailable = false;
-                        DeviceResourceHandle streamDeviceHandle;
-                        DeviceResourceHandle fallbackDeviceHandle;
-
-                        const IRendererResourceManager& resourceManager = *updater.m_displayResourceManager;
-                        const IEmbeddedCompositingManager& embeddedCompositingManager = updater.m_renderer.getDisplayController().getEmbeddedCompositingManager();
-                        const IEmbeddedCompositor& embeddedCompositor                 = updater.m_renderer.getDisplayController().getRenderBackend().getEmbeddedCompositor();
-
-                        contentAvailable |= embeddedCompositor.isContentAvailableForStreamTexture(streamSource);
-                        DeviceResourceHandle tempResourceHandle = embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamSource);
-                        if(tempResourceHandle.isValid())
-                        {
-                            streamDeviceHandle = tempResourceHandle;
-                        }
-
-                        tempResourceHandle = resourceManager.getResourceDeviceHandle(streamTex.fallbackTexture);
-                        if(tempResourceHandle.isValid())
-                        {
-                            fallbackDeviceHandle = tempResourceHandle;
-                        }
-
-                        std::vector<TextureSamplerHandle> samplerList;
-                        for (TextureSamplerHandle i(0); i < scene.getTextureSamplerCount(); i++)
-                        {
-                            if (scene.isTextureSamplerAllocated(i) && scene.getTextureSampler(i).contentType == TextureSampler::ContentType::StreamTexture && scene.getTextureSampler(i).contentHandle == streamTextureHandle.asMemoryHandle())
-                            {
-                                samplerList.push_back(i);
-                            }
-                        }
-
-                        context << "StreamTexture [handle: " << streamTextureHandle << "]" << RendererLogContext::NewLine;
-                        context.indent();
-                        {
-                            context << "Source:               " << streamSource.getValue() << RendererLogContext::NewLine;
-                            if(streamDeviceHandle.isValid())
-                            {
-                                context << "Device handle:        " << streamDeviceHandle.asMemoryHandle() << RendererLogContext::NewLine;
-                            }
-                            else
-                            {
-                                context << "Device handle:        invalid" << RendererLogContext::NewLine;
-                            }
-                            context << "Content is available: " << (contentAvailable ? "yes" : "no") << RendererLogContext::NewLine;
-                            context << RendererLogContext::NewLine;
-
-                            // Fallback section
-                            context << "FallbackTexture" << RendererLogContext::NewLine;
-                            context.indent();
-                            context << "Fallback is forced: " << (streamTex.forceFallbackTexture ? "yes" : "no") << RendererLogContext::NewLine;
-                            if(fallbackDeviceHandle.isValid())
-                            {
-                                context << "Device handle:      " << fallbackDeviceHandle.asMemoryHandle() << RendererLogContext::NewLine;
-                            }
-                            else
-                            {
-                                context << "Device handle:      invalid" << RendererLogContext::NewLine;
-                            }
-                            context << "Hash:               " << streamTex.fallbackTexture << RendererLogContext::NewLine;
-                            context.unindent();
-                        }
-                        context << RendererLogContext::NewLine;
-
-                        // Sampler section
-                        if(samplerList.empty())
-                        {
-                            context << "No sampler associated with this stream texture" << RendererLogContext::NewLine;
-                        }
-                        else
-                        {
-                            context << "Sampler using this stream texture" << RendererLogContext::NewLine;
-                            context.indent();
-                            for(const auto& sampler: samplerList)
-                            {
-                                DeviceResourceHandle samplerDeviceHandle = scene.getCachedHandlesForTextureSamplers()[sampler.asMemoryHandle()];
-                                context << RendererLogContext::NewLine;
-                                context << "Sampler [handle: " << sampler.asMemoryHandle() << "]" << RendererLogContext::NewLine;
-                                context.indent();
-                                if(samplerDeviceHandle.isValid())
-                                {
-                                    context << "Device handle:    " << samplerDeviceHandle.asMemoryHandle() << RendererLogContext::NewLine;
-                                }
-                                else
-                                {
-                                    context << "Device handle:    invalid" << RendererLogContext::NewLine;
-                                }
-                                context.unindent();
-                            }
-                            context.unindent();
-                        }
-                        context << RendererLogContext::NewLine;
-
-                        context.unindent();
-                    }
-                }
-                context.unindent();
-            }
-        }
-        EndSection("RENDERER STREAM TEXTURES", context);
     }
 
     void RendererLogger::LogReferencedScenes(const RendererSceneUpdater& updater, RendererLogContext& context)
@@ -920,7 +776,7 @@ namespace ramses_internal
             context << "Provider(s)" << RendererLogContext::NewLine;
             context.indent();
 
-            UInt32 slotCount = 0u;
+            uint32_t slotCount = 0u;
             for (const auto& slot : scene.getDataSlots())
             {
                 const EDataSlotType slotType = slot.second->type;
@@ -960,7 +816,7 @@ namespace ramses_internal
         const EDataSlotType slotType = scene.getDataSlot(slotHandle).type;
 
         const SceneLinks& sceneLinks = GetSceneLinks(scenes.getSceneLinksManager(), slotType);
-        const Bool isLinked = sceneLinks.hasLinkedConsumers(providerSceneId, slotHandle);
+        const bool isLinked = sceneLinks.hasLinkedConsumers(providerSceneId, slotHandle);
         const DataSlotId providerId = scene.getDataSlot(slotHandle).id;
 
         context << "[";
@@ -998,7 +854,7 @@ namespace ramses_internal
         const SceneLinks& sceneLinks = GetSceneLinks(scenes.getSceneLinksManager(), slotType);
         const OffscreenBufferHandle linkedOB = GetOffscreenBufferLinkedToConsumer(scenes, consumerSceneId, slotHandle);
         const StreamBufferHandle linkedSB = GetStreamBufferLinkedToConsumer(scenes, consumerSceneId, slotHandle);
-        const Bool isLinked = sceneLinks.hasLinkedProvider(consumerSceneId, slotHandle) || linkedOB.isValid();
+        const bool isLinked = sceneLinks.hasLinkedProvider(consumerSceneId, slotHandle) || linkedOB.isValid();
         const DataSlotId consumerId = scene.getDataSlot(slotHandle).id;
 
         context << "[";
@@ -1218,18 +1074,16 @@ namespace ramses_internal
             sos << "\n";
             updater.m_renderer.getStatistics().writeStatsToStream(sos);
             sos << "\nTime budgets:"
-                << " sceneResourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << "us"
-                << " resourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ResourcesUpload).count()) << "us"
-                << " obRender " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us"
+                << " sceneResourceUpload " << int64_t(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << "us"
+                << " resourceUpload " << int64_t(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ResourcesUpload).count()) << "us"
+                << " obRender " << int64_t(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us"
                 << " skub=" << updater.m_skipUnmodifiedScenes;
             sos << "\n";
             updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);
             sos << "\n";
-            updater.m_renderer.getMemoryStatistics().writeMemoryUsageSummaryToString(sos);
         }));
 
         updater.m_renderer.getStatistics().reset();
         updater.m_renderer.getProfilerStatistics().resetFrameTimings();
-        updater.m_renderer.getMemoryStatistics().reset();
     }
 }

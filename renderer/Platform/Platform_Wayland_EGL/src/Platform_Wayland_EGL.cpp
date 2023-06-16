@@ -28,10 +28,10 @@ namespace ramses_internal
     {
     }
 
-    Bool Platform_Wayland_EGL::isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const
+    bool Platform_Wayland_EGL::isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const
     {
         //EC should be created if (any of) display config params are set
-        const Bool areConfigParametersForEmbeddedCompositorSet = !displayConfig.getWaylandSocketEmbedded().empty()
+        const bool areConfigParametersForEmbeddedCompositorSet = !displayConfig.getWaylandSocketEmbedded().empty()
                 || 0 <= displayConfig.getWaylandSocketEmbeddedFD();
 
         return areConfigParametersForEmbeddedCompositorSet;

@@ -15,19 +15,15 @@ namespace ramses_internal
 {
     enum class EConnectionProtocol
     {
-        SomeIP_HU = 0,
-        SomeIP_IC,
         TCP,
-        Fake,
+        Off,
         Invalid, // must be last
     };
 
-    static const char* ConectionProtocolNames[] =
+    const std::array ConectionProtocolNames =
     {
-        "SomeIP_HU",
-        "SomeIP_IC",
         "TCP",
-        "Fake",
+        "Off",
         "Invalid"
     };
 }

@@ -18,7 +18,7 @@ namespace ramses_internal
         registerKeyword("limits");
     }
 
-    Bool SetFrameTimeLimits::execute(uint32_t& limitForDynamicResourcesUploadMicrosec, uint32_t& limitForStaticResourcesUploadMicrosec, uint32_t& limitForOffscreenBufferRenderMicrosec) const
+    bool SetFrameTimeLimits::execute(uint32_t& limitForDynamicResourcesUploadMicrosec, uint32_t& limitForStaticResourcesUploadMicrosec, uint32_t& limitForOffscreenBufferRenderMicrosec) const
     {
         m_rendererCommandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{ limitForDynamicResourcesUploadMicrosec, limitForStaticResourcesUploadMicrosec, limitForOffscreenBufferRenderMicrosec });
         return true;

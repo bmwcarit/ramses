@@ -7,17 +7,17 @@
 //  -------------------------------------------------------------------------
 
 #include "ActionTestScene.h"
+#include "Scene/SceneActionApplier.h"
 
 namespace ramses_internal
 {
     ActionTestScene::ActionTestScene(const SceneInfo& sceneInfo)
         : m_scene(sceneInfo)
-        , m_actionApplier(const_cast<Scene&>(m_scene))   // this const cast is needed to enforce usage of converter instead of m_scene
         , m_actionCollector()
     {
     }
 
-    const String& ActionTestScene::getName() const
+    const std::string& ActionTestScene::getName() const
     {
         return m_scene.getName();
     }
@@ -37,7 +37,7 @@ namespace ramses_internal
         return m_scene.getEffectTimeSync();
     }
 
-    UInt32 ActionTestScene::getRenderableCount() const
+    uint32_t ActionTestScene::getRenderableCount() const
     {
         return m_scene.getRenderableCount();
     }
@@ -66,13 +66,13 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderableStartIndex(RenderableHandle renderableHandle, UInt32 startIndex)
+    void ActionTestScene::setRenderableStartIndex(RenderableHandle renderableHandle, uint32_t startIndex)
     {
         m_actionCollector.setRenderableStartIndex(renderableHandle, startIndex);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderableIndexCount(RenderableHandle renderableHandle, UInt32 indexCount)
+    void ActionTestScene::setRenderableIndexCount(RenderableHandle renderableHandle, uint32_t indexCount)
     {
         m_actionCollector.setRenderableIndexCount(renderableHandle, indexCount);
         flushPendingSceneActions();
@@ -90,14 +90,14 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderableInstanceCount(RenderableHandle renderableHandle, UInt32 instanceCount)
+    void ActionTestScene::setRenderableInstanceCount(RenderableHandle renderableHandle, uint32_t instanceCount)
     {
         m_actionCollector.setRenderableInstanceCount(renderableHandle, instanceCount);
         flushPendingSceneActions();
     }
 
 
-    void ActionTestScene::setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex)
+    void ActionTestScene::setRenderableStartVertex(RenderableHandle renderableHandle, uint32_t startVertex)
     {
         m_actionCollector.setRenderableStartVertex(renderableHandle, startVertex);
         flushPendingSceneActions();
@@ -108,7 +108,7 @@ namespace ramses_internal
         return m_scene.getRenderable(renderableHandle);
     }
 
-    UInt32 ActionTestScene::getRenderStateCount() const
+    uint32_t ActionTestScene::getRenderStateCount() const
     {
         return m_scene.getRenderStateCount();
     }
@@ -143,7 +143,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    void ActionTestScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const glm::vec4& color)
     {
         m_actionCollector.setRenderStateBlendColor(stateHandle, color);
         flushPendingSceneActions();
@@ -179,7 +179,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, UInt8 ref, UInt8 mask)
+    void ActionTestScene::setRenderStateStencilFunc(RenderStateHandle stateHandle, EStencilFunc func, uint8_t ref, uint8_t mask)
     {
         m_actionCollector.setRenderStateStencilFunc(stateHandle, func, ref, mask);
         flushPendingSceneActions();
@@ -202,7 +202,7 @@ namespace ramses_internal
         return m_scene.getRenderState(stateHandle);
     }
 
-    UInt32 ActionTestScene::getCameraCount() const
+    uint32_t ActionTestScene::getCameraCount() const
     {
         return m_scene.getCameraCount();
     }
@@ -225,12 +225,12 @@ namespace ramses_internal
         return m_scene.getCamera(cameraHandle);
     }
 
-    UInt32 ActionTestScene::getNodeCount() const
+    uint32_t ActionTestScene::getNodeCount() const
     {
         return m_scene.getNodeCount();
     }
 
-    NodeHandle ActionTestScene::allocateNode(UInt32 childrenCount, NodeHandle handle /*= NodeHandle::Invalid()*/)
+    NodeHandle ActionTestScene::allocateNode(uint32_t childrenCount, NodeHandle handle /*= NodeHandle::Invalid()*/)
     {
         const NodeHandle actualHandle = m_actionCollector.allocateNode(childrenCount, handle);
         flushPendingSceneActions();
@@ -248,7 +248,7 @@ namespace ramses_internal
         return m_scene.isNodeAllocated(nodeHandle);
     }
 
-    UInt32 ActionTestScene::getTransformCount() const
+    uint32_t ActionTestScene::getTransformCount() const
     {
         return m_scene.getTransformCount();
     }
@@ -288,12 +288,12 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    UInt32 ActionTestScene::getChildCount(NodeHandle parent) const
+    uint32_t ActionTestScene::getChildCount(NodeHandle parent) const
     {
         return m_scene.getChildCount(parent);
     }
 
-    NodeHandle ActionTestScene::getChild(NodeHandle parent, UInt32 childNumber) const
+    NodeHandle ActionTestScene::getChild(NodeHandle parent, uint32_t childNumber) const
     {
         return m_scene.getChild(parent, childNumber);
     }
@@ -303,50 +303,45 @@ namespace ramses_internal
         return m_scene.getTransformNode(handle);
     }
 
-    const Vector3& ActionTestScene::getTranslation(TransformHandle handle) const
+    const glm::vec3& ActionTestScene::getTranslation(TransformHandle handle) const
     {
         return m_scene.getTranslation(handle);
     }
 
-    const Vector3& ActionTestScene::getRotation(TransformHandle handle) const
+    const glm::vec4& ActionTestScene::getRotation(TransformHandle handle) const
     {
         return m_scene.getRotation(handle);
     }
 
-    ERotationConvention ActionTestScene::getRotationConvention(TransformHandle handle) const
+    ERotationType ActionTestScene::getRotationType(TransformHandle handle) const
     {
-        return m_scene.getRotationConvention(handle);
+        return m_scene.getRotationType(handle);
     }
 
-    const Vector3& ActionTestScene::getScaling(TransformHandle handle) const
+    const glm::vec3& ActionTestScene::getScaling(TransformHandle handle) const
     {
         return m_scene.getScaling(handle);
     }
 
-    void ActionTestScene::setTranslation(TransformHandle handle, const Vector3& translation)
+    void ActionTestScene::setTranslation(TransformHandle handle, const glm::vec3& translation)
     {
         m_actionCollector.setTranslation(handle, translation);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
+    void ActionTestScene::setRotation(TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType)
     {
-        m_actionCollector.setRotation(handle, rotation, convention);
+        m_actionCollector.setRotation(handle, rotation, rotationType);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotationForAnimation(TransformHandle, const Vector3&)
-    {
-        assert(false && "Should only be called from Animations without creation of any scene actions");
-    }
-
-    void ActionTestScene::setScaling(TransformHandle handle, const Vector3& scaling)
+    void ActionTestScene::setScaling(TransformHandle handle, const glm::vec3& scaling)
     {
         m_actionCollector.setScaling(handle, scaling);
         flushPendingSceneActions();
     }
 
-    UInt32 ActionTestScene::getDataLayoutCount() const
+    uint32_t ActionTestScene::getDataLayoutCount() const
     {
         return m_scene.getDataLayoutCount();
     }
@@ -374,7 +369,7 @@ namespace ramses_internal
         return m_scene.getDataLayout(layoutHandle);
     }
 
-    UInt32 ActionTestScene::getDataInstanceCount() const
+    uint32_t ActionTestScene::getDataInstanceCount() const
     {
         return m_scene.getDataInstanceCount();
     }
@@ -402,57 +397,57 @@ namespace ramses_internal
         return m_scene.getLayoutOfDataInstance(containerHandle);
     }
 
-    const Float* ActionTestScene::getDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const float* ActionTestScene::getDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataFloatArray(containerHandle, field);
     }
 
-    const Vector2* ActionTestScene::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec2* ActionTestScene::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector2fArray(containerHandle, field);
     }
 
-    const Vector3* ActionTestScene::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec3* ActionTestScene::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector3fArray(containerHandle, field);
     }
 
-    const Vector4* ActionTestScene::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec4* ActionTestScene::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector4fArray(containerHandle, field);
     }
 
-    const Int32* ActionTestScene::getDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const int32_t* ActionTestScene::getDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataIntegerArray(containerHandle, field);
     }
 
-    const Matrix22f* ActionTestScene::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat2* ActionTestScene::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataMatrix22fArray(containerHandle, field);
     }
 
-    const Matrix33f* ActionTestScene::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat3* ActionTestScene::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataMatrix33fArray(containerHandle, field);
     }
 
-    const Matrix44f* ActionTestScene::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat4* ActionTestScene::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataMatrix44fArray(containerHandle, field);
     }
 
-    const Vector2i* ActionTestScene::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec2* ActionTestScene::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector2iArray(containerHandle, field);
     }
 
-    const Vector3i* ActionTestScene::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec3* ActionTestScene::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector3iArray(containerHandle, field);
     }
 
-    const Vector4i* ActionTestScene::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec4* ActionTestScene::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataVector4iArray(containerHandle, field);
     }
@@ -472,128 +467,128 @@ namespace ramses_internal
         return m_scene.getDataReference(containerHandle, field);
     }
 
-    Float ActionTestScene::getDataSingleFloat(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    float ActionTestScene::getDataSingleFloat(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleFloat(containerHandle, field);
     }
 
-    const Vector2& ActionTestScene::getDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec2& ActionTestScene::getDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector2f(containerHandle, field);
     }
 
-    const Vector3& ActionTestScene::getDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec3& ActionTestScene::getDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector3f(containerHandle, field);
     }
 
-    const Vector4& ActionTestScene::getDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::vec4& ActionTestScene::getDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector4f(containerHandle, field);
     }
 
-    Int32 ActionTestScene::getDataSingleInteger(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    int32_t ActionTestScene::getDataSingleInteger(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleInteger(containerHandle, field);
     }
 
-    const Matrix22f& ActionTestScene::getDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat2& ActionTestScene::getDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleMatrix22f(containerHandle, field);
     }
 
-    const Matrix33f& ActionTestScene::getDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat3& ActionTestScene::getDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleMatrix33f(containerHandle, field);
     }
 
-    const Matrix44f& ActionTestScene::getDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::mat4& ActionTestScene::getDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleMatrix44f(containerHandle, field);
     }
 
-    const Vector2i& ActionTestScene::getDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec2& ActionTestScene::getDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector2i(containerHandle, field);
     }
 
-    const Vector3i& ActionTestScene::getDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec3& ActionTestScene::getDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector3i(containerHandle, field);
     }
 
-    const Vector4i& ActionTestScene::getDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    const glm::ivec4& ActionTestScene::getDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleVector4i(containerHandle, field);
     }
 
-    void ActionTestScene::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Float* data)
+    void ActionTestScene::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const float* data)
     {
         m_actionCollector.setDataFloatArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2* data)
+    void ActionTestScene::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec2* data)
     {
         m_actionCollector.setDataVector2fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3* data)
+    void ActionTestScene::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec3* data)
     {
         m_actionCollector.setDataVector3fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4* data)
+    void ActionTestScene::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec4* data)
     {
         m_actionCollector.setDataVector4fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data)
+    void ActionTestScene::setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat2* data)
     {
         m_actionCollector.setDataMatrix22fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data)
+    void ActionTestScene::setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat3* data)
     {
         m_actionCollector.setDataMatrix33fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data)
+    void ActionTestScene::setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::mat4* data)
     {
         m_actionCollector.setDataMatrix44fArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Int32* data)
+    void ActionTestScene::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const int32_t* data)
     {
         m_actionCollector.setDataIntegerArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector2i* data)
+    void ActionTestScene::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec2* data)
     {
         m_actionCollector.setDataVector2iArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector3i* data)
+    void ActionTestScene::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec3* data)
     {
         m_actionCollector.setDataVector3iArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Vector4i* data)
+    void ActionTestScene::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::ivec4* data)
     {
         m_actionCollector.setDataVector4iArray(containerHandle, field, elementCount, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
+    void ActionTestScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride)
     {
         m_actionCollector.setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
         flushPendingSceneActions();
@@ -611,67 +606,67 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleFloat(DataInstanceHandle containerHandle, DataFieldHandle field, Float data)
+    void ActionTestScene::setDataSingleFloat(DataInstanceHandle containerHandle, DataFieldHandle field, float data)
     {
         m_actionCollector.setDataSingleFloat(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2& data)
+    void ActionTestScene::setDataSingleVector2f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec2& data)
     {
         m_actionCollector.setDataSingleVector2f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3& data)
+    void ActionTestScene::setDataSingleVector3f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec3& data)
     {
         m_actionCollector.setDataSingleVector3f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4& data)
+    void ActionTestScene::setDataSingleVector4f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::vec4& data)
     {
         m_actionCollector.setDataSingleVector4f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleInteger(DataInstanceHandle containerHandle, DataFieldHandle field, Int32 data)
+    void ActionTestScene::setDataSingleInteger(DataInstanceHandle containerHandle, DataFieldHandle field, int32_t data)
     {
         m_actionCollector.setDataSingleInteger(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector2i& data)
+    void ActionTestScene::setDataSingleVector2i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec2& data)
     {
         m_actionCollector.setDataSingleVector2i(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector3i& data)
+    void ActionTestScene::setDataSingleVector3i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec3& data)
     {
         m_actionCollector.setDataSingleVector3i(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field, const Vector4i& data)
+    void ActionTestScene::setDataSingleVector4i(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::ivec4& data)
     {
         m_actionCollector.setDataSingleVector4i(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix22f& data)
+    void ActionTestScene::setDataSingleMatrix22f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat2& data)
     {
         m_actionCollector.setDataSingleMatrix22f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix33f& data)
+    void ActionTestScene::setDataSingleMatrix33f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat3& data)
     {
         m_actionCollector.setDataSingleMatrix33f(containerHandle, field, data);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field, const Matrix44f& data)
+    void ActionTestScene::setDataSingleMatrix44f(DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat4& data)
     {
         m_actionCollector.setDataSingleMatrix44f(containerHandle, field, data);
         flushPendingSceneActions();
@@ -690,7 +685,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    UInt32 ActionTestScene::getTextureSamplerCount() const
+    uint32_t ActionTestScene::getTextureSamplerCount() const
     {
         return m_scene.getTextureSamplerCount();
     }
@@ -705,45 +700,12 @@ namespace ramses_internal
         return m_scene.isTextureSamplerAllocated(samplerHandle);
     }
 
-    AnimationSystemHandle ActionTestScene::addAnimationSystem(IAnimationSystem* animationSystem, AnimationSystemHandle animSystemHandle)
-    {
-        auto handle = m_actionCollector.addAnimationSystem(animationSystem, animSystemHandle);
-        flushPendingSceneActions();
-        return handle;
-    }
-
-    void ActionTestScene::removeAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        m_actionCollector.removeAnimationSystem(animSystemHandle);
-        flushPendingSceneActions();
-    }
-
-    const IAnimationSystem* ActionTestScene::getAnimationSystem(AnimationSystemHandle animSystemHandle) const
-    {
-        return m_scene.getAnimationSystem(animSystemHandle);
-    }
-
-    IAnimationSystem* ActionTestScene::getAnimationSystem(AnimationSystemHandle animSystemHandle)
-    {
-        return const_cast<Scene&>(m_scene).getAnimationSystem(animSystemHandle);
-    }
-
-    bool ActionTestScene::isAnimationSystemAllocated(AnimationSystemHandle animSystemHandle) const
-    {
-        return m_scene.isAnimationSystemAllocated(animSystemHandle);
-    }
-
-    UInt32 ActionTestScene::getAnimationSystemCount() const
-    {
-        return m_scene.getAnimationSystemCount();
-    }
-
     SceneSizeInformation ActionTestScene::getSceneSizeInformation() const
     {
         return m_scene.getSceneSizeInformation();
     }
 
-    RenderGroupHandle ActionTestScene::allocateRenderGroup(UInt32 renderableCount, UInt32 nestedGroupCount, RenderGroupHandle groupHandle)
+    RenderGroupHandle ActionTestScene::allocateRenderGroup(uint32_t renderableCount, uint32_t nestedGroupCount, RenderGroupHandle groupHandle)
     {
         const RenderGroupHandle actualHandle = m_actionCollector.allocateRenderGroup(renderableCount, nestedGroupCount, groupHandle);
         flushPendingSceneActions();
@@ -761,12 +723,12 @@ namespace ramses_internal
         return m_scene.isRenderGroupAllocated(groupHandle);
     }
 
-    UInt32 ActionTestScene::getRenderGroupCount() const
+    uint32_t ActionTestScene::getRenderGroupCount() const
     {
         return m_scene.getRenderGroupCount();
     }
 
-    void ActionTestScene::addRenderableToRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle, Int32 order)
+    void ActionTestScene::addRenderableToRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle, int32_t order)
     {
         m_actionCollector.addRenderableToRenderGroup(groupHandle, renderableHandle, order);
         flushPendingSceneActions();
@@ -778,7 +740,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::addRenderGroupToRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, Int32 order)
+    void ActionTestScene::addRenderGroupToRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, int32_t order)
     {
         m_actionCollector.addRenderGroupToRenderGroup(groupHandleParent, groupHandleChild, order);
         flushPendingSceneActions();
@@ -795,7 +757,7 @@ namespace ramses_internal
         return m_scene.getRenderGroup(groupHandle);
     }
 
-    RenderPassHandle ActionTestScene::allocateRenderPass(UInt32 renderGroupCount, RenderPassHandle handle /*= RenderPassHandle::Invalid()*/)
+    RenderPassHandle ActionTestScene::allocateRenderPass(uint32_t renderGroupCount, RenderPassHandle handle /*= RenderPassHandle::Invalid()*/)
     {
         const RenderPassHandle actualHandle = m_actionCollector.allocateRenderPass(renderGroupCount, handle);
         flushPendingSceneActions();
@@ -813,7 +775,7 @@ namespace ramses_internal
         return m_scene.isRenderPassAllocated(pass);
     }
 
-    UInt32 ActionTestScene::getRenderPassCount() const
+    uint32_t ActionTestScene::getRenderPassCount() const
     {
         return m_scene.getRenderPassCount();
     }
@@ -843,12 +805,12 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    UInt32 ActionTestScene::getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const
+    uint32_t ActionTestScene::getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const
     {
         return m_scene.getRenderTargetRenderBufferCount(targetHandle);
     }
 
-    RenderBufferHandle ActionTestScene::getRenderTargetRenderBuffer(RenderTargetHandle targetHandle, UInt32 bufferIndex) const
+    RenderBufferHandle ActionTestScene::getRenderTargetRenderBuffer(RenderTargetHandle targetHandle, uint32_t bufferIndex) const
     {
         return m_scene.getRenderTargetRenderBuffer(targetHandle, bufferIndex);
     }
@@ -871,7 +833,7 @@ namespace ramses_internal
         return m_scene.isRenderBufferAllocated(handle);
     }
 
-    UInt32 ActionTestScene::getRenderBufferCount() const
+    uint32_t ActionTestScene::getRenderBufferCount() const
     {
         return m_scene.getRenderBufferCount();
     }
@@ -881,41 +843,7 @@ namespace ramses_internal
         return m_scene.getRenderBuffer(handle);
     }
 
-    StreamTextureHandle ActionTestScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
-    {
-        const StreamTextureHandle handle = m_actionCollector.allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
-        flushPendingSceneActions();
-        return handle;
-    }
-
-    void ActionTestScene::releaseStreamTexture(StreamTextureHandle streamTextureHandle)
-    {
-        m_actionCollector.releaseStreamTexture(streamTextureHandle);
-        flushPendingSceneActions();
-    }
-
-    bool ActionTestScene::isStreamTextureAllocated(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.isStreamTextureAllocated(streamTextureHandle);
-    }
-
-    UInt32 ActionTestScene::getStreamTextureCount() const
-    {
-        return m_scene.getStreamTextureCount();
-    }
-
-    void ActionTestScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, bool forceFallbackImage)
-    {
-        m_actionCollector.setForceFallbackImage(streamTextureHandle, forceFallbackImage);
-        flushPendingSceneActions();
-    }
-
-    const StreamTexture& ActionTestScene::getStreamTexture(StreamTextureHandle streamTextureHandle) const
-    {
-        return m_scene.getStreamTexture(streamTextureHandle);
-    }
-
-    DataBufferHandle ActionTestScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle)
+    DataBufferHandle ActionTestScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle)
     {
         const DataBufferHandle allocatedHandle = m_actionCollector.allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, handle);
         flushPendingSceneActions();
@@ -928,12 +856,12 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    UInt32 ActionTestScene::getDataBufferCount() const
+    uint32_t ActionTestScene::getDataBufferCount() const
     {
         return m_scene.getDataBufferCount();
     }
 
-    void ActionTestScene::updateDataBuffer(DataBufferHandle handle, UInt32 offsetInBytes, UInt32 dataSizeInBytes, const Byte* data)
+    void ActionTestScene::updateDataBuffer(DataBufferHandle handle, uint32_t offsetInBytes, uint32_t dataSizeInBytes, const Byte* data)
     {
         m_actionCollector.updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
         flushPendingSceneActions();
@@ -962,12 +890,12 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    UInt32 ActionTestScene::getTextureBufferCount() const
+    uint32_t ActionTestScene::getTextureBufferCount() const
     {
         return m_scene.getTextureBufferCount();
     }
 
-    void ActionTestScene::updateTextureBuffer(TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data)
+    void ActionTestScene::updateTextureBuffer(TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const Byte* data)
     {
         m_actionCollector.updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
         flushPendingSceneActions();
@@ -1007,7 +935,7 @@ namespace ramses_internal
         return m_scene.isDataSlotAllocated(handle);
     }
 
-    UInt32 ActionTestScene::getDataSlotCount() const
+    uint32_t ActionTestScene::getDataSlotCount() const
     {
         return m_scene.getDataSlotCount();
     }
@@ -1053,7 +981,7 @@ namespace ramses_internal
         return m_scene.isSceneReferenceAllocated(handle);
     }
 
-    UInt32 ActionTestScene::getSceneReferenceCount() const
+    uint32_t ActionTestScene::getSceneReferenceCount() const
     {
         return m_scene.getSceneReferenceCount();
     }
@@ -1063,13 +991,13 @@ namespace ramses_internal
         return m_scene.getSceneReference(handle);
     }
 
-    void ActionTestScene::setRenderPassClearFlag(RenderPassHandle handle, UInt32 clearFlag)
+    void ActionTestScene::setRenderPassClearFlag(RenderPassHandle handle, uint32_t clearFlag)
     {
         m_actionCollector.setRenderPassClearFlag(handle, clearFlag);
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderPassClearColor(RenderPassHandle handle, const Vector4& clearColor)
+    void ActionTestScene::setRenderPassClearColor(RenderPassHandle handle, const glm::vec4& clearColor)
     {
         m_actionCollector.setRenderPassClearColor(handle, clearColor);
         flushPendingSceneActions();
@@ -1081,7 +1009,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRenderPassRenderOrder(RenderPassHandle pass, Int32 renderOrder)
+    void ActionTestScene::setRenderPassRenderOrder(RenderPassHandle pass, int32_t renderOrder)
     {
         m_actionCollector.setRenderPassRenderOrder(pass, renderOrder);
         flushPendingSceneActions();
@@ -1105,7 +1033,7 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, Int32 order)
+    void ActionTestScene::addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, int32_t order)
     {
         m_actionCollector.addRenderGroupToRenderPass(passHandle, groupHandle, order);
         flushPendingSceneActions();
@@ -1140,7 +1068,7 @@ namespace ramses_internal
         return m_scene.isPickableObjectAllocated(pickableHandle);
     }
 
-    ramses_internal::UInt32 ActionTestScene::getPickableObjectCount() const
+    uint32_t ActionTestScene::getPickableObjectCount() const
     {
         return m_scene.getPickableObjectCount();
     }
@@ -1187,12 +1115,12 @@ namespace ramses_internal
         return m_scene.isBlitPassAllocated(passHandle);
     }
 
-    ramses_internal::UInt32 ActionTestScene::getBlitPassCount() const
+    uint32_t ActionTestScene::getBlitPassCount() const
     {
         return m_scene.getBlitPassCount();
     }
 
-    void ActionTestScene::setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder)
+    void ActionTestScene::setBlitPassRenderOrder(BlitPassHandle passHandle, int32_t renderOrder)
     {
         m_actionCollector.setBlitPassRenderOrder(passHandle, renderOrder);
         flushPendingSceneActions();
@@ -1220,7 +1148,7 @@ namespace ramses_internal
         return m_scene.isRenderTargetAllocated(targetHandle);
     }
 
-    UInt32 ActionTestScene::getRenderTargetCount() const
+    uint32_t ActionTestScene::getRenderTargetCount() const
     {
         return m_scene.getRenderTargetCount();
     }
@@ -1232,8 +1160,8 @@ namespace ramses_internal
 
     void ActionTestScene::flushPendingSceneActions()
     {
-        SceneActionCollection& actionCollector = m_actionCollector.getSceneActionCollection();
-        m_actionApplier.applyActionsOnScene(actionCollector);
+        SceneActionCollection& actionCollection = m_actionCollector.getSceneActionCollection();
+        SceneActionApplier::ApplyActionsOnScene(const_cast<Scene&>(m_scene), actionCollection);
         m_actionCollector.getSceneActionCollection().clear();
     }
 

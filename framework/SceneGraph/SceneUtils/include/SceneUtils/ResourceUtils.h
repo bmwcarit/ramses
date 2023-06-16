@@ -12,7 +12,6 @@
 #include "Scene/ResourceChanges.h"
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/TextureSampler.h"
-#include "SceneAPI/StreamTexture.h"
 #include "SceneAPI/GeometryDataBuffer.h"
 #include "SceneAPI/TextureBuffer.h"
 #include "Scene/DataLayout.h"
@@ -68,9 +67,6 @@ namespace ramses_internal
                 }
             }
 
-            for (const auto& streamTexIt : scene.getStreamTextures())
-                pushBackIfValid(resources, streamTexIt.second->fallbackTexture);
-
             for (const auto& dataSlotIt : scene.getDataSlots())
                 pushBackIfValid(resources, dataSlotIt.second->attachedTexture);
 
@@ -84,13 +80,12 @@ namespace ramses_internal
             assert(actions.empty());
 
             // collect all scene resources currently in use by scene and mark as pending to be uploaded
-            const UInt32 numRenderBuffers = scene.getRenderBufferCount();
-            const UInt32 numRenderTargets = scene.getRenderTargetCount();
-            const UInt32 numStreamTextures = scene.getStreamTextureCount();
-            const UInt32 numBlitPasses = scene.getBlitPassCount();
-            const UInt32 numDataBuffers = scene.getDataBufferCount();
-            const UInt32 numTextureBuffers = scene.getTextureBufferCount();
-            const UInt32 numSceneResources = numRenderTargets + numRenderBuffers + numStreamTextures + numBlitPasses + numDataBuffers * 2u + numTextureBuffers * 2u;
+            const uint32_t numRenderBuffers = scene.getRenderBufferCount();
+            const uint32_t numRenderTargets = scene.getRenderTargetCount();
+            const uint32_t numBlitPasses = scene.getBlitPassCount();
+            const uint32_t numDataBuffers = scene.getDataBufferCount();
+            const uint32_t numTextureBuffers = scene.getTextureBufferCount();
+            const uint32_t numSceneResources = numRenderTargets + numRenderBuffers + numBlitPasses + numDataBuffers * 2u + numTextureBuffers * 2u;
 
             actions.reserve(numSceneResources);
             usedDataByteSize = 0u;
@@ -104,11 +99,6 @@ namespace ramses_internal
             {
                 if (scene.isRenderTargetAllocated(rtHandle))
                     actions.push_back({ rtHandle.asMemoryHandle(), ESceneResourceAction_CreateRenderTarget });
-            }
-            for (StreamTextureHandle texHandle(0u); texHandle < numStreamTextures; ++texHandle)
-            {
-                if (scene.isStreamTextureAllocated(texHandle))
-                    actions.push_back({ texHandle.asMemoryHandle(), ESceneResourceAction_CreateStreamTexture });
             }
             for (BlitPassHandle bpHandle(0u); bpHandle < numBlitPasses; ++bpHandle)
             {

@@ -42,10 +42,10 @@ namespace ramses
             1u,
             ""))
         , m_textureSampler(*scene.createTextureSampler(
-            ETextureAddressMode_Clamp,
-            ETextureAddressMode_Clamp,
-            ETextureSamplingMethod_Linear,
-            ETextureSamplingMethod_Linear,
+            ETextureAddressMode::Clamp,
+            ETextureAddressMode::Clamp,
+            ETextureSamplingMethod::Linear,
+            ETextureSamplingMethod::Linear,
             m_textureBuffer))
     {
         m_freeQuads.push_back(Quad(QuadOffset(0, 0), size));

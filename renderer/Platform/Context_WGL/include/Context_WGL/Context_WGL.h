@@ -14,19 +14,20 @@
 
 #include "PlatformAbstraction/MinimalWindowsH.h"
 #include "SceneAPI/TextureEnums.h"
+#include "RendererAPI/EDeviceType.h"
 
 namespace ramses_internal
 {
     class Context_WGL : public Context_Base
     {
     public:
-        Context_WGL(ERenderBufferType depthStencilBufferType, HDC displayHandle, WglExtensions procs, const Int32* contextAttributes, UInt32 msaaSampleCount);
-        Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions procs, const Int32* contextAttributes, UInt32 msaaSampleCount);
+        Context_WGL(ERenderBufferType depthStencilBufferType, HDC displayHandle, WglExtensions procs, EDeviceType deviceType, uint32_t msaaSampleCount);
+        Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions procs, uint32_t msaaSampleCount);
         ~Context_WGL() override;
 
-        Bool init();
+        bool init();
 
-        void* getProcAddress(const Char* name) const override;
+        void* getProcAddress(const char* name) const override;
 
         // Platform stuff used by other platform modules
         HGLRC getNativeContextHandle() const;
@@ -36,13 +37,14 @@ namespace ramses_internal
         virtual bool disable() override;
 
     private:
-        Bool initCustomPixelFormat();
+        bool initCustomPixelFormat();
+        std::vector<int32_t> createContextAttributes(EDeviceType deviceType);
 
         HDC m_displayHandle;
         WglExtensions m_ext;
         // Type is broken in WGL - it has no type abstraction
-        const Int32* m_contextAttributes;
-        UInt32 m_msaaSampleCount;
+        const std::vector<int32_t> m_contextAttributes;
+        uint32_t m_msaaSampleCount;
 
         const HGLRC m_wglSharedContextHandle = 0;
         HGLRC m_wglContextHandle = 0;

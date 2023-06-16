@@ -9,8 +9,6 @@
 #ifndef RAMSES_RAMSHTYPEINFO_H
 #define RAMSES_RAMSHTYPEINFO_H
 
-#include "Collections/String.h"
-
 namespace ramses_internal
 {
     using RamshTypeInfo = const void *;
@@ -68,16 +66,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<String>
-    {
-        inline explicit operator std::string() const
-        {
-            return "string";
-        }
-    };
-
-    template<>
-    struct TypeName<Float>
+    struct TypeName<float>
     {
         inline explicit operator std::string() const
         {
@@ -86,7 +75,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Double>
+    struct TypeName<double>
     {
         inline explicit operator std::string() const
         {
@@ -95,7 +84,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Int8>
+    struct TypeName<int8_t>
     {
         inline explicit operator std::string() const
         {
@@ -104,7 +93,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Int16>
+    struct TypeName<int16_t>
     {
         inline explicit operator std::string() const
         {
@@ -113,7 +102,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Int32>
+    struct TypeName<int32_t>
     {
         inline explicit operator std::string() const
         {
@@ -122,7 +111,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Int64>
+    struct TypeName<int64_t>
     {
         inline explicit operator std::string() const
         {
@@ -131,7 +120,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<UInt8>
+    struct TypeName<uint8_t>
     {
         inline explicit operator std::string() const
         {
@@ -140,7 +129,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<UInt16>
+    struct TypeName<uint16_t>
     {
         inline explicit operator std::string() const
         {
@@ -149,7 +138,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<UInt32>
+    struct TypeName<uint32_t>
     {
         inline explicit operator std::string() const
         {
@@ -158,7 +147,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<UInt64>
+    struct TypeName<uint64_t>
     {
         inline explicit operator std::string() const
         {
@@ -167,7 +156,7 @@ namespace ramses_internal
     };
 
     template<>
-    struct TypeName<Char>
+    struct TypeName<char>
     {
         inline explicit operator std::string() const
         {

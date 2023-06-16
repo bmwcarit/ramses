@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EffectInputImpl.h"
-#include "EffectInputUtils.h"
+#include "DataTypeUtils.h"
 #include "EffectInputSemanticUtils.h"
 #include "SceneAPI/IScene.h"
 
@@ -29,11 +29,11 @@ namespace ramses
 
     void EffectInputImpl::initialize(
         const ramses_internal::ResourceContentHash& effectHash,
-        const ramses_internal::String&              name,
+        std::string_view                            name,
         ramses_internal::EDataType                  dataType,
         ramses_internal::EFixedSemantics            semantics,
-        uint32_t                                    elementCount,
-        uint32_t                                    index)
+        size_t                                      elementCount,
+        size_t                                      index)
     {
         m_effectHash = effectHash;
         m_name = name;
@@ -53,22 +53,20 @@ namespace ramses
         return m_effectHash;
     }
 
-    const ramses_internal::String& EffectInputImpl::getName() const
+    const std::string& EffectInputImpl::getName() const
     {
         return m_name;
     }
 
-    EEffectInputDataType EffectInputImpl::getUniformInputDataType() const
+    std::optional<EDataType> EffectInputImpl::getDataType() const
     {
-        return EffectInputUtils::GetEffectInputDataType(m_dataType);
+        if (!isValid())
+            return std::nullopt;
+
+        return DataTypeUtils::ConvertDataTypeFromInternal(m_dataType);
     }
 
-    EEffectInputDataType EffectInputImpl::getAttributeInputDataType() const
-    {
-        return EffectInputUtils::GetEffectInputDataTypeFromBuffer(m_dataType);
-    }
-
-    ramses_internal::EDataType EffectInputImpl::getDataType() const
+    ramses_internal::EDataType EffectInputImpl::getInternalDataType() const
     {
         return m_dataType;
     }
@@ -78,12 +76,12 @@ namespace ramses
         return m_semantics;
     }
 
-    uint32_t EffectInputImpl::getElementCount() const
+    size_t EffectInputImpl::getElementCount() const
     {
         return m_elementCount;
     }
 
-    uint32_t EffectInputImpl::getInputIndex() const
+    size_t EffectInputImpl::getInputIndex() const
     {
         return m_inputIndex;
     }
@@ -104,8 +102,8 @@ namespace ramses
         outStream << m_name;
         outStream << static_cast<uint32_t>(m_dataType);
         outStream << static_cast<uint32_t>(m_semantics);
-        outStream << m_elementCount;
-        outStream << m_inputIndex;
+        outStream << static_cast<uint32_t>(m_elementCount);
+        outStream << static_cast<uint32_t>(m_inputIndex);
 
         return StatusOK;
     }
@@ -117,16 +115,19 @@ namespace ramses
 
         uint32_t dataType;
         inStream >> dataType;
-
         m_dataType = ramses_internal::EDataType(dataType);
 
         uint32_t semantics;
         inStream >> semantics;
-
         m_semantics = ramses_internal::EFixedSemantics(semantics);
 
-        inStream >> m_elementCount;
-        inStream >> m_inputIndex;
+        uint32_t elementCount;
+        inStream >> elementCount;
+        m_elementCount = elementCount;
+
+        uint32_t inputIndex;
+        inStream >> inputIndex;
+        m_inputIndex = inputIndex;
 
         return StatusOK;
     }

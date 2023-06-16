@@ -23,11 +23,11 @@ namespace ramses_internal
         virtual ~IRenderBackend() = default;
 
         // Get components
-        virtual IWindow&                        getWindow() const = 0;
-        virtual IContext&                       getContext() const = 0;
-        virtual IDevice&                        getDevice() const = 0;
-        virtual IEmbeddedCompositor&            getEmbeddedCompositor() const = 0;
-        virtual ITextureUploadingAdapter&       getTextureUploadingAdapter()  const = 0;
+        [[nodiscard]] virtual IWindow&                        getWindow() const = 0;
+        [[nodiscard]] virtual IContext&                       getContext() const = 0;
+        [[nodiscard]] virtual IDevice&                        getDevice() const = 0;
+        [[nodiscard]] virtual IEmbeddedCompositor&            getEmbeddedCompositor() const = 0;
+        [[nodiscard]] virtual ITextureUploadingAdapter&       getTextureUploadingAdapter()  const = 0;
     };
 }
 

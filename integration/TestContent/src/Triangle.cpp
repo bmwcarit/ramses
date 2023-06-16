@@ -18,7 +18,7 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/DataVector4f.h"
+#include "ramses-client-api/DataObject.h"
 
 namespace ramses
 {
@@ -28,7 +28,7 @@ namespace ramses
     {
     }
 
-    void Triangle::bindColor(const DataVector4f& colorDataObject)
+    void Triangle::bindColor(const DataObject& colorDataObject)
     {
         m_appearance.bindColor(colorDataObject);
     }

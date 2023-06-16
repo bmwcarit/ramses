@@ -13,17 +13,19 @@
 #include "Resource/EffectResource.h"
 #include "Utils/LogMacros.h"
 
+#include <string>
+
 namespace ramses_internal
 {
     namespace ResourceSerializationHelper
     {
         void SerializeResourceMetadata(IOutputStream& output, const IResource& resource)
         {
-            output << static_cast<UInt32>(resource.getTypeID());
+            output << static_cast<uint32_t>(resource.getTypeID());
             output << resource.getName();
 
             // prefer compressed if available
-            output << static_cast<UInt32>(resource.isCompressedAvailable() ? EResourceCompressionStatus_Compressed : EResourceCompressionStatus_Uncompressed);
+            output << static_cast<uint32_t>(resource.isCompressedAvailable() ? EResourceCompressionStatus_Compressed : EResourceCompressionStatus_Uncompressed);
             output << resource.getCompressedDataSize();
             output << resource.getDecompressedDataSize();
             output << resource.getCacheFlag().getValue();
@@ -31,7 +33,7 @@ namespace ramses_internal
             resource.serializeResourceMetadataToStream(output);
         }
 
-        UInt32 ResourceMetadataSize(const IResource& resource)
+        uint32_t ResourceMetadataSize(const IResource& resource)
         {
             VoidOutputStream stream;
             SerializeResourceMetadata(stream, resource);
@@ -40,12 +42,12 @@ namespace ramses_internal
 
         DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input)
         {
-            UInt32 resourceTypeValue = 0;
-            String name;
-            UInt32 compressionStatusValue = 0;
-            UInt32 compressedSize = 0;
-            UInt32 decompressedSize = 0;
-            UInt32 cacheFlagValue = 0;
+            uint32_t resourceTypeValue = 0;
+            std::string name;
+            uint32_t compressionStatusValue = 0;
+            uint32_t compressedSize = 0;
+            uint32_t decompressedSize = 0;
+            uint32_t cacheFlagValue = 0;
 
             input >> resourceTypeValue;
             input >> name;

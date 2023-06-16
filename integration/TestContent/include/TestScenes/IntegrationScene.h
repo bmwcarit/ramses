@@ -9,9 +9,11 @@
 #ifndef RAMSES_INTEGRATIONSCENE_H
 #define RAMSES_INTEGRATIONSCENE_H
 
+#include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/Vector.h"
-#include "Collections/String.h"
+#include "DataTypesImpl.h"
 
+#include <string>
 namespace ramses
 {
     class RamsesClient;
@@ -27,12 +29,10 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class Vector3;
-
     class IntegrationScene
     {
     public:
-        IntegrationScene(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth = DefaultViewportWidth, uint32_t vpHeight = DefaultViewportHeight);
+        IntegrationScene(ramses::Scene& scene, const glm::vec3& cameraPosition, uint32_t vpWidth = DefaultViewportWidth, uint32_t vpHeight = DefaultViewportHeight);
         virtual ~IntegrationScene();
         virtual void dispatchHandler(){};
 
@@ -40,7 +40,7 @@ namespace ramses_internal
         static constexpr uint32_t DefaultViewportHeight = 200u;
 
     protected:
-        ramses::Effect* getTestEffect(const String& nameOrShaderFile);
+        ramses::Effect* getTestEffect(const std::string& nameOrShaderFile);
 
         void                   addMeshNodeToDefaultRenderGroup(const ramses::MeshNode& mesh, int32_t orderWithinGroup = 0);
         void                   setCameraToDefaultRenderPass(const ramses::Camera* camera);

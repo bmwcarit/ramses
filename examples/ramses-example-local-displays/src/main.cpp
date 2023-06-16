@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-client.h"
+#include "ramses-utils.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
@@ -28,7 +29,7 @@ public:
         m_windowClosed = true;
     }
 
-    bool isWindowClosed() const
+    [[nodiscard]] bool isWindowClosed() const
     {
         return m_windowClosed;
     }
@@ -53,7 +54,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     auto* camera = clientScene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -61,10 +62,10 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 0, 1, 2 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.f, 0.f, -6.f}, ramses::vec3f{1.f, 0.f, -6.f}, ramses::vec3f{0.f, 1.f, -6.f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 0, 1, 2 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -91,34 +92,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, 500.f);
-    spline1->setKey(10000u, 1000.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(5.f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
-    appearance->setInputValueVector4f(colorInput, 1.0f, 1.0f, 0.3f, 1.0f);
-
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 1.0f, 0.3f, 1.0f });
 
     return clientScene;
 }
@@ -133,7 +107,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     auto* camera = clientScene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
-    camera->setTranslation(0.0f, 0.0f, 5.0f);
+    camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -141,10 +115,10 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     renderPass->addRenderGroup(*renderGroup);
 
     // prepare triangle geometry: vertex position array and index array
-    float vertexPositionsArray[] = { -1.1f, 0.f, -6.1f, 1.1f, 0.f, -6.1f, 0.f, 1.1f, -6.1f };
-    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
-    uint16_t indicesArray[] = { 2, 0, 1 };
-    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
+    const std::array<ramses::vec3f, 3u> vertexPositionsData{ ramses::vec3f{-1.1f, 0.f, -6.1f}, ramses::vec3f{1.1f, 0.f, -6.1f}, ramses::vec3f{0.f, 1.1f, -6.1f} };
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(3u, vertexPositionsData.data());
+    const std::array<uint16_t, 3u> indexData{ 2, 0, 1 };
+    ramses::ArrayResource* indices = clientScene->createArrayResource(3u, indexData.data());
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -171,48 +145,21 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    ramses::AnimationSystemRealTime* animationSystem = clientScene->createRealTimeAnimationSystem(ramses::EAnimationSystemFlags_Default, "animation system");
-
-    // create splines with animation keys
-    ramses::SplineLinearFloat* spline1 = animationSystem->createSplineLinearFloat("spline1");
-    spline1->setKey(0u, 0.f);
-    spline1->setKey(5000u, -500.f);
-    spline1->setKey(10000u, -1000.f);
-
-    // create animated property for each translation node with single component animation
-    ramses::AnimatedProperty* animProperty1 = animationSystem->createAnimatedProperty(*meshNode, ramses::EAnimatedProperty_Rotation, ramses::EAnimatedPropertyComponent_Z);
-
-    // create three animations
-    ramses::Animation* animation1 = animationSystem->createAnimation(*animProperty1, *spline1, "animation1");
-
-    // create animation sequence and add animation
-    ramses::AnimationSequence* sequence = animationSystem->createAnimationSequence();
-    sequence->addAnimation(*animation1);
-
-    // set animation properties (optional)
-    sequence->setAnimationLooping(*animation1);
-    sequence->setPlaybackSpeed(5.f);
-
-    // start animation sequence
-    animationSystem->updateLocalTime(nowMs());
-    sequence->start();
-
-    appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.5f, 1.0f);
-
+    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.5f, 1.0f });
 
     return clientScene;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     //Ramses client
-    ramses::RamsesFrameworkConfig config(argc, argv);
-    config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);  //needed for automated test of examples
+    ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel_Latest};
+    config.setRequestedRamsesShellType(ramses::ERamsesShellType::Console);  //needed for automated test of examples
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-client-test"));
 
     // Ramses renderer
-    ramses::RendererConfig rendererConfig(argc, argv);
+    ramses::RendererConfig rendererConfig;
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rendererConfig));
     auto& sceneControlAPI = *renderer.getSceneControlAPI();
     framework.connect();
@@ -231,14 +178,14 @@ int main(int argc, char* argv[])
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
     // Create displays and map scenes to them
-    ramses::DisplayConfig displayConfig1(argc, argv);
+    ramses::DisplayConfig displayConfig1;
     const ramses::displayId_t display1 = renderer.createDisplay(displayConfig1);
 
     sceneControlAPI.setSceneMapping(sceneId1, display1);
     sceneControlAPI.setSceneState(sceneId1, ramses::RendererSceneState::Rendered);
     sceneControlAPI.flush();
 
-    ramses::DisplayConfig displayConfig2(argc, argv);
+    ramses::DisplayConfig displayConfig2;
     //ivi surfaces must be unique for every display
     displayConfig2.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(displayConfig1.getWaylandIviSurfaceID().getValue() + 1));
     const ramses::displayId_t display2 = renderer.createDisplay(displayConfig2);
@@ -249,20 +196,28 @@ int main(int argc, char* argv[])
     sceneControlAPI.flush();
 
     /// [Displays Example]
-    ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
+    /// Refresh first display 60fps but limit second display to 5fps
+    renderer.setFramerateLimit(display1, 60);
+    renderer.setFramerateLimit(display2, 5);
+
     renderer.startThread();
     renderer.flush();
-    //ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
+    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
+
     RendererEventHandler eventHandler;
+    float rotationZ = 0.f;
     while (!eventHandler.isWindowClosed())
     {
         renderer.dispatchEvents(eventHandler);
-        ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display2);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ramses::RamsesRenderer::setMaximumFramerate(renderer, 1, display2);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        rotationZ += 1.f;
+        meshScene1->setRotation({0.f, 0.f, rotationZ}, ramses::ERotationType::Euler_XYZ);
+        scene1->flush();
+        meshScene2->setRotation({0.f, 0.f, -rotationZ}, ramses::ERotationType::Euler_XYZ);
+        scene2->flush();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

@@ -9,25 +9,27 @@
 #include "StatusObjectImpl.h"
 #include "gtest/gtest.h"
 
+#include <string>
+
 using namespace ramses;
 using namespace ramses_internal;
 
 class TestStatusObject : public StatusObjectImpl
 {
 public:
-    explicit TestStatusObject(String prefix = "", std::vector<const StatusObjectImpl*> dependentObjs = {}, EValidationSeverity validationSeverityToReturn = EValidationSeverity_Error)
-        : m_prefix(std::move(prefix))
+    explicit TestStatusObject(std::string_view prefix = {}, std::vector<const StatusObjectImpl*> dependentObjs = {}, EValidationSeverity validationSeverityToReturn = EValidationSeverity::Error)
+        : m_prefix(prefix)
         , m_depObjs(std::move(dependentObjs))
         , m_validationSeverityToReturn(validationSeverityToReturn)
     {
     }
 
-    virtual status_t validate() const override
+    status_t validate() const override
     {
         StatusObjectImpl::validate();
-        const auto infoStatus = addValidationMessage(EValidationSeverity_Info, m_prefix + "info");
-        const auto warnStatus = addValidationMessage(EValidationSeverity_Warning, m_prefix + "warn");
-        const auto errStatus = addValidationMessage(EValidationSeverity_Error, m_prefix + "err");
+        const auto infoStatus = addValidationMessage(EValidationSeverity::Info, m_prefix + "info");
+        const auto warnStatus = addValidationMessage(EValidationSeverity::Warning, m_prefix + "warn");
+        const auto errStatus = addValidationMessage(EValidationSeverity::Error, m_prefix + "err");
 
         for (const auto depObj : m_depObjs)
             addValidationOfDependentObject(*depObj);
@@ -35,16 +37,16 @@ public:
         switch (m_validationSeverityToReturn)
         {
         default:
-        case ramses::EValidationSeverity_Info:
+        case ramses::EValidationSeverity::Info:
             return infoStatus;
-        case ramses::EValidationSeverity_Warning:
+        case ramses::EValidationSeverity::Warning:
             return warnStatus;
-        case ramses::EValidationSeverity_Error:
+        case ramses::EValidationSeverity::Error:
             return errStatus;
         }
     }
 
-    String m_prefix;
+    std::string m_prefix;
     std::vector<const StatusObjectImpl*> m_depObjs;
     EValidationSeverity m_validationSeverityToReturn;
 };
@@ -104,7 +106,7 @@ TEST_F(AStatusObject, generatesValidationReport_info)
     const TestStatusObject objLvl1{ "1", {&objLvl2, &objLvl3} };
 
     EXPECT_NE(StatusOK, objLvl1.validate());
-    String report = objLvl1.getValidationReport(EValidationSeverity_Info);
+    std::string report = objLvl1.getValidationReport(EValidationSeverity::Info);
 
     StringOutputStream expectedReport;
     expectedReport << "1info\n" << "WARNING: 1warn\n" << "ERROR: 1err\n";
@@ -117,7 +119,7 @@ TEST_F(AStatusObject, generatesValidationReport_info)
 
     // obj3 only
     EXPECT_NE(StatusOK, objLvl3.validate());
-    report = objLvl3.getValidationReport(EValidationSeverity_Info);
+    report = objLvl3.getValidationReport(EValidationSeverity::Info);
     StringOutputStream expectedReport2;
     expectedReport2 << "3info\n" << "WARNING: 3warn\n" << "ERROR: 3err\n";
     EXPECT_STREQ(expectedReport2.c_str(), report.c_str());
@@ -134,7 +136,7 @@ TEST_F(AStatusObject, generatesValidationReport_warning)
     const TestStatusObject objLvl1{ "1", {&objLvl2, &objLvl3} };
 
     EXPECT_NE(StatusOK, objLvl1.validate());
-    String report = objLvl1.getValidationReport(EValidationSeverity_Warning);
+    std::string report = objLvl1.getValidationReport(EValidationSeverity::Warning);
 
     // other than info level won't indent and won't add any extra messages
     // it also won't report any object more than once
@@ -147,7 +149,7 @@ TEST_F(AStatusObject, generatesValidationReport_warning)
 
     // obj3 only
     EXPECT_NE(StatusOK, objLvl3.validate());
-    report = objLvl3.getValidationReport(EValidationSeverity_Warning);
+    report = objLvl3.getValidationReport(EValidationSeverity::Warning);
     StringOutputStream expectedReport2;
     expectedReport2 << "WARNING: 3warn\n" << "ERROR: 3err\n";
     EXPECT_STREQ(expectedReport2.c_str(), report.c_str());
@@ -164,7 +166,7 @@ TEST_F(AStatusObject, generatesValidationReport_error)
     const TestStatusObject objLvl1{ "1", {&objLvl2, &objLvl3} };
 
     EXPECT_NE(StatusOK, objLvl1.validate());
-    String report = objLvl1.getValidationReport(EValidationSeverity_Error);
+    std::string report = objLvl1.getValidationReport(EValidationSeverity::Error);
 
     // other than info level won't indent and won't add any extra messages
     // it also won't report any object more than once
@@ -177,7 +179,7 @@ TEST_F(AStatusObject, generatesValidationReport_error)
 
     // obj3 only
     EXPECT_NE(StatusOK, objLvl3.validate());
-    report = objLvl3.getValidationReport(EValidationSeverity_Error);
+    report = objLvl3.getValidationReport(EValidationSeverity::Error);
     StringOutputStream expectedReport2;
     expectedReport2 << "ERROR: 3err\n";
     EXPECT_STREQ(expectedReport2.c_str(), report.c_str());
@@ -185,9 +187,9 @@ TEST_F(AStatusObject, generatesValidationReport_error)
 
 TEST_F(AStatusObject, reportsStatusBasedSeverityOfValidation)
 {
-    const TestStatusObject objLvl1{ "1", {}, EValidationSeverity_Info };
-    const TestStatusObject objLvl2{ "2", {}, EValidationSeverity_Warning };
-    const TestStatusObject objLvl3{ "3", {}, EValidationSeverity_Error };
+    const TestStatusObject objLvl1{ "1", {}, EValidationSeverity::Info };
+    const TestStatusObject objLvl2{ "2", {}, EValidationSeverity::Warning };
+    const TestStatusObject objLvl3{ "3", {}, EValidationSeverity::Error };
 
     EXPECT_EQ(StatusOK, objLvl1.validate());
     EXPECT_STREQ("Validation warning", objLvl2.getStatusMessage(objLvl2.validate()));

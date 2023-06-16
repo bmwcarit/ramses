@@ -9,19 +9,11 @@
 #ifndef RAMSES_LOGLEVEL_H
 #define RAMSES_LOGLEVEL_H
 
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
+
 namespace ramses_internal
 {
-    enum class ELogLevel
-    {
-        // the integer value of these may not be changed
-        Off = 0,
-        Fatal = 1,
-        Error = 2,
-        Warn = 3,
-        Info = 4,
-        Debug = 5,
-        Trace = 6
-    };
+    using ramses::ELogLevel;
 }
 
 #endif

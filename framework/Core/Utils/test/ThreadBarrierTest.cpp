@@ -27,7 +27,7 @@ namespace ramses_internal
             {
             }
 
-            virtual void run() override
+            void run() override
             {
                 barrier.wait();
                 done = true;

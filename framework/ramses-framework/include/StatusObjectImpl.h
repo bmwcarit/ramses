@@ -12,10 +12,11 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/EValidationSeverity.h"
 #include "Utils/MessagePool.h"
-#include "Collections/String.h"
 #include "PlatformAbstraction/PlatformLock.h"
 #include "APILoggingMacros.h"
+
 #include <unordered_set>
+#include <string>
 
 #define CHECK_RETURN_ERR(expr) \
     { \
@@ -42,7 +43,7 @@ namespace ramses
         const char*         getValidationReport(EValidationSeverity minSeverity) const;
 
     protected:
-        virtual status_t    addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const;
+        virtual status_t    addValidationMessage(EValidationSeverity severity, std::string message) const;
         status_t            addValidationOfDependentObject(const StatusObjectImpl& dependentObject) const;
 
     private:
@@ -52,12 +53,12 @@ namespace ramses
         struct ValidationMessage
         {
             EValidationSeverity severity;
-            ramses_internal::String message;
+            std::string message;
         };
         using ValidationMessages = std::vector<ValidationMessage>;
 
         mutable ValidationMessages      m_validationMessages;
-        mutable ramses_internal::String m_validationReport;
+        mutable std::string m_validationReport;
         mutable std::vector<const StatusObjectImpl*> m_dependentObjects;
 
         static std::recursive_mutex m_statusCacheLock;

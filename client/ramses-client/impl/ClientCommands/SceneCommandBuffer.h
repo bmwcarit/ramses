@@ -11,20 +11,15 @@
 
 #include "ramses-framework-api/EValidationSeverity.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "Collections/String.h"
 #include "PlatformAbstraction/VariantWrapper.h"
+
 #include <mutex>
 #include <vector>
+#include <string>
 
 namespace ramses_internal
 {
     // Commands
-    struct SceneCommandForceFallback
-    {
-        String streamTextureName;
-        bool   forceFallback;
-    };
-
     struct SceneCommandFlushSceneVersion
     {
         ramses::sceneVersionTag_t sceneVersion;
@@ -32,13 +27,13 @@ namespace ramses_internal
 
     struct SceneCommandValidationRequest
     {
-        ramses::EValidationSeverity severity = ramses::EValidationSeverity_Info;
-        String optionalObjectName;
+        ramses::EValidationSeverity severity = ramses::EValidationSeverity::Info;
+        std::string optionalObjectName;
     };
 
     struct SceneCommandDumpSceneToFile
     {
-        String fileName;
+        std::string fileName;
         bool sendViaDLT;
     };
 
@@ -60,8 +55,7 @@ namespace ramses_internal
         void execute(V&& visitor);
 
     private:
-        using CommandVariant = absl::variant<SceneCommandForceFallback,
-                                           SceneCommandFlushSceneVersion,
+        using CommandVariant = std::variant<SceneCommandFlushSceneVersion,
                                            SceneCommandValidationRequest,
                                            SceneCommandDumpSceneToFile,
                                            SceneCommandLogResourceMemoryUsage>;
@@ -87,7 +81,7 @@ namespace ramses_internal
         }
 
         for (const auto& v : localBuffer)
-            absl::visit(visitor, v);
+            std::visit(visitor, v);
     }
 }
 #endif

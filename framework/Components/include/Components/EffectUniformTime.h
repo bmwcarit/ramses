@@ -16,7 +16,7 @@ namespace ramses_internal
     class EffectUniformTime
     {
     public:
-        static Int32 GetMilliseconds(FlushTime::Clock::time_point epochBeginning);
+        static int32_t GetMilliseconds(FlushTime::Clock::time_point epochBeginning);
     };
 }
 

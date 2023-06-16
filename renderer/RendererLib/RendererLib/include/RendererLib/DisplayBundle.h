@@ -23,7 +23,6 @@
 #include "RendererLib/RendererStatistics.h"
 #include "RendererAPI/ELoopMode.h"
 #include "RendererEventCollector.h"
-#include "Monitoring/Monitor.h"
 
 namespace ramses_internal
 {
@@ -36,15 +35,15 @@ namespace ramses_internal
     class IDisplayBundle
     {
     public:
-        virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) = 0;
+        virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds prevFrameSleepTime) = 0;
         virtual void pushAndConsumeCommands(RendererCommands& cmds) = 0;
         virtual void dispatchRendererEvents(RendererEventVector& events) = 0;
         virtual void dispatchSceneControlEvents(RendererEventVector& events) = 0;
-        virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const = 0;
+        [[nodiscard]] virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const = 0;
         virtual void enableContext() = 0;
         virtual IEmbeddedCompositingManager& getECManager() = 0;
         virtual IEmbeddedCompositor& getEC() = 0;
-        virtual bool hasSystemCompositorController() const = 0;
+        [[nodiscard]] virtual bool hasSystemCompositorController() const = 0;
 
         virtual std::atomic_int& traceId() = 0;
 
@@ -59,35 +58,33 @@ namespace ramses_internal
             IRendererSceneEventSender& rendererSceneSender,
             IPlatform& platform,
             IThreadAliveNotifier& notifier,
-            std::chrono::milliseconds timingReportingPeriod,
-            bool isFirstDisplay,
-            const String& kpiFilename = {});
+            std::chrono::milliseconds timingReportingPeriod);
 
-        virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
+        void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
 
-        virtual void pushAndConsumeCommands(RendererCommands& cmds) override;
-        virtual void dispatchRendererEvents(RendererEventVector& events) override;
-        virtual void dispatchSceneControlEvents(RendererEventVector& events) override;
+        void pushAndConsumeCommands(RendererCommands& cmds) override;
+        void dispatchRendererEvents(RendererEventVector& events) override;
+        void dispatchSceneControlEvents(RendererEventVector& events) override;
 
-        virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const override;
-        virtual void enableContext() override;
+        [[nodiscard]] SceneId findMasterSceneForReferencedScene(SceneId refScene) const override;
+        void enableContext() override;
 
         // needed for EC tests...
-        virtual IEmbeddedCompositingManager& getECManager() override;
-        virtual IEmbeddedCompositor& getEC() override;
+        IEmbeddedCompositingManager& getECManager() override;
+        IEmbeddedCompositor& getEC() override;
 
         // needed for Renderer lifecycle tests...
-        virtual bool hasSystemCompositorController() const override;
+        [[nodiscard]] bool hasSystemCompositorController() const override;
 
         // TODO vaclav remove, debugging only
-        virtual std::atomic_int& traceId() override { return m_renderer.m_traceId; }
+        std::atomic_int& traceId() override { return m_renderer.m_traceId; }
 
     private:
         void update();
         void render();
 
         void collectEvents();
-        void finishFrameStatistics(std::chrono::microseconds sleepTime);
+        void finishFrameStatistics(std::chrono::microseconds prevFrameSleepTime);
         void updateSceneControlLogic();
         void updateTiming();
 
@@ -114,12 +111,6 @@ namespace ramses_internal
         std::chrono::microseconds m_sumFrameTimes{ 0 };
         std::chrono::microseconds m_maxFrameTime{ 0 };
         size_t m_loopsWithinMeasurePeriod{ 0u };
-        const bool m_isFirstDisplay;
-
-        // TODO rework KPI monitor
-        uint64_t m_lastUpdateTimeStampMilliSec = 0;
-        static constexpr uint64_t MonitorUpdateIntervalInMilliSec = 500u;
-        std::unique_ptr<Monitor> m_kpiMonitor;
     };
 }
 

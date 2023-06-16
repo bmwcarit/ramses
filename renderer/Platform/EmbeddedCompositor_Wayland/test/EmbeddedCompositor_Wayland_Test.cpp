@@ -12,7 +12,6 @@
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
 #include "ContextMock.h"
 #include "PlatformMock.h"
-#include "Platform_Base/Platform_Base.h"
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
@@ -35,7 +34,7 @@ namespace ramses_internal
 
     namespace
     {
-        Bool canDisplayConnectToCompositor(wl_display* display)
+        bool canDisplayConnectToCompositor(wl_display* display)
         {
             if(display == nullptr)
             {
@@ -46,7 +45,7 @@ namespace ramses_internal
         }
 
 
-        Bool isSocket(int fd)
+        bool isSocket(int fd)
         {
             if (fd < 0)
             {
@@ -59,10 +58,11 @@ namespace ramses_internal
                 return false;
             }
 
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             return S_ISSOCK(buf.st_mode);
         }
 
-        ramses_internal::String getUserGroupName()
+        std::string getUserGroupName()
         {
             passwd* pws = getpwuid(geteuid());
             if (pws)
@@ -73,7 +73,7 @@ namespace ramses_internal
                     return group->gr_name;
                 }
             }
-            return "";
+            return {};
         }
 
         uint32_t getEcSocketPermissions(const char* ecSocketPath)
@@ -84,6 +84,7 @@ namespace ramses_internal
             struct stat statbuf;
             if (stat(fullPath.c_str(), &statbuf) != 0)
                 return 0;
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             return statbuf.st_mode & 0777;
         }
 
@@ -98,7 +99,7 @@ namespace ramses_internal
             {
             }
 
-            explicit ConnectToDisplayRunnable(const String& clientFileName)
+            explicit ConnectToDisplayRunnable(const std::string& clientFileName)
             : m_clientSocketFileName(clientFileName)
             , m_result(false)
             , m_started(false)
@@ -106,7 +107,7 @@ namespace ramses_internal
             {
             }
 
-            virtual void run() override
+            void run() override
             {
                 m_started = true;
                 wl_display* display = (m_clientSocketFileDescriptor>=0) ?
@@ -124,39 +125,34 @@ namespace ramses_internal
                 m_ended = true;
             }
 
-            Bool couldConnectToEmbeddedCompositor() const
+            [[nodiscard]] bool couldConnectToEmbeddedCompositor() const
             {
                 return m_result;
             }
 
-            Bool hasStarted() const
+            [[nodiscard]] bool hasStarted() const
             {
                 return m_started;
             }
 
-            Bool hasEnded() const
+            [[nodiscard]] bool hasEnded() const
             {
                 return m_ended;
             }
 
         private:
             int          m_clientSocketFileDescriptor = -1;
-            String       m_clientSocketFileName;
-            std::atomic<Bool> m_result;
-            std::atomic<Bool> m_started;
-            std::atomic<Bool> m_ended;
+            std::string       m_clientSocketFileName;
+            std::atomic<bool> m_result;
+            std::atomic<bool> m_started;
+            std::atomic<bool> m_ended;
         };
-    }
-
-    IPlatform* Platform_Base::CreatePlatform(const RendererConfig&)
-    {
-        return new ::testing::NiceMock<PlatformNiceMock>();
     }
 
     class AEmbeddedCompositor_Wayland : public TestWithWaylandEnvironment
     {
     public:
-        bool init(const String& ecSocketName, const String& ecSocketGroup = "", int ecSocketFD = -1, bool xdgRuntimeDirSet = true, uint32_t ecSocketPermissions = 0)
+        bool init(const std::string& ecSocketName, const std::string& ecSocketGroup = "", int ecSocketFD = -1, bool xdgRuntimeDirSet = true, uint32_t ecSocketPermissions = 0)
         {
             // caller is expected to have a display prefix for logs
             ThreadLocalLog::SetPrefix(1);
@@ -177,14 +173,14 @@ namespace ramses_internal
             return embeddedCompositor->init();
         }
 
-        Bool clientCanConnectViaSocket(const String& socketName)
+        bool clientCanConnectViaSocket(const std::string& socketName)
         {
             ConnectToDisplayRunnable client(socketName);
             runClientAndWaitForThreadJoining(client);
             return client.couldConnectToEmbeddedCompositor();
         }
 
-        Bool clientCanConnectViaSocket(int socketFD)
+        bool clientCanConnectViaSocket(int socketFD)
         {
             ConnectToDisplayRunnable client(socketFD);
             runClientAndWaitForThreadJoining(client);
@@ -230,8 +226,8 @@ namespace ramses_internal
     {
         WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
 
-        const String socketName("wayland-10");
-        const String groupName = getUserGroupName();
+        const std::string socketName("wayland-10");
+        const std::string groupName = getUserGroupName();
 
         EXPECT_TRUE(init(socketName, groupName));
         EXPECT_TRUE(clientCanConnectViaSocket(socketName));
@@ -276,7 +272,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanNotInitializeWithBothSocketsConfigured)
     {
-        const String socketName("wayland-10");
+        const std::string socketName("wayland-10");
         const int socketFD = socket.createBoundFileDescriptor();
         ASSERT_TRUE(isSocket(socketFD));
 
@@ -285,7 +281,7 @@ namespace ramses_internal
 
     TEST_F(AEmbeddedCompositor_Wayland, CanNotInitializeWithSocketNameSetButXDGRuntimeDirNotSet)
     {
-        const String socketName("wayland-10");
+        const std::string socketName("wayland-10");
         EXPECT_FALSE(init(socketName, "", -1, false));
         EXPECT_FALSE(clientCanConnectViaSocket(socketName));
     }
@@ -344,7 +340,7 @@ namespace ramses_internal
         EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
-        const String title = "someTitle";
+        const std::string title = "someTitle";
 
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);
@@ -418,7 +414,7 @@ namespace ramses_internal
         EXPECT_TRUE(init("wayland-10"));
 
         const WaylandIviSurfaceId surfaceIVIId(123);
-        const UInt64              numberOfCommitedFrames = 456;
+        const uint64_t numberOfCommitedFrames = 456;
 
         StrictMock<WaylandSurfaceMock> surface;
         embeddedCompositor->addWaylandSurface(surface);

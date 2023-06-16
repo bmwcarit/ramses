@@ -26,6 +26,7 @@ android {
         externalNativeBuild {
             cmake {
                 targets "exampleNativeLib"
+                arguments "-Dramses-sdk_ENABLE_FLATBUFFERS_GENERATION=0", "-Dramses-sdk_ENABLE_WINDOW_TYPE_ANDROID=ON"
             }
         }
     }

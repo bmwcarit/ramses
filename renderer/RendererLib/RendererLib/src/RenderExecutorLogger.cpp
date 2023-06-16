@@ -71,7 +71,7 @@ namespace ramses_internal
                 m_logContext << "    Access mode: " << RenderBufferAccessModeNames[renderBuffer.accessMode] << RendererLogContext::NewLine;
                 m_logContext << "    Sample count: " << renderBuffer.sampleCount << RendererLogContext::NewLine;
 
-                const UInt32 clearFlags = rp.clearFlags;
+                const uint32_t clearFlags = rp.clearFlags;
                 m_logContext << "    Clear flags: "
                             << ((clearFlags & EClearFlags_Color) ? "Color|" : "")
                             << ((clearFlags & EClearFlags_Depth) ? "Depth|" : "")
@@ -81,7 +81,7 @@ namespace ramses_internal
 
                 if (clearFlags & EClearFlags_Color)
                 {
-                    const Vector4& clearColor = rp.clearColor;
+                    const auto& clearColor = rp.clearColor;
                     m_logContext << "    Clear color: ["
                         << clearColor.r << " "
                         << clearColor.g << " "
@@ -91,7 +91,7 @@ namespace ramses_internal
 
                 m_logContext << "    Render buffers: " << scene.getRenderTargetRenderBufferCount(renderTarget) << RendererLogContext::NewLine;
 
-                for (UInt32 i = 0; i < scene.getRenderTargetRenderBufferCount(renderTarget); i++)
+                for (uint32_t i = 0; i < scene.getRenderTargetRenderBufferCount(renderTarget); i++)
                 {
                     const RenderBufferHandle rbHandle = scene.getRenderTargetRenderBuffer(renderTarget, i);
                     const DeviceResourceHandle deviceHandle = GetDeviceHandleForRenderBuffer(rbHandle, scene);
@@ -116,8 +116,8 @@ namespace ramses_internal
 
             for (const auto renderable : orderedRenderables)
             {
-                const Bool filterMatches = m_logContext.isMatchingNodeHandeFilter(scene.getRenderable(renderable).node);
-                const Bool detailedLogging = m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details);
+                const bool filterMatches = m_logContext.isMatchingNodeHandeFilter(scene.getRenderable(renderable).node);
+                const bool detailedLogging = m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details);
 
                 // skip renderable name, unless it was both filtered out and logging is not detailed
                 if (filterMatches || detailedLogging)
@@ -190,7 +190,7 @@ namespace ramses_internal
 
     DeviceResourceHandle RenderExecutorLogger::GetDeviceHandleForRenderBuffer(RenderBufferHandle rbHandle, const RendererCachedScene& scene)
     {
-        const UInt32 samplerCount = scene.getTextureSamplerCount();
+        const uint32_t samplerCount = scene.getTextureSamplerCount();
         for (TextureSamplerHandle samplerHandle(0u); samplerHandle < samplerCount; ++samplerHandle)
         {
             if (scene.isTextureSamplerAllocated(samplerHandle) && scene.getTextureSampler(samplerHandle).contentType == TextureSampler::ContentType::RenderBuffer)

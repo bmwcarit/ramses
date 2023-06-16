@@ -31,12 +31,12 @@ namespace ramses_internal
     class LongRunningTestTask : public ITask
     {
     public:
-        explicit LongRunningTestTask(UInt32 howLong = 50)
+        explicit LongRunningTestTask(uint32_t howLong = 50)
             : time(howLong)
         {
             ON_CALL(*this, execute()).WillByDefault(Invoke(this, &LongRunningTestTask::doSomethingLong));
         }
-        virtual ~LongRunningTestTask() override = default;
+        ~LongRunningTestTask() override = default;
         MOCK_METHOD(void, execute, (), (override));
         virtual void doSomethingLong()
         {
@@ -47,7 +47,7 @@ namespace ramses_internal
 
         PlatformEvent executeStarted;
         PlatformEvent executeFinished;
-        UInt32 time;
+        uint32_t time;
     };
 
     class BlockingTask : public ITask
@@ -58,7 +58,7 @@ namespace ramses_internal
             , m_blockedExecutionStateEvent(blockedExecutionStateEvent)
         {
         }
-        virtual void execute() override
+        void execute() override
         {
             m_blockedExecutionStateEvent.signal();
             m_blockingLock.lock();
@@ -73,19 +73,19 @@ namespace ramses_internal
     {
         PlatformEvent syncWaiter;
         PlatformWatchdogMockCallback mockCallback;
-        EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
         ThreadWatchdogConfig config;
         config.setThreadWatchDogCallback(&mockCallback);
-        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 100);
+        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier::Workers, 100);
 
-        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers))
+        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier::Workers))
             .Times(AtLeast(1))
             .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
         ThreadedTaskExecutor ex(2, config);
 
         EXPECT_TRUE(syncWaiter.wait(2000));
 
-        EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
     }
 
     TEST(AThreadedTaskExecutor, doesNotReportToWatchDogIfOneThreadIsBlocked)
@@ -99,7 +99,7 @@ namespace ramses_internal
         ON_CALL(fastTask, execute()).WillByDefault([&]() { fastTasksCounter++; });
 
         ThreadWatchdogConfig config;
-        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 0); // no time limitations - always notify
+        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier::Workers, 0); // no time limitations - always notify
         config.setThreadWatchDogCallback(&mockCallback);
         TaskMock blockingTask;
         ThreadedTaskExecutor taskSystem(2, config);
@@ -153,12 +153,12 @@ namespace ramses_internal
     {
         PlatformEvent syncWaiter;
         PlatformWatchdogMockCallback mockCallback;
-        EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(mockCallback, registerThread(ramses::ERamsesThreadIdentifier::Workers));
         ThreadWatchdogConfig config;
         config.setThreadWatchDogCallback(&mockCallback);
-        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 10000);
+        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier::Workers, 10000);
 
-        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier_Workers))
+        EXPECT_CALL(mockCallback, notifyThread(ramses::ERamsesThreadIdentifier::Workers))
             .Times(AtLeast(1))
             .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
         ThreadedTaskExecutor ex(2, config);
@@ -169,9 +169,9 @@ namespace ramses_internal
             ex.stop();
         });
 
-        EXPECT_TRUE(syncWaiter.wait(config.getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers)));
+        EXPECT_TRUE(syncWaiter.wait(config.getWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier::Workers)));
 
-        EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+        EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier::Workers));
         t.join();
     }
 

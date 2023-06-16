@@ -11,7 +11,9 @@
 
 #include "SceneAPI/SceneSizeInformation.h"
 #include "SceneAPI/SceneId.h"
-#include "Collections/String.h"
+
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -19,7 +21,7 @@ namespace ramses_internal
     {
         explicit SceneCreationInformation(
             SceneId id = SceneId(),
-            const String& name = String(),
+            std::string_view name = {},
             const SceneSizeInformation& sizeInfo = SceneSizeInformation())
             : m_id(id)
             , m_name(name)
@@ -28,7 +30,7 @@ namespace ramses_internal
         }
 
         SceneId              m_id;
-        String               m_name;
+        std::string          m_name;
         SceneSizeInformation m_sizeInfo;
     };
 }

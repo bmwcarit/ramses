@@ -31,7 +31,7 @@ namespace ramses_internal
         T    memoryPool;
         typename T::handle_type allocatedObject;
 
-        static const UInt32 InitialSize = 100u;
+        static const uint32_t InitialSize = 100u;
     };
 
     namespace
@@ -46,11 +46,11 @@ namespace ramses_internal
     }
 
     using MemoryPoolTypes = ::testing::Types<
-        MemoryPool<DummyTestObject, UInt32>,
-        MemoryPool<DummyTestObject, UInt16>,
+        MemoryPool<DummyTestObject, uint32_t>,
+        MemoryPool<DummyTestObject, uint16_t>,
         MemoryPool<DummyTestObject, DummyMemoryHandle>,
-        MemoryPoolExplicit<DummyTestObject, UInt32>,
-        MemoryPoolExplicit<DummyTestObject, UInt16>,
+        MemoryPoolExplicit<DummyTestObject, uint32_t>,
+        MemoryPoolExplicit<DummyTestObject, uint16_t>,
         MemoryPoolExplicit<DummyTestObject, DummyMemoryHandle>
     >;
 
@@ -398,13 +398,13 @@ namespace ramses_internal
 
         for (auto it : pool)
         {
-            static UInt32 c = 0u;
+            static uint32_t c = 0u;
             it.second->integer = c++;
         }
 
         for (const auto& it : pool)
         {
-            static UInt32 c = 0u;
+            static uint32_t c = 0u;
             EXPECT_EQ(it.second->integer, c++);
         }
     }

@@ -12,13 +12,12 @@
 #include "Utils/File.h"
 #include "Utils/LoggingUtils.h"
 #include "Utils/LogMacros.h"
-#include "absl/strings/match.h"
 
 namespace ramses_internal
 {
     namespace
     {
-        const char* const EnvironmentVariableNames[] =
+        const std::array EnvironmentVariableNames =
         {
             "XDG_RUNTIME_DIR",
             "WAYLAND_SOCKET",
@@ -29,8 +28,8 @@ namespace ramses_internal
 
         bool CheckXDGRuntimeDir()
         {
-            String xdgPathEnvironmentVar;
-            const Bool xdgPathFoundInEnvironmentVars = PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
+            std::string xdgPathEnvironmentVar;
+            const bool xdgPathFoundInEnvironmentVars = PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
 
             if (!xdgPathFoundInEnvironmentVars)
             {
@@ -49,9 +48,9 @@ namespace ramses_internal
             return true;
         }
 
-        void CheckSocketFileExists(const String& xdgRuntimeDir, const String& socketFilename)
+        void CheckSocketFileExists(const std::string& xdgRuntimeDir, const std::string& socketFilename)
         {
-            const bool socketIsAbsolute = absl::StartsWith(socketFilename, "/");
+            const bool socketIsAbsolute = (!socketFilename.empty()) && socketFilename[0] == '/';
             const auto socketFullPath = (socketIsAbsolute ? socketFilename : (xdgRuntimeDir + "/" + socketFilename));
 
             if(!socketIsAbsolute)
@@ -65,7 +64,7 @@ namespace ramses_internal
                 LOG_WARN(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Socket file " << socketFullPath << " does not exist.");
         }
 
-        bool CheckSocketFileDescritorExists(const String& socketFD)
+        bool CheckSocketFileDescritorExists(const std::string& socketFD)
         {
             if (UnixDomainSocket::IsFileDescriptorForValidSocket(atoi(socketFD.c_str())))
                 LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Environment variable WAYLAND_SOCKET contains a valid socket file descriptor.");
@@ -78,7 +77,7 @@ namespace ramses_internal
 
     namespace WaylandEnvironmentUtils
     {
-        void SetVariable(WaylandEnvironmentVariable variableName, const String& value)
+        void SetVariable(WaylandEnvironmentVariable variableName, const std::string& value)
         {
             PlatformEnvironmentVariables::SetEnvVar(EnumToString(variableName), value);
         }
@@ -88,21 +87,21 @@ namespace ramses_internal
             PlatformEnvironmentVariables::UnsetEnvVar(EnumToString(variableName));
         }
 
-        String GetVariable(WaylandEnvironmentVariable variableName)
+        std::string GetVariable(WaylandEnvironmentVariable variableName)
         {
-            String variable;
+            std::string variable;
             PlatformEnvironmentVariables::get(EnumToString(variableName), variable);
             return variable;
         }
 
-        void LogEnvironmentState(const String& waylandDisplayName)
+        void LogEnvironmentState(const std::string& waylandDisplayName)
         {
-            String xdgPathEnvironmentVar;
-            String waylandDisplayEnvironmentVar;
-            String waylandSocketEnvironmentVar;
+            std::string xdgPathEnvironmentVar;
+            std::string waylandDisplayEnvironmentVar;
+            std::string waylandSocketEnvironmentVar;
             PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", xdgPathEnvironmentVar);
-            const Bool waylandDisplayFoundInEnvironmentVars = PlatformEnvironmentVariables::get("WAYLAND_DISPLAY", waylandDisplayEnvironmentVar);
-            const Bool waylandSocketFoundInEnvironmentVars  = PlatformEnvironmentVariables::get("WAYLAND_SOCKET",  waylandSocketEnvironmentVar);
+            const bool waylandDisplayFoundInEnvironmentVars = PlatformEnvironmentVariables::get("WAYLAND_DISPLAY", waylandDisplayEnvironmentVar);
+            const bool waylandSocketFoundInEnvironmentVars  = PlatformEnvironmentVariables::get("WAYLAND_SOCKET",  waylandSocketEnvironmentVar);
 
             LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Wayland display set on display config=" << waylandDisplayName
                       << ", XDG_RUNTIME_DIR=" << xdgPathEnvironmentVar

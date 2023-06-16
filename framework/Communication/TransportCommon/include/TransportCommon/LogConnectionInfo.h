@@ -13,14 +13,13 @@
 
 namespace ramses_internal
 {
-    class String;
     class ICommunicationSystem;
 
     class LogConnectionInfo : public RamshCommand
     {
     public:
         explicit LogConnectionInfo(ICommunicationSystem& communicationSystem);
-        virtual bool executeInput(const std::vector<std::string>& input) override;
+        bool executeInput(const std::vector<std::string>& input) override;
 
     private:
         ICommunicationSystem& m_communicationSystem;

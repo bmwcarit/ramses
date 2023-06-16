@@ -18,8 +18,8 @@ namespace ramses_internal
     class SceneActionCollectionUtils
     {
     public:
-        static UInt32 CountNumberOfActionsOfType(const SceneActionCollection& actions, ESceneActionId type);
-        static UInt32 CountNumberOfActionsOfType(const SceneActionCollection& actions, const SceneActionIdVector& types);
+        static uint32_t CountNumberOfActionsOfType(const SceneActionCollection& actions, ESceneActionId type);
+        static uint32_t CountNumberOfActionsOfType(const SceneActionCollection& actions, const SceneActionIdVector& types);
     };
 }
 

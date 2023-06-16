@@ -10,11 +10,13 @@
 
 #include "ramses-client-api/RamsesClient.h"
 
+#include <string>
+
 namespace ramses_internal
 {
-    SceneFromPath::SceneFromPath(ramses::RamsesClient& ramsesClient, const String& folder, const String& fileName)
+    SceneFromPath::SceneFromPath(ramses::RamsesClient& ramsesClient, const std::string& folder, const std::string& fileName)
     {
-        ramses::Scene* loadedScene = ramsesClient.loadSceneFromFile((folder + fileName + String(".ramses")).c_str());
+        ramses::Scene* loadedScene = ramsesClient.loadSceneFromFile(folder + fileName + ".ramses");
         loadedScene->flush();
 
         m_createdScene = loadedScene;

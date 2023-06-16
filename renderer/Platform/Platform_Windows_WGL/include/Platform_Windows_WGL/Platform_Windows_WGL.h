@@ -10,24 +10,24 @@
 #define RAMSES_PLATFORM_WINDOWS_WGL_H
 
 #include "Platform_Base/Platform_Base.h"
+#include "RendererAPI/EDeviceType.h"
 #include "Context_WGL/WglExtensions.h"
 
 namespace ramses_internal
 {
     class Platform_Windows_WGL : public Platform_Base
     {
-    protected:
+    public:
         explicit Platform_Windows_WGL(const RendererConfig& rendererConfig);
 
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
-        virtual bool createContext(const DisplayConfig& displayConfig) override;
-        virtual bool createContextUploading() override;
+    protected:
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
+        virtual bool createContext(const DisplayConfig& displayConfig) override final;
+        virtual bool createContextUploading() override final;
+        virtual bool createDevice() override final;
+        virtual bool createDeviceUploading() override final;
 
         WglExtensions m_wglExtensions;
-
-    private:
-        // must be implemented by sub-classes
-        virtual const Int32* getContextAttributes() = 0;
     };
 }
 

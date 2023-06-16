@@ -11,6 +11,8 @@
 
 #include "IntegrationScene.h"
 
+#include <string>
+
 namespace ramses
 {
     class Effect;
@@ -23,7 +25,7 @@ namespace ramses_internal
     class CustomShaderTestScene : public IntegrationScene
     {
     public:
-        CustomShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        CustomShaderTestScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {
@@ -32,7 +34,7 @@ namespace ramses_internal
         };
 
     private:
-        String getEffectNameFromState(UInt32 state) const;
+        [[nodiscard]] std::string getEffectNameFromState(uint32_t state) const;
         void createGeometry();
         void initInputs();
 

@@ -31,33 +31,33 @@ namespace ramses_internal
                     m_totalSize += alignmentRequirement - (m_totalSize % alignmentRequirement);
 
                 m_fieldOffsets.push_back(m_totalSize);
-                m_totalSize += static_cast<UInt32>(EnumToSize(field.dataType)) * field.elementCount;
+                m_totalSize += static_cast<uint32_t>(EnumToSize(field.dataType)) * field.elementCount;
             }
         }
 
-        const DataFieldInfoVector& getDataFields() const
+        [[nodiscard]] const DataFieldInfoVector& getDataFields() const
         {
             return m_fields;
         }
 
-        UInt32 getFieldCount() const
+        [[nodiscard]] uint32_t getFieldCount() const
         {
-            return static_cast<UInt32>(m_fields.size());
+            return static_cast<uint32_t>(m_fields.size());
         }
 
-        const DataFieldInfo& getField(DataFieldHandle id) const
+        [[nodiscard]] const DataFieldInfo& getField(DataFieldHandle id) const
         {
             assert(id < m_fields.size());
             return m_fields[id.asMemoryHandle()];
         }
 
-        UInt32 getFieldOffset(DataFieldHandle id) const
+        [[nodiscard]] uint32_t getFieldOffset(DataFieldHandle id) const
         {
             assert(id < m_fieldOffsets.size());
             return m_fieldOffsets[id.asMemoryHandle()];
         }
 
-        UInt32 getTotalSize() const
+        [[nodiscard]] uint32_t getTotalSize() const
         {
             return m_totalSize;
         }
@@ -67,15 +67,15 @@ namespace ramses_internal
             effectHash = newHash;
         }
 
-        const ResourceContentHash& getEffectHash() const
+        [[nodiscard]] const ResourceContentHash& getEffectHash() const
         {
             return effectHash;
         }
 
     private:
         DataFieldInfoVector m_fields;
-        std::vector<UInt32> m_fieldOffsets;
-        UInt32 m_totalSize = 0u;
+        std::vector<uint32_t> m_fieldOffsets;
+        uint32_t m_totalSize = 0u;
         ResourceContentHash effectHash;
     };
 }

@@ -75,6 +75,7 @@ namespace ramses_internal
 
         const TextureSamplerHandle consumerSampler = storeConsumerSlot(consumerSceneId, consumerSlotHandle);
         m_scenes.getScene(consumerSceneId).setTextureSamplerContentSource(consumerSampler, getLinkedTexture(consumerSceneId, consumerSampler));
+        m_scenes.getScene(consumerSceneId).setRenderableResourcesDirtyByTextureSampler(consumerSampler);
 
         return true;
     }
@@ -105,6 +106,7 @@ namespace ramses_internal
 
         const TextureSamplerHandle consumerSampler = storeConsumerSlot(consumerSceneId, consumerSlotHandle);
         m_scenes.getScene(consumerSceneId).setTextureSamplerContentSource(consumerSampler, providerBuffer);
+        m_scenes.getScene(consumerSceneId).setRenderableResourcesDirtyByTextureSampler(consumerSampler);
     }
 
     bool TextureLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
@@ -137,6 +139,7 @@ namespace ramses_internal
             const TextureSamplerHandle consumerSampler = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).attachedTextureSampler;
             assert(consumerSampler != TextureSamplerHandle::Invalid());
             m_scenes.getScene(consumerSceneId).restoreTextureSamplerFallbackValue(consumerSampler);
+            m_scenes.getScene(consumerSceneId).setRenderableResourcesDirtyByTextureSampler(consumerSampler);
 
             const TextureSamplerHandle sampler = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).attachedTextureSampler;
             assert(m_samplersToDataSlots.contains(consumerSceneId));
@@ -286,8 +289,10 @@ namespace ramses_internal
         getSceneLinks().getLinkedConsumers(providerSceneId, providerSlotHandle, consumers);
         for (const auto& consumer : consumers)
         {
-            TextureLinkCachedScene& consumerScene = m_scenes.getScene(consumer.consumerSceneId);
-            consumerScene.setTextureSamplerContentSource(consumerScene.getDataSlot(consumer.consumerSlot).attachedTextureSampler, texture);
+            auto& consumerScene = m_scenes.getScene(consumer.consumerSceneId);
+            const auto texSamplerHandle = consumerScene.getDataSlot(consumer.consumerSlot).attachedTextureSampler;
+            consumerScene.setTextureSamplerContentSource(texSamplerHandle, texture);
+            consumerScene.setRenderableResourcesDirtyByTextureSampler(texSamplerHandle);
         }
     }
 }

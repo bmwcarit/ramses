@@ -11,7 +11,7 @@
 
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/RendererEvent.h"
-#include "absl/algorithm/container.h"
+#include <algorithm>
 
 namespace ramses_internal
 {
@@ -38,13 +38,11 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::DestroyOffscreenBuffer& cmd) { return fmt::format("DestroyOffscreenBuffer (displayId={} OB={})", cmd.display, cmd.offscreenBuffer); }
         inline std::string ToString(const RendererCommand::CreateStreamBuffer& cmd) { return fmt::format("CreateStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
         inline std::string ToString(const RendererCommand::DestroyStreamBuffer& cmd) { return fmt::format("DestroyStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
-        inline std::string ToString(const RendererCommand::SetStreamBufferState& cmd) { return fmt::format("SetStreamBufferState (displayId={} SB={} state={})", cmd.display, cmd.streamBuffer, cmd.newState); }
         inline std::string ToString(const RendererCommand::CreateExternalBuffer& cmd) { return fmt::format("CreateExternalBuffer (displayId={} EB={})", cmd.display, cmd.externalBuffer); }
         inline std::string ToString(const RendererCommand::DestroyExternalBuffer& cmd) { return fmt::format("DestroyExternalBuffer (displayId={} EB={})", cmd.display, cmd.externalBuffer); }
         inline std::string ToString(const RendererCommand::SetClearFlags& cmd) { return fmt::format("SetClearEnabled (displayId={} OB={} flags={})", cmd.display, cmd.offscreenBuffer, cmd.clearFlags); }
         inline std::string ToString(const RendererCommand::SetClearColor& cmd) { return fmt::format("SetClearColor (displayId={} OB={} color={})", cmd.display, cmd.offscreenBuffer, cmd.clearColor); }
         inline std::string ToString(const RendererCommand::SetExterallyOwnedWindowSize& cmd) { return fmt::format("SetExterallyOwnedWindowSize (displayId={} width={} height={})", cmd.display, cmd.width, cmd.height); }
-        inline std::string ToString(const RendererCommand::UpdateWarpingData& cmd) { return fmt::format("UpdateWarpingData (displayId={})", cmd.display); }
         inline std::string ToString(const RendererCommand::ReadPixels& cmd) { return fmt::format("ReadPixels (displayId={} OB={})", cmd.display, cmd.offscreenBuffer); }
         inline std::string ToString(const RendererCommand::SetSkippingOfUnmodifiedBuffers& cmd) { return fmt::format("SetSkippingOfUnmodifiedBuffers (enable={})", cmd.enable); }
         inline std::string ToString(const RendererCommand::LogStatistics&) { return "LogStatistics"; }
@@ -61,14 +59,10 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::SetLimits_FrameBudgets& cmd) { return fmt::format("SetLimits_FrameBudgets (dynResources={} resources={} obRender={})", cmd.limitForSceneResourcesUploadMicrosec, cmd.limitForResourcesUploadMicrosec, cmd.limitForOffscreenBufferRenderMicrosec); }
         inline std::string ToString(const RendererCommand::SetLimits_FlushesForceApply& cmd) { return fmt::format("SetLimits_FlushesForceApply (numFlushes={})", cmd.limitForPendingFlushesForceApply); }
         inline std::string ToString(const RendererCommand::SetLimits_FlushesForceUnsubscribe& cmd) { return fmt::format("SetLimits_FlushesForceUnsubscribe (numFlushes={})", cmd.limitForPendingFlushesForceUnsubscribe); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_Toggle& cmd) { return fmt::format("FrameProfiler_Toggle (enable={})", cmd.toggle); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_TimingGraphHeight& cmd) { return fmt::format("FrameProfiler_TimingGraphHeight (height={})", cmd.height); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_CounterGraphHeight& cmd) { return fmt::format("FrameProfiler_CounterGraphHeight (height={})", cmd.height); }
-        inline std::string ToString(const RendererCommand::FrameProfiler_RegionFilterFlags& cmd) { return fmt::format("FrameProfiler_RegionFilterFlags (flags={})", cmd.flags); }
         inline std::string ToString(const RendererCommand::ConfirmationEcho& cmd) { return fmt::format("ConfirmationEcho (display={} text={})", cmd.display, cmd.text); }
         inline std::string ToString(const RendererCommand::Variant& var)
         {
-            return absl::visit([&](const auto& c) { return RendererCommandUtils::ToString(c); }, var);
+            return std::visit([&](const auto& c) { return RendererCommandUtils::ToString(c); }, var);
         }
 
         template <typename T>
@@ -86,7 +80,7 @@ namespace ramses_internal
         }
         inline RendererCommand::Variant Copy(const RendererCommand::Variant& var)
         {
-            return absl::visit([&](const auto& c) { return RendererCommandUtils::CreateVariantFrom(c); }, var);
+            return std::visit([&](const auto& c) { return RendererCommandUtils::CreateVariantFrom(c); }, var);
         }
 
         template <typename T>
@@ -142,13 +136,6 @@ namespace ramses_internal
             return evt;
         }
         template <>
-        inline RendererEvent GenerateFailEventForCommand<RendererCommand::UpdateWarpingData>(const RendererCommand::UpdateWarpingData& cmd)
-        {
-            RendererEvent evt{ ERendererEventType::WarpingDataUpdateFailed };
-            evt.displayHandle = cmd.display;
-            return evt;
-        }
-        template <>
         inline RendererEvent GenerateFailEventForCommand<RendererCommand::ReadPixels>(const RendererCommand::ReadPixels& cmd)
         {
             RendererEvent evt{ ERendererEventType::ReadPixelsFromFramebufferFailed };
@@ -158,22 +145,22 @@ namespace ramses_internal
         }
         inline RendererEvent GenerateFailEventForCommand(const RendererCommand::Variant& var)
         {
-            return absl::visit([&](const auto& c) { return RendererCommandUtils::GenerateFailEventForCommand(c); }, var);
+            return std::visit([&](const auto& c) { return RendererCommandUtils::GenerateFailEventForCommand(c); }, var);
         }
 
         inline void AddAndConsolidateCommandToStash(RendererCommand::Variant&& cmd, RendererCommands& commands)
         {
             // never filter publish or confirmation echo
-            if (absl::holds_alternative<RendererCommand::ScenePublished>(cmd))
+            if (std::holds_alternative<RendererCommand::ScenePublished>(cmd))
             {
                 commands.push_back(std::move(cmd));
             }
             // strike out unpublish of published scene
-            else if (absl::holds_alternative<RendererCommand::SceneUnpublished>(cmd))
+            else if (std::holds_alternative<RendererCommand::SceneUnpublished>(cmd))
             {
-                const auto sceneId = absl::get<RendererCommand::SceneUnpublished>(cmd).scene;
-                const auto it = absl::c_find_if(commands, [sceneId](const auto& c) {
-                    return absl::holds_alternative<RendererCommand::ScenePublished>(c) && absl::get<RendererCommand::ScenePublished>(c).scene == sceneId;
+                const auto sceneId = std::get<RendererCommand::SceneUnpublished>(cmd).scene;
+                const auto it = std::find_if(std::cbegin(commands), std::cend(commands), [sceneId](const auto& c) {
+                    return std::holds_alternative<RendererCommand::ScenePublished>(c) && std::get<RendererCommand::ScenePublished>(c).scene == sceneId;
                 });
                 if (it != commands.end())
                     commands.erase(it);
@@ -181,15 +168,15 @@ namespace ramses_internal
                     commands.push_back(std::move(cmd));
             }
             // do not stash single time commands and frame profiler
-            else if (absl::holds_alternative<RendererCommand::FrameProfiler_Toggle>(cmd) ||
-                absl::holds_alternative<RendererCommand::LogInfo>(cmd) ||
-                absl::holds_alternative<RendererCommand::LogStatistics>(cmd))
+            else if (
+                std::holds_alternative<RendererCommand::LogInfo>(cmd) ||
+                std::holds_alternative<RendererCommand::LogStatistics>(cmd))
             {
             }
             // keep always just the last cmd of all other types
             else
             {
-                const auto it = absl::c_find_if(commands, [&cmd](const auto& c) {
+                const auto it = std::find_if(std::begin(commands), std::end(commands), [&cmd](const auto& c) {
                     return c.index() == cmd.index();
                 });
                 if (it != commands.end())

@@ -19,7 +19,7 @@ namespace ramses_internal
     class RenderPassScene : public IntegrationScene
     {
     public:
-        RenderPassScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        RenderPassScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition);
 
         enum
         {

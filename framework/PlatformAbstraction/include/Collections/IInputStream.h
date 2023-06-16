@@ -27,69 +27,37 @@ namespace ramses_internal
         virtual ~IInputStream() = default;
 
         virtual IInputStream& read(void* data, size_t size) = 0;
-        virtual EStatus getState() const = 0;
+        [[nodiscard]] virtual EStatus getState() const = 0;
 
         virtual EStatus seek(Int numberOfBytesToSeek, Seek origin) = 0;
         virtual EStatus getPos(size_t& position) const = 0;
     };
 
-    inline IInputStream& operator>>(IInputStream& stream, int32_t& value)
+    template <typename T, std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, bool> = true>
+    IInputStream& operator>>(IInputStream& stream, T& value)
     {
         return stream.read(&value, sizeof(value));
     }
 
-    inline IInputStream& operator>>(IInputStream& stream, Int64& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, UInt32& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, UInt64& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, bool&  value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, Float& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, UInt16& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, Int16& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, UInt8& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    inline IInputStream& operator>>(IInputStream& stream, Int8& value)
-    {
-        return stream.read(&value, sizeof(value));
-    }
-
-    template<typename E,
-             typename = typename std::enable_if<std::is_enum<E>::value  && !std::is_convertible<E, int>::value>::type>
+    template <typename E, std::enable_if_t<std::is_enum_v<E> && !std::is_convertible_v<E, int>, bool> = true>
     IInputStream& operator>>(IInputStream& stream, E& value)
     {
         std::underlying_type_t<E> valueInUnderlyingType;
         stream >> valueInUnderlyingType;
         value = static_cast<E>(valueInUnderlyingType);
+
+        return stream;
+    }
+
+    inline IInputStream& operator>>(IInputStream& stream, std::string& value)
+    {
+        uint32_t length{0};
+        stream >> length; // first read the length of the string
+        value.resize(length);
+        if (length > 0)
+        {
+            stream.read(value.data(), length);
+        }
 
         return stream;
     }

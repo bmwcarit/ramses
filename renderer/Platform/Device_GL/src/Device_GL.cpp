@@ -24,20 +24,11 @@
 #include "RendererAPI/IDeviceExtension.h"
 #include "Resource/EffectResource.h"
 
-#include "Math3d/Vector2.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/Vector4.h"
-#include "Math3d/Vector2i.h"
-#include "Math3d/Vector3i.h"
-#include "Math3d/Vector4i.h"
-#include "Math3d/Matrix22f.h"
-#include "Math3d/Matrix33f.h"
-#include "Math3d/Matrix44f.h"
-
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "PlatformAbstraction/Macros.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace ramses_internal
 {
@@ -50,9 +41,9 @@ namespace ramses_internal
     struct GLTextureInfo
     {
         GLenum target = GL_ZERO;
-        UInt32 width = 0u;
-        UInt32 height = 0u;
-        UInt32 depth = 0u;
+        uint32_t width = 0u;
+        uint32_t height = 0u;
+        uint32_t depth = 0u;
         TextureUploadParams_GL uploadParams;
     };
 
@@ -60,7 +51,7 @@ namespace ramses_internal
     class TextureGPUResource_GL : public GPUResource
     {
     public:
-        TextureGPUResource_GL(const GLTextureInfo& textureInfo, UInt32 gpuAddress, UInt32 dataSizeInBytes)
+        TextureGPUResource_GL(const GLTextureInfo& textureInfo, uint32_t gpuAddress, uint32_t dataSizeInBytes)
             : GPUResource(gpuAddress, dataSizeInBytes)
             , m_textureInfo(textureInfo)
         {
@@ -69,14 +60,11 @@ namespace ramses_internal
         const GLTextureInfo m_textureInfo;
     };
 
-    Device_GL::Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded, IDeviceExtension* deviceExtension)
+    Device_GL::Device_GL(IContext& context, IDeviceExtension* deviceExtension)
         : Device_Base(context)
         , m_activeShader(nullptr)
         , m_activePrimitiveDrawMode(EDrawMode::Triangles)
         , m_activeIndexArrayElementSizeBytes(2u)
-        , m_majorApiVersion(majorApiVersion)
-        , m_minorApiVersion(minorApiVersion)
-        , m_isEmbedded(isEmbedded)
         , m_debugOutput()
         , m_deviceExtension(deviceExtension)
         , m_emptyExternalTextureResource(m_resourceMapper.registerResource(std::make_unique<GPUResource>(0u, 0u)))
@@ -124,22 +112,22 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(m_framebufferRenderTarget);
     }
 
-    Bool Device_GL::init()
+    bool Device_GL::init()
     {
         LOAD_ALL_API_PROCS(m_context);
 
-        const Char* tmp = nullptr;
+        const char* tmp = nullptr;
 
-        tmp = reinterpret_cast<const Char*>(glGetString(GL_VENDOR));
+        tmp = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
         LOG_INFO(CONTEXT_RENDERER, "Device_GL::init:  OpenGL vendor is " << tmp);
 
-        tmp = reinterpret_cast<const Char*>(glGetString(GL_RENDERER));
+        tmp = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
         LOG_INFO(CONTEXT_RENDERER, "    OpenGL renderer is " << tmp);
 
-        tmp = reinterpret_cast<const Char*>(glGetString(GL_VERSION));
+        tmp = reinterpret_cast<const char*>(glGetString(GL_VERSION));
         LOG_INFO(CONTEXT_RENDERER, "     OpenGL version is " << tmp);
 
-        tmp = reinterpret_cast<const Char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+        tmp = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
         LOG_INFO(CONTEXT_RENDERER, "     GLSL version " << tmp);
 
         loadOpenGLExtensions();
@@ -161,19 +149,7 @@ namespace ramses_internal
         return true;
     }
 
-    EDeviceTypeId Device_GL::getDeviceTypeId() const
-    {
-        if (m_majorApiVersion == 3 && m_minorApiVersion == 0 && m_isEmbedded)
-            return EDeviceTypeId_GL_ES_3_0;
-        else if (m_majorApiVersion == 4 && m_minorApiVersion == 2 && !m_isEmbedded)
-            return EDeviceTypeId_GL_4_2_CORE;
-        else if (m_majorApiVersion == 4 && m_minorApiVersion == 5 && !m_isEmbedded)
-            return EDeviceTypeId_GL_4_5;
-        else
-            return EDeviceTypeId_INVALID;
-    }
-
-    void Device_GL::drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
+    void Device_GL::drawIndexedTriangles(int32_t startOffset, int32_t elementCount, uint32_t instanceCount)
     {
         assert(m_activeIndexArraySizeBytes != 0 && m_activeIndexArrayElementSizeBytes != 0);
         if (m_activeIndexArraySizeBytes < (startOffset + elementCount) * m_activeIndexArrayElementSizeBytes)
@@ -184,7 +160,7 @@ namespace ramses_internal
             return;
         }
 
-        const UInt startOffsetAddressAsUInt = startOffset * m_activeIndexArrayElementSizeBytes;
+        const size_t startOffsetAddressAsUInt = startOffset * m_activeIndexArrayElementSizeBytes;
         const GLvoid* startOffsetAddress = reinterpret_cast<void*>(startOffsetAddressAsUInt);
 
         const GLenum drawModeGL = TypesConversion_GL::GetDrawMode(m_activePrimitiveDrawMode);
@@ -198,7 +174,7 @@ namespace ramses_internal
         Device_Base::drawIndexedTriangles(startOffset, elementCount, instanceCount);
     }
 
-    void Device_GL::drawTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
+    void Device_GL::drawTriangles(int32_t startOffset, int32_t elementCount, uint32_t instanceCount)
     {
         const GLenum drawModeGL = TypesConversion_GL::GetDrawMode(m_activePrimitiveDrawMode);
         if (instanceCount > 1u)
@@ -214,31 +190,34 @@ namespace ramses_internal
         Device_Base::drawTriangles(startOffset, elementCount, instanceCount);
     }
 
-    void Device_GL::clear(UInt32 clearFlags)
+    void Device_GL::clear(uint32_t clearFlags)
     {
         GLbitfield deviceClearFlags = 0;
         if (clearFlags & EClearFlags_Color)
         {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             deviceClearFlags |= GL_COLOR_BUFFER_BIT;
         }
         if (clearFlags & EClearFlags_Depth)
         {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             deviceClearFlags |= GL_DEPTH_BUFFER_BIT;
         }
         if (clearFlags & EClearFlags_Stencil)
         {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             deviceClearFlags |= GL_STENCIL_BUFFER_BIT;
         }
 
         glClear(deviceClearFlags);
     }
 
-    void Device_GL::clearColor(const Vector4& clearColor)
+    void Device_GL::clearColor(const glm::vec4& clearColor)
     {
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     }
 
-    void Device_GL::colorMask(Bool r, Bool g, Bool b, Bool a)
+    void Device_GL::colorMask(bool r, bool g, bool b, bool a)
     {
         glColorMask(ToGLboolean(r),
                     ToGLboolean(g),
@@ -246,12 +225,12 @@ namespace ramses_internal
                     ToGLboolean(a));
     }
 
-    void Device_GL::clearDepth(Float d)
+    void Device_GL::clearDepth(float d)
     {
         glClearDepthf(d);
     }
 
-    void Device_GL::clearStencil(Int32 s)
+    void Device_GL::clearStencil(int32_t s)
     {
         glClearStencil(s);
     }
@@ -314,7 +293,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::blendColor(const Vector4& color)
+    void Device_GL::blendColor(const glm::vec4& color)
     {
         glBlendColor(color.r, color.g, color.b, color.a);
     }
@@ -333,7 +312,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::stencilFunc(EStencilFunc func, UInt8 ref, UInt8 mask)
+    void Device_GL::stencilFunc(EStencilFunc func, uint8_t ref, uint8_t mask)
     {
         if (func == EStencilFunc::Disabled)
         {
@@ -373,7 +352,7 @@ namespace ramses_internal
         glViewport(x, y, std::min(width, m_limits.getMaxViewportWidth()), std::min(height, m_limits.getMaxViewportHeight()));
     }
 
-    GLHandle Device_GL::createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat, UInt32 sampleCount) const
+    GLHandle Device_GL::createTexture(uint32_t width, uint32_t height, ETextureFormat storageFormat, uint32_t sampleCount) const
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::createTexture:  creating a new texture (texture render target)");
 
@@ -385,7 +364,7 @@ namespace ramses_internal
         return texID;
     }
 
-    GLHandle Device_GL::createRenderBuffer(UInt32 width, UInt32 height, ETextureFormat format, UInt32 sampleCount)
+    GLHandle Device_GL::createRenderBuffer(uint32_t width, uint32_t height, ETextureFormat format, uint32_t sampleCount)
     {
         LOG_TRACE(CONTEXT_RENDERER, "Creating a new render buffer");
 
@@ -416,21 +395,21 @@ namespace ramses_internal
         return renderbufferHandle;
     }
 
-    Bool Device_GL::getUniformLocation(DataFieldHandle field, GLInputLocation& location) const
+    bool Device_GL::getUniformLocation(DataFieldHandle field, GLInputLocation& location) const
     {
         assert(nullptr != m_activeShader);
         location = m_activeShader->getUniformLocation(field);
         return location != GLInputLocationInvalid;
     }
 
-    Bool Device_GL::getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const
+    bool Device_GL::getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const
     {
         assert(nullptr != m_activeShader);
         location = m_activeShader->getAttributeLocation(field);
         return location != GLInputLocationInvalid;
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Float* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const float* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
@@ -440,37 +419,37 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector2* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::vec2* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform2fv(uniformLocation.getValue(), count, value[0].data);
+            glUniform2fv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector3* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::vec3* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform3fv(uniformLocation.getValue(), count, value[0].data);
+            glUniform3fv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector4* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::vec4* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform4fv(uniformLocation.getValue(), count, value[0].data);
+            glUniform4fv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Int32* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const int32_t* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
@@ -480,67 +459,67 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector2i* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::ivec2* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform2iv(uniformLocation.getValue(), count, value[0].data);
+            glUniform2iv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector3i* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::ivec3* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform3iv(uniformLocation.getValue(), count, value[0].data);
+            glUniform3iv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Vector4i* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::ivec4* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniform4iv(uniformLocation.getValue(), count, value[0].data);
+            glUniform4iv(uniformLocation.getValue(), count, glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Matrix22f* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::mat2* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix2fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
+            glUniformMatrix2fv(uniformLocation.getValue(), count, ToGLboolean(false), glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Matrix33f* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::mat3* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix3fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
+            glUniformMatrix3fv(uniformLocation.getValue(), count, ToGLboolean(false), glm::value_ptr(value[0]));
         }
     }
 
-    void Device_GL::setConstant(DataFieldHandle field, UInt32 count, const Matrix44f* value)
+    void Device_GL::setConstant(DataFieldHandle field, uint32_t count, const glm::mat4* value)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix4fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
+            glUniformMatrix4fv(uniformLocation.getValue(), count, ToGLboolean(false), glm::value_ptr(value[0]));
         }
     }
 
-    DeviceResourceHandle Device_GL::allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
+    DeviceResourceHandle Device_GL::allocateTexture2D(uint32_t width, uint32_t height, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, uint32_t mipLevelCount, uint32_t totalSizeInBytes)
     {
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_2D);
         GLTextureInfo texInfo;
@@ -550,7 +529,7 @@ namespace ramses_internal
         return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, totalSizeInBytes));
     }
 
-    DeviceResourceHandle Device_GL::allocateTexture3D(UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
+    DeviceResourceHandle Device_GL::allocateTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat textureFormat, uint32_t mipLevelCount, uint32_t totalSizeInBytes)
     {
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_3D);
         GLTextureInfo texInfo;
@@ -560,7 +539,7 @@ namespace ramses_internal
         return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, totalSizeInBytes));
     }
 
-    DeviceResourceHandle Device_GL::allocateTextureCube(UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
+    DeviceResourceHandle Device_GL::allocateTextureCube(uint32_t faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, uint32_t mipLevelCount, uint32_t totalSizeInBytes)
     {
         const GLHandle texID = generateAndBindTexture(GL_TEXTURE_CUBE_MAP);
         GLTextureInfo texInfo;
@@ -602,7 +581,7 @@ namespace ramses_internal
         glGenerateMipmap(gpuResource.m_textureInfo.target);
     }
 
-    void Device_GL::uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize)
+    void Device_GL::uploadTextureData(DeviceResourceHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height, uint32_t depth, const Byte* data, uint32_t dataSize)
     {
         const TextureGPUResource_GL& gpuResource = m_resourceMapper.getResourceAs<TextureGPUResource_GL>(handle);
 
@@ -616,7 +595,7 @@ namespace ramses_internal
         uploadTextureMipMapData(mipLevel, x, y, z, width, height, depth, texInfo, data, dataSize);
     }
 
-    DeviceResourceHandle Device_GL::uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle)
+    DeviceResourceHandle Device_GL::uploadStreamTexture2D(DeviceResourceHandle handle, uint32_t width, uint32_t height, ETextureFormat format, const uint8_t* data, const TextureSwizzleArray& swizzle)
     {
         if (!handle.isValid())
         {
@@ -653,7 +632,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& glTexInfoOut) const
+    void Device_GL::fillGLInternalTextureInfo(GLenum target, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& glTexInfoOut) const
     {
         glTexInfoOut.target = target;
         glTexInfoOut.width = width;
@@ -688,7 +667,7 @@ namespace ramses_internal
         return numSamples;
     }
 
-    void Device_GL::allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels, UInt32 sampleCount) const
+    void Device_GL::allocateTextureStorage(const GLTextureInfo& texInfo, uint32_t mipLevels, uint32_t sampleCount) const
     {
         assert(!(sampleCount && mipLevels > 1));
         glPixelStorei(GL_UNPACK_ALIGNMENT, texInfo.uploadParams.byteAlignment);
@@ -719,7 +698,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize) const
+    void Device_GL::uploadTextureMipMapData(uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height, uint32_t depth, const GLTextureInfo& texInfo, const uint8_t *pData, uint32_t dataSize) const
     {
         assert(width > 0 && height > 0 && depth > 0 && "trying to upload texture with 0 width and/or height and/or depth!");
         assert(x + width <= TextureMathUtils::GetMipSize(mipLevel, texInfo.width));
@@ -782,7 +761,7 @@ namespace ramses_internal
         return DeviceResourceHandle::Invalid();
     }
 
-    DeviceResourceHandle Device_GL::uploadDmaRenderBuffer(UInt32 width, UInt32 height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers)
+    DeviceResourceHandle Device_GL::uploadDmaRenderBuffer(uint32_t width, uint32_t height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers)
     {
         if(m_deviceExtension == nullptr)
             return {};
@@ -909,7 +888,7 @@ namespace ramses_internal
     void Device_GL::activateTextureSampler(DeviceResourceHandle handle, DataFieldHandle field)
     {
         const TextureSlot textureSlot = m_activeShader->getTextureSlot(field).slot;
-        assert(static_cast<UInt32>(textureSlot) < m_limits.getMaximumTextureUnits());
+        assert(static_cast<uint32_t>(textureSlot) < m_limits.getMaximumTextureUnits());
         const GLHandle glAddress = m_resourceMapper.getResource(handle).getGPUAddress();
         glBindSampler(textureSlot, glAddress);
     }
@@ -928,15 +907,15 @@ namespace ramses_internal
         activateTextureSampler(it->second, field);
     }
 
-    Bool Device_GL::allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const
+    bool Device_GL::allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const
     {
         assert(!renderBuffers.empty());
         assert(renderBuffers.size() <= 16u);
 
-        UInt32 width = 0u;
-        UInt32 height = 0u;
+        uint32_t width = 0u;
+        uint32_t height = 0u;
 
-        for (UInt i = 0; i < renderBuffers.size(); ++i)
+        for (size_t i = 0; i < renderBuffers.size(); ++i)
         {
             const RenderBufferGPUResource& bufferGPUResource = m_resourceMapper.getResourceAs<RenderBufferGPUResource>(renderBuffers[i]);
 
@@ -1079,7 +1058,7 @@ namespace ramses_internal
         const GPUResource* rtResource = nullptr;
         if (renderTargetPair != m_pairedRenderTargets.cend())
         {
-            const UInt8 writingIndex = (renderTargetPair->readingIndex + 1) % 2;
+            const uint8_t writingIndex = (renderTargetPair->readingIndex + 1) % 2;
             rtResource = &m_resourceMapper.getResource(renderTargetPair->renderTargets[writingIndex]);
         }
         else
@@ -1091,7 +1070,7 @@ namespace ramses_internal
         glBindFramebuffer(GL_FRAMEBUFFER, rtGlAddress);
     }
 
-    void Device_GL::pairRenderTargetsForDoubleBuffering(DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2])
+    void Device_GL::pairRenderTargetsForDoubleBuffering(const std::array<DeviceResourceHandle, 2>& renderTargets, const std::array<DeviceResourceHandle, 2>& colorBuffers)
     {
         m_pairedRenderTargets.push_back({ { renderTargets[0], renderTargets[1] },{ colorBuffers[0], colorBuffers[1] }, 0u });
     }
@@ -1120,7 +1099,7 @@ namespace ramses_internal
         return texID;
     }
 
-    DeviceResourceHandle Device_GL::allocateVertexBuffer(UInt32 totalSizeInBytes)
+    DeviceResourceHandle Device_GL::allocateVertexBuffer(uint32_t totalSizeInBytes)
     {
         GLHandle glAddress = InvalidGLHandle;
         glGenBuffers(1, &glAddress);
@@ -1129,7 +1108,7 @@ namespace ramses_internal
         return m_resourceMapper.registerResource(std::make_unique<GPUResource>(glAddress, totalSizeInBytes));
     }
 
-    void Device_GL::uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize)
+    void Device_GL::uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, uint32_t dataSize)
     {
         const auto& vertexBuffer = m_resourceMapper.getResource(handle);
         assert(dataSize <= vertexBuffer.getTotalSizeInBytes());
@@ -1226,7 +1205,7 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
-    DeviceResourceHandle Device_GL::allocateIndexBuffer(EDataType dataType, UInt32 sizeInBytes)
+    DeviceResourceHandle Device_GL::allocateIndexBuffer(EDataType dataType, uint32_t sizeInBytes)
     {
         GLHandle glAddress = InvalidGLHandle;
         glGenBuffers(1, &glAddress);
@@ -1236,7 +1215,7 @@ namespace ramses_internal
         return m_resourceMapper.registerResource(std::make_unique<IndexBufferGPUResource>(glAddress, sizeInBytes, dataType == EDataType::UInt16 ? 2 : 4));
     }
 
-    void Device_GL::uploadIndexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize)
+    void Device_GL::uploadIndexBufferData(DeviceResourceHandle handle, const Byte* data, uint32_t dataSize)
     {
         const auto& indexBuffer = m_resourceMapper.getResource(handle);
         assert(dataSize <= indexBuffer.getTotalSizeInBytes());
@@ -1256,8 +1235,8 @@ namespace ramses_internal
     std::unique_ptr<const GPUResource> Device_GL::uploadShader(const EffectResource& shader)
     {
         ShaderProgramInfo programInfo;
-        String debugErrorLog;
-        const Bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromSource(shader, programInfo, debugErrorLog);
+        std::string debugErrorLog;
+        const bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromSource(shader, programInfo, debugErrorLog);
 
         if (uploadSuccessful)
             return std::make_unique<const ShaderGPUResource_GL>(shader, programInfo);
@@ -1273,15 +1252,15 @@ namespace ramses_internal
         return m_resourceMapper.registerResource(std::move(shaderResource));
     }
 
-    DeviceResourceHandle Device_GL::uploadBinaryShader(const EffectResource& shader, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
+    DeviceResourceHandle Device_GL::uploadBinaryShader(const EffectResource& shader, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
     {
         ShaderProgramInfo programInfo;
-        String debugErrorLog;
-        const Bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromBinary(binaryShaderData, binaryShaderDataSize, binaryShaderFormat, programInfo, debugErrorLog);
+        std::string debugErrorLog;
+        const bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromBinary(binaryShaderData, binaryShaderDataSize, binaryShaderFormat, programInfo, debugErrorLog);
 
         if (uploadSuccessful)
         {
-            LOG_INFO(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << shader.getName());
+            LOG_DEBUG(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << shader.getName());
             return m_resourceMapper.registerResource(std::make_unique<ShaderGPUResource_GL>(shader, programInfo));
         }
         else
@@ -1291,7 +1270,7 @@ namespace ramses_internal
         }
     }
 
-    Bool Device_GL::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
+    bool Device_GL::getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat)
     {
         binaryShader.clear();
 
@@ -1333,7 +1312,7 @@ namespace ramses_internal
         {
             const TextureSlotInfo textureSlot = m_activeShader->getTextureSlot(field);
 
-            assert(static_cast<UInt32>(textureSlot.slot) < m_limits.getMaximumTextureUnits());
+            assert(static_cast<uint32_t>(textureSlot.slot) < m_limits.getMaximumTextureUnits());
             glActiveTexture(GL_TEXTURE0 + textureSlot.slot);
 
             const auto renderTargetPair = std::find_if(m_pairedRenderTargets.cbegin(), m_pairedRenderTargets.cend(), [handle](const RenderTargetPair& rtPair) -> bool {return rtPair.colorBuffers[0] == handle; });
@@ -1368,7 +1347,7 @@ namespace ramses_internal
         return m_framebufferRenderTarget;
     }
 
-    void Device_GL::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, Bool colorOnly)
+    void Device_GL::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, bool colorOnly)
     {
         const GPUResource& rtSrcResource = m_resourceMapper.getResource(rtSrc);
         const GPUResource& rtDstResource = m_resourceMapper.getResource(rtDst);
@@ -1376,6 +1355,7 @@ namespace ramses_internal
         const GLuint blittingSourceFrameBuffer = rtSrcResource.getGPUAddress();
         const GLuint blittingDestinationFrameBuffer = rtDstResource.getGPUAddress();
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         const GLenum blittingMask = (colorOnly ? GL_COLOR_BUFFER_BIT : (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
         glBindFramebuffer(GL_READ_FRAMEBUFFER, blittingSourceFrameBuffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blittingDestinationFrameBuffer);
@@ -1393,7 +1373,7 @@ namespace ramses_internal
             GL_NEAREST);
     }
 
-    Bool Device_GL::isApiExtensionAvailable(const String& extensionName) const
+    bool Device_GL::isApiExtensionAvailable(const std::string& extensionName) const
     {
         return m_apiExtensions.contains(extensionName);
     }
@@ -1408,7 +1388,7 @@ namespace ramses_internal
             size_t sumExtensionStringLength = 0;
             for (auto i = 0; i < numExtensions; i++)
             {
-                const auto tmp = reinterpret_cast<const Char*>(glGetStringi(GL_EXTENSIONS, i));
+                const auto tmp = reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i));
                 sumExtensionStringLength += std::strlen(tmp);
                 m_apiExtensions.put(tmp);
             }
@@ -1509,17 +1489,17 @@ namespace ramses_internal
         m_limits.setExternalTextureExtensionSupported(externalTexturesSupported);
     }
 
-    void Device_GL::readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
+    void Device_GL::readPixels(uint8_t* buffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
         glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, static_cast<void*>(buffer));
     }
 
-    UInt32 Device_GL::getTotalGpuMemoryUsageInKB() const
+    uint32_t Device_GL::getTotalGpuMemoryUsageInKB() const
     {
         return m_resourceMapper.getTotalGpuMemoryUsageInKB();
     }
 
-    Bool Device_GL::isDeviceStatusHealthy() const
+    bool Device_GL::isDeviceStatusHealthy() const
     {
         if (m_debugOutput.isAvailable())
         {

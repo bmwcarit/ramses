@@ -17,10 +17,10 @@ namespace ramses_internal
     {
     public:
         virtual ~IWaylandBuffer(){}
-        virtual WaylandBufferResource& getResource() const = 0;
+        [[nodiscard]] virtual WaylandBufferResource& getResource() const = 0;
         virtual void reference() = 0;
         virtual void release() = 0;
-        virtual bool isSharedMemoryBuffer() const = 0;
+        [[nodiscard]] virtual bool isSharedMemoryBuffer() const = 0;
     };
 }
 

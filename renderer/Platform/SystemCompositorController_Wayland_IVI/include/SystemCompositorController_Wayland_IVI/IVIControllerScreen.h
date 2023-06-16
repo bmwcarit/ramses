@@ -10,7 +10,8 @@
 #define RAMSES_IVICONTROLLERSCREEN_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "Collections/String.h"
+
+#include <string>
 
 struct ivi_controller_screen;
 
@@ -22,8 +23,8 @@ namespace ramses_internal
         IVIControllerScreen(ivi_controller_screen& controllerScreen, uint32_t screenId);
         ~IVIControllerScreen();
 
-        void takeScreenshot(const String& fileName);
-        uint32_t getScreenId() const;
+        void takeScreenshot(const std::string& fileName);
+        [[nodiscard]] uint32_t getScreenId() const;
 
     private:
         ivi_controller_screen& m_controllerScreen;

@@ -26,7 +26,6 @@ namespace ramses_internal
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
         displayConfig.setWindowRectangle(0u, 0u, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
-        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
 
         testFramework.createTestCase(ShowFallbackTexture, *this, "ShowFallbackTexture").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ShowStreamTexture, *this, "ShowStreamTexture").m_displayConfigs.push_back(displayConfig);
@@ -62,20 +61,24 @@ namespace ramses_internal
 
     bool SingleStreamTextureTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
-        Bool testResultValue = true;
-        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
-        const WaylandIviSurfaceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
+        bool testResultValue = true;
+        constexpr WaylandIviSurfaceId waylandSurfaceIviId1{574u};
+        constexpr WaylandIviSurfaceId waylandSurfaceIviId2{7889u};
+
+        const auto streamBuffer = testFramework.createStreamBuffer(0u, ramses::waylandIviSurfaceId_t{ waylandSurfaceIviId1.getValue()});
 
         switch(testCase.m_id)
         {
         case ShowFallbackTexture:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, secondStreamTextureSourceId);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId2);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(secondStreamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId2);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -83,12 +86,15 @@ namespace ramses_internal
         }
         case ShowStreamTexture:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -96,13 +102,16 @@ namespace ramses_internal
         }
         case StreamTextureWithDifferentSizeFromFallbackTexture:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(3840, 10, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(3840, 10, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_BlueTriangleStreamTexture_SmallRes");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -110,14 +119,17 @@ namespace ramses_internal
         }
         case ShowStreamTextureWithTexCoordsOffset:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_WithTexCoordsOffset");
             testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(3840, 10, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(3840, 10, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_BlueTriangleStreamTexture_WithTexCoordsOffset");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -125,14 +137,17 @@ namespace ramses_internal
         }
         case ShowFallbackTextureAfterSurfaceIsDestroyed:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
             testFramework.sendDestroySurfaceToTestApplication(surfaceId);
-            testFramework.waitForSurfaceUnavailableForStreamTexture(streamTextureSourceId);
+            testFramework.waitForSurfaceUnavailableForStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -140,12 +155,15 @@ namespace ramses_internal
         }
         case StreamTextureContentAvailableBeforeSceneCreated:
         {
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -155,12 +173,12 @@ namespace ramses_internal
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(streamTextureSourceId.getValue()), 0);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
+            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(waylandSurfaceIviId1.getValue()), 0);
             for (uint32_t frame = 1; frame <= 10; frame++)
             {
                 testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-                testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(streamTextureSourceId.getValue()), frame);
+                testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(waylandSurfaceIviId1.getValue()), frame);
                 testFramework.renderOneFrame();
             }
 
@@ -169,45 +187,55 @@ namespace ramses_internal
         }
         case ShowStreamTextureAfterChangingSurfaceSize:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(streamTextureSourceId.getValue()), 1);
+            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(waylandSurfaceIviId1.getValue()), 1);
             testFramework.renderOneFrame();
 
-            testResultValue &= resizeSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 8, 8, streamTextureSourceId, 2, "EC_RedTriangleStreamTexture_SmallRes");
-            testResultValue &= resizeSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 384, 384, streamTextureSourceId, 3, "EC_RedTriangleStreamTexture");
+            testResultValue &= resizeSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 8, 8, waylandSurfaceIviId1, 2, "EC_RedTriangleStreamTexture_SmallRes");
+            testResultValue &= resizeSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 384, 384, waylandSurfaceIviId1, 3, "EC_RedTriangleStreamTexture");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
         }
         case ShowStreamTextureAfterRecreatingSurfaceWithDifferentSize:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
 
-            testResultValue &= recreateSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 8, 8, streamTextureSourceId, "EC_RedTriangleStreamTexture_SmallRes");
-            testResultValue &= recreateSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 384, 384, streamTextureSourceId, "EC_RedTriangleStreamTexture");
+            testResultValue &= recreateSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 8, 8, waylandSurfaceIviId1, "EC_RedTriangleStreamTexture_SmallRes");
+            testResultValue &= recreateSurfaceRenderAndCheckOneFrame(testFramework, surfaceId, 384, 384, waylandSurfaceIviId1, "EC_RedTriangleStreamTexture");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
         }
         case ShowStreamTextureAfterRecreatingScene:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId1 = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId1, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testFramework.getScenesRegistry().destroyScenes();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId2= testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId2, EmbeddedCompositorScene::SamplerConsumerId1);
+
+            testFramework.createBufferDataLink(streamBuffer, sceneId2, EmbeddedCompositorScene::SamplerConsumerId1);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -215,12 +243,15 @@ namespace ramses_internal
         }
         case ShowFallbackTextureWhenNoSurfaceUpdate:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.waitForSurfaceUnavailableForStreamTexture(streamTextureSourceId);
+            testFramework.waitForSurfaceUnavailableForStreamTexture(waylandSurfaceIviId1);
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.waitForSurfaceAvailableForStreamTexture(streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
+            testFramework.waitForSurfaceAvailableForStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -228,10 +259,12 @@ namespace ramses_internal
         }
         case EachFrameOfClientIsSynchronouslyDisplayedByRenderer:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             const ETriangleColor colors[] = {
                 ETriangleColor::Red,
@@ -240,12 +273,12 @@ namespace ramses_internal
                 ETriangleColor::White
             };
 
-            const String screenshotFiles[] = {"EC_RedTriangleStreamTexture",
-                                            "EC_BlueTriangleStreamTexture",
-                                            "EC_GrayTriangleStreamTexture",
-                                            "EC_WhiteTriangleStreamTexture"};
+            const std::string screenshotFiles[] = {"EC_RedTriangleStreamTexture",
+                                                "EC_BlueTriangleStreamTexture",
+                                                "EC_GrayTriangleStreamTexture",
+                                                "EC_WhiteTriangleStreamTexture"};
 
-            testResultValue = renderFramesOnTestApplicationAndTakeScreenshots(testFramework, surfaceId, streamTextureSourceId, 30u, colors, screenshotFiles, 4u);
+            testResultValue = renderFramesOnTestApplicationAndTakeScreenshots(testFramework, surfaceId, waylandSurfaceIviId1, 30u, colors, screenshotFiles, 4u);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
@@ -254,7 +287,7 @@ namespace ramses_internal
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 0);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             const uint32_t frameCount = 20;
             for (uint32_t frame = 1; frame <= frameCount; frame++)
@@ -262,7 +295,7 @@ namespace ramses_internal
                 testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             }
             // waitUntilNumberOfCommitedFramesForIviSurface does no rendering -> would block without swapInterval 0
-            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, frameCount);
+            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, frameCount);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
@@ -271,22 +304,22 @@ namespace ramses_internal
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
 
             // First frame does not block
-            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 1);
+            testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 1);
 
             // Second frame is blocked, must be timed out
-            testResultValue &= !testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2, 5000);
+            testResultValue &= !testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 2, 5000);
 
             // Render 1st frame and unblock test client, so that it can render the next frame
             testFramework.renderOneFrame();
 
             // Now, client is unblocked
-            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2);
+            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 2);
 
             // Render 2nd frame to unblock test client, so that it can be destroyed without blocking
             testFramework.renderOneFrame();
@@ -297,21 +330,26 @@ namespace ramses_internal
         case ShowStreamTextureAfterClientRecreated:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testFramework.renderOneFrame();
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             testFramework.startTestApplicationAndWaitUntilConnected();
 
             TestApplicationSurfaceId surfaceIdNew = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceIdNew, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceIdNew, waylandSurfaceIviId1);
             testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceIdNew);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
 
             testResultValue = testFramework.renderAndCompareScreenshot("EC_BlueTriangleStreamTexture");
 
@@ -321,21 +359,25 @@ namespace ramses_internal
         case ShowStreamTextureAfterSurfaceRecreated:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testFramework.renderOneFrame();
 
             testFramework.sendDestroySurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
 
             TestApplicationSurfaceId surfaceIdNew = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceIdNew, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceIdNew, waylandSurfaceIviId1);
             testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceIdNew);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
 
             testResultValue = testFramework.renderAndCompareScreenshot("EC_BlueTriangleStreamTexture");
 
@@ -346,22 +388,22 @@ namespace ramses_internal
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 0);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId, true);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId, true);
 
             // First frame does not block
-            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 1);
+            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 1);
 
             // Second frame is blocked, must be timed out
-            testResultValue &= !testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2, 5000);
+            testResultValue &= !testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 2, 5000);
 
             // Render one frame, which sends the frame callback and unblock test client, so that it can render the next frame
             testFramework.renderOneFrame();
 
             // Now, client is unblocked
-            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2);
+            testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 2);
 
             // Unblock waiting of second frame callback
             testFramework.renderOneFrame();
@@ -372,15 +414,16 @@ namespace ramses_internal
         case ClientCanBindMultipleTimesToEmbeddedCompositor:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
 
             testFramework.sendAdditionalConnectToEmbeddedCompositorToTestApplication();
             testFramework.waitUntilNumberOfCompositorConnections(2);
 
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
 
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
@@ -391,11 +434,13 @@ namespace ramses_internal
         case ShowFallbackTextureWhenClientIsKilled:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
 
             testFramework.killTestApplication();
             testFramework.waitUntilNumberOfCompositorConnections(0);
@@ -405,12 +450,11 @@ namespace ramses_internal
 
         case ClientCreatesTwoSurfacesWithSameIVIIdSendsErrorToClient:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, waylandSurfaceIviId1);
             TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, waylandSurfaceIviId1);
 
             // The embedded compositor sends a wl_resource_post_error to the client, for the second
             // ivi_application_surface_create. This terminates the wayland display connection of the client to the
@@ -423,17 +467,19 @@ namespace ramses_internal
 
         case ClientUsesShellSurface:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             // Rendering and wait is just done, to ensure that the surface is created in the EC.
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 1);
+            testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 1);
             testFramework.renderOneFrame();
 
-            if (testFramework.getTitleOfIviSurface(streamTextureSourceId) != "")
+            if (testFramework.getTitleOfIviSurface(waylandSurfaceIviId1) != "")
             {
                 LOG_ERROR(CONTEXT_RENDERER,
                           "SingleStreamTextureTests::runEmbeddedCompositingTestCase Title is not empty!");
@@ -446,9 +492,9 @@ namespace ramses_internal
 
             // Rendering and wait is just done, to ensure that the shell surface title has also arrived in the EC.
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2);
+            testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 2);
 
-            if (testFramework.getTitleOfIviSurface(streamTextureSourceId) != "TestWaylandApplication")
+            if (testFramework.getTitleOfIviSurface(waylandSurfaceIviId1) != "TestWaylandApplication")
             {
                 LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase Title does not match!");
                 testResultValue = false;
@@ -462,16 +508,19 @@ namespace ramses_internal
 
         case ShowFallbackTextureWhenIVISurfaceDestroyed:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
             testFramework.sendDestroyIVISurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -480,11 +529,10 @@ namespace ramses_internal
 
         case ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
             // The embedded compositor sends a wl_resource_post_error to the client, for the second
             // ivi_application_surface_create. This terminates the wayland display connection of the client to the
@@ -497,11 +545,10 @@ namespace ramses_internal
 
         case ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, secondStreamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId2);
 
             // The embedded compositor sends a wl_resource_post_error to the client, for the second
             // ivi_application_surface_create. This terminates the wayland display connection of the client to the
@@ -514,20 +561,26 @@ namespace ramses_internal
 
         case ClientRecreatesIVISurfaceWithSameId:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
             testFramework.sendDestroyIVISurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForUnavailablilityOfContentOnStreamTexture(waylandSurfaceIviId1);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1");
 
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -536,16 +589,19 @@ namespace ramses_internal
 
         case ShowStreamTextureWhenIVISurfaceIsCreatedAfterUpdate:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId  = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
 
             testResultValue = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId::Invalid(), 1);
 
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
+
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -583,19 +639,21 @@ namespace ramses_internal
 
         case SurfaceHasNoTitleWhenShellSurfaceDestroyed:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            const auto sceneId = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
             TestApplicationShellSurfaceId shellSurfaceId =
                 testFramework.sendCreateShellSurfaceToTestApplication(surfaceId);
             testFramework.sendSetShellSurfaceTitleToTestApplication(shellSurfaceId, "TestWaylandApplication");
 
             // Rendering and wait is just done, to ensure that the shell surface title has also arrived in the EC.
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
-            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId1);
 
-            if (testFramework.getTitleOfIviSurface(streamTextureSourceId) != "TestWaylandApplication")
+            if (testFramework.getTitleOfIviSurface(waylandSurfaceIviId1) != "TestWaylandApplication")
             {
                 LOG_ERROR(CONTEXT_RENDERER,
                           "SingleStreamTextureTests::runEmbeddedCompositingTestCase Title does not match!");
@@ -618,11 +676,11 @@ namespace ramses_internal
             // A version with the destroy function, could check here for the empty string.
             //
             // testFramework.sendRenderOneFrameToTestApplication(surfaceId);
-            // testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2);
+            // testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId1, 2);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
-            if (testFramework.getTitleOfIviSurface(streamTextureSourceId) != "")
+            if (testFramework.getTitleOfIviSurface(waylandSurfaceIviId1) != "")
             {
                 LOG_ERROR(CONTEXT_RENDERER,
                           "SingleStreamTextureTests::runEmbeddedCompositingTestCase Title is not empty!");
@@ -639,22 +697,22 @@ namespace ramses_internal
             TestApplicationShellSurfaceId shellSurfaceId = testFramework.sendCreateShellSurfaceToTestApplication(surfaceId);
             testFramework.sendSetShellSurfaceTitleToTestApplication(shellSurfaceId, "TestWaylandApplication");
 
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, waylandSurfaceIviId1);
 
-            testFramework.waitForSurfaceAvailableForStreamTexture(streamTextureSourceId);
+            testFramework.waitForSurfaceAvailableForStreamTexture(waylandSurfaceIviId1);
 
             RendererLogContext context(ERendererLogLevelFlag_Details);
             testFramework.logEmbeddedCompositor(context);
 
-            const std::string outputString = context.getStream().c_str();
+            const std::string outputString = context.getStream().data();
 
             std::stringstream expectedLogBuf;
             expectedLogBuf << "1 connected wayland client(s)\n"
-                           << "  [ivi-surface-id: " << EmbeddedCompositorScene::GetStreamTextureSourceId().getValue() << "; title: \"TestWaylandApplication\"]\n";
+                           << "  [ivi-surface-id: " << waylandSurfaceIviId1.getValue() << "; title: \"TestWaylandApplication\"]\n";
 
             if (outputString != expectedLogBuf.str())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase  Wrong log output: " << outputString.c_str());
+                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase  Wrong log output: " << outputString);
                 testResultValue = false;
             }
 
@@ -666,63 +724,68 @@ namespace ramses_internal
             assert(false);
         }
 
+        testFramework.destroyStreamBuffer(0u, streamBuffer);
+
         return testResultValue;
     }
 
     bool SingleStreamTextureTests::recreateSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework,
                                                                          TestApplicationSurfaceId& testSurfaceIdOut,
-                                                                         UInt32 surfaceWidth,
-                                                                         UInt32 surfaceHeight,
-                                                                         WaylandIviSurfaceId streamTextureSourceId,
-                                                                         const ramses_internal::String& expectedImageName)
+                                                                         uint32_t surfaceWidth,
+                                                                         uint32_t surfaceHeight,
+                                                                         WaylandIviSurfaceId waylandSurfaceIviId,
+                                                                         const std::string& expectedImageName)
     {
         testFramework.sendDestroySurfaceToTestApplication(testSurfaceIdOut);
-        testFramework.waitForSurfaceUnavailableForStreamTexture(streamTextureSourceId);
+        testFramework.waitForSurfaceUnavailableForStreamTexture(waylandSurfaceIviId);
         testSurfaceIdOut = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(surfaceWidth, surfaceHeight, 1);
-        testFramework.sendCreateIVISurfaceToTestApplication(testSurfaceIdOut, streamTextureSourceId);
+        testFramework.sendCreateIVISurfaceToTestApplication(testSurfaceIdOut, waylandSurfaceIviId);
         testFramework.sendRenderOneFrameToEGLBufferToTestApplication(testSurfaceIdOut);
-        testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+        testFramework.waitForContentOnStreamTexture(waylandSurfaceIviId);
+
+        //testFramework.createBufferDataLink(streamBuffer, sceneId, EmbeddedCompositorScene::SamplerConsumerId1);
+
         return testFramework.renderAndCompareScreenshot(expectedImageName);
     }
 
     bool SingleStreamTextureTests::resizeSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework,
                                                                        TestApplicationSurfaceId testSurfaceId,
-                                                                       UInt32 surfaceWidth,
-                                                                       UInt32 surfaceHeight,
-                                                                       WaylandIviSurfaceId streamTextureSourceId,
-                                                                       UInt32 frameCount,
-                                                                       const ramses_internal::String& expectedImageName)
+                                                                       uint32_t surfaceWidth,
+                                                                       uint32_t surfaceHeight,
+                                                                       WaylandIviSurfaceId waylandSurfaceIviId,
+                                                                       uint32_t frameCount,
+                                                                       const std::string& expectedImageName)
     {
         testFramework.sendSetSurfaceSizeToTestApplicaton(testSurfaceId, surfaceWidth, surfaceHeight);
         testFramework.sendRenderOneFrameToEGLBufferToTestApplication(testSurfaceId);
-        const Bool frameCountReached = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(streamTextureSourceId.getValue()), frameCount);
+        const bool frameCountReached = testFramework.waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId(waylandSurfaceIviId.getValue()), frameCount);
         return frameCountReached && testFramework.renderAndCompareScreenshot(expectedImageName);
     }
 
     bool SingleStreamTextureTests::renderFramesOnTestApplicationAndTakeScreenshots(EmbeddedCompositingTestsFramework& testFramework,
                                                                                    TestApplicationSurfaceId testSurfaceId,
-                                                                                   WaylandIviSurfaceId streamTextureSourceId,
-                                                                                   const UInt32 frameCountToRender,
+                                                                                   WaylandIviSurfaceId waylandSurfaceIviId,
+                                                                                   const uint32_t frameCountToRender,
                                                                                    const ETriangleColor triangleColors[],
-                                                                                   const String screenshotFiles[],
-                                                                                   const UInt32 triangleColorCount)
+                                                                                   const std::string screenshotFiles[],
+                                                                                   const uint32_t triangleColorCount)
     {
-        for (UInt32 frameIndex = 0u; frameIndex < frameCountToRender; ++frameIndex)
+        for (uint32_t frameIndex = 0u; frameIndex < frameCountToRender; ++frameIndex)
         {
             const ETriangleColor color = triangleColors[frameIndex % triangleColorCount];
             testFramework.sendSetTriangleColorToTestApplication(color);
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(testSurfaceId);
         }
 
-        Bool testResult = true;
+        bool testResult = true;
 
-        for (UInt32 frameIndex = 0u; frameIndex < frameCountToRender; ++frameIndex)
+        for (uint32_t frameIndex = 0u; frameIndex < frameCountToRender; ++frameIndex)
         {
-            testResult &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, frameIndex + 1);
+            testResult &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId, frameIndex + 1);
 
             LOG_INFO(CONTEXT_RENDERER, "SingleStreamTextureTests::renderFramesOnTestApplicationAndTakeScreenshots(): taking screenshot for frame with index: " << frameIndex);
 
-            const String& screenshotName = screenshotFiles[frameIndex % triangleColorCount];
+            const std::string& screenshotName = screenshotFiles[frameIndex % triangleColorCount];
             if(!testFramework.renderAndCompareScreenshot(screenshotName))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::renderFramesOnTestApplicationAndTakeScreenshots(): test failed for screenshot for frame with index: " << frameIndex);

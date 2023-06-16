@@ -12,6 +12,7 @@
 #include "SceneAPI/ResourceContentHash.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ERenderableDataSlotType.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -27,12 +28,12 @@ namespace ramses_internal
         NodeHandle node;
         EVisibilityMode visibilityMode = EVisibilityMode::Visible;
 
-        UInt32 startIndex = 0u;
-        UInt32 indexCount = 0u;
-        UInt32 instanceCount = 1u;
-        UInt32 startVertex = 0u;
+        uint32_t startIndex = 0u;
+        uint32_t indexCount = 0u;
+        uint32_t instanceCount = 1u;
+        uint32_t startVertex = 0u;
 
-        DataInstanceHandle dataInstances[ERenderableDataSlotType_MAX_SLOTS];
+        std::array<DataInstanceHandle, ERenderableDataSlotType_MAX_SLOTS> dataInstances;
         RenderStateHandle renderState;
     };
 }

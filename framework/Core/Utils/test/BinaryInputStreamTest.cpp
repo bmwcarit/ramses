@@ -9,11 +9,10 @@
 #include "Utils/BinaryInputStream.h"
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
-#include "Math3d/Matrix44f.h"
 #include "PlatformAbstraction/PlatformMemory.h"
-#include "Collections/String.h"
 #include "UnsafeTestMemoryHelpers.h"
 
+#include <string>
 namespace ramses_internal
 {
     TEST(BinaryInputStreamTest, ReadInt32Value)
@@ -85,7 +84,7 @@ namespace ramses_internal
     TEST(BinaryInputStreamTest, ReadStringValue)
     {
         Byte buffer[16];
-        String value = "Hello World";
+        std::string value = "Hello World";
         uint32_t strlen = static_cast<uint32_t>(value.size());
 
         UnsafeTestMemoryHelpers::WriteToMemoryBlob(strlen, buffer);
@@ -101,7 +100,7 @@ namespace ramses_internal
     TEST(BinaryInputStreamTest, ReadEmptyStringValue)
     {
         Byte buffer[16];
-        String value = "";
+        std::string value;
         uint32_t strlen = static_cast<uint32_t>(value.size());
 
         UnsafeTestMemoryHelpers::WriteToMemoryBlob(strlen, buffer);
@@ -145,11 +144,11 @@ namespace ramses_internal
         Byte buffer[1024];
         int32_t intVal = 5;
         float floatVal = 4.3f;
-        String stringVal = "Hello World";
+        std::string stringVal = "Hello World";
         uint32_t strlen = static_cast<uint32_t>(stringVal.size());
         bool boolVal = true;
 
-        UInt offset = 0;
+        size_t offset = 0;
 
         PlatformMemory::Copy(buffer, &intVal, sizeof(int32_t));
         offset += sizeof(int32_t);

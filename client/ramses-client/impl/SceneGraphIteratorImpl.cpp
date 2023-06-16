@@ -18,7 +18,7 @@ namespace ramses
         : m_traversalStyle(traversalStyle)
         , m_objectFilterType(objectFilterType)
     {
-        m_nodesToExpand.push_back(&startNode.impl);
+        m_nodesToExpand.push_back(&startNode.m_impl);
     }
 
     Node* SceneGraphIteratorImpl::getNext()
@@ -38,8 +38,8 @@ namespace ramses
 
     void SceneGraphIteratorImpl::expandBreadthFirst(NodeImpl& node)
     {
-        const uint32_t childCount = node.getChildCount();
-        for (uint32_t i = 0; i < childCount; ++i)
+        const size_t childCount = node.getChildCount();
+        for (size_t i = 0; i < childCount; ++i)
         {
             m_nodesToExpand.push_back(&node.getChildImpl(i));
         }
@@ -66,14 +66,12 @@ namespace ramses
 
         switch (m_traversalStyle)
         {
-        case ETreeTraversalStyle_BreadthFirst:
+        case ETreeTraversalStyle::BreadthFirst:
             expandBreadthFirst(*next);
             break;
-        case ETreeTraversalStyle_DepthFirst:
+        case ETreeTraversalStyle::DepthFirst:
             expandDepthFirst(*next);
             break;
-        default:
-            assert(false);
         }
 
         return next;

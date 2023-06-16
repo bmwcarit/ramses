@@ -10,7 +10,7 @@
 #define RAMSES_RAMSESFRAMEWORKTYPES_H
 
 #include "ramses-framework-api/StronglyTypedValue.h"
-#include "stdint.h"
+#include <cstdint>
 #include <limits>
 #include <string>
 
@@ -85,11 +85,7 @@ namespace ramses
         /**
          * @brief Default constructor initialized to Invalid
          */
-        constexpr resourceId_t()
-            : lowPart(0)
-            , highPart(0)
-        {
-        }
+        constexpr resourceId_t() = default;
 
         /**
          * @brief Construct with low and high part
@@ -115,7 +111,7 @@ namespace ramses
          * @brief Check if resource is valid
          * @return true when resource id has a valid value, false otherwise
          */
-        constexpr bool isValid() const
+        [[nodiscard]] constexpr bool isValid() const
         {
             return *this != Invalid();
         }
@@ -145,9 +141,9 @@ namespace ramses
         }
 
         /// Low bits
-        uint64_t lowPart;
+        uint64_t lowPart{0};
         /// High bits
-        uint64_t highPart;
+        uint64_t highPart{0};
     };
 
     /**
@@ -163,11 +159,11 @@ namespace ramses
     /**
     * @brief Type of Ramses Shell
     */
-    enum ERamsesShellType
+    enum class ERamsesShellType
     {
-        ERamsesShellType_None = 0,
-        ERamsesShellType_Console,
-        ERamsesShellType_Default
+        None,
+        Console,
+        Default
     };
 
     /**
@@ -175,13 +171,13 @@ namespace ramses
     */
     enum class ELogLevel
     {
-        Off,
-        Fatal,
-        Error,
-        Warn,
-        Info,
-        Debug,
-        Trace
+        Off = 0,    ///< No logs shall be issues, no matter the severity
+        Fatal = 1,  ///< Log only fatal errors
+        Error = 2,  ///< Log all errors
+        Warn = 3,   ///< Log warnings + errors
+        Info = 4,   ///< Include general info logs in addition to warn + errors
+        Debug = 5,  ///< Debug logs - use this only for debugging
+        Trace = 6   ///< Verbose trace logs - use only for debugging and inspection
     };
 
     /**
@@ -260,7 +256,17 @@ namespace ramses
         EClearFlags_Depth     = 1 << 1,
         EClearFlags_Stencil   = 1 << 2,
 
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
         EClearFlags_All       = EClearFlags_Color | EClearFlags_Depth | EClearFlags_Stencil
+    };
+
+    /**
+    * @brief Supported connection systems for distributed rendering
+    */
+    enum class EConnectionSystem : uint32_t
+    {
+        TCP,
+        Off
     };
 }
 

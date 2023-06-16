@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         DisplayThreadMock();
-        virtual ~DisplayThreadMock() override;
+        ~DisplayThreadMock() override;
 
         MOCK_METHOD(void, startUpdating, (), (override));
         MOCK_METHOD(void, stopUpdating, (), (override));

@@ -11,6 +11,8 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
 
+#include <string>
+
 using namespace testing;
 using namespace ramses_internal;
 
@@ -42,12 +44,12 @@ TEST_F(ARendererScenes, isEmptyInitiallyConst)
 
 TEST_F(ARendererScenes, createsSceneAndStagingInfo)
 {
-    const String sceneName("bla");
+    const std::string sceneName("bla");
     const SceneId sceneID(12u);
     SceneInfo sceneInfo(sceneID, sceneName);
     IScene& createdScene = rendererScenes.createScene(sceneInfo);
 
-    SceneSizeInformation sceneSizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+    SceneSizeInformation sceneSizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18);
     createdScene.preallocateSceneSize(sceneSizeInfo);
 
     EXPECT_EQ(1u, rendererScenes.size());
@@ -89,7 +91,7 @@ TEST_F(ARendererScenes, canIterateOverScenes)
     EXPECT_TRUE(rendererScenes.hasScene(sceneID2));
     EXPECT_TRUE(rendererScenes.hasScene(sceneID3));
 
-    UInt32 count = 0u;
+    uint32_t count = 0u;
     for(auto rendScene : rendererScenes)
     {
         EXPECT_TRUE(sceneID1 == rendScene.key || sceneID2 == rendScene.key || sceneID3 == rendScene.key);

@@ -15,6 +15,8 @@
 #include "RendererCommandVisitorMock.h"
 #include "MockResourceHash.h"
 
+#include <string>
+
 using namespace testing;
 
 namespace ramses_internal
@@ -54,7 +56,7 @@ namespace ramses_internal
 
         const Guid providerID;
         const SceneId sceneId;
-        const String sceneName;
+        const std::string sceneName;
         const SceneSizeInformation sizeInfo;
     };
 

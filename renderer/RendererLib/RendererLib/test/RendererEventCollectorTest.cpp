@@ -25,7 +25,7 @@ namespace ramses_internal
             ThreadLocalLog::SetPrefix(1);
         }
 
-        virtual void TearDown() override
+        void TearDown() override
         {
             // make sure all test cases dispatch all collected events
             RendererEventVector resultEvents;
@@ -84,13 +84,15 @@ namespace ramses_internal
     TEST_F(ARendererEventCollector, CanAddRendererEventWithDisplayConfig)
     {
         DisplayConfig config;
-        config.setWarpingEnabled(true);
-
-        m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_displayHandle);
+        config.setClearColor({1, 0, 0, 1});
+        config.setResizable(true);
+        config.setSwapInterval(2);
+        m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_displayHandle, config);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(m_displayHandle, resultEvents[0].displayHandle);
         EXPECT_EQ(ERendererEventType::DisplayCreated, resultEvents[0].eventType);
+        EXPECT_EQ(config, resultEvents[0].displayConfig);
     }
 
     TEST_F(ARendererEventCollector, CanAddRendererEventWithLinkInfo)
@@ -219,7 +221,7 @@ namespace ramses_internal
     {
         const DisplayHandle displayHandle(124u);
         MouseEvent mouseEvent;
-        mouseEvent.pos = Vector2i(50u, 60u);
+        mouseEvent.pos = glm::ivec2(50u, 60u);
         mouseEvent.type = EMouseEventType_LeftButtonDown;
 
         m_rendererEventCollector.addWindowEvent(ERendererEventType::WindowMouseEvent, displayHandle, mouseEvent);
@@ -251,18 +253,6 @@ namespace ramses_internal
 
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::StreamSurfaceAvailable, resultEvents[0].eventType);
-        EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
-    }
-
-    TEST_F(ARendererEventCollector, CanAddStreamBufferEnabledEvent)
-    {
-        const WaylandIviSurfaceId streamId(794u);
-
-        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamBufferEnabled, streamId);
-        const RendererEventVector resultEvents = consumeSceneControlEvents();
-
-        ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType::StreamBufferEnabled, resultEvents[0].eventType);
         EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
     }
 
@@ -321,14 +311,13 @@ namespace ramses_internal
         constexpr std::chrono::microseconds maxTime{ 123 };
         constexpr std::chrono::microseconds avgTime{ 321 };
         const DisplayHandle displayHandle(124u);
-        m_rendererEventCollector.addFrameTimingReport(displayHandle, true, maxTime, avgTime);
+        m_rendererEventCollector.addFrameTimingReport(displayHandle, maxTime, avgTime);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::FrameTimingReport, resultEvents[0].eventType);
         EXPECT_EQ(maxTime, resultEvents[0].frameTimings.maximumLoopTimeWithinPeriod);
         EXPECT_EQ(avgTime, resultEvents[0].frameTimings.averageLoopTimeWithinPeriod);
         EXPECT_EQ(displayHandle, resultEvents[0].displayHandle);
-        EXPECT_TRUE(resultEvents[0].isFirstDisplay);
     }
 
     TEST_F(ARendererEventCollector, CanAddStreamSurfaceUnavailableEvent)

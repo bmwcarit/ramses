@@ -10,12 +10,15 @@
 #define RAMSES_RENDERERSTATISTICS_H
 
 #include "SceneAPI/SceneId.h"
-#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererAPI/Types.h"
 #include "Utils/StatisticCollection.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "PlatformAbstraction/PlatformTypes.h"
 #include "Components/FlushTimeInformation.h"
+
 #include <map>
+#include <string>
+#include <string_view>
 
 namespace ramses_internal
 {
@@ -24,11 +27,11 @@ namespace ramses_internal
     class RendererStatistics
     {
     public:
-        Float  getFps() const;
-        UInt32 getDrawCallsPerFrame() const;
+        [[nodiscard]] float  getFps() const;
+        [[nodiscard]] uint32_t getDrawCallsPerFrame() const;
 
         void sceneRendered(SceneId sceneId);
-        void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency);
+        void trackArrivedFlush(SceneId sceneId, size_t numSceneActions, size_t numAddedResources, size_t numRemovedResources, size_t numSceneResourceActions, std::chrono::milliseconds latency);
         void flushApplied(SceneId sceneId);
         void flushBlocked(SceneId sceneId);
 
@@ -36,10 +39,10 @@ namespace ramses_internal
         void offscreenBufferInterrupted(DeviceResourceHandle offscreenBuffer);
         void framebufferSwapped();
 
-        void resourceUploaded(UInt byteSize);
-        void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
-        void streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates);
-        void shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid);
+        void resourceUploaded(size_t byteSize);
+        void sceneResourceUploaded(SceneId sceneId, size_t byteSize);
+        void streamTextureUpdated(WaylandIviSurfaceId sourceId, size_t numUpdates);
+        void shaderCompiled(std::chrono::microseconds microsecondsUsed, std::string_view name, SceneId sceneid);
         void setVRAMUsage(uint64_t totalUploaded, uint64_t gpuCacheSize);
 
         void untrackScene(SceneId sceneId);
@@ -48,79 +51,79 @@ namespace ramses_internal
 
         void addExpirationOffset(SceneId sceneId, int64_t expirationOffset);
 
-        void frameFinished(UInt32 drawCalls);
+        void frameFinished(uint32_t drawCalls);
         void reset();
 
         void writeStatsToStream(StringOutputStream& str) const;
 
     private:
-        Int32 m_frameNumber = 0;
-        UInt64 m_timeBase = PlatformTime::GetMillisecondsMonotonic();
-        UInt32 m_drawCalls = 0u;
-        UInt64 m_lastFrameTick = 0u;
-        UInt32 m_frameDurationMin = std::numeric_limits<UInt32>::max();
-        UInt32 m_frameDurationMax = 0u;
-        UInt m_resourcesUploaded = 0u;
-        UInt m_resourcesBytesUploaded = 0u;
-        UInt m_shadersCompiled = 0u;
+        int32_t m_frameNumber = 0;
+        uint64_t m_timeBase = PlatformTime::GetMillisecondsMonotonic();
+        uint32_t m_drawCalls = 0u;
+        uint64_t m_lastFrameTick = 0u;
+        uint32_t m_frameDurationMin = std::numeric_limits<uint32_t>::max();
+        uint32_t m_frameDurationMax = 0u;
+        size_t m_resourcesUploaded = 0u;
+        size_t m_resourcesBytesUploaded = 0u;
+        size_t m_shadersCompiled = 0u;
         uint64_t m_totalResourceUploadedSize = 0u;
         uint64_t m_gpuCacheSize = 0u;
-        UInt64 m_microsecondsForShaderCompilation = 0u;
-        String m_maximumDurationShaderName;
+        std::string m_maximumDurationShaderName;
+        uint64_t m_microsecondsForShaderCompilation = 0u;
         std::chrono::microseconds m_maximumDurationShaderTime = {};
         SceneId m_maximumDurationShaderScene;
 
         struct SceneStatistics
         {
-            UInt numFlushesArrived = 0u;
-            UInt numFlushesApplied = 0u;
-            UInt numFramesWhereFlushArrived = 0u;
-            UInt numFramesWhereFlushApplied = 0u;
-            UInt numFramesWhereFlushBlocked = 0u;
-            UInt maxFramesWithNoFlushApplied = 0u;
-            UInt maxConsecutiveFramesBlocked = 0u;
-            UInt currentConsecutiveFramesBlocked = 0u;
-            Int32 lastFrameFlushArrived = -1;
-            Int32 lastFrameFlushApplied = -1;
-            Int32 lastFrameFlushBlocked = std::numeric_limits<Int32>::min();
+            size_t numFlushesArrived = 0u;
+            size_t numFlushesApplied = 0u;
+            size_t numFramesWhereFlushArrived = 0u;
+            size_t numFramesWhereFlushApplied = 0u;
+            size_t numFramesWhereFlushBlocked = 0u;
+            size_t maxFramesWithNoFlushApplied = 0u;
+            size_t maxConsecutiveFramesBlocked = 0u;
+            size_t currentConsecutiveFramesBlocked = 0u;
+            int32_t lastFrameFlushArrived = -1;
+            int32_t lastFrameFlushApplied = -1;
+            int32_t lastFrameFlushBlocked = std::numeric_limits<int32_t>::min();
 
-            SummaryEntry<UInt> numSceneActionsPerFlush;
-            SummaryEntry<UInt> numResourcesAddedPerFlush;
-            SummaryEntry<UInt> numResourcesRemovedPerFlush;
-            SummaryEntry<UInt> numSceneResourceActionsPerFlush;
+            SummaryEntry<size_t> numSceneActionsPerFlush;
+            SummaryEntry<size_t> numResourcesAddedPerFlush;
+            SummaryEntry<size_t> numResourcesRemovedPerFlush;
+            SummaryEntry<size_t> numSceneResourceActionsPerFlush;
             SummaryEntry<int64_t> flushLatency;
 
             // expiration offset in milliseconds, can be negative and zero (=healthy) or positive (=expired)
             SummaryEntry<int64_t> expirationOffset;
-            UInt numExpirationOffsets;
-            UInt numExpiredOffsets;
+            size_t numExpirationOffsets;
+            size_t numExpiredOffsets;
 
-            UInt sceneResourcesUploaded = 0u;
-            UInt sceneResourcesBytesUploaded = 0u;
+            size_t sceneResourcesUploaded = 0u;
+            size_t sceneResourcesBytesUploaded = 0u;
 
-            UInt numRendered = 0u;
+            size_t numRendered = 0u;
         };
 
         struct OffscreenBufferStatistics
         {
-            UInt numSwapped = 0u;
-            UInt numInterrupted = 0u;
+            size_t numSwapped = 0u;
+            size_t numInterrupted = 0u;
             bool isInterruptible = false;
         };
 
         struct DisplayStatistics
         {
-            UInt numFrameBufferSwapped = 0;
+            size_t numFrameBufferSwapped = 0;
             std::map<DeviceResourceHandle, OffscreenBufferStatistics> offscreenBufferStatistics;
         };
 
         struct StreamTextureStatistics
         {
-            UInt numUpdates = 0u;
-            UInt numFramesWhereUpdated = 0u;
-            UInt maxUpdatesPerFrame = 0u;
-            UInt maxFramesWithNoUpdate = 0u;
-            Int32 lastFrameUpdated = -1;
+            size_t numUpdates = 0u;
+            size_t numFramesWhereUpdated = 0u;
+            size_t maxUpdatesPerFrame = 0u;
+            size_t maxFramesWithNoUpdate = 0u;
+            int32_t lastFrameUpdated = -1;
         };
 
         template <typename T>

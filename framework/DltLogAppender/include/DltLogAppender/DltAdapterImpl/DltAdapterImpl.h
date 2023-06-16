@@ -14,10 +14,11 @@
 #include "PlatformAbstraction/PlatformLock.h"
 
 #include "Utils/LogContext.h"
-#include "Collections/String.h"
 #include "Collections/Vector.h"
 #include "Collections/Pair.h"
 #include "Utils/Warnings.h"
+
+#include <string>
 
 WARNINGS_PUSH
 WARNING_DISABLE_LINUX(-Wold-style-cast)
@@ -42,16 +43,16 @@ namespace ramses_internal
         */
         static DltAdapterImpl* getDltAdapter();
 
-        bool initialize(const String& id, const String& description, bool registerApplication,
-                        const std::function<void(const String&, int)>& logLevelChangeCallback,
+        bool initialize(const std::string& id, const std::string& description, bool registerApplication,
+                        const std::function<void(const std::string&, int)>& logLevelChangeCallback,
                         const std::vector<LogContext*>& contexts, bool pushLogLevelsToDaemon) override;
         void uninitialize() override;
 
-        virtual bool logMessage(const LogMessage& msg) override;
-        virtual bool registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
-        virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) override;
+        bool logMessage(const LogMessage& msg) override;
+        bool registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
+        bool transmitFile(LogContext& ctx, const std::string& uri, bool deleteFile) override;
 
-        virtual bool isInitialized() override;
+        bool isInitialized() override;
 
         static bool IsDummyAdapter()
         {
@@ -59,6 +60,7 @@ namespace ramses_internal
         }
 
     private:
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         static void DltLogLevelChangedCallback(char context_id[DLT_ID_SIZE], uint8_t log_level, uint8_t trace_status);
 
         DltAdapterImpl();
@@ -68,7 +70,7 @@ namespace ramses_internal
         bool m_appRegistered = false;
 
         std::vector<LogContext*> m_contexts;
-        std::function<void(const String&, int)> m_logLevelChangeCallback;
+        std::function<void(const std::string&, int)> m_logLevelChangeCallback;
 
         class FileTransferWorker : private Runnable
         {
@@ -76,14 +78,14 @@ namespace ramses_internal
             FileTransferWorker();
             ~FileTransferWorker() override;
 
-            bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile);
+            bool transmitFile(LogContext& ctx, const std::string& uri, bool deleteFile);
 
         private:
             void run() override;
 
             struct FileTransfer
             {
-                String filename;
+                std::string filename;
                 DltContext* ctx = nullptr;
                 int deleteFlag = 0;
             };

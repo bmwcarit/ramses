@@ -39,11 +39,11 @@ namespace ramses_internal
 
         void processAllEvents()
         {
-            for (UInt32 i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
+            for (uint32_t i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
                 window.handleEvents();
         }
 
-        void sendKeyEvent(UInt8 virtualKeyCode)
+        void sendKeyEvent(uint8_t virtualKeyCode)
         {
             ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_KEYDOWN, virtualKeyCode, 0));
             ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_KEYUP, virtualKeyCode, 0));
@@ -60,7 +60,7 @@ namespace ramses_internal
             ASSERT_TRUE(PostMessage(window.getNativeWindowHandle(), WM_MOUSELEAVE, 0, 0));
         }
 
-        void testKeyCode(UInt8 virtualKeyCode, EKeyCode expectedRamesKeyCode, UInt32 expectedModifier = EKeyModifier_NoModifier)
+        void testKeyCode(uint8_t virtualKeyCode, EKeyCode expectedRamesKeyCode, uint32_t expectedModifier = EKeyModifier_NoModifier)
         {
             sendKeyEvent(virtualKeyCode);
 
@@ -95,7 +95,7 @@ namespace ramses_internal
         Window_Windows window(config, eventHandlerMock, 0);
 
         ASSERT_TRUE(window.init());
-        for (UInt32 i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
+        for (uint32_t i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
             window.handleEvents();
 
         const uint32_t width = 15;
@@ -118,7 +118,7 @@ namespace ramses_internal
         Window_Windows window(config, eventHandlerMock, 0);
 
         ASSERT_TRUE(window.init());
-        for (UInt32 i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
+        for (uint32_t i = 0; i < 10; i++) // enforce handling of all enqueued window events which will trigger our event handler
             window.handleEvents();
 
         const int32_t posX = 15;

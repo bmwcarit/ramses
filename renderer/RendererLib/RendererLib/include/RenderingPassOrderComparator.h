@@ -22,15 +22,15 @@ namespace ramses_internal
         {
         }
 
-        Bool operator()(const RenderingPassInfo& pass1, const RenderingPassInfo& pass2) const
+        bool operator()(const RenderingPassInfo& pass1, const RenderingPassInfo& pass2) const
         {
-            const Int32 pass1RenderOrder = getRenderingPassRenderOrder(pass1);
-            const Int32 pass2RenderOrder = getRenderingPassRenderOrder(pass2);
+            const int32_t pass1RenderOrder = getRenderingPassRenderOrder(pass1);
+            const int32_t pass2RenderOrder = getRenderingPassRenderOrder(pass2);
             return pass1RenderOrder < pass2RenderOrder;
         }
 
     private:
-        Int32 getRenderingPassRenderOrder(const RenderingPassInfo& pass) const
+        [[nodiscard]] int32_t getRenderingPassRenderOrder(const RenderingPassInfo& pass) const
         {
             assert((ERenderingPassType::RenderPass == pass.getType() && m_scene.isRenderPassAllocated(pass.getRenderPassHandle()))
                 || (ERenderingPassType::BlitPass == pass.getType() && m_scene.isBlitPassAllocated(pass.getBlitPassHandle())));

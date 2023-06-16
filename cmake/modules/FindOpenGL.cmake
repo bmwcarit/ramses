@@ -15,7 +15,7 @@ IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
     # Windows has all OpenGL/WGL symbols in one lib - opengl32.lib
     SET(OpenGL_LIBRARIES opengl32)
-    SET(OpenGL_DEFINITIONS "-DDESKTOP_GL")
+    set(OpenGL_DEFINITIONS "-DDESKTOP_GL")
 
     MARK_AS_ADVANCED(
         OpenGL_INCLUDE_DIRS

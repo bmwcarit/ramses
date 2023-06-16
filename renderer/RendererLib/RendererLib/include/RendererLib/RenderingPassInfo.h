@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    enum class ERenderingPassType : UInt8
+    enum class ERenderingPassType : uint8_t
     {
         RenderPass = 0,
         BlitPass
@@ -33,18 +33,18 @@ namespace ramses_internal
         {
         }
 
-        ERenderingPassType getType() const
+        [[nodiscard]] ERenderingPassType getType() const
         {
             return m_type;
         }
 
-        RenderPassHandle getRenderPassHandle() const
+        [[nodiscard]] RenderPassHandle getRenderPassHandle() const
         {
             assert(m_type == ERenderingPassType::RenderPass);
             return RenderPassHandle(m_handle);
         }
 
-        BlitPassHandle getBlitPassHandle() const
+        [[nodiscard]] BlitPassHandle getBlitPassHandle() const
         {
             assert(m_type == ERenderingPassType::BlitPass);
             return BlitPassHandle(m_handle);
