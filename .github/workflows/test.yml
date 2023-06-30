@@ -5,105 +5,34 @@ name: Test
 
 # Only pushes and PRs against protected branches are built
 on:
-  push:
-    branches:
-      - master
-      - ramses-28
   pull_request:
     branches:
       - master
-      - ramses-28
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    # Strategy: builds on oldest and newest Ubuntu and on Windows
-    # Oldest -> because that's what is used to build backwards compatible packages (see release.yaml)
-    # Newest -> so that we can test with latest tools (clang-tidy) and use recent drivers/packages
-    strategy:
-      matrix:
-        target-platform: [host-os]
-        os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
-        type: [Debug, Release]
-        compiler: [default]
-        include:
-          - target-platform: iphoneos
-            os: macos-12
-            type: Debug
-          - target-platform: iphonesimulator
-            os: macos-12
-            type: Debug
-        # Test with latest Clang too
-          - os: ubuntu-22.04
-            type: Debug
-            compiler: clang
-        # on Windows we skip Debug because otherwise the hosted runner runs out of space
-        exclude:
-          - os: windows-2022
-            type: Debug
+  publish_docs:
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
-    - name: Install GL/X11 packages for rendering (Linux only)
-      run: |
-        sudo apt-get update && sudo apt-get -y --no-install-recommends install \
-          libgles2-mesa-dev \
-          libx11-dev
-      if: ${{ contains(matrix.os, 'ubuntu') }}
-
     - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
-    - name: Configure CMake (${{matrix.os}} ${{matrix.compiler}} ${{matrix.type}} ${{matrix.target-platform}})
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
       run: |
-        cmake_args="-DCMAKE_BUILD_TYPE=${{ matrix.type }}"
+        cmake -E make_directory ${{runner.workspace}}/build
+        sudo apt install graphviz doxygen
 
-        if [[ "${{matrix.compiler}}" == "clang"* ]]; then
-          cmake_args+=" -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
-          cmake_args+=" -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64_llvm.toolchain"
-        fi
-
-        if [[ "${{matrix.os}}" == "windows"* ]]; then
-            # This is needed because on the Windows Server 2019 build nodes of Github, the Perl installation
-            # exposes its libraries on the path and messes up CMake builds
-            echo "Path before: $PATH"
-            export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/c\/bin//')
-            export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/site\/bin//')
-            export PATH=$(echo "$PATH" | sed -e 's/:\/c\/Strawberry\/perl\/bin//')
-            echo "Path after: $PATH"
-
-            # Limiting CMAKE_CONFIGURATION_TYPES for MSVC improves build time and reduces diskspace usage
-            cmake_args+=" -DCMAKE_CONFIGURATION_TYPES=${{ matrix.type }}"
-        fi
-
-        if [[ "${{matrix.os}}" == "macos"* ]]; then
-            cmake_args+=" -Dramses-sdk_ENABLE_FLATBUFFERS_GENERATION=OFF"
-            cmake_args+=" -Dramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF"
-            cmake_args+=" -Dramses-sdk_BUILD_FULL_SHARED_LIB=OFF"
-            cmake_args+=" -Dramses-sdk_BUILD_HEADLESS_SHARED_LIB=ON"
-        fi
-
-        if [[ "${{matrix.target-platform}}" == "iphone"* ]]; then
-            cmake_args+=" -GXcode"
-            cmake_args+=" -DCMAKE_OSX_SYSROOT=${{ matrix.target-platform }}"
-            cmake_args+=" -DCMAKE_SYSTEM_NAME=iOS"
-            cmake_args+=" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO"
-        fi
-
-        cmake $GITHUB_WORKSPACE ${cmake_args}
-
-    - name: Build
+    - name: Build docs
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake --build . --config ${{ matrix.type }}
+      run: |
+        cmake $GITHUB_WORKSPACE \
+            -Dramses-sdk_BUILD_HEADLESS_SHARED_LIB=ON \
+            -Dramses-sdk_BUILD_FULL_SHARED_LIB=OFF \
+            -Dramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF \
+            -Dramses-sdk_BUILD_TESTS=OFF \
+            -Dramses-sdk_BUILD_EXAMPLES=OFF \
+            -Dramses-sdk_BUILD_DEMOS=OFF \
+            -Dramses-sdk_BUILD_TOOLS=OFF
 
-    - name: Run unit tests (exclude rendering tests)
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: ctest -C ${{ matrix.type }} --exclude-regex '.*RNDSANDWICHTEST'
-      # Tests cannot be executed on iOS, will only be executed if not cross-compiling for a different platform
-      if: ${{ matrix.target-platform == 'host-os'  }}
+        cmake --build . --target doc
