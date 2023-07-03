@@ -21,6 +21,7 @@ jobs:
       run: |
         cmake -E make_directory ${{runner.workspace}}/build
         sudo apt install graphviz doxygen
+        pip3 install -r ${{runner.workspace}}/doc/sphinx/requirements.txt
 
     - name: Build docs
       working-directory: ${{runner.workspace}}/build
