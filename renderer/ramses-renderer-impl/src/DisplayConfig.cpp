@@ -151,7 +151,7 @@ namespace ramses
         const status_t status = m_impl.get().setAsyncEffectUploadEnabled(enabled);
         LOG_HL_RENDERER_API1(status, enabled);
         return status;
-    }
+        }
 
     void* DisplayConfig::getAndroidNativeWindow() const
     {
@@ -161,6 +161,17 @@ namespace ramses
     status_t DisplayConfig::setAndroidNativeWindow(void* nativeWindowPtr)
     {
         return m_impl.get().setAndroidNativeWindow(nativeWindowPtr);
+    }
+
+
+    void* DisplayConfig::getIOSNativeWindow() const
+    {
+        return m_impl.get().getIOSNativeWindow();
+    }
+
+    status_t DisplayConfig::setIOSNativeWindow(void* nativeWindowPtr)
+    {
+        return m_impl.get().setIOSNativeWindow(nativeWindowPtr);
     }
 
     status_t DisplayConfig::setWindowIviVisible()

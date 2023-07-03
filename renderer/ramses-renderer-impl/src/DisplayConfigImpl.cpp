@@ -69,6 +69,9 @@ namespace ramses
         case ramses::EWindowType::Android:
             m_internalConfig.setWindowType(ramses_internal::EWindowType::Android);
             break;
+        case ramses::EWindowType::iOS:
+            m_internalConfig.setWindowType(ramses_internal::EWindowType::iOS);
+            break;
         }
 
         return StatusOK;
@@ -88,6 +91,8 @@ namespace ramses
             return EWindowType::Wayland_Shell;
         case ramses_internal::EWindowType::Android:
             return EWindowType::Android;
+        case ramses_internal::EWindowType::iOS:
+            return EWindowType::iOS;
         }
 
         assert(false);
@@ -188,6 +193,17 @@ namespace ramses
     status_t DisplayConfigImpl::setAndroidNativeWindow(void * nativeWindowPtr)
     {
         m_internalConfig.setAndroidNativeWindow(ramses_internal::AndroidNativeWindowPtr(nativeWindowPtr));
+        return StatusOK;
+    }
+    
+    void* DisplayConfigImpl::getIOSNativeWindow() const
+    {
+        return m_internalConfig.getIOSNativeWindow().getValue();
+    }
+
+    status_t DisplayConfigImpl::setIOSNativeWindow(void * nativeWindowPtr)
+    {
+        m_internalConfig.setIOSNativeWindow(ramses_internal::IOSNativeWindowPtr(nativeWindowPtr));
         return StatusOK;
     }
 

@@ -67,6 +67,16 @@ namespace ramses_internal
         m_androidNativeWindowPtr = nativeWindowPtr;
     }
 
+    IOSNativeWindowPtr DisplayConfig::getIOSNativeWindow() const
+    {
+        return m_iOSNativeWindowPtr;
+    }
+
+    void DisplayConfig::setIOSNativeWindow(IOSNativeWindowPtr nativeWindowPtr)
+    {
+        m_iOSNativeWindowPtr = nativeWindowPtr;
+    }
+
     bool DisplayConfig::getStartVisibleIvi() const
     {
         return m_startVisibleIvi;

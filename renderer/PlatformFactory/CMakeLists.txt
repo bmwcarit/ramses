@@ -32,6 +32,10 @@ if(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID)
     target_link_libraries(PlatformFactory PUBLIC Platform_Android_EGL)
 endif()
 
+if(ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
+    target_link_libraries(PlatformFactory PUBLIC Platform_iOS_EGL)
+endif()
+
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS)
     target_link_libraries(PlatformFactory PUBLIC Platform_Windows_WGL)
 endif()

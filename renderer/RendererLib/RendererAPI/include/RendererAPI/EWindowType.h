@@ -19,7 +19,8 @@ namespace ramses_internal
         X11,
         Wayland_IVI,
         Wayland_Shell,
-        Android
+        Android,
+        iOS
     };
 
     //This is needed to decide default platform based on build configuration
@@ -39,6 +40,9 @@ namespace ramses_internal
 #endif
 #if defined(ramses_sdk_ENABLE_WINDOW_TYPE_ANDROID)
         EWindowType::Android
+#endif
+#if defined(ramses_sdk_ENABLE_WINDOW_TYPE_IOS)
+        EWindowType::iOS
 #endif
     };
 }

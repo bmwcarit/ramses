@@ -208,6 +208,25 @@ namespace ramses
         RAMSES_API status_t setAndroidNativeWindow(void* nativeWindowPtr);
 
         /**
+        * @brief Get the current setting of iOS native window.
+        *
+        * @return the current setting of iOS native window (CAMetalLayer), returns nullptr if no value has been set yet
+        */
+        [[nodiscard]] RAMSES_API  void* getIOSNativeWindow() const;
+
+        /**
+        * @brief [Mandatory on iOS] Set native window to use for rendering on iOS.
+        *
+        * @param[in] nativeWindowPtr CAMetalLayer* which should be added to the view where RAMSES should rendered to.
+        *
+        * No ownership is transferred, the user is responsible to clean up the CAMetalLayer after destroying the RAMSES Renderer.
+        *
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        RAMSES_API status_t setIOSNativeWindow(void* nativeWindowPtr);
+
+        /**
         * @brief Set IVI window to be visible right after window creation
         *
         * @return StatusOK on success, otherwise the returned status can be used

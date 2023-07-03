@@ -48,6 +48,10 @@ if(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID)
     target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_ANDROID)
 endif()
 
+if(ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
+    target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_IOS)
+endif()
+
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI)
     target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI)
 endif()

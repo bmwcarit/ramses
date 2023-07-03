@@ -29,6 +29,9 @@
 #if defined(ramses_sdk_ENABLE_WINDOW_TYPE_ANDROID)
 #include "Platform_Android_EGL/Platform_Android_EGL.h"
 #endif
+#if defined(ramses_sdk_ENABLE_WINDOW_TYPE_IOS)
+#include "Platform_iOS_EGL/Platform_iOS_EGL.h"
+#endif
 
 namespace ramses_internal
 {
@@ -49,6 +52,11 @@ namespace ramses_internal
         case EWindowType::Android:
 #if defined(ramses_sdk_ENABLE_WINDOW_TYPE_ANDROID)
             return std::make_unique<Platform_Android_EGL>(rendererConfig);
+#endif
+                
+        case EWindowType::iOS:
+#if defined(ramses_sdk_ENABLE_WINDOW_TYPE_IOS)
+            return std::make_unique<Platform_iOS_EGL>(rendererConfig);
 #endif
             break;
         case EWindowType::Wayland_IVI:

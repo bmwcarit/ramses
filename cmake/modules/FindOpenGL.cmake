@@ -76,5 +76,5 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Android")
         OpenGL_INCLUDE_DIRS
         OpenGL_LIBRARIES
     )
-
 ENDIF()
+

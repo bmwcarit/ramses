@@ -439,3 +439,119 @@ if(ramses-sdk_ENABLE_LOGIC)
         folderizeTarget(flatc)
     endif()
 endif()
+
+
+# ANGLE - Build for iOS support only
+IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
+
+    # 1. Fetch ANGLE from the WebKit Github Repository
+    SET(ramses-sdk_ANGLE_DIR ${ramses-sdk_SOURCE_DIR}/external/ANGLE)
+
+    # 2. Define File Copy Function that WebKit ANGLE build expect to be there
+    function(WEBKIT_COPY_FILES target_name)
+        # This CMake macro is from the WebKit Repository and licensed as follows:
+        #   BSD License
+        #   
+        #   Copyright (C) 2009 Apple Inc. All rights reserved.
+        #   
+        #   Redistribution and use in source and binary forms, with or without
+        #   modification, are permitted provided that the following conditions are met: 
+        #   
+        #   1. Redistributions of source code must retain the above copyright notice, this
+        #   list of conditions and the following disclaimer.
+        #   
+        #   2. Redistributions in binary form must reproduce the above copyright notice, this
+        #   list of conditions and the following disclaimer in the documentation and/or other
+        #   materials provided with the distribution.
+        #   
+        #   THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS “AS IS” AND ANY
+        #   EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+        #   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+        #   EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+        #   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+        #   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+        #   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+        #   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+        #   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+        set(options FLATTENED)
+        set(oneValueArgs DESTINATION)
+        set(multiValueArgs FILES)
+        cmake_parse_arguments(opt "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        set(files ${opt_FILES})
+        set(dst_files)
+        foreach (file IN LISTS files)
+            if (IS_ABSOLUTE ${file})
+                set(src_file ${file})
+            else ()
+                set(src_file ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+            endif ()
+            if (opt_FLATTENED)
+                get_filename_component(filename ${file} NAME)
+                set(dst_file ${opt_DESTINATION}/${filename})
+            else ()
+                get_filename_component(file_dir ${file} DIRECTORY)
+                file(MAKE_DIRECTORY ${opt_DESTINATION}/${file_dir})
+                set(dst_file ${opt_DESTINATION}/${file})
+            endif ()
+            add_custom_command(OUTPUT ${dst_file}
+                COMMAND ${CMAKE_COMMAND} -E copy ${src_file} ${dst_file}
+                MAIN_DEPENDENCY ${file}
+                VERBATIM
+            )
+            list(APPEND dst_files ${dst_file})
+        endforeach ()
+        add_custom_target(${target_name} ALL DEPENDS ${dst_files})
+    endfunction()
+
+    # 3. Define Config Function that WebKit ANGLE build expect to be there. For iOS we need to define our own configuration, no config file exists.
+    macro(WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS)
+        find_library(COREGRAPHICS_LIBRARY CoreGraphics)
+        find_library(FOUNDATION_LIBRARY Foundation)
+        find_library(IOKIT_LIBRARY IOKit)
+        find_library(IOSURFACE_LIBRARY IOSurface)
+        find_library(METAL_LIBRARY Metal)
+        find_package(ZLIB REQUIRED)
+        
+        list(APPEND ANGLE_SOURCES
+            ${metal_backend_sources}
+        
+            ${angle_translator_lib_metal_sources}
+            ${angle_translator_apple_sources}
+            ${angle_translator_glsl_apple_sources}
+        
+            ${libangle_gpu_info_util_ios_sources}
+            ${libangle_gpu_info_util_sources}
+            ${libangle_ios_sources}
+        )
+        
+        list(APPEND ANGLE_DEFINITIONS
+            ANGLE_ENABLE_METAL
+            ANGLE_PLATFORM_IOS
+            ANGLE_ENABLE_APPLE_WORKAROUNDS
+        )
+        
+        list(APPEND ANGLEGLESv2_LIBRARIES
+            ${COREGRAPHICS_LIBRARY}
+            ${FOUNDATION_LIBRARY}
+            ${IOKIT_LIBRARY}
+            ${IOSURFACE_LIBRARY}
+            ${METAL_LIBRARY}
+        )    
+    endmacro()
+
+    # 4. Configure the ANGLE build
+    SET(USE_ANGLE_EGL ON)
+    SET(ENABLE_WEBGL OFF)
+    set(ANGLE_FRAMEWORK_HEADERS_DIR dev/null/ANGLE)
+    SET(PORT Mac)
+    SET(is_apple ON)
+    SET(is_ios ON)
+    SET(is_mac OFF)
+
+    # 5. Add Angle CMake build
+    add_subdirectory(${ramses-sdk_ANGLE_DIR})
+
+    # 6. Alias ANGLE as OpenGL, so it is a drop in replacement.
+    add_library(OpenGL ALIAS GLESv2)
+ENDIF()

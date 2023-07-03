@@ -45,6 +45,8 @@ namespace ramses
         std::string_view getWaylandDisplay() const;
         void* getAndroidNativeWindow() const;
         status_t setAndroidNativeWindow(void * nativeWindowPtr);
+        void* getIOSNativeWindow() const;
+        status_t setIOSNativeWindow(void * nativeWindowPtr);
         status_t setWindowIviVisible(bool visible);
         status_t setResizable(bool resizable);
         status_t keepEffectsUploaded(bool enable);

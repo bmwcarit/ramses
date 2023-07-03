@@ -40,6 +40,7 @@ option(ramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE            "Enable a default window
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS            "Enable building for Windows window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_X11                "Enable building for X11 window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID            "Enable building for Android window" OFF)
+option(ramses-sdk_ENABLE_WINDOW_TYPE_IOS                "Enable building for iOS window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI        "Enable building for Wayland ivi window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL   "Enable building for Wayland wl_shell window" OFF)
 
@@ -124,6 +125,7 @@ set(ANY_WINDOW_TYPE_ENABLED OFF)
 if(    ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS
     OR ramses-sdk_ENABLE_WINDOW_TYPE_X11
     OR ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID
+    OR ramses-sdk_ENABLE_WINDOW_TYPE_IOS
     OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI
     OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
         set(ANY_WINDOW_TYPE_ENABLED ON)
@@ -152,6 +154,8 @@ if(NOT ANY_WINDOW_TYPE_ENABLED)
             setDefaultWindowType(ramses-sdk_ENABLE_WINDOW_TYPE_X11 "X11")
         elseif(CMAKE_SYSTEM_NAME  STREQUAL "Android")
             setDefaultWindowType(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID "Android")
+        elseif(CMAKE_SYSTEM_NAME  STREQUAL "iOS")
+            setDefaultWindowType(ramses-sdk_ENABLE_WINDOW_TYPE_IOS "iOS")
         else()
             message(WARNING "Incorrect configuration. No default window type is known for the build operating system '${CMAKE_SYSTEM_NAME}':\n"
                              "* Either disable default window type by setting ramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF\n"
@@ -261,6 +265,12 @@ if(RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TOOLS AND ramses-sdk_ENABLE_LOGIC)
     # OR rework the benchmarks to only benchmark public API
     #addSubdirectory(MODE ON PATH benchmarks)
 endif()
+
+# iOS: Make sure headers work for ANGLE usage.
+IF ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
+    target_include_directories(Device_GL SYSTEM PUBLIC ${ramses-sdk_SOURCE_DIR}/external/ANGLE/include)
+    target_include_directories(Context_EGL SYSTEM PUBLIC ${ramses-sdk_SOURCE_DIR}/external/ANGLE/include)
+ENDIF()
 
 # Only enable testAssetProducer if built as top-level project
 if(RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TESTS AND ramses-sdk_ENABLE_LOGIC)

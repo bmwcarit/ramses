@@ -130,6 +130,11 @@ Supported window types can be controlled with the cmake options below:
     * default: ON
     * Enables building window type *Android*.
 
+* -Dramses-sdk_ENABLE_WINDOW_TYPE_IOS
+    * options: ON/OFF
+    * default: ON
+    * Enables building window type *iOS*.
+
 * -Dramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI
     * options: ON/OFF
     * default: ON

@@ -17,7 +17,7 @@ if(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS)
     add_subdirectory(Platform/Platform_Windows_WGL)
 endif()
 
-if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL OR ramses-sdk_ENABLE_WINDOW_TYPE_X11 OR ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID)
+if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL OR ramses-sdk_ENABLE_WINDOW_TYPE_X11 OR ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID OR ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
     add_subdirectory(Platform/Context_EGL)
     add_subdirectory(Platform/Platform_EGL)
 endif()
@@ -28,6 +28,10 @@ endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID)
     add_subdirectory(Platform/Platform_Android_EGL)
+endif()
+
+if(ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
+    add_subdirectory(Platform/Platform_iOS_EGL)
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
