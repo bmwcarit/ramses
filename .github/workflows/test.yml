@@ -39,12 +39,12 @@ jobs:
             -Dramses-sdk_BUILD_DEMOS=OFF \
             -Dramses-sdk_BUILD_TOOLS=OFF
         cmake --build . --target ramses-sphinx
-        echo "build:"
-        ls -la ${{runner.workspace}}/build
-        echo "build/doc:"
-        ls ${{runner.workspace}}/build/doc
-        echo "build/sphinx:"
-        ls $${{runner.workspace}}/build/sphinx
+        # echo "build:"
+        # ls -la ${{runner.workspace}}/build
+        # echo "build/doc:"
+        # ls ${{runner.workspace}}/build/doc
+        # echo "build/sphinx:"
+        # ls $${{runner.workspace}}/build/sphinx
 
     - name: Deploy to github pages
       uses: JamesIves/github-pages-deploy-action@v4.4.1
