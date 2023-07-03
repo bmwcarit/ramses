@@ -496,30 +496,6 @@
         - Fix segfault caused by activating VAO that was not uploaded due to wrong handling of dirtiness
           in resource cached scene.
 
-27.0.106
--------------------
-        General changes
-        ------------------------------------------------------------------------
-        - Display creation DOES fail if EC creation fails
-            - A change was introduced as a temporary measure in 27.0.105 that lets display
-              creation not fail if EC creation fails. This change is reverted and a proper
-              fix is introduced. See API changes of RendererConfig and DisplayConfig.
-
-        API changes
-        ------------------------------------------------------------------------
-        - API for configuring EC is moved from RendererConfig to DisplayConfig
-            - Allows configuring EC per display
-            - API in RendererConfig is not removed. It is marked as deprecated and always fails
-        - Add layoutAvailability field to DCSM metadata
-
-        Bugfixes
-        ------------------------------------------------------------------------
-        - Failing to create EGL image from DMA buffer does not lead to a segfault
-          in RAMSES renderer. An error code ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER
-          is sent to wayland client.
-        - Fix segfault caused by activating VAO that was not uploaded due to wrong handling of dirtiness
-          in resource cached scene.
-
 27.0.105
 -------------------
         General changes
