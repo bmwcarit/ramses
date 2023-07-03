@@ -8,6 +8,10 @@ on:
   pull_request:
     branches:
       - master
+
+permissions:
+  contents: write
+
 jobs:
   publish_docs:
     runs-on: ubuntu-22.04
