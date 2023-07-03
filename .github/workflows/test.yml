@@ -39,9 +39,12 @@ jobs:
             -Dramses-sdk_BUILD_DEMOS=OFF \
             -Dramses-sdk_BUILD_TOOLS=OFF
         cmake --build . --target doc
+        ls $GITHUB_WORKSPACE
+        ls $GITHUB_WORKSPACE/doc
+        ls $GITHUB_WORKSPACE/sphinx
 
     - name: Deploy to github pages
       uses: JamesIves/github-pages-deploy-action@v4.4.1
       with:
         branch: gh-pages
-        folder: ${{runner.workspace}}/build/doc/html
+        folder: ${{runner.workspace}}/build/sphinx
