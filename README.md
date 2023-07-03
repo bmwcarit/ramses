@@ -1,9 +1,9 @@
 <!-- RAMSES -->
 # RAMSES
 ## Table of Contents
-* [What is RAMSES](#what-is-ramses)
-* [Obtaining the source code](#obtaining-the-source-code)
-* [Building and testing](#building-and-testing)
+* [What is RAMSES]
+* [Obtaining the source code]
+* [Building and testing]
 * [License](#license)
 
 ## What is RAMSES
