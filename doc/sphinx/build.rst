@@ -11,7 +11,7 @@
 
 The following sections describe different build scenarios with detailed
 options and explanations. If you are a versed C++ developer and are familiar
-with CMake, consider using the :ref:`quickstart guide <Build instructions>`.
+with CMake, consider using the quickstart guide.
 
 ========================================
 Cloning
