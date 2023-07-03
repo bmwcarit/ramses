@@ -1,5 +1,5 @@
 <!-- RAMSES -->
-
+# RAMSES
 ## Table of Contents
 * [What is RAMSES](#what-is-ramses)
 * [Obtaining the source code](#obtaining-the-source-code)
