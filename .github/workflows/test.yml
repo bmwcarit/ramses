@@ -38,7 +38,7 @@ jobs:
             -Dramses-sdk_BUILD_EXAMPLES=OFF \
             -Dramses-sdk_BUILD_DEMOS=OFF \
             -Dramses-sdk_BUILD_TOOLS=OFF
-        cmake --build . --target doc
+        cmake --build . --target ramses-sphinx
         echo "build"
         ls ${{runner.workspace}}/build
         echo "build/doc"
