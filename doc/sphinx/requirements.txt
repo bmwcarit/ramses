@@ -10,7 +10,7 @@ alabaster==0.7.12
 attrs==21.2.0
 Babel==2.9.1
 breathe==4.18.1
-certifi==2022.12.7
+certifi==2023.7.22
 chardet==4.0.0
 docutils==0.16
 idna==2.10
