@@ -50,7 +50,7 @@ set(RAMSES_RELEASE_FLAGS)
 
 # gcc OR clang (they share a lot)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    addFlags(RAMSES_C_CXX_FLAGS "-fPIC -pthread -fvisibility=hidden")
+    addFlags(RAMSES_C_CXX_FLAGS "-fPIC -pthread")
     addFlags(RAMSES_CXX_FLAGS "-std=c++${ramses-sdk_CPP_VERSION}")
     addFlags(RAMSES_C_FLAGS "-std=c11")
     addFlags(RAMSES_DEBUG_FLAGS "-ggdb -D_DEBUG -fno-omit-frame-pointer")
