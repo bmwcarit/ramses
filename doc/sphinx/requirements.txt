@@ -21,7 +21,7 @@ MarkupSafe==2.0.0
 mdit-py-plugins==0.2.8
 myst-parser==0.14.0
 packaging==20.9
-Pygments==2.9.0
+Pygments==2.15.0
 pyparsing==2.4.7
 pytz==2021.1
 PyYAML==5.4.1
