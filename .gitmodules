@@ -43,3 +43,6 @@
 [submodule "external/sol"]
     path = external/sol
     url = https://github.com/ThePhD/sol2.git
+[submodule "external/ANGLE"]
+	path = external/ANGLE
+	url = https://github.com/bmwcarit/ANGLE.git
