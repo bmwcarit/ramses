@@ -1,0 +1,28 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+
+#include "internal/Communication/TransportCommon/LogConnectionInfo.h"
+#include "internal/Communication/TransportCommon/ICommunicationSystem.h"
+
+namespace ramses::internal
+{
+    LogConnectionInfo::LogConnectionInfo(ICommunicationSystem& communicationSystem)
+        : m_communicationSystem(communicationSystem)
+    {
+        description = "print connection information";
+        registerKeyword("cinfo");
+        registerKeyword("printConnectionInfo");
+    }
+
+    bool LogConnectionInfo::executeInput(const std::vector<std::string>& /*input*/)
+    {
+        m_communicationSystem.logConnectionInfo();
+        return true;
+    }
+}

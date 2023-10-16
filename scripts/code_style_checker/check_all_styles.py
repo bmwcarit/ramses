@@ -28,7 +28,6 @@ from check_tabbing_and_spacing import check_no_spacing_line_end
 from check_tabbing_and_spacing import check_tabs_no_spaces
 from check_enum_style import check_enum_style
 from check_last_line_newline import check_last_line_newline
-from check_api_export_symbols import check_api_export_symbols
 from check_comments import check_doxygen_singleline_comments
 from check_deprecated import check_deprecated
 from check_file_attributes import check_file_attributes
@@ -82,7 +81,7 @@ def main():
     }
 
     generated_files = {
-        r'^client/logic/lib/flatbuffers/generated'
+        r'^src/client/internal/logic/flatbuffers/generated'
     }
 
     # Externals are allowed to have their own code style
@@ -106,7 +105,6 @@ def main():
         check_deprecated(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
         check_enum_style(f, clean_file_contents)
         check_last_line_newline(f, file_contents)
-        check_api_export_symbols(f, clean_file_contents)
         check_doxygen_singleline_comments(f, file_lines)
 
     shared_blacklist_non_src_files = shared_blacklist | generated_files | {
@@ -118,10 +116,14 @@ def main():
         r'.*/gradle\.properties$',
         r'.*/gradlew$',
         r'.*/gradlew\.bat$',
+        # Android demo
         r'^demo/android/ramses-renderer-android-app/app/src/main/res/',
         r'^demo/android/ramses-renderer-android-app/build\.gradle',
         r'^demo/android/ramses-renderer-android-app-native-activity/app/src/main/res/',
         r'^demo/android/ramses-renderer-android-app-native-activity/build\.gradle',
+        # iOS demo
+        r'Info\.plist$',
+        r'\.storyboard$',
     }
 
     blacklist_files_formatting = shared_blacklist_non_src_files | {
@@ -146,6 +148,7 @@ def main():
         r'asan_suppressions\.txt$',
         r'lsan_suppressions\.txt$',
         r'tsan_blacklist\.txt$',
+        r'ubsan_blacklist\.txt$',
         r'maven_settings\.xml$',
         r'\.config$',
         r'\.conf$',

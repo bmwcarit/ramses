@@ -15,5 +15,5 @@ Minimal example
 =========================
 
 .. literalinclude:: ../../../../examples/ramses-example-minimal/src/main.cpp
-    :start-after: #include "ramses-client.h"
+    :start-after: #include "ramses/client/ramses-client.h"
 

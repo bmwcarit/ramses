@@ -8,18 +8,19 @@
 
 #include "UniformInputWrapper.h"
 
-#include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/Effect.h"
+#include "ramses/client/Appearance.h"
+#include "ramses/client/Effect.h"
 
 UniformInputWrapper::UniformInputWrapper(const char* inputName, ramses::Appearance& appearance)
-    :m_appearance(appearance)
+    : m_input{appearance.getEffect().findUniformInput(inputName)}
+    , m_appearance{appearance}
 {
-    m_appearance.getEffect().findUniformInput(inputName, m_input);
+    assert(m_input.has_value());
 }
 
 void UniformInputWrapper::setInputValueFloat(float x)
 {
-    m_appearance.setInputValue(m_input, x);
+    m_appearance.setInputValue(*m_input, x);
 }
 
 

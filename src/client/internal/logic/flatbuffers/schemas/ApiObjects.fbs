@@ -1,0 +1,44 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2021 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+include "LuaModule.fbs";
+include "LuaScript.fbs";
+include "LuaInterface.fbs";
+include "NodeBinding.fbs";
+include "AppearanceBinding.fbs";
+include "CameraBinding.fbs";
+include "RenderPassBinding.fbs";
+include "RenderGroupBinding.fbs";
+include "MeshNodeBinding.fbs";
+include "SkinBinding.fbs";
+include "Link.fbs";
+include "DataArray.fbs";
+include "AnimationNode.fbs";
+include "TimerNode.fbs";
+include "AnchorPoint.fbs";
+
+namespace rlogic_serialization;
+
+table ApiObjects
+{
+    luaModules:[LuaModule];
+    luaScripts:[LuaScript];
+    luaInterfaces:[LuaInterface];
+    nodeBindings:[NodeBinding];
+    appearanceBindings:[AppearanceBinding];
+    cameraBindings:[CameraBinding];
+    dataArrays:[DataArray];
+    animationNodes:[AnimationNode];
+    timerNodes:[TimerNode];
+    links:[Link];
+    renderPassBindings:[RenderPassBinding];
+    anchorPoints:[AnchorPoint];
+    renderGroupBindings:[RenderGroupBinding];
+    skinBindings:[SkinBinding];
+    meshNodeBindings:[MeshNodeBinding];
+}

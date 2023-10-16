@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
 #include <thread>
 
@@ -24,7 +24,8 @@ int main()
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "interleaved vertex buffers scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "interleaved vertex buffers scene");
 
     // every scene needs a render pass with camera
     auto* camera = scene->createPerspectiveCamera("my camera");
@@ -32,7 +33,7 @@ int main()
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -54,7 +55,7 @@ int main()
     };
     // interleaved data must be created as ByteBlob and passed as byte array
     ramses::ArrayBuffer* vertexDataBuffer = scene->createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertexData));
-    vertexDataBuffer->updateData(0u, sizeof(vertexData), reinterpret_cast<const ramses::Byte*>(vertexData.data()));
+    vertexDataBuffer->updateData(0u, sizeof(vertexData), reinterpret_cast<const std::byte*>(vertexData.data()));
 
     // create an appearance for triangle
     ramses::EffectDescription effectDesc;
@@ -62,15 +63,14 @@ int main()
     effectDesc.setFragmentShaderFromFile("res/ramses-example-interleaved-vertex-buffers.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    const ramses::Effect* effect = scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "appearance");
 
     // set vertex positions and color in geometry
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect, "geometry");
-    ramses::AttributeInput positionsInput;
-    ramses::AttributeInput colorsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    effect->findAttributeInput("a_color", colorsInput);
+    ramses::Geometry* geometry = scene->createGeometry(*effect, "geometry");
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> colorsInput    = effect->findAttributeInput("a_color");
+    assert(positionsInput.has_value() && colorsInput.has_value());
 
     //positions have Zero offset
     constexpr uint16_t positionsOffset = 0u;
@@ -85,14 +85,14 @@ int main()
     //constexpr uint16_t colorsOffset     = positionsOffset   + uint16_t(ramses::GetSizeOfDataType(ramses::EDataType::Vector4F));
     //constexpr uint16_t stride           = colorsOffset      + uint16_t(ramses::GetSizeOfDataType(ramses::EDataType::Vector3F));
 
-    geometry->setInputBuffer(positionsInput, *vertexDataBuffer, positionsOffset, stride);
-    geometry->setInputBuffer(colorsInput, *vertexDataBuffer, colorsOffset, stride);
+    geometry->setInputBuffer(*positionsInput, *vertexDataBuffer, positionsOffset, stride);
+    geometry->setInputBuffer(*colorsInput, *vertexDataBuffer, colorsOffset, stride);
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
     meshNode->setIndexCount(3);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     /// [Interleaved Vertex Buffers Example]
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
@@ -102,7 +102,7 @@ int main()
     scene->flush();
 
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     // application logic
     std::this_thread::sleep_for(std::chrono::seconds(10));

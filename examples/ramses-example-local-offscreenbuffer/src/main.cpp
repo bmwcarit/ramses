@@ -6,14 +6,14 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-utils.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/renderer/IRendererSceneControlEventHandler.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/client/ramses-utils.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <thread>
@@ -43,7 +43,7 @@ public:
         m_scenes[sceneId].version = sceneVersion;
     }
 
-    void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    void offscreenBufferCreated(ramses::displayId_t /*displayId*/, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult::Failed != result)
         {
@@ -51,7 +51,7 @@ public:
         }
     }
 
-    void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
+    void offscreenBufferLinked(ramses::displayBufferId_t /*offscreenBufferId*/, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t /*consumerId*/, bool success) override
     {
         if (success)
         {
@@ -69,9 +69,9 @@ public:
         waitUntilOrTimeout([&] {return m_scenesConsumingOffscreenBuffer.count(sceneId) > 0; });
     }
 
-    void waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
+    void waitForSceneState(ramses::Scene& scene, ramses::RendererSceneState state)
     {
-        waitUntilOrTimeout([&] { return m_scenes[sceneId].state == state; });
+        waitUntilOrTimeout([&] { return m_scenes[scene.getSceneId()].state == state; }, &scene);
     }
 
     bool waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersion)
@@ -79,15 +79,18 @@ public:
         return waitUntilOrTimeout([&] { return m_scenes[sceneId].version == sceneVersion; });
     }
 
-    bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction)
+    bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction, ramses::Scene* scene = nullptr)
     {
         const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };
         while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes
+            if (scene)
+                scene->flush(); // local only scenes have to be flushed periodically when getting scene to READY state
 
             m_renderer.dispatchEvents(*this);
             m_renderer.getSceneControlAPI()->dispatchEvents(*this);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes
         }
 
         return conditionFunction();
@@ -150,27 +153,29 @@ static constexpr uint32_t DisplayHeight = 800u;
 ramses::MeshNode* createTexturedQuad(ramses::Scene* clientScene, const ramses::Effect* effect, const ramses::ArrayResource* indices, const ramses::ArrayResource* vertexPositions, const ramses::ArrayResource* textureCoords)
 {
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "quad appearance");
-    ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "quad geometry");
+    ramses::Geometry* geometry = clientScene->createGeometry(*effect, "quad geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-    ramses::AttributeInput texCoordsInput;
-    effect->findAttributeInput("a_texcoord", texCoordsInput);
-    geometry->setInputBuffer(texCoordsInput, *textureCoords);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> texCoordsInput = effect->findAttributeInput("a_texcoord");
+    assert(positionsInput.has_value() && texCoordsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
+    geometry->setInputBuffer(*texCoordsInput, *textureCoords);
 
     ramses::MeshNode* meshNode = clientScene->createMeshNode();
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
 
-    ramses::UniformInput sampleCountUnif;
+    std::optional<ramses::UniformInput> sampleCountUnif;
     for (uint32_t i = 0; i < effect->getUniformInputCount(); ++i)
-        if (ramses::StatusOK == effect->getUniformInput(i, sampleCountUnif) && strcmp(sampleCountUnif.getName(), "sampleCount") == 0)
+    {
+        sampleCountUnif = effect->getUniformInput(i);
+        if (sampleCountUnif.has_value() && strcmp(sampleCountUnif->getName(), "sampleCount") == 0)
         {
-            appearance->setInputValue(sampleCountUnif, static_cast<int32_t>(SampleCount));
+            appearance->setInputValue(*sampleCountUnif, static_cast<int32_t>(SampleCount));
             break;
         }
+    }
 
     return meshNode;
 }
@@ -192,7 +197,7 @@ void createClearPass(ramses::Scene* scene, ramses::RenderBuffer* renderBuffer)
     //Clear RenderBuffer to visible color
     clearPass->setRenderTarget(&renderTarget);
     clearPass->setClearColor({1.f, 0.f, 0.f, 1.f});
-    clearPass->setClearFlags(ramses::EClearFlags_All);
+    clearPass->setClearFlags(ramses::EClearFlag::All);
 }
 
 ramses::Effect* createEffect(ramses::Scene* scene, const std::string& shaderName, const std::string& effectName)
@@ -202,19 +207,19 @@ ramses::Effect* createEffect(ramses::Scene* scene, const std::string& shaderName
     effectDesc.setFragmentShaderFromFile(("res/" + shaderName + ".frag").c_str());
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    return scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, effectName.c_str());
+    return scene->createEffect(effectDesc, effectName.c_str());
 }
 
 ramses::Scene* createConsumerScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const char* samplerConsumerName, const char* samplerConsumerNameMS)
 {
-    ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example");
+    ramses::Scene* clientScene = client.createScene(sceneId, "local displays example");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("MyCamera");
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     camera->setFrustum(-2.f, 2.f, -2.f, 2.f, 0.1f, 100.f);
     camera->setViewport(0, 0u, DisplayWidth, DisplayHeight);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -241,9 +246,9 @@ ramses::Scene* createConsumerScene(ramses::RamsesClient& client, ramses::sceneId
     // Create fallback texture to show when sampler not linked to an offscreen buffer
     ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-offscreenbuffer-fallback.png", *clientScene);
     ramses::TextureSampler* textureSampler = clientScene->createTextureSampler(ramses::ETextureAddressMode::Repeat, ramses::ETextureAddressMode::Repeat, ramses::ETextureSamplingMethod::Linear, ramses::ETextureSamplingMethod::Linear, *fallbackTexture, 1u, samplerConsumerName);
-    ramses::UniformInput textureUnif;
-    effect->findUniformInput("textureSampler", textureUnif);
-    meshNode->getAppearance()->setInputTexture(textureUnif, *textureSampler);
+    std::optional<ramses::UniformInput> textureUnif = effect->findUniformInput("textureSampler");
+    assert(textureUnif.has_value());
+    meshNode->getAppearance()->setInputTexture(*textureUnif, *textureSampler);
 
     // create an appearance for grey quad multi sampled
     ramses::Effect* effectMS = createEffect(clientScene, "ramses-example-offscreenbuffer_textureMS","quad effect MS");
@@ -256,20 +261,20 @@ ramses::Scene* createConsumerScene(ramses::RamsesClient& client, ramses::sceneId
     renderGroup->addMeshNode(*meshNodeMS);
 
     // Multisampled texture cannot use a texture as fallback like the quad above but it has to use a multisampled render buffer as fallback instead in case the offscreen buffer is not linked.
-    ramses::RenderBuffer* fallbackBuffer = clientScene->createRenderBuffer(ObWidth, ObHeight, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite, SampleCount);
+    ramses::RenderBuffer* fallbackBuffer = clientScene->createRenderBuffer(ObWidth, ObHeight, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite, SampleCount);
     // Buffer gets cleared to solid color so it is visible when sampler is not linked to the offscreen buffer
     createClearPass(clientScene, fallbackBuffer);
     ramses::TextureSamplerMS* textureSamplerMS = clientScene->createTextureSamplerMS(*fallbackBuffer, samplerConsumerNameMS);
-    ramses::UniformInput textureUnifMS;
-    effectMS->findUniformInput("textureSampler", textureUnifMS);
-    meshNodeMS->getAppearance()->setInputTexture(textureUnifMS, *textureSamplerMS);
+    std::optional<ramses::UniformInput> textureUnifMS = effectMS->findUniformInput("textureSampler");
+    assert(textureUnifMS.has_value());
+    meshNodeMS->getAppearance()->setInputTexture(*textureUnifMS, *textureSamplerMS);
 
     return clientScene;
 }
 
 ramses::Scene* createProviderScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId, const char* rotationNodeName)
 {
-    ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example scene");
+    ramses::Scene* clientScene = client.createScene(sceneId, "local displays example scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera ();
     camera->setTranslation({0.0f, 0.0f, 5.0f});
@@ -277,7 +282,7 @@ ramses::Scene* createProviderScene(ramses::RamsesClient& client, ramses::sceneId
     camera->setViewport ( 0, 0u, ObWidth, ObHeight );
 
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -291,22 +296,22 @@ ramses::Scene* createProviderScene(ramses::RamsesClient& client, ramses::sceneId
     ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(4u, vertexPositionsQuadArray.data());
 
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "Quad appearance");
-    ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "Quad geometry");
+    ramses::Geometry* geometry = clientScene->createGeometry(*effect, "Quad geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
-    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.3f, 0.5f, 1.0f });
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
+    appearance->setInputValue(*colorInput, ramses::vec4f{ 1.0f, 0.3f, 0.5f, 1.0f });
 
     ramses::MeshNode* meshNode = clientScene->createMeshNode("quad mesh node");
     ramses::Node* rotationNode = clientScene->createNode(rotationNodeName);
     meshNode->setParent(*rotationNode);
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     renderGroup->addMeshNode(*meshNode);
 
     return clientScene;
@@ -364,12 +369,12 @@ int main()
     sceneControlAPI.setSceneState(providerSceneId2, ramses::RendererSceneState::Ready);
     sceneControlAPI.flush();
 
-    eventHandler.waitForSceneState(consumerSceneId, ramses::RendererSceneState::Ready);
-    eventHandler.waitForSceneState(providerSceneId, ramses::RendererSceneState::Ready);
-    eventHandler.waitForSceneState(providerSceneId2, ramses::RendererSceneState::Ready);
+    eventHandler.waitForSceneState(*consumerScene, ramses::RendererSceneState::Ready);
+    eventHandler.waitForSceneState(*providerScene, ramses::RendererSceneState::Ready);
+    eventHandler.waitForSceneState(*providerScene2, ramses::RendererSceneState::Ready);
 
-    const ramses::TextureSamplerMS* textureSamplerConsumerMS = ramses::RamsesUtils::TryConvert<ramses::TextureSamplerMS>(*consumerScene->findObjectByName("textureSamplerConsumerMS"));
-    const ramses::TextureSampler* textureSamplerConsumer = ramses::RamsesUtils::TryConvert<ramses::TextureSampler>(*consumerScene->findObjectByName("textureSamplerConsumer"));
+    const auto* textureSamplerConsumerMS = consumerScene->findObject<ramses::TextureSamplerMS>("textureSamplerConsumerMS");
+    const auto* textureSamplerConsumer   = consumerScene->findObject<ramses::TextureSampler>("textureSamplerConsumer");
 
     /// [Offscreen Buffer Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -422,8 +427,8 @@ int main()
     uint64_t timeStamp = 1u;
     float rotationZ = 0.f;
 
-    ramses::Node* rotationNode = ramses::RamsesUtils::TryConvert<ramses::Node>(*providerScene->findObjectByName("rotationNode"));
-    ramses::Node* rotationNodeMS = ramses::RamsesUtils::TryConvert<ramses::Node>(*providerScene2->findObjectByName("rotationNodeMS"));
+    auto* rotationNode   = providerScene->findObject<ramses::Node>("rotationNode");
+    auto* rotationNodeMS = providerScene2->findObject<ramses::Node>("rotationNodeMS");
 
     while (!eventHandler.isWindowClosed())
     {

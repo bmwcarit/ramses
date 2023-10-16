@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -42,14 +42,12 @@ add_custom_target(run-ramses-shared-lib-check
 add_dependencies(run-all run-ramses-shared-lib-check)
 
 # build with exported target
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
-    add_executable(tgt-ramses-shared-lib-check "ramses-shared-lib-check.cpp")
-    target_link_libraries(tgt-ramses-shared-lib-check ramses::headless)
+add_executable(tgt-ramses-shared-lib-check "ramses-shared-lib-check.cpp")
+target_link_libraries(tgt-ramses-shared-lib-check ramses::headless)
 
-    add_custom_target(run-tgt-ramses-shared-lib-check
-        COMMAND $<TARGET_FILE:tgt-ramses-shared-lib-check>
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        DEPENDS tgt-ramses-shared-lib-check
-        COMMENT "Run executable tgt-ramses-shared-lib-check")
-    add_dependencies(run-all run-tgt-ramses-shared-lib-check)
-endif()
+add_custom_target(run-tgt-ramses-shared-lib-check
+    COMMAND $<TARGET_FILE:tgt-ramses-shared-lib-check>
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS tgt-ramses-shared-lib-check
+    COMMENT "Run executable tgt-ramses-shared-lib-check")
+add_dependencies(run-all run-tgt-ramses-shared-lib-check)

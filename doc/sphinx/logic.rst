@@ -43,14 +43,14 @@ the input of another node (:ref:`more info on links <Creating links between node
 Logical nodes can't interact with Ramses objects directly. Instead, they
 can link to ``Bindings`` which are designed to "bind" ``Ramses`` objects and modify
 their properties' values (node visibility, transformation values, material properties... etc.)
-(:ref:`more info on bindings <Linking logic nodes to Ramses scenes>`).
+(:ref:`more info on bindings <Linking logic nodes to Ramses scene objects>`).
 
 The greyed-out slots in the image above represent input properties which are neither linked nor
 have a statically configured value. In bindings, this denotes that the corresponding ``Ramses`` property
 is not being updated by the ``Logic Engine`` (see also :ref:`the section on data flow <Data Flow>`). In other nodes, these
 properties will receive a default value at runtime (``0``, ``0.0f``, ``""``, ``true`` etc.) unless explicitly set by the application
 logic. Bindings' input values are initialized with the values of the bound `Ramses` object, for all bindings except
-:class:`ramses::RamsesAppearanceBinding`.
+:class:`ramses::AppearanceBinding`.
 
 Finally, ``Interface nodes`` have no execution logic, only inputs (and implicit outputs which are identical to the inputs).
 Interfaces are supposed to be the bridge between application code/data and the Ramses/Logic asset.
@@ -86,7 +86,7 @@ However, it's guaranteed that:
 * TimerNodes will be executed always, regardless if their inputs were set
 
 
-Additionally, bindings' properties are applied selectively - e.g. setting the ``scaling`` property of a :class:`ramses::RamsesNodeBinding`
+Additionally, bindings' properties are applied selectively - e.g. setting the ``scaling`` property of a :class:`ramses::NodeBinding`
 will result in a call to ``ramses::Node::setScaling()``, but will not cause setting any other ``ramses::Node`` properties.
 This can be useful if you want to have your own logic e.g.
 to control the visibility of all ``Ramses`` nodes, and only use a ``Logic Engine`` to control transformation properties. In that case
@@ -97,13 +97,6 @@ you should never set the ``visibility`` property of a Binding object, instead se
     We strongly discourage setting values to ``Ramses`` objects and to ``Ramses Logic`` bindings in the same update cycle
     for the same property to avoid unexpected behavior. At any given time, use one *or* the other, not both mechanisms to set values!
 
-The ``Logic Engine`` can be also serialized and deserialized into binary files for fast loading.
-The above data flow rules still apply as if all the scripts and binding objects were just created. The first call to
-:func:`ramses::LogicEngine::update` after loading from file will execute all scripts. Binding values will only be passed further to ``Ramses``
-if their values were modified, e.g. by a link which produced a different value than before saving, or if the application
-called :func:`ramses::Property::set` explicitly on any of the bindings' input properties. For more details on saving and loading,
-see the :ref:`section further down <Saving/Loading from file>`.
-
 ===================================
 Logic node creation
 ===================================
@@ -112,9 +105,9 @@ The entry point to ``RAMSES logic`` is a factory-style class :class:`ramses::Log
 create instances of all other types of objects supported by ``RAMSES Logic``:
 
 * :class:`ramses::LuaScript`
-* :class:`ramses::RamsesNodeBinding`
-* :class:`ramses::RamsesAppearanceBinding`
-* :class:`ramses::RamsesCameraBinding`
+* :class:`ramses::NodeBinding`
+* :class:`ramses::AppearanceBinding`
+* :class:`ramses::CameraBinding`
 
 See the full list over at the :ref:`class index <Class index>`.
 
@@ -127,7 +120,7 @@ You can create scripts using the :class:`ramses::LogicEngine` class like this:
     :linenos:
     :emphasize-lines: 5-14,16-17
 
-    #include "ramses-logic/LogicEngine.h"
+    #include "ramses/client/logic/LogicEngine.h"
 
     using namespace ramses::logic;
 
@@ -157,18 +150,17 @@ function - see :func:`ramses::LogicNode::getInputs()` and :func:`ramses::LogicNo
 
 You can :ref:`link nodes <Creating links between nodes>` to form a more sophisticated logic execution graph.
 
-You can :ref:`bind to Ramses objects <Linking logic nodes to Ramses scenes>` to control a 3D ``Ramses`` scene.
-
-Finally, the :class:`ramses::LogicEngine` class and all its content can be also saved/loaded from a file. Refer to
-:ref:`the section on saving/loading from files for more details <Saving/Loading from file>`.
+You can :ref:`bind to Ramses objects <Linking logic nodes to Ramses scene objects>` to control a 3D ``Ramses`` scene.
 
 ==================================================
 Object lifecycle
 ==================================================
 
-All objects besides the :class:`ramses::LogicEngine` instance follow a strict factory pattern.
-An object ``X`` is created by a method of the shape ``X* LogicEngine::createX(...)``. The pointer
-returned shall not be freed or deleted, instead objects must be destroyed by calling :func:`ramses::LogicEngine::destroy`.
+All logic objects are managed by the :class:`ramses::LogicEngine` instance which they were created from.
+A logic object ``X`` is created by a method ``X* LogicEngine::createX(...)``. The pointer
+returned shall not be freed or deleted, instead objects can be destroyed by calling :func:`ramses::LogicEngine::destroy`.
+Logic objects are automatically destroyed when their owning :class:`ramses::LogicEngine` instance is destroyed.
+The :class:`ramses::LogicEngine` itself is managed by the :class:`ramses::Scene` it was created from following same principle.
 
 .. note::
 
@@ -177,18 +169,12 @@ returned shall not be freed or deleted, instead objects must be destroyed by cal
     when combining different CRTs. In order to provide a stable API on Windows
     we chose to use raw pointers and hide object creation/deletion behind a pimpl/factory pattern.
 
-The :class:`ramses::LogicEngine` doesn't create or destroy objects on its own - all data is
-explicitly created by calling ``create`` and ``destroy`` methods. There are two special cases worth mentioning:
+There are two cases when objects are implicitly created or destroyed by :class:`ramses::LogicEngine`:
 
-* if :class:`ramses::LogicEngine` is destroyed, all objects are destroyed as well and theirs pointers invalidated
-* :func:`ramses::LogicEngine::loadFromFile` destroys all objects previously created before the new content is loaded from the file
+* if :class:`ramses::LogicEngine` is destroyed, all its objects are destroyed as well
+* :func:`ramses::LogicEngine::loadFromFile` destroys all previously created objects and creates new objects from loaded file
 
-.. note::
-
-    Loading data from files will invalidate all previous pointers to objects in
-    the :class:`ramses::LogicEngine`. To avoid that, we recommend generally avoiding using
-    a logicengine instance which already has content to load from files, and instead always
-    create a fresh instance.
+In both the cases above any existing pointers to destroyed objects are invalidated.
 
 ==================================================
 Creating links between nodes
@@ -264,30 +250,30 @@ and :func:`ramses::LogicEngine::unlink` documentation. The `data flow section <D
 network of logic nodes when connected by links.
 
 ==================================================
-Linking logic nodes to Ramses scenes
+Linking logic nodes to Ramses scene objects
 ==================================================
 
 Lua scripts would not make much sense on their own if they can't interact with ``Ramses`` scene objects. The way to
 link script output properties to ``Ramses`` scene objects is by creating :class:`ramses::RamsesBinding` instances and linking their inputs to scripts' outputs.
-There are different binding types depending on the type of ``Ramses`` object - refer to :class:`ramses::RamsesBinding` for the full list of derived classes.
-Bindings can be linked in the exact same way as :ref:`scripts can <Creating links between nodes>`. In fact, they derive from the
+There are different binding types depending on the type of scene object - refer to :class:`ramses::RamsesBinding` for the full list of derived classes.
+Bindings can be linked in the exact same way as :ref:`scripts can <Creating links between nodes>`, they derive from the
 same base class - :class:`ramses::LogicNode`. The only
-difference is that the bindings have only input properties (the outputs are implicitly defined and statically linked to the Ramses
+difference is that the bindings have only input properties (the outputs are implicitly defined and statically linked to the scene
 objects attached to them), whereas scripts have inputs and outputs explicitly defined in the script interface.
 
 One might wonder, why not allow to directly link script outputs to ``Ramses`` objects?
 The reason for that is two-fold:
 
-* Separation of concerns between pure script logic and ``Ramses``-related scene updates
+* Separation of concerns between pure script logic and scene updates
 * This allows to handle all inputs and outputs in a generic way using the :class:`ramses::LogicNode` class' interface from
-  which both :class:`ramses::LuaScript` and :class:`ramses::RamsesNodeBinding` derive
+  which both :class:`ramses::LuaScript` and :class:`ramses::NodeBinding` derive
 
 The `section on data flow <Data Flow>`_ describes how data is passed throughout the network of logic nodes and when
 bound Ramses objects are updated and when not.
 
 .. note::
 
-    Binding input values are initialized with the same values as the `Ramses` objects they "bind". The only
+    Binding input values are initialized with the same values as the scene objects they "bind". The only
     exception to this are Appearance bindings - extracting all data from Ramses Appearances would incur performance
     costs not worth the convenience.
 
@@ -296,10 +282,10 @@ Dynamic sorting of content
 ==================================================
 
 The ``Logic Engine`` provides a mechanism to dynamically sort select ``ramses::MeshNode`` and ``ramses::RenderGroup``
-objects. To do so, you can use the :class:`ramses::RamsesRenderGroupBinding` class. The class works similarly to
-other binding classes - it statically binds to Ramses content (configured using :class:`ramses::RamsesRenderGroupBindingElements`)
+objects. To do so, you can use the :class:`ramses::RenderGroupBinding` class. The class works similarly to
+other binding classes - it statically binds to Ramses content (configured using :class:`ramses::RenderGroupBindingElements`)
 and allows setting the rendering priority of the bound content by setting input properties of type ``Int32`` with a name as
-configured in :class:`ramses::RamsesRenderGroupBindingElements`.
+configured in :class:`ramses::RenderGroupBindingElements`.
 
 =========================
 Animations
@@ -380,27 +366,26 @@ Error handling
 =========================
 
 Some of the ``RAMSES Logic`` classes' methods can issue errors when used incorrectly or when
-a ``Lua`` script encounters a compile-time or run-time error. Those errors are globally collected
-by the :class:`ramses::LogicEngine` class and can be obtained by calling :func:`ramses::LogicEngine::getErrors()`.
-The error information stored in :struct:`ramses::ErrorData` contains additional stack trace information for Lua runtime errors,
-and a pointer to the originating :class:`ramses::LogicNode` which caused the error for errors which occured during :func:`ramses::LogicEngine::update()`
-and can't be directly attributed to a specific API call.
-Beware that any of the mutable methods of :class:`ramses::LogicEngine` clear the previously generated errors
-in the list, so that the list only ever contains the errors since the last method call!
+a ``Lua`` script encounters a compile-time or run-time error. Those errors are collected via the Ramses SDK error handling mechanism
+which uses :class:`ramses::RamsesFramework` to register always the last occurred error until it is retrieved by calling
+:func:`ramses::RamsesFramework::getLastError()`.
+The :struct:`ramses::Issue` contains additional information: human readable message (e.g. stack trace information for Lua runtime errors)
+and optionally a pointer to the originating :class:`ramses::RamsesObject` which reported or caused the error (for errors which occured during
+:func:`ramses::LogicEngine::update()` and can't be directly attributed to a specific API call).
 
 For code samples which demonstrate how compile-time and runtime errors can be gracefully handled,
 have a look at the :ref:`examples <List of all examples>`.
 
 To intercept and fix potential content problems, you can use :func:`ramses::LogicEngine::validate()`. This method will
 scan the contents of the ``Logic Engine`` and report pontential issues which are not fatal, but may result in suboptimal
-performance, data inconsistency or serialization bugs. It is highly advised to use this method in conjunction with the
-``Ramses`` validation methods (StatusObject::validate) to prevent issues during runtime.
+performance, data inconsistency or serialization bugs. It is highly recommended to also validate the scene this ``LogicEngine`` is used with
+(:func:`ramses::Scene::validate()`) to prevent issues during runtime.
 
 =====================================
 Iterating over object collections
 =====================================
 
-Iterating over objects can be useful, for example when :ref:`loading content from files <Saving/Loading from file>`
+Iterating over objects can be useful, for example when the logic was loaded from file
 or when applying search or filter algorithms over all objects from a specific type.
 The :class:`ramses::LogicEngine` class provides iterator-style access to all of its objects:
 
@@ -424,155 +409,6 @@ other STL algorithms or libraries which adhere to STL principles. The iterators 
     The :class:`ramses::Iterator` and :class:`ramses::Collection` classes are not following the ``pimpl`` pattern as the rest of
     the ``Ramses Logic`` to performance ends. Be careful not to depend on any internals of the classes (mostly the Internally
     wrapped STL containers) to avoid compatibility problems when updating the ``Ramses Logic`` version!
-
-=====================================
-Saving/Loading from file
-=====================================
-
-The :class:`ramses::LogicEngine` class and its content can be stored in a file and loaded from file again using the functions
-:func:`ramses::LogicEngine::saveToFile` and :func:`ramses::LogicEngine::loadFromFile`. The latter has an optional argument
-to provide a ``Ramses`` scene which should be used to resolve references to Ramses objects in the Logic Engine file. Read
-further for more details.
-
-.. note::
-
-    Even though it would be technically possible to combine the storing and loading of Ramses scenes together with the Logic Engine
-    and its scripts in a single file, we decided to not do this but instead keep the content in separate files and load/save it independently.
-    This allows to have the same Ramses scene stored multiple times or with different settings, but using the same logic content,
-    as well as the other way around - having different logic implementations based on the same Ramses scene. It also leaves more freedom
-    to choose how to store the Ramses scene. This implies that at most a single Ramses scene can be referenced at the time of saving,
-    having more than one scene will result in error.
-
---------------------------------------------------
-Object lifecycle when saving and loading to files
---------------------------------------------------
-
-After loading,
-the current state of the logic engine objects will be completely overwritten by the contents from the file. If you don't want this behavior,
-use two different instances of the class - one dedicated for loading from files and nothing else.
-
-Here is a simple example which demonstrates how saving/loading from file works in the simplest case (i.e. no references to Ramses objects):
-
-.. code-block::
-    :linenos:
-
-    // Creates an empty LogicEngine instance, saves it to file and destroys the object
-    {
-        ramses::LogicEngine engine;
-        engine.saveToFile("logicEngine.bin");
-    }
-    // Loads the file we saved above into a freshly created LogicEngine instance
-    {
-        ramses::LogicEngine engine;
-        engine.loadFromFile("logicEngine.bin");
-    }
-
-After the call to :func:`ramses::LogicEngine::loadFromFile` successfully returns (refer to the :ref:`Error handling` section
-for info on handling errors), the state of the :class:`ramses::LogicEngine` class will be overwritten with
-the contents loaded from the file. This implies that all objects created prior loading will be deleted and pointers to them
-will be pointing to invalid memory locations. We advise designing your object lifecycles around this and immediately dispose
-such pointers after loading from file.
-
---------------------------------------------------
-File compatibility
---------------------------------------------------
-
-Starting with version ``1.1.0``, the ``Logic Engine`` supports ``feature levels`` which ensure that
-you can use a newer version of the library but keep your assets to the older version. This allows integrating
-fixes and supporting multiple versions of the content toolchain at the same time. This mechanism is called
-``feature toggle`` in other projects and essentially enables trying out new features and rolling back if
-they prove to be unstable and need more work.
-
-How does it work? The Logic Engine provides an enum :enum:`rligic::EFeatureLevel` which represents the different
-feature levels introduced since the last major version of the lib. For example, Ramses Logic 1.0 and 1.1 provide two
-different feature levels each (``1`` and ``2``). You can use ``1`` or ``2`` selectively if you use version 1.1 of the library,
-or you can use
-only ``1`` if you use version 1.0. You can select at runtime which version to use by specifying a value
-in the overloaded constructor of the class :func:`ramses::LogicEngine::LogicEngine`. You can also check which version
-is used in a binary file by using :func:`ramses::LogicEngine::GetFeatureLevelFromFile`. Note that to load a file you must
-always use the exact feature level that was used to export the file, otherwise the loading will fail.
-
-For more details on the available feature levels and how to use them, see :enum:`ramses::EFeatureLevel`.
-
------------------------------------------------------------
-File compatibility (prior version 1.1 and feature levels)
------------------------------------------------------------
-
-Since version ``0.7.0``, Ramses Logic binary files are backwards compatible.
-This means that a newer version of the runtime can be used to load an older binary file, unless the file format version
-had a breaking change and a newer version of the Logic Engine must be used.
-The exact compatibility info is documented in the `version matrix <https://ramses-logic.readthedocs.io/en/latest/readme_ref.html#version-matrix>`_.
-There are some limitations:
-
-* Loading a file older than v0.7.0 will result in an error with a runtime equal or newer than v0.7.0
-* Adding new features will still break the format and require re-export. We will explicitly list such breaking changes in the version matrix.
-
---------------------------------------------------
-Saving and loading together with a Ramses scene
---------------------------------------------------
-
-In a slightly less simple, but more realistic setup, the Logic Engine will contain objects of type ``Ramses<Object>Binding`` which
-contain references to Ramses objects. In that case, use the optional ``ramses::Scene*`` argument to :func:`ramses::LogicEngine::loadFromFile`
-to specify the scene from which the references to Ramses objects should be resolved. ``Ramses Logic`` uses the ``getSceneObjectId()`` method of the
-``ramses::SceneObject`` class to track references to scene objects. This implies that those IDs must be the same after loading, otherwise
-:func:`ramses::LogicEngine::loadFromFile` will report error and fail. ``Ramses Logic`` makes no assumptions on the origin of the scene, its name
-or ID.
-
-For a full-fledged example, have a look at :ref:`the serialization example <Save/load from file example>`.
-
-.. warning::
-
-    The ``LogicEngine`` expects that immediately after loading, the state of the ``Ramses`` scene is the same as it was right before saving, and will not
-    modify ``Ramses`` objects which are attached to bindings in the ``LogicEngine`` in its first update, unless they are linked to scripts or explicitly
-    overwritten by :func:`ramses::Property::set` calls after loading from the file. We strongly advice to always save and load
-    both the ``Ramses`` scene and the ``LogicEngine`` scene together to avoid data inconsistencies!
-
---------------------------------------------------
-Using memory buffer instead of file
---------------------------------------------------
-
-You can use :func:`ramses::LogicEngine::loadFromBuffer` to load the contents of the logic engine from your own memory. This can be useful
-if you have your own file management logic, or the data comes from a different source than a file on disk. Be mindful that passing data buffers
-over the boundaries of libraries can be unsafe with C++, and some errors/abuse can't be reliably prevented. Make sure you check the size of
-the buffer and don't load from memory of untrusted origins.
-
-=========================
-Logging
-=========================
-
-Internally there are four log levels available.
-
-* Info
-* Debug
-* Warn
-* Error
-
-By default all internal logging messages are sent to std::cout. You can toggle this with :func:`ramses::Logger::SetDefaultLogging`.
-In addition, it is possible to have a custom log handler function which is called each time a log message is issued.
-
-.. code-block::
-    :linenos:
-
-    #include <iostream>
-
-    Logger::SetLogHandler([](ElogMessageType msgType, std::string_view message){
-        switch(type)
-        {
-            case ELogMessageType::ERROR:
-                std::cout << "Error: " << message << std::endl;
-                break;
-            default:
-                std::cout << message << std::endl;
-                break;
-        }
-    });
-
-Inside the log handler function, you get the type of the message and the message itself as a std::string_view.
-Keep in mind, that you can't store the std::string_view. It will be invalid after the call to the log handler
-function. If you need the message for later usage, store it in a std::string.
-
-The amount of logging can be configured with :func:`ramses::Logger::SetLogVerbosity`. This affects both the default
-logging and the custom logger.
 
 
 ======================================

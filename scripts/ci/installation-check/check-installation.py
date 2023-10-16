@@ -63,7 +63,7 @@ def main():
         # TODO: remove, these are a tests/demos, not needed in the package
         r"^bin/ramses-client-test$",
         r"^bin/ramses-framework-test$",
-        r"^bin/ramses-logic-viewer-unittests$",
+        r"^bin/ramses-logic-viewer-test$",
         r"^bin/ivi-gears$",
         r"^bin/ivi-simple-dmabuf-egl$",
     ]
@@ -84,41 +84,41 @@ def main():
             r"^bin/ramses-logic-viewer$",
             # TODO: remove, these are a tests/demos, not needed in the package
             r"^bin/ramses-renderer-lib-test$",
-            r"^bin/ramses-renderer-impl-test$",
+            r"^bin/ramses-renderer-test$",
             r"^bin/ramses-cli-test$",
-            r"^bin/ramses-logic-viewer-swrast-tests$",
+            r"^bin/ramses-logic-viewer-gui-test$",
             r"^lib/libramses-shared-lib\.so$",
             r"^lib/libramses-shared-lib\.so\.\d+\.\d+$",
             # TODO: These files should be packaged separately - maybe as a tools package?
-            r"^bin/ramses-renderer$",
+            r"^bin/ramses-renderer-standalone$",
             r"^bin/ramses-scene-viewer$",
             r"^bin/ramses-stream-viewer$",
             # TODO: remove, these are a tests/demos, not needed in the package
             r"^bin/ramses-test-client$",
             r"^bin/ramses-local-client-test$",
-            r"^bin/ResourceStressTests$",
-            r"^bin/RenderBackendTests$",
-            r"^bin/RenderingTests$",
-            r"^bin/RendererLifecycleTests$",
+            r"^bin/resource-stress-tests$",
+            r"^bin/render-backend-tests$",
+            r"^bin/rendering-tests$",
+            r"^bin/renderer-lifecycle-tests$",
         ]
 
         # Everything else below should also not be in the package
-        expectNonHeaderFiles += [r"^bin/DmaOffscreenBufferRenderingTests$"]
+        expectNonHeaderFiles += [r"^bin/dma-offscreen-buffer-rendering-tests$"]
 
         for p in args.platform:
             if p == 'wayland-ivi-egl-es-3-0':
                 expectNonHeaderFiles += [
-                    r"^bin/SystemCompositorController_Wayland_IVI_Test$",
-                    r"^bin/Window_Wayland_IVI_Test$",
-                    r"^bin/EmbeddedCompositor_Wayland_Test$",
-                    r"^bin/EmbeddedCompositingTests$",
+                    r"^bin/system-compositor-controller-wayland-test$",
+                    r"^bin/window-wayland-ivi-test$",
+                    r"^bin/embedded-compositor-wayland-test$",
+                    r"^bin/embedded-compositing-rendering-tests$",
                 ]
 
             if p == 'wayland-shell-egl-es-3-0':
-                expectNonHeaderFiles += [r"^bin/Window_Wayland_Shell_Test$"]
+                expectNonHeaderFiles += [r"^bin/window-wayland-wl-shell-test$"]
 
             if p == 'x11-egl-es-3-0':
-                expectNonHeaderFiles += [r"^bin/platform-x11-test$"]
+                expectNonHeaderFiles += [r"^bin/window-x11-test$"]
 
         expectNonHeaderFiles += [
             r"^lib/cmake/ramses-shared-lib-\d+\.\d+/ramses-shared-libConfigVersion\.cmake$",
@@ -149,7 +149,7 @@ def main():
         # Ramses header file - add to special list to check compilation later
         if re.match(r'^include/', relPathStr):
             installedHeaders.append(str(path.relative_to(includePath)))
-        elif re.match(r'^bin/res', relPathStr):
+        elif re.match(r'^bin/res/', relPathStr):
             # Ignore resource files
             # TODO Violin: don't pollute installation packages with test resources! Don't install resources unless explicitly requested
             pass
@@ -184,8 +184,8 @@ def main():
         return 1
 
     # Extract header files from the source tree
-    headlessApiHeaders = get_source_api_headers(args.src_dir, '.*/((ramses-(?!renderer)[^/]+-api)|logic)/include')
-    rendererApiHeaders = get_source_api_headers(args.src_dir, '.*/ramses-renderer-api/include')
+    headlessApiHeaders = get_source_api_headers(Path(args.src_dir) / 'include', 'ramses/(?!renderer)', False)
+    rendererApiHeaders = get_source_api_headers(Path(args.src_dir) / 'include', 'ramses/renderer', False)
     glmHeaders = get_source_api_headers(Path(args.src_dir) / 'external' / 'glm', 'glm', trim=False)
 
     srcApiHeaders = headlessApiHeaders

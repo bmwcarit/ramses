@@ -48,6 +48,7 @@ target_link_libraries(ramses-gmock-main INTERFACE gmock_main gtest)
 if (TARGET fmt::fmt)
     message(STATUS "+ fmt (existing target)")
 else()
+    set(FMT_INSTALL OFF)
     add_subdirectory("fmt")
     target_compile_definitions(fmt PUBLIC "-DFMT_EXCEPTIONS=0")
     folderizeTarget(fmt)
@@ -150,6 +151,23 @@ createModule(
                             glslang-os-dep/GenericSingleThreaded/ossource.cpp
                             )
 
+createModule(
+    NAME                    lodepng
+    TYPE                    STATIC_LIBRARY
+    ENABLE_INSTALL          OFF
+    INCLUDE_PATHS           lodepng
+    SRC_FILES               lodepng/*.h
+                            lodepng/lodepng.cpp
+                            )
+
+createModule(
+    NAME                    cityhash
+    TYPE                    STATIC_LIBRARY
+    ENABLE_INSTALL          OFF
+    INCLUDE_PATHS           cityhash/src
+    SRC_FILES               cityhash/src/*.h
+                            cityhash/src/city.cc
+                            )
 
 if(ramses-sdk_TEXT_SUPPORT)
     # find freetype with harfbuzz support
@@ -162,7 +180,11 @@ if(ramses-sdk_TEXT_SUPPORT)
         # no 'd' suffix on debug libs
         set(DISABLE_FORCE_DEBUG_POSTFIX TRUE)
 
+        # freetype's FindHarfbuzz.cmake won't find our internal harfbuzz - force harfbuzz usage
+        set(HARFBUZZ_FOUND TRUE)
+
         add_subdirectory(freetype)
+        target_include_directories(freetype PRIVATE "harfbuzz/src")
         message(STATUS "+ freetype")
 
         set(HB_BUILD_SUBSET OFF CACHE BOOL "don't build harfbuzz subset" FORCE)
@@ -172,6 +194,12 @@ if(ramses-sdk_TEXT_SUPPORT)
         folderizeTarget(freetype)
         folderizeTarget(harfbuzz)
 
+        # Verify that harfbuzz is actually used
+        file(READ "${CMAKE_CURRENT_BINARY_DIR}/freetype/include/freetype/config/ftoption.h" FTOPTION_H)
+        string(REGEX MATCH "\n#define FT_CONFIG_OPTION_USE_HARFBUZZ" FREETYPE_USES_HARFBUZZ "${FTOPTION_H}")
+        if (NOT FREETYPE_USES_HARFBUZZ)
+            message(FATAL_ERROR "Failed to enable harfbuzz support for internal freetype.")
+        endif()
     endif()
 else()
     message(STATUS "- harfbuzz/freetype (text support disabled)")
@@ -194,33 +222,29 @@ FIND_PACKAGE(wayland-client QUIET)
 FIND_PACKAGE(wayland-server QUIET)
 
 # wayland ivi extension library
-IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
-    FIND_PACKAGE(wayland-ivi-extension QUIET)
-    IF (wayland-ivi-extension_FOUND)
-        message(STATUS "+ wayland-ivi-extension (system)")
-    ELSEIF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-extension")
-        IF (wayland-client_FOUND AND wayland-server_FOUND)
-            createModule(
-                NAME                    wayland-ivi-extension
-                TYPE                    STATIC_LIBRARY
-                ENABLE_INSTALL          OFF
+FIND_PACKAGE(wayland-ivi-extension QUIET)
+IF (wayland-ivi-extension_FOUND)
+    message(STATUS "+ wayland-ivi-extension (system)")
+ELSEIF (wayland-client_FOUND AND wayland-server_FOUND)
+    createModule(
+        NAME                    wayland-ivi-extension
+        TYPE                    STATIC_LIBRARY
+        ENABLE_INSTALL          OFF
 
-                INCLUDE_PATHS           wayland-ivi-extension/ivi-extension-protocol
-                SRC_FILES               wayland-ivi-extension/ivi-extension-protocol/*.h
-                                        wayland-ivi-extension/ivi-extension-protocol/*.c
-                )
-        ENDIF()
-    ENDIF()
+        INCLUDE_PATHS           wayland-ivi-extension/ivi-extension-protocol
+        SRC_FILES               wayland-ivi-extension/ivi-extension-protocol/*.h
+                                wayland-ivi-extension/ivi-extension-protocol/*.c
+        )
 ENDIF()
 
-option(ramses-sdk_BUILD_IVI_TEST_APPS "Enable build of ivi test applications" ON)
-if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension) AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-example-client")
+importDependenciesAndCheckMissing(WAYLAND_IVI_EXT_MISSING wayland-ivi-extension)
+if (ramses-sdk_BUILD_TOOLS AND (NOT WAYLAND_IVI_EXT_MISSING))
     # wayland ivi example/test application
     createModule(
         NAME                    ivi-gears
         TYPE                    BINARY
         ENABLE_INSTALL          ON
-        SRC_FILES            wayland-ivi-example-client/gears.c
+        SRC_FILES               wayland-ivi-example-client/gears.c
         DEPENDENCIES            EGL
                                 OpenGL
                                 wayland-client
@@ -245,7 +269,9 @@ IF (wayland-client_FOUND AND wayland-server_FOUND AND EXISTS "${CMAKE_CURRENT_SO
         )
 ENDIF()
 
-if (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension)
+
+importDependenciesAndCheckMissing(MISSING_DEPENDENCY wayland-ivi-extension gbm libdrm)
+if (ramses-sdk_BUILD_TOOLS AND (NOT MISSING_DEPENDENCY))
     # wayland ivi example/test application 2
     createModule(
         NAME                    ivi-simple-dmabuf-egl
@@ -289,12 +315,11 @@ if(ramses-sdk_BUILD_TOOLS)
         )
 endif()
 
-# LZ4 de-/compression library
-OPTION(ramses-sdk_ALLOW_PLATFORM_LZ4 "Enable to search for platform provided lz4" ON)
 
 # TODO (MacOS) find out why linking against the platform LZ4 doesn't work on Darwin
 IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS") OR (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     SET(ramses-sdk_ALLOW_PLATFORM_LZ4 OFF)
+    message(WARNING "Force ramses-sdk_ALLOW_PLATFORM_LZ4 set to OFF")
 ENDIF()
 
 IF (ramses-sdk_ALLOW_PLATFORM_LZ4)
@@ -343,7 +368,8 @@ if(ramses-sdk_ENABLE_LOGIC)
     ################     Lua      ##################
     ################################################
 
-    if(NOT TARGET lua)
+    if(NOT TARGET lua::lua)
+        message(STATUS "+ lua (internal) (STATIC_LIBRARY)")
         ensureSubmoduleExists(lua)
 
         # Collect all source and header files
@@ -375,9 +401,8 @@ if(ramses-sdk_ENABLE_LOGIC)
         )
 
         folderizeTarget(lua)
+        add_library(lua::lua ALIAS lua)
     endif()
-
-    add_library(lua::lua ALIAS lua)
 
     ################################################
     ################     Sol      ##################
@@ -396,8 +421,6 @@ if(ramses-sdk_ENABLE_LOGIC)
 
         # Ensure sol is expecting c++ compiled lua
         target_compile_definitions(sol2 INTERFACE
-            # we compile lua with c++, make sol not use extern C etc
-            SOL_USING_CXX_LUA=1
             # catch and redirect exception to user handler func instead of
             # prapagating them directly through lua
             SOL_EXCEPTIONS_ALWAYS_UNSAFE=1
@@ -408,6 +431,13 @@ if(ramses-sdk_ENABLE_LOGIC)
             # Make sure Debug flags are equivalent to Release flags in terms of behavior
             SOL_IN_DEBUG_DETECTED=0
         )
+
+        if(NOT ramses-sdk_USE_PLATFORM_LUAJIT)
+            target_compile_definitions(sol2 INTERFACE
+                # we compile lua with c++, make sol not use extern C etc
+                SOL_USING_CXX_LUA=1
+                )
+        endif()
     endif()
 
     ################################################
@@ -439,3 +469,118 @@ if(ramses-sdk_ENABLE_LOGIC)
         folderizeTarget(flatc)
     endif()
 endif()
+
+
+# ANGLE - Build for iOS support only
+IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
+    # Define File Copy Function that WebKit ANGLE build expects to be there
+    function(WEBKIT_COPY_FILES target_name)
+        # This CMake macro is from the WebKit Repository and licensed as follows:
+        #   BSD License
+        #   
+        #   Copyright (C) 2009 Apple Inc. All rights reserved.
+        #   
+        #   Redistribution and use in source and binary forms, with or without
+        #   modification, are permitted provided that the following conditions are met: 
+        #   
+        #   1. Redistributions of source code must retain the above copyright notice, this
+        #   list of conditions and the following disclaimer.
+        #   
+        #   2. Redistributions in binary form must reproduce the above copyright notice, this
+        #   list of conditions and the following disclaimer in the documentation and/or other
+        #   materials provided with the distribution.
+        #   
+        #   THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS “AS IS” AND ANY
+        #   EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+        #   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+        #   EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+        #   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+        #   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+        #   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+        #   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+        #   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+        set(options FLATTENED)
+        set(oneValueArgs DESTINATION)
+        set(multiValueArgs FILES)
+        cmake_parse_arguments(opt "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        set(files ${opt_FILES})
+        set(dst_files)
+        foreach (file IN LISTS files)
+            if (IS_ABSOLUTE ${file})
+                set(src_file ${file})
+            else ()
+                set(src_file ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+            endif ()
+            if (opt_FLATTENED)
+                get_filename_component(filename ${file} NAME)
+                set(dst_file ${opt_DESTINATION}/${filename})
+            else ()
+                get_filename_component(file_dir ${file} DIRECTORY)
+                file(MAKE_DIRECTORY ${opt_DESTINATION}/${file_dir})
+                set(dst_file ${opt_DESTINATION}/${file})
+            endif ()
+            add_custom_command(OUTPUT ${dst_file}
+                COMMAND ${CMAKE_COMMAND} -E copy ${src_file} ${dst_file}
+                MAIN_DEPENDENCY ${file}
+                VERBATIM
+            )
+            list(APPEND dst_files ${dst_file})
+        endforeach ()
+        add_custom_target(${target_name} ALL DEPENDS ${dst_files})
+    endfunction()
+
+    # Define Config Function that WebKit ANGLE build expects to be there. For iOS we need to define our own configuration, no config file exists.
+    macro(WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS)
+        find_library(COREGRAPHICS_LIBRARY CoreGraphics)
+        find_library(FOUNDATION_LIBRARY Foundation)
+        find_library(IOKIT_LIBRARY IOKit)
+        find_library(IOSURFACE_LIBRARY IOSurface)
+        find_library(METAL_LIBRARY Metal)
+        find_package(ZLIB REQUIRED)
+        
+        list(APPEND ANGLE_SOURCES
+            ${metal_backend_sources}
+        
+            ${angle_translator_lib_metal_sources}
+            ${angle_translator_apple_sources}
+            ${angle_translator_glsl_apple_sources}
+        
+            ${libangle_gpu_info_util_ios_sources}
+            ${libangle_gpu_info_util_sources}
+            ${libangle_ios_sources}
+        )
+        
+        list(APPEND ANGLE_DEFINITIONS
+            ANGLE_ENABLE_METAL
+            ANGLE_PLATFORM_IOS
+            ANGLE_ENABLE_APPLE_WORKAROUNDS
+        )
+        
+        list(APPEND ANGLEGLESv2_LIBRARIES
+            ${COREGRAPHICS_LIBRARY}
+            ${FOUNDATION_LIBRARY}
+            ${IOKIT_LIBRARY}
+            ${IOSURFACE_LIBRARY}
+            ${METAL_LIBRARY}
+        )    
+    endmacro()
+
+    # Configure the ANGLE build
+    set(USE_ANGLE_EGL ON)
+    set(ENABLE_WEBGL OFF)
+    set(ANGLE_FRAMEWORK_HEADERS_DIR ${CMAKE_CURRENT_BINARY_DIR}/ANGLE/FRAMEWORK_HEADERS_DESTINATION)
+    set(PORT Mac)
+    set(is_apple ON)
+    set(is_ios ON)
+    set(is_mac OFF)
+
+    # Add Angle CMake build
+    add_subdirectory(ANGLE)
+
+    target_include_directories(GLESv2  INTERFACE ANGLE/include)
+    target_include_directories(EGL INTERFACE ANGLE/include)
+
+    # Alias ANGLE as OpenGL, so it is a drop in replacement.
+    add_library(OpenGL ALIAS GLESv2)
+ENDIF()

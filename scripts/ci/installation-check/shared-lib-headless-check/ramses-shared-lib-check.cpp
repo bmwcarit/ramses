@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ramses-client.h"
-#include "ramses-framework-api/RamsesFramework.h"
-#include "ramses-text.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/framework/RamsesFramework.h"
+#include "ramses/client/text/ramses-text.h"
 
 int main(int argc, char* argv[])
 {
@@ -19,11 +19,11 @@ int main(int argc, char* argv[])
 
     printf("Start ramses-shared-lib-check headless\n");
     ramses::RamsesFramework framework{config};
-    framework.isConnected();
+    const auto flag = framework.isConnected();
 
     ramses::RamsesClient* ramses(framework.createClient("ramses-shared-lib-check"));
     ramses::Scene* scene = ramses->createScene(ramses::sceneId_t(1u));
-    scene->isPublished();
+    const auto flag2 = scene->isPublished();
 
     ramses::FontRegistry fontRegistry;
 

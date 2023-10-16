@@ -33,7 +33,7 @@ class TestClangTidyIssueParsing:
     def test_can_single_parse_entry(self):
         entry = """
 /home/foobar/ramses/framework/Ramsh/src/RamshStandardSetup.cpp:10:1: error: #includes are not sorted properly [llvm-include-order]
-#include "Ramsh/RamshCommunicationChannelDLT.h"
+#include "internal/Ramsh/RamshCommunicationChannelDLT.h"
 ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          "Ramsh/RamshCommunicationChannelConsole.h"
 """
@@ -86,7 +86,7 @@ class TestClangTidyIssueParsing:
     def test_can_parse_multiple_entries(self):
         entries = """
 /home/foobar/ramses/framework/Ramsh/src/RamshStandardSetup.cpp:10:1: error: #includes are not sorted properly [llvm-include-order]
-#include "Ramsh/RamshCommunicationChannelDLT.h"
+#include "internal/Ramsh/RamshCommunicationChannelDLT.h"
 ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          "Ramsh/RamshCommunicationChannelConsole.h"
 /home/foobar/ramses/framework/Ramsh/src/RamshStandardSetup.cpp:13:11: error: '__llvm_libc' needs to be the outermost namespace [llvmlibc-implementation-in-namespace]
@@ -100,7 +100,7 @@ namespace ramses_internal
         assert result[0].line == 10
         assert result[0].column == 1
         assert result[0].text == """/home/foobar/ramses/framework/Ramsh/src/RamshStandardSetup.cpp:10:1: error: #includes are not sorted properly [llvm-include-order]
-#include "Ramsh/RamshCommunicationChannelDLT.h"
+#include "internal/Ramsh/RamshCommunicationChannelDLT.h"
 ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          "Ramsh/RamshCommunicationChannelConsole.h"
 """  # noqa E501 allow long string

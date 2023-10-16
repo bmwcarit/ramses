@@ -6,9 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include <cstdio>
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -28,7 +27,8 @@ int main()
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "triangle scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "triangle scene");
 
     // every scene needs a render pass with camera
     auto* camera = scene->createPerspectiveCamera("my camera");
@@ -36,7 +36,7 @@ int main()
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 35.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -47,14 +47,14 @@ int main()
     effectDesc.setFragmentShaderFromFile("res/ramses-example-data-buffers-vertices.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance data buffer");
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect, "triangle geometry data buffer");
+    ramses::Geometry* geometry = scene->createGeometry(*effect, "triangle geometry data buffer");
 
     // get input data of appearance and set color values
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
-    appearance->setInputValue(colorInput, ramses::vec4f{ 0.0f, 1.0f, 1.0f, 1.0f });
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
+    appearance->setInputValue(*colorInput, ramses::vec4f{ 0.0f, 1.0f, 1.0f, 1.0f });
 
     // the raw data for vertices and indices
     const std::vector<ramses::vec3f> vertexPositions = {
@@ -83,8 +83,8 @@ int main()
 
     // Create the ArrayBuffers
     // The data buffers need more information about size
-    const uint32_t NumVertices = uint32_t(vertexPositions.size());
-    const uint32_t NumIndices = uint32_t(indexData.size());
+    const auto NumVertices = uint32_t(vertexPositions.size());
+    const auto NumIndices = uint32_t(indexData.size());
 
     // then create the buffers via the _scene_
     ramses::ArrayBuffer* vertices = scene->createArrayBuffer(ramses::EDataType::Vector3F, NumVertices, "some varying vertices");
@@ -97,9 +97,9 @@ int main()
     /// [Data Buffer Example Setup]
 
     // applying the vertex/index data to the geometry binding is the same for both
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertices);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertices);
     geometry->setIndices(*indices);
 
 
@@ -107,7 +107,7 @@ int main()
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node data buffers");
 
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
 
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
@@ -116,11 +116,11 @@ int main()
     scene->flush();
 
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     // application logic
     auto translateVertex = [&vertexPositions](ramses::vec3f& updatedValues, uint32_t index, uint64_t timeStamp, float scaleFactor){
-        const float currentFactor = static_cast<float>(std::sin(0.005f*timeStamp));
+        const auto currentFactor = std::sin(0.005f * static_cast<float>(timeStamp));
         const float    xValue     = vertexPositions[index][0];
         const float    yValue     = vertexPositions[index][1];
         const float    zValue     = vertexPositions[index][2];

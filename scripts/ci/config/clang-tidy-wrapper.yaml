@@ -15,7 +15,7 @@ exclude:
   - ^external/
 
   # exclude generated flatbuffers files
-  - ^client/logic/lib/flatbuffers/
+  - ^src/client/internal/logic/flatbuffers/
 
 sort-order:
   # run on tests first because tests tend to take long due to googletest macros
@@ -23,32 +23,30 @@ sort-order:
     priority: 10
 
 check-filter:
-  - check: cppcoreguidelines-pro-type-reinterpret-cast
-    include:
-      - ^framework/
-      - ^client/
   # false positives on clang-12 related to google test matchers
   - check: clang-analyzer-cplusplus.NewDeleteLeaks
     pattern: Potential leak of memory pointed to by field 'shared'
     exclude:
-      - /test/.*Test.cpp$
-      - ^renderer/RendererLib/RendererLib/test/RendererSceneUpdaterTest_Resources.cpp$
-      - ^renderer/RendererLib/RendererLib/test/TestSceneHelper.h$
-      - ^renderer/RendererLib/RendererLib/test/RendererSceneUpdaterTest.h$
-      - ^renderer/RendererLib/RendererTestCommon/RendererResourceManagerMock.cpp$
+      - ^tests/*
+  - check: cppcoreguidelines-narrowing-conversions
+    exclude:
+      - ^tests/.*
+  - check: cppcoreguidelines-pro-type-reinterpret-cast
+    include:
+      - ^src/framework/
+      - ^client/
+  - check: cppcoreguidelines-pro-type-vararg
+    exclude:
+      # ImGui uses va_args in its api
+      - ^tools/ramses-scene-viewer/src/SceneViewerGui.cpp$
+      - ^tools/ramses-imgui/src/ImguiWidgets.cpp$
   - check: hicpp-signed-bitwise
     exclude:
       - ^examples/ramses-example-local-dma-offscreenbuffer/src/main.cpp$
-      - ^integration/SandwichTests/RendererTests/DmaOffscreenBufferRenderingTests/DmaOffscreenBufferTests.cpp$
+      - ^tests/integration/renderer-tests/dma-offscreen-buffer-rendering-tests/DmaOffscreenBufferTests.cpp$
   - check: modernize-avoid-c-arrays
     exclude:
-      - ^client/test/.*Test.cpp$
-      - ^framework/Core/Math3d/include/Math3d
-      - ^framework/.*/test/.*Test.cpp$
-      - ^renderer/RendererLib/RendererLib/test/.*Test.cpp$
-      - ^renderer/ramses-renderer-impl/test/.*Test.cpp$
-      - ^integration/SandwichTests/RendererTests/EmbeddedCompositingTests
-      - ^integration/TestContent
+      - ^tests/.*
 
 remove-duplicate-sources: true
 remove-duplicate-reports: true

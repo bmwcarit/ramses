@@ -12,5 +12,5 @@ createModule(
     ENABLE_INSTALL          ON
     SRC_FILES               include/*.h
                             src/*.cpp
-    DEPENDENCIES            ramses-shared-lib
+    DEPENDENCIES            ramses::shared-lib-for-examples
 )

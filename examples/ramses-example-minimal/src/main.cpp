@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
 #include <thread>
 
@@ -25,18 +25,19 @@ int main()
     framework.connect();
 
     // create a scene and register it at RAMSES daemon
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u));
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig);
 
     // signal the scene it is in a state that can be rendered
     scene->flush();
 
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     // application logic
     uint32_t loops = 100;
 
-    while (--loops)
+    while (--loops != 0u)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }

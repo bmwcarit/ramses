@@ -24,17 +24,7 @@ if(COMPONENTS_LENGTH GREATER 0)
     MESSAGE(FATAL_ERROR "Unused components passed: ${ramses-shared-lib_FIND_COMPONENTS}")
 endif()
 
-# find include dir
-IF("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
-    FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
-        HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
-        CMAKE_FIND_ROOT_PATH_BOTH
-    )
-ELSE()
-    FIND_PATH(ramses-shared-lib_INCLUDE_DIRS ramses-client.h
-        HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
-    )
-ENDIF()
+set(ramses-shared-lib_INCLUDE_DIRS "@PACKAGE_RAMSES_INSTALL_HEADERS_PATH@")
 
 if(IS_DIRECTORY "${ramses-shared-lib_INCLUDE_DIRS}/glm")
     add_library(glm::glm INTERFACE IMPORTED)

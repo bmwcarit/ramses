@@ -1,0 +1,23 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2020 BMW AG
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#pragma once
+
+#include "absl/types/span.h"
+
+#include <cstdint>
+
+namespace ramses::internal
+{
+    class ISceneUpdateSerializer
+    {
+    public:
+        virtual ~ISceneUpdateSerializer() = default;
+        virtual bool writeToPackets(absl::Span<std::byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc) const = 0;
+    };
+}

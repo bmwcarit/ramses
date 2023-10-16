@@ -35,8 +35,8 @@ class BuildConfig(common.CommonConfig):
                         flatbuf_gen, android_abi, disable_logic, use_imagemagick,
                         headless, no_full_shared_lib,
                         no_examples, no_demos, no_tests, no_tools, generator,
-                        enable_dlt, enable_lto, test_coverage, enable_coverage,
-                        package_name, cpp_std, cmake_modules):
+                        enable_dlt, enable_lto, test_coverage, enable_coverage, sanitizer_name,
+                        package_name, cpp_std, cmake_modules, enable_luajit):
 
         optional_args = []
         if self.compiler == 'llvm':
@@ -53,7 +53,6 @@ class BuildConfig(common.CommonConfig):
             no_demos = True
             no_tests = True
             no_tools = True
-            optional_args.append('-Dramses-sdk_BUILD_DAEMON=OFF')
             optional_args.append('-Dramses-sdk_BUILD_IVI_TEST_APPS=OFF')
             # TODO These should not be needed, if using Gradle instead of CMake
             optional_args.append('-DANDROID_PLATFORM=21')
@@ -67,6 +66,9 @@ class BuildConfig(common.CommonConfig):
 
         if test_coverage:
             optional_args.append('-Dramses-sdk_ENABLE_COVERAGE=1')
+
+        if sanitizer_name:
+            optional_args.append(f'-Dramses-sdk_ENABLE_SANITIZER={sanitizer_name}')
 
         if headless:
             optional_args.append('-Dramses-sdk_BUILD_HEADLESS_SHARED_LIB=1')
@@ -90,6 +92,8 @@ class BuildConfig(common.CommonConfig):
             optional_args.append('-Dramses-sdk_BUILD_TOOLS=0')
         if cmake_modules:
             optional_args.append(f'-DCMAKE_MODULE_PATH={cmake_modules}')
+        if enable_luajit:
+            optional_args.append('-Dramses-sdk_USE_PLATFORM_LUAJIT=1')
 
         generator = generator
         if generator:
@@ -121,7 +125,9 @@ class BuildConfig(common.CommonConfig):
             f'-B{self.build_dir}',
         ]
         print(f'CWD: {self.build_dir}\nRun:', ' '.join(args))
-        subprocess.check_call(args, cwd=self.build_dir)
+        processResult = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.build_dir)
+        print(processResult.stdout.decode('utf-8'))
+        return processResult
 
     def cmake_build(self, target):
         args = [
@@ -165,6 +171,8 @@ class BuildConfig(common.CommonConfig):
 @click.option('--enable-lto', is_flag=True, default=False, help='Build with LTO support')
 @click.option('--test-coverage', is_flag=True, default=False, help='Enable test coverage')
 @click.option('--enable-coverage', is_flag=True, default=False, help='Enable code coverage')
+@click.option('--enable-luajit', is_flag=True, default=False, help='Enable system-provided luajit')
+@click.option('--sanitizer-name', help='Enables provided sanitizers')
 @click.option('--package-name', default="", help='Use a different package name for CPack than the default')
 @click.option('--package-destination', type=click.Path(exists=True, file_okay=False), help='Specify a folder where the package shall be copied')
 @click.option('--cpp-std', type=click.Choice(CPP_STANDARDS), default=CPP_STANDARDS[0])
@@ -173,10 +181,10 @@ class BuildConfig(common.CommonConfig):
 @click.option('--cmake-modules', help='Sets cmake module path')
 def build(compiler, config, build_dir, configure_only, build_target, package_destination, **kwargs):
     conf = BuildConfig(compiler, config, build_dir)
-    conf.cmake_configure(**kwargs)
+    cmake_process_result = conf.cmake_configure(**kwargs)
 
     if configure_only:
-        return
+        return cmake_process_result
 
     conf.cmake_build(build_target)
 

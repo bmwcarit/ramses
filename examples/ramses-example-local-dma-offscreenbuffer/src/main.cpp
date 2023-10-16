@@ -6,14 +6,14 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-utils.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/renderer/IRendererSceneControlEventHandler.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/client/ramses-utils.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <thread>
@@ -26,6 +26,7 @@
 #include <sys/ioctl.h>
 #include <drm_fourcc.h>
 #include <gbm.h>
+#include <iostream>
 
 /**
  * @example ramses-example-local-dma-offscreenbuffer/src/main.cpp
@@ -100,19 +101,23 @@ public:
     {
     }
 
-    void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t, ramses::displayBufferId_t, ramses::ERendererEventResult result) override
+    void framebufferPixelsRead(const uint8_t* pixelData, const uint32_t pixelDataSize, ramses::displayId_t /*displayId*/, ramses::displayBufferId_t /*displayBuffer*/, ramses::ERendererEventResult result) override
     {
         if(result == ramses::ERendererEventResult::Ok)
         {
             static uint32_t filePostifx = 0u;
             const std::string fileName = "./dmaBufExampleScreenshot_" + std::to_string(filePostifx++) + ".png";
-            if(!ramses::RamsesUtils::SaveImageBufferToPng(fileName, {pixelData, pixelData + pixelDataSize}, DisplayWidth, DisplayHeight))
-                printf("Error: Failed saving screenshot to %s !!\n", fileName.c_str());
+            if (!ramses::RamsesUtils::SaveImageBufferToPng(fileName, {pixelData, pixelData + pixelDataSize}, DisplayWidth, DisplayHeight))
+            {
+                std::cout << "Error: Failed saving screenshot to " << fileName << std::endl;
+            }
             else
-                printf("Saved screenshot to %s\n", fileName.c_str());
+            {
+                std::cout << "Saved screenshot to " << fileName << std::endl;
+            }
         }
         else
-            printf("Error: Failed read pixels!!\n");
+            std::cout << "Error: Failed read pixels!!" << std::endl;
     }
 
     void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override
@@ -128,7 +133,7 @@ public:
         }
     }
 
-    void offscreenBufferCreated(ramses::displayId_t, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
+    void offscreenBufferCreated(ramses::displayId_t /*displayId*/, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result) override
     {
         if (ramses::ERendererEventResult::Failed != result)
         {
@@ -136,7 +141,7 @@ public:
         }
     }
 
-    void offscreenBufferLinked(ramses::displayBufferId_t, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t, bool success) override
+    void offscreenBufferLinked(ramses::displayBufferId_t /*offscreenBufferId*/, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t /*consumerId*/, bool success) override
     {
         if (success)
         {
@@ -176,7 +181,7 @@ public:
 
         const auto result = conditionFunction();
         if(!result)
-            printf("Error: timed out waiting for state/condition!\n");
+            std::cout  << "Error: timed out waiting for state/condition!" << std::endl;
 
         return result;
     }
@@ -222,7 +227,7 @@ ramses::Effect& createEffect(ramses::Scene& scene, const std::string& effectName
     effectDesc.setFragmentShader(fragmentShader);
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    return *scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, effectName.c_str());
+    return *scene.createEffect(effectDesc, effectName.c_str());
 }
 
 ramses::MeshNode& createQuadWithTexture(ramses::Scene& scene, ramses::Effect& effect, ramses::TextureSampler& textureSampler)
@@ -243,23 +248,22 @@ ramses::MeshNode& createQuadWithTexture(ramses::Scene& scene, ramses::Effect& ef
     const ramses::ArrayResource* textureCoords = scene.createArrayResource(4u, textureCoordsArray.data());
 
     ramses::Appearance* appearance = scene.createAppearance(effect, "quad appearance");
-    ramses::GeometryBinding* geometry = scene.createGeometryBinding(effect, "quad geometry");
+    ramses::Geometry* geometry = scene.createGeometry(effect, "quad geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect.findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-    ramses::AttributeInput texCoordsInput;
-    effect.findAttributeInput("a_texcoord", texCoordsInput);
-    geometry->setInputBuffer(texCoordsInput, *textureCoords);
+    std::optional<ramses::AttributeInput> positionsInput = effect.findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> texCoordsInput = effect.findAttributeInput("a_texcoord");
+    assert(positionsInput.has_value() && texCoordsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
+    geometry->setInputBuffer(*texCoordsInput, *textureCoords);
 
     ramses::MeshNode* meshNode = scene.createMeshNode();
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
 
-    ramses::UniformInput textureInput;
-    effect.findUniformInput("textureSampler", textureInput);
-    appearance->setInputTexture(textureInput, textureSampler);
+    std::optional<ramses::UniformInput> textureInput = effect.findUniformInput("textureSampler");
+    assert(textureInput.has_value());
+    appearance->setInputTexture(*textureInput, textureSampler);
 
     return *meshNode;
 }
@@ -269,7 +273,7 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
     //scene consists of two quads with textures
     //the left quad is stream tex input rendered as is
     //the right quad is output result from processing input (from two frames ago)
-    ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "main scene");
+    ramses::Scene* clientScene = client.createScene(sceneId, "main scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("main scene camera");
     camera->setTranslation({0.0f, 0.0f, 5.0f});
@@ -315,7 +319,7 @@ ramses::Scene& createMainScene(ramses::RamsesClient& client, ramses::sceneId_t s
 ramses::Scene& createSourceScene(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
 {
     //scene consists of one quad with a the stream texture that fills whole OB where scene is rendered
-    ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "source scene");
+    ramses::Scene* clientScene = client.createScene(sceneId, "source scene");
 
     ramses::OrthographicCamera* camera = clientScene->createOrthographicCamera("source scene camera");
     camera->setTranslation({0.0f, 0.0f, 5.0f});
@@ -361,7 +365,7 @@ ramses::displayBufferId_t createDmaOffscreenBuffer(ramses::RamsesRenderer& rende
     const auto bufferId = renderer.createDmaOffscreenBuffer(display, OffscreenBufferWidth, OffscreenBufferHeight, DmaBufferFourccFormat, usageFlags, modifier);
 
     if(!bufferId.isValid())
-        printf("Error: Failed creating offscreen buffer!\n");
+        std::cout << "Error: Failed creating offscreen buffer!" << std::endl;
 
     return bufferId;
 }
@@ -371,29 +375,29 @@ bool mapDmaOffscreenBuffer(ramses::RamsesRenderer& renderer, ramses::displayId_t
     errno = 0;
     if(bufferInfoMap.find(displayBuffer) != bufferInfoMap.cend())
     {
-        printf("Error: Buffer already mapped!\n");
+        std::cout << "Error: Buffer already mapped!" << std::endl;
         return false;
     }
 
     int bufferFD = -1;
     uint32_t bufferStride = 0;
-    if(renderer.getDmaOffscreenBufferFDAndStride(display, displayBuffer, bufferFD, bufferStride) != ramses::StatusOK)
+    if(!renderer.getDmaOffscreenBufferFDAndStride(display, displayBuffer, bufferFD, bufferStride))
     {
-        printf("Error: Failed to get FD and stride!\n");
+        std::cout  << "Error: Failed to get FD and stride!" << std::endl;
         return false;
     }
 
-    const std::size_t fileSize = static_cast<std::size_t>(lseek(bufferFD, 0u, SEEK_END));
+    const auto fileSize = static_cast<std::size_t>(lseek(bufferFD, 0u, SEEK_END));
     const auto mappingPreviliges = (readyOnly? (PROT_READ) : (PROT_WRITE | PROT_READ));
     void* mappedMemory = mmap(nullptr, fileSize, mappingPreviliges, MAP_SHARED, bufferFD, 0u);
-    if(mappedMemory == MAP_FAILED)
+    if (mappedMemory == MAP_FAILED) // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     {
         const auto errorValue = errno;
-        printf("Error: Failed to map memory (errno=%i, errnoString=%s)!\n", errorValue, strerror(errorValue));
+        std::cout << "Error: Failed to map memory (errno=" << errorValue << ", errnoString=" << strerror(errorValue) << ")!" << std::endl;
         return false;
     }
 
-    printf("Mapped OB %u with FD %i successfully to %p\n", displayBuffer.getValue(), bufferFD, mappedMemory);
+    std::cout << "Mapped OB " << displayBuffer.getValue() << " with FD " << bufferFD << " successfully to " << mappedMemory << std::endl;
 
     bufferInfoMap[displayBuffer] = {bufferFD, bufferStride, fileSize, mappedMemory};
     return true;
@@ -404,17 +408,18 @@ bool startBufferAccess(ramses::displayBufferId_t displayBuffer)
     const auto bufferInfoIt = bufferInfoMap.find(displayBuffer);
     if(bufferInfoIt == bufferInfoMap.cend())
     {
-        printf("Error: Failed to find buffer for start sync!\n");
+        std::cout << "Error: Failed to find buffer for start sync!" << std::endl;
         return false;
     }
 
     dma_buf_sync syncStartFlags = { 0 };
     syncStartFlags.flags = DMA_BUF_SYNC_START | DMA_BUF_SYNC_RW;
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): false positive
     const auto syncStartResult = ioctl(bufferInfoIt->second.fd, DMA_BUF_IOCTL_SYNC, &syncStartFlags);
     if(syncStartResult != 0)
     {
-        printf("Error: Failed to start sync!\n");
+        std::cout << "Error: Failed to start sync!" << std::endl;
         return false;
     }
 
@@ -426,16 +431,17 @@ bool endBufferAccess(ramses::displayBufferId_t displayBuffer)
     const auto bufferInfoIt = bufferInfoMap.find(displayBuffer);
     if(bufferInfoIt == bufferInfoMap.cend())
     {
-        printf("Error: Failed to find buffer for end sync!\n");
+        std::cout << "Error: Failed to find buffer for end sync!" << std::endl;
         return false;
     }
 
     dma_buf_sync syncEndFlags = { 0 };
     syncEndFlags.flags = DMA_BUF_SYNC_END | DMA_BUF_SYNC_RW;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): false positive
     const auto syncEndResult = ioctl(bufferInfoIt->second.fd, DMA_BUF_IOCTL_SYNC, &syncEndFlags);
     if(syncEndResult != 0)
     {
-        printf("Failed to end sync!\n");
+        std::cout << "Failed to end sync!" << std::endl;
         return false;
     }
 
@@ -463,20 +469,20 @@ bool doProcessing(ramses::displayBufferId_t inputBuffer, ramses::displayBufferId
             uint8_t* outputPixelMem = reinterpret_cast<uint8_t*>(outputBufferInfo.mappedMem) + row * bufferStride + col * 4u;
 
             //Magic values for demonestrating noticeable change in several color channels
-            const float     magicValue1     = 1.f * col / OffscreenBufferWidth;
-            const uint16_t  magicValue2     = uint8_t(255.f * col / OffscreenBufferWidth);
-            const uint8_t   magicValue3     = uint8_t(255.f * row / OffscreenBufferHeight);
+            const auto magicValue1 = 1.f * static_cast<float>(col) / static_cast<float>(OffscreenBufferWidth);
+            const auto magicValue2 = uint16_t(255.f * static_cast<float>(col) / static_cast<float>(OffscreenBufferWidth));
+            const auto magicValue3 = uint8_t(255.f * static_cast<float>(row) / static_cast<float>(OffscreenBufferHeight));
 
-            switch (DmaBufferFourccFormat)
+            if (DmaBufferFourccFormat == DRM_FORMAT_ARGB8888) //ARGB little endian
             {
-            case DRM_FORMAT_ARGB8888: //ARGB little endian
                 outputPixelMem[0] = inputPixelMem[0];                                                   //Blue channel
-                outputPixelMem[1] = std::min<uint8_t>(uint8_t(magicValue1 * inputPixelMem[1]), 255u);   //Green channel
-                outputPixelMem[2] = uint8_t(std::min<uint16_t>(magicValue2 + inputPixelMem[2], 255u));  //Red channel
+                outputPixelMem[1] = static_cast<uint8_t>(magicValue1 * static_cast<float>(inputPixelMem[1])); //Green channel
+                outputPixelMem[2] = static_cast<uint8_t>(std::min<uint16_t>(magicValue2 + inputPixelMem[2], 255u));  //Red channel
                 outputPixelMem[3] = magicValue3;                                                        //Alpha channel
-                break;
-            default:
-                printf("Error: Unsupported format!\n");
+            }
+            else
+            {
+                std::cout << "Error: Unsupported format!" << std::endl;
                 return false;
             }
         }
@@ -554,15 +560,15 @@ int main()
     if(!mapDmaOffscreenBuffer(renderer, display, dmaOffscreenBufferWrite2, false))
        return 1;
 
-    printf("\n************* All OBs mapped successfully !! **********\n");
+    std::cout << std::endl <<"************* All OBs mapped successfully !! **********" << std::endl;
 
     //disable clearing for OBs in order to control when does content get overwritten
     //for example, the content of the write OBs (final result after processing) is written to memory
     //on CPU side, so GPU should not clear that content while rendering
-    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead1, ramses::EClearFlags_None);
-    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead2, ramses::EClearFlags_None);
-    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite1, ramses::EClearFlags_None);
-    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite2, ramses::EClearFlags_None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead1, ramses::EClearFlag::None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferRead2, ramses::EClearFlag::None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite1, ramses::EClearFlag::None);
+    renderer.setDisplayBufferClearFlags(display, dmaOffscreenBufferWrite2, ramses::EClearFlag::None);
     renderer.flush();
 
     const ramses::dataConsumerId_t samplerConsumerId(457u);
@@ -570,7 +576,7 @@ int main()
     const ramses::sceneId_t mainSceneId{1u};
     const std::string& processingOutputSamplerName = "processingOutputTexSampler";
     ramses::Scene& mainScene = createMainScene(client, mainSceneId, processingOutputSamplerName);
-    const ramses::TextureSampler& processingOutputSampler = *ramses::RamsesUtils::TryConvert<ramses::TextureSampler>(*mainScene.findObjectByName(processingOutputSamplerName.c_str()));
+    const auto& processingOutputSampler = *mainScene.findObject<ramses::TextureSampler>(processingOutputSamplerName);
     mainScene.createTextureConsumer(processingOutputSampler, samplerConsumerId);
 
     mainScene.flush();
@@ -621,14 +627,14 @@ int main()
         if(result == -1)
         {
             const auto errorValue = errno;
-            printf("Error: Failed to unmap memory for OB %u (errno=%i, errnoString=%s)!\n", bufferInfo.first.getValue(), errorValue, strerror(errorValue));
+            std::cout << "Error: Failed to unmap memory for OB " << bufferInfo.first.getValue() << " (errno=" << errorValue << ", errnoString=" << strerror(errorValue) << ")!" << std::endl;
             return 1;
         }
 
-        printf("Unmapped OB %u with FD %i successfully!\n", bufferInfo.first.getValue(), bufferInfo.second.fd);
+        std::cout << "Unmapped OB " << bufferInfo.first.getValue() << " with FD " << bufferInfo.second.fd << " successfully!" << std::endl;
     }
 
-    printf("\n************* All OBs unmapped successfully !! **********\n");
+    std::cout << std::endl << "************* All OBs unmapped successfully !! **********" << std::endl;
 
     return 0;
 }

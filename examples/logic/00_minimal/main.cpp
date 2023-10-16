@@ -8,9 +8,10 @@
 
 #include <iostream>
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/Property.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/ramses-client.h"
 
 /**
  * This example is designed to be minimal, but still provide insight into
@@ -21,8 +22,14 @@ int main()
     /**
      * Create an instance of the LogicEngine class. This holds all data
      * and offers methods to load and execute scripts among other things.
+     * We need to instantiate the basic components of Ramses ecosystem first,
+     * start with framework, then client and then scene which will be the owner
+     * of the logic instance.
      */
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ ramses::EFeatureLevel_Latest } };
+    ramses::RamsesClient* client = framework.createClient("client");
+    ramses::Scene* scene = client->createScene(ramses::sceneId_t{ 123u });
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
      * Create a script by providing the source code of the script with a string.

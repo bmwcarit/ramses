@@ -21,7 +21,7 @@ function(add_example)
         INCLUDE_PATHS           shared
         ENABLE_INSTALL          OFF
         SRC_FILES               ${EXAMPLE_FILES}
-        DEPENDENCIES            ramses-shared-lib
+        DEPENDENCIES            ramses::shared-lib-for-examples
     )
 
     if(TARGET ${EXAMPLE_NAME} AND ramses-sdk_BUILD_TESTS AND ${EXAMPLE_MAKE_TEST})
@@ -45,11 +45,13 @@ add_example(NAME 09_modules               FILES 09_modules/main.cpp             
 add_example(NAME 10_globals               FILES 10_globals/main.cpp               MAKE_TEST)
 add_example(NAME 11_interfaces            FILES 11_interfaces/main.cpp            MAKE_TEST)
 
-# Can't execute ramses animation examples as test - they have a loop which blocks test automation and wastes resources
-add_example(NAME 08a_static_animation     FILES 08a_static_animation/main.cpp)
-add_example(NAME 08b_dynamic_animation    FILES 08b_dynamic_animation/main.cpp)
-# Can't execute as test - it is essentially animation with loop which blocks test automation and wastes resources
-add_example(NAME 14_skinbinding           FILES 14_skinbinding/main.cpp)
-add_example(NAME 12_anchor_point          FILES 12_anchor_point/main.cpp)
-add_example(NAME 13_render_order          FILES 13_render_order/main.cpp)
-add_example(NAME 15_meshnodebinding       FILES 15_meshnodebinding/main.cpp)
+if(ramses-sdk_BUILD_FULL_SHARED_LIB)
+    # Can't execute ramses animation examples as test - they have a loop which blocks test automation and wastes resources
+    add_example(NAME 08a_static_animation     FILES 08a_static_animation/main.cpp)
+    add_example(NAME 08b_dynamic_animation    FILES 08b_dynamic_animation/main.cpp)
+    # Can't execute as test - it is essentially animation with loop which blocks test automation and wastes resources
+    add_example(NAME 14_skinbinding           FILES 14_skinbinding/main.cpp)
+    add_example(NAME 12_anchor_point          FILES 12_anchor_point/main.cpp)
+    add_example(NAME 13_render_order          FILES 13_render_order/main.cpp)
+    add_example(NAME 15_meshnodebinding       FILES 15_meshnodebinding/main.cpp)
+endif()

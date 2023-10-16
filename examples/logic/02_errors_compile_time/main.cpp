@@ -6,7 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/ramses-client.h"
 #include <cassert>
 #include <iostream>
 
@@ -16,7 +17,10 @@
 
 int main()
 {
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ ramses::EFeatureLevel_Latest } };
+    ramses::RamsesClient* client = framework.createClient("client");
+    ramses::Scene* scene = client->createScene(ramses::sceneId_t{ 123u });
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
      * Try to compile a script which has invalid Lua syntax
@@ -34,21 +38,17 @@ int main()
     if (nullptr == faultyScript)
     {
         /**
-         * To get further information about the issue, fetch errors from LogicEngine
-         * Note that this list will be reset with the next API call to logicEngine!
+         * To get further information about the issue, fetch last error from RamsesFramework.
+         * Note that the error will be reset once getLastError is called.
          */
-        auto errorList = logicEngine.getErrors();
-        assert(!errorList.empty());
+        const auto lastError = framework.getLastError();
+        assert(lastError.has_value());
 
-        // Print out the error information
-        for (auto& error : errorList)
-        {
-            /**
-             * Note that this error has no stack trace, because there is no stack - the script failed compiling
-             * Furthermore, the source code line indication is also "Lua style" - it starts at 1, not 0
-             */
-            std::cout << error.message << std::endl;
-        }
+        /**
+        * Note that this error has no stack trace, because there is no stack - the script failed compiling
+        * Furthermore, the source code line indication is also "Lua style" - it starts at 1, not 0
+        */
+        std::cout << lastError->message << std::endl;
     }
 
     return 0;

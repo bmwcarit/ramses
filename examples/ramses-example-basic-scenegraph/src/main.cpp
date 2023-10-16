@@ -6,23 +6,23 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
-#include "ramses-client-api/Scene.h"
-#include "ramses-client-api/RenderPass.h"
-#include "ramses-client-api/RenderGroup.h"
-#include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/EffectDescription.h"
-#include "ramses-client-api/ArrayResource.h"
-#include "ramses-client-api/SceneGraphIterator.h"
-#include "ramses-client-api/SceneObjectIterator.h"
-#include "ramses-client-api/UniformInput.h"
-#include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/Effect.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/Scene.h"
+#include "ramses/client/RenderPass.h"
+#include "ramses/client/RenderGroup.h"
+#include "ramses/client/Appearance.h"
+#include "ramses/client/Geometry.h"
+#include "ramses/client/MeshNode.h"
+#include "ramses/client/EffectDescription.h"
+#include "ramses/client/ArrayResource.h"
+#include "ramses/client/SceneGraphIterator.h"
+#include "ramses/client/SceneObjectIterator.h"
+#include "ramses/client/UniformInput.h"
+#include "ramses/client/AttributeInput.h"
+#include "ramses/client/Effect.h"
 
-#include <cstdio>
 #include <thread>
+#include <iostream>
 
 /**
  * @example ramses-example-basic-scenegraph/src/main.cpp
@@ -38,7 +38,8 @@ int main()
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic scenegraph scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "basic scenegraph scene");
 
     // every scene needs a render pass with camera
     auto* camera = scene->createPerspectiveCamera("my camera");
@@ -46,7 +47,7 @@ int main()
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -63,19 +64,19 @@ int main()
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-scenegraph.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance");
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = scene->createGeometry(*effect, "triangle geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     // get input data of appearance and bind required data
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
-    appearance->setInputValue(colorInput, ramses::vec4f{ 0.5f, 1.0f, 0.3f, 1.0f });
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
+    appearance->setInputValue(*colorInput, ramses::vec4f{ 0.5f, 1.0f, 0.3f, 1.0f });
 
     /// [Basic Scene Graph Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -92,8 +93,8 @@ int main()
             // create a mesh node to define the triangle with chosen appearance
             ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
             meshNode->setAppearance(*appearance);
-            meshNode->setGeometryBinding(*geometry);
-            meshNode->setTranslation({column * 0.2f, row * 0.2f, 0.0f});
+            meshNode->setGeometry(*geometry);
+            meshNode->setTranslation({static_cast<float>(column) * 0.2f, static_cast<float>(row) * 0.2f, 0.0f});
             meshNode->setParent(*group);
             // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
             renderGroup->addMeshNode(*meshNode);
@@ -102,15 +103,15 @@ int main()
     /// [Basic Scene Graph Example]
 
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     //example: how to traverse scene graph
     ramses::SceneGraphIterator graphIterator(*group, ramses::ETreeTraversalStyle::DepthFirst);
-    ramses::Node* nextNode;
-    printf("Scene graph traversed in depth first order: \n");
+    ramses::Node* nextNode = nullptr;
+    std::cout <<  "Scene graph traversed in depth first order:" << std::endl;
     while ((nextNode = graphIterator.getNext()) != nullptr)
     {
-        printf("Node: %s \n", nextNode->getName());
+        std::cout << "Node: " << nextNode->getName() << std::endl;
     }
 
     //example: how to iterate through objects of scene
@@ -120,7 +121,7 @@ int main()
     {
         ++numberOfMeshes;
     }
-    printf("Scene contains %i meshnodes\n", numberOfMeshes);
+    std::cout <<  "Scene contains " << numberOfMeshes << " meshnodes" << std::endl;
 
     scene->flush();
 

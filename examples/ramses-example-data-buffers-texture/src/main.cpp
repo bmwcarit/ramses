@@ -6,8 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include <thread>
 #include <chrono>
@@ -50,7 +50,8 @@ int main()
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic texturing scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "basic texturing scene");
 
     // every scene needs a render pass with camera
     auto* camera = scene->createPerspectiveCamera("my camera");
@@ -58,7 +59,7 @@ int main()
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 8.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -106,17 +107,17 @@ int main()
     const uint32_t regionDataSizeLevel0 = regionWidthLevel0 * regionHeightLevel0 * numChannels;
     const uint32_t regionDataSizeLevel1 = regionWidthLevel1 * regionHeightLevel1 * numChannels;
 
-    std::array<uint8_t, dataSizeLevel0> textureDataLevel0;
-    std::array<uint8_t, dataSizeLevel1> textureDataLevel1;
-    std::array<uint8_t, regionDataSizeLevel0> regionDataLevel0;
-    std::array<uint8_t, regionDataSizeLevel1> regionDataLevel1;
+    std::array<uint8_t, dataSizeLevel0> textureDataLevel0{};
+    std::array<uint8_t, dataSizeLevel1> textureDataLevel1{};
+    std::array<uint8_t, regionDataSizeLevel0> regionDataLevel0{};
+    std::array<uint8_t, regionDataSizeLevel1> regionDataLevel1{};
 
     // A helper function to cast and map a float value [0.f, 1.f[ to uint8 [0,255]
     auto convertToUInt8 = [](float value)->uint8_t
     {
         // by substracting the integer part, we just keep
         // the fractional part [0.f,1.f[
-        value -= static_cast<uint32_t>(value);
+        value -= static_cast<float>(static_cast<uint32_t>(value));
         return static_cast<uint8_t>(value * 255.f);
     };
 
@@ -165,45 +166,42 @@ int main()
     effectDesc.setFragmentShaderFromFile("res/ramses-example-data-buffers-texture.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effectTex = scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearanceNear = scene->createAppearance(*effectTex, "quad appearance (near)");
     ramses::Appearance* appearanceFar  = scene->createAppearance(*effectTex, "quad appearance (far)");
 
     // set vertex positions directly in geometry
-    ramses::AttributeInput positionsInput;
-    ramses::AttributeInput texcoordsInput;
-    ramses::UniformInput   mipmapLevelInput;
-    effectTex->findAttributeInput("a_position",  positionsInput);
-    effectTex->findAttributeInput("a_texcoord",  texcoordsInput);
+    std::optional<ramses::AttributeInput> positionsInput = effectTex->findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> texcoordsInput = effectTex->findAttributeInput("a_texcoord");
     // for sake of showing the different mipmap levels explicitly, a uniform selecting
     // a specific mipmap level has been added to the fragment shader
-    effectTex->findUniformInput("mipmapLevel", mipmapLevelInput);
+    std::optional<ramses::UniformInput> mipmapLevelInput = effectTex->findUniformInput("mipmapLevel");
+    assert(positionsInput.has_value() && texcoordsInput.has_value() && mipmapLevelInput.has_value());
 
-    ramses::GeometryBinding* geometryNear = scene->createGeometryBinding(*effectTex, "quad geometry (near)");
-    geometryNear->setInputBuffer(positionsInput, *vertexPositionsNear);
-    geometryNear->setInputBuffer(texcoordsInput, *textureCoords);
+    ramses::Geometry* geometryNear = scene->createGeometry(*effectTex, "quad geometry (near)");
+    geometryNear->setInputBuffer(*positionsInput, *vertexPositionsNear);
+    geometryNear->setInputBuffer(*texcoordsInput, *textureCoords);
     geometryNear->setIndices(*indices);
 
-    ramses::GeometryBinding* geometryFar = scene->createGeometryBinding(*effectTex, "quad geometry (far)");
-    geometryFar->setInputBuffer(positionsInput, *vertexPositionsFar);
-    geometryFar->setInputBuffer(texcoordsInput, *textureCoords);
+    ramses::Geometry* geometryFar = scene->createGeometry(*effectTex, "quad geometry (far)");
+    geometryFar->setInputBuffer(*positionsInput, *vertexPositionsFar);
+    geometryFar->setInputBuffer(*texcoordsInput, *textureCoords);
     geometryFar->setIndices(*indices);
 
-    ramses::UniformInput textureInput;
-    effectTex->findUniformInput("textureSampler", textureInput);
-    appearanceNear->setInputTexture(textureInput, *sampler);
-    appearanceFar->setInputTexture(textureInput, *sampler);
+    std::optional<ramses::UniformInput> textureInput = effectTex->findUniformInput("textureSampler");
+    appearanceNear->setInputTexture(*textureInput, *sampler);
+    appearanceFar->setInputTexture(*textureInput, *sampler);
 
-    appearanceNear->setInputValue(mipmapLevelInput, 0);
-    appearanceFar->setInputValue(mipmapLevelInput, 1);
+    appearanceNear->setInputValue(*mipmapLevelInput, 0);
+    appearanceFar->setInputValue(*mipmapLevelInput, 1);
     // create a mesh node to define the quad with chosen appearance
     ramses::MeshNode* meshNodeNear = scene->createMeshNode("textured quad mesh node (near)");
     meshNodeNear->setAppearance(*appearanceNear);
-    meshNodeNear->setGeometryBinding(*geometryNear);
+    meshNodeNear->setGeometry(*geometryNear);
 
     ramses::MeshNode* meshNodeFar = scene->createMeshNode("textured quad mesh node (far)");
     meshNodeFar->setAppearance(*appearanceFar);
-    meshNodeFar->setGeometryBinding(*geometryFar);
+    meshNodeFar->setGeometry(*geometryFar);
 
 
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
@@ -214,7 +212,7 @@ int main()
     scene->flush();
 
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     /// [Data Buffer Texture Example Update Loop]
     // application logic
@@ -325,7 +323,7 @@ template<   uint32_t TotalWidth, uint32_t TotalHeight,
 float IndexIterator<TotalWidth, TotalHeight, RegionOffsetX, RegionOffsetY, RegionWidth, RegionHeight>::getPositionXLocal(float cycleOffset)
 {
     const float shiftedPosition        = (static_cast<float>(x) / static_cast<float>(RegionWidth)) + cycleOffset;
-    const float positionFractionalPart = shiftedPosition - static_cast<uint32_t>(shiftedPosition);
+    const auto positionFractionalPart = shiftedPosition - static_cast<float>(static_cast<uint32_t>(shiftedPosition));
     return positionFractionalPart;
 }
 
@@ -346,7 +344,7 @@ template<   uint32_t TotalWidth, uint32_t TotalHeight,
 float IndexIterator<TotalWidth, TotalHeight, RegionOffsetX, RegionOffsetY, RegionWidth, RegionHeight>::getPositionYLocal(float cycleOffset)
 {
     const float shiftedPosition        = (static_cast<float>(y) / static_cast<float>(RegionHeight)) + cycleOffset;
-    const float positionFractionalPart = shiftedPosition - static_cast<uint32_t>(shiftedPosition);
+    const auto positionFractionalPart = shiftedPosition - static_cast<float>(static_cast<uint32_t>(shiftedPosition));
     return positionFractionalPart;
 }
 

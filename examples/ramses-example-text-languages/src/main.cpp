@@ -6,9 +6,9 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
-#include "ramses-text-api/FontRegistry.h"
-#include "ramses-text-api/TextCache.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/text/FontRegistry.h"
+#include "ramses/client/text/TextCache.h"
 #include <thread>
 
 /**
@@ -28,7 +28,8 @@ int main()
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ExampleTextDirections"));
 
-    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u));
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = client.createScene(sceneConfig);
 
     // create font registry to hold font memory and text cache to cache text meshes
     ramses::FontRegistry fontRegistry;
@@ -43,7 +44,7 @@ int main()
 
     // create render pass
     ramses::RenderPass* renderPass = scene->createRenderPass();
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -56,7 +57,7 @@ int main()
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
     effectDesc.setVertexShaderFromFile("res/ramses-example-text-languages-effect.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-text-languages-effect.frag");
-    const ramses::Effect* textEffect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "simpleTextShader");
+    const ramses::Effect* textEffect = scene->createEffect(effectDesc, "simpleTextShader");
     /// [Languages Text Example]
     // create font instances
     const ramses::FontId hebrewFont   = fontRegistry.createFreetype2Font("res/ramses-example-text-languages-Arimo-Regular.ttf");
@@ -109,7 +110,7 @@ int main()
     renderGroup->addMeshNode(*textLine5->meshNode);
 
     scene->flush();
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
     std::this_thread::sleep_for(std::chrono::seconds(30));
 
     scene->unpublish();

@@ -15,11 +15,7 @@ SET(ramses-shared-lib-headless_VERSION @RAMSES_VERSION@)
 
 @PACKAGE_INIT@
 
-
-#find include dir
-FIND_PATH(ramses-shared-lib-headless_INCLUDE_DIRS ramses-client.h
-    HINTS @PACKAGE_RAMSES_INSTALL_HEADERS_PATH@
-)
+set(ramses-shared-lib-headless_INCLUDE_DIRS "@PACKAGE_RAMSES_INSTALL_HEADERS_PATH@")
 
 if(IS_DIRECTORY "${ramses-shared-lib-headless_INCLUDE_DIRS}/glm")
     add_library(glm::glm INTERFACE IMPORTED)

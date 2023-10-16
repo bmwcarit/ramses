@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
 #include <thread>
 
@@ -24,7 +24,8 @@ int main()
     framework.connect();
 
     // create a scene
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic renderpasses scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "basic renderpasses scene");
 
     // prepare triangle geometry: vertex position array and index array
     const std::array<ramses::vec3f, 4u> vertexPositionsData{ ramses::vec3f{-0.5f, 0.f, -1.f}, ramses::vec3f{0.5f, 0.f, -1.f}, ramses::vec3f{-0.5f, 1.f, -1.f}, ramses::vec3f{0.5f, 1.f, -1.f} };
@@ -37,7 +38,7 @@ int main()
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-renderpasses.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-renderpasses.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
-    ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effectTex = scene->createEffect(effectDesc, "glsl shader");
 
     /// [Basic Renderpasses Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -63,8 +64,8 @@ int main()
     // create two renderpasses
     ramses::RenderPass* renderPassA = scene->createRenderPass("renderpass A");
     ramses::RenderPass* renderPassB = scene->createRenderPass("renderpass B");
-    renderPassA->setClearFlags(ramses::EClearFlags_None);
-    renderPassB->setClearFlags(ramses::EClearFlags_None);
+    renderPassA->setClearFlags(ramses::EClearFlag::None);
+    renderPassB->setClearFlags(ramses::EClearFlag::None);
 
     // set valid cameras for the passes
     renderPassA->setCamera(*cameraA);
@@ -80,25 +81,25 @@ int main()
     ramses::Appearance* appearanceB = scene->createAppearance(*effectTex, "triangle appearance");
 
     // set vertex positions directly in geometry
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effectTex, "triangle geometry");
+    ramses::Geometry* geometry = scene->createGeometry(*effectTex, "triangle geometry");
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effectTex->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effectTex->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     // use two appearances, each with a different color for distinguishing the meshes
-    ramses::UniformInput color;
-    effectTex->findUniformInput("color", color);
-    appearanceA->setInputValue(color, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
-    appearanceB->setInputValue(color, ramses::vec4f{ 0.0f, 1.0f, 0.0f, 1.0f });
+    std::optional<ramses::UniformInput> color = effectTex->findUniformInput("color");
+    assert(color.has_value());
+    appearanceA->setInputValue(*color, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
+    appearanceB->setInputValue(*color, ramses::vec4f{ 0.0f, 1.0f, 0.0f, 1.0f });
 
     ramses::MeshNode* meshNodeA = scene->createMeshNode("red triangle mesh node");
     meshNodeA->setAppearance(*appearanceA);
-    meshNodeA->setGeometryBinding(*geometry);
+    meshNodeA->setGeometry(*geometry);
 
     ramses::MeshNode* meshNodeB = scene->createMeshNode("green triangle mesh node");
     meshNodeB->setAppearance(*appearanceB);
-    meshNodeB->setGeometryBinding(*geometry);
+    meshNodeB->setGeometry(*geometry);
 
     // add each mesh to one pass
     renderGroupA->addMeshNode(*meshNodeA);
@@ -109,7 +110,7 @@ int main()
     // signal the scene it is in a state that can be rendered
     scene->flush();
 
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
     // distribute the scene to RAMSES
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -117,7 +118,7 @@ int main()
 
     uint32_t loops = 10000;
 
-    while (--loops)
+    while (--loops != 0u)
     {
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }

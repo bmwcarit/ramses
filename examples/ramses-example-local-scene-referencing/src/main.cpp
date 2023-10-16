@@ -6,16 +6,16 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include "ramses-client-api/SceneReference.h"
+#include "ramses/client/SceneReference.h"
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/RendererSceneControl.h"
 
-#include "ramses-utils.h"
+#include "ramses/client/ramses-utils.h"
 
 #include <thread>
 #include <unordered_map>
@@ -47,11 +47,11 @@ public:
         : m_client(client)
     {}
 
-    void sceneFileLoadFailed(std::string_view) override {}
-    void sceneFileLoadSucceeded(std::string_view, ramses::Scene*) override {}
-    void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t) override {}
-    void dataLinked(ramses::sceneId_t, ramses::dataProviderId_t, ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
-    void dataUnlinked(ramses::sceneId_t, ramses::dataConsumerId_t, bool) override {}
+    void sceneFileLoadFailed(std::string_view /*filename*/) override {}
+    void sceneFileLoadSucceeded(std::string_view /*filename*/, ramses::Scene* /*loadedScene*/) override {}
+    void sceneReferenceFlushed(ramses::SceneReference& /*sceneRef*/, ramses::sceneVersionTag_t /*versionTag*/) override {}
+    void dataLinked(ramses::sceneId_t /*providerScene*/, ramses::dataProviderId_t /*providerId*/, ramses::sceneId_t /*consumerScene*/, ramses::dataConsumerId_t /*consumerId*/, bool /*success*/) override {}
+    void dataUnlinked(ramses::sceneId_t /*consumerScene*/, ramses::dataConsumerId_t /*consumerId*/, bool /*success*/) override {}
 
     void sceneReferenceStateChanged(ramses::SceneReference& sceneRef, ramses::RendererSceneState state) override
     {
@@ -62,6 +62,10 @@ public:
     {
         while (m_sceneRefState.count(sceneId) == 0 || m_sceneRefState.find(sceneId)->second != state)
         {
+            ramses::SceneIterator sceneIter{ m_client };
+            while (auto scene = sceneIter.getNext())
+                scene->flush(); // local only scenes have to be flushed periodically when getting scene to READY state
+
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
             m_client.dispatchEvents(*this);
         }
@@ -113,7 +117,7 @@ void createContentProviderScene(ramses::RamsesClient& client, ramses::sceneId_t 
     clientScene->createDataConsumer(*vpSizeData, VPSizeConsumerId);
 
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -137,38 +141,38 @@ void main(void) {
 })glsl");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
-    ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = clientScene->createGeometry(*effect, "triangle geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     renderGroup->addMeshNode(*meshNode);
 
     ramses::MeshNode* meshNode2 = clientScene->createMeshNode("triangle mesh node 2");
     ramses::Appearance* appearance2 = clientScene->createAppearance(*effect, "triangle appearance");
     meshNode2->setAppearance(*appearance2);
-    meshNode2->setGeometryBinding(*geometry);
+    meshNode2->setGeometry(*geometry);
     renderGroup->addMeshNode(*meshNode2);
     meshNode2->setTranslation({0, -10, -5});
     meshNode2->setScaling({100, 100, 1});
 
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
 
     // Create data objects to hold color and bind them to appearance inputs
     auto color1 = clientScene->createDataObject(ramses::EDataType::Vector4F);
     auto color2 = clientScene->createDataObject(ramses::EDataType::Vector4F);
     color1->setValue(ramses::vec4f{ 1.f, 1.f, 1.f, 1.f });
     color1->setValue(ramses::vec4f{ 0.5f, 0.5f, 0.5f, 1.f });
-    appearance->bindInput(colorInput, *color1);
-    appearance2->bindInput(colorInput, *color2);
+    appearance->bindInput(*colorInput, *color1);
+    appearance2->bindInput(*colorInput, *color2);
     clientScene->createDataConsumer(*color1, Color1ConsumerId);
     clientScene->createDataConsumer(*color2, Color2ConsumerId);
 
@@ -296,10 +300,10 @@ int main()
     sceneControlAPI.flush();
 
     // These are master scene's data objects linked to scene1 and scene2 cameras' viewports
-    auto scene1vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*masterScene->findObjectByName("vp1offset"));
-    auto scene1vpSize = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*masterScene->findObjectByName("vp1size"));
-    auto scene2vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*masterScene->findObjectByName("vp2offset"));
-    auto scene2vpSize = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*masterScene->findObjectByName("vp2size"));
+    auto scene1vpOffset = masterScene->findObject<ramses::DataObject>("vp1offset");
+    auto scene1vpSize = masterScene->findObject<ramses::DataObject>("vp1size");
+    auto scene2vpOffset = masterScene->findObject<ramses::DataObject>("vp2offset");
+    auto scene2vpSize = masterScene->findObject<ramses::DataObject>("vp2size");
 
     // start animating data provider values after scenes are being rendered
     eventHandler.waitForSceneRefState(refSceneId1, ramses::RendererSceneState::Rendered);

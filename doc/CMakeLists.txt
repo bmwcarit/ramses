@@ -34,11 +34,7 @@ endif()
 # when an API file is changed)
 file(GLOB_RECURSE
     API_FILES
-    # TODO clean this up, it is a mess
-    ${PROJECT_SOURCE_DIR}/*/ramses-*-api/include/*.h
-    ${PROJECT_SOURCE_DIR}/*/*/ramses-*-api/include/*.h
-    ${PROJECT_SOURCE_DIR}/*/*/*/ramses-*-api/include/*.h
-    ${PROJECT_SOURCE_DIR}/client/logic/include/ramses-logic/*.h
+    ${PROJECT_SOURCE_DIR}/include/ramses/*.h
 )
 
 string(REPLACE ";" " " DOXYGEN_INPUT  "${API_FILES}")

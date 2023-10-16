@@ -6,13 +6,13 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/RendererSceneControl.h"
 #include <unordered_set>
 #include <thread>
 
@@ -47,7 +47,7 @@ uint64_t nowMs()
 ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
 {
     //client scene
-    ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example scene");
+    ramses::Scene* clientScene = client.createScene(sceneId, "local displays example scene");
 
     //fill scene with content, i.e. use high level api
     // every scene needs a render pass with camera
@@ -56,7 +56,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -73,26 +73,24 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     effectDesc.setFragmentShaderFromFile("res/ramses-local-displays-test.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
-    ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = clientScene->createGeometry(*effect, "triangle geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(positionsInput.has_value() && colorInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 1.0f, 0.3f, 1.0f });
+    appearance->setInputValue(*colorInput, ramses::vec4f{ 1.0f, 1.0f, 0.3f, 1.0f });
 
     return clientScene;
 }
@@ -100,7 +98,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
 ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t sceneId)
 {
     //client scene
-    ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local displays example scene");
+    ramses::Scene* clientScene = client.createScene(sceneId, "local displays example scene");
 
     //fill scene with content, i.e. use high level api
     // every scene needs a render pass with camera
@@ -109,7 +107,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -126,26 +124,25 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     effectDesc.setFragmentShaderFromFile("res/ramses-local-displays-test.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
-    ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = clientScene->createGeometry(*effect, "triangle geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(positionsInput.has_value() && colorInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.5f, 1.0f });
+    appearance->setInputValue(*colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.5f, 1.0f });
 
     return clientScene;
 }
@@ -203,8 +200,8 @@ int main()
     renderer.startThread();
     renderer.flush();
 
-    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
-    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
+    auto* meshScene1 = scene1->findObject<ramses::MeshNode>("triangle mesh node");
+    auto* meshScene2 = scene2->findObject<ramses::MeshNode>("triangle mesh node");
 
     RendererEventHandler eventHandler;
     float rotationZ = 0.f;

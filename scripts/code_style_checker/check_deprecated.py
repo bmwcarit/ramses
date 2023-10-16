@@ -49,7 +49,7 @@ def check_deprecated(filename, file_contents, clean_file_contents, file_lines, c
 
         if filename.endswith('.h') and g_re_unwanted_force_thread_local.search(line):
             common.log_warning("check_deprecated", filename, line_number + 1,
-                               'found disallowed #include "Utils/ThreadLocalLogForced.h" in header"', file_lines[line_number].strip(" \t\r\n"))
+                               'found disallowed #include "internal/Core/Utils/ThreadLocalLogForced.h" in header"', file_lines[line_number].strip(" \t\r\n"))
 
         # TODO: Fix offenders and reduce limit until some reasonable length is reached
         if len(line) > g_max_line_length:

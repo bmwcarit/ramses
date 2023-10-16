@@ -9,7 +9,7 @@
 function(makeTestFromTarget)
     cmake_parse_arguments(
         TEST                # Prefix of parsed args
-        "SKIPPABLE"         # Options
+        ""                  # Options
         "TARGET;SUFFIX"     # Single-value args
         "EXTRA_ARGS"        # Multi-value-args
         ${ARGN}
@@ -22,12 +22,7 @@ function(makeTestFromTarget)
     set(TEST_NAME "${TEST_TARGET}_${TEST_SUFFIX}")
 
     if (NOT TARGET ${TEST_TARGET})
-        if(TEST_SKIPPABLE)
-            message(STATUS "Skipping test '${TEST_NAME}' because it's executable ${TEST_TARGET} is missing")
-            return()
-        else()
-            message(FATAL_ERROR "makeTestFromTarget: Test target '${TEST_TARGET}' not found")
-        endif()
+        message(FATAL_ERROR "makeTestFromTarget: Test target '${TEST_TARGET}' not found")
     endif()
 
     # TODO: tests should not have to be installed, this line could be deleted after tests have been refactored to

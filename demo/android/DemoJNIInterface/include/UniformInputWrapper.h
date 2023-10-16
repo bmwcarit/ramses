@@ -6,10 +6,9 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_UNIFORMINPUTWRAPPER_H
-#define RAMSES_UNIFORMINPUTWRAPPER_H
+#pragma once
 
-#include "ramses-client-api/UniformInput.h"
+#include "ramses/client/UniformInput.h"
 
 namespace ramses
 {
@@ -24,9 +23,7 @@ public:
     void setInputValueFloat(float x);
 
 private:
-    ramses::UniformInput m_input;
+    std::optional<ramses::UniformInput> m_input;
     ramses::Appearance& m_appearance;
 
 };
-
-#endif

@@ -6,16 +6,16 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "ramses-client-api/PickableObject.h"
-#include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/framework/RamsesFrameworkTypes.h"
+#include "ramses/client/PickableObject.h"
+#include "ramses/client/PerspectiveCamera.h"
+#include "ramses/renderer/IRendererSceneControlEventHandler.h"
 #include <unordered_set>
 #include <thread>
 #include <iostream>
@@ -46,12 +46,12 @@ public:
     {
     }
 
-    void mouseEvent(ramses::displayId_t, ramses::EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) override
+    void mouseEvent(ramses::displayId_t /*displayId*/, ramses::EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY) override
     {
         if (eventType == ramses::EMouseEvent::LeftButtonDown)
         {
             //Flip PosY
-            mousePosY = DisplayHeight - mousePosY;
+            mousePosY = static_cast<int32_t>(DisplayHeight) - mousePosY;
 
             //normalized coordinate calculation
             const float mouseXNormalized = ((2.0f * static_cast<float>(mousePosX) / DisplayWidth)) - 1.f;
@@ -76,12 +76,16 @@ public:
             // change color of clicked triangles to random value
             if (pickedObjects[po].getValue() == 1)
             {
-                m_appearanceA.getEffect().findUniformInput("color", m_colorInput);
+                std::optional<ramses::UniformInput> colorInput = m_appearanceA.getEffect().findUniformInput("color");
+                assert(colorInput.has_value());
+                m_colorInput = std::move(*colorInput);
                 m_appearanceA.setInputValue(m_colorInput, ramses::vec4f{ r, g, b, 1.0f });
             }
             else if (pickedObjects[po].getValue() == 2)
             {
-                m_appearanceB.getEffect().findUniformInput("color", m_colorInput);
+                std::optional<ramses::UniformInput> colorInput = m_appearanceB.getEffect().findUniformInput("color");
+                assert(colorInput.has_value());
+                m_colorInput = std::move(*colorInput);
                 m_appearanceB.setInputValue(m_colorInput, ramses::vec4f{ r, g, b, 1.0f });
             }
         }
@@ -129,7 +133,7 @@ int main()
 
     //client scene
     const ramses::sceneId_t sceneId(1u);
-    ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local client example scene");
+    ramses::Scene* clientScene = client.createScene(sceneId, "local client example scene");
 
     // every scene needs a render pass with camera
     ramses::OrthographicCamera* orthographicCamera = clientScene->createOrthographicCamera("my orthographicCamera");
@@ -147,8 +151,8 @@ int main()
     perspectiveCamera->scale({1.f, 2.f, 1.f});
     ramses::RenderPass* renderPassA = clientScene->createRenderPass("my render pass A");
     ramses::RenderPass* renderPassB = clientScene->createRenderPass("my render pass B");
-    renderPassA->setClearFlags(ramses::EClearFlags_None);
-    renderPassB->setClearFlags(ramses::EClearFlags_None);
+    renderPassA->setClearFlags(ramses::EClearFlag::None);
+    renderPassB->setClearFlags(ramses::EClearFlag::None);
     renderPassA->setCamera(*perspectiveCamera);
     renderPassB->setCamera(*orthographicCamera);
     ramses::RenderGroup* renderGroupA = clientScene->createRenderGroup();
@@ -172,18 +176,18 @@ int main()
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-pick-handling.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearanceA = clientScene->createAppearance(*effect, "triangle appearance A");
     ramses::Appearance* appearanceB = clientScene->createAppearance(*effect, "triangle appearance B");
-    ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = clientScene->createGeometry(*effect, "triangle geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
 
     // create two mesh nodes to define the triangles with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
@@ -193,7 +197,7 @@ int main()
     meshNode->setTranslation({1.5f, -0.3f, 0.4f});
     meshNode->setRotation({-12.f, -30.f, -10.f}, ramses::ERotationType::Euler_XYZ);
     meshNode->setScaling({1.2f, 1.5f, 0.7f});
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroupA->addMeshNode(*meshNode);
 
@@ -201,11 +205,11 @@ int main()
     meshNode2->setRotation({-10.f, -34.f, -19.f}, ramses::ERotationType::Euler_XYZ);
     meshNode2->setScaling({0.5f, 0.5f, 0.5f});
     meshNode2->setAppearance(*appearanceB);
-    meshNode2->setGeometryBinding(*geometry);
+    meshNode2->setGeometry(*geometry);
     renderGroupB->addMeshNode(*meshNode2);
 
-    appearanceA->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
-    appearanceB->setInputValue(colorInput, ramses::vec4f{ 0.0f, 1.0f, 0.3f, 1.0f });
+    appearanceA->setInputValue(*colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
+    appearanceB->setInputValue(*colorInput, ramses::vec4f{ 0.0f, 1.0f, 0.3f, 1.0f });
 
     /// [Pick Handling Example]
     // use triangle's vertex position array as PickableObject geometry
@@ -225,7 +229,7 @@ int main()
     clientScene->publish();
     clientScene->flush();
 
-    SceneStateEventHandler eventHandler(sceneControlAPI, *appearanceA, *appearanceB, colorInput);
+    SceneStateEventHandler eventHandler(sceneControlAPI, *appearanceA, *appearanceB, *colorInput);
 
     // show the scene on the renderer
     sceneControlAPI.setSceneMapping(sceneId, display);

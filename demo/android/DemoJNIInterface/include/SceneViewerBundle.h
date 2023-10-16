@@ -6,8 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_SCENEVIEWERBUNDLE_H
-#define RAMSES_SCENEVIEWERBUNDLE_H
+#pragma once
 
 #include "RendererBundle.h"
 #include "UniformInputWrapper.h"
@@ -38,5 +37,3 @@ private:
     ramses::RamsesClient* m_client;
     ramses::Scene* m_loadedScene;
 };
-
-#endif

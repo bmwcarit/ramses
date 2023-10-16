@@ -6,18 +6,18 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/SkinBinding.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/RamsesNodeBinding.h"
-#include "ramses-logic/Property.h"
-#include "ramses-logic/AnimationNode.h"
-#include "ramses-logic/AnimationNodeConfig.h"
-#include "ramses-logic/AnimationTypes.h"
-#include "ramses-logic/TimerNode.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/SkinBinding.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/NodeBinding.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/logic/AnimationNode.h"
+#include "ramses/client/logic/AnimationNodeConfig.h"
+#include "ramses/client/logic/AnimationTypes.h"
+#include "ramses/client/logic/TimerNode.h"
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include "SimpleRenderer.h"
 
@@ -51,7 +51,7 @@ SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client);
 * Helper method which sets up simple animation for a skeleton joint node.
 * Details on how to set up animations are covered in the animation example.
 */
-void SetupJointAnimation(const ramses::RamsesNodeBinding& node, ramses::LogicEngine& logicEngine);
+void SetupJointAnimation(ramses::NodeBinding& node, ramses::LogicEngine& logicEngine);
 
 int main()
 {
@@ -67,7 +67,7 @@ int main()
      */
     auto [scene, appearance] = CreateSceneWithSkinnableMesh(*renderer.getClient());
 
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
     * Show the scene on the renderer
@@ -78,11 +78,11 @@ int main()
     * First create skeleton joints, each skeleton joint is represented by a Ramses node and a node binding.
     * Joint 2 is slightly offset in Y axis so that both joints form a simple 2-bone skeleton.
     */
-    auto skeletonJoint1 = scene->createNode();
-    auto skeletonJoint2 = scene->createNode();
+    auto* skeletonJoint1 = scene->createNode();
+    auto* skeletonJoint2 = scene->createNode();
     skeletonJoint2->setTranslation({0.f, 1.f, 0.f});
-    const auto skeletonJointBinding1 = logicEngine.createRamsesNodeBinding(*skeletonJoint1);
-    const auto skeletonJointBinding2 = logicEngine.createRamsesNodeBinding(*skeletonJoint2);
+    auto* skeletonJointBinding1 = logicEngine.createNodeBinding(*skeletonJoint1);
+    auto* skeletonJointBinding2 = logicEngine.createNodeBinding(*skeletonJoint2);
 
     /**
     * Set up a simple rotation animation for joint 2.
@@ -108,16 +108,16 @@ int main()
     *  - appearance binding of the appearance used to render the mesh
     *  - uniform input of the appearance where joint matrices are expected
     */
-    const std::vector<const ramses::RamsesNodeBinding*> skinBindingJoints = {
+    const std::vector<const ramses::NodeBinding*> skinBindingJoints = {
         skeletonJointBinding1,
         skeletonJointBinding2 };
     const std::vector<ramses::matrix44f> skinBindingInverseBindMatrices = {
         inverseBindMatrix1,
         inverseBindMatrix2 };
-    ramses::RamsesAppearanceBinding* appearanceBinding = logicEngine.createRamsesAppearanceBinding(*appearance);
+    ramses::AppearanceBinding* appearanceBinding = logicEngine.createAppearanceBinding(*appearance);
 
-    ramses::UniformInput jointMatUniform;
-    appearance->getEffect().findUniformInput("u_jointMat", jointMatUniform);
+    std::optional<ramses::UniformInput> jointMatUniform = appearance->getEffect().findUniformInput("u_jointMat");
+    assert(jointMatUniform.has_value());
 
     /**
     * Finally create instance of skin binding using all the data.
@@ -126,7 +126,7 @@ int main()
         skinBindingJoints,
         skinBindingInverseBindMatrices,
         *appearanceBinding,
-        jointMatUniform);
+        *jointMatUniform);
 
     /**
     * Note that after this point there is no application logic needed, all the steps needed for skinning happen
@@ -166,7 +166,7 @@ int main()
 
 SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client)
 {
-    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "skinning scene");
+    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), "skinning scene");
 
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(SimpleRenderer::GetDisplaySize()[0])/float(SimpleRenderer::GetDisplaySize()[1]), 0.1f, 100.0f);
@@ -174,7 +174,7 @@ SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client)
     camera->setTranslation({0.0f, 1.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -267,22 +267,20 @@ SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client)
     const ramses::Effect* effect = scene->createEffect(effectDesc);
     ramses::Appearance* appearance = scene->createAppearance(*effect);
 
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect);
+    ramses::Geometry* geometry = scene->createGeometry(*effect);
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-    ramses::AttributeInput weightsInput;
-    effect->findAttributeInput("a_weight", weightsInput);
-    geometry->setInputBuffer(weightsInput, *weights);
-    ramses::AttributeInput jointIndicesInput;
-    effect->findAttributeInput("a_joint", jointIndicesInput);
-    geometry->setInputBuffer(jointIndicesInput, *jointIndices);
+    std::optional<ramses::AttributeInput> positionsInput    = effect->findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> weightsInput      = effect->findAttributeInput("a_weight");
+    std::optional<ramses::AttributeInput> jointIndicesInput = effect->findAttributeInput("a_joint");
+    assert(positionsInput.has_value() && weightsInput.has_value() && jointIndicesInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
+    geometry->setInputBuffer(*weightsInput, *weights);
+    geometry->setInputBuffer(*jointIndicesInput, *jointIndices);
 
     ramses::MeshNode* meshNode = scene->createMeshNode("mesh");
     meshNode->setAppearance(*appearance);
     meshNode->setIndexCount(uint32_t(indexArray.size()));
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
 
     renderGroup->addMeshNode(*meshNode);
 
@@ -292,7 +290,7 @@ SceneAndAppearance CreateSceneWithSkinnableMesh(ramses::RamsesClient& client)
     return { scene, appearance };
 }
 
-void SetupJointAnimation(const ramses::RamsesNodeBinding& node, ramses::LogicEngine& logicEngine)
+void SetupJointAnimation(ramses::NodeBinding& node, ramses::LogicEngine& logicEngine)
 {
     ramses::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 2.f, 4.f }); // will be interpreted as seconds
     ramses::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ { 0.f, 0.f, -90.f }, { 0.f, 0.f, 90.f }, { 0.f, 0.f, -90.f } });

@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -53,16 +53,14 @@ if (NOT SYSTEM_GLM)
 endif()
 
 # build with exported target
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
-    set(tgtname "tgt-${name}")
-    add_executable(${tgtname} "ramses-shared-lib-check.cpp")
-    # ramses::ramses target resolves glm dependency
-    target_link_libraries(${tgtname} ramses::ramses)
+set(tgtname "tgt-${name}")
+add_executable(${tgtname} "ramses-shared-lib-check.cpp")
+# ramses::ramses target resolves glm dependency
+target_link_libraries(${tgtname} ramses::ramses)
 
-    add_custom_target(run-${tgtname}
-        COMMAND $<TARGET_FILE:${tgtname}>
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        DEPENDS ${tgtname}
-        COMMENT "Run executable ${tgtname}")
-    add_dependencies(run-all run-${tgtname})
-endif()
+add_custom_target(run-${tgtname}
+    COMMAND $<TARGET_FILE:${tgtname}>
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${tgtname}
+    COMMENT "Run executable ${tgtname}")
+add_dependencies(run-all run-${tgtname})
