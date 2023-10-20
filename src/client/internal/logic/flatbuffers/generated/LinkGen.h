@@ -6,6 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "PropertyGen.h"
 
 namespace rlogic_serialization {
@@ -13,12 +20,12 @@ namespace rlogic_serialization {
 struct Link;
 struct LinkBuilder;
 
-inline const flatbuffers::TypeTable *LinkTypeTable();
+inline const ::flatbuffers::TypeTable *LinkTypeTable();
 
-struct Link FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Link FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LinkBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return LinkTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -35,46 +42,45 @@ struct Link FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool isWeak() const {
     return GetField<uint8_t>(VT_ISWEAK, 0) != 0;
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_SOURCEPROPERTY) &&
            verifier.VerifyTable(sourceProperty()) &&
            VerifyOffset(verifier, VT_TARGETPROPERTY) &&
            verifier.VerifyTable(targetProperty()) &&
-           VerifyField<uint8_t>(verifier, VT_ISWEAK) &&
+           VerifyField<uint8_t>(verifier, VT_ISWEAK, 1) &&
            verifier.EndTable();
   }
 };
 
 struct LinkBuilder {
   typedef Link Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_sourceProperty(flatbuffers::Offset<rlogic_serialization::Property> sourceProperty) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_sourceProperty(::flatbuffers::Offset<rlogic_serialization::Property> sourceProperty) {
     fbb_.AddOffset(Link::VT_SOURCEPROPERTY, sourceProperty);
   }
-  void add_targetProperty(flatbuffers::Offset<rlogic_serialization::Property> targetProperty) {
+  void add_targetProperty(::flatbuffers::Offset<rlogic_serialization::Property> targetProperty) {
     fbb_.AddOffset(Link::VT_TARGETPROPERTY, targetProperty);
   }
   void add_isWeak(bool isWeak) {
     fbb_.AddElement<uint8_t>(Link::VT_ISWEAK, static_cast<uint8_t>(isWeak), 0);
   }
-  explicit LinkBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit LinkBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  LinkBuilder &operator=(const LinkBuilder &);
-  flatbuffers::Offset<Link> Finish() {
+  ::flatbuffers::Offset<Link> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Link>(end);
+    auto o = ::flatbuffers::Offset<Link>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<Link> CreateLink(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::Property> sourceProperty = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> targetProperty = 0,
+inline ::flatbuffers::Offset<Link> CreateLink(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::Property> sourceProperty = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> targetProperty = 0,
     bool isWeak = false) {
   LinkBuilder builder_(_fbb);
   builder_.add_targetProperty(targetProperty);
@@ -88,13 +94,13 @@ struct Link::Traits {
   static auto constexpr Create = CreateLink;
 };
 
-inline const flatbuffers::TypeTable *LinkTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_BOOL, 0, -1 }
+inline const ::flatbuffers::TypeTable *LinkTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_BOOL, 0, -1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::PropertyTypeTable
   };
   static const char * const names[] = {
@@ -102,8 +108,8 @@ inline const flatbuffers::TypeTable *LinkTypeTable() {
     "targetProperty",
     "isWeak"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 3, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 3, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

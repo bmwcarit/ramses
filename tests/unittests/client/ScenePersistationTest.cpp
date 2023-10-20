@@ -1242,8 +1242,8 @@ namespace ramses::internal
         const ETextureSamplingMethod minSamplingMethod = ETextureSamplingMethod::Linear_MipMapNearest;
         const ETextureSamplingMethod magSamplingMethod = ETextureSamplingMethod::Linear;
         const uint8_t data[4] = { 0u };
-        const MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = this->m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, "texture");
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        Texture2D* texture = this->m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "texture");
 
         auto* sampler = this->m_scene.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, *texture, 8u, "sampler");
         ASSERT_TRUE(nullptr != sampler);

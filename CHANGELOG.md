@@ -1,4 +1,3 @@
-
 # Ramses Changelog
 
 28.0.0-rc2
@@ -23,7 +22,11 @@
 
 ### Changed <a name=28.0.0-rc2.Changed></a>
 
+- Modernized mipLevelData from C-style array to vector for Scene::createTexture2D(), Scene::createTexture3D() and Scene::createTextureCube()
+- Scene::findObject now also searches for logic objects in all existing logic engines
 - Switched from fmt 7.0.1 to 10.1.1
+- Switched from google-benchmark 1.5.2 to 1.8.3
+- Switched from google-flatbuffers 1.12.0 to 23.5.9
 - LogicEngine is now part of Scene and can only be created using Scene::createLogicEngine
   - LogicEngine is now a SceneObject of type ERamsesObjectType::LogicEngine and its lifecycle is managed by Scene as for any other SceneObject. LogicEngine is no longer a movable type.
   - removed scene argument from all loading functions in LogicEngine: loadFromFile, loadFromFileDescriptor, loadFromBuffer
@@ -92,6 +95,10 @@
   - compression flag is part of SaveFileConfig and is disabled by default
   - by default `saveToFile()` will fail, if the scene has validation errors (warnings will be ignored)
 - Changed interfaces to load/create scenes: Added sceneId and verification flag to `ramses::SceneConfig`
+- ramses-scene-viewer:
+  - changed default gui mode to "overlay" (no offscreen buffer)
+- ramses-logic-viewer:
+  - disabled offscreen rendering by default, cli option is changed from `--no-offscreen` to `--offscreen`
 - Renamed ramses::EClearFlags to ramses::EClearFlag
 - Renamed standalone renderer executable to `ramses-renderer-standalone`
 - Renamed `ERamsesObjectType::ArrayBufferObject` to `ERamsesObjectType::ArrayBuffer` to match the class name

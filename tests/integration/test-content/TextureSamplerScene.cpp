@@ -36,11 +36,11 @@ namespace ramses::internal
             0xff,0xff,0xff,  0x00,0x00,0x00,
             0xff,0x00,0x00,  0x00,0x00,0xff,
         };
-        const ramses::MipLevelData mipLevelData[] = { { sizeof(rgb8), rgb8 } };
+        const std::vector<MipLevelData> mipLevelData = { MipLevelData{ sizeof(rgb8), rgb8 } };
 
         if (state == EState::EState_ClientTexture)
         {
-            const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 2, 2, 1, mipLevelData, false);
+            const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 2, 2, mipLevelData, false);
             m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode::Repeat, ramses::ETextureAddressMode::Repeat, ramses::ETextureSamplingMethod::Nearest, ramses::ETextureSamplingMethod::Nearest, *texture);
         }
         else if (state == EState::EState_TextureBuffer)
@@ -104,8 +104,8 @@ namespace ramses::internal
         {
         case EState::EState_SetClientTexture:
         {
-            const ramses::MipLevelData mipLevelData[] = { { sizeof(rgb8), rgb8 } };
-            const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, 1, mipLevelData, false);
+            const std::vector<MipLevelData> mipLevelData = { MipLevelData{ sizeof(rgb8), rgb8 } };
+            const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, mipLevelData, false);
             m_sampler->setTextureData(*texture);
             break;
         }
@@ -137,9 +137,9 @@ namespace ramses::internal
 
         case EState_SetTextureSampler:
         {
-            const ramses::MipLevelData mipLevelData[] = { { sizeof(rgb8), rgb8 } };
+            const std::vector<MipLevelData> mipLevelData = { MipLevelData{ sizeof(rgb8), rgb8 } };
 
-            const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, 1, mipLevelData, false);
+            const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, mipLevelData, false);
             m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode::Repeat, ramses::ETextureAddressMode::Repeat, ramses::ETextureSamplingMethod::Nearest, ramses::ETextureSamplingMethod::Nearest, *texture);
             m_appearance->setInputTexture(*m_effect->findUniformInput("u_texture"), *m_sampler);
             break;

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #  -------------------------------------------------------------------------
-#  Copyright (C) 2013 BMW Car IT GmbH
+#  Copyright (C) 2023 BMW AG
 #  -------------------------------------------------------------------------
 #  This Source Code Form is subject to the terms of the Mozilla Public
 #  License, v. 2.0. If a copy of the MPL was not distributed with this

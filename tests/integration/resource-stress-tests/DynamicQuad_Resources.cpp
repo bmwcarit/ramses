@@ -90,8 +90,8 @@ namespace ramses::internal
             }
         }
 
-        ramses::MipLevelData textureData(textureWidth * textureHeight * 3, rawData.get());
-        resources.texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, textureWidth, textureHeight, 1, &textureData, false, {});
+        const std::vector<MipLevelData> textureData{ MipLevelData(textureWidth * textureHeight * 3, rawData.get()) };
+        resources.texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, textureWidth, textureHeight, textureData, false, {});
 
         resources.textureSampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode::Repeat,

@@ -6,22 +6,26 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "LogicObjectGen.h"
-#include "PropertyGen.h"
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "RamsesBindingGen.h"
-#include "RamsesReferenceGen.h"
 
 namespace rlogic_serialization {
 
 struct RenderPassBinding;
 struct RenderPassBindingBuilder;
 
-inline const flatbuffers::TypeTable *RenderPassBindingTypeTable();
+inline const ::flatbuffers::TypeTable *RenderPassBindingTypeTable();
 
-struct RenderPassBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct RenderPassBinding FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef RenderPassBindingBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return RenderPassBindingTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -30,7 +34,7 @@ struct RenderPassBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::RamsesBinding *base() const {
     return GetPointer<const rlogic_serialization::RamsesBinding *>(VT_BASE);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
@@ -40,26 +44,25 @@ struct RenderPassBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct RenderPassBindingBuilder {
   typedef RenderPassBinding Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::RamsesBinding> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::RamsesBinding> base) {
     fbb_.AddOffset(RenderPassBinding::VT_BASE, base);
   }
-  explicit RenderPassBindingBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit RenderPassBindingBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  RenderPassBindingBuilder &operator=(const RenderPassBindingBuilder &);
-  flatbuffers::Offset<RenderPassBinding> Finish() {
+  ::flatbuffers::Offset<RenderPassBinding> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<RenderPassBinding>(end);
+    auto o = ::flatbuffers::Offset<RenderPassBinding>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<RenderPassBinding> CreateRenderPassBinding(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0) {
+inline ::flatbuffers::Offset<RenderPassBinding> CreateRenderPassBinding(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0) {
   RenderPassBindingBuilder builder_(_fbb);
   builder_.add_base(base);
   return builder_.Finish();
@@ -70,18 +73,18 @@ struct RenderPassBinding::Traits {
   static auto constexpr Create = CreateRenderPassBinding;
 };
 
-inline const flatbuffers::TypeTable *RenderPassBindingTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 }
+inline const ::flatbuffers::TypeTable *RenderPassBindingTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::RamsesBindingTypeTable
   };
   static const char * const names[] = {
     "base"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 1, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 1, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

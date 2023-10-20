@@ -18,7 +18,8 @@ namespace ramses
 namespace flatbuffers
 {
     template<typename T> struct Offset;
-    class FlatBufferBuilder;
+    template<bool> class FlatBufferBuilderImpl;
+    using FlatBufferBuilder = FlatBufferBuilderImpl<false>;
 }
 
 namespace rlogic_serialization

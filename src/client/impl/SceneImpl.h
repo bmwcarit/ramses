@@ -209,12 +209,9 @@ namespace ramses::internal
         template <typename T>
         // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         ramses::ArrayResource* createArrayResource(uint32_t numElements, const T* arrayData, std::string_view name);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, size_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, size_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, std::string_view name);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        TextureCube* createTextureCube(uint32_t size, ETextureFormat format, size_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name);
+        Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, const std::vector<MipLevelData>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name);
+        Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, const std::vector<MipLevelData>& mipLevelData, bool generateMipChain, std::string_view name);
+        TextureCube* createTextureCube(uint32_t size, ETextureFormat format, const std::vector<CubeMipLevelData>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name);
         Effect* createEffect(const EffectDescription& effectDesc, std::string_view name);
         std::string getLastEffectErrorMessages() const;
 

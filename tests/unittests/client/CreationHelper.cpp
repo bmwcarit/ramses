@@ -125,20 +125,20 @@ namespace ramses::internal
     template <> Texture2D* CreationHelper::createObjectOfType<Texture2D>(std::string_view name)
     {
         std::array<uint8_t, 4> data = { 0u };
-        MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
-        return m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, name);
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        return m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, name);
     }
     template <> Texture3D* CreationHelper::createObjectOfType<Texture3D>(std::string_view name)
     {
         std::array<uint8_t, 32> data = { 0u };
-        MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
-        return m_scene->createTexture3D(ETextureFormat::RGBA8, 1u, 2u, 4u, 1, &mipLevelData, false, name);
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        return m_scene->createTexture3D(ETextureFormat::RGBA8, 1u, 2u, 4u, mipLevelData, false, name);
     }
     template <> TextureCube* CreationHelper::createObjectOfType<TextureCube>(std::string_view name)
     {
         std::byte data[4] = { std::byte{0u} }; // NOLINT(modernize-avoid-c-arrays)
-        CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        return m_scene->createTextureCube(ETextureFormat::RGBA8, 1u, 1, &mipLevelData, false, {}, name);
+        std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        return m_scene->createTextureCube(ETextureFormat::RGBA8, 1u, mipLevelData, false, {}, name);
     }
     template <> ArrayResource* CreationHelper::createObjectOfType<ArrayResource>(std::string_view name)
     {
@@ -165,8 +165,8 @@ namespace ramses::internal
     template <> ramses::TextureSampler* CreationHelper::createObjectOfType<ramses::TextureSampler>(std::string_view name)
     {
         std::array<uint8_t, 4> data = { 0u };
-        MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
-        Texture2D* texture = m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, "texture");
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        Texture2D* texture = m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "texture");
         return m_scene->createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Mirror, ETextureSamplingMethod::Linear, ETextureSamplingMethod::Nearest, *texture, 1u, name);
     }
     template <> TextureSamplerMS* CreationHelper::createObjectOfType<TextureSamplerMS>(std::string_view name)

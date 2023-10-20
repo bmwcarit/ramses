@@ -47,9 +47,9 @@ public:
         m_ob = renderer->createOffscreenBuffer(display, width, height);
         renderer->flush();
 
-        static const std::array<uint8_t, 4> imgbuf = {255, 255, 255, 255};
-        ramses::MipLevelData mipLevelData(4, imgbuf.data());
-        auto* texture = imguiHelper.getScene()->createTexture2D(ramses::ETextureFormat::RGBA8, 1, 1, 1, &mipLevelData);
+        static const std::array<uint8_t, 4> imgbuf = { 255, 255, 255, 255 };
+        const std::vector<ramses::MipLevelData> mipLevelData{ ramses::MipLevelData(4, imgbuf.data()) };
+        auto* texture = imguiHelper.getScene()->createTexture2D(ramses::ETextureFormat::RGBA8, 1, 1, mipLevelData);
         m_sampler = imguiHelper.getScene()->createTextureSampler(
             ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp, ramses::ETextureSamplingMethod::Linear, ramses::ETextureSamplingMethod::Linear, *texture);
 
@@ -130,6 +130,8 @@ public:
             m_sceneControl->setSceneMapping(scene->getSceneId(), display);
         }
         m_sceneControl->setSceneMapping(guiSceneId, display);
+        // inspection gui must be drawn on top
+        m_sceneControl->setSceneDisplayBufferAssignment(guiSceneId, ramses::displayBufferId_t(), 255);
         if (scene)
         {
             m_sceneControl->setSceneState(scene->getSceneId(), ramses::RendererSceneState::Rendered);

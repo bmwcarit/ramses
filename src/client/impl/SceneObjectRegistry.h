@@ -10,18 +10,20 @@
 
 #include "ramses/framework/RamsesFrameworkTypes.h"
 #include "ramses/client/SceneObject.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LogicObject.h"
 
 #include "impl/SceneObjectImpl.h"
 #include "impl/RamsesObjectVector.h"
 #include "impl/RamsesObjectTypeTraits.h"
 #include "impl/RamsesObjectTypeUtils.h"
 
-#include "internal/PlatformAbstraction/Collections/HashMap.h"
 #include "internal/Core/Utils/MemoryPool.h"
 
 #include <string_view>
 #include <array>
 #include <string>
+#include <unordered_map>
 
 namespace ramses::internal
 {
@@ -57,8 +59,7 @@ namespace ramses::internal
         [[nodiscard]] bool containsObject(const SceneObject& object) const;
         void trackSceneObjectById(SceneObject& object);
 
-        using ObjectIdMap = ramses::internal::HashMap<sceneObjectId_t, SceneObject *>;
-        ObjectIdMap m_objectsById;
+        std::unordered_map<sceneObjectId_t, SceneObject*> m_objectsById;
 
         using SceneObjectsPool = ramses::internal::MemoryPool<SceneObject *, SceneObjectRegistryHandle>;
         std::array<SceneObjectsPool, RamsesObjectTypeCount> m_objects;
@@ -87,19 +88,35 @@ namespace ramses::internal
 
     template <typename T> T* SceneObjectRegistry::findObjectByName(std::string_view name)
     {
-        constexpr ERamsesObjectType typeToReturn = TYPE_ID_OF_RAMSES_OBJECT<T>::ID;
-        for (size_t typeIdx = 0u; typeIdx < RamsesObjectTypeCount; ++typeIdx)
+        if constexpr (!std::is_base_of_v<LogicObject, T>) // if searching for logic object don't bother going thru scene registry
         {
-            const auto type = static_cast<ERamsesObjectType>(typeIdx);
-            if (RamsesObjectTypeUtils::IsConcreteType(type) && RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, typeToReturn))
+            constexpr ERamsesObjectType typeToReturn = TYPE_ID_OF_RAMSES_OBJECT<T>::ID;
+            for (size_t typeIdx = 0u; typeIdx < RamsesObjectTypeCount; ++typeIdx)
             {
-                const auto& objs = m_objects[typeIdx];
-                const auto it = std::find_if(objs.begin(), objs.end(), [name](const auto o) { return (*o.second)->getName() == name; });
-                if (it != objs.end())
-                    return (*it->second)->template as<T>();
+                const auto type = static_cast<ERamsesObjectType>(typeIdx);
+                if (RamsesObjectTypeUtils::IsConcreteType(type) && RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, typeToReturn))
+                {
+                    const auto& objs = m_objects[typeIdx];
+                    const auto it = std::find_if(objs.begin(), objs.end(), [name](const auto o) { return (*o.second)->getName() == name; });
+                    if (it != objs.end())
+                        return (*it->second)->template as<T>();
+                }
             }
         }
 
+        // NOLINTNEXTLINE(readability-misleading-indentation) for some reason clang is confused about constexpr branch above
+        if constexpr (std::is_base_of_v<T, LogicObject>) // additionally search logic engines if type is base of LogicObject
+        {
+            auto& logicEngines = m_objects[static_cast<uint32_t>(ERamsesObjectType::LogicEngine)];
+            for (auto& le : logicEngines)
+            {
+                auto obj = (*le.second)->as<LogicEngine>()->findObject(name);
+                if (obj)
+                    return obj;
+            }
+        }
+
+        // NOLINTNEXTLINE(readability-misleading-indentation) for some reason clang is confused about constexpr branch above
         return nullptr;
     }
 

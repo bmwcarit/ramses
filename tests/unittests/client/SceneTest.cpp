@@ -21,9 +21,10 @@
 #include "ramses/client/Texture3D.h"
 #include "ramses/client/OrthographicCamera.h"
 #include "ramses/client/PerspectiveCamera.h"
-#include "ramses/framework/EDataType.h"
 #include "ramses/client/ArrayBuffer.h"
+#include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/ramses-utils.h"
+#include "ramses/framework/EDataType.h"
 
 #include "impl/DataObjectImpl.h"
 #include "impl/RenderGroupImpl.h"
@@ -308,8 +309,8 @@ namespace ramses::internal
         ramses::Scene& anotherScene(*client.createScene(SceneConfig(sceneId_t{ 0xf00 })));
         {
             const uint8_t data[] = { 1, 2, 3 };
-            const MipLevelData mipData(3u, data);
-            Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, 1u, &mipData, false);
+            const std::vector<MipLevelData> mipData({ MipLevelData(3u, data) });
+            Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
             ASSERT_TRUE(texture != nullptr);
 
             ramses::TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -317,8 +318,8 @@ namespace ramses::internal
         }
         {
             const uint8_t data[1 * 2 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-            MipLevelData mipLevelData(sizeof(data), data);
-            Texture3D* texture = anotherScene.createTexture3D(ETextureFormat::RGBA8, 2, 1, 2, 1, &mipLevelData, false, {});
+            std::vector<MipLevelData> mipLevelData({ MipLevelData(sizeof(data), data) });
+            Texture3D* texture = anotherScene.createTexture3D(ETextureFormat::RGBA8, 2, 1, 2, mipLevelData, false, {});
             ASSERT_TRUE(nullptr != texture);
 
             ramses::TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -326,8 +327,8 @@ namespace ramses::internal
         }
         {
             const std::byte data[4 * 10 * 10] = {};
-            CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-            TextureCube* texture = anotherScene.createTextureCube(ETextureFormat::RGBA8, 10, 1, &mipLevelData, false);
+            std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+            TextureCube* texture = anotherScene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false);
             ASSERT_TRUE(nullptr != texture);
 
             ramses::TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -930,8 +931,8 @@ namespace ramses::internal
         RamsesFramework anotherFramework{config};
         ramses::Scene& anotherScene(*client.createScene(SceneConfig(sceneId_t{ 0xf00 })));
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        const Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_FALSE(m_scene.createTextureProvider(*texture, dataProviderId_t{1u}));
@@ -941,8 +942,8 @@ namespace ramses::internal
     {
         ramses::Scene& anotherScene = *client.createScene(SceneConfig(sceneId_t(12u)));
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         const ramses::TextureSampler* sampler = anotherScene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -983,8 +984,8 @@ namespace ramses::internal
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_TRUE(m_scene.createTextureProvider(*texture, dataProviderId_t{666u}));
@@ -1002,13 +1003,13 @@ namespace ramses::internal
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
         uint8_t data1 = 0u;
-        MipLevelData mipData1(1u, &data1);
-        Texture2D* texture1 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData1, false);
+        const std::vector<MipLevelData> mipData1{ MipLevelData(1u, &data1) };
+        Texture2D* texture1 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData1, false);
         ASSERT_TRUE(nullptr != texture1);
 
         uint8_t data2 = 1u;
-        MipLevelData mipData2(1u, &data2);
-        Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData2, false);
+        const std::vector<MipLevelData> mipData2{ MipLevelData(1u, &data2) };
+        Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData2, false);
         ASSERT_TRUE(nullptr != texture2);
 
         EXPECT_TRUE(m_scene.createTextureProvider(*texture1, dataProviderId_t{666u}));
@@ -1027,8 +1028,8 @@ namespace ramses::internal
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         const ramses::TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -1088,8 +1089,8 @@ namespace ramses::internal
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture3D* texture = m_scene.createTexture3D(ETextureFormat::R8, 1u, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture3D* texture = m_scene.createTexture3D(ETextureFormat::R8, 1u, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         const ramses::TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -1101,8 +1102,8 @@ namespace ramses::internal
     TEST_F(AScene, removesDataSlotsOfTextureSamplerOnDestruction)
     {
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -1122,8 +1123,8 @@ namespace ramses::internal
     TEST_F(AScene, canNotCreateMoreThanOneConsumerForATextureSampler)
     {
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -1157,8 +1158,8 @@ namespace ramses::internal
     TEST_F(AScene, canNotCreateMoreThanOneProviderForATexture)
     {
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_TRUE(m_scene.createTextureProvider(*texture, dataProviderId_t{666u}));
@@ -1168,10 +1169,10 @@ namespace ramses::internal
     TEST_F(AScene, canNotCreateMoreThanOneTextureConsumerOrProviderWithTheSameId)
     {
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
-        Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture2);
 
         ramses::TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
@@ -1191,8 +1192,8 @@ namespace ramses::internal
     TEST_F(AScene, canNotUpdateTextureProviderWhichWasNotCreatedBefore)
     {
         uint8_t data = 0u;
-        MipLevelData mipData(1u, &data);
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_FALSE(m_scene.updateTextureProvider(*texture, dataProviderId_t(1u)));
@@ -1680,18 +1681,26 @@ namespace ramses::internal
     TEST_F(AScene, canFindByNameWithSameNameUsedForDifferentTypes)
     {
         auto node = m_scene.createNode("test");
-        const auto camNode1 = m_scene.createOrthographicCamera("test");
-        const auto camNode2 = m_scene.createPerspectiveCamera("test");
-        const auto arrBuffer = m_scene.createArrayBuffer(ramses::EDataType::Float, 1u, "test");
+        auto camNode1 = m_scene.createOrthographicCamera("test");
+        auto camNode2 = m_scene.createPerspectiveCamera("test");
+        auto arrBuffer = m_scene.createArrayBuffer(ramses::EDataType::Float, 1u, "test");
+        auto logicEngine = m_scene.createLogicEngine("test");
+        const auto logicObject = logicEngine->createTimerNode("test");
         ASSERT_TRUE(node);
         ASSERT_TRUE(camNode1);
         ASSERT_TRUE(camNode2);
         ASSERT_TRUE(arrBuffer);
+        ASSERT_TRUE(logicEngine);
+        ASSERT_TRUE(logicObject);
 
         // concrete types
         EXPECT_EQ(camNode1, m_scene.findObject<ramses::OrthographicCamera>("test"));
         EXPECT_EQ(camNode2, m_scene.findObject<ramses::PerspectiveCamera>("test"));
         EXPECT_EQ(arrBuffer, m_scene.findObject<ramses::ArrayBuffer>("test"));
+        EXPECT_EQ(logicEngine, m_scene.findObject<ramses::LogicEngine>("test"));
+        EXPECT_EQ(logicObject, m_scene.findObject<ramses::LogicObject>("test"));
+
+        EXPECT_THAT(m_scene.findObject<ramses::SceneObject>("test"), AnyOf(node, camNode1, camNode2, logicEngine, logicObject));
 
         // this must be one of the 2 cameras
         EXPECT_THAT(m_scene.findObject<ramses::Camera>("test"), AnyOf(camNode1, camNode2));
@@ -1706,5 +1715,12 @@ namespace ramses::internal
         EXPECT_TRUE(m_scene.destroy(*node));
         // also now this must be one of the 2 cameras
         EXPECT_THAT(m_scene.findObject<ramses::Node>("test"), AnyOf(camNode1, camNode2));
+
+        EXPECT_TRUE(camNode1->setName("other"));
+        EXPECT_TRUE(camNode2->setName("other"));
+        EXPECT_TRUE(arrBuffer->setName("other"));
+        EXPECT_TRUE(logicEngine->setName("other"));
+        // only one remaining scene object with test name
+        EXPECT_EQ(logicObject, m_scene.findObject<ramses::SceneObject>("test"));
     }
 }

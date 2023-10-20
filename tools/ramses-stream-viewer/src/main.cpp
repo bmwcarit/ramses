@@ -88,8 +88,8 @@ public:
         m_indices = m_scene->createArrayResource(6u, indicesArray.data());
 
         const std::array<uint8_t, 4> textureData = {1u, 1u, 1u, 1u};
-        const ramses::MipLevelData mipLevelData(4, textureData.data());
-        m_texture = m_scene->createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, "");
+        const std::vector<ramses::MipLevelData> mipLevelData{ ramses::MipLevelData(4, textureData.data()) };
+        m_texture = m_scene->createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "");
 
         ramses::EffectDescription effectDesc;
 

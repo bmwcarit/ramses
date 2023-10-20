@@ -30,8 +30,7 @@ namespace ramses::internal
             auto* texture = m_scene->createTexture2D(TextureUtils::GetTextureFormatFromInternal(format),
                                                      mm.width,
                                                      mm.height,
-                                                     static_cast<uint32_t>(mipLevelData.size()),
-                                                     &mipLevelData[0],
+                                                     mipLevelData,
                                                      false,
                                                      textureSwizzle);
             image.width  = mm.width;
@@ -83,8 +82,7 @@ namespace ramses::internal
             ramses::Texture2D*   texture     = m_scene->createTexture2D(TextureUtils::GetTextureFormatFromInternal(res->getTextureFormat()),
                                                                   res->getWidth(),
                                                                   res->getHeight(),
-                                                                  static_cast<uint32_t>(mipLevelData.size()),
-                                                                  &mipLevelData[0],
+                                                                  mipLevelData,
                                                                   false,
                                                                   textureSwizzle);
 

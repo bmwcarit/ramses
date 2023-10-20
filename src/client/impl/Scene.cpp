@@ -429,27 +429,24 @@ namespace ramses
         return arr;
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    Texture2D* Scene::createTexture2D(ETextureFormat format, uint32_t width, uint32_t height, size_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name /* = {} */)
+    Texture2D* Scene::createTexture2D(ETextureFormat format, uint32_t width, uint32_t height, const std::vector<MipLevelData>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name /* = {} */)
     {
-        Texture2D* tex = m_impl.createTexture2D(width, height, format, mipMapCount, mipLevelData, generateMipChain, swizzle, name);
-        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), width, height, toString(format), mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, name);
+        Texture2D* tex = m_impl.createTexture2D(width, height, format, mipLevelData, generateMipChain, swizzle, name);
+        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), width, height, toString(format), mipLevelData.size(), LOG_API_GENERIC_OBJECT_STRING(mipLevelData), generateMipChain, swizzle, name);
         return tex;
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    Texture3D* Scene::createTexture3D(ETextureFormat format, uint32_t width, uint32_t height, uint32_t depth, size_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, std::string_view name /* = {} */)
+    Texture3D* Scene::createTexture3D(ETextureFormat format, uint32_t width, uint32_t height, uint32_t depth, const std::vector<MipLevelData>& mipLevelData, bool generateMipChain, std::string_view name /* = {} */)
     {
-        Texture3D* tex = m_impl.createTexture3D(width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, name);
-        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), width, height, depth, toString(format), mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, name);
+        Texture3D* tex = m_impl.createTexture3D(width, height, depth, format, mipLevelData, generateMipChain, name);
+        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), width, height, depth, toString(format), mipLevelData.size(), LOG_API_GENERIC_OBJECT_STRING(mipLevelData), generateMipChain, name);
         return tex;
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    TextureCube* Scene::createTextureCube(ETextureFormat format, uint32_t size, size_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name /* = {} */)
+    TextureCube* Scene::createTextureCube(ETextureFormat format, uint32_t size, const std::vector<CubeMipLevelData>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name /* = {} */)
     {
-        TextureCube* tex = m_impl.createTextureCube(size, format, mipMapCount, mipLevelData, generateMipChain, swizzle, name);
-        LOG_HL_CLIENT_API7(LOG_API_RESOURCE_PTR_STRING(tex), size, toString(format), mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, name);
+        TextureCube* tex = m_impl.createTextureCube(size, format, mipLevelData, generateMipChain, swizzle, name);
+        LOG_HL_CLIENT_API7(LOG_API_RESOURCE_PTR_STRING(tex), size, toString(format), mipLevelData.size(), LOG_API_GENERIC_OBJECT_STRING(mipLevelData), generateMipChain, swizzle, name);
         return tex;
     }
 

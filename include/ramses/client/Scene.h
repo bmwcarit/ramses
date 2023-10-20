@@ -270,8 +270,8 @@ namespace ramses
 
         /**
         * @brief Get an object from the scene by name
-        * Note that this will not find #ramses::LogicObject instances created from #ramses::LogicEngine,
-        * use #ramses::LogicEngine::findObject for those.
+        * This will also search for logic objects in all existing #ramses::LogicEngine instances if used with #ramses::SceneObject or #ramses::LogicObject template type,
+        * however to search for a concrete logic type (e.g. #ramses::LuaScript) use #ramses::LogicEngine::findObject instead.
         * Note that giving a concrete object template type might result in faster search because it is limited to only objects of that type.
         *
         * @param[in] name The name of the object to get.
@@ -286,6 +286,8 @@ namespace ramses
 
         /**
         * @brief Get an object from the scene by id
+        * This will also search for logic objects in all existing #ramses::LogicEngine instances if used with #ramses::SceneObject or #ramses::LogicObject template type,
+        * however to search for a concrete logic type (e.g. #ramses::LuaScript) use #ramses::LogicEngine::findObject instead.
         *
         * @param[in] id The id of the object to get.
         * @return Pointer to the object if found and convertible to the demanded type, nullptr otherwise.
@@ -540,8 +542,7 @@ namespace ramses
         * @param[in] format Pixel format of the Texture2D data.
         * @param[in] width Width of the texture (mipmap level 0).
         * @param[in] height Height of the texture (mipmap level 0).
-        * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
-        * @param[in] mipLevelData Array of #ramses::MipLevelData structs defining mipmap levels
+        * @param[in] mipLevelData Vector of #ramses::MipLevelData structs defining mipmap levels
         *                         to use. Amount and sizes of supplied mipmap levels have to
         *                         conform to GL specification. Order is lowest level (biggest
         *                         resolution) to highest level (smallest resolution).
@@ -555,8 +556,7 @@ namespace ramses
             ETextureFormat format,
             uint32_t width,
             uint32_t height,
-            size_t mipMapCount,
-            const MipLevelData mipLevelData[], // NOLINT(modernize-avoid-c-arrays)
+            const std::vector<MipLevelData>& mipLevelData,
             bool generateMipChain = false,
             const TextureSwizzle& swizzle = {},
             std::string_view name = {});
@@ -569,8 +569,7 @@ namespace ramses
         * @param[in] width Width of the texture (mipmap level 0).
         * @param[in] height Height of the texture (mipmap level 0).
         * @param[in] depth Depth of the texture.
-        * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
-        * @param[in] mipLevelData Array of #ramses::MipLevelData structs defining mipmap levels
+        * @param[in] mipLevelData Vector of #ramses::MipLevelData structs defining mipmap levels
         *                         to use. Amount and sizes of supplied mipmap levels have to
         *                         conform to GL specification. Order is lowest level (biggest
         *                         resolution) to highest level (smallest resolution).
@@ -583,8 +582,7 @@ namespace ramses
             uint32_t width,
             uint32_t height,
             uint32_t depth,
-            size_t mipMapCount,
-            const MipLevelData mipLevelData[], // NOLINT(modernize-avoid-c-arrays)
+            const std::vector<MipLevelData>& mipLevelData,
             bool generateMipChain = false,
             std::string_view name = {});
 
@@ -594,8 +592,7 @@ namespace ramses
         *
         * @param[in] format Pixel format of the Cube Texture data.
         * @param[in] size edge length of one quadratic cube face, belonging to the texture.
-        * @param[in] mipMapCount Number of mipmaps contained in mipLevelData array.
-        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
+        * @param[in] mipLevelData Vector of MipLevelData structs defining mipmap levels
         *                         to use. Amount and sizes of supplied mipmap levels have to
         *                         conform to GL specification. Order ist lowest level (biggest
         *                         resolution) to highest level (smallest resolution).
@@ -607,8 +604,7 @@ namespace ramses
         TextureCube* createTextureCube(
             ETextureFormat format,
             uint32_t size,
-            size_t mipMapCount,
-            const CubeMipLevelData mipLevelData[], // NOLINT(modernize-avoid-c-arrays)
+            const std::vector<CubeMipLevelData>& mipLevelData,
             bool generateMipChain = false,
             const TextureSwizzle& swizzle = {},
             std::string_view name = {});
@@ -937,6 +933,6 @@ namespace ramses
     void Scene::StaticTypeCheck()
     {
         static_assert(std::is_base_of_v<SceneObject, T>, "Type not derived from SceneObject or undefined! Make sure you include the header for the target type class.");
-        static_assert(!std::is_base_of_v<LogicObject, T>, "To find logic objects use LogicEngine::findObject.");
+        static_assert(!std::is_base_of_v<LogicObject, T> || std::is_same_v<LogicObject, T>, "To find concrete types derived from LogicObject use LogicEngine::findObject.");
     }
 }

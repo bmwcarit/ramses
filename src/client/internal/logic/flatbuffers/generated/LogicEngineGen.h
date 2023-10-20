@@ -6,38 +6,26 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "AnchorPointGen.h"
-#include "AnimationNodeGen.h"
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "ApiObjectsGen.h"
-#include "AppearanceBindingGen.h"
-#include "CameraBindingGen.h"
-#include "DataArrayGen.h"
-#include "LinkGen.h"
-#include "LogicObjectGen.h"
-#include "LuaInterfaceGen.h"
-#include "LuaModuleGen.h"
-#include "LuaScriptGen.h"
-#include "MeshNodeBindingGen.h"
-#include "NodeBindingGen.h"
-#include "PropertyGen.h"
-#include "RamsesBindingGen.h"
-#include "RamsesReferenceGen.h"
-#include "RenderGroupBindingGen.h"
-#include "RenderPassBindingGen.h"
-#include "SkinBindingGen.h"
-#include "TimerNodeGen.h"
 
 namespace rlogic_serialization {
 
 struct LogicEngine;
 struct LogicEngineBuilder;
 
-inline const flatbuffers::TypeTable *LogicEngineTypeTable();
+inline const ::flatbuffers::TypeTable *LogicEngineTypeTable();
 
-struct LogicEngine FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct LogicEngine FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LogicEngineBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return LogicEngineTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -46,7 +34,7 @@ struct LogicEngine FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::ApiObjects *apiObjects() const {
     return GetPointer<const rlogic_serialization::ApiObjects *>(VT_APIOBJECTS);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_APIOBJECTS) &&
            verifier.VerifyTable(apiObjects()) &&
@@ -56,26 +44,25 @@ struct LogicEngine FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct LogicEngineBuilder {
   typedef LogicEngine Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_apiObjects(flatbuffers::Offset<rlogic_serialization::ApiObjects> apiObjects) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_apiObjects(::flatbuffers::Offset<rlogic_serialization::ApiObjects> apiObjects) {
     fbb_.AddOffset(LogicEngine::VT_APIOBJECTS, apiObjects);
   }
-  explicit LogicEngineBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit LogicEngineBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  LogicEngineBuilder &operator=(const LogicEngineBuilder &);
-  flatbuffers::Offset<LogicEngine> Finish() {
+  ::flatbuffers::Offset<LogicEngine> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<LogicEngine>(end);
+    auto o = ::flatbuffers::Offset<LogicEngine>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<LogicEngine> CreateLogicEngine(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::ApiObjects> apiObjects = 0) {
+inline ::flatbuffers::Offset<LogicEngine> CreateLogicEngine(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::ApiObjects> apiObjects = 0) {
   LogicEngineBuilder builder_(_fbb);
   builder_.add_apiObjects(apiObjects);
   return builder_.Finish();
@@ -86,49 +73,49 @@ struct LogicEngine::Traits {
   static auto constexpr Create = CreateLogicEngine;
 };
 
-inline const flatbuffers::TypeTable *LogicEngineTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 }
+inline const ::flatbuffers::TypeTable *LogicEngineTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::ApiObjectsTypeTable
   };
   static const char * const names[] = {
     "apiObjects"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 1, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 1, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }
 
 inline const rlogic_serialization::LogicEngine *GetLogicEngine(const void *buf) {
-  return flatbuffers::GetRoot<rlogic_serialization::LogicEngine>(buf);
+  return ::flatbuffers::GetRoot<rlogic_serialization::LogicEngine>(buf);
 }
 
 inline const rlogic_serialization::LogicEngine *GetSizePrefixedLogicEngine(const void *buf) {
-  return flatbuffers::GetSizePrefixedRoot<rlogic_serialization::LogicEngine>(buf);
+  return ::flatbuffers::GetSizePrefixedRoot<rlogic_serialization::LogicEngine>(buf);
 }
 
 inline bool VerifyLogicEngineBuffer(
-    flatbuffers::Verifier &verifier) {
+    ::flatbuffers::Verifier &verifier) {
   return verifier.VerifyBuffer<rlogic_serialization::LogicEngine>(nullptr);
 }
 
 inline bool VerifySizePrefixedLogicEngineBuffer(
-    flatbuffers::Verifier &verifier) {
+    ::flatbuffers::Verifier &verifier) {
   return verifier.VerifySizePrefixedBuffer<rlogic_serialization::LogicEngine>(nullptr);
 }
 
 inline void FinishLogicEngineBuffer(
-    flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicEngine> root) {
+    ::flatbuffers::FlatBufferBuilder &fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicEngine> root) {
   fbb.Finish(root);
 }
 
 inline void FinishSizePrefixedLogicEngineBuffer(
-    flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicEngine> root) {
+    ::flatbuffers::FlatBufferBuilder &fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicEngine> root) {
   fbb.FinishSizePrefixed(root);
 }
 

@@ -59,6 +59,6 @@ namespace ramses::internal
         void createOrthoCamera();
         void createQuad(const ramses::TextureSampler& sampler);
 
-        static const ramses::MipLevelData& GetTextureFormatAndData(EState state, ramses::ETextureFormat& format, uint32_t& width, uint32_t& height, ramses::TextureSwizzle& swizzle);
+        static const std::vector<MipLevelData>& GetTextureFormatAndData(EState state, ramses::ETextureFormat& format, uint32_t& width, uint32_t& height, ramses::TextureSwizzle& swizzle);
     };
 }

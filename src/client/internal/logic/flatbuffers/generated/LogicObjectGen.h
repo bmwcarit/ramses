@@ -6,17 +6,24 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 namespace rlogic_serialization {
 
 struct LogicObject;
 struct LogicObjectBuilder;
 
-inline const flatbuffers::TypeTable *LogicObjectTypeTable();
+inline const ::flatbuffers::TypeTable *LogicObjectTypeTable();
 
-struct LogicObject FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct LogicObject FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LogicObjectBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return LogicObjectTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -25,8 +32,8 @@ struct LogicObject FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_USERIDHIGH = 8,
     VT_USERIDLOW = 10
   };
-  const flatbuffers::String *name() const {
-    return GetPointer<const flatbuffers::String *>(VT_NAME);
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   uint64_t id() const {
     return GetField<uint64_t>(VT_ID, 0);
@@ -37,22 +44,22 @@ struct LogicObject FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint64_t userIdLow() const {
     return GetField<uint64_t>(VT_USERIDLOW, 0);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
-           VerifyField<uint64_t>(verifier, VT_ID) &&
-           VerifyField<uint64_t>(verifier, VT_USERIDHIGH) &&
-           VerifyField<uint64_t>(verifier, VT_USERIDLOW) &&
+           VerifyField<uint64_t>(verifier, VT_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_USERIDHIGH, 8) &&
+           VerifyField<uint64_t>(verifier, VT_USERIDLOW, 8) &&
            verifier.EndTable();
   }
 };
 
 struct LogicObjectBuilder {
   typedef LogicObject Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(LogicObject::VT_NAME, name);
   }
   void add_id(uint64_t id) {
@@ -64,21 +71,20 @@ struct LogicObjectBuilder {
   void add_userIdLow(uint64_t userIdLow) {
     fbb_.AddElement<uint64_t>(LogicObject::VT_USERIDLOW, userIdLow, 0);
   }
-  explicit LogicObjectBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit LogicObjectBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  LogicObjectBuilder &operator=(const LogicObjectBuilder &);
-  flatbuffers::Offset<LogicObject> Finish() {
+  ::flatbuffers::Offset<LogicObject> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<LogicObject>(end);
+    auto o = ::flatbuffers::Offset<LogicObject>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<LogicObject> CreateLogicObject(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> name = 0,
+inline ::flatbuffers::Offset<LogicObject> CreateLogicObject(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     uint64_t id = 0,
     uint64_t userIdHigh = 0,
     uint64_t userIdLow = 0) {
@@ -95,8 +101,8 @@ struct LogicObject::Traits {
   static auto constexpr Create = CreateLogicObject;
 };
 
-inline flatbuffers::Offset<LogicObject> CreateLogicObjectDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
+inline ::flatbuffers::Offset<LogicObject> CreateLogicObjectDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *name = nullptr,
     uint64_t id = 0,
     uint64_t userIdHigh = 0,
@@ -110,12 +116,12 @@ inline flatbuffers::Offset<LogicObject> CreateLogicObjectDirect(
       userIdLow);
 }
 
-inline const flatbuffers::TypeTable *LogicObjectTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_STRING, 0, -1 },
-    { flatbuffers::ET_ULONG, 0, -1 },
-    { flatbuffers::ET_ULONG, 0, -1 },
-    { flatbuffers::ET_ULONG, 0, -1 }
+inline const ::flatbuffers::TypeTable *LogicObjectTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_ULONG, 0, -1 },
+    { ::flatbuffers::ET_ULONG, 0, -1 },
+    { ::flatbuffers::ET_ULONG, 0, -1 }
   };
   static const char * const names[] = {
     "name",
@@ -123,8 +129,8 @@ inline const flatbuffers::TypeTable *LogicObjectTypeTable() {
     "userIdHigh",
     "userIdLow"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 4, type_codes, nullptr, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 4, type_codes, nullptr, nullptr, nullptr, names
   };
   return &tt;
 }

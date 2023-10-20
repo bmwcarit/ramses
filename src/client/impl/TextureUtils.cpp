@@ -14,100 +14,95 @@
 
 namespace ramses::internal
 {
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    void TextureUtils::FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const MipLevelData mipLevelData[])
+    void TextureUtils::FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, const std::vector<MipLevelData>& mipLevelData)
     {
         assert(mipDataSizes.empty());
-        mipDataSizes.reserve(mipMapCount);
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        mipDataSizes.reserve(mipLevelData.size());
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_size;
+            const uint32_t mipDataSize = data.m_size;
             mipDataSizes.push_back(mipDataSize);
         }
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    void TextureUtils::FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[])
+    void TextureUtils::FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, const std::vector<CubeMipLevelData>& mipLevelData)
     {
         assert(mipDataSizes.empty());
-        mipDataSizes.reserve(mipMapCount);
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        mipDataSizes.reserve(mipLevelData.size());
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_faceDataSize;
+            const uint32_t mipDataSize = data.m_faceDataSize;
             mipDataSizes.push_back(mipDataSize);
         }
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    void TextureUtils::FillMipData(std::byte* dest, uint32_t mipMapCount, const MipLevelData mipLevelData[])
+    void TextureUtils::FillMipData(std::byte* dest, const std::vector<MipLevelData>& mipLevelData)
     {
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_size;
-            ramses::internal::PlatformMemory::Copy(dest, mipLevelData[i].m_data, mipDataSize);
+            const uint32_t mipDataSize = data.m_size;
+            ramses::internal::PlatformMemory::Copy(dest, data.m_data, mipDataSize);
             dest += mipDataSize;
         }
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    void TextureUtils::FillMipData(std::byte* dest, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[])
+    void TextureUtils::FillMipData(std::byte* dest, const std::vector<CubeMipLevelData>& mipLevelData)
     {
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, mipLevelData[i].m_dataPX, mipDataSize);
+            const uint32_t mipDataSize = data.m_faceDataSize;
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPX, mipDataSize);
             dest += mipDataSize;
         }
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, mipLevelData[i].m_dataNX, mipDataSize);
+            const uint32_t mipDataSize = data.m_faceDataSize;
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNX, mipDataSize);
             dest += mipDataSize;
         }
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, mipLevelData[i].m_dataPY, mipDataSize);
+            const uint32_t mipDataSize = data.m_faceDataSize;
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPY, mipDataSize);
             dest += mipDataSize;
         }
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, mipLevelData[i].m_dataNY, mipDataSize);
+            const uint32_t mipDataSize = data.m_faceDataSize;
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNY, mipDataSize);
             dest += mipDataSize;
         }
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, mipLevelData[i].m_dataPZ, mipDataSize);
+            const uint32_t mipDataSize = data.m_faceDataSize;
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPZ, mipDataSize);
             dest += mipDataSize;
         }
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = mipLevelData[i].m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, mipLevelData[i].m_dataNZ, mipDataSize);
+            const uint32_t mipDataSize = data.m_faceDataSize;
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNZ, mipDataSize);
             dest += mipDataSize;
         }
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    bool TextureUtils::MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const MipLevelData mipLevelData[], ETextureFormat format)
+    bool TextureUtils::MipDataValid(uint32_t width, uint32_t height, uint32_t depth, const std::vector<MipLevelData>& mipLevelData, ETextureFormat format)
     {
-        if (mipMapCount == 0u || mipLevelData == nullptr)
+        if (mipLevelData.empty())
         {
             return false;
         }
 
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (size_t i = 0u; i < mipLevelData.size(); ++i)
         {
             if (mipLevelData[i].m_data == nullptr || mipLevelData[i].m_size == 0u)
             {
                 return false;
             }
 
-            const uint32_t mipWidth = ramses::internal::TextureMathUtils::GetMipSize(i, width);
-            const uint32_t mipHeight = ramses::internal::TextureMathUtils::GetMipSize(i, height);
-            const uint32_t mipDepth = ramses::internal::TextureMathUtils::GetMipSize(i, depth);
+            const uint32_t mipWidth = ramses::internal::TextureMathUtils::GetMipSize(static_cast<uint32_t>(i), width);
+            const uint32_t mipHeight = ramses::internal::TextureMathUtils::GetMipSize(static_cast<uint32_t>(i), height);
+            const uint32_t mipDepth = ramses::internal::TextureMathUtils::GetMipSize(static_cast<uint32_t>(i), depth);
             const ramses::internal::EPixelStorageFormat internalFormat = TextureUtils::GetTextureFormatInternal(format);
             if (!ramses::internal::IsFormatCompressed(internalFormat))
             {
@@ -132,22 +127,20 @@ namespace ramses::internal
         return true;
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    bool TextureUtils::MipDataValid(uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t depth, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format)
+    bool TextureUtils::MipDataValid(uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t depth, const std::vector<CubeMipLevelData>& mipLevelData, ETextureFormat format)
     {
         // wrapper so that this function can be called from template following 2D/3D texture function signature
-        return MipDataValid(width, mipMapCount, mipLevelData, format);
+        return MipDataValid(width, mipLevelData, format);
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    bool TextureUtils::MipDataValid(uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format)
+    bool TextureUtils::MipDataValid(uint32_t size, const std::vector<CubeMipLevelData>& mipLevelData, ETextureFormat format)
     {
-        if (mipMapCount == 0u || mipLevelData == nullptr)
+        if (mipLevelData.empty())
         {
             return false;
         }
 
-        for (uint32_t i = 0u; i < mipMapCount; ++i)
+        for (size_t i = 0u; i < mipLevelData.size(); ++i)
         {
             if (mipLevelData[i].m_dataPX == nullptr ||
                 mipLevelData[i].m_dataNX == nullptr ||
@@ -160,7 +153,7 @@ namespace ramses::internal
                 return false;
             }
 
-            const uint32_t mipSize = ramses::internal::TextureMathUtils::GetMipSize(i, size);
+            const uint32_t mipSize = ramses::internal::TextureMathUtils::GetMipSize(static_cast<uint32_t>(i), size);
             const ramses::internal::EPixelStorageFormat internalFormat = TextureUtils::GetTextureFormatInternal(format);
             if (!ramses::internal::IsFormatCompressed(internalFormat))
             {

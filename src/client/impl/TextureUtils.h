@@ -484,20 +484,13 @@ namespace ramses::internal
             return ERenderBufferFormat::RGBA8;
         }
 
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        static void FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const MipLevelData mipLevelData[]);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        static void FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[]);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        static void FillMipData(std::byte* dest, uint32_t mipMapCount, const MipLevelData mipLevelData[]);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        static void FillMipData(std::byte* dest, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[]);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        static bool MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const MipLevelData mipLevelData[], ETextureFormat format);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        static bool MipDataValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format);
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        static bool MipDataValid(uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], ETextureFormat format);
+        static void FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, const std::vector<MipLevelData>& mipLevelData);
+        static void FillMipDataSizes(ramses::internal::MipDataSizeVector& mipDataSizes, const std::vector<CubeMipLevelData>& mipLevelData);
+        static void FillMipData(std::byte* dest, const std::vector<MipLevelData>& mipLevelData);
+        static void FillMipData(std::byte* dest, const std::vector<CubeMipLevelData>& mipLevelData);
+        static bool MipDataValid(uint32_t width, uint32_t height, uint32_t depth, const std::vector<MipLevelData>& mipLevelData, ETextureFormat format);
+        static bool MipDataValid(uint32_t width, uint32_t height, uint32_t depth, const std::vector<CubeMipLevelData>& mipLevelData, ETextureFormat format);
+        static bool MipDataValid(uint32_t size, const std::vector<CubeMipLevelData>& mipLevelData, ETextureFormat format);
         static bool TextureParametersValid(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount);
     };
 }

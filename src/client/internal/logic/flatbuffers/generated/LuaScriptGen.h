@@ -6,6 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "LogicObjectGen.h"
 #include "LuaModuleGen.h"
 #include "PropertyGen.h"
@@ -15,12 +22,12 @@ namespace rlogic_serialization {
 struct LuaScript;
 struct LuaScriptBuilder;
 
-inline const flatbuffers::TypeTable *LuaScriptTypeTable();
+inline const ::flatbuffers::TypeTable *LuaScriptTypeTable();
 
-struct LuaScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct LuaScript FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LuaScriptBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return LuaScriptTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -35,14 +42,14 @@ struct LuaScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::LogicObject *base() const {
     return GetPointer<const rlogic_serialization::LogicObject *>(VT_BASE);
   }
-  const flatbuffers::String *luaSourceCode() const {
-    return GetPointer<const flatbuffers::String *>(VT_LUASOURCECODE);
+  const ::flatbuffers::String *luaSourceCode() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_LUASOURCECODE);
   }
-  const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *userModules() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *>(VT_USERMODULES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *userModules() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *>(VT_USERMODULES);
   }
-  const flatbuffers::Vector<uint8_t> *standardModules() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_STANDARDMODULES);
+  const ::flatbuffers::Vector<uint8_t> *standardModules() const {
+    return GetPointer<const ::flatbuffers::Vector<uint8_t> *>(VT_STANDARDMODULES);
   }
   const rlogic_serialization::Property *rootInput() const {
     return GetPointer<const rlogic_serialization::Property *>(VT_ROOTINPUT);
@@ -50,10 +57,10 @@ struct LuaScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::Property *rootOutput() const {
     return GetPointer<const rlogic_serialization::Property *>(VT_ROOTOUTPUT);
   }
-  const flatbuffers::Vector<uint8_t> *luaByteCode() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_LUABYTECODE);
+  const ::flatbuffers::Vector<uint8_t> *luaByteCode() const {
+    return GetPointer<const ::flatbuffers::Vector<uint8_t> *>(VT_LUABYTECODE);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
@@ -76,50 +83,49 @@ struct LuaScript FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct LuaScriptBuilder {
   typedef LuaScript Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
     fbb_.AddOffset(LuaScript::VT_BASE, base);
   }
-  void add_luaSourceCode(flatbuffers::Offset<flatbuffers::String> luaSourceCode) {
+  void add_luaSourceCode(::flatbuffers::Offset<::flatbuffers::String> luaSourceCode) {
     fbb_.AddOffset(LuaScript::VT_LUASOURCECODE, luaSourceCode);
   }
-  void add_userModules(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> userModules) {
+  void add_userModules(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> userModules) {
     fbb_.AddOffset(LuaScript::VT_USERMODULES, userModules);
   }
-  void add_standardModules(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> standardModules) {
+  void add_standardModules(::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> standardModules) {
     fbb_.AddOffset(LuaScript::VT_STANDARDMODULES, standardModules);
   }
-  void add_rootInput(flatbuffers::Offset<rlogic_serialization::Property> rootInput) {
+  void add_rootInput(::flatbuffers::Offset<rlogic_serialization::Property> rootInput) {
     fbb_.AddOffset(LuaScript::VT_ROOTINPUT, rootInput);
   }
-  void add_rootOutput(flatbuffers::Offset<rlogic_serialization::Property> rootOutput) {
+  void add_rootOutput(::flatbuffers::Offset<rlogic_serialization::Property> rootOutput) {
     fbb_.AddOffset(LuaScript::VT_ROOTOUTPUT, rootOutput);
   }
-  void add_luaByteCode(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> luaByteCode) {
+  void add_luaByteCode(::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> luaByteCode) {
     fbb_.AddOffset(LuaScript::VT_LUABYTECODE, luaByteCode);
   }
-  explicit LuaScriptBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit LuaScriptBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  LuaScriptBuilder &operator=(const LuaScriptBuilder &);
-  flatbuffers::Offset<LuaScript> Finish() {
+  ::flatbuffers::Offset<LuaScript> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<LuaScript>(end);
+    auto o = ::flatbuffers::Offset<LuaScript>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<LuaScript> CreateLuaScript(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
-    flatbuffers::Offset<flatbuffers::String> luaSourceCode = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> userModules = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> standardModules = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> luaByteCode = 0) {
+inline ::flatbuffers::Offset<LuaScript> CreateLuaScript(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> luaSourceCode = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> userModules = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> standardModules = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> luaByteCode = 0) {
   LuaScriptBuilder builder_(_fbb);
   builder_.add_luaByteCode(luaByteCode);
   builder_.add_rootOutput(rootOutput);
@@ -136,17 +142,17 @@ struct LuaScript::Traits {
   static auto constexpr Create = CreateLuaScript;
 };
 
-inline flatbuffers::Offset<LuaScript> CreateLuaScriptDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+inline ::flatbuffers::Offset<LuaScript> CreateLuaScriptDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
     const char *luaSourceCode = nullptr,
-    const std::vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *userModules = nullptr,
+    const std::vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *userModules = nullptr,
     const std::vector<uint8_t> *standardModules = nullptr,
-    flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0,
     const std::vector<uint8_t> *luaByteCode = nullptr) {
   auto luaSourceCode__ = luaSourceCode ? _fbb.CreateString(luaSourceCode) : 0;
-  auto userModules__ = userModules ? _fbb.CreateVector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>(*userModules) : 0;
+  auto userModules__ = userModules ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>(*userModules) : 0;
   auto standardModules__ = standardModules ? _fbb.CreateVector<uint8_t>(*standardModules) : 0;
   auto luaByteCode__ = luaByteCode ? _fbb.CreateVector<uint8_t>(*luaByteCode) : 0;
   return rlogic_serialization::CreateLuaScript(
@@ -160,17 +166,17 @@ inline flatbuffers::Offset<LuaScript> CreateLuaScriptDirect(
       luaByteCode__);
 }
 
-inline const flatbuffers::TypeTable *LuaScriptTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_STRING, 0, -1 },
-    { flatbuffers::ET_SEQUENCE, 1, 1 },
-    { flatbuffers::ET_UCHAR, 1, -1 },
-    { flatbuffers::ET_SEQUENCE, 0, 2 },
-    { flatbuffers::ET_SEQUENCE, 0, 2 },
-    { flatbuffers::ET_UCHAR, 1, -1 }
+inline const ::flatbuffers::TypeTable *LuaScriptTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_SEQUENCE, 1, 1 },
+    { ::flatbuffers::ET_UCHAR, 1, -1 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 2 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 2 },
+    { ::flatbuffers::ET_UCHAR, 1, -1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::LogicObjectTypeTable,
     rlogic_serialization::LuaModuleUsageTypeTable,
     rlogic_serialization::PropertyTypeTable
@@ -184,8 +190,8 @@ inline const flatbuffers::TypeTable *LuaScriptTypeTable() {
     "rootOutput",
     "luaByteCode"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 7, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 7, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

@@ -1648,11 +1648,10 @@ namespace ramses::internal
         return &registerCreatedResourceObject<ramses::ArrayResource>(std::move(pimpl));
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    Texture2D* SceneImpl::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, size_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name)
+    Texture2D* SceneImpl::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, const std::vector<MipLevelData>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name)
     {
         ramses::internal::ManagedResource res = getClientImpl().createManagedTexture(
-            ramses::internal::EResourceType::Texture2D, width, height, 1u, format, static_cast<uint32_t>(mipMapCount), mipLevelData, generateMipChain, swizzle, name);
+            ramses::internal::EResourceType::Texture2D, width, height, 1u, format, mipLevelData, generateMipChain, swizzle, name);
         if (!res)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createTexture2D: failed to create managed Texture2D resource");
@@ -1676,11 +1675,10 @@ namespace ramses::internal
         return &registerCreatedResourceObject<Texture2D>(std::move(pimpl));
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    Texture3D* SceneImpl::createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, size_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, std::string_view name)
+    Texture3D* SceneImpl::createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, const std::vector<MipLevelData>& mipLevelData, bool generateMipChain, std::string_view name)
     {
         ramses::internal::ManagedResource res = getClientImpl().createManagedTexture(
-            ramses::internal::EResourceType::Texture3D, width, height, depth, format, static_cast<uint32_t>(mipMapCount), mipLevelData, generateMipChain, {}, name);
+            ramses::internal::EResourceType::Texture3D, width, height, depth, format, mipLevelData, generateMipChain, {}, name);
         if (!res)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createTexture3D: failed to create managed Texture3D resource");
@@ -1702,11 +1700,10 @@ namespace ramses::internal
         return &registerCreatedResourceObject<Texture3D>(std::move(pimpl));
     }
 
-    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-    TextureCube* SceneImpl::createTextureCube(uint32_t size, ETextureFormat format, size_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name)
+    TextureCube* SceneImpl::createTextureCube(uint32_t size, ETextureFormat format, const std::vector<CubeMipLevelData>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name)
     {
         ramses::internal::ManagedResource res = getClientImpl().createManagedTexture(
-            ramses::internal::EResourceType::TextureCube, size, 1u, 1u, format, static_cast<uint32_t>(mipMapCount), mipLevelData, generateMipChain, swizzle, name);
+            ramses::internal::EResourceType::TextureCube, size, 1u, 1u, format, mipLevelData, generateMipChain, swizzle, name);
         if (!res)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureCube: failed to create managed TextureCube resource");

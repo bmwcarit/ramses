@@ -185,14 +185,13 @@ namespace ramses::internal
             rgba8_level0[idx + 3] = 0xff - transparency;
         }
 
-        const ramses::MipLevelData mipLevelData[] = {
+        const std::vector<ramses::MipLevelData> mipLevelData = {
             ramses::MipLevelData(width*height*4u*sizeof(uint8_t), rgba8_level0)
         };
 
         ramses::Texture2D* texture = m_scene.createTexture2D(
             ramses::ETextureFormat::RGBA8,
             width, height,
-            1,
             mipLevelData,
             true);
 

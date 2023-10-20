@@ -83,8 +83,8 @@ namespace ramses
             return nullptr;
         }
 
-        MipLevelData mipLevelData{static_cast<uint32_t>(data.size()), data.data()};
-        return scene.createTexture2D(ETextureFormat::RGBA8, width, height, 1, &mipLevelData, false, swizzle, name);
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        return scene.createTexture2D(ETextureFormat::RGBA8, width, height, mipLevelData, false, swizzle, name);
     }
 
     Texture2D* RamsesUtils::CreateTextureResourceFromPngBuffer(const std::vector<uint8_t>& pngData, Scene& scene, const TextureSwizzle& swizzle, std::string_view name)
@@ -100,8 +100,8 @@ namespace ramses
             return nullptr;
         }
 
-        MipLevelData mipLevelData{static_cast<uint32_t>(data.size()), data.data()};
-        return scene.createTexture2D(ETextureFormat::RGBA8, width, height, 1, &mipLevelData, false, swizzle, name);
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        return scene.createTexture2D(ETextureFormat::RGBA8, width, height, mipLevelData, false, swizzle, name);
     }
 
     bool RamsesUtils::SaveImageBufferToPng(const std::string& filePath, const std::vector<uint8_t>& imageData, uint32_t width, uint32_t height)

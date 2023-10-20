@@ -64,8 +64,8 @@ namespace ramses::internal
             EXPECT_TRUE(info.input.has_value());
 
             const uint8_t data[] = { 1, 2, 3 };
-            const MipLevelData mipData(3u, data);
-            Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, 1u, &mipData, false);
+            const std::vector<MipLevelData> mipData{ MipLevelData(3u, data) };
+            Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
             EXPECT_TRUE(texture != nullptr);
             info.texture2D = texture;
 
@@ -94,8 +94,8 @@ namespace ramses::internal
             EXPECT_TRUE(info.input.has_value());
 
             const uint8_t data[] = { 1, 2, 3 };
-            const MipLevelData mipData(3u, data);
-            Texture3D* texture = sharedTestState->getScene().createTexture3D(ETextureFormat::RGB8, 1u, 1u, 1u, 1u, &mipData, false);
+            const std::vector<MipLevelData> mipData{ MipLevelData(3u, data) };
+            Texture3D* texture = sharedTestState->getScene().createTexture3D(ETextureFormat::RGB8, 1u, 1u, 1u, mipData, false);
             EXPECT_TRUE(texture != nullptr);
             info.texture3D = texture;
 
@@ -110,8 +110,8 @@ namespace ramses::internal
             EXPECT_TRUE(info.input.has_value());
 
             const std::byte data[] = { std::byte{1}, std::byte{2}, std::byte{3} };
-            const CubeMipLevelData mipData(3u, data, data, data, data, data, data);
-            TextureCube* texture = sharedTestState->getScene().createTextureCube(ETextureFormat::RGB8, 1u, 1u, &mipData, false);
+            std::vector<CubeMipLevelData> mipData{ CubeMipLevelData(3u, data, data, data, data, data, data) };
+            TextureCube* texture = sharedTestState->getScene().createTextureCube(ETextureFormat::RGB8, 1u, mipData, false);
             EXPECT_TRUE(texture != nullptr);
             info.textureCube = texture;
 
@@ -347,9 +347,9 @@ namespace ramses::internal
         ASSERT_TRUE(optUniform.has_value());
 
         const uint8_t texData[] = { 1, 2, 3 };
-        const MipLevelData mipData(3u, texData);
+        const std::vector<MipLevelData> mipData{ MipLevelData(3u, texData) };
 
-        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, 1u, &mipData, false);
+        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
         ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
@@ -366,10 +366,10 @@ namespace ramses::internal
         ASSERT_TRUE(optUniform.has_value());
 
         const uint8_t texData[] = { 1, 2, 3 };
-        const MipLevelData mipData(3u, texData);
+        const std::vector<MipLevelData> mipData{ MipLevelData(3u, texData) };
 
         ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(sceneId_t(1u));
-        Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, 1u, &mipData, false);
+        Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
         ramses::TextureSampler* textureSampler = anotherScene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
@@ -386,8 +386,8 @@ namespace ramses::internal
         ASSERT_TRUE(optUniform.has_value());
 
         const uint8_t texData[] = { 1, 2, 3 };
-        const MipLevelData mipData(3u, texData);
-        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, 1u, &mipData, false);
+        const std::vector<MipLevelData> mipData{ MipLevelData(3u, texData) };
+        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
         ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
@@ -936,9 +936,9 @@ namespace ramses::internal
         ASSERT_TRUE(optUniform.has_value());
 
         const uint8_t texData[] = { 1, 2, 3 };
-        const MipLevelData mipData(3u, texData);
+        const std::vector<MipLevelData> mipData{ MipLevelData(3u, texData) };
 
-        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, 1u, &mipData, false);
+        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
         ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
@@ -981,9 +981,9 @@ namespace ramses::internal
         ASSERT_TRUE(optUniform.has_value());
 
         const std::byte texData[] = { std::byte{1}, std::byte{2}, std::byte{3} };
-        const CubeMipLevelData mipData(3u, texData, texData, texData, texData, texData, texData);
+        std::vector<CubeMipLevelData> mipData{ CubeMipLevelData(3u, texData, texData, texData, texData, texData, texData) };
 
-        TextureCube* texture = sharedTestState->getScene().createTextureCube(ETextureFormat::RGB8, 1u, 1u, &mipData, false);
+        TextureCube* texture = sharedTestState->getScene().createTextureCube(ETextureFormat::RGB8, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
         ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Linear, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);

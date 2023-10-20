@@ -205,8 +205,8 @@ namespace ramses::internal
         case EState_ClientTextureResource_RGBA8:
         {
             const ramses::MipLevelData mip2x2(sizeof(rgba_2x2_green), rgba_2x2_green);
-            const ramses::MipLevelData mips[] = { mip2x2 };
-            m_clientTexture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 2u, 2u, 1u, mips);
+            const std::vector<ramses::MipLevelData> mips = { mip2x2 };
+            m_clientTexture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 2u, 2u, mips);
             sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp, ramses::ETextureSamplingMethod::Nearest_MipMapNearest, ramses::ETextureSamplingMethod::Nearest, *m_clientTexture);
             mipToFetch = 0;
             break;

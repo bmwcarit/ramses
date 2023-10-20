@@ -24,10 +24,9 @@
 
 namespace flatbuffers
 {
-    class FlatBufferBuilder;
-
-    class FlatBufferBuilder;
     template <typename T> struct Offset;
+    template<bool> class FlatBufferBuilderImpl;
+    using FlatBufferBuilder = FlatBufferBuilderImpl<false>;
 }
 
 namespace rlogic_serialization

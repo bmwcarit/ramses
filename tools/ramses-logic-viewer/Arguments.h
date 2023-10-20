@@ -38,7 +38,7 @@ Loads and shows a ramses scene from the <ramsesfile>.
             ->expected(0, 1)
             ->type_name("[FILE]")
             ->excludes(exec);
-        cli.add_flag("--no-offscreen", m_noOffscreen, "Renders the scene directly to the window's framebuffer. Screenshot size will be the current window size.");
+        cli.add_flag("--offscreen", m_offscreen, "Renders the scene to an offscreen buffer. Screenshot apply to the offscreen buffer.");
         cli.set_version_flag("--version", ramses_sdk::RAMSES_SDK_RAMSES_VERSION);
 
         std::vector<std::pair<std::string, ramses::ELogLevel>> loglevelMap{{"off", ramses::ELogLevel::Off},
@@ -75,9 +75,9 @@ Loads and shows a ramses scene from the <ramsesfile>.
         return m_exec;
     }
 
-    bool noOffscreen() const
+    bool offscreen() const
     {
-        return m_noOffscreen;
+        return m_offscreen;
     }
 
     bool writeConfig() const
@@ -102,7 +102,7 @@ private:
     mutable std::string m_luaFile;
     std::string m_luaFunction;
     std::string m_exec;
-    bool m_noOffscreen = false;
+    bool m_offscreen = false;
     bool m_writeConfig = false;
     ramses::ELogLevel m_ramsesLogLevel = ramses::ELogLevel::Error;
 };

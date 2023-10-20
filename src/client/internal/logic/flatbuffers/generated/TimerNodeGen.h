@@ -6,6 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "LogicObjectGen.h"
 #include "PropertyGen.h"
 
@@ -14,12 +21,12 @@ namespace rlogic_serialization {
 struct TimerNode;
 struct TimerNodeBuilder;
 
-inline const flatbuffers::TypeTable *TimerNodeTypeTable();
+inline const ::flatbuffers::TypeTable *TimerNodeTypeTable();
 
-struct TimerNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct TimerNode FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TimerNodeBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return TimerNodeTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -36,7 +43,7 @@ struct TimerNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::Property *rootOutput() const {
     return GetPointer<const rlogic_serialization::Property *>(VT_ROOTOUTPUT);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
@@ -50,34 +57,33 @@ struct TimerNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct TimerNodeBuilder {
   typedef TimerNode Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
     fbb_.AddOffset(TimerNode::VT_BASE, base);
   }
-  void add_rootInput(flatbuffers::Offset<rlogic_serialization::Property> rootInput) {
+  void add_rootInput(::flatbuffers::Offset<rlogic_serialization::Property> rootInput) {
     fbb_.AddOffset(TimerNode::VT_ROOTINPUT, rootInput);
   }
-  void add_rootOutput(flatbuffers::Offset<rlogic_serialization::Property> rootOutput) {
+  void add_rootOutput(::flatbuffers::Offset<rlogic_serialization::Property> rootOutput) {
     fbb_.AddOffset(TimerNode::VT_ROOTOUTPUT, rootOutput);
   }
-  explicit TimerNodeBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit TimerNodeBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  TimerNodeBuilder &operator=(const TimerNodeBuilder &);
-  flatbuffers::Offset<TimerNode> Finish() {
+  ::flatbuffers::Offset<TimerNode> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<TimerNode>(end);
+    auto o = ::flatbuffers::Offset<TimerNode>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<TimerNode> CreateTimerNode(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0) {
+inline ::flatbuffers::Offset<TimerNode> CreateTimerNode(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0) {
   TimerNodeBuilder builder_(_fbb);
   builder_.add_rootOutput(rootOutput);
   builder_.add_rootInput(rootInput);
@@ -90,13 +96,13 @@ struct TimerNode::Traits {
   static auto constexpr Create = CreateTimerNode;
 };
 
-inline const flatbuffers::TypeTable *TimerNodeTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_SEQUENCE, 0, 1 },
-    { flatbuffers::ET_SEQUENCE, 0, 1 }
+inline const ::flatbuffers::TypeTable *TimerNodeTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 1 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::LogicObjectTypeTable,
     rlogic_serialization::PropertyTypeTable
   };
@@ -105,8 +111,8 @@ inline const flatbuffers::TypeTable *TimerNodeTypeTable() {
     "rootInput",
     "rootOutput"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 3, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 3, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

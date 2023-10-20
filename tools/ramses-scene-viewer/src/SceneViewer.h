@@ -54,7 +54,7 @@ namespace ramses::internal
         void validateContent(ramses::ValidationReport& report, const ramses::Scene& scene) const;
 
         std::string m_sceneName;
-        GuiMode     m_guiMode = GuiMode::On;
+        GuiMode     m_guiMode = GuiMode::Overlay;
         bool        m_noValidation = false;
         bool        m_noSkub = false;
         std::string m_validationOutput;

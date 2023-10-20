@@ -6,22 +6,26 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "LogicObjectGen.h"
-#include "PropertyGen.h"
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "RamsesBindingGen.h"
-#include "RamsesReferenceGen.h"
 
 namespace rlogic_serialization {
 
 struct NodeBinding;
 struct NodeBindingBuilder;
 
-inline const flatbuffers::TypeTable *NodeBindingTypeTable();
+inline const ::flatbuffers::TypeTable *NodeBindingTypeTable();
 
-struct NodeBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct NodeBinding FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef NodeBindingBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return NodeBindingTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -34,40 +38,39 @@ struct NodeBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint8_t rotationType() const {
     return GetField<uint8_t>(VT_ROTATIONTYPE, 0);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
-           VerifyField<uint8_t>(verifier, VT_ROTATIONTYPE) &&
+           VerifyField<uint8_t>(verifier, VT_ROTATIONTYPE, 1) &&
            verifier.EndTable();
   }
 };
 
 struct NodeBindingBuilder {
   typedef NodeBinding Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::RamsesBinding> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::RamsesBinding> base) {
     fbb_.AddOffset(NodeBinding::VT_BASE, base);
   }
   void add_rotationType(uint8_t rotationType) {
     fbb_.AddElement<uint8_t>(NodeBinding::VT_ROTATIONTYPE, rotationType, 0);
   }
-  explicit NodeBindingBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit NodeBindingBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  NodeBindingBuilder &operator=(const NodeBindingBuilder &);
-  flatbuffers::Offset<NodeBinding> Finish() {
+  ::flatbuffers::Offset<NodeBinding> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<NodeBinding>(end);
+    auto o = ::flatbuffers::Offset<NodeBinding>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<NodeBinding> CreateNodeBinding(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0,
+inline ::flatbuffers::Offset<NodeBinding> CreateNodeBinding(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0,
     uint8_t rotationType = 0) {
   NodeBindingBuilder builder_(_fbb);
   builder_.add_base(base);
@@ -80,20 +83,20 @@ struct NodeBinding::Traits {
   static auto constexpr Create = CreateNodeBinding;
 };
 
-inline const flatbuffers::TypeTable *NodeBindingTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_UCHAR, 0, -1 }
+inline const ::flatbuffers::TypeTable *NodeBindingTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_UCHAR, 0, -1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::RamsesBindingTypeTable
   };
   static const char * const names[] = {
     "base",
     "rotationType"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

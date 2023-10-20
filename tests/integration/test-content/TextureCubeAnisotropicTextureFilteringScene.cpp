@@ -121,7 +121,7 @@ namespace ramses::internal
         /// Vertically, 1 texel map to one pixel => IntegrationScene::DefaultViewportHeight texels needed.
         /// Cube map textures are of square size, so take larger value.
         const uint32_t numberOfMipLevels = GetNextLargerPowerOf2Exponent(std::max(IntegrationScene::DefaultViewportWidth * 2, uint32_t(IntegrationScene::DefaultViewportHeight))) + 1;
-        auto* mipLevelData = new ramses::CubeMipLevelData[numberOfMipLevels];
+        std::vector<ramses::CubeMipLevelData> mipLevelData(numberOfMipLevels);
 
         const uint32_t textureResolution = 1u << (numberOfMipLevels - 1);
 
@@ -132,13 +132,15 @@ namespace ramses::internal
             auto* rgb8_data = new uint8_t[levelSize];
             FillMipLevelData(rgb8_data, resolution, i);
 
-            mipLevelData[i].m_faceDataSize = levelSize;
-            mipLevelData[i].m_dataNX = reinterpret_cast<const std::byte*>(rgb8_data);
-            mipLevelData[i].m_dataPX = reinterpret_cast<const std::byte*>(rgb8_data);
-            mipLevelData[i].m_dataNY = reinterpret_cast<const std::byte*>(rgb8_data);
-            mipLevelData[i].m_dataPY = reinterpret_cast<const std::byte*>(rgb8_data);
-            mipLevelData[i].m_dataNZ = reinterpret_cast<const std::byte*>(rgb8_data);
-            mipLevelData[i].m_dataPZ = reinterpret_cast<const std::byte*>(rgb8_data);
+            mipLevelData.emplace_back(CubeMipLevelData(
+                levelSize,
+                reinterpret_cast<const std::byte*>(rgb8_data),
+                reinterpret_cast<const std::byte*>(rgb8_data),
+                reinterpret_cast<const std::byte*>(rgb8_data),
+                reinterpret_cast<const std::byte*>(rgb8_data),
+                reinterpret_cast<const std::byte*>(rgb8_data),
+                reinterpret_cast<const std::byte*>(rgb8_data)
+                ));
         }
 
         ramses::Effect* effect(getTestEffect("ramses-test-client-textured-cube"));
@@ -174,15 +176,14 @@ namespace ramses::internal
         ramses::TextureCube* texture = m_scene.createTextureCube(
             ramses::ETextureFormat::RGB8,
             textureResolution,
-            numberOfMipLevels,
             mipLevelData,
             false);
 
-        for (uint32_t i = 0; i < numberOfMipLevels; i++)
+        for (auto& data : mipLevelData)
         {
-            delete[] mipLevelData[i].m_dataNX;
+            delete[] data.m_dataNX;
         }
-        delete[] mipLevelData;
+        mipLevelData.clear();
 
         std::optional<ramses::UniformInput> textureInput = effect->findUniformInput("u_texture");
         assert(textureInput.has_value());

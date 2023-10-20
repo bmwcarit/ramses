@@ -6,6 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 namespace rlogic_serialization {
 
 struct float_s;
@@ -34,29 +41,29 @@ struct string_sBuilder;
 struct Property;
 struct PropertyBuilder;
 
-inline const flatbuffers::TypeTable *float_sTypeTable();
+inline const ::flatbuffers::TypeTable *float_sTypeTable();
 
-inline const flatbuffers::TypeTable *vec2f_sTypeTable();
+inline const ::flatbuffers::TypeTable *vec2f_sTypeTable();
 
-inline const flatbuffers::TypeTable *vec3f_sTypeTable();
+inline const ::flatbuffers::TypeTable *vec3f_sTypeTable();
 
-inline const flatbuffers::TypeTable *vec4f_sTypeTable();
+inline const ::flatbuffers::TypeTable *vec4f_sTypeTable();
 
-inline const flatbuffers::TypeTable *int32_sTypeTable();
+inline const ::flatbuffers::TypeTable *int32_sTypeTable();
 
-inline const flatbuffers::TypeTable *int64_sTypeTable();
+inline const ::flatbuffers::TypeTable *int64_sTypeTable();
 
-inline const flatbuffers::TypeTable *vec2i_sTypeTable();
+inline const ::flatbuffers::TypeTable *vec2i_sTypeTable();
 
-inline const flatbuffers::TypeTable *vec3i_sTypeTable();
+inline const ::flatbuffers::TypeTable *vec3i_sTypeTable();
 
-inline const flatbuffers::TypeTable *vec4i_sTypeTable();
+inline const ::flatbuffers::TypeTable *vec4i_sTypeTable();
 
-inline const flatbuffers::TypeTable *bool_sTypeTable();
+inline const ::flatbuffers::TypeTable *bool_sTypeTable();
 
-inline const flatbuffers::TypeTable *string_sTypeTable();
+inline const ::flatbuffers::TypeTable *string_sTypeTable();
 
-inline const flatbuffers::TypeTable *PropertyTypeTable();
+inline const ::flatbuffers::TypeTable *PropertyTypeTable();
 
 enum class EPropertyRootType : uint8_t {
   Primitive = 0,
@@ -86,7 +93,7 @@ inline const char * const *EnumNamesEPropertyRootType() {
 }
 
 inline const char *EnumNameEPropertyRootType(EPropertyRootType e) {
-  if (flatbuffers::IsOutRange(e, EPropertyRootType::Primitive, EPropertyRootType::Array)) return "";
+  if (::flatbuffers::IsOutRange(e, EPropertyRootType::Primitive, EPropertyRootType::Array)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesEPropertyRootType()[index];
 }
@@ -146,7 +153,7 @@ inline const char * const *EnumNamesPropertyValue() {
 }
 
 inline const char *EnumNamePropertyValue(PropertyValue e) {
-  if (flatbuffers::IsOutRange(e, PropertyValue::NONE, PropertyValue::bool_s)) return "";
+  if (::flatbuffers::IsOutRange(e, PropertyValue::NONE, PropertyValue::bool_s)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPropertyValue()[index];
 }
@@ -199,28 +206,33 @@ template<> struct PropertyValueTraits<rlogic_serialization::bool_s> {
   static const PropertyValue enum_value = PropertyValue::bool_s;
 };
 
-bool VerifyPropertyValue(flatbuffers::Verifier &verifier, const void *obj, PropertyValue type);
-bool VerifyPropertyValueVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
+bool VerifyPropertyValue(::flatbuffers::Verifier &verifier, const void *obj, PropertyValue type);
+bool VerifyPropertyValueVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<PropertyValue> *types);
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) float_s FLATBUFFERS_FINAL_CLASS {
  private:
   float v_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return float_sTypeTable();
   }
-  float_s() {
-    memset(static_cast<void *>(this), 0, sizeof(float_s));
+  float_s()
+      : v_(0) {
   }
   float_s(float _v)
-      : v_(flatbuffers::EndianScalar(_v)) {
+      : v_(::flatbuffers::EndianScalar(_v)) {
   }
   float v() const {
-    return flatbuffers::EndianScalar(v_);
+    return ::flatbuffers::EndianScalar(v_);
   }
 };
 FLATBUFFERS_STRUCT_END(float_s, 4);
+
+struct float_s::Traits {
+  using type = float_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec2f_s FLATBUFFERS_FINAL_CLASS {
  private:
@@ -228,24 +240,30 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec2f_s FLATBUFFERS_FINAL_CLASS {
   float y_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return vec2f_sTypeTable();
   }
-  vec2f_s() {
-    memset(static_cast<void *>(this), 0, sizeof(vec2f_s));
+  vec2f_s()
+      : x_(0),
+        y_(0) {
   }
   vec2f_s(float _x, float _y)
-      : x_(flatbuffers::EndianScalar(_x)),
-        y_(flatbuffers::EndianScalar(_y)) {
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)) {
   }
   float x() const {
-    return flatbuffers::EndianScalar(x_);
+    return ::flatbuffers::EndianScalar(x_);
   }
   float y() const {
-    return flatbuffers::EndianScalar(y_);
+    return ::flatbuffers::EndianScalar(y_);
   }
 };
 FLATBUFFERS_STRUCT_END(vec2f_s, 8);
+
+struct vec2f_s::Traits {
+  using type = vec2f_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec3f_s FLATBUFFERS_FINAL_CLASS {
  private:
@@ -254,28 +272,35 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec3f_s FLATBUFFERS_FINAL_CLASS {
   float z_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return vec3f_sTypeTable();
   }
-  vec3f_s() {
-    memset(static_cast<void *>(this), 0, sizeof(vec3f_s));
+  vec3f_s()
+      : x_(0),
+        y_(0),
+        z_(0) {
   }
   vec3f_s(float _x, float _y, float _z)
-      : x_(flatbuffers::EndianScalar(_x)),
-        y_(flatbuffers::EndianScalar(_y)),
-        z_(flatbuffers::EndianScalar(_z)) {
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)),
+        z_(::flatbuffers::EndianScalar(_z)) {
   }
   float x() const {
-    return flatbuffers::EndianScalar(x_);
+    return ::flatbuffers::EndianScalar(x_);
   }
   float y() const {
-    return flatbuffers::EndianScalar(y_);
+    return ::flatbuffers::EndianScalar(y_);
   }
   float z() const {
-    return flatbuffers::EndianScalar(z_);
+    return ::flatbuffers::EndianScalar(z_);
   }
 };
 FLATBUFFERS_STRUCT_END(vec3f_s, 12);
+
+struct vec3f_s::Traits {
+  using type = vec3f_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec4f_s FLATBUFFERS_FINAL_CLASS {
  private:
@@ -285,72 +310,90 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec4f_s FLATBUFFERS_FINAL_CLASS {
   float w_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return vec4f_sTypeTable();
   }
-  vec4f_s() {
-    memset(static_cast<void *>(this), 0, sizeof(vec4f_s));
+  vec4f_s()
+      : x_(0),
+        y_(0),
+        z_(0),
+        w_(0) {
   }
   vec4f_s(float _x, float _y, float _z, float _w)
-      : x_(flatbuffers::EndianScalar(_x)),
-        y_(flatbuffers::EndianScalar(_y)),
-        z_(flatbuffers::EndianScalar(_z)),
-        w_(flatbuffers::EndianScalar(_w)) {
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)),
+        z_(::flatbuffers::EndianScalar(_z)),
+        w_(::flatbuffers::EndianScalar(_w)) {
   }
   float x() const {
-    return flatbuffers::EndianScalar(x_);
+    return ::flatbuffers::EndianScalar(x_);
   }
   float y() const {
-    return flatbuffers::EndianScalar(y_);
+    return ::flatbuffers::EndianScalar(y_);
   }
   float z() const {
-    return flatbuffers::EndianScalar(z_);
+    return ::flatbuffers::EndianScalar(z_);
   }
   float w() const {
-    return flatbuffers::EndianScalar(w_);
+    return ::flatbuffers::EndianScalar(w_);
   }
 };
 FLATBUFFERS_STRUCT_END(vec4f_s, 16);
+
+struct vec4f_s::Traits {
+  using type = vec4f_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) int32_s FLATBUFFERS_FINAL_CLASS {
  private:
   int32_t v_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return int32_sTypeTable();
   }
-  int32_s() {
-    memset(static_cast<void *>(this), 0, sizeof(int32_s));
+  int32_s()
+      : v_(0) {
   }
   int32_s(int32_t _v)
-      : v_(flatbuffers::EndianScalar(_v)) {
+      : v_(::flatbuffers::EndianScalar(_v)) {
   }
   int32_t v() const {
-    return flatbuffers::EndianScalar(v_);
+    return ::flatbuffers::EndianScalar(v_);
   }
 };
 FLATBUFFERS_STRUCT_END(int32_s, 4);
+
+struct int32_s::Traits {
+  using type = int32_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(8) int64_s FLATBUFFERS_FINAL_CLASS {
  private:
   int64_t v_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return int64_sTypeTable();
   }
-  int64_s() {
-    memset(static_cast<void *>(this), 0, sizeof(int64_s));
+  int64_s()
+      : v_(0) {
   }
   int64_s(int64_t _v)
-      : v_(flatbuffers::EndianScalar(_v)) {
+      : v_(::flatbuffers::EndianScalar(_v)) {
   }
   int64_t v() const {
-    return flatbuffers::EndianScalar(v_);
+    return ::flatbuffers::EndianScalar(v_);
   }
 };
 FLATBUFFERS_STRUCT_END(int64_s, 8);
+
+struct int64_s::Traits {
+  using type = int64_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec2i_s FLATBUFFERS_FINAL_CLASS {
  private:
@@ -358,24 +401,30 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec2i_s FLATBUFFERS_FINAL_CLASS {
   int32_t y_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return vec2i_sTypeTable();
   }
-  vec2i_s() {
-    memset(static_cast<void *>(this), 0, sizeof(vec2i_s));
+  vec2i_s()
+      : x_(0),
+        y_(0) {
   }
   vec2i_s(int32_t _x, int32_t _y)
-      : x_(flatbuffers::EndianScalar(_x)),
-        y_(flatbuffers::EndianScalar(_y)) {
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)) {
   }
   int32_t x() const {
-    return flatbuffers::EndianScalar(x_);
+    return ::flatbuffers::EndianScalar(x_);
   }
   int32_t y() const {
-    return flatbuffers::EndianScalar(y_);
+    return ::flatbuffers::EndianScalar(y_);
   }
 };
 FLATBUFFERS_STRUCT_END(vec2i_s, 8);
+
+struct vec2i_s::Traits {
+  using type = vec2i_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec3i_s FLATBUFFERS_FINAL_CLASS {
  private:
@@ -384,28 +433,35 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec3i_s FLATBUFFERS_FINAL_CLASS {
   int32_t z_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return vec3i_sTypeTable();
   }
-  vec3i_s() {
-    memset(static_cast<void *>(this), 0, sizeof(vec3i_s));
+  vec3i_s()
+      : x_(0),
+        y_(0),
+        z_(0) {
   }
   vec3i_s(int32_t _x, int32_t _y, int32_t _z)
-      : x_(flatbuffers::EndianScalar(_x)),
-        y_(flatbuffers::EndianScalar(_y)),
-        z_(flatbuffers::EndianScalar(_z)) {
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)),
+        z_(::flatbuffers::EndianScalar(_z)) {
   }
   int32_t x() const {
-    return flatbuffers::EndianScalar(x_);
+    return ::flatbuffers::EndianScalar(x_);
   }
   int32_t y() const {
-    return flatbuffers::EndianScalar(y_);
+    return ::flatbuffers::EndianScalar(y_);
   }
   int32_t z() const {
-    return flatbuffers::EndianScalar(z_);
+    return ::flatbuffers::EndianScalar(z_);
   }
 };
 FLATBUFFERS_STRUCT_END(vec3i_s, 12);
+
+struct vec3i_s::Traits {
+  using type = vec3i_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec4i_s FLATBUFFERS_FINAL_CLASS {
  private:
@@ -415,66 +471,79 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) vec4i_s FLATBUFFERS_FINAL_CLASS {
   int32_t w_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return vec4i_sTypeTable();
   }
-  vec4i_s() {
-    memset(static_cast<void *>(this), 0, sizeof(vec4i_s));
+  vec4i_s()
+      : x_(0),
+        y_(0),
+        z_(0),
+        w_(0) {
   }
   vec4i_s(int32_t _x, int32_t _y, int32_t _z, int32_t _w)
-      : x_(flatbuffers::EndianScalar(_x)),
-        y_(flatbuffers::EndianScalar(_y)),
-        z_(flatbuffers::EndianScalar(_z)),
-        w_(flatbuffers::EndianScalar(_w)) {
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)),
+        z_(::flatbuffers::EndianScalar(_z)),
+        w_(::flatbuffers::EndianScalar(_w)) {
   }
   int32_t x() const {
-    return flatbuffers::EndianScalar(x_);
+    return ::flatbuffers::EndianScalar(x_);
   }
   int32_t y() const {
-    return flatbuffers::EndianScalar(y_);
+    return ::flatbuffers::EndianScalar(y_);
   }
   int32_t z() const {
-    return flatbuffers::EndianScalar(z_);
+    return ::flatbuffers::EndianScalar(z_);
   }
   int32_t w() const {
-    return flatbuffers::EndianScalar(w_);
+    return ::flatbuffers::EndianScalar(w_);
   }
 };
 FLATBUFFERS_STRUCT_END(vec4i_s, 16);
+
+struct vec4i_s::Traits {
+  using type = vec4i_s;
+};
 
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(1) bool_s FLATBUFFERS_FINAL_CLASS {
  private:
   uint8_t v_;
 
  public:
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  struct Traits;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return bool_sTypeTable();
   }
-  bool_s() {
-    memset(static_cast<void *>(this), 0, sizeof(bool_s));
+  bool_s()
+      : v_(0) {
   }
   bool_s(bool _v)
-      : v_(flatbuffers::EndianScalar(static_cast<uint8_t>(_v))) {
+      : v_(::flatbuffers::EndianScalar(static_cast<uint8_t>(_v))) {
   }
   bool v() const {
-    return flatbuffers::EndianScalar(v_) != 0;
+    return ::flatbuffers::EndianScalar(v_) != 0;
   }
 };
 FLATBUFFERS_STRUCT_END(bool_s, 1);
 
-struct string_s FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct bool_s::Traits {
+  using type = bool_s;
+};
+
+struct string_s FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef string_sBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return string_sTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_V = 4
   };
-  const flatbuffers::String *v() const {
-    return GetPointer<const flatbuffers::String *>(VT_V);
+  const ::flatbuffers::String *v() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_V);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_V) &&
            verifier.VerifyString(v()) &&
@@ -484,26 +553,25 @@ struct string_s FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct string_sBuilder {
   typedef string_s Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_v(flatbuffers::Offset<flatbuffers::String> v) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_v(::flatbuffers::Offset<::flatbuffers::String> v) {
     fbb_.AddOffset(string_s::VT_V, v);
   }
-  explicit string_sBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit string_sBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  string_sBuilder &operator=(const string_sBuilder &);
-  flatbuffers::Offset<string_s> Finish() {
+  ::flatbuffers::Offset<string_s> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<string_s>(end);
+    auto o = ::flatbuffers::Offset<string_s>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<string_s> Createstring_s(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> v = 0) {
+inline ::flatbuffers::Offset<string_s> Createstring_s(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> v = 0) {
   string_sBuilder builder_(_fbb);
   builder_.add_v(v);
   return builder_.Finish();
@@ -514,8 +582,8 @@ struct string_s::Traits {
   static auto constexpr Create = Createstring_s;
 };
 
-inline flatbuffers::Offset<string_s> Createstring_sDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
+inline ::flatbuffers::Offset<string_s> Createstring_sDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *v = nullptr) {
   auto v__ = v ? _fbb.CreateString(v) : 0;
   return rlogic_serialization::Createstring_s(
@@ -523,10 +591,10 @@ inline flatbuffers::Offset<string_s> Createstring_sDirect(
       v__);
 }
 
-struct Property FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Property FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PropertyBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return PropertyTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -536,14 +604,14 @@ struct Property FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_VALUE_TYPE = 10,
     VT_VALUE = 12
   };
-  const flatbuffers::String *name() const {
-    return GetPointer<const flatbuffers::String *>(VT_NAME);
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   rlogic_serialization::EPropertyRootType rootType() const {
     return static_cast<rlogic_serialization::EPropertyRootType>(GetField<uint8_t>(VT_ROOTTYPE, 0));
   }
-  const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Property>> *children() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Property>> *>(VT_CHILDREN);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Property>> *children() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Property>> *>(VT_CHILDREN);
   }
   rlogic_serialization::PropertyValue value_type() const {
     return static_cast<rlogic_serialization::PropertyValue>(GetField<uint8_t>(VT_VALUE_TYPE, 0));
@@ -585,15 +653,15 @@ struct Property FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::bool_s *value_as_bool_s() const {
     return value_type() == rlogic_serialization::PropertyValue::bool_s ? static_cast<const rlogic_serialization::bool_s *>(value()) : nullptr;
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
-           VerifyField<uint8_t>(verifier, VT_ROOTTYPE) &&
+           VerifyField<uint8_t>(verifier, VT_ROOTTYPE, 1) &&
            VerifyOffset(verifier, VT_CHILDREN) &&
            verifier.VerifyVector(children()) &&
            verifier.VerifyVectorOfTables(children()) &&
-           VerifyField<uint8_t>(verifier, VT_VALUE_TYPE) &&
+           VerifyField<uint8_t>(verifier, VT_VALUE_TYPE, 1) &&
            VerifyOffset(verifier, VT_VALUE) &&
            VerifyPropertyValue(verifier, value(), value_type()) &&
            verifier.EndTable();
@@ -646,42 +714,41 @@ template<> inline const rlogic_serialization::bool_s *Property::value_as<rlogic_
 
 struct PropertyBuilder {
   typedef Property Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Property::VT_NAME, name);
   }
   void add_rootType(rlogic_serialization::EPropertyRootType rootType) {
     fbb_.AddElement<uint8_t>(Property::VT_ROOTTYPE, static_cast<uint8_t>(rootType), 0);
   }
-  void add_children(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Property>>> children) {
+  void add_children(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Property>>> children) {
     fbb_.AddOffset(Property::VT_CHILDREN, children);
   }
   void add_value_type(rlogic_serialization::PropertyValue value_type) {
     fbb_.AddElement<uint8_t>(Property::VT_VALUE_TYPE, static_cast<uint8_t>(value_type), 0);
   }
-  void add_value(flatbuffers::Offset<void> value) {
+  void add_value(::flatbuffers::Offset<void> value) {
     fbb_.AddOffset(Property::VT_VALUE, value);
   }
-  explicit PropertyBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit PropertyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  PropertyBuilder &operator=(const PropertyBuilder &);
-  flatbuffers::Offset<Property> Finish() {
+  ::flatbuffers::Offset<Property> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Property>(end);
+    auto o = ::flatbuffers::Offset<Property>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<Property> CreateProperty(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> name = 0,
+inline ::flatbuffers::Offset<Property> CreateProperty(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     rlogic_serialization::EPropertyRootType rootType = rlogic_serialization::EPropertyRootType::Primitive,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Property>>> children = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Property>>> children = 0,
     rlogic_serialization::PropertyValue value_type = rlogic_serialization::PropertyValue::NONE,
-    flatbuffers::Offset<void> value = 0) {
+    ::flatbuffers::Offset<void> value = 0) {
   PropertyBuilder builder_(_fbb);
   builder_.add_value(value);
   builder_.add_children(children);
@@ -696,15 +763,15 @@ struct Property::Traits {
   static auto constexpr Create = CreateProperty;
 };
 
-inline flatbuffers::Offset<Property> CreatePropertyDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
+inline ::flatbuffers::Offset<Property> CreatePropertyDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *name = nullptr,
     rlogic_serialization::EPropertyRootType rootType = rlogic_serialization::EPropertyRootType::Primitive,
-    const std::vector<flatbuffers::Offset<rlogic_serialization::Property>> *children = nullptr,
+    const std::vector<::flatbuffers::Offset<rlogic_serialization::Property>> *children = nullptr,
     rlogic_serialization::PropertyValue value_type = rlogic_serialization::PropertyValue::NONE,
-    flatbuffers::Offset<void> value = 0) {
+    ::flatbuffers::Offset<void> value = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
-  auto children__ = children ? _fbb.CreateVector<flatbuffers::Offset<rlogic_serialization::Property>>(*children) : 0;
+  auto children__ = children ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::Property>>(*children) : 0;
   return rlogic_serialization::CreateProperty(
       _fbb,
       name__,
@@ -714,53 +781,53 @@ inline flatbuffers::Offset<Property> CreatePropertyDirect(
       value);
 }
 
-inline bool VerifyPropertyValue(flatbuffers::Verifier &verifier, const void *obj, PropertyValue type) {
+inline bool VerifyPropertyValue(::flatbuffers::Verifier &verifier, const void *obj, PropertyValue type) {
   switch (type) {
     case PropertyValue::NONE: {
       return true;
     }
     case PropertyValue::float_s: {
-      return verifier.Verify<rlogic_serialization::float_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::float_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::vec2f_s: {
-      return verifier.Verify<rlogic_serialization::vec2f_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::vec2f_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::vec3f_s: {
-      return verifier.Verify<rlogic_serialization::vec3f_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::vec3f_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::vec4f_s: {
-      return verifier.Verify<rlogic_serialization::vec4f_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::vec4f_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::int32_s: {
-      return verifier.Verify<rlogic_serialization::int32_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::int32_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::int64_s: {
-      return verifier.Verify<rlogic_serialization::int64_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::int64_s>(static_cast<const uint8_t *>(obj), 0, 8);
     }
     case PropertyValue::vec2i_s: {
-      return verifier.Verify<rlogic_serialization::vec2i_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::vec2i_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::vec3i_s: {
-      return verifier.Verify<rlogic_serialization::vec3i_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::vec3i_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::vec4i_s: {
-      return verifier.Verify<rlogic_serialization::vec4i_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::vec4i_s>(static_cast<const uint8_t *>(obj), 0, 4);
     }
     case PropertyValue::string_s: {
       auto ptr = reinterpret_cast<const rlogic_serialization::string_s *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case PropertyValue::bool_s: {
-      return verifier.Verify<rlogic_serialization::bool_s>(static_cast<const uint8_t *>(obj), 0);
+      return verifier.VerifyField<rlogic_serialization::bool_s>(static_cast<const uint8_t *>(obj), 0, 1);
     }
     default: return true;
   }
 }
 
-inline bool VerifyPropertyValueVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types) {
+inline bool VerifyPropertyValueVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<PropertyValue> *types) {
   if (!values || !types) return !values && !types;
   if (values->size() != types->size()) return false;
-  for (flatbuffers::uoffset_t i = 0; i < values->size(); ++i) {
+  for (::flatbuffers::uoffset_t i = 0; i < values->size(); ++i) {
     if (!VerifyPropertyValue(
         verifier,  values->Get(i), types->GetEnum<PropertyValue>(i))) {
       return false;
@@ -769,13 +836,13 @@ inline bool VerifyPropertyValueVector(flatbuffers::Verifier &verifier, const fla
   return true;
 }
 
-inline const flatbuffers::TypeTable *EPropertyRootTypeTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_UCHAR, 0, 0 },
-    { flatbuffers::ET_UCHAR, 0, 0 },
-    { flatbuffers::ET_UCHAR, 0, 0 }
+inline const ::flatbuffers::TypeTable *EPropertyRootTypeTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_UCHAR, 0, 0 },
+    { ::flatbuffers::ET_UCHAR, 0, 0 },
+    { ::flatbuffers::ET_UCHAR, 0, 0 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::EPropertyRootTypeTypeTable
   };
   static const char * const names[] = {
@@ -783,28 +850,28 @@ inline const flatbuffers::TypeTable *EPropertyRootTypeTypeTable() {
     "Struct",
     "Array"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_ENUM, 3, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_ENUM, 3, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *PropertyValueTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, -1 },
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_SEQUENCE, 0, 1 },
-    { flatbuffers::ET_SEQUENCE, 0, 2 },
-    { flatbuffers::ET_SEQUENCE, 0, 3 },
-    { flatbuffers::ET_SEQUENCE, 0, 4 },
-    { flatbuffers::ET_SEQUENCE, 0, 5 },
-    { flatbuffers::ET_SEQUENCE, 0, 6 },
-    { flatbuffers::ET_SEQUENCE, 0, 7 },
-    { flatbuffers::ET_SEQUENCE, 0, 8 },
-    { flatbuffers::ET_SEQUENCE, 0, 9 },
-    { flatbuffers::ET_SEQUENCE, 0, 10 }
+inline const ::flatbuffers::TypeTable *PropertyValueTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, -1 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 1 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 2 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 3 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 4 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 5 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 6 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 7 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 8 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 9 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 10 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::float_sTypeTable,
     rlogic_serialization::vec2f_sTypeTable,
     rlogic_serialization::vec3f_sTypeTable,
@@ -831,47 +898,47 @@ inline const flatbuffers::TypeTable *PropertyValueTypeTable() {
     "string_s",
     "bool_s"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_UNION, 12, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_UNION, 12, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *float_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_FLOAT, 0, -1 }
+inline const ::flatbuffers::TypeTable *float_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_FLOAT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4 };
   static const char * const names[] = {
     "v"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 1, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 1, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *vec2f_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_FLOAT, 0, -1 },
-    { flatbuffers::ET_FLOAT, 0, -1 }
+inline const ::flatbuffers::TypeTable *vec2f_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4, 8 };
   static const char * const names[] = {
     "x",
     "y"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 2, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 2, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *vec3f_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_FLOAT, 0, -1 },
-    { flatbuffers::ET_FLOAT, 0, -1 },
-    { flatbuffers::ET_FLOAT, 0, -1 }
+inline const ::flatbuffers::TypeTable *vec3f_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4, 8, 12 };
   static const char * const names[] = {
@@ -879,18 +946,18 @@ inline const flatbuffers::TypeTable *vec3f_sTypeTable() {
     "y",
     "z"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 3, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 3, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *vec4f_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_FLOAT, 0, -1 },
-    { flatbuffers::ET_FLOAT, 0, -1 },
-    { flatbuffers::ET_FLOAT, 0, -1 },
-    { flatbuffers::ET_FLOAT, 0, -1 }
+inline const ::flatbuffers::TypeTable *vec4f_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 },
+    { ::flatbuffers::ET_FLOAT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4, 8, 12, 16 };
   static const char * const names[] = {
@@ -899,61 +966,61 @@ inline const flatbuffers::TypeTable *vec4f_sTypeTable() {
     "z",
     "w"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 4, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 4, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *int32_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_INT, 0, -1 }
+inline const ::flatbuffers::TypeTable *int32_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_INT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4 };
   static const char * const names[] = {
     "v"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 1, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 1, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *int64_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_LONG, 0, -1 }
+inline const ::flatbuffers::TypeTable *int64_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_LONG, 0, -1 }
   };
   static const int64_t values[] = { 0, 8 };
   static const char * const names[] = {
     "v"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 1, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 1, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *vec2i_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_INT, 0, -1 },
-    { flatbuffers::ET_INT, 0, -1 }
+inline const ::flatbuffers::TypeTable *vec2i_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_INT, 0, -1 },
+    { ::flatbuffers::ET_INT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4, 8 };
   static const char * const names[] = {
     "x",
     "y"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 2, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 2, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *vec3i_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_INT, 0, -1 },
-    { flatbuffers::ET_INT, 0, -1 },
-    { flatbuffers::ET_INT, 0, -1 }
+inline const ::flatbuffers::TypeTable *vec3i_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_INT, 0, -1 },
+    { ::flatbuffers::ET_INT, 0, -1 },
+    { ::flatbuffers::ET_INT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4, 8, 12 };
   static const char * const names[] = {
@@ -961,18 +1028,18 @@ inline const flatbuffers::TypeTable *vec3i_sTypeTable() {
     "y",
     "z"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 3, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 3, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *vec4i_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_INT, 0, -1 },
-    { flatbuffers::ET_INT, 0, -1 },
-    { flatbuffers::ET_INT, 0, -1 },
-    { flatbuffers::ET_INT, 0, -1 }
+inline const ::flatbuffers::TypeTable *vec4i_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_INT, 0, -1 },
+    { ::flatbuffers::ET_INT, 0, -1 },
+    { ::flatbuffers::ET_INT, 0, -1 },
+    { ::flatbuffers::ET_INT, 0, -1 }
   };
   static const int64_t values[] = { 0, 4, 8, 12, 16 };
   static const char * const names[] = {
@@ -981,48 +1048,48 @@ inline const flatbuffers::TypeTable *vec4i_sTypeTable() {
     "z",
     "w"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 4, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 4, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *bool_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_BOOL, 0, -1 }
+inline const ::flatbuffers::TypeTable *bool_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_BOOL, 0, -1 }
   };
   static const int64_t values[] = { 0, 1 };
   static const char * const names[] = {
     "v"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_STRUCT, 1, type_codes, nullptr, values, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_STRUCT, 1, type_codes, nullptr, nullptr, values, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *string_sTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_STRING, 0, -1 }
+inline const ::flatbuffers::TypeTable *string_sTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_STRING, 0, -1 }
   };
   static const char * const names[] = {
     "v"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 1, type_codes, nullptr, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 1, type_codes, nullptr, nullptr, nullptr, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *PropertyTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_STRING, 0, -1 },
-    { flatbuffers::ET_UCHAR, 0, 0 },
-    { flatbuffers::ET_SEQUENCE, 1, 1 },
-    { flatbuffers::ET_UTYPE, 0, 2 },
-    { flatbuffers::ET_SEQUENCE, 0, 2 }
+inline const ::flatbuffers::TypeTable *PropertyTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_UCHAR, 0, 0 },
+    { ::flatbuffers::ET_SEQUENCE, 1, 1 },
+    { ::flatbuffers::ET_UTYPE, 0, 2 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 2 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::EPropertyRootTypeTypeTable,
     rlogic_serialization::PropertyTypeTable,
     rlogic_serialization::PropertyValueTypeTable
@@ -1034,8 +1101,8 @@ inline const flatbuffers::TypeTable *PropertyTypeTable() {
     "value_type",
     "value"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

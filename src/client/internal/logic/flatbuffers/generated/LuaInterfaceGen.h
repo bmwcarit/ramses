@@ -6,6 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "LogicObjectGen.h"
 #include "PropertyGen.h"
 
@@ -14,12 +21,12 @@ namespace rlogic_serialization {
 struct LuaInterface;
 struct LuaInterfaceBuilder;
 
-inline const flatbuffers::TypeTable *LuaInterfaceTypeTable();
+inline const ::flatbuffers::TypeTable *LuaInterfaceTypeTable();
 
-struct LuaInterface FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct LuaInterface FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LuaInterfaceBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return LuaInterfaceTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -32,7 +39,7 @@ struct LuaInterface FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::Property *rootProperty() const {
     return GetPointer<const rlogic_serialization::Property *>(VT_ROOTPROPERTY);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
@@ -44,30 +51,29 @@ struct LuaInterface FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct LuaInterfaceBuilder {
   typedef LuaInterface Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
     fbb_.AddOffset(LuaInterface::VT_BASE, base);
   }
-  void add_rootProperty(flatbuffers::Offset<rlogic_serialization::Property> rootProperty) {
+  void add_rootProperty(::flatbuffers::Offset<rlogic_serialization::Property> rootProperty) {
     fbb_.AddOffset(LuaInterface::VT_ROOTPROPERTY, rootProperty);
   }
-  explicit LuaInterfaceBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit LuaInterfaceBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  LuaInterfaceBuilder &operator=(const LuaInterfaceBuilder &);
-  flatbuffers::Offset<LuaInterface> Finish() {
+  ::flatbuffers::Offset<LuaInterface> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<LuaInterface>(end);
+    auto o = ::flatbuffers::Offset<LuaInterface>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<LuaInterface> CreateLuaInterface(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootProperty = 0) {
+inline ::flatbuffers::Offset<LuaInterface> CreateLuaInterface(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootProperty = 0) {
   LuaInterfaceBuilder builder_(_fbb);
   builder_.add_rootProperty(rootProperty);
   builder_.add_base(base);
@@ -79,12 +85,12 @@ struct LuaInterface::Traits {
   static auto constexpr Create = CreateLuaInterface;
 };
 
-inline const flatbuffers::TypeTable *LuaInterfaceTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_SEQUENCE, 0, 1 }
+inline const ::flatbuffers::TypeTable *LuaInterfaceTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::LogicObjectTypeTable,
     rlogic_serialization::PropertyTypeTable
   };
@@ -92,8 +98,8 @@ inline const flatbuffers::TypeTable *LuaInterfaceTypeTable() {
     "base",
     "rootProperty"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

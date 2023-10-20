@@ -6,10 +6,14 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "LogicObjectGen.h"
-#include "PropertyGen.h"
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "RamsesBindingGen.h"
-#include "RamsesReferenceGen.h"
 
 namespace rlogic_serialization {
 
@@ -19,27 +23,27 @@ struct ElementBuilder;
 struct RenderGroupBinding;
 struct RenderGroupBindingBuilder;
 
-inline const flatbuffers::TypeTable *ElementTypeTable();
+inline const ::flatbuffers::TypeTable *ElementTypeTable();
 
-inline const flatbuffers::TypeTable *RenderGroupBindingTypeTable();
+inline const ::flatbuffers::TypeTable *RenderGroupBindingTypeTable();
 
-struct Element FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Element FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ElementBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return ElementTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
     VT_RAMSESOBJECT = 6
   };
-  const flatbuffers::String *name() const {
-    return GetPointer<const flatbuffers::String *>(VT_NAME);
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   const rlogic_serialization::RamsesReference *ramsesObject() const {
     return GetPointer<const rlogic_serialization::RamsesReference *>(VT_RAMSESOBJECT);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
@@ -51,30 +55,29 @@ struct Element FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct ElementBuilder {
   typedef Element Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Element::VT_NAME, name);
   }
-  void add_ramsesObject(flatbuffers::Offset<rlogic_serialization::RamsesReference> ramsesObject) {
+  void add_ramsesObject(::flatbuffers::Offset<rlogic_serialization::RamsesReference> ramsesObject) {
     fbb_.AddOffset(Element::VT_RAMSESOBJECT, ramsesObject);
   }
-  explicit ElementBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit ElementBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ElementBuilder &operator=(const ElementBuilder &);
-  flatbuffers::Offset<Element> Finish() {
+  ::flatbuffers::Offset<Element> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Element>(end);
+    auto o = ::flatbuffers::Offset<Element>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<Element> CreateElement(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> name = 0,
-    flatbuffers::Offset<rlogic_serialization::RamsesReference> ramsesObject = 0) {
+inline ::flatbuffers::Offset<Element> CreateElement(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<rlogic_serialization::RamsesReference> ramsesObject = 0) {
   ElementBuilder builder_(_fbb);
   builder_.add_ramsesObject(ramsesObject);
   builder_.add_name(name);
@@ -86,10 +89,10 @@ struct Element::Traits {
   static auto constexpr Create = CreateElement;
 };
 
-inline flatbuffers::Offset<Element> CreateElementDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
+inline ::flatbuffers::Offset<Element> CreateElementDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *name = nullptr,
-    flatbuffers::Offset<rlogic_serialization::RamsesReference> ramsesObject = 0) {
+    ::flatbuffers::Offset<rlogic_serialization::RamsesReference> ramsesObject = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return rlogic_serialization::CreateElement(
       _fbb,
@@ -97,10 +100,10 @@ inline flatbuffers::Offset<Element> CreateElementDirect(
       ramsesObject);
 }
 
-struct RenderGroupBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct RenderGroupBinding FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef RenderGroupBindingBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return RenderGroupBindingTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -110,10 +113,10 @@ struct RenderGroupBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::RamsesBinding *base() const {
     return GetPointer<const rlogic_serialization::RamsesBinding *>(VT_BASE);
   }
-  const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Element>> *elements() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Element>> *>(VT_ELEMENTS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Element>> *elements() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Element>> *>(VT_ELEMENTS);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
@@ -126,30 +129,29 @@ struct RenderGroupBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct RenderGroupBindingBuilder {
   typedef RenderGroupBinding Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::RamsesBinding> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::RamsesBinding> base) {
     fbb_.AddOffset(RenderGroupBinding::VT_BASE, base);
   }
-  void add_elements(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Element>>> elements) {
+  void add_elements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Element>>> elements) {
     fbb_.AddOffset(RenderGroupBinding::VT_ELEMENTS, elements);
   }
-  explicit RenderGroupBindingBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit RenderGroupBindingBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  RenderGroupBindingBuilder &operator=(const RenderGroupBindingBuilder &);
-  flatbuffers::Offset<RenderGroupBinding> Finish() {
+  ::flatbuffers::Offset<RenderGroupBinding> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<RenderGroupBinding>(end);
+    auto o = ::flatbuffers::Offset<RenderGroupBinding>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<RenderGroupBinding> CreateRenderGroupBinding(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::Element>>> elements = 0) {
+inline ::flatbuffers::Offset<RenderGroupBinding> CreateRenderGroupBinding(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::Element>>> elements = 0) {
   RenderGroupBindingBuilder builder_(_fbb);
   builder_.add_elements(elements);
   builder_.add_base(base);
@@ -161,41 +163,41 @@ struct RenderGroupBinding::Traits {
   static auto constexpr Create = CreateRenderGroupBinding;
 };
 
-inline flatbuffers::Offset<RenderGroupBinding> CreateRenderGroupBindingDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0,
-    const std::vector<flatbuffers::Offset<rlogic_serialization::Element>> *elements = nullptr) {
-  auto elements__ = elements ? _fbb.CreateVector<flatbuffers::Offset<rlogic_serialization::Element>>(*elements) : 0;
+inline ::flatbuffers::Offset<RenderGroupBinding> CreateRenderGroupBindingDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::RamsesBinding> base = 0,
+    const std::vector<::flatbuffers::Offset<rlogic_serialization::Element>> *elements = nullptr) {
+  auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::Element>>(*elements) : 0;
   return rlogic_serialization::CreateRenderGroupBinding(
       _fbb,
       base,
       elements__);
 }
 
-inline const flatbuffers::TypeTable *ElementTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_STRING, 0, -1 },
-    { flatbuffers::ET_SEQUENCE, 0, 0 }
+inline const ::flatbuffers::TypeTable *ElementTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::RamsesReferenceTypeTable
   };
   static const char * const names[] = {
     "name",
     "ramsesObject"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *RenderGroupBindingTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_SEQUENCE, 1, 1 }
+inline const ::flatbuffers::TypeTable *RenderGroupBindingTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_SEQUENCE, 1, 1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::RamsesBindingTypeTable,
     rlogic_serialization::ElementTypeTable
   };
@@ -203,8 +205,8 @@ inline const flatbuffers::TypeTable *RenderGroupBindingTypeTable() {
     "base",
     "elements"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 2, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

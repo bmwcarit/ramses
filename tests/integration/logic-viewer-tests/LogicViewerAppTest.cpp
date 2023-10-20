@@ -608,7 +608,8 @@ namespace ramses::internal
     public:
         ALogicViewerAppUI()
         {
-            setup(iniFile);
+            // use --offscreen to get screenshots without ui
+            setup(iniFile, {"--offscreen"});
         }
     };
 
@@ -847,7 +848,7 @@ namespace ramses::internal
                 rlogic.screenshot("test_red.png")
             end
         )");
-        createApp({ "--exec=test_default", "--no-offscreen", ramsesFile });
+        createApp({ "--exec=test_default", ramsesFile });
         EXPECT_EQ(0, m_app->run());
         EXPECT_TRUE(CompareImage("test_red.png", "ALogicViewerApp_red.png"));
     }
@@ -1237,11 +1238,11 @@ rlogic.meshNodeBindings["myMeshNode"]["IN"]["instanceCount"].value = 1)", rtrim(
         {
             if (GetParam())
             {
-                setup(iniFile, { "--clear-color", "0", "0", "0.5", "1" });
+                setup(iniFile, { "--offscreen", "--clear-color", "0", "0", "0.5", "1" });
             }
             else
             {
-                setup(iniFile, { "--no-offscreen", "--clear-color", "0", "0", "0.5", "1" });
+                setup(iniFile, { "--clear-color", "0", "0", "0.5", "1" });
             }
         }
     };

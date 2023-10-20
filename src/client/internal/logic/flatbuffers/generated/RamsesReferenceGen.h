@@ -6,17 +6,24 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 namespace rlogic_serialization {
 
 struct RamsesReference;
 struct RamsesReferenceBuilder;
 
-inline const flatbuffers::TypeTable *RamsesReferenceTypeTable();
+inline const ::flatbuffers::TypeTable *RamsesReferenceTypeTable();
 
-struct RamsesReference FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct RamsesReference FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef RamsesReferenceBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return RamsesReferenceTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -29,38 +36,37 @@ struct RamsesReference FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint32_t objectType() const {
     return GetField<uint32_t>(VT_OBJECTTYPE, 0);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint64_t>(verifier, VT_OBJECTID) &&
-           VerifyField<uint32_t>(verifier, VT_OBJECTTYPE) &&
+           VerifyField<uint64_t>(verifier, VT_OBJECTID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_OBJECTTYPE, 4) &&
            verifier.EndTable();
   }
 };
 
 struct RamsesReferenceBuilder {
   typedef RamsesReference Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
   void add_objectId(uint64_t objectId) {
     fbb_.AddElement<uint64_t>(RamsesReference::VT_OBJECTID, objectId, 0);
   }
   void add_objectType(uint32_t objectType) {
     fbb_.AddElement<uint32_t>(RamsesReference::VT_OBJECTTYPE, objectType, 0);
   }
-  explicit RamsesReferenceBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit RamsesReferenceBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  RamsesReferenceBuilder &operator=(const RamsesReferenceBuilder &);
-  flatbuffers::Offset<RamsesReference> Finish() {
+  ::flatbuffers::Offset<RamsesReference> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<RamsesReference>(end);
+    auto o = ::flatbuffers::Offset<RamsesReference>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<RamsesReference> CreateRamsesReference(
-    flatbuffers::FlatBufferBuilder &_fbb,
+inline ::flatbuffers::Offset<RamsesReference> CreateRamsesReference(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t objectId = 0,
     uint32_t objectType = 0) {
   RamsesReferenceBuilder builder_(_fbb);
@@ -74,17 +80,17 @@ struct RamsesReference::Traits {
   static auto constexpr Create = CreateRamsesReference;
 };
 
-inline const flatbuffers::TypeTable *RamsesReferenceTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_ULONG, 0, -1 },
-    { flatbuffers::ET_UINT, 0, -1 }
+inline const ::flatbuffers::TypeTable *RamsesReferenceTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_ULONG, 0, -1 },
+    { ::flatbuffers::ET_UINT, 0, -1 }
   };
   static const char * const names[] = {
     "objectId",
     "objectType"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 2, type_codes, nullptr, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 2, type_codes, nullptr, nullptr, nullptr, names
   };
   return &tt;
 }

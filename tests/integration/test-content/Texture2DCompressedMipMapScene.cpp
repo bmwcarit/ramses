@@ -36,11 +36,10 @@ namespace ramses::internal
         const uint8_t dataLevel1[] = {0x7e, 0x80, 0x4, 0x7f, 0x0, 0x7, 0xe0, 0x0};
         // 4x4: red
 
-        const ramses::MipLevelData mipLevelData[NumMipMaps] = { { 32u, dataLevel0 }, { 8u, dataLevel1 } };
+        const std::vector<MipLevelData> mipLevelData = { MipLevelData{ 32u, dataLevel0 }, MipLevelData{ 8u, dataLevel1 } };
         const ramses::Texture2D* texture = m_scene.createTexture2D(
             ramses::ETextureFormat::ETC2RGB,
             m_textureWidth, m_textureHeight,
-            NumMipMaps,
             mipLevelData,
             false);
 

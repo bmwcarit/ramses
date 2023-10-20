@@ -183,13 +183,13 @@ namespace ramses
             return {};
         }
 
-        if (args.noOffscreen())
+        if (args.offscreen())
         {
-            m_sceneSetup = std::make_unique<FramebufferSetup>(*m_imguiHelper, renderer, m_scene, display);
+            m_sceneSetup = std::make_unique<OffscreenSetup>(*m_imguiHelper, renderer, m_scene, display, m_width, m_height);
         }
         else
         {
-            m_sceneSetup = std::make_unique<OffscreenSetup>(*m_imguiHelper, renderer, m_scene, display, m_width, m_height);
+            m_sceneSetup = std::make_unique<FramebufferSetup>(*m_imguiHelper, renderer, m_scene, display);
         }
 
         renderer.setDisplayBufferClearColor(display, m_sceneSetup->getOffscreenBuffer(), {m_defaultClearColor[0], m_defaultClearColor[1], m_defaultClearColor[2], m_defaultClearColor[3]});

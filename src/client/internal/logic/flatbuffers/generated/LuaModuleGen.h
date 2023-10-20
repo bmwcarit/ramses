@@ -6,6 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "LogicObjectGen.h"
 
 namespace rlogic_serialization {
@@ -16,14 +23,14 @@ struct LuaModuleBuilder;
 struct LuaModuleUsage;
 struct LuaModuleUsageBuilder;
 
-inline const flatbuffers::TypeTable *LuaModuleTypeTable();
+inline const ::flatbuffers::TypeTable *LuaModuleTypeTable();
 
-inline const flatbuffers::TypeTable *LuaModuleUsageTypeTable();
+inline const ::flatbuffers::TypeTable *LuaModuleUsageTypeTable();
 
-struct LuaModule FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct LuaModule FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LuaModuleBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return LuaModuleTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -36,19 +43,19 @@ struct LuaModule FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::LogicObject *base() const {
     return GetPointer<const rlogic_serialization::LogicObject *>(VT_BASE);
   }
-  const flatbuffers::String *source() const {
-    return GetPointer<const flatbuffers::String *>(VT_SOURCE);
+  const ::flatbuffers::String *source() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SOURCE);
   }
-  const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *dependencies() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *>(VT_DEPENDENCIES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *dependencies() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *>(VT_DEPENDENCIES);
   }
-  const flatbuffers::Vector<uint8_t> *standardModules() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_STANDARDMODULES);
+  const ::flatbuffers::Vector<uint8_t> *standardModules() const {
+    return GetPointer<const ::flatbuffers::Vector<uint8_t> *>(VT_STANDARDMODULES);
   }
-  const flatbuffers::Vector<uint8_t> *luaByteCode() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_LUABYTECODE);
+  const ::flatbuffers::Vector<uint8_t> *luaByteCode() const {
+    return GetPointer<const ::flatbuffers::Vector<uint8_t> *>(VT_LUABYTECODE);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
@@ -67,42 +74,41 @@ struct LuaModule FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct LuaModuleBuilder {
   typedef LuaModule Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
     fbb_.AddOffset(LuaModule::VT_BASE, base);
   }
-  void add_source(flatbuffers::Offset<flatbuffers::String> source) {
+  void add_source(::flatbuffers::Offset<::flatbuffers::String> source) {
     fbb_.AddOffset(LuaModule::VT_SOURCE, source);
   }
-  void add_dependencies(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> dependencies) {
+  void add_dependencies(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> dependencies) {
     fbb_.AddOffset(LuaModule::VT_DEPENDENCIES, dependencies);
   }
-  void add_standardModules(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> standardModules) {
+  void add_standardModules(::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> standardModules) {
     fbb_.AddOffset(LuaModule::VT_STANDARDMODULES, standardModules);
   }
-  void add_luaByteCode(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> luaByteCode) {
+  void add_luaByteCode(::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> luaByteCode) {
     fbb_.AddOffset(LuaModule::VT_LUABYTECODE, luaByteCode);
   }
-  explicit LuaModuleBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit LuaModuleBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  LuaModuleBuilder &operator=(const LuaModuleBuilder &);
-  flatbuffers::Offset<LuaModule> Finish() {
+  ::flatbuffers::Offset<LuaModule> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<LuaModule>(end);
+    auto o = ::flatbuffers::Offset<LuaModule>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<LuaModule> CreateLuaModule(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
-    flatbuffers::Offset<flatbuffers::String> source = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> dependencies = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> standardModules = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> luaByteCode = 0) {
+inline ::flatbuffers::Offset<LuaModule> CreateLuaModule(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> source = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>> dependencies = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> standardModules = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> luaByteCode = 0) {
   LuaModuleBuilder builder_(_fbb);
   builder_.add_luaByteCode(luaByteCode);
   builder_.add_standardModules(standardModules);
@@ -117,15 +123,15 @@ struct LuaModule::Traits {
   static auto constexpr Create = CreateLuaModule;
 };
 
-inline flatbuffers::Offset<LuaModule> CreateLuaModuleDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+inline ::flatbuffers::Offset<LuaModule> CreateLuaModuleDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
     const char *source = nullptr,
-    const std::vector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *dependencies = nullptr,
+    const std::vector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>> *dependencies = nullptr,
     const std::vector<uint8_t> *standardModules = nullptr,
     const std::vector<uint8_t> *luaByteCode = nullptr) {
   auto source__ = source ? _fbb.CreateString(source) : 0;
-  auto dependencies__ = dependencies ? _fbb.CreateVector<flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>(*dependencies) : 0;
+  auto dependencies__ = dependencies ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::LuaModuleUsage>>(*dependencies) : 0;
   auto standardModules__ = standardModules ? _fbb.CreateVector<uint8_t>(*standardModules) : 0;
   auto luaByteCode__ = luaByteCode ? _fbb.CreateVector<uint8_t>(*luaByteCode) : 0;
   return rlogic_serialization::CreateLuaModule(
@@ -137,56 +143,55 @@ inline flatbuffers::Offset<LuaModule> CreateLuaModuleDirect(
       luaByteCode__);
 }
 
-struct LuaModuleUsage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct LuaModuleUsage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LuaModuleUsageBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return LuaModuleUsageTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
     VT_MODULEID = 6
   };
-  const flatbuffers::String *name() const {
-    return GetPointer<const flatbuffers::String *>(VT_NAME);
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   uint64_t moduleId() const {
     return GetField<uint64_t>(VT_MODULEID, 0);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
-           VerifyField<uint64_t>(verifier, VT_MODULEID) &&
+           VerifyField<uint64_t>(verifier, VT_MODULEID, 8) &&
            verifier.EndTable();
   }
 };
 
 struct LuaModuleUsageBuilder {
   typedef LuaModuleUsage Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(LuaModuleUsage::VT_NAME, name);
   }
   void add_moduleId(uint64_t moduleId) {
     fbb_.AddElement<uint64_t>(LuaModuleUsage::VT_MODULEID, moduleId, 0);
   }
-  explicit LuaModuleUsageBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit LuaModuleUsageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  LuaModuleUsageBuilder &operator=(const LuaModuleUsageBuilder &);
-  flatbuffers::Offset<LuaModuleUsage> Finish() {
+  ::flatbuffers::Offset<LuaModuleUsage> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<LuaModuleUsage>(end);
+    auto o = ::flatbuffers::Offset<LuaModuleUsage>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<LuaModuleUsage> CreateLuaModuleUsage(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> name = 0,
+inline ::flatbuffers::Offset<LuaModuleUsage> CreateLuaModuleUsage(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     uint64_t moduleId = 0) {
   LuaModuleUsageBuilder builder_(_fbb);
   builder_.add_moduleId(moduleId);
@@ -199,8 +204,8 @@ struct LuaModuleUsage::Traits {
   static auto constexpr Create = CreateLuaModuleUsage;
 };
 
-inline flatbuffers::Offset<LuaModuleUsage> CreateLuaModuleUsageDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
+inline ::flatbuffers::Offset<LuaModuleUsage> CreateLuaModuleUsageDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *name = nullptr,
     uint64_t moduleId = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
@@ -210,15 +215,15 @@ inline flatbuffers::Offset<LuaModuleUsage> CreateLuaModuleUsageDirect(
       moduleId);
 }
 
-inline const flatbuffers::TypeTable *LuaModuleTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_STRING, 0, -1 },
-    { flatbuffers::ET_SEQUENCE, 1, 1 },
-    { flatbuffers::ET_UCHAR, 1, -1 },
-    { flatbuffers::ET_UCHAR, 1, -1 }
+inline const ::flatbuffers::TypeTable *LuaModuleTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_SEQUENCE, 1, 1 },
+    { ::flatbuffers::ET_UCHAR, 1, -1 },
+    { ::flatbuffers::ET_UCHAR, 1, -1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::LogicObjectTypeTable,
     rlogic_serialization::LuaModuleUsageTypeTable
   };
@@ -229,23 +234,23 @@ inline const flatbuffers::TypeTable *LuaModuleTypeTable() {
     "standardModules",
     "luaByteCode"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }
 
-inline const flatbuffers::TypeTable *LuaModuleUsageTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_STRING, 0, -1 },
-    { flatbuffers::ET_ULONG, 0, -1 }
+inline const ::flatbuffers::TypeTable *LuaModuleUsageTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_ULONG, 0, -1 }
   };
   static const char * const names[] = {
     "name",
     "moduleId"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 2, type_codes, nullptr, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 2, type_codes, nullptr, nullptr, nullptr, names
   };
   return &tt;
 }

@@ -133,7 +133,7 @@ namespace ramses::internal
             ramses::internal::Image imageNZ;
             imageNZ.loadFromFilePNG("res/ramses-test-client-cube-nz.png");
 
-            ramses::CubeMipLevelData mipLevelData(
+            const std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(
                 static_cast<uint32_t>(imagePX.getData().size()),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                 reinterpret_cast<const std::byte*>(imagePX.getData().data()),
@@ -146,9 +146,9 @@ namespace ramses::internal
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                 reinterpret_cast<const std::byte*>(imagePZ.getData().data()),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNZ.getData().data()));
+                reinterpret_cast<const std::byte*>(imageNZ.getData().data())) };
 
-            return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), 1, &mipLevelData, false);
+            return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), mipLevelData, false);
         }
         case EState_BGRA_Swizzled:
         {
@@ -166,7 +166,7 @@ namespace ramses::internal
             ramses::internal::Image imageNZ;
             imageNZ.loadFromFilePNG("res/ramses-test-client-cube-nz.png");
 
-            ramses::CubeMipLevelData mipLevelData(
+            const std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(
                 static_cast<uint32_t>(imagePX.getData().size()),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                 reinterpret_cast<const std::byte*>(imagePX.getData().data()),
@@ -179,9 +179,9 @@ namespace ramses::internal
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                 reinterpret_cast<const std::byte*>(imagePZ.getData().data()),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNZ.getData().data()));
+                reinterpret_cast<const std::byte*>(imageNZ.getData().data())) };
 
-            return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), 1, &mipLevelData, false, bgraSwizzle);
+            return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), mipLevelData, false, bgraSwizzle);
         }
         case EState_Float:
         {
@@ -192,9 +192,9 @@ namespace ramses::internal
                                     1.0f, 1.0f, 1.0f};
 
             const auto* texturePtr = reinterpret_cast<const std::byte*>(texture);
-            ramses::CubeMipLevelData mipLevelData(sizeof(texture), texturePtr, texturePtr, texturePtr, texturePtr, texturePtr, texturePtr);
+            const std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(sizeof(texture), texturePtr, texturePtr, texturePtr, texturePtr, texturePtr, texturePtr) };
 
-            return m_scene.createTextureCube(ramses::ETextureFormat::RGB32F, 2, 1, &mipLevelData, false);
+            return m_scene.createTextureCube(ramses::ETextureFormat::RGB32F, 2, mipLevelData, false);
         }
         default:
             assert(!"Invalid texture type");

@@ -172,8 +172,8 @@ namespace ramses
         int textureheight = 0;
         unsigned char* pixels = nullptr;
         io.Fonts->GetTexDataAsRGBA32(&pixels, &texturewidth, &textureheight);
-        ramses::MipLevelData mipLevelData(static_cast<uint32_t>(texturewidth * textureheight * 4), pixels);
-        auto texture = m_imguiscene->createTexture2D(ramses::ETextureFormat::RGBA8, texturewidth, textureheight, 1, &mipLevelData);
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(texturewidth * textureheight * 4), pixels) };
+        auto texture = m_imguiscene->createTexture2D(ramses::ETextureFormat::RGBA8, texturewidth, textureheight, mipLevelData);
         sampler = m_imguiscene->createTextureSampler(
             ramses::ETextureAddressMode::Repeat,
             ramses::ETextureAddressMode::Repeat,

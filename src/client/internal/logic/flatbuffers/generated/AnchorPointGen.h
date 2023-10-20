@@ -6,6 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "LogicObjectGen.h"
 #include "PropertyGen.h"
 
@@ -14,12 +21,12 @@ namespace rlogic_serialization {
 struct AnchorPoint;
 struct AnchorPointBuilder;
 
-inline const flatbuffers::TypeTable *AnchorPointTypeTable();
+inline const ::flatbuffers::TypeTable *AnchorPointTypeTable();
 
-struct AnchorPoint FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct AnchorPoint FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AnchorPointBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return AnchorPointTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -44,12 +51,12 @@ struct AnchorPoint FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::Property *rootOutput() const {
     return GetPointer<const rlogic_serialization::Property *>(VT_ROOTOUTPUT);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
-           VerifyField<uint64_t>(verifier, VT_NODEBINDINGID) &&
-           VerifyField<uint64_t>(verifier, VT_CAMERABINDINGID) &&
+           VerifyField<uint64_t>(verifier, VT_NODEBINDINGID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_CAMERABINDINGID, 8) &&
            VerifyOffset(verifier, VT_ROOTINPUT) &&
            verifier.VerifyTable(rootInput()) &&
            VerifyOffset(verifier, VT_ROOTOUTPUT) &&
@@ -60,9 +67,9 @@ struct AnchorPoint FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct AnchorPointBuilder {
   typedef AnchorPoint Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
     fbb_.AddOffset(AnchorPoint::VT_BASE, base);
   }
   void add_nodeBindingId(uint64_t nodeBindingId) {
@@ -71,31 +78,30 @@ struct AnchorPointBuilder {
   void add_cameraBindingId(uint64_t cameraBindingId) {
     fbb_.AddElement<uint64_t>(AnchorPoint::VT_CAMERABINDINGID, cameraBindingId, 0);
   }
-  void add_rootInput(flatbuffers::Offset<rlogic_serialization::Property> rootInput) {
+  void add_rootInput(::flatbuffers::Offset<rlogic_serialization::Property> rootInput) {
     fbb_.AddOffset(AnchorPoint::VT_ROOTINPUT, rootInput);
   }
-  void add_rootOutput(flatbuffers::Offset<rlogic_serialization::Property> rootOutput) {
+  void add_rootOutput(::flatbuffers::Offset<rlogic_serialization::Property> rootOutput) {
     fbb_.AddOffset(AnchorPoint::VT_ROOTOUTPUT, rootOutput);
   }
-  explicit AnchorPointBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit AnchorPointBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  AnchorPointBuilder &operator=(const AnchorPointBuilder &);
-  flatbuffers::Offset<AnchorPoint> Finish() {
+  ::flatbuffers::Offset<AnchorPoint> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<AnchorPoint>(end);
+    auto o = ::flatbuffers::Offset<AnchorPoint>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<AnchorPoint> CreateAnchorPoint(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+inline ::flatbuffers::Offset<AnchorPoint> CreateAnchorPoint(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
     uint64_t nodeBindingId = 0,
     uint64_t cameraBindingId = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
-    flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0) {
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootInput = 0,
+    ::flatbuffers::Offset<rlogic_serialization::Property> rootOutput = 0) {
   AnchorPointBuilder builder_(_fbb);
   builder_.add_cameraBindingId(cameraBindingId);
   builder_.add_nodeBindingId(nodeBindingId);
@@ -110,15 +116,15 @@ struct AnchorPoint::Traits {
   static auto constexpr Create = CreateAnchorPoint;
 };
 
-inline const flatbuffers::TypeTable *AnchorPointTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_ULONG, 0, -1 },
-    { flatbuffers::ET_ULONG, 0, -1 },
-    { flatbuffers::ET_SEQUENCE, 0, 1 },
-    { flatbuffers::ET_SEQUENCE, 0, 1 }
+inline const ::flatbuffers::TypeTable *AnchorPointTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_ULONG, 0, -1 },
+    { ::flatbuffers::ET_ULONG, 0, -1 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 1 },
+    { ::flatbuffers::ET_SEQUENCE, 0, 1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::LogicObjectTypeTable,
     rlogic_serialization::PropertyTypeTable
   };
@@ -129,8 +135,8 @@ inline const flatbuffers::TypeTable *AnchorPointTypeTable() {
     "rootInput",
     "rootOutput"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

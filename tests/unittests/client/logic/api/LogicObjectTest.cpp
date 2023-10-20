@@ -99,7 +99,7 @@ namespace ramses::internal
         EXPECT_EQ(&this->m_ramses.getFramework(), &obj->impl().getClientImpl().getFramework().getHLRamsesFramework());
     }
 
-    TYPED_TEST(LogicOwnershipTest, canFindCreatedObjectInLogicEngine)
+    TYPED_TEST(LogicOwnershipTest, canFindCreatedObjectInLogicEngineAndScene)
     {
         { // non-const
             const auto* obj = this->template createObjectOfType<TypeParam>("objectName");
@@ -107,9 +107,13 @@ namespace ramses::internal
 
             EXPECT_EQ(obj, this->m_logicEngine->template findObject<LogicObject>("objectName"));
             EXPECT_EQ(obj, this->m_logicEngine->template findObject<TypeParam>("objectName"));
+            EXPECT_EQ(obj, this->m_scene->template findObject<LogicObject>("objectName"));
+            EXPECT_EQ(obj, this->m_scene->template findObject<SceneObject>("objectName"));
 
             EXPECT_EQ(obj, this->m_logicEngine->template findObject<LogicObject>(obj->getSceneObjectId()));
             EXPECT_EQ(obj, this->m_logicEngine->template findObject<TypeParam>(obj->getSceneObjectId()));
+            EXPECT_EQ(obj, this->m_scene->template findObject<LogicObject>(obj->getSceneObjectId()));
+            EXPECT_EQ(obj, this->m_scene->template findObject<SceneObject>(obj->getSceneObjectId()));
 
             const auto coll = this->m_logicEngine->template getCollection<LogicObject>();
             EXPECT_TRUE(std::find(coll.cbegin(), coll.cend(), obj) != coll.cend());
@@ -121,12 +125,17 @@ namespace ramses::internal
             const auto* obj = this->template createObjectOfType<TypeParam>("objectName2");
             ASSERT_TRUE(obj);
             const auto* logicEngineConst = this->m_logicEngine;
+            const auto* sceneConst = this->m_scene;
 
             EXPECT_EQ(obj, logicEngineConst->template findObject<LogicObject>("objectName2"));
             EXPECT_EQ(obj, logicEngineConst->template findObject<TypeParam>("objectName2"));
+            EXPECT_EQ(obj, sceneConst->template findObject<LogicObject>("objectName2"));
+            EXPECT_EQ(obj, sceneConst->template findObject<SceneObject>("objectName2"));
 
             EXPECT_EQ(obj, logicEngineConst->template findObject<LogicObject>(obj->getSceneObjectId()));
             EXPECT_EQ(obj, logicEngineConst->template findObject<TypeParam>(obj->getSceneObjectId()));
+            EXPECT_EQ(obj, sceneConst->template findObject<LogicObject>(obj->getSceneObjectId()));
+            EXPECT_EQ(obj, sceneConst->template findObject<SceneObject>(obj->getSceneObjectId()));
 
             const auto coll = logicEngineConst->template getCollection<LogicObject>();
             EXPECT_TRUE(std::find(coll.cbegin(), coll.cend(), obj) != coll.cend());
@@ -266,9 +275,13 @@ namespace ramses::internal
 
         EXPECT_EQ(obj, this->m_logicEngine->template findObject<LogicObject>("newName"));
         EXPECT_EQ(obj, this->m_logicEngine->template findObject<TypeParam>("newName"));
+        EXPECT_EQ(obj, this->m_scene->template findObject<LogicObject>("newName"));
+        EXPECT_EQ(obj, this->m_scene->template findObject<SceneObject>("newName"));
         EXPECT_EQ(obj, this->m_logicEngine->template findObject<LogicObject>(obj->getSceneObjectId()));
         EXPECT_EQ(obj, this->m_logicEngine->template findObject<TypeParam>(obj->getSceneObjectId()));
         EXPECT_EQ(obj, this->m_logicEngine->findObject(obj->getSceneObjectId()));
+        EXPECT_EQ(obj, this->m_scene->template findObject<LogicObject>(obj->getSceneObjectId()));
+        EXPECT_EQ(obj, this->m_scene->template findObject<SceneObject>(obj->getSceneObjectId()));
 
         const auto coll = this->m_logicEngine->template getCollection<LogicObject>();
         EXPECT_TRUE(std::find(coll.cbegin(), coll.cend(), obj) != coll.cend());

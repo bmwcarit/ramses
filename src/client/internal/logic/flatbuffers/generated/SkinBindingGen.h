@@ -6,22 +6,26 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "LogicObjectGen.h"
-#include "PropertyGen.h"
+// Ensure the included flatbuffers.h is the same version as when this file was
+// generated, otherwise it may not be compatible.
+static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
+              FLATBUFFERS_VERSION_MINOR == 5 &&
+              FLATBUFFERS_VERSION_REVISION == 9,
+             "Non-compatible flatbuffers version included");
+
 #include "RamsesBindingGen.h"
-#include "RamsesReferenceGen.h"
 
 namespace rlogic_serialization {
 
 struct SkinBinding;
 struct SkinBindingBuilder;
 
-inline const flatbuffers::TypeTable *SkinBindingTypeTable();
+inline const ::flatbuffers::TypeTable *SkinBindingTypeTable();
 
-struct SkinBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct SkinBinding FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SkinBindingBuilder Builder;
   struct Traits;
-  static const flatbuffers::TypeTable *MiniReflectTypeTable() {
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return SkinBindingTypeTable();
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -34,19 +38,19 @@ struct SkinBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const rlogic_serialization::LogicObject *base() const {
     return GetPointer<const rlogic_serialization::LogicObject *>(VT_BASE);
   }
-  const flatbuffers::Vector<uint64_t> *jointNodeBindingIds() const {
-    return GetPointer<const flatbuffers::Vector<uint64_t> *>(VT_JOINTNODEBINDINGIDS);
+  const ::flatbuffers::Vector<uint64_t> *jointNodeBindingIds() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_JOINTNODEBINDINGIDS);
   }
-  const flatbuffers::Vector<float> *inverseBindingMatricesData() const {
-    return GetPointer<const flatbuffers::Vector<float> *>(VT_INVERSEBINDINGMATRICESDATA);
+  const ::flatbuffers::Vector<float> *inverseBindingMatricesData() const {
+    return GetPointer<const ::flatbuffers::Vector<float> *>(VT_INVERSEBINDINGMATRICESDATA);
   }
   uint64_t appearanceBindingId() const {
     return GetField<uint64_t>(VT_APPEARANCEBINDINGID, 0);
   }
-  const flatbuffers::String *jointMatUniformInputName() const {
-    return GetPointer<const flatbuffers::String *>(VT_JOINTMATUNIFORMINPUTNAME);
+  const ::flatbuffers::String *jointMatUniformInputName() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_JOINTMATUNIFORMINPUTNAME);
   }
-  bool Verify(flatbuffers::Verifier &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BASE) &&
            verifier.VerifyTable(base()) &&
@@ -54,7 +58,7 @@ struct SkinBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyVector(jointNodeBindingIds()) &&
            VerifyOffset(verifier, VT_INVERSEBINDINGMATRICESDATA) &&
            verifier.VerifyVector(inverseBindingMatricesData()) &&
-           VerifyField<uint64_t>(verifier, VT_APPEARANCEBINDINGID) &&
+           VerifyField<uint64_t>(verifier, VT_APPEARANCEBINDINGID, 8) &&
            VerifyOffset(verifier, VT_JOINTMATUNIFORMINPUTNAME) &&
            verifier.VerifyString(jointMatUniformInputName()) &&
            verifier.EndTable();
@@ -63,42 +67,41 @@ struct SkinBinding FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 
 struct SkinBindingBuilder {
   typedef SkinBinding Table;
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_base(flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_base(::flatbuffers::Offset<rlogic_serialization::LogicObject> base) {
     fbb_.AddOffset(SkinBinding::VT_BASE, base);
   }
-  void add_jointNodeBindingIds(flatbuffers::Offset<flatbuffers::Vector<uint64_t>> jointNodeBindingIds) {
+  void add_jointNodeBindingIds(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> jointNodeBindingIds) {
     fbb_.AddOffset(SkinBinding::VT_JOINTNODEBINDINGIDS, jointNodeBindingIds);
   }
-  void add_inverseBindingMatricesData(flatbuffers::Offset<flatbuffers::Vector<float>> inverseBindingMatricesData) {
+  void add_inverseBindingMatricesData(::flatbuffers::Offset<::flatbuffers::Vector<float>> inverseBindingMatricesData) {
     fbb_.AddOffset(SkinBinding::VT_INVERSEBINDINGMATRICESDATA, inverseBindingMatricesData);
   }
   void add_appearanceBindingId(uint64_t appearanceBindingId) {
     fbb_.AddElement<uint64_t>(SkinBinding::VT_APPEARANCEBINDINGID, appearanceBindingId, 0);
   }
-  void add_jointMatUniformInputName(flatbuffers::Offset<flatbuffers::String> jointMatUniformInputName) {
+  void add_jointMatUniformInputName(::flatbuffers::Offset<::flatbuffers::String> jointMatUniformInputName) {
     fbb_.AddOffset(SkinBinding::VT_JOINTMATUNIFORMINPUTNAME, jointMatUniformInputName);
   }
-  explicit SkinBindingBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit SkinBindingBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  SkinBindingBuilder &operator=(const SkinBindingBuilder &);
-  flatbuffers::Offset<SkinBinding> Finish() {
+  ::flatbuffers::Offset<SkinBinding> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<SkinBinding>(end);
+    auto o = ::flatbuffers::Offset<SkinBinding>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<SkinBinding> CreateSkinBinding(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint64_t>> jointNodeBindingIds = 0,
-    flatbuffers::Offset<flatbuffers::Vector<float>> inverseBindingMatricesData = 0,
+inline ::flatbuffers::Offset<SkinBinding> CreateSkinBinding(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> jointNodeBindingIds = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<float>> inverseBindingMatricesData = 0,
     uint64_t appearanceBindingId = 0,
-    flatbuffers::Offset<flatbuffers::String> jointMatUniformInputName = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> jointMatUniformInputName = 0) {
   SkinBindingBuilder builder_(_fbb);
   builder_.add_appearanceBindingId(appearanceBindingId);
   builder_.add_jointMatUniformInputName(jointMatUniformInputName);
@@ -113,9 +116,9 @@ struct SkinBinding::Traits {
   static auto constexpr Create = CreateSkinBinding;
 };
 
-inline flatbuffers::Offset<SkinBinding> CreateSkinBindingDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
+inline ::flatbuffers::Offset<SkinBinding> CreateSkinBindingDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<rlogic_serialization::LogicObject> base = 0,
     const std::vector<uint64_t> *jointNodeBindingIds = nullptr,
     const std::vector<float> *inverseBindingMatricesData = nullptr,
     uint64_t appearanceBindingId = 0,
@@ -132,15 +135,15 @@ inline flatbuffers::Offset<SkinBinding> CreateSkinBindingDirect(
       jointMatUniformInputName__);
 }
 
-inline const flatbuffers::TypeTable *SkinBindingTypeTable() {
-  static const flatbuffers::TypeCode type_codes[] = {
-    { flatbuffers::ET_SEQUENCE, 0, 0 },
-    { flatbuffers::ET_ULONG, 1, -1 },
-    { flatbuffers::ET_FLOAT, 1, -1 },
-    { flatbuffers::ET_ULONG, 0, -1 },
-    { flatbuffers::ET_STRING, 0, -1 }
+inline const ::flatbuffers::TypeTable *SkinBindingTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 0, 0 },
+    { ::flatbuffers::ET_ULONG, 1, -1 },
+    { ::flatbuffers::ET_FLOAT, 1, -1 },
+    { ::flatbuffers::ET_ULONG, 0, -1 },
+    { ::flatbuffers::ET_STRING, 0, -1 }
   };
-  static const flatbuffers::TypeFunction type_refs[] = {
+  static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::LogicObjectTypeTable
   };
   static const char * const names[] = {
@@ -150,8 +153,8 @@ inline const flatbuffers::TypeTable *SkinBindingTypeTable() {
     "appearanceBindingId",
     "jointMatUniformInputName"
   };
-  static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, names
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 5, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

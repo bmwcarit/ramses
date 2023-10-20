@@ -10,7 +10,7 @@
 #include "ramses/framework/RamsesObject.h"
 #include "ramses/client/Node.h"
 #include "impl/RamsesObjectImpl.h"
-#include "ObjectIteratorImpl.h"
+#include "impl/ObjectIteratorImpl.h"
 #include "impl/NodeImpl.h"
 #include "impl/RamsesObjectTypeUtils.h"
 #include "internal/PlatformAbstraction/PlatformStringUtils.h"
@@ -40,8 +40,8 @@ namespace ramses::internal
         if (object.isOfType(ERamsesObjectType::SceneObject))
         {
             const sceneObjectId_t sceneObjectId = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object).getSceneObjectId();
-            assert(m_objectsById.contains(sceneObjectId));
-            m_objectsById.remove(sceneObjectId);
+            assert(m_objectsById.count(sceneObjectId) != 0u);
+            m_objectsById.erase(sceneObjectId);
         }
 
         const SceneObjectRegistryHandle handle = object.impl().getObjectRegistryHandle();
@@ -85,17 +85,26 @@ namespace ramses::internal
         {
             auto& sceneObject = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object);
             const sceneObjectId_t sceneObjectId = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object).getSceneObjectId();
-            assert(!m_objectsById.contains(sceneObjectId));
-            m_objectsById.put(sceneObjectId, &sceneObject);
+            assert(m_objectsById.count(sceneObjectId) == 0u);
+            m_objectsById[sceneObjectId] = &sceneObject;
         }
     }
 
     SceneObject* SceneObjectRegistry::findObjectById(sceneObjectId_t id)
     {
-        SceneObject* object(nullptr);
-        m_objectsById.get(id, object);
+        const auto it = m_objectsById.find(id);
+        if (it != m_objectsById.cend())
+            return it->second;
 
-        return object;
+        auto& logicEngines = m_objects[static_cast<uint32_t>(ERamsesObjectType::LogicEngine)];
+        for (auto& le : logicEngines)
+        {
+            auto obj = (*le.second)->as<LogicEngine>()->findObject(id);
+            if (obj)
+                return obj;
+        }
+
+        return nullptr;
     }
 
     const SceneObject* SceneObjectRegistry::findObjectById(sceneObjectId_t id) const

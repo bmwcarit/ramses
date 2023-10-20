@@ -760,16 +760,16 @@ namespace ramses::internal
     ramses::internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses::internal::EResourceType textureType,
                                                                             uint32_t width, uint32_t height, uint32_t depth,
                                                                             ETextureFormat format,
-                                                                            uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, // NOLINT(modernize-avoid-c-arrays)
+                                                                            const std::vector<MipDataStorageType>& mipLevelData, bool generateMipChain,
                                                                             const TextureSwizzle& swizzle, std::string_view name)
     {
-        if (!TextureUtils::TextureParametersValid(width, height, depth, mipMapCount) || !TextureUtils::MipDataValid(width, height, depth, mipMapCount, mipLevelData, format))
+        if (!TextureUtils::TextureParametersValid(width, height, depth, static_cast<uint32_t>(mipLevelData.size())) || !TextureUtils::MipDataValid(width, height, depth, mipLevelData, format))
         {
             LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::createTexture: invalid parameters");
             return {};
         }
 
-        if (generateMipChain && (!FormatSupportsMipChainGeneration(format) || (mipMapCount > 1)))
+        if (generateMipChain && (!FormatSupportsMipChainGeneration(format) || (mipLevelData.size() > 1)))
         {
             LOG_WARN(ramses::internal::CONTEXT_CLIENT, "RamsesClient::createTexture: cannot auto generate mipmaps when custom mipmap data provided or unsupported format used");
             generateMipChain = false;
@@ -782,22 +782,22 @@ namespace ramses::internal
         texDesc.m_format = TextureUtils::GetTextureFormatInternal(format);
         texDesc.m_generateMipChain = generateMipChain;
         texDesc.m_swizzle = TextureUtils::GetTextureSwizzleInternal(swizzle);
-        TextureUtils::FillMipDataSizes(texDesc.m_dataSizes, mipMapCount, mipLevelData);
+        TextureUtils::FillMipDataSizes(texDesc.m_dataSizes, mipLevelData);
 
         auto* resource = new ramses::internal::TextureResource(textureType, texDesc, name);
-        TextureUtils::FillMipData(const_cast<std::byte*>(resource->getResourceData().data()), mipMapCount, mipLevelData);
+        TextureUtils::FillMipData(const_cast<std::byte*>(resource->getResourceData().data()), mipLevelData);
 
         return manageResource(resource);
     }
     template ramses::internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses::internal::EResourceType textureType,
                                                                                      uint32_t width, uint32_t height, uint32_t depth,
                                                                                      ETextureFormat format,
-                                                                                     uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain,
+                                                                                     const std::vector<MipLevelData>& mipLevelData, bool generateMipChain,
                                                                                      const TextureSwizzle& swizzle, std::string_view name);
     template ramses::internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses::internal::EResourceType textureType,
                                                                                      uint32_t width, uint32_t height, uint32_t depth,
                                                                                      ETextureFormat format,
-                                                                                     uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain,
+                                                                                     const std::vector<CubeMipLevelData>& mipLevelData, bool generateMipChain,
                                                                                      const TextureSwizzle& swizzle, std::string_view name);
 
     ramses::internal::ManagedResource RamsesClientImpl::createManagedEffect(const EffectDescription& effectDesc, std::string_view name, std::string& errorMessages)

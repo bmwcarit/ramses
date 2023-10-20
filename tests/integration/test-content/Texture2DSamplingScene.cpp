@@ -52,7 +52,7 @@ namespace ramses::internal
             0x00,0xff,0x00
         };
 
-        const ramses::MipLevelData mipLevelData[] = {
+        const std::vector<ramses::MipLevelData> mipLevelData = {
             ramses::MipLevelData(sizeof(rgb8_level0), rgb8_level0),
             ramses::MipLevelData(sizeof(rgb8_level1), rgb8_level1),
             ramses::MipLevelData(sizeof(rgb8_level2), rgb8_level2)
@@ -61,7 +61,6 @@ namespace ramses::internal
         ramses::Texture2D* texture = m_scene.createTexture2D(
             ramses::ETextureFormat::RGB8,
             4, 4,
-            3,
             mipLevelData,
             false);
 
