@@ -144,13 +144,14 @@ made in that flush as they are 'blocked' until all the resources are resolved.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^
-Return status
+API error handling
 ^^^^^^^^^^^^^^^^^^^^^^
 
 The RAMSES API is designed to check most errors on usage - for example trying to create :class:`ramses::TextureSampler` using a write-only
-:class:`ramses::RenderBuffer`
-will result in error. The error message will appear in log and/or can be retrieved by using :func:`ramses::StatusObject::getStatusMessage` and passing
-the status code returned from the API call.
+:class:`ramses::RenderBuffer` will result in error.
+In case of an error the API method returns `nullptr` or `false` depending on its signature and the error message will appear in log.
+For most API calls the error message and object that caused it can also be retrieved by calling :func:`ramses::RamsesFramework::getLastError`,
+note that only last error that occurred is available this way and it will be cleared after the method is called.
 
 It is highly recommended to check the status of every RAMSES API call, at least in debug configuration.
 See :ref:`Validation` to find out other ways of checking the state of RAMSES objects.
@@ -160,7 +161,7 @@ Validation
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Some of the content issues are too expensive to be handled by the normal
-:ref:`return code <Return status>` of the Ramses API. Examples of such cases include:
+:ref:`return code <API error handling>` of the Ramses API. Examples of such cases include:
 
 * invalid states are very expensive to check, or...
 * valid states which probably do not produce the desired result
@@ -185,20 +186,14 @@ as expected.
 Client side validation
 """"""""""""""""""""""""""
 
-The state of a RAMSES object can be checked at any time by calling :func:`ramses::StatusObject::validate` method on its instance.
-The :func:`ramses::StatusObject::validate` method will do two things:
+The state of any RAMSES object can be checked at any time by calling :func:`ramses::RamsesObject::validate` method on its instance.
+The :func:`ramses::RamsesObject::validate` method returns :class:`ramses::ValidationReport` which contains list of issues that were found
+for the instance that was validated as well as its dependent objects (e.g. :class:`ramses::Appearance` validates also its assigned :class:`ramses::Effect`
+which is its dependency). Typical use case can be validating a :class:`ramses::Scene` which will validate all its contents.
 
-* return an overall result status of the object (valid or invalid)
-* produce a human-readable report of the state of that object
-
-The report can be obtained by calling :func:`ramses::StatusObject::getValidationReport`
-immediately after calling :func:`ramses::StatusObject::validate`.
-
-The :func:`ramses::StatusObject::validate` method works hierarchically -
-each instance will recursively validate all its objects.
-For example, the :class:`ramses::RamsesClient` version of the
-method will validate all its resources and all its scenes,
-each scene will validate all its objects created within that scene and so on.
+The returned :class:`ramses::ValidationReport` provides list of issues - each containing severity (warning or error), human readable message describing
+the issue and pointer to an object that reported this issue. This allows filtering and sorting to suit any concrete needs of the caller (e.g. only
+issues of certain object can be filtered).
 
 It is also possible to call validate from the shell. For that, one must enable the
 shell by calling :func:`ramses::RamsesFrameworkConfig::setRequestedRamsesShellType`.
@@ -230,7 +225,7 @@ There can be a case when a scene is in valid state on the client (according to v
 but it is not rendered in the the desired way. Such cases can be
 difficult to analyze. One simple tool to show the state of the renderer
 and get an overview of what is being rendered is to the "rinfo" shell command (only available on a :ref:`renderer <The Renderer component>`).
-While :func:`ramses::StatusObject::validate` focuses on scene content, the purpose of "rinfo" is to get
+While :func:`ramses::RamsesObject::validate` focuses on scene content, the purpose of "rinfo" is to get
 overview of how is that content interpreted. It reports all the information about displays, scenes it knows
 and their states, more or less detailed rendering queue for each shown scene and so on.
 
@@ -414,7 +409,7 @@ Text Shaders
 """"""""""""""""""""""
 
 In order to create a renderable mesh representing text, the mesh has to have a valid shader.
-User needs to provide a RAMSES effect that will be assigned to both GeometryBinding and Appearance
+User needs to provide a RAMSES effect that will be assigned to both Geometry and Appearance
 created by the text logic. The effect has to have semantics assigned to various uniform and attribute
 inputs so that the text logic knows where to bind necessary inputs like vertices, texture coordinates
 and sampler with glyph texture.

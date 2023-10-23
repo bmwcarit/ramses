@@ -22,24 +22,21 @@ function(cmakePathToFolderName OUT)
     set(${OUT} ${folder_path} PARENT_SCOPE)
 endfunction()
 
-function(folderizeTarget tgt)
-    # skip interface libs because VS generator ignores INTERFACE_FOLDER property
-    get_target_property(tgt_type ${tgt} TYPE)
-    if (tgt_type STREQUAL INTERFACE_LIBRARY)
-        return()
-    endif()
-
+function(folderizeTarget TARGET_NAME)
     cmakePathToFolderName(folderName)
-    set_property(TARGET ${tgt} PROPERTY FOLDER "${folderName}")
+    set_property(TARGET ${TARGET_NAME} PROPERTY FOLDER "${folderName}")
 
     # sort sources in groups
-    get_target_property(tgt_content ${tgt} SOURCES)
-    if (tgt_content)
-        foreach(file_iter ${tgt_content})
-            string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" tmp1 "${file_iter}")
-            string(REGEX REPLACE "/[^/]*$" "" tmp2 "${tmp1}")
-            string(REPLACE "/" "\\" module_internal_path "${tmp2}")
-            source_group(${module_internal_path} FILES ${file_iter})
-        endforeach()
-    endif()
+    get_target_property(TARGET_SOURCE_DIR ${TARGET_NAME} SOURCE_DIR)
+
+    get_target_property(TARGET_SOURCES ${TARGET_NAME} SOURCES)
+
+    foreach(SOURCE_PATH ${TARGET_SOURCES})
+        get_filename_component(SOURCE_FULL_PATH "${SOURCE_PATH}" ABSOLUTE)
+        get_filename_component(SOURCE_FULL_DIR "${SOURCE_FULL_PATH}" DIRECTORY)
+        file(RELATIVE_PATH SOURCE_RELATIVE_DIR "${TARGET_SOURCE_DIR}" "${SOURCE_FULL_DIR}")
+        if(NOT "${SOURCE_RELATIVE_DIR}" STREQUAL "")
+            source_group(${SOURCE_RELATIVE_DIR} FILES ${SOURCE_FULL_PATH})
+        endif()
+    endforeach()
 endfunction()

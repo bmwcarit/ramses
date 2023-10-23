@@ -6,8 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include <thread>
 
@@ -25,7 +25,8 @@ int main()
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic texturing scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "basic texturing scene");
 
     // every scene needs a render pass with camera
     auto* camera = scene->createPerspectiveCamera("my camera");
@@ -33,7 +34,7 @@ int main()
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -67,27 +68,24 @@ int main()
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-texturing.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effectTex = scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effectTex, "triangle appearance");
 
     // set vertex positions directly in geometry
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effectTex, "triangle geometry");
+    ramses::Geometry* geometry = scene->createGeometry(*effectTex, "triangle geometry");
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    ramses::AttributeInput texcoordsInput;
-    effectTex->findAttributeInput("a_position", positionsInput);
-    effectTex->findAttributeInput("a_texcoord", texcoordsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-    geometry->setInputBuffer(texcoordsInput, *textureCoords);
-
-    ramses::UniformInput textureInput;
-    effectTex->findUniformInput("textureSampler", textureInput);
-    appearance->setInputTexture(textureInput, *sampler);
+    std::optional<ramses::AttributeInput> positionsInput = effectTex->findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> texcoordsInput = effectTex->findAttributeInput("a_texcoord");
+    std::optional<ramses::UniformInput> textureInput = effectTex->findUniformInput("textureSampler");
+    assert(positionsInput.has_value() && texcoordsInput.has_value() && textureInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
+    geometry->setInputBuffer(*texcoordsInput, *textureCoords);
+    appearance->setInputTexture(*textureInput, *sampler);
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = scene->createMeshNode("textured triangle mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
     /// [Basic Texturing Example]
@@ -96,7 +94,7 @@ int main()
     scene->flush();
 
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     // application logic
     std::this_thread::sleep_for(std::chrono::seconds(100));

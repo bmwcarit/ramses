@@ -1,0 +1,2 @@
+#glslang uses EShLanguageMask enum as bitfield
+fun:_ZN7glslang14TParseVersions12requireStageERKNS_10TSourceLocE15EShLanguageMaskPKc

@@ -18,20 +18,20 @@ ramses-logic-viewer
 Synopsis
 --------
 
-**ramses-logic-viewer** [options] <ramsesfile> [<logicfile> <luafile>]
+**ramses-logic-viewer** [options] <ramsesfile> [<luafile>]
 
 -----------
 Description
 -----------
 
 :program:`ramses-logic-viewer` is a tool which can load, configure and display
-Ramses (``<ramsesfile>``) and Ramses Logic (``<logicfile>``) binary files alongside with a custom configuration (``<luafile>``).
+Ramses (``<ramsesfile>``) binary files alongside with a custom configuration (``<luafile>``).
 It also provides a GUI to inspect the displayed scene.
 
-* Both ``<ramsesfile>`` and ``<logicfile>`` are typically created by the Ramses Composer.
+* ``<ramsesfile>`` is typically created by the Ramses Composer.
 * ``<luafile>`` is an optional configuration file written in lua to modify the scene view
   (see :ref:`lua_configuration_api` for details)
-* Both ``<logicfile>`` and ``<luafile>`` are found in the same path as ``<ramsesfile>`` if not provided as arguments.
+* ``<luafile>`` is found in the same path as ``<ramsesfile>`` if not provided as an argument.
   For auto-detection the file extensions `rlogic` and `lua` are expected.
 * If no ``<luafile>`` is found, the viewer will show the scene and propose to store a default configuration.
 * Display size is auto-detected based on the first camera viewport found in the scene.
@@ -90,7 +90,7 @@ Options
 .. option:: --write-config [filename]
 
    Writes the default lua configuration to the given filename. If the filename is omitted, the viewer will use
-   the ``<logicfile>``'s name with lua extension.
+   the ``<ramsesfile>``'s name with lua extension.
 
 .. option:: --log-level-console [off|fatal|error|warn|info|debug|trace]
 
@@ -116,12 +116,12 @@ The module ``rlogic`` provides members to access all Logic Node types:
 * ``rlogic.scripts`` (:cpp:class:`ramses::LuaScript`)
 * ``rlogic.animationNodes`` (:cpp:class:`ramses::AnimationNode`)
 * ``rlogic.timerNodes`` (:cpp:class:`ramses::TimerNode`)
-* ``rlogic.nodeBindings`` (:cpp:class:`ramses::RamsesNodeBinding`)
-* ``rlogic.appearanceBindings`` (:cpp:class:`ramses::RamsesAppearanceBinding`)
-* ``rlogic.cameraBindings`` (:cpp:class:`ramses::RamsesCameraBinding`)
-* ``rlogic.renderPassBindings`` (:cpp:class:`ramses::RamsesRenderPassBinding`)
-* ``rlogic.renderGroupBindings`` (:cpp:class:`ramses::RamsesRenderGroupBinding`)
-* ``rlogic.meshNodeBindings`` (:cpp:class:`ramses::RamsesMeshNodeBinding`)
+* ``rlogic.nodeBindings`` (:cpp:class:`ramses::NodeBinding`)
+* ``rlogic.appearanceBindings`` (:cpp:class:`ramses::AppearanceBinding`)
+* ``rlogic.cameraBindings`` (:cpp:class:`ramses::CameraBinding`)
+* ``rlogic.renderPassBindings`` (:cpp:class:`ramses::RenderPassBinding`)
+* ``rlogic.renderGroupBindings`` (:cpp:class:`ramses::RenderGroupBinding`)
+* ``rlogic.meshNodeBindings`` (:cpp:class:`ramses::MeshNodeBinding`)
 * ``rlogic.anchorPoints`` (:cpp:class:`ramses::AnchorPoint`)
 * ``rlogic.skinBindings`` (:cpp:class:`ramses::SkinBinding`)
 

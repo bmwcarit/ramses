@@ -23,6 +23,7 @@ ignore: |
     /external/google-benchmark/
     /external/glslang/
     /external/lua/
+    /external/ANGLE/
 
 rules:
     line-length: disable

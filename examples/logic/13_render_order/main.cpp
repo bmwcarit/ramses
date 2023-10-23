@@ -6,14 +6,14 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/RamsesRenderGroupBinding.h"
-#include "ramses-logic/RamsesRenderGroupBindingElements.h"
-#include "ramses-logic/Property.h"
-#include "ramses-logic/EPropertyType.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/RenderGroupBinding.h"
+#include "ramses/client/logic/RenderGroupBindingElements.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/logic/EPropertyType.h"
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include "SimpleRenderer.h"
 
@@ -55,16 +55,16 @@ int main()
      */
     auto [scene, renderGroup, triMesh1, triMesh2] = CreateSceneWithTriangles(*renderer.getClient());
 
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
     * In order to create a render group binding we need to first specify what elements we want to expose for render order control,
     * in our case it is the two triangles.
     */
-    ramses::RamsesRenderGroupBindingElements renderGroupElements;
+    ramses::RenderGroupBindingElements renderGroupElements;
     renderGroupElements.addElement(*triMesh1, "tri1");
     renderGroupElements.addElement(*triMesh2, "tri2");
-    ramses::RamsesRenderGroupBinding* renderGroupBinding = logicEngine.createRamsesRenderGroupBinding(*renderGroup, renderGroupElements);
+    ramses::RenderGroupBinding* renderGroupBinding = logicEngine.createRenderGroupBinding(*renderGroup, renderGroupElements);
 
     /**
     * Show the scene on the renderer
@@ -119,7 +119,7 @@ int main()
 
 SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
 {
-    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "red triangle scene");
+    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), "red triangle scene");
 
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(SimpleRenderer::GetDisplaySize()[0])/float(SimpleRenderer::GetDisplaySize()[1]), 0.1f, 100.0f);
@@ -127,7 +127,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
     camera->setTranslation({0.0f, 0.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -156,12 +156,12 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     const ramses::Effect* effect = scene->createEffect(effectDesc);
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
     ramses::Appearance* appearanceRed = scene->createAppearance(*effect);
-    appearanceRed->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 0.5f });
+    appearanceRed->setInputValue(*colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 0.5f });
     ramses::Appearance* appearanceWhite = scene->createAppearance(*effect);
-    appearanceWhite->setInputValue(colorInput, ramses::vec4f{ 1.f, 1.f, 1.f, 0.5f });
+    appearanceWhite->setInputValue(*colorInput, ramses::vec4f{ 1.f, 1.f, 1.f, 0.5f });
 
     // set up blending
     appearanceRed->setBlendingFactors(ramses::EBlendFactor::SrcAlpha, ramses::EBlendFactor::OneMinusSrcAlpha, ramses::EBlendFactor::One, ramses::EBlendFactor::Zero);
@@ -171,21 +171,21 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client)
     appearanceWhite->setBlendingOperations(ramses::EBlendOperation::Add, ramses::EBlendOperation::Add);
     appearanceWhite->setDepthFunction(ramses::EDepthFunc::Disabled);
 
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    ramses::Geometry* geometry = scene->createGeometry(*effect);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     ramses::MeshNode* meshNode1 = scene->createMeshNode("triangle mesh node 1");
     meshNode1->setAppearance(*appearanceRed);
     meshNode1->setIndexCount(3);
-    meshNode1->setGeometryBinding(*geometry);
+    meshNode1->setGeometry(*geometry);
     renderGroup->addMeshNode(*meshNode1);
 
     ramses::MeshNode* meshNode2 = scene->createMeshNode("triangle mesh node 2");
     meshNode2->setAppearance(*appearanceWhite);
     meshNode2->setIndexCount(3);
-    meshNode2->setGeometryBinding(*geometry);
+    meshNode2->setGeometry(*geometry);
     meshNode2->setTranslation({0.5f, -0.2f, 0.7f});
 
     renderGroup->addMeshNode(*meshNode1);

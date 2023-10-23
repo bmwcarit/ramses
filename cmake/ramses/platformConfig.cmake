@@ -129,7 +129,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if (ramses-sdk_ENABLE_SANITIZER AND NOT ramses-sdk_ENABLE_SANITIZER STREQUAL "")
 
         set(ubsan_checks "bool,bounds,enum,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,vla-bound,float-cast-overflow,vptr,alignment,function")
-        set(ubsan_options "-fsanitize=undefined -fno-sanitize-recover=${ubsan_checks}")
+        set(ubsan_options "-fsanitize=undefined -fno-sanitize-recover=${ubsan_checks} -fsanitize-blacklist=${CMAKE_CURRENT_SOURCE_DIR}/scripts/ci/config/sanitizer/ubsan_blacklist.txt")
         set(tsan_options "-fsanitize=thread")
         set(asan_options "-fsanitize=address")
 
@@ -158,7 +158,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
     addFlags(RAMSES_C_CXX_FLAGS "/MP /DNOMINMAX")
     addFlags(RAMSES_CXX_FLAGS "/std:c++${ramses-sdk_CPP_VERSION} /bigobj")
-    target_compile_options(ramses-build-options-base INTERFACE /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996 /wd4702)
+    target_compile_options(ramses-build-options-base INTERFACE /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996 /wd4702 /wd4251)
     addFlags(RAMSES_RELEASE_FLAGS "/MD /O2 /Ob2 /DNDEBUG")
     addFlags(RAMSES_DEBUG_FLAGS "/MDd /Zi /Od /D_DEBUG")
     target_compile_options(ramses-build-options-base INTERFACE $<$<CONFIG:Debug>:/RTC1>)
@@ -182,7 +182,7 @@ endif()
 
 if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") OR (${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
     addFlags(RAMSES_C_FLAGS "-x objective-c")
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++${ramses-sdk_CPP_VERSION}")
     set(CMAKE_XCODE_GENERATE_SCHEME ON)
 endif()
 

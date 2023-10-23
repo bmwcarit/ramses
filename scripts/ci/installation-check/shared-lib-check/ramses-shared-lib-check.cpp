@@ -9,12 +9,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ramses-renderer-api/RendererConfig.h"
-#include "ramses-client.h"
-#include "ramses-text.h"
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-framework-api/RamsesFramework.h"
-#include "ramses-utils.h"
+#include "ramses/renderer/RendererConfig.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/text/ramses-text.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/framework/RamsesFramework.h"
+#include "ramses/client/ramses-utils.h"
 
 int main(int argc, char* argv[])
 {
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
     printf("Start ramses-shared-lib-check\n");
     ramses::RamsesFramework framework{frameworkConfig};
-    framework.isConnected();
+    const auto flag = framework.isConnected();
 
     ramses::RendererConfig config;
     ramses::RamsesRenderer* renderer(framework.createRenderer(config));
@@ -31,12 +31,21 @@ int main(int argc, char* argv[])
     ramses::RamsesClient* ramses(framework.createClient("ramses-shared-lib-check"));
     ramses::Scene* scene = ramses->createScene(ramses::sceneId_t(1u));
     ramses::Node* node = scene->createNode();
-    scene->isPublished();
+    ramses::MeshNode* meshNode = scene->createMeshNode();
+    const auto flag2 = scene->isPublished();
+
+    ramses::Node* meshNodeAsNode = meshNode;
+    ramses::MeshNode* meshNodeDynamic = dynamic_cast<ramses::MeshNode*>(meshNodeAsNode);
+    if(!meshNodeDynamic)
+    {
+        printf("Could not find dynamic casted mesh node!\n");
+        exit(1);
+    }
 
     ramses::FontRegistry fontRegistry;
 
     ramses::nodeId_t nid = ramses::RamsesUtils::GetNodeId(*node);
-    nid.getValue();
+    const auto val = nid.getValue();
 
     printf("End ramses-shared-lib-check\n");
     return 0;

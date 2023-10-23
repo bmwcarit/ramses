@@ -1,6 +1,6 @@
 ..
     -------------------------------------------------------------------------
-    Copyright (C) 2020 BMW AG
+    Copyright (C) 2023 BMW AG
     -------------------------------------------------------------------------
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,8 +35,8 @@ Build requirements
 
 ``RAMSES`` requires CMake 3.13 or newer and a C++17-compatible compiler:
 
-* Clang6 or newer
-* GCC7 or newer
+* Clang12 or newer
+* GCC9 or newer
 * MSVC2017 (_MSC_VER >= 1914)
 
 ``RAMSES`` requires the following
@@ -48,7 +48,7 @@ additional build dependencies:
     * X11 or Wayland (or both) developer libraries
     * OpenGL + EGL developer libraries
 
-For example, for ``Ubuntu 18.04 LTS`` these can be installed like this:
+For example, for ``Ubuntu 20.04 LTS`` these can be installed like this:
 
 .. code-block:: bash
 
@@ -68,7 +68,7 @@ modify some of the build settings:
 * -Dramses-sdk_WARNINGS_AS_ERRORS
     * options: ON/OFF
     * default: ON
-    * treats compiler warnings as errors and aborts the build. Use this option if your compiler generates warnings which are not fixed yet.
+    * Treats compiler warnings as errors and aborts the build. Use this option if your compiler generates warnings which are not fixed yet.
 
 * -Dramses-sdk_ENABLE_INSTALL
     * options: ON/OFF
@@ -79,17 +79,7 @@ modify some of the build settings:
 * -Dramses-sdk_BUILD_WITH_LTO
     * options: ON/OFF
     * default: OFF
-    * turns clang's link-time optimizations on (details `here <https://llvm.org/docs/LinkTimeOptimization.html>`_)
-
-* -DCMAKE_TOOLCHAIN_FILE=<file>
-    * options: any of the files in `cmake/toolchain <https://github.com/bmwcarit/ramses/tree/master/cmake/toolchain>`_ or your custom cross-compilation toolchain file
-    * default: not set
-    * This is a standard CMake feature. We provide several toolchain files for popular compilers, use them or create your own
-
-* -Dramses-sdk_PACKAGE_TYPE=<type>
-    * options: any of the `supported CPack generators <https://cmake.org/cmake/help/latest/manual/cpack-generators.7.html>`_
-    * default: TGZ
-    * Allows to control which type of package is built by CMake/CPack when the 'package' target is built. See CPack docs for 'CPACK_GENERATOR' for details
+    * Turns clang's link-time optimizations on (details `here <https://llvm.org/docs/LinkTimeOptimization.html>`_).
 
 
 ``Ramses`` can produce two types of shared libs, and both types can be enabled or disabled independently:
@@ -130,6 +120,11 @@ Supported window types can be controlled with the cmake options below:
     * default: ON
     * Enables building window type *Android*.
 
+* -Dramses-sdk_ENABLE_WINDOW_TYPE_IOS
+    * options: ON/OFF
+    * default: ON
+    * Enables building window type *iOS*.
+
 * -Dramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI
     * options: ON/OFF
     * default: ON
@@ -146,17 +141,12 @@ You can use the following options to disable some of the Ramses features:
 * -Dramses-sdk_ENABLE_LOGIC
     * options: ON/OFF
     * default: ON
-    * Enables the logic subsystem of ramses alongside its dependencies (Lua, Sol, ...)
-
-* -Dramses-sdk_BUILD_DAEMON
-    * options: ON/OFF
-    * default: ON
-    * Builds the ramses-daemon executable (for distributed rendering)
+    * Enables the logic subsystem of ramses alongside its dependencies (Lua, Sol, ...).
 
 * -Dramses-sdk_TEXT_SUPPORT
     * options: ON/OFF
     * default: ON
-    * enables the text subsystem of ramses alongside its dependencies (freetype, harfbuzz...)
+    * Enables the text subsystem of ramses alongside its dependencies (freetype, harfbuzz...).
 
 * -Dramses-sdk_ENABLE_TCP_SUPPORT
     * options: ON/OFF
@@ -173,27 +163,32 @@ Additionally, you can disable additional examples, demos and tools:
 * -Dramses-sdk_BUILD_EXAMPLES
     * options: ON/OFF
     * default: ON if ``Ramses`` is a top level project, otherwise OFF by default
-    * set to OFF if you don't need the examples and want to reduce building time
+    * Set to OFF if you don't need the examples and want to reduce building time.
 
 * -Dramses-sdk_BUILD_DEMOS
     * options: ON/OFF
     * default: ON if ``Ramses`` is a top level project, otherwise OFF by default
-    * set to OFF if you don't need the demos and want to reduce building time
+    * Set to OFF if you don't need the demos and want to reduce building time.
 
 * -Dramses-sdk_BUILD_TOOLS
     * options: ON/OFF
     * default: ON if ``Ramses`` is a top level project, otherwise OFF by default
-    * set to OFF if you don't need the tools (e.g. imgui-based viewer) and want to reduce building time
+    * Set to OFF if you don't need the tools (e.g. imgui-based viewer) and want to reduce building time.
 
 * -Dramses-sdk_BUILD_TESTS
     * options: ON/OFF
     * default: ON if ``Ramses`` is a top level project, otherwise OFF by default
     * Build ramses tests.
 
-* -Dramses-sdk_ENABLE_TEST_COVERAGE
+* -Dramses-sdk_ENABLE_COVERAGE
     * options: ON/OFF
     * default: OFF
-    * enables clang's options to generate code coverage from test executables
+    * Enables clang's options to generate code coverage from test executables.
+
+* -Dramses-sdk_FORCE_BUILD_DOCS
+    * options: ON/OFF
+    * default: OFF
+    * Forces to build documentation when ramses is not the top level project.  By default the documentation is built only when ramses is built as standalone project.
 
 
 For other supported cmake options, please refer to CMakeLists.txt.

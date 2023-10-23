@@ -6,20 +6,20 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/RamsesNodeBinding.h"
-#include "ramses-logic/Property.h"
-#include "ramses-logic/AnimationNode.h"
-#include "ramses-logic/AnimationNodeConfig.h"
-#include "ramses-logic/AnimationTypes.h"
-#include "ramses-logic/EPropertyType.h"
-#include "ramses-logic/DataArray.h"
-#include "ramses-logic/TimerNode.h"
-#include "ramses-logic/AnchorPoint.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/NodeBinding.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/logic/AnimationNode.h"
+#include "ramses/client/logic/AnimationNodeConfig.h"
+#include "ramses/client/logic/AnimationTypes.h"
+#include "ramses/client/logic/EPropertyType.h"
+#include "ramses/client/logic/DataArray.h"
+#include "ramses/client/logic/TimerNode.h"
+#include "ramses/client/logic/AnchorPoint.h"
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include "SimpleRenderer.h"
 
@@ -51,7 +51,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
 /**
 * Helper to create a simple animation for given node, see animation example for more details on how to create an animation.
 */
-void CreateAnimationForNode(ramses::LogicEngine& logicEngine, const ramses::RamsesNodeBinding* nodeBinding);
+void CreateAnimationForNode(ramses::LogicEngine& logicEngine, ramses::NodeBinding* nodeBinding);
 
 int main()
 {
@@ -68,12 +68,12 @@ int main()
      */
     auto [scene, node3dToTrack, camera3d, cameraSimulating2d] = CreateSceneWithTriangles(*renderer.getClient(), SimpleRenderer::GetDisplaySize());
 
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
     * First we need to create a Ramses Logic representation of the node we will track using Ramses binding.
     */
-    ramses::RamsesNodeBinding* nodeToTrackBinding = logicEngine.createRamsesNodeBinding(*node3dToTrack);
+    ramses::NodeBinding* nodeToTrackBinding = logicEngine.createNodeBinding(*node3dToTrack);
 
     /**
     * Create a simple animation for the 3D mesh we are about to track, see animation example for more details on how to create an animation.
@@ -88,7 +88,7 @@ int main()
     /**
     * Create camera binding for the camera that is used for rendering the 3D mesh we want to track
     */
-    ramses::RamsesCameraBinding* camera3dBinding = logicEngine.createRamsesCameraBinding(*camera3d);
+    ramses::CameraBinding* camera3dBinding = logicEngine.createCameraBinding(*camera3d);
 
     /**
     * Finally create anchor point, we must provide not only the node we want to track but also the camera that is used to render the 3D mesh
@@ -138,7 +138,7 @@ int main()
 
 SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<uint32_t, 2> displaySize)
 {
-    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "red triangle scene");
+    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), "red triangle scene");
 
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(displaySize[0])/float(displaySize[1]), 0.1f, 100.0f);
@@ -146,7 +146,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
     camera->setTranslation({0.0f, 0.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -180,24 +180,24 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
 
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
+    const ramses::Effect* effect = scene->createEffect(effectDesc);
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
     ramses::Appearance* appearanceRed = scene->createAppearance(*effect);
-    appearanceRed->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 1.f });
+    appearanceRed->setInputValue(*colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 1.f });
     ramses::Appearance* appearanceWhite = scene->createAppearance(*effect);
-    appearanceWhite->setInputValue(colorInput, ramses::vec4f{ 1.f, 1.f, 1.f, 1.f });
+    appearanceWhite->setInputValue(*colorInput, ramses::vec4f{ 1.f, 1.f, 1.f, 1.f });
     appearanceWhite->setDepthFunction(ramses::EDepthFunc::Always);
 
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    ramses::Geometry* geometry = scene->createGeometry(*effect);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     ramses::MeshNode* meshNode1 = scene->createMeshNode("triangle mesh node 1");
     meshNode1->setAppearance(*appearanceRed);
     meshNode1->setIndexCount(3);
-    meshNode1->setGeometryBinding(*geometry);
+    meshNode1->setGeometry(*geometry);
 
     renderGroup->addMeshNode(*meshNode1);
 
@@ -211,12 +211,12 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
     ramses::MeshNode* meshNode2 = scene->createMeshNode("triangle mesh node 2");
     meshNode2->setAppearance(*appearanceWhite);
     meshNode2->setIndexCount(3);
-    meshNode2->setGeometryBinding(*geometry);
+    meshNode2->setGeometry(*geometry);
     meshNode2->setTranslation({0.f, -5.f, -1.f});
     meshNode2->setScaling({10.f, 10.f, 1.f});
 
     ramses::RenderPass* renderPassOrtho = scene->createRenderPass();
-    renderPassOrtho->setClearFlags(ramses::EClearFlags_None);
+    renderPassOrtho->setClearFlags(ramses::EClearFlag::None);
     renderPassOrtho->setCamera(*orthoCamera);
     ramses::RenderGroup* renderGroupOrtho = scene->createRenderGroup();
     renderPassOrtho->addRenderGroup(*renderGroupOrtho);
@@ -230,7 +230,7 @@ SceneAndNodes CreateSceneWithTriangles(ramses::RamsesClient& client, std::array<
     return SceneAndNodes{ scene, meshNode1, camera, orthoCamera };
 }
 
-void CreateAnimationForNode(ramses::LogicEngine& logicEngine, const ramses::RamsesNodeBinding* nodeBinding)
+void CreateAnimationForNode(ramses::LogicEngine& logicEngine, ramses::NodeBinding* nodeBinding)
 {
     ramses::DataArray* animTimestamps = logicEngine.createDataArray(std::vector<float>{ 0.f, 5.f, 10.f, 15.f, 20.f }); // will be interpreted as seconds
     ramses::DataArray* animKeyframes = logicEngine.createDataArray(std::vector<ramses::vec3f>{ {-3.f, -1.f, -1.f}, { 3.f, -1.f, -1.f }, { 3.f, 0.5f, -1.f }, { -3.f, 0.5f, -1.f }, { -3.f, -1.f, -1.f } });

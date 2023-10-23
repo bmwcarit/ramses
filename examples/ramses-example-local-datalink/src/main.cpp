@@ -6,15 +6,15 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-client-api/DataObject.h"
-#include "ramses-utils.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/renderer/IRendererSceneControlEventHandler.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/client/DataObject.h"
+#include "ramses/client/ramses-utils.h"
 #include <unordered_set>
 #include <cmath>
 #include <chrono>
@@ -37,12 +37,12 @@ public:
     {
     }
 
-    void dataProviderCreated(ramses::sceneId_t sceneId, ramses::dataProviderId_t) override
+    void dataProviderCreated(ramses::sceneId_t sceneId, ramses::dataProviderId_t /*dataProviderId*/) override
     {
         scenesWithCreatedProviderOrConsumer.insert(sceneId);
     }
 
-    void dataConsumerCreated(ramses::sceneId_t sceneId, ramses::dataConsumerId_t) override
+    void dataConsumerCreated(ramses::sceneId_t sceneId, ramses::dataConsumerId_t /*dataConsumerId*/) override
     {
         scenesWithCreatedProviderOrConsumer.insert(sceneId);
     }
@@ -53,9 +53,16 @@ public:
             mappedScenes.insert(sceneId);
     }
 
-    void waitForSceneReady(ramses::sceneId_t sceneId)
+    void waitForSceneReady(ramses::Scene& scene)
     {
-        waitUntilOrTimeout([&] { return mappedScenes.count(sceneId) != 0; });
+        const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };
+        while (mappedScenes.count(scene.getSceneId()) == 0 && std::chrono::steady_clock::now() < timeoutTS)
+        {
+            scene.flush();
+            m_renderer.doOneLoop();
+            m_renderer.dispatchEvents(*this);
+            m_sceneControlApi.dispatchEvents(*this);
+        }
     }
 
     void waitForDataProviderOrConsumerCreated(ramses::sceneId_t sceneId)
@@ -67,7 +74,7 @@ public:
         }
     }
 
-    void windowClosed(ramses::displayId_t) override
+    void windowClosed(ramses::displayId_t /*displayId*/) override
     {
         m_windowClosed = true;
     }
@@ -78,19 +85,6 @@ public:
     }
 
 private:
-    bool waitUntilOrTimeout(const std::function<bool()>& conditionFunction)
-    {
-        const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{ 5 };
-        while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
-        {
-            m_renderer.doOneLoop();
-            m_renderer.dispatchEvents(*this);
-            m_sceneControlApi.dispatchEvents(*this);
-        }
-
-        return conditionFunction();
-    }
-
     ramses::RendererSceneControl& m_sceneControlApi;
     ramses::RamsesRenderer& m_renderer;
     std::unordered_set<ramses::sceneId_t> mappedScenes;
@@ -131,14 +125,14 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
 {
     auto sceneInfo = std::make_unique<TriangleSceneInfo>();
 
-    sceneInfo->scene = client.createScene(sceneId, ramses::SceneConfig(), "triangle scene");
+    sceneInfo->scene = client.createScene(sceneId, "triangle scene");
 
     // every scene needs a render pass with camera
     auto* camera = sceneInfo->scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     ramses::RenderPass* renderPass = sceneInfo->scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = sceneInfo->scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -156,25 +150,24 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-datalink.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = sceneInfo->scene->createAppearance(*effect, "triangle appearance");
     appearance->setCullingMode(ramses::ECullMode::Disabled);
     appearance->setDepthFunction(ramses::EDepthFunc::Always);
 
-    ramses::GeometryBinding* geometry = sceneInfo->scene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = sceneInfo->scene->createGeometry(*effect, "triangle geometry");
     geometry->setIndices(*indices);
 
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(positionsInput.has_value() && colorInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
-    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
+    appearance->setInputValue(*colorInput, ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
     //bind input to data object
     sceneInfo->colorData = sceneInfo->scene->createDataObject(ramses::EDataType::Vector4F, "colorData");
     sceneInfo->colorData->setValue(ramses::vec4f{ 1.0f, 0.0f, 0.3f, 1.0f });
-    appearance->bindInput(colorInput, *sceneInfo->colorData);
+    appearance->bindInput(*colorInput, *sceneInfo->colorData);
 
     ramses::Node* rootTranslation = sceneInfo->scene->createNode("root scene translation node");
     rootTranslation->setTranslation({0.0f, 0.0f, -1.0f});
@@ -185,7 +178,7 @@ std::unique_ptr<TriangleSceneInfo> createTriangleSceneContent(ramses::RamsesClie
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = sceneInfo->scene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     meshNode->setParent(*sceneInfo->translateNode);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
@@ -201,14 +194,14 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
 {
     auto sceneInfo = std::make_unique<QuadSceneInfo>();
 
-    sceneInfo->scene = client.createScene(sceneId, ramses::SceneConfig(), "quad scene");
+    sceneInfo->scene = client.createScene(sceneId, "quad scene");
 
     // every scene needs a render pass with camera
     auto* camera = sceneInfo->scene->createPerspectiveCamera("my camera");
     camera->setViewport(0, 0, 1280u, 480u);
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     ramses::RenderPass* renderPass = sceneInfo->scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = sceneInfo->scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -235,32 +228,26 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-datalink-texturing.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = sceneInfo->scene->createAppearance(*effect, "quad appearance");
     appearance->setDepthFunction(ramses::EDepthFunc::Always);
     appearance->setCullingMode(ramses::ECullMode::Disabled);
 
-    ramses::GeometryBinding* geometry = sceneInfo->scene->createGeometryBinding(*effect, "quad geometry");
+    ramses::Geometry* geometry = sceneInfo->scene->createGeometry(*effect, "quad geometry");
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> texCoordsInput = effect->findAttributeInput("a_texcoord");
+    std::optional<ramses::UniformInput>   colorInput     = effect->findUniformInput("color");
+    std::optional<ramses::UniformInput>   textureInput   = effect->findUniformInput("textureSampler");
+    assert(positionsInput.has_value() && texCoordsInput.has_value() && colorInput.has_value() && textureInput.has_value());
     geometry->setIndices(*indices);
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
+    geometry->setInputBuffer(*texCoordsInput, *texCoords);
+    appearance->setInputValue(*colorInput, ramses::vec4f{ 1.0f, 1.0f, 1.0f, 1.0f });
 
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-
-    ramses::AttributeInput texCoordsInput;
-    effect->findAttributeInput("a_texcoord", texCoordsInput);
-    geometry->setInputBuffer(texCoordsInput, *texCoords);
-
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
-    appearance->setInputValue(colorInput, ramses::vec4f{ 1.0f, 1.0f, 1.0f, 1.0f });
-
-    ramses::UniformInput textureInput;
-    effect->findUniformInput("textureSampler", textureInput);
     ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture-fallback.png", *sceneInfo->scene);
     sceneInfo->textureSampler = sceneInfo->scene->createTextureSampler(ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp,
         ramses::ETextureSamplingMethod::Linear, ramses::ETextureSamplingMethod::Linear, *fallbackTexture);
-    appearance->setInputTexture(textureInput, *sceneInfo->textureSampler);
+    appearance->setInputTexture(*textureInput, *sceneInfo->textureSampler);
 
     sceneInfo->consumerNode = sceneInfo->scene->createNode("quad root node");
     sceneInfo->rotateNode = sceneInfo->scene->createNode("");
@@ -268,7 +255,7 @@ std::unique_ptr<QuadSceneInfo> createQuadSceneContent(ramses::RamsesClient& clie
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = sceneInfo->scene->createMeshNode("quad mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     meshNode->setParent(*sceneInfo->rotateNode);
 
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
@@ -339,15 +326,11 @@ int main()
     triangleScene->createTextureProvider(*triangleInfo->textures[0], textureProviderId);
     quadScene2->createTextureConsumer(*quadInfo2->textureSampler, textureConsumerId);
 
-    triangleScene->flush();
-    quadScene->flush();
-    quadScene2->flush();
-
     /// [Data Linking Example Client]
     framework.connect();
-    triangleScene->publish();
-    quadScene->publish();
-    quadScene2->publish();
+    triangleScene->publish(ramses::EScenePublicationMode::LocalOnly);
+    quadScene->publish(ramses::EScenePublicationMode::LocalOnly);
+    quadScene2->publish(ramses::EScenePublicationMode::LocalOnly);
 
     const auto fbId = renderer.getDisplayFramebuffer(display);
 
@@ -367,9 +350,9 @@ int main()
     sceneControlAPI.flush();
 
     RendererAndSceneStateEventHandler eventHandler(sceneControlAPI, renderer);
-    eventHandler.waitForSceneReady(triangleSceneId);
-    eventHandler.waitForSceneReady(quadSceneId);
-    eventHandler.waitForSceneReady(quadSceneId2);
+    eventHandler.waitForSceneReady(*triangleScene);
+    eventHandler.waitForSceneReady(*quadScene);
+    eventHandler.waitForSceneReady(*quadScene2);
     eventHandler.waitForDataProviderOrConsumerCreated(triangleSceneId);
     eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId);
     eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId2);
@@ -399,7 +382,7 @@ int main()
             triangleInfo->scene->updateTextureProvider(*triangleInfo->textures[textureId], textureProviderId);
         }
 
-        triangleInfo->translateNode->setTranslation({std::sin(timeStamp * 0.05f) * 0.2f, 0.0f, 0.0f});
+        triangleInfo->translateNode->setTranslation({std::sin(static_cast<float>(timeStamp) * 0.05f) * 0.2f, 0.0f, 0.0f});
         triangleInfo->scene->flush();
         rotationFactor += 1.f;
         quadInfo->rotateNode->setRotation({0.0f, 0.0f, rotationFactor}, ramses::ERotationType::Euler_XYZ);
@@ -407,7 +390,7 @@ int main()
         quadInfo2->rotateNode->setRotation({0.0f, rotationFactor, 0.0f}, ramses::ERotationType::Euler_XYZ);
         quadInfo2->scene->flush();
 
-        quadInfo->colorData->setValue(ramses::vec4f{ std::sin(timeStamp * 0.1f), 0.0f, 0.5f, 1.0f });
+        quadInfo->colorData->setValue(ramses::vec4f{ std::sin(static_cast<float>(timeStamp) * 0.1f), 0.0f, 0.5f, 1.0f });
 
         renderer.doOneLoop();
         timeStamp++;

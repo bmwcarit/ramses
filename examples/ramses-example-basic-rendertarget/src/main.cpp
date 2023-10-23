@@ -6,8 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
-#include "ramses-client-api/RenderTargetDescription.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/RenderTargetDescription.h"
 
 #include <thread>
 
@@ -25,7 +25,8 @@ int main()
     framework.connect();
 
     // create a scene
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic rendertarget scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "basic rendertarget scene");
 
     // prepare triangle geometry: vertex position array and index array
     const std::array<ramses::vec3f, 4u> vertexPositionsQuadArray{ ramses::vec3f{-1.5f, -0.75f, -1.f}, ramses::vec3f{1.5f, -0.75f, -1.f}, ramses::vec3f{-1.5f, 0.75f, -1.f}, ramses::vec3f{1.5f, 0.75f, -1.f} };
@@ -45,13 +46,13 @@ int main()
     triangleEffectDesc.setVertexShaderFromFile("res/ramses-example-basic-rendertarget-simple-color.vert");
     triangleEffectDesc.setFragmentShaderFromFile("res/ramses-example-basic-rendertarget-simple-color.frag");
     triangleEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
-    const ramses::Effect* triangleEffect = scene->createEffect(triangleEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    const ramses::Effect* triangleEffect = scene->createEffect(triangleEffectDesc, "glsl shader");
 
     ramses::EffectDescription quadEffectDesc;
     quadEffectDesc.setVertexShaderFromFile("res/ramses-example-basic-rendertarget-texturing.vert");
     quadEffectDesc.setFragmentShaderFromFile("res/ramses-example-basic-rendertarget-texturing.frag");
     quadEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
-    const ramses::Effect* quadEffect = scene->createEffect(quadEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    const ramses::Effect* quadEffect = scene->createEffect(quadEffectDesc, "glsl shader");
 
     /// [Basic Rendertarget Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -76,7 +77,7 @@ int main()
     // create the renderpasses
     ramses::RenderPass* renderPassA = scene->createRenderPass("renderpass A");
     ramses::RenderPass* renderPassB = scene->createRenderPass("renderpass B");
-    renderPassB->setClearFlags(ramses::EClearFlags_None);
+    renderPassB->setClearFlags(ramses::EClearFlag::None);
     renderPassA->setClearColor({1.f, 1.f, 1.f, 1.f});
 
     // set valid cameras for the passes
@@ -90,7 +91,7 @@ int main()
     renderPassB->addRenderGroup(*renderGroupB);
 
     // create a render target and assign it to renderpass A
-    ramses::RenderBuffer* renderBuffer = scene->createRenderBuffer(64u, 64u, ramses::ERenderBufferType::Color, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite);
+    ramses::RenderBuffer* renderBuffer = scene->createRenderBuffer(64u, 64u, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite);
     ramses::RenderTargetDescription rtDesc;
     rtDesc.addRenderBuffer(*renderBuffer);
     ramses::RenderTarget* renderTarget = scene->createRenderTarget(rtDesc);
@@ -99,17 +100,17 @@ int main()
     // create triangle appearance, get input data and bind required data
     ramses::Appearance* appearanceA = scene->createAppearance(*triangleEffect, "triangle appearance");
     {
-        ramses::UniformInput color;
-        triangleEffect->findUniformInput("color", color);
-        appearanceA->setInputValue(color, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
+        std::optional<ramses::UniformInput> color = triangleEffect->findUniformInput("color");
+        assert(color.has_value());
+        appearanceA->setInputValue(*color, ramses::vec4f{ 1.0f, 0.0f, 0.0f, 1.0f });
     }
 
-    ramses::GeometryBinding* geometryA = scene->createGeometryBinding(*triangleEffect, "triangle geometry");
+    ramses::Geometry* geometryA = scene->createGeometry(*triangleEffect, "triangle geometry");
     {
         geometryA->setIndices(*indicesTriangle);
-        ramses::AttributeInput positionsInput;
-        triangleEffect->findAttributeInput("a_position", positionsInput);
-        geometryA->setInputBuffer(positionsInput, *vertexPositionsTriangle);
+        std::optional<ramses::AttributeInput> positionsInput = triangleEffect->findAttributeInput("a_position");
+        assert(positionsInput.has_value());
+        geometryA->setInputBuffer(*positionsInput, *vertexPositionsTriangle);
     }
 
     // create quad appearance, get input data and bind required data
@@ -124,30 +125,29 @@ int main()
             *renderBuffer);
 
         // set render target sampler as input
-        ramses::UniformInput textureInput;
-        quadEffect->findUniformInput("textureSampler", textureInput);
-        appearanceB->setInputTexture(textureInput, *sampler);
+        std::optional<ramses::UniformInput> textureInput = quadEffect->findUniformInput("textureSampler");
+        assert(textureInput.has_value());
+        appearanceB->setInputTexture(*textureInput, *sampler);
     }
 
-    ramses::GeometryBinding* geometryB = scene->createGeometryBinding(*quadEffect, "quad geometry");
+    ramses::Geometry* geometryB = scene->createGeometry(*quadEffect, "quad geometry");
     {
         geometryB->setIndices(*indicesQuad);
-        ramses::AttributeInput positionsInput;
-        ramses::AttributeInput texcoordsInput;
-        quadEffect->findAttributeInput("a_position", positionsInput);
-        quadEffect->findAttributeInput("a_texcoord", texcoordsInput);
-        geometryB->setInputBuffer(positionsInput, *vertexPositionsQuad);
-        geometryB->setInputBuffer(texcoordsInput, *textureCoords);
+        std::optional<ramses::AttributeInput> positionsInput = quadEffect->findAttributeInput("a_position");
+        std::optional<ramses::AttributeInput> texcoordsInput = quadEffect->findAttributeInput("a_texcoord");
+        assert(positionsInput.has_value() && texcoordsInput.has_value());
+        geometryB->setInputBuffer(*positionsInput, *vertexPositionsQuad);
+        geometryB->setInputBuffer(*texcoordsInput, *textureCoords);
     }
 
     // create meshs
     ramses::MeshNode* meshNodeA = scene->createMeshNode("red triangle mesh node");
     meshNodeA->setAppearance(*appearanceA);
-    meshNodeA->setGeometryBinding(*geometryA);
+    meshNodeA->setGeometry(*geometryA);
 
     ramses::MeshNode* meshNodeB = scene->createMeshNode("texture quad mesh node");
     meshNodeB->setAppearance(*appearanceB);
-    meshNodeB->setGeometryBinding(*geometryB);
+    meshNodeB->setGeometry(*geometryB);
 
     // add triangle mesh to first pass and quad to second one
     renderGroupA->addMeshNode(*meshNodeA);
@@ -158,12 +158,12 @@ int main()
     // signal the scene it is in a state that can be rendered
     scene->flush();
 
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     // application logic
     uint32_t loops = 10000;
 
-    while (--loops)
+    while (--loops != 0u)
     {
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }

@@ -6,14 +6,14 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/RamsesMeshNodeBinding.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/Property.h"
-#include "ramses-logic/TimerNode.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/MeshNodeBinding.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/logic/TimerNode.h"
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include "SimpleRenderer.h"
 
@@ -23,7 +23,7 @@
 #include <cmath>
 
 /**
-* This example demonstrates how to use RamsesMeshNodeBinding in a simple scene.
+* This example demonstrates how to use MeshNodeBinding in a simple scene.
 */
 
 struct SceneAndMesh
@@ -52,7 +52,7 @@ int main()
      */
     auto [scene, meshNode] = CreateSceneWithTriangles(*renderer.getClient());
 
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
     * Show the scene on the renderer.
@@ -60,7 +60,7 @@ int main()
     renderer.showScene(scene->getSceneId());
 
     /**
-    * Create control script which will output values meaningful for some of the RamsesMeshNodeBinding inputs.
+    * Create control script which will output values meaningful for some of the MeshNodeBinding inputs.
     * This script takes in time ticker and adjusts mesh parameters so that it cycles through up to 3 instances
     * of it also cycles through subsets of vertices to be used to render it.
     */
@@ -91,10 +91,10 @@ int main()
         *controlScript->getInputs()->getChild("ticker"));
 
     /**
-    * Finally we create the RamsesMeshNodeBinding which binds to our mesh.
-    * Each control script output is linked to the corresponding RamsesMeshNodeBinding's input.
+    * Finally we create the MeshNodeBinding which binds to our mesh.
+    * Each control script output is linked to the corresponding MeshNodeBinding's input.
     */
-    const auto meshNodeBinding = logicEngine.createRamsesMeshNodeBinding(*meshNode, "meshNodeBinding");
+    const auto meshNodeBinding = logicEngine.createMeshNodeBinding(*meshNode, "meshNodeBinding");
     logicEngine.link(
         *controlScript->getOutputs()->getChild("vertexOffset"),
         *meshNodeBinding->getInputs()->getChild("vertexOffset"));
@@ -105,7 +105,7 @@ int main()
         *controlScript->getOutputs()->getChild("instanceCount"),
         *meshNodeBinding->getInputs()->getChild("instanceCount"));
     /**
-     * Note that we do not link all the RamsesMeshNodeBinding input properties (e.g. 'indexOffset' is not used here),
+     * Note that we do not link all the MeshNodeBinding input properties (e.g. 'indexOffset' is not used here),
      * meaning it will be initialized by Ramses and not modified in any way by Ramses logic.
      */
 
@@ -140,7 +140,7 @@ int main()
 
 SceneAndMesh CreateSceneWithTriangles(ramses::RamsesClient& client)
 {
-    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "skinning scene");
+    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), "skinning scene");
 
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, float(SimpleRenderer::GetDisplaySize()[0])/float(SimpleRenderer::GetDisplaySize()[1]), 0.1f, 100.0f);
@@ -148,7 +148,7 @@ SceneAndMesh CreateSceneWithTriangles(ramses::RamsesClient& client)
     camera->setTranslation({0.0f, 1.0f, 10.0f});
 
     ramses::RenderPass* renderPass = scene->createRenderPass();
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -215,16 +215,16 @@ SceneAndMesh CreateSceneWithTriangles(ramses::RamsesClient& client)
     ramses::Appearance* appearance = scene->createAppearance(*effect);
     appearance->setDrawMode(ramses::EDrawMode::TriangleStrip);
 
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect);
+    ramses::Geometry* geometry = scene->createGeometry(*effect);
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     ramses::MeshNode* meshNode = scene->createMeshNode("mesh");
     meshNode->setAppearance(*appearance);
     meshNode->setIndexCount(uint32_t(indexArray.size()));
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
 
     renderGroup->addMeshNode(*meshNode);
 

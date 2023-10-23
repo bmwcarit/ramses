@@ -6,20 +6,20 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/RendererConfig.h"
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/RendererConfig.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/renderer/IRendererSceneControlEventHandler.h"
+#include "ramses/framework/RamsesFrameworkTypes.h"
 
 #include "ramses-cli.h"
 
-#include <cstdio>
 #include <thread>
+#include <iostream>
 
 /**
  * @example ramses-example-local-compositing/src/main.cpp
@@ -36,11 +36,11 @@ public:
     {
     }
 
-    void displayCreated(ramses::displayId_t, ramses::ERendererEventResult result) override
+    void displayCreated(ramses::displayId_t /*displayId*/, ramses::ERendererEventResult result) override
     {
         if (result != ramses::ERendererEventResult::Ok)
         {
-            printf("Failed creating display!\n");
+            std::cout << "Failed creating display!" << std::endl;
             return;
         }
 
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 
     CLI11_PARSE(cli, argc, argv);
 
-    printf("using wayland ivi surface id: %u for stream buffer\n", surfaceId.getValue());
+    std::cout <<  "using wayland ivi surface id: " << surfaceId.getValue() << " for stream buffer" << std::endl;
 
     ramses::RamsesFramework framework(config);
     ramses::RamsesClient& client(*framework.createClient("ramses-local-compositing-example"));
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -188,35 +188,29 @@ int main(int argc, char* argv[])
     effectDesc.setVertexShaderFromFile("res/ramses-example-local-compositing.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-compositing.frag");
 
-    ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effectTex = scene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effectTex, "triangle appearance");
 
     // set vertex positions directly in geometry
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effectTex, "triangle geometry");
+    ramses::Geometry* geometry = scene->createGeometry(*effectTex, "triangle geometry");
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    ramses::AttributeInput texcoordsInput;
-    effectTex->findAttributeInput("a_position", positionsInput);
-    effectTex->findAttributeInput("a_texcoord", texcoordsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
-    geometry->setInputBuffer(texcoordsInput, *textureCoords);
-
-    ramses::UniformInput textureInput;
-    effectTex->findUniformInput("textureSampler", textureInput);
-    appearance->setInputTexture(textureInput, *sampler);
+    std::optional<ramses::AttributeInput> positionsInput = effectTex->findAttributeInput("a_position");
+    std::optional<ramses::AttributeInput> texcoordsInput = effectTex->findAttributeInput("a_texcoord");
+    std::optional<ramses::UniformInput>   textureInput   = effectTex->findUniformInput("textureSampler");
+    assert(positionsInput.has_value() && texcoordsInput.has_value() && textureInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
+    geometry->setInputBuffer(*texcoordsInput, *textureCoords);
+    appearance->setInputTexture(*textureInput, *sampler);
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = scene->createMeshNode("textured triangle mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
 
-    // signal the scene it is in a state that can be rendered
-    scene->flush();
-
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalOnly);
 
     // show the scene on the renderer
     sceneControlAPI.setSceneMapping(sceneId, display);
@@ -227,6 +221,8 @@ int main(int argc, char* argv[])
     RendererEventHandler eventHandler(renderer, display, surfaceId);
     for (uint32_t i = 0u; i < 6000u; ++i)
     {
+        scene->flush(); // flush scene periodically so its data can be transferred to renderer
+
         renderer.dispatchEvents(eventHandler);
         sceneControlAPI.dispatchEvents(eventHandler);
 

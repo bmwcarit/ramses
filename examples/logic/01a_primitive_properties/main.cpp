@@ -6,9 +6,10 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/Property.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/ramses-client.h"
 
 #include <iostream>
 
@@ -17,7 +18,10 @@
  */
 int main()
 {
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ ramses::EFeatureLevel_Latest } };
+    ramses::RamsesClient* client = framework.createClient("client");
+    ramses::Scene* scene = client->createScene(ramses::sceneId_t{ 123u });
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     // Create a simple script which multiplies two numbers and stores the result in a string
     ramses::LuaScript* multiplyScript = logicEngine.createLuaScript(R"(

@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
 #include <cstdlib>
 #include <thread>
@@ -25,7 +25,8 @@ int main()
     framework.connect();
 
     // create a scene for distributing content
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "triangles scene");
+    const ramses::SceneConfig sceneConfig(ramses::sceneId_t{123}, ramses::EScenePublicationMode::LocalAndRemote);
+    ramses::Scene* scene = ramses.createScene(sceneConfig, "triangles scene");
 
     // every scene needs a render pass with camera
     auto* camera = scene->createPerspectiveCamera("my camera");
@@ -33,7 +34,7 @@ int main()
     camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -50,7 +51,7 @@ int main()
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-blending.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    const ramses::Effect* effect = scene->createEffect(effectDesc, "glsl shader");
 
     // create an appearance for red triangle
     ramses::Appearance* appearanceRed = scene->createAppearance(*effect, "red triangle appearance");
@@ -59,11 +60,11 @@ int main()
     // create an appearance for blue triangle
     ramses::Appearance* appearanceBlue = scene->createAppearance(*effect, "blue triangle appearance");
 
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = scene->createGeometry(*effect, "triangle geometry");
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     // create mesh nodes to define the triangles with different appearances
     ramses::MeshNode* meshNodeRed = scene->createMeshNode("red triangle mesh node");
@@ -77,11 +78,11 @@ int main()
     meshNodeBlue->setTranslation({0.2f, 0.2f, -10.f});
 
     // get handle to appearances' input and set color with alpha smaller than 1
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
-    appearanceRed->setInputValue(colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 0.9f });
-    appearanceGreen->setInputValue(colorInput, ramses::vec4f{ 0.f, 1.f, 0.f, 0.6f });
-    appearanceBlue->setInputValue(colorInput, ramses::vec4f{ 0.f, 0.f, 1.f, 0.3f });
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
+    appearanceRed->setInputValue(*colorInput, ramses::vec4f{ 1.f, 0.f, 0.f, 0.9f });
+    appearanceGreen->setInputValue(*colorInput, ramses::vec4f{ 0.f, 1.f, 0.f, 0.6f });
+    appearanceBlue->setInputValue(*colorInput, ramses::vec4f{ 0.f, 0.f, 1.f, 0.3f });
 
     /// [Basic Blending Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -101,9 +102,9 @@ int main()
     meshNodeBlue->setAppearance(*appearanceBlue);
 
     // set same geometry to all mesh nodes
-    meshNodeRed->setGeometryBinding(*geometry);
-    meshNodeGreen->setGeometryBinding(*geometry);
-    meshNodeBlue->setGeometryBinding(*geometry);
+    meshNodeRed->setGeometry(*geometry);
+    meshNodeGreen->setGeometry(*geometry);
+    meshNodeBlue->setGeometry(*geometry);
 
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     // set render order so that triangles are rendered back to front
@@ -116,7 +117,7 @@ int main()
     scene->flush();
 
     // distribute the scene to RAMSES
-    scene->publish();
+    scene->publish(ramses::EScenePublicationMode::LocalAndRemote);
 
     // application logic
     std::this_thread::sleep_for(std::chrono::seconds(10));

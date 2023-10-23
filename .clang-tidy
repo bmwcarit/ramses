@@ -8,237 +8,94 @@
 
 ---
 Checks:
-    # disable all by default and enable selected checks
     '-*,
-
-    bugprone-argument-comment,
-    bugprone-assert-side-effect,
-    bugprone-bool-pointer-implicit-conversion,
-    # TODO bugprone-branch-clone,
-    bugprone-copy-constructor-init,
-    bugprone-dangling-handle,
-    bugprone-exception-escape,
-    bugprone-fold-init-type,
-    bugprone-forward-declaration-namespace,
-    bugprone-forwarding-reference-overload,
-    bugprone-inaccurate-erase,
-    bugprone-incorrect-roundings,
-    bugprone-integer-division,
-    bugprone-lambda-function-name,
-    bugprone-macro-repeated-side-effects,
-    bugprone-misplaced-operator-in-strlen-in-alloc,
-    bugprone-misplaced-widening-cast,
-    bugprone-move-forwarding-reference,
-    bugprone-multiple-statement-macro,
-    bugprone-parent-virtual-call,
-    bugprone-posix-return,
-    bugprone-sizeof-container,
-    bugprone-sizeof-expression,
-    bugprone-string-constructor,
-    bugprone-string-integer-assignment,
-    bugprone-string-literal-with-embedded-nul,
-    bugprone-suspicious-enum-usage,
-    bugprone-suspicious-memset-usage,
-    bugprone-suspicious-missing-comma,
-    bugprone-suspicious-semicolon,
-    bugprone-suspicious-string-compare,
-    bugprone-swapped-arguments,
-    bugprone-terminating-continue,
-    bugprone-throw-keyword-missing,
-    bugprone-too-small-loop-variable,
-    bugprone-undefined-memory-manipulation,
-    bugprone-undelegated-constructor,
-    # TODO(tobias) false positives: bugprone-unhandled-self-assignment,
-    bugprone-unused-raii,
-    bugprone-unused-return-value,
-    bugprone-use-after-move,
-    bugprone-virtual-near-miss,
-    bugprone-spuriously-wake-up-functions,
-    bugprone-suspicious-include,
-    bugprone-misplaced-pointer-arithmetic-in-alloc,
-    bugprone-reserved-identifier,
+    bugprone-*,
+    -bugprone-argument-comment,
+    -bugprone-branch-clone,
+    -bugprone-no-escape,
+    -bugprone-narrowing-conversions,
+    -bugprone-redundant-branch-condition,
+    -bugprone-signal-handler,
 
     cert-dcl16-c,
     cert-dcl21-cpp,
-    cert-dcl54-cpp,
+    cert-dcl50-cpp,
     cert-dcl58-cpp,
     cert-dcl59-cpp,
     cert-env33-c,
-    cert-err09-cpp,
+    cert-err34-c,
     cert-err52-cpp,
     cert-err60-cpp,
-    cert-err61-cpp,
-    cert-fio38-c,
-    cert-msc32-c,
+    cert-mem57-cpp,
+    cert-msc50-cpp,
     cert-msc51-cpp,
-    cert-oop11-cpp,
-    cert-dcl50-cpp,
-    cert-flp30-c,
-    # TODO(tobias) false positives: cert-oop54-cpp,
-    cert-oop57-cpp,
+    cert-oop58-cpp,
 
     clang-analyzer-apiModeling.StdCLibraryFunctions,
-    clang-analyzer-apiModeling.TrustNonnull,
-    clang-analyzer-apiModeling.google.GTest,
-    clang-analyzer-apiModeling.llvm.CastValue,
-    clang-analyzer-apiModeling.llvm.ReturnValue,
-    clang-analyzer-core.CallAndMessage,
-    clang-analyzer-core.DivideZero,
-    clang-analyzer-core.DynamicTypePropagation,
-    clang-analyzer-core.NonNullParamChecker,
-    clang-analyzer-core.NonnilStringConstants,
-    clang-analyzer-core.NullDereference,
-    clang-analyzer-core.StackAddrEscapeBase,
-    clang-analyzer-core.StackAddressEscape,
-    clang-analyzer-core.UndefinedBinaryOperatorResult,
-    clang-analyzer-core.VLASize,
-    clang-analyzer-core.builtin.BuiltinFunctions,
-    clang-analyzer-core.builtin.NoReturnFunctions,
-    clang-analyzer-core.uninitialized.ArraySubscript,
-    clang-analyzer-core.uninitialized.Assign,
-    clang-analyzer-core.uninitialized.Branch,
-    clang-analyzer-core.uninitialized.CapturedBlockVariable,
-    clang-analyzer-core.uninitialized.UndefReturn,
+    clang-analyzer-core*,
+    clang-analyzer-cplusplus.*,
     clang-analyzer-deadcode.DeadStores,
-    clang-analyzer-nullability.NullPassedToNonnull,
-    clang-analyzer-nullability.NullReturnedFromNonnull,
-    clang-analyzer-nullability.NullabilityBase,
-    clang-analyzer-nullability.NullableDereferenced,
-    clang-analyzer-nullability.NullablePassedToNonnull,
-    clang-analyzer-nullability.NullableReturnedFromNonnull,
     clang-analyzer-optin.cplusplus.UninitializedObject,
-    clang-analyzer-optin.mpi.MPI-Checker,
-    clang-analyzer-optin.performance.GCDAntipattern,
+    clang-analyzer-optin.cplusplus.VirtualCall,
     clang-analyzer-optin.performance.Padding,
     clang-analyzer-optin.portability.UnixAPI,
-    clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
-    clang-analyzer-security.insecureAPI.SecuritySyntaxChecker,
-    clang-analyzer-security.insecureAPI.UncheckedReturn,
-    clang-analyzer-security.insecureAPI.bcmp,
-    clang-analyzer-security.insecureAPI.bcopy,
-    clang-analyzer-security.insecureAPI.bzero,
-    clang-analyzer-security.insecureAPI.getpw,
-    clang-analyzer-security.insecureAPI.gets,
-    clang-analyzer-security.insecureAPI.mkstemp,
-    clang-analyzer-security.insecureAPI.mktemp,
-    clang-analyzer-security.insecureAPI.rand,
-    clang-analyzer-security.insecureAPI.strcpy,
-    clang-analyzer-security.insecureAPI.vfork,
-    clang-analyzer-unix.API,
-    clang-analyzer-unix.DynamicMemoryModeling,
-    clang-analyzer-unix.Malloc,
-    clang-analyzer-unix.MallocSizeof,
-    clang-analyzer-unix.MismatchedDeallocator,
-    clang-analyzer-unix.Vfork,
-    clang-analyzer-unix.cstring.BadSizeArg,
-    clang-analyzer-unix.cstring.CStringModeling,
-    clang-analyzer-unix.cstring.NullArg,
-    clang-analyzer-valist.CopyToSelf,
-    clang-analyzer-valist.Uninitialized,
-    clang-analyzer-valist.Unterminated,
-    clang-analyzer-valist.ValistBase,
-
-    clang-analyzer-cplusplus.InnerPointer,
-    clang-analyzer-cplusplus.Move,
-    clang-analyzer-cplusplus.NewDelete,
-    clang-analyzer-cplusplus.NewDeleteLeaks,
-    clang-analyzer-cplusplus.SelfAssignment,
-    clang-analyzer-cplusplus.SmartPtr,
-    # TODO clang-analyzer-optin.cplusplus.VirtualCall,
-    clang-analyzer-security.FloatLoopCounter,
-
-    google-explicit-constructor,
-    google-global-names-in-headers,
-    google-readability-casting,
-    # TODO google-readability-todo,
-    google-runtime-operator,
-    google-build-explicit-make-pair,
-
-    # alias: hicpp-avoid-goto,
-    # TODO hicpp-multiway-paths-covered,
-    # TODO hicpp-named-parameter,
-    hicpp-no-assembler,
-    hicpp-noexcept-move,
-    hicpp-signed-bitwise,
-    hicpp-exception-baseclass,
-
-    misc-redundant-expression,
-    misc-unused-alias-decls,
-    misc-unused-parameters,
-    misc-unused-using-decls,
-    misc-definitions-in-headers,
-    # TODO misc-misplaced-const,
-    misc-redundant-expression,
-    misc-unused-alias-decls,
-    misc-unused-parameters,
-    misc-unused-using-decls,
-    misc-unconventional-assign-operator,
-
-    modernize-avoid-c-arrays,
-    modernize-use-nullptr,
-    modernize-use-bool-literals,
-    modernize-raw-string-literal,
-    modernize-use-nodiscard,
-    modernize-use-using,
-    modernize-deprecated-headers,
-    modernize-make-unique,
-    modernize-make-shared,
-    modernize-use-override,
-
-    performance-faster-string-find,
-    performance-for-range-copy,
-    performance-implicit-conversion-in-loop,
-    performance-inefficient-algorithm,
-    performance-inefficient-string-concatenation,
-    performance-inefficient-vector-operation,
-    performance-move-constructor-init,
-    performance-noexcept-move-constructor,
-    performance-type-promotion-in-math-fn,
-    performance-unnecessary-copy-initialization,
-    performance-unnecessary-value-param,
-    performance-no-automatic-move,
-
-    portability-simd-intrinsics,
-
-    readability-redundant-control-flow,
-    readability-redundant-declaration,
-    readability-redundant-function-ptr-dereference,
-    readability-redundant-preprocessor,
-    readability-redundant-smartptr-get,
-    readability-redundant-string-cstr
-    readability-braces-around-statements,
-    # TODO readability-container-size-empty,
-    # TODO readability-convert-member-functions-to-static,
-    readability-deleted-default,
-    readability-isolate-declaration,
-    readability-delete-null-pointer,
-    readability-inconsistent-declaration-parameter-name,
-    readability-non-const-parameter,
-    readability-redundant-control-flow,
-    readability-redundant-declaration,
-    readability-redundant-function-ptr-dereference,
-    readability-redundant-smartptr-get,
-    readability-redundant-string-cstr,
-    readability-redundant-string-init,
-    readability-simplify-subscript-expr,
-    # TODO readability-static-accessed-through-instance,
-    readability-static-definition-in-anonymous-namespace,
-    readability-string-compare,
-    readability-uniqueptr-delete-release,
-    readability-misleading-indentation,
-    readability-misplaced-array-index,
-    readability-implicit-bool-conversion,
+    clang-analyzer-security.*,
+    -clang-analyzer-security.insecureAPI.decodeValueOfObjCType,
+    clang-analyzer-unix.*,
+    clang-analyzer-valist.*,
 
     cppcoreguidelines-avoid-goto,
     cppcoreguidelines-c-copy-assignment-signature,
+    cppcoreguidelines-init-variables,
     cppcoreguidelines-interfaces-global-init,
-    # TODO cppcoreguidelines-narrowing-conversions,
+    cppcoreguidelines-narrowing-conversions,
     cppcoreguidelines-no-malloc,
-    # TODO cppcoreguidelines-pro-type-cstyle-cast,
-    cppcoreguidelines-slicing,
-    cppcoreguidelines-avoid-non-const-global-variable,
+    cppcoreguidelines-pro-type-cstyle-cast,
     cppcoreguidelines-pro-type-reinterpret-cast,
+    cppcoreguidelines-pro-type-vararg,
+    cppcoreguidelines-slicing,
+
+    google-build-explicit-make-pair,
+    google-default-arguments,
+    google-explicit-constructor,
+    google-global-names-in-headers,
+    google-readability-casting,
+    google-runtime-int,
+    google-runtime-operator,
+    google-upgrade-googletest-case,
+
+    hicpp-exception-baseclass,
+    hicpp-multiway-paths-covered,
+    hicpp-no-assembler,
+    hicpp-signed-bitwise,
+
+    misc-*,
+    -misc-no-recursion,
+    -misc-non-private-member-variables-in-classes,
+
+    modernize-*,
+    -modernize-concat-nested-namespaces,
+    -modernize-replace-disallow-copy-and-assign-macro,
+    -modernize-use-trailing-return-type,
+    -modernize-use-transparent-functors,
+
+    performance-*,
+    -performance-no-int-to-ptr,
+
+    readability-*,
+    -readability-avoid-const-params-in-decls,
+    -readability-function-cognitive-complexity,
+    -readability-function-size,
+    -readability-identifier-naming,
+    -readability-magic-numbers,
+    -readability-make-member-function-const,
+    -readability-qualified-auto,
+    -readability-redundant-access-specifiers,
+    -readability-simplify-boolean-expr,
+    -readability-uppercase-literal-suffix,
+    -readability-use-anyofallof,
 '
+
 # everything that is enabled is also an error
 WarningsAsErrors: '*'
 
@@ -246,24 +103,43 @@ WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 
 AnalyzeTemporaryDtors: false
-FormatStyle:     none
+FormatStyle:     File
 
 CheckOptions:
-  - key: modernize-use-nullptr.NullMacros
-    value: 'NULL'
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: 'Q_ASSERT,Q_ASSERT_X,Q_CHECK_PTR'
+  - key: bugprone-assert-side-effect.CheckFunctionCalls
+    value: '1'
+  - key: bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression
+    value: '1'
+  - key: bugprone-suspicious-string-compare.WarnOnLogicalNotComparison
+    value: '1'
 
-  - key: cert-oop57-cpp.MemSetNames
-    value: ramses_internal::PlatformMemory::Set
-  - key: cert-oop57-cpp.MemCpyNames
-    value: ramses_internal::PlatformMemory::Copy
-  - key: cert-oop57-cpp.MemCmpNames
-    value: ramses_internal::PlatformMemory::Compare
+  - key: cppcoreguidelines-narrowing-conversions.PedanticMode
+    value: '1'
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value: '1'
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: '1'
 
-  - key: readability-implicit-bool-conversion.AllowIntegerConditions
-    value: true
-  - key: readability-implicit-bool-conversion.AllowPointerConditions
-    value: true
-  - key: modernize-use-override.AllowOverrideAndFinal
-    value: true
   - key: hicpp-signed-bitwise.IgnorePositiveIntegerLiterals
     value: true
+  - key: hicpp-multiway-paths-covered.WarnOnMissingElse
+    value: '0'
+
+  - key: misc-throw-by-value-catch-by-reference.WarnOnLargeObject
+    value: '1'
+    
+  - key: modernize-use-override.AllowOverrideAndFinal
+    value: true
+
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: false
+
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: '2'
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+
+
+...

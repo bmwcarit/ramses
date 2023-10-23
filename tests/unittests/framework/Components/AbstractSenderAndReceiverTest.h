@@ -1,0 +1,97 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2014 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#pragma once
+
+#include <gmock/gmock.h>
+#include "CommunicationSystemTestWrapper.h"
+#include "internal/Core/Common/TypedMemoryHandle.h"
+
+namespace ramses::internal
+{
+    using namespace testing;
+
+    class AbstractSenderAndReceiverTest : public ::testing::TestWithParam<ECommunicationSystemType>
+    {
+    public:
+        explicit AbstractSenderAndReceiverTest(EServiceType serviceType)
+            : m_state(std::make_unique<CommunicationSystemTestState>(GetParam(), serviceType))
+            , m_daemon(std::make_unique<ConnectionSystemTestDaemon>())
+            , m_senderTestWrapper(std::make_unique<CommunicationSystemTestWrapper>(*m_state, "sender"))
+            , m_receiverTestWrapper(std::make_unique<CommunicationSystemTestWrapper>(*m_state, "receiver"))
+            , sender(*m_senderTestWrapper->commSystem)
+            , receiver(*m_receiverTestWrapper->commSystem)
+            , senderId(m_senderTestWrapper->id)
+            , receiverId(m_receiverTestWrapper->id)
+            , receiverExpectCallLock(m_receiverTestWrapper->frameworkLock)
+        {
+        }
+
+        ~AbstractSenderAndReceiverTest() override = default;
+
+        ::testing::AssertionResult waitForEvent(int numberEvents = 1, uint32_t waitTimeMsOverride = 0)
+        {
+            return m_state->event.waitForEvents(numberEvents, waitTimeMsOverride);
+        }
+
+        void sendEvent()
+        {
+            m_state->event.signal();
+        }
+
+        void skipStatisticsTest()
+        {
+            statisticsTestEnabled = false;
+        }
+
+    private:
+        void SetUp() override
+        {
+            ASSERT_TRUE(m_daemon->start());
+            m_state->connectAll();
+            ASSERT_TRUE(m_state->blockOnAllConnected());
+
+            // make sure receiver can get broadcasts
+            m_receiverTestWrapper->registerAsEventReceiver();
+
+            // record message stats
+            numberMessagesSentBefore = m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue();
+            numberMessagesReceivedBefore = m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue();
+        }
+
+        void TearDown() override
+        {
+            if (statisticsTestEnabled)
+            {
+                // check at least one message sent and received
+                EXPECT_LE(numberMessagesSentBefore + 1, m_senderTestWrapper->statisticCollection.statMessagesSent.getCounterValue());
+                EXPECT_LE(numberMessagesReceivedBefore + 1, m_receiverTestWrapper->statisticCollection.statMessagesReceived.getCounterValue());
+            }
+
+            m_state->disconnectAll();
+            EXPECT_TRUE(m_daemon->stop());
+        }
+
+        std::unique_ptr<CommunicationSystemTestState> m_state;
+        std::unique_ptr<ConnectionSystemTestDaemon> m_daemon;
+
+    protected:
+        std::unique_ptr<CommunicationSystemTestWrapper> m_senderTestWrapper;
+        std::unique_ptr<CommunicationSystemTestWrapper> m_receiverTestWrapper;
+
+    public:
+        ICommunicationSystem& sender;
+        ICommunicationSystem& receiver;
+        const Guid& senderId;
+        const Guid& receiverId;
+        PlatformLock& receiverExpectCallLock;
+        uint32_t numberMessagesSentBefore = 0;
+        uint32_t numberMessagesReceivedBefore = 0;
+        bool statisticsTestEnabled = true;
+    };
+}

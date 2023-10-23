@@ -10,8 +10,8 @@
 
 #include <android/log.h>
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 
 SceneViewerBundle::SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height, const char* sceneFile)
@@ -39,12 +39,7 @@ void SceneViewerBundle::run()
 
 ramses::Node* SceneViewerBundle::findNodeByName(const char* name)
 {
-    ramses::RamsesObject* nodeObject = m_loadedScene->findObjectByName(name);
-    if (nodeObject)
-    {
-        return ramses::RamsesUtils::TryConvert<ramses::Node>(*nodeObject);
-    }
-    return nullptr;
+    return m_loadedScene->findObject<ramses::Node>(name);
 }
 
 void SceneViewerBundle::flushScene()
@@ -54,14 +49,10 @@ void SceneViewerBundle::flushScene()
 
 UniformInputWrapper* SceneViewerBundle::findUniformInput(const char* appearanceName, const char* inputName)
 {
-    ramses::RamsesObject* appearanceObj = m_loadedScene->findObjectByName(appearanceName);
-    if (appearanceObj)
+    auto* appearance = m_loadedScene->findObject<ramses::Appearance>(appearanceName);
+    if (appearance)
     {
-        ramses::Appearance* appearance = ramses::RamsesUtils::TryConvert<ramses::Appearance>(*appearanceObj);
-        if (appearance)
-        {
-                return new UniformInputWrapper(inputName, *appearance);
-        }
+        return new UniformInputWrapper(inputName, *appearance);
     }
     return nullptr;
 }

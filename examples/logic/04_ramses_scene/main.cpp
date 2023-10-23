@@ -6,13 +6,13 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/RamsesNodeBinding.h"
-#include "ramses-logic/Property.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/NodeBinding.h"
+#include "ramses/client/logic/Property.h"
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include <cassert>
 #include <iostream>
@@ -64,13 +64,13 @@ int main()
      */
     auto [scene, triangleNode] = CreateSceneWithTriangle(*ramsesClient);
 
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
      * Create a binding object which serves as a bridge between logic scripts and animations on one end
      * and a Ramses scene on the other end
      */
-    ramses::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*triangleNode, ramses::ERotationType::Euler_XYZ, "binding to triangle mesh node");
+    ramses::NodeBinding* nodeBinding = logicEngine.createNodeBinding(*triangleNode, ramses::ERotationType::Euler_XYZ, "binding to triangle mesh node");
 
     /**
      * Create a simple script which takes the current time in milliseconds
@@ -89,7 +89,7 @@ int main()
     )");
 
     /**
-     * Connect the script output 'rotationZ' with the rotation property of the RamsesNodeBinding object.
+     * Connect the script output 'rotationZ' with the rotation property of the NodeBinding object.
      * After this, the value computed in the script will be propagated to the ramses node.
      */
     logicEngine.link(
@@ -136,14 +136,14 @@ int main()
 
 SceneAndNode CreateSceneWithTriangle(ramses::RamsesClient& client)
 {
-    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "red triangle scene");
+    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), "red triangle scene");
 
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, 1.0f, 0.1f, 100.0f);
     camera->setViewport(0, 0, 800, 800);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass();
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -175,18 +175,18 @@ SceneAndNode CreateSceneWithTriangle(ramses::RamsesClient& client)
 
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+    const ramses::Effect* effect = scene->createEffect(effectDesc);
     ramses::Appearance* appearance = scene->createAppearance(*effect);
 
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    ramses::Geometry* geometry = scene->createGeometry(*effect);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
     meshNode->setIndexCount(3);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
 
     renderGroup->addMeshNode(*meshNode);
 

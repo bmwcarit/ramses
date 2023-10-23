@@ -33,12 +33,6 @@
 #include <algorithm>
 #include <string.h>  // for memcpy and memset
 
-#include "Utils/Warnings.h"
-WARNING_DISABLE_LINUX(-Wshadow)
-#if defined(_MSC_VER)
-#pragma warning(push, 2)
-#endif
-
 using namespace std;
 
 static cityhash::uint64 UNALIGNED_LOAD64(const char *p) {

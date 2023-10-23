@@ -1,0 +1,58 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2016 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#pragma once
+
+#include "internal/RendererLib/TransformationLinkManager.h"
+#include "internal/RendererLib/DataReferenceLinkManager.h"
+#include "internal/RendererLib/TextureLinkManager.h"
+#include "internal/SceneGraph/SceneAPI/DataSlot.h"
+
+namespace ramses::internal
+{
+    class RendererScenes;
+    class RendererEventCollector;
+
+    class SceneLinksManager
+    {
+    public:
+        explicit SceneLinksManager(RendererScenes& rendererScenes, RendererEventCollector& rendererEventCollector);
+
+        void createDataLink(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId);
+        void createBufferLink(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId);
+        void createBufferLink(StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId);
+        void createBufferLink(ExternalBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId);
+        void removeDataLink(SceneId consumerSceneId, DataSlotId consumerId);
+
+        void handleSceneRemoved(SceneId sceneId);
+        void handleSceneUnmapped(SceneId sceneId);
+        void handleDataSlotCreated(SceneId sceneId, DataSlotHandle dataSlotHandle);
+        void handleDataSlotDestroyed(SceneId sceneId, DataSlotHandle dataSlotHandle);
+        void handleBufferDestroyed(OffscreenBufferHandle providerBuffer);
+        void handleBufferDestroyedOrSourceUnavailable(StreamBufferHandle providerBuffer);
+        void handleBufferDestroyed(ExternalBufferHandle providerBuffer);
+
+        [[nodiscard]] const TransformationLinkManager& getTransformationLinkManager() const;
+        [[nodiscard]] const DataReferenceLinkManager&  getDataReferenceLinkManager() const;
+        [[nodiscard]] const TextureLinkManager&        getTextureLinkManager() const;
+
+    private:
+        template <typename BUFFERHANDLE>
+        void createBufferLinkInternal(BUFFERHANDLE providerBuffer, SceneId consumerSceneId, DataSlotId consumerId);
+        template <typename LINKMANAGER>
+        void removeLinksToProvider(SceneId sceneId, DataSlotHandle providerSlotHandle, LINKMANAGER& manager) const;
+        void removeAnyDataLinkFromConsumer(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);
+
+        const RendererScenes&     m_rendererScenes;
+        RendererEventCollector&   m_rendererEventCollector;
+
+        TransformationLinkManager m_transformationLinkManager;
+        DataReferenceLinkManager  m_dataReferenceLinkManager;
+        TextureLinkManager        m_textureLinkManager;
+    };
+}

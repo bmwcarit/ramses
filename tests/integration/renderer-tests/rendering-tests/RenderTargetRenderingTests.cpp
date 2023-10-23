@@ -1,0 +1,142 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#include "RenderTargetRenderingTests.h"
+#include "TestScenes/RenderTargetScene.h"
+#include "TestScenes/RenderBufferScene.h"
+#include "TestScenes/MsaaRenderBufferScene.h"
+#include "TestScenes/MultipleRenderTargetScene.h"
+
+namespace ramses::internal
+{
+    void RenderTargetRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
+    {
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Perspective, *this, "RenderTarget_Perspective");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Orthographic, *this, "RenderTarget_Orthographic");
+
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGBA4, *this, "RenderTarget_Format_RGBA4");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_R8, *this, "RenderTarget_Format_R8");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RG8, *this, "RenderTarget_Format_RG8");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGB8, *this, "RenderTarget_Format_RGB8");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_R16F, *this, "RenderTarget_Format_R16F");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_R32F, *this, "RenderTarget_Format_R32F");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RG16F, *this, "RenderTarget_Format_RG16F");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RG32F, *this, "RenderTarget_Format_RG32F");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGB16F, *this, "RenderTarget_Format_RGB16F");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGB32F, *this, "RenderTarget_Format_RGB32F");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGBA16F, *this, "RenderTarget_Format_RGBA16F");
+        testFramework.createTestCaseWithDefaultDisplay(RenderTarget_Format_RGBA32F, *this, "RenderTarget_Format_RGBA32F");
+
+        testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_TwoColorBuffersCleared, *this, "MultipleRenderTarget_TwoColorBuffersCleared");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_TwoColorBuffersWritten, *this, "MultipleRenderTarget_TwoColorBuffersWritten");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_TwoColorBuffersWrittenRGBA8_RGBA4, *this, "MultipleRenderTarget_TwoColorBuffersWrittenRGBA8_RGBA4");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_ShaderWritesTwoColorBuffers_RTHasOnlyOne, *this, "MultipleRenderTarget_ShaderWritesTwoColorBuffers_RTHasOnlyOne");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_ReuseSameColorBufferInTwoRTs, *this, "MultipleRenderTarget_ReuseSameColorBufferInTwoRTs");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_ReuseSameDepthBufferInTwoRTs, *this, "MultipleRenderTarget_ReuseSameDepthBufferInTwoRTs");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleRenderTarget_ReadFromDepth, *this, "MultipleRenderTarget_ReadFromDepth");
+
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferNoDepthOrStencil, *this, "RenderBuffer_OneColorBufferNoDepthOrStencil");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer, *this, "RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer, *this, "RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferWithWriteOnlyDepth16, *this, "RenderBuffer_OneColorBufferWithWriteOnlyDepth16");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferWithWriteOnlyDepth24, *this, "RenderBuffer_OneColorBufferWithWriteOnlyDepth24");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_ReadWriteDepth16, *this, "RenderBuffer_ReadWriteDepth16");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_ReadWriteDepth24, *this, "RenderBuffer_ReadWriteDepth24");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_ReadWriteDepth32, *this, "RenderBuffer_ReadWriteDepth32");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount1Blit, *this, "RenderBuffer_MsaaSampleCount1Blit");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount2Blit, *this, "RenderBuffer_MsaaSampleCount2Blit");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount4Blit, *this, "RenderBuffer_MsaaSampleCount4Blit");
+        testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount4TexelFetch, *this, "RenderBuffer_MsaaSampleCount4TexelFetch");
+    }
+
+    bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
+    {
+        switch (testCase.m_id)
+        {
+        case RenderTarget_Perspective:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::PERSPECTIVE_PROJECTION, "RenderTargetScene_PerspectiveProjection");
+        case RenderTarget_Orthographic:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::ORTHOGRAPHIC_PROJECTION, "RenderTargetScene_OrthographicProjection");
+        case RenderTarget_Format_RGBA4:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA4, "RenderTargetScene_RedGreenBlue", 3.0f); // higher threshold needed due to conversion imprecision from 4 to 8 bit
+        case RenderTarget_Format_R8:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_R8, "RenderTargetScene_Red");
+        case RenderTarget_Format_RG8:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RG8, "RenderTargetScene_RedGreen");
+        case RenderTarget_Format_RGB8:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB8, "RenderTargetScene_RedGreenBlue_NoAlpha");
+        case RenderTarget_Format_R16F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_R16F, "RenderTargetScene_Red");
+        case RenderTarget_Format_R32F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_R32F, "RenderTargetScene_Red");
+        case RenderTarget_Format_RG16F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RG16F, "RenderTargetScene_RedGreen");
+        case RenderTarget_Format_RG32F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RG32F, "RenderTargetScene_RedGreen");
+        case RenderTarget_Format_RGB16F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB16F, "RenderTargetScene_RedGreenBlue_NoAlpha");
+        case RenderTarget_Format_RGB32F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGB32F, "RenderTargetScene_RedGreenBlue");
+        case RenderTarget_Format_RGBA16F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA16F, "RenderTargetScene_RedGreenBlue", 0.35f); // higher threshold needed due to floating formats get sampled differently on different platforms
+        case RenderTarget_Format_RGBA32F:
+            return runBasicTest<RenderTargetScene>(testFramework, RenderTargetScene::RENDERBUFFER_FORMAT_RGBA32F, "RenderTargetScene_RedGreenBlue", 0.35f); // higher threshold needed due to floating formats get sampled differently on different platforms
+        case MultipleRenderTarget_TwoColorBuffersCleared:
+            return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::CLEAR_MRT, "MultiRenderTarget_ClearTwoColorBuffers");
+        case MultipleRenderTarget_TwoColorBuffersWritten:
+            return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::TWO_COLOR_BUFFERS, "MultiRenderTarget_TwoColorBuffers");
+        case MultipleRenderTarget_TwoColorBuffersWrittenRGBA8_RGBA4:
+            return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4, "MultiRenderTarget_TwoColorBuffers", 0.5f); // higher threshold needed due to conversion imprecision from 4 to 8 bit
+        case MultipleRenderTarget_ShaderWritesTwoColorBuffers_RTHasOnlyOne:
+            return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::SHADER_WRITES_TWO_COLOR_BUFFERS_RT_HAS_ONE, "MultiRenderTarget_OneColorBufferWritten");
+        case MultipleRenderTarget_ReuseSameColorBufferInTwoRTs:
+            return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::COLOR_WRITTEN_BY_TWO_DIFFERENT_RTS, "MultiRenderTarget_ColorBufferWrittenByTwoPasses");
+        case MultipleRenderTarget_ReuseSameDepthBufferInTwoRTs:
+            return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::DEPTH_WRITTEN_AND_USED_BY_DIFFERENT_RT, "MultiRenderTarget_DepthBufferUsedByTwoPasses");
+        case MultipleRenderTarget_ReadFromDepth:
+            return runBasicTest<MultipleRenderTargetScene>(testFramework, MultipleRenderTargetScene::DEPTH_WRITTEN_AND_READ, "MultiRenderTarget_DepthRead");
+        case RenderBuffer_OneColorBufferNoDepthOrStencil:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::ONE_COLOR_BUFFER_NO_DEPTH_OR_STENCIL, "RenderBuffer_OneColorBufferNoDepthOrStencil");
+        case RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH_BUFFER, "RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer");
+        case RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH_STENCIL_BUFFER, "RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer");
+        case RenderBuffer_OneColorBufferWithWriteOnlyDepth16:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH16, "RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer");
+        case RenderBuffer_OneColorBufferWithWriteOnlyDepth24:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH24, "RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer");
+        case RenderBuffer_ReadWriteDepth16:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::READ_WRITE_DEPTH16, "RenderBuffer_ReadWriteDepthBuffer");
+        case RenderBuffer_ReadWriteDepth24:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::READ_WRITE_DEPTH24, "RenderBuffer_ReadWriteDepthBuffer");
+        case RenderBuffer_ReadWriteDepth32:
+            return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::READ_WRITE_DEPTH32, "RenderBuffer_ReadWriteDepthBuffer");
+        case RenderBuffer_MsaaSampleCount1Blit:
+            return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_1_BLIT, "RenderBuffer_MsaaSampleCount2Blit", 0.33f); // seems most GL implementations still use msaa2 even with only 1 sample specified
+        case RenderBuffer_MsaaSampleCount2Blit:
+            return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_2_BLIT, "RenderBuffer_MsaaSampleCount2Blit", 0.33f);
+        case RenderBuffer_MsaaSampleCount4Blit:
+            return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4_BLIT, "RenderBuffer_MsaaSampleCount4Blit", 0.33f);
+        case RenderBuffer_MsaaSampleCount4TexelFetch:
+            return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4_TEXEL_FETCH, "RenderBuffer_MsaaSampleCount4TexelFetch");
+
+        default:
+            assert(!"Invalid renderer test ID!");
+            return false;
+        }
+    }
+
+    template <typename INTEGRATION_SCENE>
+    bool RenderTargetRenderingTests::runBasicTest(RendererTestsFramework& testFramework, uint32_t sceneState, const std::string& expectedImageName, float maxAveragePercentErrorPerPixel)
+    {
+        const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState);
+        testFramework.publishAndFlushScene(sceneId);
+        testFramework.getSceneToRendered(sceneId);
+        return testFramework.renderAndCompareScreenshot(expectedImageName, 0u, maxAveragePercentErrorPerPixel);
+    }
+}

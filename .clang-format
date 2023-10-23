@@ -47,7 +47,7 @@ PointerAlignment: Left
 ReflowComments: true
 SpacesBeforeTrailingComments: 1
 Cpp11BracedListStyle: true
-Standard:        Cpp11
+Standard:        Cpp17
 IndentWidth:     4
 ContinuationIndentWidth: 4
 UseTab:          Never

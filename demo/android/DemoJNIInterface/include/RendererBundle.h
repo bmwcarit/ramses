@@ -6,14 +6,13 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_RENDERERBUNDLE_H
-#define RAMSES_RENDERERBUNDLE_H
+#pragma once
 
 #include <jni.h>
 #include <thread>
 #include <atomic>
 #include <memory>
-#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
+#include "ramses/renderer/IRendererSceneControlEventHandler.h"
 
 namespace ramses
 {
@@ -55,5 +54,3 @@ protected:
     std::unique_ptr<std::thread> m_dispatchEventsThread;
     std::atomic<bool> m_cancelDispatchLoop;
 };
-
-#endif

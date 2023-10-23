@@ -1,17 +1,17 @@
 #  -------------------------------------------------------------------------
-#  Copyright (C) 2018 BMW Car IT GmbH
+#  Copyright (C) 2023 BMW AG
 #  -------------------------------------------------------------------------
 #  This Source Code Form is subject to the terms of the Mozilla Public
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 
 set(RAMSES_VERSION_MAJOR 28)
 set(RAMSES_VERSION_MINOR 0)
 set(RAMSES_VERSION_PATCH 0)
-set(RAMSES_VERSION_POSTFIX "-rc1")
+set(RAMSES_VERSION_POSTFIX "-rc2")
 set(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
 
 project(ramses-sdk
@@ -40,6 +40,7 @@ option(ramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE            "Enable a default window
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS            "Enable building for Windows window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_X11                "Enable building for X11 window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID            "Enable building for Android window" OFF)
+option(ramses-sdk_ENABLE_WINDOW_TYPE_IOS                "Enable building for iOS window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI        "Enable building for Wayland ivi window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL   "Enable building for Wayland wl_shell window" OFF)
 
@@ -49,7 +50,6 @@ option(ramses-sdk_BUILD_HEADLESS_SHARED_LIB             "Enable building headles
 
 # optional components
 option(ramses-sdk_ENABLE_LOGIC                          "Enable ramses logic - a component for scripting and animation." ON)
-option(ramses-sdk_BUILD_DAEMON                          "Build the ramses daemon." ON)
 option(ramses-sdk_TEXT_SUPPORT                          "Enable/disable the ramses text API." ON)
 option(ramses-sdk_ENABLE_TCP_SUPPORT                    "Enable use of TCP communication." ON)
 option(ramses-sdk_ENABLE_DLT                            "Enable DLT logging support." ON)
@@ -70,6 +70,8 @@ option(ramses-sdk_USE_IMAGEMAGICK                       "Enable tests depending 
 option(ramses-sdk_ALLOW_PLATFORM_GLM                    "Enable to search for platform provided OpenGL Math libary (glm)." ON)
 option(ramses-sdk_ALLOW_PLATFORM_FREETYPE               "Enable to search for platform provided freetype and harfbuzz." ON)
 option(ramses-sdk_ALLOW_CUSTOM_FREETYPE                 "Allow usage of custom freetype and harfbuzz if platform provided one was not found." ON)
+option(ramses-sdk_ALLOW_PLATFORM_LZ4                    "Enable to search for platform provided lz4" ON)
+option(ramses-sdk_USE_PLATFORM_LUAJIT                   "Uses platform provided luajit instead of internal lua" OFF)
 
 # other options
 set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING            "Optional folder prefix for targets in visual studio.")
@@ -95,21 +97,29 @@ include(cmake/ramses/folderize.cmake)
 include(cmake/ramses/testConfig.cmake)
 include(cmake/ramses/buildConfig.cmake)
 include(cmake/ramses/createTarget.cmake)
-include(cmake/ramses/addSubdirectory.cmake)
+
+if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+    include(cmake/ramses/flatbuffersGeneration.cmake)
+endif()
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
 )
 
-if (CMAKE_BUILD_TYPE)
+# 32-bit builds are not supported
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        message(FATAL_ERROR "32-bit architectures not supported.")
+endif()
+
+if(CMAKE_BUILD_TYPE)
     # Case-insensitive comparison required, build type is not case-sensitive
     string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER_CASE)
     if(NOT("${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "debug" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "release" OR
            "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "relwithdebinfo" OR "${CMAKE_BUILD_TYPE_LOWER_CASE}" STREQUAL "minsizerel"))
         message(FATAL_ERROR "Build type set to unsupported type ${CMAKE_BUILD_TYPE}.")
-    endif ()
-endif ()
+    endif()
+endif()
 
 message(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS} c++${ramses-sdk_CPP_VERSION}")
 
@@ -118,12 +128,19 @@ if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") OR (${CMAKE_SYSTEM_NAME} MATCHES "iOS
     set(ramses-sdk_TEXT_SUPPORT OFF CACHE STRING "Enable/disable the ramses text API." FORCE)
 endif()
 
+IF (NOT DEFINED ramses-sdk_ENABLE_HARFBUZZ_LEGACY_SHAPING)
+    IF ("${TARGET_OS}" STREQUAL "Integrity")
+        SET(ramses-sdk_ENABLE_HARFBUZZ_LEGACY_SHAPING ON CACHE BOOL "Enable old shaping behavior for text blocks with special characters, e.g. for compatibility reasons")
+    ENDIF()
+ENDIF()
+
 # check if valid configuration of window types in relation with shared libs
 set(ANY_WINDOW_TYPE_ENABLED OFF)
 
 if(    ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS
     OR ramses-sdk_ENABLE_WINDOW_TYPE_X11
     OR ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID
+    OR ramses-sdk_ENABLE_WINDOW_TYPE_IOS
     OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI
     OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
         set(ANY_WINDOW_TYPE_ENABLED ON)
@@ -152,6 +169,8 @@ if(NOT ANY_WINDOW_TYPE_ENABLED)
             setDefaultWindowType(ramses-sdk_ENABLE_WINDOW_TYPE_X11 "X11")
         elseif(CMAKE_SYSTEM_NAME  STREQUAL "Android")
             setDefaultWindowType(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID "Android")
+        elseif(CMAKE_SYSTEM_NAME  STREQUAL "iOS")
+            setDefaultWindowType(ramses-sdk_ENABLE_WINDOW_TYPE_IOS "iOS")
         else()
             message(WARNING "Incorrect configuration. No default window type is known for the build operating system '${CMAKE_SYSTEM_NAME}':\n"
                              "* Either disable default window type by setting ramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF\n"
@@ -193,9 +212,6 @@ if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 endif()
 set(CMAKE_DEBUG_POSTFIX "") # no debug suffix in this project
 
-set(ramses-shared-lib-MIXIN CACHE INTERNAL "")
-set(ramses-shared-lib-renderer-MIXIN CACHE INTERNAL "")
-
 include(cmake/ramses/platformTargets.cmake)
 include(cmake/ramses/makeTestFromTarget.cmake)
 include(cmake/ramses/resourceCopy.cmake)
@@ -219,57 +235,37 @@ if (ramses-sdk_ALLOW_PLATFORM_GLM)
         add_library(glm::glm ALIAS glm)
     endif()
 endif()
+if (ramses-sdk_USE_PLATFORM_LUAJIT)
+    if (TARGET lua::lua)
+        message(WARNING "ramses-sdk_USE_PLATFORM_LUAJIT is ON, but `lua::lua` target is already defined. Existing `lua::lua` target will be used.")
+    endif()
+    find_package(LuaJIT REQUIRED)
+endif()
 
 createBuildConfig()
 
-addSubdirectory(MODE AUTO PATH external)
-addSubdirectory(MODE ON PATH framework)
+add_subdirectory(external)
 
-addSubdirectory(MODE ON PATH client)
-
-if(ANY_WINDOW_TYPE_ENABLED)
-    addSubdirectory(MODE ON PATH renderer)
-endif()
-
-addSubdirectory(MODE AUTO PATH ramses-shared-lib)
-addSubdirectory(MODE AUTO PATH ramses-cli)
+add_subdirectory(include)
+add_subdirectory(src)
 
 if(ramses-sdk_BUILD_TOOLS)
-    addSubdirectory(MODE AUTO PATH utils)
+    add_subdirectory(tools)
 endif()
 
-if(ramses-sdk_BUILD_DAEMON)
-    addSubdirectory(MODE ON PATH ramses-daemon)
-endif()
-
-if(ramses-sdk_BUILD_TOOLS)
-    addSubdirectory(MODE AUTO PATH renderer/ramses-renderer-main)
-endif()
-if(ramses-sdk_BUILD_EXAMPLES)
-    addSubdirectory(MODE AUTO PATH examples)
-endif()
-if(ramses-sdk_BUILD_TESTS)
-    addSubdirectory(MODE AUTO PATH integration)
-endif()
-if(ramses-sdk_BUILD_DEMOS)
-    addSubdirectory(MODE AUTO PATH demo)
-endif()
-
-if(RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TOOLS AND ramses-sdk_ENABLE_LOGIC)
-    addSubdirectory(MODE AUTO PATH client/logic/tools)
-    # TODO Fix the benchmarks - they need to link statically, ramses doesn't allow that currently
-    # OR rework the benchmarks to only benchmark public API
-    #addSubdirectory(MODE ON PATH benchmarks)
-endif()
-
-# Only enable testAssetProducer if built as top-level project
-if(RAMSES_TOPLEVEL AND ramses-sdk_BUILD_TESTS AND ramses-sdk_ENABLE_LOGIC)
-    addSubdirectory(MODE AUTO PATH client/logic/unittests/testAssetProducer)
-    if(TARGET testAssetProducer)
-        add_custom_target(RL_REGEN_TEST_ASSETS
-            COMMAND testAssetProducer ${PROJECT_SOURCE_DIR}/client/logic/unittests/res)
-        set_property(TARGET RL_REGEN_TEST_ASSETS PROPERTY FOLDER "CMakePredefinedTargets")
+if(ramses-sdk_BUILD_FULL_SHARED_LIB OR ramses-sdk_BUILD_HEADLESS_SHARED_LIB)
+    if(ramses-sdk_BUILD_EXAMPLES)
+        add_subdirectory(examples)
     endif()
+endif()
+if(ramses-sdk_BUILD_FULL_SHARED_LIB)
+    if(ramses-sdk_BUILD_DEMOS)
+        add_subdirectory(demo)
+    endif()
+endif()
+
+if(ramses-sdk_BUILD_TESTS)
+    add_subdirectory(tests)
 endif()
 
 include(cmake/ramses/createPackage.cmake)

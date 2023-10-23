@@ -11,10 +11,10 @@
 #include <android/native_window.h>
 #include <android/log.h>
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-framework-api/RamsesFramework.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/framework/RamsesFramework.h"
 
 
 RendererBundle::RendererBundle(

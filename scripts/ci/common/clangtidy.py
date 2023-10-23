@@ -135,13 +135,13 @@ class ClangTidyResult:
         return self._compdb_entry
 
 
-def run_on_file(compdb_entry):
+def run_on_file(compdb_entry, extra_args=[]):
     compdb_path = Path(compdb_entry.compdb_path)
     if not (compdb_path.is_file() and compdb_path.name == 'compile_commands.json'):
         raise RuntimeError(f'compile_commands.json not found in {compdb_path}')
 
     start_time = time.time()
-    cmd = ['clang-tidy', f'-p={compdb_path}', '-quiet', compdb_entry.file]
+    cmd = ['clang-tidy', f'-p={compdb_path}', *extra_args, '-quiet', compdb_entry.file]
     p = subprocess.Popen(cmd,
                          shell=False,
                          cwd=compdb_entry.directory,

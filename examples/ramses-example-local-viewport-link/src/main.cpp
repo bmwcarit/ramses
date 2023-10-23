@@ -6,18 +6,18 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-client-api/PerspectiveCamera.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/IRendererEventHandler.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/IRendererSceneControlEventHandler.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/client/PerspectiveCamera.h"
 #include <unordered_set>
 #include <thread>
 #include <unordered_map>
-#include "ramses-utils.h"
+#include "ramses/client/ramses-utils.h"
 
 /**
  * @example ramses-example-local-viewport-link/src/main.cpp
@@ -61,10 +61,11 @@ public:
         m_scenes[sceneId] = state;
     }
 
-    void waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
+    void waitForSceneState(ramses::Scene& scene, ramses::RendererSceneState state)
     {
-        while (m_scenes.count(sceneId) == 0 || m_scenes.find(sceneId)->second != state)
+        while (m_scenes.count(scene.getSceneId()) == 0 || m_scenes.find(scene.getSceneId())->second != state)
         {
+            scene.flush(); // local only scenes have to be flushed periodically when getting scene to READY state
             m_renderer.doOneLoop();
             m_renderer.getSceneControlAPI()->dispatchEvents(*this);
         }
@@ -121,7 +122,7 @@ ramses::Scene* createContentProviderScene(ramses::RamsesClient& client, ramses::
     /// [Viewport Link Example Content]
 
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = clientScene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -136,38 +137,38 @@ ramses::Scene* createContentProviderScene(ramses::RamsesClient& client, ramses::
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-viewport-link.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
-    ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
+    ramses::Geometry* geometry = clientScene->createGeometry(*effect, "triangle geometry");
 
     geometry->setIndices(*indices);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    std::optional<ramses::AttributeInput> positionsInput = effect->findAttributeInput("a_position");
+    assert(positionsInput.has_value());
+    geometry->setInputBuffer(*positionsInput, *vertexPositions);
 
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
     renderGroup->addMeshNode(*meshNode);
 
     ramses::MeshNode*   meshNode2   = clientScene->createMeshNode("triangle mesh node 2");
     ramses::Appearance* appearance2 = clientScene->createAppearance(*effect, "triangle appearance");
     meshNode2->setAppearance(*appearance2);
-    meshNode2->setGeometryBinding(*geometry);
+    meshNode2->setGeometry(*geometry);
     renderGroup->addMeshNode(*meshNode2);
     meshNode2->setTranslation({0, -10, -5});
     meshNode2->setScaling({100, 100, 1});
 
-    ramses::UniformInput colorInput;
-    effect->findUniformInput("color", colorInput);
+    std::optional<ramses::UniformInput> colorInput = effect->findUniformInput("color");
+    assert(colorInput.has_value());
 
     // Create data objects to hold color and bind them to appearance inputs
     auto color1 = clientScene->createDataObject(ramses::EDataType::Vector4F);
     auto color2 = clientScene->createDataObject(ramses::EDataType::Vector4F);
     color1->setValue(ramses::vec4f{ 1.f, 1.f, 1.f, 1.f });
     color1->setValue(ramses::vec4f{ 0.5f, 0.5f, 0.5f, 1.f });
-    appearance->bindInput(colorInput, *color1);
-    appearance2->bindInput(colorInput, *color2);
+    appearance->bindInput(*colorInput, *color1);
+    appearance2->bindInput(*colorInput, *color2);
     clientScene->createDataConsumer(*color1, Color1ConsumerId);
     clientScene->createDataConsumer(*color2, Color2ConsumerId);
 
@@ -262,9 +263,9 @@ int main()
     sceneControlAPI.setSceneState(sceneIdMaster, ramses::RendererSceneState::Ready);
     sceneControlAPI.flush();
 
-    eventHandler.waitForSceneState(sceneId1, ramses::RendererSceneState::Rendered);
-    eventHandler.waitForSceneState(sceneId2, ramses::RendererSceneState::Rendered);
-    eventHandler.waitForSceneState(sceneIdMaster, ramses::RendererSceneState::Ready);
+    eventHandler.waitForSceneState(*scene1, ramses::RendererSceneState::Rendered);
+    eventHandler.waitForSceneState(*scene2, ramses::RendererSceneState::Rendered);
+    eventHandler.waitForSceneState(*sceneMaster, ramses::RendererSceneState::Ready);
 
 #if 1
     /// [Viewport Link Example]
@@ -285,16 +286,16 @@ int main()
 #endif
 
     // These are master scene's data objects linked to scene1 and scene2 cameras' viewports
-    auto scene1vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp1offset"));
-    auto scene1vpSize = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp1size"));
-    auto scene2vpOffset = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp2offset"));
-    auto scene2vpSize = ramses::RamsesUtils::TryConvert<ramses::DataObject>(*sceneMaster->findObjectByName("vp2size"));
+    auto* scene1vpOffset = sceneMaster->findObject<ramses::DataObject>("vp1offset");
+    auto* scene1vpSize = sceneMaster->findObject<ramses::DataObject>("vp1size");
+    auto* scene2vpOffset = sceneMaster->findObject<ramses::DataObject>("vp2offset");
+    auto* scene2vpSize = sceneMaster->findObject<ramses::DataObject>("vp2size");
 
     int animParam = 0;
     bool animInc = true;
 
-    ramses::MeshNode* meshScene1 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene1->findObjectByName("triangle mesh node"));
-    ramses::MeshNode* meshScene2 = ramses::RamsesUtils::TryConvert<ramses::MeshNode>(*scene2->findObjectByName("triangle mesh node"));
+    auto* meshScene1 = scene1->findObject<ramses::MeshNode>("triangle mesh node");
+    auto* meshScene2 = scene2->findObject<ramses::MeshNode>("triangle mesh node");
 
     RendererEventHandler rendererEventHandler;
     float rotationFactor = 0.f;

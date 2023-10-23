@@ -1,12 +1,12 @@
 <!-- RAMSES -->
 
-## Table of Contents
+# Table of Contents
 * [What is RAMSES](#what-is-ramses)
 * [Obtaining the source code](#obtaining-the-source-code)
 * [Building and testing](#building-and-testing)
 * [License](#license)
 
-## What is RAMSES
+# What is RAMSES
 
 RAMSES is 3D rendering engine with focus on bandwidth and resource efficiency.
 For a broader overview and introduction to the ecosystem and tools, visit our
@@ -14,14 +14,14 @@ For a broader overview and introduction to the ecosystem and tools, visit our
 
 Have a look at our showcase video: [![RAMSES Distributed Rendering Engine Showcase Video](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
 
-## Obtaining the source code
+# Obtaining the source code
 RAMSES can be cloned from its BMW Car IT repository using git:
 
 ```
 git clone --recurse-submodules https://github.com/bmwcarit/ramses <ramses-sdk>
 ```
 
-## Building and testing
+# Build instructions
 General building tips: RAMSES's build system is based on CMake. It has
 mandatory components and optional components which are built only if
 required dependencies and/or CMake flags are present. The CMake log will
@@ -83,7 +83,7 @@ You can also check the docker container setup scripts for a reference how to bui
 <ramses-sdk>/scripts/docker/runtime-files/build-ramses.sh   -> contains CMake command for building
 ```
 
-## License
+# License
 RAMSES original code is copyright BMW Car IT or BMW AG
 
 ```Copyright (C) 20xx BMW Car IT GmbH``` or ```Copyright (C) 20xx BMW AG```
@@ -108,6 +108,7 @@ Submodule reference:
 - GLSLang (Licensed under BSD-3 and Khronos Group License)
 - OpenGL Mathematics (Licensed under MIT License)
 - Googletest (Licensed under BSD-3)
+- Google Benchmark (Licensed under Apache-2.0)
 - Harfbuzz (Licensed under MIT and ISC; see external/harfbuzz/COPYING)
 - Asio (Boost Software License - Version 1.0)
 - LZ4 (Licensed under BSD-2; see also external/lz4/LICENSE for more details)
@@ -115,6 +116,10 @@ Submodule reference:
 - ImGui (Licensed under MIT License)
 - Abseil (Licensed under Apache 2.0; see also external/abseil/LICENSE for more details)
 - CLI11 (Licensed under BSD-3)
+- Lua (Licensed under MIT)
+- Sol (Licensed under MIT)
+- Flatbuffers (Licensed under Apache-2.0)
+- Webkit ANGLE (Licensed under BSD-3)
 
 Included Assets:
 - Roboto Font (Licensed under Apache 2.0)
@@ -124,3 +129,4 @@ Included Assets:
 - Droid Kufi Font (Licensed under Apache 2.0)
 - Droid Naskh Font (Licensed under Apache 2.0)
 - Satisfy Font (Licensed under Apache 2.0)
+- Noto Sans Thai Font (Licensed under SIL Open Font License 1.1)

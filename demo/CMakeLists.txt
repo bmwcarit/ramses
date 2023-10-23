@@ -6,4 +6,8 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-add_subdirectory(android)
+if(CMAKE_SYSTEM_NAME  STREQUAL "Android")
+    add_subdirectory(android)
+elseif(CMAKE_SYSTEM_NAME  STREQUAL "iOS")
+    add_subdirectory(iOS)
+endif()

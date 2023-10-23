@@ -76,6 +76,27 @@ function(setSharedTargetProperties)
     folderizeTarget(${TARGET_NAME})
 endfunction()
 
+# macro to import dependencies and check if any are none available. If a missing dependency is found
+# the passed variable as 'MISSING_DEPENDENCY_OUT' is overritten with the missing
+# dependency name, otherwise it gets unset
+macro(importDependenciesAndCheckMissing MISSING_DEPENDENCY_OUT)
+    # discard any values in MISSING_DEPENDENCY_OUT if any.
+    # If all dependencies are found it becomes undefined
+    unset(${MISSING_DEPENDENCY_OUT})
+
+    foreach(DEPENDENCY ${ARGN})
+        if((NOT TARGET ${DEPENDENCY}) AND (NOT ${DEPENDENCY}_FOUND))
+            # since macro's dont create a new scope, the variables declared
+            # in the find scripts will be visible in the calling scope
+            find_package(${DEPENDENCY})
+            if(NOT ${DEPENDENCY}_FOUND)
+                set(${MISSING_DEPENDENCY_OUT} ${DEPENDENCY})
+                break()
+            endif()
+        endif()
+    endforeach()
+endmacro()
+
 function(createModule)
     cmake_parse_arguments(
         MODULE              # Prefix of parsed args
@@ -95,40 +116,9 @@ function(createModule)
     # resolve file wildcards
     file(GLOB GLOBBED_MODULE_SRC_FILES LIST_DIRECTORIES false ${MODULE_SRC_FILES})
 
-    # check, if all dependencies can be resolved
-    # TODO This can be for sure modernized with newer CMake functionality for dependency resolving
-    set(MSG "")
-    set(MODULE_BUILD_ENABLED TRUE)
-    foreach(DEPENDENCY ${MODULE_DEPENDENCIES})
-        if(NOT TARGET ${DEPENDENCY})
-            list(FIND GLOBAL_WILL_NOT_FIND_DEPENDENCY ${DEPENDENCY} SKIP_FIND)
-
-            if(NOT ${DEPENDENCY}_FOUND AND SKIP_FIND EQUAL -1)
-                find_package(${DEPENDENCY} QUIET)
-            endif()
-            if(NOT ${DEPENDENCY}_FOUND)
-                set(GLOBAL_WILL_NOT_FIND_DEPENDENCY "${DEPENDENCY};${GLOBAL_WILL_NOT_FIND_DEPENDENCY}" CACHE INTERNAL "")
-
-                list(APPEND MSG "missing ${DEPENDENCY}")
-                if(GLOBAL_MODULE_DEPENDENCY_CHECK)
-                    set(MODULE_BUILD_ENABLED FALSE)
-                endif()
-            endif()
-        endif()
-    endforeach()
-
-    if(NOT MODULE_BUILD_ENABLED)
-        message(STATUS "- ${MODULE_NAME} [${MSG}]")
-        set(GLOBAL_WILL_NOT_FIND_DEPENDENCY "${MODULE_NAME};${GLOBAL_WILL_NOT_FIND_DEPENDENCY}" CACHE INTERNAL "")
-        return()
-    endif()
-
-    if(NOT "${MSG}" STREQUAL "")
-        message("        build enabled, but")
-        foreach(M ${MSG})
-            message("        - ${M}")
-        endforeach()
-        message(FATAL_ERROR "aborting configuration")
+    importDependenciesAndCheckMissing(MISSING_DEPENDENCY ${MODULE_DEPENDENCIES})
+    if(MISSING_DEPENDENCY)
+        message(FATAL_ERROR "Aborting configuration! Missing dependency: ${MISSING_DEPENDENCY} for module: ${MODULE_NAME}!")
     endif()
 
     message(STATUS "+ ${MODULE_NAME} (${MODULE_TYPE})")
@@ -219,7 +209,7 @@ function(createModuleWithRenderer)
         message(FATAL_ERROR "Unparsed createModuleWithRenderer properties: '${MODULE_UNPARSED_ARGUMENTS}'")
     endif()
 
-    set(MODULE_DEPENDENCIES "ramses-renderer-impl;ramses-build-options-base;${MODULE_DEPENDENCIES}")
+    set(MODULE_DEPENDENCIES "ramses-renderer;ramses-build-options-base;${MODULE_DEPENDENCIES}")
 
     createModule(NAME                   ${MODULE_NAME}
                 TYPE                    ${MODULE_TYPE}
@@ -230,4 +220,5 @@ function(createModuleWithRenderer)
                 RESOURCE_FOLDERS        ${MODULE_RESOURCE_FOLDERS}
                 )
 
+    target_link_libraries(${MODULE_NAME} INTERFACE ramses-api)
 endfunction()

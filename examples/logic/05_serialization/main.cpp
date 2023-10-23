@@ -6,13 +6,13 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/RamsesNodeBinding.h"
-#include "ramses-logic/Property.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/NodeBinding.h"
+#include "ramses/client/logic/Property.h"
 
-#include "ramses-client.h"
-#include "ramses-utils.h"
+#include "ramses/client/ramses-client.h"
+#include "ramses/client/ramses-utils.h"
 
 #include <string>
 #include <array>
@@ -26,7 +26,7 @@
  */
 
 
-void CreateAndSaveContent(const std::string& ramsesSceneFile, const std::string& ramsesLogicFile);
+void CreateAndSaveContent(const std::string& ramsesSceneFile);
 
 int main()
 {
@@ -34,12 +34,11 @@ int main()
      * Define file names to use where content will be saved
      */
     const std::string ramsesSceneFile = "scene.ramses";
-    const std::string ramsesLogicFile = "scene.logic";
 
     /**
      * Create a simple triangle scene and a script which controls it. Save both to its own file.
      */
-    CreateAndSaveContent(ramsesSceneFile, ramsesLogicFile);
+    CreateAndSaveContent(ramsesSceneFile);
 
     /**
      * Load the Ramses scene from the file. It has to be loaded first, so that we can
@@ -51,18 +50,15 @@ int main()
     ramses::Scene* scene = client.loadSceneFromFile(ramsesSceneFile.c_str());
 
     /**
-     * Load the logic content from its file, and provide a pointer to the ramses scene as argument.
-     * After loadFromFile() returns, the bindings which point to Ramses objects will point
-     * to objects from the scene provided as an argument.
+     * The loaded scene contains the Logic instance
      */
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
-    logicEngine.loadFromFile(ramsesLogicFile, scene);
+    ramses::LogicEngine& logicEngine = *scene->findObject<ramses::LogicEngine>("example logic");
 
     /**
      * ramses::LogicEngine provides iterable collections to its objects. We can use them to resolve objects after loading
      */
     ramses::Collection<ramses::LuaScript> loadedScripts = logicEngine.getCollection<ramses::LuaScript>();
-    ramses::Collection<ramses::RamsesNodeBinding> loadedNodeBindings = logicEngine.getCollection<ramses::RamsesNodeBinding>();
+    ramses::Collection<ramses::NodeBinding> loadedNodeBindings = logicEngine.getCollection<ramses::NodeBinding>();
 
     /**
      * We can use any STL algorithm on the collections.
@@ -74,11 +70,11 @@ int main()
 
     /**
      * We can do the same to find a ramses node binding. We can use the binding to obtain a pointer to the ramses::Node further down.
-     * This is an alternative to ramses::Scene::findObjectById()/findObjectByName() methods.
+     * This is an alternative to ramses::Scene::findObject() methods.
      * Note that this example uses fully qualified names and type traits for documentation sake. You can also just use 'auto'.
      */
-    ramses::Collection<ramses::RamsesNodeBinding>::const_iterator triangleNodeBinding = std::find_if(loadedNodeBindings.cbegin(), loadedNodeBindings.cend(),
-        [](const ramses::RamsesNodeBinding* binding) {return binding->getName() == "link to triangle node"; });
+    ramses::Collection<ramses::NodeBinding>::const_iterator triangleNodeBinding = std::find_if(loadedNodeBindings.cbegin(), loadedNodeBindings.cend(),
+        [](const ramses::NodeBinding* binding) {return binding->getName() == "link to triangle node"; });
 
     /**
      * The LogicEngine iterators work just like any other STL forward iterator - can be compared, dereferenced, incremented etc.
@@ -106,7 +102,7 @@ int main()
  * Helper method which creates a simple ramses scene, a simple script, and
  * saves the content in two separate files
  */
-void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string& ramsesLogicFile)
+void CreateAndSaveContent(const std::string &ramsesSceneFile)
 {
     /**
      * Boilerplate Ramses code which saves a red triangle scene in a file. For more ramses
@@ -116,14 +112,14 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string&
     ramses::RamsesFramework ramsesFramework(config);
     ramses::RamsesClient& client = *ramsesFramework.createClient("example client");
 
-    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "red triangle scene");
+    ramses::Scene* scene = client.createScene(ramses::sceneId_t(123u), "red triangle scene");
 
     ramses::PerspectiveCamera* camera = scene->createPerspectiveCamera();
     camera->setFrustum(19.0f, 1.0f, 0.1f, 100.0f);
     camera->setViewport(0, 0, 800, 800);
     camera->setTranslation({0.0f, 0.0f, 5.0f});
     ramses::RenderPass* renderPass = scene->createRenderPass();
-    renderPass->setClearFlags(ramses::EClearFlags_None);
+    renderPass->setClearFlags(ramses::EClearFlag::None);
     renderPass->setCamera(*camera);
     ramses::RenderGroup* renderGroup = scene->createRenderGroup();
     renderPass->addRenderGroup(*renderGroup);
@@ -155,28 +151,28 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string&
 
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+    const ramses::Effect* effect = scene->createEffect(effectDesc);
     ramses::Appearance* appearance = scene->createAppearance(*effect);
 
-    ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect);
-    ramses::AttributeInput positionsInput;
-    effect->findAttributeInput("a_position", positionsInput);
-    geometry->setInputBuffer(positionsInput, *vertexPositions);
+    ramses::Geometry* geometry = scene->createGeometry(*effect);
+    std::optional<ramses::AttributeInput> optPositionsInput = effect->findAttributeInput("a_position");
+    assert(optPositionsInput.has_value());
+    geometry->setInputBuffer(*optPositionsInput, *vertexPositions);
 
     ramses::MeshNode* meshNode = scene->createMeshNode("triangle mesh node");
     meshNode->setAppearance(*appearance);
     meshNode->setIndexCount(3);
-    meshNode->setGeometryBinding(*geometry);
+    meshNode->setGeometry(*geometry);
 
     renderGroup->addMeshNode(*meshNode);
 
     scene->flush();
 
     /**
-     * Create a temporary LogicEngine instance for creating and saving a simple script which references a ramses Node
+     * Create a LogicEngine instance for creating and saving a simple script which references a ramses Node
      */
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
-    ramses::RamsesNodeBinding* nodeBinding = logicEngine.createRamsesNodeBinding(*meshNode, ramses::ERotationType::Euler_XYZ, "link to triangle node");
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine("example logic") };
+    ramses::NodeBinding* nodeBinding = logicEngine.createNodeBinding(*meshNode, ramses::ERotationType::Euler_XYZ, "link to triangle node");
 
     /**
      * Create a simple script which sets the rotation values of a node based on simulated time
@@ -205,17 +201,12 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile, const std::string&
     logicEngine.update();
 
     /**
-     * Save the script, the node binding and their link to a file so that they can be loaded later
+     * Save the ramses scene (includes the script, the node binding and the link)
      *
      * Note: in this example validation on saving is disabled for simplification, since normally a warning
      * gets generated for script input that is not linked.
      */
     ramses::SaveFileConfig saveFileConfig;
     saveFileConfig.setValidationEnabled(false);
-    logicEngine.saveToFile(ramsesLogicFile, saveFileConfig);
-
-    /**
-     * Finally, we save the Ramses scene with the values/data which has been applied by the LogicEngine above
-     */
-    [[maybe_unused]] auto status = scene->saveToFile(ramsesSceneFile.c_str(), false);
+    [[maybe_unused]] auto status = scene->saveToFile(ramsesSceneFile.c_str(), saveFileConfig);
 }

@@ -6,8 +6,9 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/LuaScript.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/ramses-client.h"
 
 #include <cassert>
 #include <iostream>
@@ -17,7 +18,10 @@
  */
 int main()
 {
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ ramses::EFeatureLevel_Latest } };
+    ramses::RamsesClient* client = framework.createClient("client");
+    ramses::Scene* scene = client->createScene(ramses::sceneId_t{ 123u });
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     /**
      * This script contains a runtime error, i.e. from Lua point of view this is
@@ -45,15 +49,17 @@ int main()
      * https://ramses-logic.readthedocs.io/en/latest/lua_syntax.html#the-global-in-and-out-objects for more information
      * how to read the stack trace
      */
-    logicEngine.update();
+    const bool status = logicEngine.update();
 
-    // The LogicEngine provides a list of errors from the last call. Use it to get
-    // the error message and a pointer to the object which causes the error.
+    // Ramses keeps last error that occurred during some API call until the getLastError is called, then the error is cleared.
+    // Use it to get the error message and a pointer to the object which caused the error.
+    const auto issue = framework.getLastError();
     assert(
-        logicEngine.getErrors().size() == 1u &&
-        logicEngine.getErrors()[0].object == faultyScript);
+        !status &&
+        issue.has_value() &&
+        issue->object == faultyScript);
 
     logicEngine.destroy(*faultyScript);
 
-    return 0;
+    return status ? -1 : 0;
 }

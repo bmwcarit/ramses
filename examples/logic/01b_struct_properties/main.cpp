@@ -6,9 +6,10 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-logic/LogicEngine.h"
-#include "ramses-logic/LuaScript.h"
-#include "ramses-logic/Property.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/ramses-client.h"
 
 #include <iostream>
 #include <cassert>
@@ -20,7 +21,10 @@
 
 int main()
 {
-    ramses::LogicEngine logicEngine{ ramses::EFeatureLevel_Latest };
+    ramses::RamsesFramework framework{ ramses::RamsesFrameworkConfig{ ramses::EFeatureLevel_Latest } };
+    ramses::RamsesClient* client = framework.createClient("client");
+    ramses::Scene* scene = client->createScene(ramses::sceneId_t{ 123u });
+    ramses::LogicEngine& logicEngine{ *scene->createLogicEngine() };
 
     // Create a script with inputs and outputs of the same type (consists of nested structs)
     ramses::LuaScript* script = logicEngine.createLuaScript(R"(

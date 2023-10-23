@@ -1,36 +1,36 @@
 [submodule "external/harfbuzz"]
-	url = https://github.com/harfbuzz/harfbuzz.git
-	path = external/harfbuzz
+    url = https://github.com/harfbuzz/harfbuzz.git
+    path = external/harfbuzz
 [submodule "external/googletest"]
-	url = https://github.com/google/googletest.git
-	path = external/googletest
+    url = https://github.com/google/googletest.git
+    path = external/googletest
 [submodule "external/glm"]
-	url = https://github.com/g-truc/glm.git
-	path = external/glm
+    url = https://github.com/g-truc/glm.git
+    path = external/glm
 [submodule "external/glslang"]
-	url = https://github.com/KhronosGroup/glslang.git
-	path = external/glslang
+    url = https://github.com/KhronosGroup/glslang.git
+    path = external/glslang
 [submodule "external/freetype"]
-	url = https://github.com/freetype/freetype.git
-	path = external/freetype
+    url = https://github.com/freetype/freetype.git
+    path = external/freetype
 [submodule "external/asio"]
-	url = https://github.com/chriskohlhoff/asio.git
-	path = external/asio
+    url = https://github.com/chriskohlhoff/asio.git
+    path = external/asio
 [submodule "external/lz4"]
-	url = https://github.com/lz4/lz4.git
-	path = external/lz4
+    url = https://github.com/lz4/lz4.git
+    path = external/lz4
 [submodule "external/fmt"]
-	url = https://github.com/fmtlib/fmt.git
-	path = external/fmt
+    url = https://github.com/fmtlib/fmt.git
+    path = external/fmt
 [submodule "external/abseil"]
-	url = https://github.com/abseil/abseil-cpp.git
-	path = external/abseil
+    url = https://github.com/abseil/abseil-cpp.git
+    path = external/abseil
 [submodule "external/imgui"]
-	url = https://github.com/ocornut/imgui.git
-	path = external/imgui
+    url = https://github.com/ocornut/imgui.git
+    path = external/imgui
 [submodule "external/cli11"]
-	url = https://github.com/CLIUtils/CLI11.git
-	path = external/cli11
+    url = https://github.com/CLIUtils/CLI11.git
+    path = external/cli11
 [submodule "external/google-benchmark"]
     path = external/google-benchmark
     url = https://github.com/google/benchmark.git
@@ -44,5 +44,5 @@
     path = external/sol
     url = https://github.com/ThePhD/sol2.git
 [submodule "external/ANGLE"]
-	path = external/ANGLE
-	url = https://github.com/bmwcarit/ANGLE.git
+    path = external/ANGLE
+    url = https://github.com/bmwcarit/ANGLE.git

@@ -192,6 +192,7 @@ def print_overall_runtime(entries, num_threads, start_time, *, end_time=None):
 
 
 def main():
+    print("Run:", " ".join(sys.argv))
     parser = argparse.ArgumentParser()
     parser.add_argument('compdb', help='Full path of compile_commands.json')
     parser.add_argument('-f', '--filter', default=None,
@@ -204,12 +205,18 @@ def main():
                         help='Path to configuration file')
     parser.add_argument('-r', '--repo', default=repo.get_sdkroot(), required=False,
                         help='Repository root')
+    parser.add_argument('--fix', help='Apply clang-tidy fixes.', action='store_true')
     args = parser.parse_args()
 
     start_time = time.monotonic()
     config = yamlconfig.read_config_with_defaults(args.config, CONFIG_SCHEMA, CONFIG_DEFAULTS)
     entries = compilationdb.load_from_file(args.compdb, Path(args.repo).resolve())
+    extra_args = []
     print(f'Loaded {len(entries)} entries from {args.compdb}')
+    if args.fix:
+        # Multiple clang-tidy threads will interfer each other
+        args.threads = 1
+        extra_args.append('--fix-errors')
 
     entries = process_compdb_entries(entries, config, args.filter)
     print(f'Check {len(entries)} remaining entries with {args.threads} threads\n')
@@ -218,7 +225,7 @@ def main():
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
         result_entries = []
         unique_issues = {}
-        result_futures = map(lambda e: executor.submit(clangtidy.run_on_file, e), entries)
+        result_futures = map(lambda e: executor.submit(clangtidy.run_on_file, e, extra_args), entries)
         for f_result in concurrent.futures.as_completed(result_futures):
             e = f_result.result()
             result_entries.append(e)

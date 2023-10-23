@@ -16,8 +16,8 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=$RAMSES_BUILD/install \
     -Dramses-sdk_BUILD_TESTS=1 \
     -Dramses-sdk_BUILD_EXAMPLES=1 \
-    -Dramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_SHELL=1 \
     -Dramses-sdk_ENABLE_DLT=0 \
+    -Dramses-sdk_ENABLE_FLATBUFFERS_GENERATION=0 \
     -G Ninja \
     -Wno-dev \
     $RAMSES_SOURCE

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #  -------------------------------------------------------------------------
-#  Copyright (C) 2013 BMW Car IT GmbH
+#  Copyright (C) 2023 BMW AG
 #  -------------------------------------------------------------------------
 #  This Source Code Form is subject to the terms of the Mozilla Public
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,23 +20,23 @@ G_PROP_FILES = [
 ]
 
 # generate license regexes only once
-G_RE_LICENSE_TEMPLATE_OPEN = re.compile(r"""(?://|::|#|  )  -------------------------------------------------------------------------
+G_RE_LICENSE_TEMPLATE_OPEN = re.compile(r"""(?://|::|#|%%|  )  -------------------------------------------------------------------------
 (?://|::|#|  )  Copyright \(C\) 2\d{3}(?:-2\d{3})?(?: BMW AG| BMW Car IT GmbH|, Garmin International, Inc\. and its affiliates\.)$(?:\n(?://|::|#)  Copyright \(C\) .*$)*
-(?://|::|#|  )  -------------------------------------------------------------------------
-(?://|::|#|  )  This Source Code Form is subject to the terms of the Mozilla Public
-(?://|::|#|  )  License, v\. 2\.0\. If a copy of the MPL was not distributed with this
-(?://|::|#|  )  file, You can obtain one at https://mozilla\.org/MPL/2\.0/\.
-(?://|::|#|  )  -------------------------------------------------------------------------
+(?://|::|#|%%|  )  -------------------------------------------------------------------------
+(?://|::|#|%%|  )  This Source Code Form is subject to the terms of the Mozilla Public
+(?://|::|#|%%|  )  License, v\. 2\.0\. If a copy of the MPL was not distributed with this
+(?://|::|#|%%|  )  file, You can obtain one at https://mozilla\.org/MPL/2\.0/\.
+(?://|::|#|%%|  )  -------------------------------------------------------------------------
 """, re.MULTILINE)  # noqa E501 allow long lines here
 
-G_RE_LICENSE_TEMPLATE_PROP = re.compile(r"""(?://|::|#)  -------------------------------------------------------------------------
-(?://|::|#)  Copyright \(C\) 2\d{3}(?:-2\d{3})? (BMW AG|BMW Car IT GmbH)
-(?://|::|#)  All rights reserved\.
-(?://|::|#)  -------------------------------------------------------------------------
-(?://|::|#)  This document contains proprietary information belonging to (\1)(\.)
-(?://|::|#)  Passing on and copying of this document, use and communication of its
-(?://|::|#)  contents is not permitted without prior written authorization\.
-(?://|::|#)  -------------------------------------------------------------------------
+G_RE_LICENSE_TEMPLATE_PROP = re.compile(r"""(?://|::|#|%%)  -------------------------------------------------------------------------
+(?://|::|#|%%)  Copyright \(C\) 2\d{3}(?:-2\d{3})? (BMW AG|BMW Car IT GmbH)
+(?://|::|#|%%)  All rights reserved\.
+(?://|::|#|%%)  -------------------------------------------------------------------------
+(?://|::|#|%%)  This document contains proprietary information belonging to (\1)(\.)
+(?://|::|#|%%)  Passing on and copying of this document, use and communication of its
+(?://|::|#|%%)  contents is not permitted without prior written authorization\.
+(?://|::|#|%%)  -------------------------------------------------------------------------
 """, re.MULTILINE)
 
 

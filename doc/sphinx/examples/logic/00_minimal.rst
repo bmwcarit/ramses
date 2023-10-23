@@ -15,5 +15,5 @@ Minimal logic example
 =========================
 
 .. literalinclude:: ../../../../examples/logic/00_minimal/main.cpp
-    :start-after: #include "ramses-logic/Property.h"
+    :start-after: #include "ramses/client/logic/Property.h"
 

@@ -55,7 +55,15 @@ def main():
 
     merged_data = f'coverage-merged-{args.select}.profdata'
     print(f'Generate {merged_data}')
-    subprocess.check_call(['llvm-profdata', 'merge', '-o', merged_data] + prof_files, shell=False, cwd=profdir)
+    for attempt in range(3):
+        try:
+            subprocess.check_call(['llvm-profdata', 'merge', '-o', merged_data] + prof_files, shell=False, cwd=profdir)
+        except subprocess.CalledProcessError as e:
+            print(f'Attempt {attempt} failed: {e}')
+        else:
+            break
+    else:
+        raise Exception(f'Generate {merged_data} failed')
 
     merged_executable = f'merge-executable-{args.select}'
     print(f'Generate {merged_executable}')
@@ -63,7 +71,7 @@ def main():
 
     exclude_regex = f'{sdkroot}/(external)/'
     if args.select == 'release':
-        exclude_regex += f'|{sdkroot}/integration/|/test/|/Window_Wayland_Test/|/[^/]+TestUtils/'
+        exclude_regex += f'|{sdkroot}/integration/|/test/|/window-wayland-common/|/[^/]+test-utils/'
 
     if args.report_dir:
         reportdir = Path(args.report_dir).resolve()

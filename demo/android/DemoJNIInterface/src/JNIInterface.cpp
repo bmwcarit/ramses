@@ -13,7 +13,7 @@
 #include "RendererBundle.h"
 #include "SceneViewerBundle.h"
 #include "UniformInputWrapper.h"
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
 
 extern "C"

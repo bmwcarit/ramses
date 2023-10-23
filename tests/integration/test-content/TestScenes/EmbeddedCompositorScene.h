@@ -1,0 +1,55 @@
+//  -------------------------------------------------------------------------
+//  Copyright (C) 2017 BMW Car IT GmbH
+//  -------------------------------------------------------------------------
+//  This Source Code Form is subject to the terms of the Mozilla Public
+//  License, v. 2.0. If a copy of the MPL was not distributed with this
+//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//  -------------------------------------------------------------------------
+
+#pragma once
+
+#include "IntegrationScene.h"
+#include "internal/RendererLib/Types.h"
+#include "ramses/client/Scene.h"
+
+namespace ramses
+{
+    class Appearance;
+    class ArrayResource;
+}
+
+namespace ramses::internal
+{
+    class EmbeddedCompositorScene : public IntegrationScene
+    {
+    public:
+        EmbeddedCompositorScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
+
+        enum
+        {
+            SINGLE_STREAM_TEXTURE = 0,
+            SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET,
+            SINGLE_STREAM_TEXTURE_WITH_TEXEL_FETCH,
+            TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES,
+            TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE,
+            TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SWIZZLED_FALLBACK_TEXTURES,
+            SINGLE_STREAM_TEXTURE_ON_THE_LEFT,
+            SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_FALLBACK_FROM_LEFT_SCENE,
+            SINGLE_STREAM_TEXTURE_ON_THE_RIGHT,
+            SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_SECOND_SOURCE_ID_AND_FALLBACK_FROM_LEFT_SCENE
+        };
+
+        static constexpr ramses::dataConsumerId_t SamplerConsumerId1{ 1u };
+        static constexpr ramses::dataConsumerId_t SamplerConsumerId2{ 2u };
+
+    private:
+        void createQuad(float x, float y, float w, float h, ramses::Appearance& appearance);
+        ramses::Appearance& createAppearanceWithTextureConsumer(ramses::Scene& scene, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture);
+        const ramses::Effect& createTestEffect(uint32_t state);
+        const ramses::ArrayResource& createTextureCoordinates(uint32_t state);
+        void createQuadWithTextureConsumer(float xPos, float yPos, float width, float height, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture);
+
+        const ramses::Effect& m_effect;
+        const ramses::ArrayResource& m_textureCoords;
+    };
+}

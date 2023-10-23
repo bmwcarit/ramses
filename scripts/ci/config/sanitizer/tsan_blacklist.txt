@@ -1,3 +1,6 @@
 # ignore covesa dlt locking problems
 mutex:dlt_lock_mutex
 mutex:dlt_free
+# EGL de/init in mesa swrast EGL implementation causes both leak (lsan, valgrind) and data race (tsan),
+# it might be worth to check if still happening on future driver versions
+race:~Context_EGL()

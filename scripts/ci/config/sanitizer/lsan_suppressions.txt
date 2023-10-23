@@ -1,15 +1,10 @@
 leak:libxcb.so
 
-# TODO(tobias) no idea what leaks here
+# TODO no idea what leaks here
 leak:calloc
 
-# TODO(tobias) suppress leaks from swrast executables
-leak:RendererLifecycleTests-x11-egl-es-3-0
-leak:EmbeddedCompositor_Wayland_Test
-leak:RendererLifecycleTests-wayland-ivi-egl-es-3-0
-leak:EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
-leak:EmbeddedCompositingTests-WithFD-wayland-ivi-egl-es-3-0
-leak:RenderingTests-x11-egl-es-3-0
-leak:RenderingTests-wayland-ivi-egl-es-3-0
-leak:RenderBackendTests-wayland-ivi-egl-es-3-0
-leak:RenderBackendTests-x11-egl-es-3-0
+# EGL de/init in mesa swrast EGL implementation causes both leak (lsan, valgrind) and data race (tsan),
+# it might be worth to check if still happening on future driver versions
+leak:embedded-compositing-rendering-tests
+leak:render-backend-tests
+leak:renderer-lifecycle-tests

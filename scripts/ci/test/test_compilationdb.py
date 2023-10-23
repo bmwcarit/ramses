@@ -19,8 +19,8 @@ import compilationdb  # noqa E402 module level import not at top of file
 # test entry including all supported features
 TEST_ENTRY_FULL = {
     "directory": "/base/build",
-    "command": "/usr/bin/clang++  -DFMT_EXCEPTIONS=0 -DHAS_TCP_COMM=1 -DRAMSES_LINK_STATIC -D__CLANG_SUPPORT_DYN_ANNOTATION__ -IBuildConfig -I../framework/FrameworkTestUtils/include -I../external/cityhash/src -I../external/lodepng -I../framework/Animation/Animation/include -I../framework/Animation/AnimationAPI/include -I../framework/Communication/TransportCommon/include -I../framework/Communication/TransportTCP/include -isystem ../external/googletest/googlemock/include -isystem ../external/googletest/googlemock -isystem ../external/googletest/googletest/include -isystem ../external/googletest/googletest  -m64 -fdiagnostics-color  -std=c++14  -fPIC -pthread -fvisibility=hidden  -g  -ggdb -D_DEBUG -fno-omit-frame-pointer -O0   -Wall -Wextra -Wcast-align -Wshadow -Wformat -Wformat-security -Wvla -Wmissing-include-dirs -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast -Wunused -Werror -Wimplicit-fallthrough -Winconsistent-missing-override -Wmove -std=c++14 -o framework/CMakeFiles/FrameworkTestUtils.dir/FrameworkTestUtils/src/CommunicationSystemMock.cpp.o -c /base/framework/FrameworkTestUtils/src/CommunicationSystemMock.cpp",  # noqa E501 allow long string
-    "file": "/base/framework/FrameworkTestUtils/src/CommunicationSystemMock.cpp"
+    "command": "/usr/bin/clang++  -DFMT_EXCEPTIONS=0 -DHAS_TCP_COMM=1 -DRAMSES_LINK_STATIC -D__CLANG_SUPPORT_DYN_ANNOTATION__ -IBuildConfig -I../framework/framework-test-utils/include -I../external/cityhash/src -I../external/lodepng -I../framework/Animation/Animation/include -I../framework/Animation/AnimationAPI/include -I../framework/Communication/TransportCommon/include -I../framework/Communication/TransportTCP/include -isystem ../external/googletest/googlemock/include -isystem ../external/googletest/googlemock -isystem ../external/googletest/googletest/include -isystem ../external/googletest/googletest  -m64 -fdiagnostics-color  -std=c++14  -fPIC -pthread -fvisibility=hidden  -g  -ggdb -D_DEBUG -fno-omit-frame-pointer -O0   -Wall -Wextra -Wcast-align -Wshadow -Wformat -Wformat-security -Wvla -Wmissing-include-dirs -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast -Wunused -Werror -Wimplicit-fallthrough -Winconsistent-missing-override -Wmove -std=c++14 -o framework/CMakeFiles/framework-test-utils.dir/framework-test-utils/src/CommunicationSystemMock.cpp.o -c /base/framework/framework-test-utils/src/CommunicationSystemMock.cpp",  # noqa E501 allow long string
+    "file": "/base/framework/framework-test-utils/src/CommunicationSystemMock.cpp"
 }
 
 # test entry that lacks output file and system includes
@@ -39,7 +39,7 @@ def test_can_create_from_full_entry_():
     with pytest.raises(RuntimeError):
         e.relative_file
     assert e.includes == ["BuildConfig",
-                          "../framework/FrameworkTestUtils/include",
+                          "../framework/framework-test-utils/include",
                           "../external/cityhash/src",
                           "../external/lodepng",
                           "../framework/Animation/Animation/include",
@@ -47,7 +47,7 @@ def test_can_create_from_full_entry_():
                           "../framework/Communication/TransportCommon/include",
                           "../framework/Communication/TransportTCP/include"]
     assert e.absolute_includes == ["/base/build/BuildConfig",
-                                   "/base/framework/FrameworkTestUtils/include",
+                                   "/base/framework/framework-test-utils/include",
                                    "/base/external/cityhash/src",
                                    "/base/external/lodepng",
                                    "/base/framework/Animation/Animation/include",
@@ -66,8 +66,8 @@ def test_can_create_from_full_entry_():
                          "HAS_TCP_COMM=1",
                          "RAMSES_LINK_STATIC", "__CLANG_SUPPORT_DYN_ANNOTATION__",
                          "_DEBUG"]
-    assert e.output_file == "framework/CMakeFiles/FrameworkTestUtils.dir/FrameworkTestUtils/src/CommunicationSystemMock.cpp.o"
-    assert e.absolute_output_file == "/base/build/framework/CMakeFiles/FrameworkTestUtils.dir/FrameworkTestUtils/src/CommunicationSystemMock.cpp.o"
+    assert e.output_file == "framework/CMakeFiles/framework-test-utils.dir/framework-test-utils/src/CommunicationSystemMock.cpp.o"
+    assert e.absolute_output_file == "/base/build/framework/CMakeFiles/framework-test-utils.dir/framework-test-utils/src/CommunicationSystemMock.cpp.o"
     assert e.project_root is None
     assert e.compdb_path == __file__
 
@@ -98,7 +98,7 @@ def test_can_load_compdb_from_file():
         entries = compilationdb.load_from_file(f.name)
 
         assert len(entries) == 2
-        assert entries[0].file == "/base/framework/FrameworkTestUtils/src/CommunicationSystemMock.cpp"
+        assert entries[0].file == "/base/framework/framework-test-utils/src/CommunicationSystemMock.cpp"
         assert entries[0].compdb_path == f.name
         assert entries[1].file == "/base/external/protocol.c"
         assert entries[1].compdb_path == f.name

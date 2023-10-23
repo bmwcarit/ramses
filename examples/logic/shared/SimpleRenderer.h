@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include "ramses-client.h"
+#include "ramses/client/ramses-client.h"
 
-#include "ramses-renderer-api/RendererConfig.h"
-#include "ramses-renderer-api/DisplayConfig.h"
-#include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses/renderer/RendererConfig.h"
+#include "ramses/renderer/DisplayConfig.h"
+#include "ramses/renderer/RamsesRenderer.h"
+#include "ramses/renderer/RendererSceneControl.h"
+#include "ramses/renderer/IRendererEventHandler.h"
 
 #include <memory>
 #include <vector>
