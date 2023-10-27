@@ -9,7 +9,7 @@
 set( EGL_FOUND FALSE )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    # Windows does not suppot EGL natively
+    # Windows does not support EGL natively
 
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "Android")
     find_path(EGL_INCLUDE_DIRS EGL/egl.h

@@ -21,7 +21,7 @@
 // The magic of these tests is that they must show a significant difference in the output picture, when the wrong sampling mode is
 // enabled. On the other side they must be stable across different OpenGL implementations in different platforms.
 // Testing the minification modes, means that multiple texels must map to a single pixel, so the difference between right and wrong
-// really lies in single pixels values. This tests are solely 2D, and are carefully choosen for stable output, although dealing in
+// really lies in single pixels values. This tests are solely 2D, and are carefully chosen for stable output, although dealing in
 // the sub-pixel ranges.
 // The output picture of the tests are looking quite synthetic - stripes and dotted pixel patterns - so not trivial to see
 // why it must look like that, that's why the expected result is explained in the createGeometry methods for the different modes.

@@ -307,7 +307,7 @@ namespace ramses::internal
                 const bool enableStatus = resourceUploadRenderBackend->getContext().enable();
                 successResourceUploadThread.set_value(enableStatus);
 
-                //block till main context is enabled, to make sure both got enabled succesfully at the same time
+                //block till main context is enabled, to make sure both got enabled successfully at the same time
                 //before the resource upload render backend gets destroyed
                 EXPECT_TRUE(successMainThread.get_future().get());
                 platform->destroyResourceUploadRenderBackend();
@@ -380,7 +380,7 @@ namespace ramses::internal
                     return;
                 }
 
-                //unblock enalbe context in main thread
+                //unblock enable context in main thread
                 successCreation.set_value(true);
 
                 //block till main thread enables context

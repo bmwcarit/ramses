@@ -67,7 +67,7 @@ option(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION         "Enable generation of fl
 option(ramses-sdk_USE_IMAGEMAGICK                       "Enable tests depending on image magick compare" OFF)
 
 # find options
-option(ramses-sdk_ALLOW_PLATFORM_GLM                    "Enable to search for platform provided OpenGL Math libary (glm)." ON)
+option(ramses-sdk_ALLOW_PLATFORM_GLM                    "Enable to search for platform provided OpenGL Math library (glm)." ON)
 option(ramses-sdk_ALLOW_PLATFORM_FREETYPE               "Enable to search for platform provided freetype and harfbuzz." ON)
 option(ramses-sdk_ALLOW_CUSTOM_FREETYPE                 "Allow usage of custom freetype and harfbuzz if platform provided one was not found." ON)
 option(ramses-sdk_ALLOW_PLATFORM_LZ4                    "Enable to search for platform provided lz4" ON)

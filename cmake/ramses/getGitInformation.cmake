@@ -6,7 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-# use predefined values in dependant repositories
+# use predefined values in dependent repositories
 if (EXISTS "${PROJECT_SOURCE_DIR}/originalGitInformation.txt")
     file(READ "${PROJECT_SOURCE_DIR}/originalGitInformation.txt" GIT_INFO_FILE_CONTENT)
     string(REGEX REPLACE "\n" ";" GIT_INFO_FILE_CONTENT "${GIT_INFO_FILE_CONTENT}")
@@ -47,7 +47,7 @@ else()
 endif()
 
 if (NOT GIT_COMMIT_HASH OR NOT GIT_COMMIT_COUNT)
-    message(STATUS "Could not determin git info. Use default values.")
+    message(STATUS "Could not determine git info. Use default values.")
     set(GIT_COMMIT_HASH "(unknown)")
     set(GIT_COMMIT_COUNT "0")
 endif()
