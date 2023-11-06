@@ -63,7 +63,7 @@ def main():
         # TODO: remove, these are a tests/demos, not needed in the package
         r"^bin/ramses-client-test$",
         r"^bin/ramses-framework-test$",
-        r"^bin/ramses-logic-viewer-test$",
+        r"^bin/ramses-viewer-test$",
         r"^bin/ivi-gears$",
         r"^bin/ivi-simple-dmabuf-egl$",
     ]
@@ -81,17 +81,17 @@ def main():
                 raise Exception(f"Unrecognized platform {p}, must choose one from {known_platforms}")
 
         expectNonHeaderFiles += [
-            r"^bin/ramses-logic-viewer$",
             # TODO: remove, these are a tests/demos, not needed in the package
             r"^bin/ramses-renderer-lib-test$",
             r"^bin/ramses-renderer-test$",
             r"^bin/ramses-cli-test$",
-            r"^bin/ramses-logic-viewer-gui-test$",
+            r"^bin/ramses-viewer-gui-test$",
             r"^lib/libramses-shared-lib\.so$",
             r"^lib/libramses-shared-lib\.so\.\d+\.\d+$",
             # TODO: These files should be packaged separately - maybe as a tools package?
             r"^bin/ramses-renderer-standalone$",
-            r"^bin/ramses-scene-viewer$",
+            r"^bin/ramses-viewer$",
+            r"^bin/ramses-viewer-headless$",
             r"^bin/ramses-stream-viewer$",
             # TODO: remove, these are a tests/demos, not needed in the package
             r"^bin/ramses-test-client$",
@@ -129,7 +129,7 @@ def main():
         expectNonHeaderFiles += [
             r"^lib/cmake/ramses-shared-lib-headless-\d+\.\d+/ramses-shared-lib-headlessConfigVersion\.cmake$",
             r"^lib/cmake/ramses-shared-lib-headless-\d+\.\d+/ramses-shared-lib-headlessConfig\.cmake$",
-            r"^bin/ramses-logic-viewer-headless$",
+            r"^bin/ramses-viewer-headless$",
         ]
 
     installPath = Path(args.install_dir)

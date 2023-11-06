@@ -492,7 +492,7 @@ how many nodes were needed to be updated and if the topology could be improved s
 to only the necessary nodes.
 
 .. note::
-    An easy way to quickly get insight what happens inside a logic network is to use the :ref:`GUI viewer <ramses-logic-viewer>`.
+    An easy way to quickly get insight what happens inside a logic network is to use the :ref:`GUI viewer <ramses-viewer>`.
     The viewer displays the stats reported by the :class:`ramses::LogicEngineReport` dynamically or statically over multiple
     update cycles.
 

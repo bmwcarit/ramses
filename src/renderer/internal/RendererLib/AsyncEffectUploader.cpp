@@ -15,18 +15,18 @@
 #include "internal/RendererLib/PlatformInterface/IPlatform.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include "internal/Watchdog/IThreadAliveNotifier.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <algorithm>
 
 namespace ramses::internal
 {
-    AsyncEffectUploader::AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, int logPrefixID)
+    AsyncEffectUploader::AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, DisplayHandle display)
         : m_platform(platform)
         , m_renderBackend(renderBackend)
-        , m_thread{ fmt::format("R_EffUpload{}", logPrefixID) }
+        , m_thread{ fmt::format("EffUpload{}", display) }
         , m_notifier(notifier)
         , m_aliveIdentifier(notifier.registerThread())
-        , m_logPrefixID{ logPrefixID }
+        , m_displayHandle{ display }
     {
     }
 
@@ -173,8 +173,6 @@ namespace ramses::internal
 
     void AsyncEffectUploader::run()
     {
-        ThreadLocalLog::SetPrefix(m_logPrefixID);
-
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader creating render backend for resource uploading");
         auto resourceUploadRenderBackend = m_platform.createResourceUploadRenderBackend();
         if (!resourceUploadRenderBackend)

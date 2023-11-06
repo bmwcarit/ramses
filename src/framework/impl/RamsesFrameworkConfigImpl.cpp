@@ -163,6 +163,16 @@ namespace ramses::internal
         m_periodicLogsEnabled = (periodicLogTimeout > 0);
     }
 
+    void RamsesFrameworkConfigImpl::setLoggingInstanceName(std::string_view instanceName)
+    {
+        m_loggingInstanceName = instanceName;
+    }
+
+    const std::string& RamsesFrameworkConfigImpl::getLoggingInstanceName() const
+    {
+        return m_loggingInstanceName;
+    }
+
     bool RamsesFrameworkConfigImpl::setParticipantGuid(uint64_t guid)
     {
         m_userProvidedGuid = Guid(guid);

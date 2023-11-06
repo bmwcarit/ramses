@@ -20,9 +20,9 @@ namespace ramses
     {
     }
 
-    bool Texture2DBuffer::updateData(size_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const void* data)
+    bool Texture2DBuffer::updateData(size_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const std::byte* data)
     {
-        const bool status = m_impl.setData(static_cast<const std::byte*>(data), mipLevel, offsetX, offsetY, width, height);
+        const bool status = m_impl.setData(data, mipLevel, offsetX, offsetY, width, height);
         LOG_HL_CLIENT_API6(status, LOG_API_GENERIC_PTR_STRING(data), mipLevel, offsetX, offsetY, width, height);
         return status;
     }

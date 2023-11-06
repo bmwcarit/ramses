@@ -298,9 +298,9 @@ namespace ramses::internal
         ASSERT_FALSE(saveToFile("LogicEngine.bin"));
 
         ASSERT_EQ(SCENE_ISSUES + 3u, messages.size());
-        EXPECT_EQ("Saving logic engine content with manually updated binding values without calling update() will result in those values being lost!", messages[0]);
-        EXPECT_EQ("[binding [LogicObject ScnObjId=9]] Node [binding] has no ingoing links! Node should be deleted or properly linked!", messages[1]);
-        EXPECT_EQ("Failed to saveToFile() because validation errors were encountered! Refer to the documentation of saveToFile() for details how to address these gracefully.", messages.back());
+        EXPECT_EQ("R.main: Saving logic engine content with manually updated binding values without calling update() will result in those values being lost!", messages[0]);
+        EXPECT_EQ("R.main: [binding [LogicObject ScnObjId=9]] Node [binding] has no ingoing links! Node should be deleted or properly linked!", messages[1]);
+        EXPECT_EQ("R.main: Failed to saveToFile() because validation errors were encountered! Refer to the documentation of saveToFile() for details how to address these gracefully.", messages.back());
         EXPECT_EQ(ELogLevel::Warn, messageTypes[0]);
         EXPECT_EQ(ELogLevel::Warn, messageTypes[1]);
         EXPECT_EQ(ELogLevel::Error, messageTypes.back());

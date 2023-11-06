@@ -10,14 +10,10 @@
 #include "gtest/gtest.h"
 
 #include "internal/PlatformAbstraction/PlatformConsole.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 int main(int argc, char* argv[])
 {
     testing::InitGoogleMock(&argc, argv);
-
-    // set log prefix for all tests
-    ramses::internal::ThreadLocalLog::SetPrefix(1);
 
     return RUN_ALL_TESTS();
 }

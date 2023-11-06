@@ -11,7 +11,6 @@
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
 #include "WindowEventHandlerMock.h"
 #include "RenderBackendMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -19,13 +18,6 @@ namespace ramses::internal
 {
     class APlatformTest : public Test
     {
-    public:
-        static void SetUpTestSuite()
-        {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-        }
-
     protected:
         IRenderBackend* createRenderBackend(Platform_BaseMock& platform)
         {

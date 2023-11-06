@@ -7,9 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "impl/RenderBufferImpl.h"
-#include "internal/SceneGraph/Scene/ClientScene.h"
 #include "impl/TextureUtils.h"
 #include "impl/TextureEnumsImpl.h"
+#include "internal/SceneGraph/Scene/ClientScene.h"
 
 namespace ramses::internal
 {
@@ -36,13 +36,11 @@ namespace ramses::internal
 
     uint32_t RenderBufferImpl::getWidth() const
     {
-        assert(m_renderBufferHandle.isValid());
         return getIScene().getRenderBuffer(m_renderBufferHandle).width;
     }
 
     uint32_t RenderBufferImpl::getHeight() const
     {
-        assert(m_renderBufferHandle.isValid());
         return getIScene().getRenderBuffer(m_renderBufferHandle).height;
     }
 
@@ -58,7 +56,6 @@ namespace ramses::internal
 
     uint32_t RenderBufferImpl::getSampleCount() const
     {
-        assert(m_renderBufferHandle.isValid());
         return getIScene().getRenderBuffer(m_renderBufferHandle).sampleCount;
     }
 

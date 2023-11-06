@@ -9,7 +9,7 @@
 #include "internal/RendererLib/ResourceCachedScene.h"
 #include "internal/RendererLib/IResourceDeviceHandleAccessor.h"
 #include "internal/RendererLib/TextureLinkCachedScene.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

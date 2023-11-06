@@ -12,7 +12,6 @@
 #include "ramses/renderer/DisplayConfig.h"
 #include "impl/DisplayConfigImpl.h"
 #include "internal/RendererLib/PlatformInterface/IWindowEventHandler.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 #ifdef ramses_sdk_ENABLE_WINDOW_TYPE_WINDOWS
 #include "internal/Platform/Windows/Window_Windows.h"
@@ -74,12 +73,10 @@ namespace ramses::internal
         dispConfig.setWindowRectangle(WindowX, WindowY, WindowWidth, WindowHeight);
 
 #ifdef ramses_sdk_ENABLE_WINDOW_TYPE_WINDOWS
-        ThreadLocalLog::SetPrefix(1);
         Window_Windows window(dispConfigExternalWindow.impl().getInternalDisplayConfig(), dummyEventHandler, 1);
         ASSERT_TRUE(window.init());
         dispConfig.setWindowsWindowHandle(window.getNativeWindowHandle());
 #elif ramses_sdk_ENABLE_WINDOW_TYPE_X11
-        ThreadLocalLog::SetPrefix(1);
         Window_X11 window(dispConfigExternalWindow.impl().getInternalDisplayConfig(), dummyEventHandler, 1);
         ASSERT_TRUE(window.init());
         dispConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});

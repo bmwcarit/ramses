@@ -31,7 +31,7 @@ namespace ramses::internal
     class AsyncEffectUploader : private Runnable
     {
     public:
-        AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, int logPrefixID);
+        AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, DisplayHandle display);
         ~AsyncEffectUploader() override;
 
         bool createResourceUploadRenderBackendAndStartThread();
@@ -58,8 +58,8 @@ namespace ramses::internal
         std::promise<bool> m_creationSuccess;
 
         IThreadAliveNotifier& m_notifier;
-        const uint64_t        m_aliveIdentifier;
+        const uint64_t m_aliveIdentifier;
 
-        const int m_logPrefixID;
+        const DisplayHandle m_displayHandle;
     };
 }

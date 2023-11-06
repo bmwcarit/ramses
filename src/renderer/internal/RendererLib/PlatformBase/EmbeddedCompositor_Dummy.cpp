@@ -10,7 +10,7 @@
 #include "internal/RendererLib/RendererLogContext.h"
 #include "internal/RendererLib/PlatformInterface/ITextureUploadingAdapter.h"
 #include "internal/RendererLib/Types.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

@@ -15,7 +15,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandBuffer.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandCallbackResource.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandBufferResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal
@@ -97,7 +97,7 @@ namespace ramses::internal
             const auto width = res.getWidth();
             const auto height = res.getHeight();
             auto* wlres = res.getLowLevelHandle();
-            LOG_COMMON_RP(CONTEXT_RENDERER, level, "WaylandSurface::surfaceAttach{}: {} shm:{} x:{} y:{} w:{} h:{} res:{}",
+            LOG_COMMON_P(CONTEXT_RENDERER, level, "WaylandSurface::surfaceAttach{}: {} shm:{} x:{} y:{} w:{} h:{} res:{}",
                           stage, getIviSurfaceId(), isShm, x, y, width, height, static_cast<void*>(wlres));
         }
     }

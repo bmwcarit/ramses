@@ -71,8 +71,8 @@ namespace ramses::internal
         saveToFile("noWarnings.ramses");
 
         ASSERT_EQ(warnings.size(), SCENE_ISSUES + 2u);
-        EXPECT_EQ(warnings[0], "Saving logic engine content with manually updated binding values without calling update() will result in those values being lost!");
-        EXPECT_EQ(warnings[1], "[NodeBinding [LogicObject ScnObjId=9]] Node [NodeBinding] has no ingoing links! Node should be deleted or properly linked!");
+        EXPECT_EQ(warnings[0], "R.main: Saving logic engine content with manually updated binding values without calling update() will result in those values being lost!");
+        EXPECT_EQ(warnings[1], "R.main: [NodeBinding [LogicObject ScnObjId=9]] Node [NodeBinding] has no ingoing links! Node should be deleted or properly linked!");
 
         // Fixing the problems -> removes the warning
         warnings.clear();
@@ -111,7 +111,7 @@ namespace ramses::internal
 
         // Disabling the validation causes a warning
         ASSERT_EQ(infoLogs.size(), 1u);
-        EXPECT_EQ(infoLogs[0], "Validation before saving was disabled during save*() calls! Possible content issues will not yield further warnings.");
+        EXPECT_EQ(infoLogs[0], "R.main: Validation before saving was disabled during save*() calls! Possible content issues will not yield further warnings.");
         infoLogs.clear();
 
         // Content warning doesn't show up because disabled

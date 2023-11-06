@@ -17,7 +17,7 @@
 #include "internal/SceneGraph/SceneAPI/EDataBufferType.h"
 #include "internal/Components/ManagedResource.h"
 #include "internal/SceneGraph/Resource/ResourceInfo.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/TextureMathUtils.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include <memory>

@@ -204,4 +204,11 @@ namespace ramses::internal
     {
         return m_data;
     }
+
+    std::vector<std::byte> Image::getDataAsByte() const
+    {
+        std::vector<std::byte> data(m_data.size());
+        std::transform(m_data.begin(), m_data.end(), data.begin(), [](uint8_t x) { return static_cast<std::byte>(x); });
+        return data;
+    }
 }

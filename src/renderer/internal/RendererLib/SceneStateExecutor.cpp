@@ -11,7 +11,7 @@
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/Components/ISceneGraphConsumerComponent.h"
 #include "internal/RendererLib/RendererEventCollector.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/Macros.h"
 #include "internal/RendererLib/IRendererSceneEventSender.h"
 

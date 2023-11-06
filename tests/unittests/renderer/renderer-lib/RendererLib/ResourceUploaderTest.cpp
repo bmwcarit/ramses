@@ -17,7 +17,6 @@
 #include "internal/RendererLib/ResourceDescriptor.h"
 #include "internal/Components/ResourceDeleterCallingCallback.h"
 #include "internal/Core/Utils/ThreadBarrier.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include <thread>
 
 namespace ramses::internal
@@ -87,8 +86,6 @@ namespace ramses::internal
             : uploader(true)
             , dummyManagedResourceCallback(managedResourceDeleter)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
         }
 
         StrictMock<RenderBackendStrictMock> renderer;
@@ -493,19 +490,16 @@ namespace ramses::internal
 
         ThreadBarrier startBarrier(3);
         std::thread t1([&]() {
-                ThreadLocalLog::SetPrefix(2);
                 startBarrier.wait();
                 uint32_t ramSize = 0;
                 EXPECT_FALSE(uploaderWithBinaryProvider1.uploadResource(renderer, resourceObject1, ramSize).has_value());
             });
         std::thread t2([&]() {
-                ThreadLocalLog::SetPrefix(3);
                 startBarrier.wait();
                 uint32_t ramSize = 0;
                 EXPECT_FALSE(uploaderWithBinaryProvider2.uploadResource(renderer, resourceObject2, ramSize).has_value());
             });
         std::thread t3([&]() {
-                ThreadLocalLog::SetPrefix(4);
                 startBarrier.wait();
                 uint32_t ramSize = 0;
                 EXPECT_FALSE(uploaderWithBinaryProvider3.uploadResource(renderer, resourceObject3, ramSize).has_value());

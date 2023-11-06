@@ -16,6 +16,7 @@
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/ThreadBarrier.h"
 #include "ApiRamshCommandMock.h"
+#include <thread>
 
 using namespace testing;
 
@@ -133,7 +134,7 @@ TEST(ARamsesFramework, SetLogHandler)
 
     RamsesFramework::SetLogHandler([&loggerCalled](auto level, auto context, auto message)
         {
-            if (level == ELogLevel::Warn && context == "RFRA" && message == "SetLogHandlerTest")
+            if (level == ELogLevel::Warn && context == "RFRA" && message == "R.main: SetLogHandlerTest")
             {
                 loggerCalled = true;
             }
@@ -184,5 +185,121 @@ TEST(ARamsesFramework, multipleInstancesCanBeCreatedInParallel)
     }
     for (auto& t : threads)
         t.join();
+}
+
+class ARamsesFrameworkLogging : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        RamsesFramework::SetLogHandler([this](auto /*unused*/, auto /*unused*/, auto message) {
+            m_logMessage = message;
+            });
+    }
+
+    void TearDown() override
+    {
+        RamsesFramework::SetLogHandler(nullptr);
+    }
+
+    std::string m_logMessage;
+};
+
+TEST_F(ARamsesFrameworkLogging, SetLoggingInstanceName)
+{
+    // logging prefix name tests work with static thread_local variables, each test case needs to run in own thread to not affect other test cases
+    std::thread t([&] {
+
+        // initial default
+        LOG_INFO(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("R.main: test", m_logMessage);
+
+        RamsesFrameworkConfig cfg{ EFeatureLevel_Latest };
+        cfg.setLoggingInstanceName("instName");
+        RamsesFramework fw{ cfg };
+
+        LOG_INFO(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("instName.main: test", m_logMessage);
+        LOG_WARN(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("instName.main: test", m_logMessage);
+        LOG_ERROR(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("instName.main: test", m_logMessage);
+
+        });
+    t.join();
+}
+
+TEST_F(ARamsesFrameworkLogging, SetLoggingPrefix)
+{
+    // logging prefix name tests work with static thread_local variables, each test case needs to run in own thread to not affect other test cases
+    std::thread t([&] {
+
+        // init default
+        LOG_INFO(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("R.main: test", m_logMessage);
+        LOG_WARN(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("R.main: test", m_logMessage);
+        LOG_ERROR(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("R.main: test", m_logMessage);
+
+        RamsesLogger::SetPrefixes("I", "T", "A");
+        LOG_INFO(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("I.T.A: test", m_logMessage);
+        LOG_WARN(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("I.T.A: test", m_logMessage);
+        LOG_ERROR(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("I.T.A: test", m_logMessage);
+
+        });
+    t.join();
+}
+
+TEST_F(ARamsesFrameworkLogging, SetLoggingPrefixPerThread)
+{
+    // logging prefix name tests work with static thread_local variables, each test case needs to run in own thread to not affect other test cases
+    std::thread t([&] {
+
+        RamsesFrameworkConfig cfg{ EFeatureLevel_Latest };
+        cfg.setLoggingInstanceName("instName1");
+        RamsesFramework fw1{ cfg };
+        LOG_INFO(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("instName1.main: test", m_logMessage);
+
+        std::thread t0([&] {
+            cfg.setLoggingInstanceName("instName2");
+            RamsesFramework fw2{ cfg };
+            LOG_INFO(CONTEXT_FRAMEWORK, "test");
+            EXPECT_EQ("instName2.main: test", m_logMessage);
+
+            std::thread t1([&] {
+                cfg.setLoggingInstanceName("instName3");
+                RamsesFramework fw3{ cfg };
+                LOG_INFO(CONTEXT_FRAMEWORK, "test");
+                EXPECT_EQ("instName3.main: test", m_logMessage);
+
+                std::thread t2([&] {
+                    cfg.setLoggingInstanceName("instName4");
+                    RamsesFramework fw4{ cfg };
+                    LOG_INFO(CONTEXT_FRAMEWORK, "test");
+                    EXPECT_EQ("instName4.main: test", m_logMessage);
+                    });
+                t2.join();
+
+                LOG_INFO(CONTEXT_FRAMEWORK, "test");
+                EXPECT_EQ("instName3.main: test", m_logMessage);
+                });
+            t1.join();
+
+            LOG_INFO(CONTEXT_FRAMEWORK, "test");
+            EXPECT_EQ("instName2.main: test", m_logMessage);
+            });
+        t0.join();
+
+        // main thread not affected
+        LOG_INFO(CONTEXT_FRAMEWORK, "test");
+        EXPECT_EQ("instName1.main: test", m_logMessage);
+
+        });
+    t.join();
 }
 }

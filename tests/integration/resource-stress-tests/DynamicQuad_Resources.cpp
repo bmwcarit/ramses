@@ -78,19 +78,19 @@ namespace ramses::internal
 
         const uint32_t textureWidth = 64;
         const uint32_t textureHeight = 32;
-        std::unique_ptr<uint8_t[]> rawData(new uint8_t[textureWidth * textureHeight * 3]); // NOLINT(modernize-avoid-c-arrays)
+        MipLevelData rawData(textureWidth * textureHeight * 3);
 
         for (uint32_t x = 0; x < textureWidth; ++x)
         {
             for (uint32_t y = 0; y < textureHeight; ++y)
             {
-                rawData[3 * (y * textureWidth + x) + 0] = static_cast<uint8_t>(TestRandom::Get(0, 255));
-                rawData[3 * (y * textureWidth + x) + 1] = static_cast<uint8_t>(TestRandom::Get(0, 255));
-                rawData[3 * (y * textureWidth + x) + 2] = static_cast<uint8_t>(TestRandom::Get(0, 255));
+                rawData[3 * (y * textureWidth + x) + 0] = static_cast<std::byte>(TestRandom::Get(0, 255));
+                rawData[3 * (y * textureWidth + x) + 1] = static_cast<std::byte>(TestRandom::Get(0, 255));
+                rawData[3 * (y * textureWidth + x) + 2] = static_cast<std::byte>(TestRandom::Get(0, 255));
             }
         }
 
-        const std::vector<MipLevelData> textureData{ MipLevelData(textureWidth * textureHeight * 3, rawData.get()) };
+        const std::vector<MipLevelData> textureData{ rawData };
         resources.texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, textureWidth, textureHeight, textureData, false, {});
 
         resources.textureSampler = m_scene.createTextureSampler(

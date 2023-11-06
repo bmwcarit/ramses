@@ -43,12 +43,8 @@ namespace ramses::internal
         {
             uint32_t childrenCount = 0u;
             NodeHandle nodeHandle;
-            std::string objectName;
-            uint64_t objectId = 0;
             action.read(childrenCount);
             action.read(nodeHandle);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateNode(childrenCount, nodeHandle), nodeHandle);
             break;
         }
@@ -103,12 +99,8 @@ namespace ramses::internal
         {
             DataLayoutHandle dataLayout;
             DataInstanceHandle diHandle;
-            std::string objectName;
-            uint64_t objectId = 0;
             action.read(dataLayout);
             action.read(diHandle);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateDataInstance(dataLayout, diHandle), diHandle);
             break;
         }
@@ -428,14 +420,10 @@ namespace ramses::internal
         {
             uint32_t renderableCount = 0u;
             uint32_t nestedGroupCount = 0u;
-            std::string objectName;
-            uint64_t objectId = 0;
             RenderGroupHandle renderGroup;
             action.read(renderableCount);
             action.read(nestedGroupCount);
             action.read(renderGroup);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateRenderGroup(renderableCount, nestedGroupCount, renderGroup), renderGroup);
             break;
         }
@@ -677,12 +665,8 @@ namespace ramses::internal
         {
             uint32_t renderGroupCount = 0u;
             RenderPassHandle passHandle;
-            std::string objectName;
-            uint64_t objectId = 0;
             action.read(renderGroupCount);
             action.read(passHandle);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateRenderPass(renderGroupCount, passHandle), passHandle);
             break;
         }
@@ -806,7 +790,7 @@ namespace ramses::internal
         case ESceneActionId::SetPickableObjectEnabled:
         {
             PickableObjectHandle pickableHandle;
-            bool           isEnabled = false;
+            bool isEnabled = false;
             action.read(pickableHandle);
             action.read(isEnabled);
             scene.setPickableObjectEnabled(pickableHandle, isEnabled);
@@ -817,13 +801,9 @@ namespace ramses::internal
             BlitPassHandle passHandle;
             RenderBufferHandle sourceRenderbufferHandle;
             RenderBufferHandle destinationRenderbufferHandle;
-            std::string objectName;
-            uint64_t objectId = 0;
             action.read(sourceRenderbufferHandle);
             action.read(destinationRenderbufferHandle);
             action.read(passHandle);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateBlitPass(sourceRenderbufferHandle, destinationRenderbufferHandle, passHandle), passHandle);
             break;
         }
@@ -873,8 +853,6 @@ namespace ramses::internal
         {
             TextureSamplerHandle samplerHandle;
             TextureSampler sampler;
-            std::string objectName;
-            uint64_t objectId = 0;
 
             action.read(samplerHandle);
             action.read(sampler.states.m_addressModeU);
@@ -894,9 +872,6 @@ namespace ramses::internal
                 action.read(sampler.contentHandle);
             }
 
-            action.read(objectName);
-            action.read(objectId);
-
             AssertHandle(scene.allocateTextureSampler(sampler, samplerHandle), samplerHandle);
             break;
         }
@@ -910,11 +885,7 @@ namespace ramses::internal
         case ESceneActionId::AllocateRenderTarget:
         {
             RenderTargetHandle renderTargetHandle;
-            std::string objectName;
-            uint64_t objectId = 0;
             action.read(renderTargetHandle);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateRenderTarget(renderTargetHandle), renderTargetHandle);
             break;
         }
@@ -939,8 +910,6 @@ namespace ramses::internal
             RenderBufferHandle handle;
             RenderBuffer renderBuffer;
             uint32_t enumInt = 0;
-            std::string objectName;
-            uint64_t objectId = 0;
 
             action.read(renderBuffer.width);
             action.read(renderBuffer.height);
@@ -950,8 +919,6 @@ namespace ramses::internal
             action.read(enumInt);
             renderBuffer.accessMode = static_cast<ERenderBufferAccessMode>(enumInt);
             action.read(renderBuffer.sampleCount);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateRenderBuffer(renderBuffer, handle), handle);
             break;
         }
@@ -1020,14 +987,10 @@ namespace ramses::internal
             uint32_t dataType = 0;
             uint32_t maximumSizeInBytes = 0;
             DataBufferHandle handle;
-            std::string objectName;
-            uint64_t objectId = 0;
             action.read(dataBufferType);
             action.read(dataType);
             action.read(maximumSizeInBytes);
             action.read(handle.asMemoryHandleReference());
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateDataBuffer(static_cast<EDataBufferType>(dataBufferType), static_cast<EDataType>(dataType), maximumSizeInBytes, handle), handle);
             break;
         }
@@ -1057,8 +1020,6 @@ namespace ramses::internal
             uint32_t mipLevelCount = 0;
             MipMapDimensions mipMapDimensions;
             TextureBufferHandle handle;
-            std::string objectName;
-            uint64_t objectId = 0;
 
             action.read(textureFormat);
             action.read(mipLevelCount);
@@ -1072,8 +1033,6 @@ namespace ramses::internal
                 mipMapDimensions.push_back({ width, height });
             }
             action.read(handle);
-            action.read(objectName);
-            action.read(objectId);
 
             AssertHandle(scene.allocateTextureBuffer(static_cast<EPixelStorageFormat>(textureFormat), mipMapDimensions, handle), handle);
             break;
@@ -1112,12 +1071,8 @@ namespace ramses::internal
         {
             SceneReferenceHandle handle;
             SceneId sceneId;
-            std::string objectName;
-            uint64_t objectId = 0;
             action.read(handle);
             action.read(sceneId);
-            action.read(objectName);
-            action.read(objectId);
             AssertHandle(scene.allocateSceneReference(sceneId, handle), handle);
             break;
         }

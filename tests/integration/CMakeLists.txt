@@ -13,6 +13,6 @@ add_subdirectory(smoke-tests)
 add_subdirectory(resource-stress-tests)
 add_subdirectory(render-backend-tests)
 
-if(ramses-sdk_ENABLE_LOGIC AND ramses-sdk_USE_IMAGEMAGICK AND ramses-sdk_BUILD_FULL_SHARED_LIB)
-    add_subdirectory(logic-viewer-tests)
+if(ramses-sdk_ENABLE_LOGIC AND ramses-sdk_USE_IMAGEMAGICK)
+    add_subdirectory(viewer-tests)
 endif()

@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/RendererLib/PlatformBase/RendererLimits.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

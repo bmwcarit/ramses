@@ -9,6 +9,7 @@
 #pragma once
 
 #include "internal/RendererLib/Types.h"
+#include "internal/RendererLib/RendererCommands.h"
 #include "internal/SceneGraph/SceneAPI/SceneId.h"
 #include "internal/SceneGraph/SceneAPI/TextureEnums.h"
 #include "internal/SceneGraph/SceneAPI/DataSlot.h"
@@ -51,7 +52,7 @@ namespace ramses::internal
         virtual void setLimitFlushesForceApply(size_t limitForPendingFlushesForceApply) = 0;
         virtual void setLimitFlushesForceUnsubscribe(size_t limitForPendingFlushesForceUnsubscribe) = 0;
         virtual void setSkippingOfUnmodifiedScenes(bool enable) = 0;
-        virtual void logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const = 0;
+        virtual void logRendererInfo(const RendererCommand::LogInfo& cmd) const = 0;
 
         virtual ~IRendererSceneUpdater() = default;
     };

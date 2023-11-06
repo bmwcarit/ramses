@@ -12,7 +12,6 @@
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "TestEqualHelper.h"
 #include "SceneAllocateHelper.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "internal/Core/Math3d/Rotation.h"
 #include "glm/gtx/transform.hpp"
 
@@ -76,8 +75,6 @@ namespace ramses::internal
             , consumer2ndLevelSceneConsumerId(5u)
             , consumerWithoutTransformsSceneConsumerId(6u)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
             setupNodesAndDataSlots();
         }
 

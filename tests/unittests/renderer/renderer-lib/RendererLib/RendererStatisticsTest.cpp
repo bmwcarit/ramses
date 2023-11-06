@@ -39,7 +39,7 @@ namespace ramses::internal
         stats.frameFinished(2u);
         stats.frameFinished(3u);
         stats.frameFinished(4u);
-        EXPECT_EQ(2u, stats.getDrawCallsPerFrame());
+        EXPECT_EQ(3u, stats.getDrawCallsPerFrame());
 
         stats.reset();
         EXPECT_EQ(0u, stats.getDrawCallsPerFrame());
@@ -409,7 +409,7 @@ namespace ramses::internal
             EXPECT_THAT(logOutput(), HasSubstr("Avg framerate: "));
             EXPECT_THAT(logOutput(), HasSubstr("FPS [minFrameTime "));
             EXPECT_THAT(logOutput(), HasSubstr("us, maxFrameTime "));
-            EXPECT_THAT(logOutput(), HasSubstr("], drawcallsPerFrame 25, numFrames 4"));
+            EXPECT_THAT(logOutput(), HasSubstr("], drawCalls (0/100/25), numFrames 4"));
             EXPECT_THAT(logOutput(), HasSubstr("resUploaded 2 (79 B)"));
             EXPECT_THAT(logOutput(), HasSubstr("shadersCompiled 2"));
             EXPECT_THAT(logOutput(), HasSubstr("for total ms:1"));

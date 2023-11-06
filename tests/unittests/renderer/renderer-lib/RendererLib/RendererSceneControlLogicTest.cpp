@@ -9,7 +9,6 @@
 #include "gmock/gmock.h"
 #include "RendererSceneStateControlMock.h"
 #include "internal/RendererLib/RendererSceneControlLogic.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -21,8 +20,6 @@ namespace ramses::internal
         ARendererSceneControlLogic()
             : m_logic(m_logicOutput)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
         }
 
         void SetUp() override

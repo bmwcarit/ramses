@@ -21,6 +21,6 @@ namespace ramses::internal
 
     void UserLogAppender::log(const LogMessage& logMessage)
     {
-        m_func(logMessage.getLogLevel(), logMessage.getContext().getContextId(), logMessage.getStream().data());
+        m_func(logMessage.m_logLevel, logMessage.m_context.getContextId(), logMessage.m_message);
     }
 }

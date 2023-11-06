@@ -29,7 +29,6 @@
 #include "EmbeddedCompositingManagerMock.h"
 #include "RendererSceneEventSenderMock.h"
 #include "RendererSceneUpdaterMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 namespace ramses::internal {
 
@@ -43,9 +42,6 @@ namespace ramses::internal {
             , m_sceneStateExecutor(m_renderer, m_sceneEventSender, m_rendererEventCollector)
             , m_commandExecutor(m_renderer, m_commandBuffer, m_sceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             // enable SC
             ON_CALL(m_renderer.m_platform, getSystemCompositorController()).WillByDefault(Return(&m_renderer.m_platform.systemCompositorControllerMock));
         }
@@ -490,8 +486,18 @@ namespace ramses::internal {
 
     TEST_F(ARendererCommandExecutor, triggersLogRinfo)
     {
-        m_commandBuffer.enqueueCommand(RendererCommand::LogInfo{ ERendererLogTopic::Displays, true, NodeHandle{ 6u } });
-        EXPECT_CALL(m_sceneUpdater, logRendererInfo(ERendererLogTopic::Displays, true, NodeHandle{ 6u }));
+        const RendererCommand::LogInfo cmd{ ERendererLogTopic::Displays, true, NodeHandle{ 6u }, true, false, ELoopMode::UpdateOnly, std::chrono::microseconds{ 13 } };
+        m_commandBuffer.enqueueCommand(cmd);
+        EXPECT_CALL(m_sceneUpdater, logRendererInfo(_)).WillOnce([&cmd](const RendererCommand::LogInfo& c) {
+            EXPECT_EQ(cmd.topic, c.topic);
+            EXPECT_EQ(cmd.verbose, c.verbose);
+            EXPECT_EQ(cmd.nodeFilter, c.nodeFilter);
+            EXPECT_EQ(cmd.displaysThreaded, c.displaysThreaded);
+            EXPECT_EQ(cmd.displaysThreadsRunning, c.displaysThreadsRunning);
+            EXPECT_EQ(cmd.rendererLoopMode, c.rendererLoopMode);
+            EXPECT_EQ(cmd.minFrameTime, c.minFrameTime);
+            });
+
         doCommandExecutorLoop();
     }
 }

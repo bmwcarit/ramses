@@ -52,5 +52,10 @@ namespace ramses::internal
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) safe to get std::byte*
             return absl::MakeSpan(reinterpret_cast<const std::byte*>(dataBlob), blobSize) == theSpan;
         }
+
+        inline const std::byte* ConvertToBytes(std::initializer_list<uint32_t> values)
+        {
+            return reinterpret_cast<const std::byte*>(std::data(values));
+        }
     }
 }

@@ -1150,25 +1150,25 @@ namespace ramses::internal
 
         EXPECT_FALSE(int64Property->set(std::numeric_limits<int64_t>::max()));
         EXPECT_EQ(logType, ELogLevel::Error);
-        EXPECT_EQ(logMessage, fmt::format("Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
+        EXPECT_EQ(logMessage, fmt::format("R.main: Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
             std::numeric_limits<int64_t>::max()).c_str());
 
         EXPECT_FALSE(int64Property->set(std::numeric_limits<int64_t>::min()));
         EXPECT_EQ(logType, ELogLevel::Error);
-        EXPECT_EQ(logMessage, fmt::format("Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
+        EXPECT_EQ(logMessage, fmt::format("R.main: Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
             std::numeric_limits<int64_t>::min()).c_str());
 
         static constexpr auto maxIntegerAsDouble = static_cast<int64_t>(1LLU << 53u);
         EXPECT_TRUE(int64Property->set(maxIntegerAsDouble));
         EXPECT_FALSE(int64Property->set(maxIntegerAsDouble + 1));
         EXPECT_EQ(logType, ELogLevel::Error);
-        EXPECT_EQ(logMessage, fmt::format("Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
+        EXPECT_EQ(logMessage, fmt::format("R.main: Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
             maxIntegerAsDouble + 1).c_str());
 
         EXPECT_TRUE(int64Property->set(-maxIntegerAsDouble));
         EXPECT_FALSE(int64Property->set(-maxIntegerAsDouble - 1));
         EXPECT_EQ(logType, ELogLevel::Error);
-        EXPECT_EQ(logMessage, fmt::format("Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
+        EXPECT_EQ(logMessage, fmt::format("R.main: Invalid value when setting property 'int64input', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
             -maxIntegerAsDouble - 1).c_str());
     }
 }

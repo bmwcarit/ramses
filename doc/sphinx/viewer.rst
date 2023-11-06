@@ -11,20 +11,20 @@
 .. highlight:: lua
 
 =========================
-ramses-logic-viewer
+ramses-viewer
 =========================
 
 --------
 Synopsis
 --------
 
-**ramses-logic-viewer** [options] <ramsesfile> [<luafile>]
+**ramses-viewer** [options] <ramsesfile> [<luafile>]
 
 -----------
 Description
 -----------
 
-:program:`ramses-logic-viewer` is a tool which can load, configure and display
+:program:`ramses-viewer` is a tool which can load, configure and display
 Ramses (``<ramsesfile>``) binary files alongside with a custom configuration (``<luafile>``).
 It also provides a GUI to inspect the displayed scene.
 
@@ -32,10 +32,10 @@ It also provides a GUI to inspect the displayed scene.
 * ``<luafile>`` is an optional configuration file written in lua to modify the scene view
   (see :ref:`lua_configuration_api` for details)
 * ``<luafile>`` is found in the same path as ``<ramsesfile>`` if not provided as an argument.
-  For auto-detection the file extensions `rlogic` and `lua` are expected.
+  For auto-detection the file extension `lua` is expected.
 * If no ``<luafile>`` is found, the viewer will show the scene and propose to store a default configuration.
 * Display size is auto-detected based on the first camera viewport found in the scene.
-  This can be overridden by the options :option:`ramses-logic-viewer --width` and :option:`ramses-logic-viewer --height`.
+  This can be overridden by the options :option:`ramses-viewer --width` and :option:`ramses-viewer --height`.
 
 The tool's intended use-cases are primarily:
 
@@ -48,12 +48,15 @@ The tool's intended use-cases are primarily:
 Options
 -------
 
-.. program:: ramses-logic-viewer
+.. program:: ramses-viewer
 
-.. option:: --no-offscreen
+.. option:: --gui on|off|overlay|only
 
-   Renders the scene directly to the window's framebuffer. Screenshot size will be the current window size.
-   If switched off (default), the scene is rendered to an offscreen buffer with the initial scene size.
+   Sets the Viewer's gui mode:
+   ``overlay`` (default) renders the scene directly to the window's framebuffer. Screenshot size will be the current window size.
+   ``on`` renders the scene to an offscreen buffer with the initial scene size. Screenshots only capture the scene's offscreen buffer.
+   ``off`` hides the viewer's gui.
+   ``only`` hides the loaded scene. Only the viewer's gui is shown.
 
 .. option:: --exec=<luafunction>
 
@@ -68,7 +71,7 @@ Options
 .. option:: --headless
 
    Runs the viewer without user interface and renderer. This can be useful for CI environments to run tests
-   (:option:`ramses-logic-viewer --exec` :option:`ramses-logic-viewer --exec-lua`).
+   (:option:`ramses-viewer --exec` :option:`ramses-viewer --exec-lua`).
    Screenshots will not work in this mode though.
 
 .. option:: --width WIDTH
@@ -83,9 +86,9 @@ Options
 
    Instructs the renderer to apply multisampling (Valid values: 1, 2, 4, 8)
 
-.. option:: --clear-color R G B A
+.. option:: --clear R,G,B,A
 
-   Sets the display clear color to other than the default black (e.g.: :code:`ramses-logic-viewer --clear-color 0 0.5 0.8 1`)
+   Sets the display clear color to other than the default black (e.g.: :code:`ramses-viewer --clear 0,0.5,0.8,1`)
 
 .. option:: --write-config [filename]
 
@@ -102,7 +105,7 @@ Options
 Lua configuration API
 ==============================================
 
-The :program:`ramses-logic-viewer` exposes a lua module ``rlogic`` that allows to interact with the viewer's
+The :program:`ramses-viewer` exposes a lua module ``rlogic`` that allows to interact with the viewer's
 logic engine instance. ``rlogic`` mimics the Ramses Logic C++ API and provides some extra interfaces to take
 screenshots and define interactive views.
 
@@ -192,7 +195,7 @@ A view is a lua table that contains the following members:
   A string attribute that contains the view's name
 
 ``update(time_ms)``
-  A function that is called for every frame by the :program:`ramses-logic-viewer`.
+  A function that is called for every frame by the :program:`ramses-viewer`.
   The ``time_ms`` parameter is a monotonic time value in milliseconds.
 
 ``description``
@@ -239,7 +242,7 @@ Screenshots
 --------------------------------------------------
 
 Screenshots can be taken by the ``rlogic.screenshot(filename)`` function.
-The :program:`ramses-logic-viewer` will implicitly update the logic state before.
+The :program:`ramses-viewer` will implicitly update the logic state before.
 
 .. code-block:: lua
 
@@ -250,8 +253,9 @@ The :program:`ramses-logic-viewer` will implicitly update the logic state before
 
 .. note::
 
-    By default the Logic Viewer creates an offscreen buffer for the scene.
-    That's why the screenshot's size is independent of the window size and does not contain the Logic Viewer's UI.
+    To exclude the Viewer's UI from the screenshot you can set the :option:`ramses-viewer --gui` to either `on` or `off`.
+    In `on` mode the Viewer creates an offscreen buffer for the scene.
+    That's why the screenshot's size is independent of the window size and does not contain the Viewer's UI.
 
 --------------------------------------------------
 Logic Engine Update
@@ -259,7 +263,7 @@ Logic Engine Update
 
 The logic engine is automatically updated (:cpp:func:`ramses::LogicEngine::update()`) before
 a new frame is drawn or before a screenshot is stored.
-In batch mode (:option:`ramses-logic-viewer --exec` :option:`ramses-logic-viewer --exec-lua`) it's sometimes useful to explicitly update
+In batch mode (:option:`ramses-viewer --exec` :option:`ramses-viewer --exec-lua`) it's sometimes useful to explicitly update
 the logic engine state by calling ``rlogic.update()``:
 
 .. code-block:: lua

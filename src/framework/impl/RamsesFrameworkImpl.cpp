@@ -325,6 +325,7 @@ namespace ramses::internal
 
     std::unique_ptr<RamsesFrameworkImpl> RamsesFrameworkImpl::CreateImpl(const RamsesFrameworkConfig& config)
     {
+        RamsesLogger::SetPrefixes(config.impl().getLoggingInstanceName(), "main");
         GetRamsesLogger().initialize(config.impl().loggerConfig, false, config.impl().getDltApplicationRegistrationEnabled());
 
         Guid myGuid = config.impl().getUserProvidedGuid();

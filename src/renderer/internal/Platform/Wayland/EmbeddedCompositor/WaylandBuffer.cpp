@@ -11,7 +11,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IEmbeddedCompositor_Wayland.h"
 #include "internal/Platform/Wayland/WaylandEGLExtensionProcs.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include "internal/RendererLib/RendererLogContext.h"
 #include <cassert>

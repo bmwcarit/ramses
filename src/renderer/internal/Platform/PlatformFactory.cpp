@@ -9,7 +9,7 @@
 #include "internal/Platform/PlatformFactory.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/RendererLib/RendererConfig.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 #if defined(ramses_sdk_ENABLE_WINDOW_TYPE_WINDOWS)
 #include "internal/Platform/Windows/Platform_Windows_WGL.h"

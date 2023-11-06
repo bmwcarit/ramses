@@ -21,6 +21,11 @@
 
 namespace ramses::internal
 {
+    thread_local std::string RamsesLogger::PrefixInstance = "R";
+    thread_local std::string RamsesLogger::PrefixThread = "main";
+    thread_local std::string RamsesLogger::PrefixAdditional;
+    thread_local std::string RamsesLogger::PrefixCombined = "R.main: ";
+
     RamsesLogger::RamsesLogger()
         : m_isInitialized(false)
         , m_fileTransferContext(createContext("File Transfer Context", "FILE"))
@@ -279,10 +284,12 @@ namespace ramses::internal
         return nullptr;
     }
 
-    void RamsesLogger::log(const LogMessage& msg)
+    void RamsesLogger::log(LogMessage&& msg)
     {
-        if (msg.getStream().size() > 0)
+        if (!msg.m_message.empty())
         {
+            msg.m_message.insert(0, PrefixCombined);
+
             std::lock_guard<std::mutex> guard(m_appenderLock);
             for (auto& appender : m_logAppenders)
             {
@@ -330,5 +337,32 @@ namespace ramses::internal
             m_userLogAppender = std::make_unique<UserLogAppender>(logHandlerFunc);
             m_logAppenders.push_back(m_userLogAppender.get());
         }
+    }
+
+    void RamsesLogger::SetPrefixes(std::string_view instance, std::string_view thread, std::string_view additional)
+    {
+        PrefixInstance = instance;
+        PrefixThread = thread;
+        PrefixAdditional = additional;
+
+        PrefixCombined.clear();
+        if (!PrefixAdditional.empty())
+        {
+            fmt::format_to(std::back_inserter(PrefixCombined), "{}.{}.{}: ", PrefixInstance, PrefixThread, PrefixAdditional);
+        }
+        else
+        {
+            fmt::format_to(std::back_inserter(PrefixCombined), "{}.{}: ", PrefixInstance, PrefixThread);
+        }
+    }
+
+    void RamsesLogger::SetPrefixAdditional(std::string_view additional)
+    {
+        SetPrefixes(PrefixInstance, PrefixThread, additional);
+    }
+
+    const std::string& RamsesLogger::GetPrefixInstance()
+    {
+        return PrefixInstance;
     }
 }

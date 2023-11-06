@@ -10,7 +10,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandSurface.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandIVISurface.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/NativeWaylandResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal

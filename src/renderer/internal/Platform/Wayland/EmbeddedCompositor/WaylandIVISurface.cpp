@@ -12,7 +12,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/INativeWaylandResource.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandSurface.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandClient.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

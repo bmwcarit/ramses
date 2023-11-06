@@ -10,7 +10,7 @@
 #include "internal/RendererLib/PlatformInterface/IWindowEventHandler.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/Collections/Guid.h"
 #include "fmt/format.h"
 #include <WindowsX.h>

@@ -12,7 +12,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandIVIApplicationConnection.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandGlobal.h"
 #include "internal/PlatformAbstraction/PlatformMath.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal

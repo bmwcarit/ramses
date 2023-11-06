@@ -10,7 +10,6 @@
 #include "DeviceMock.h"
 #include "EmbeddedCompositorMock.h"
 #include "internal/RendererLib/PlatformBase/TextureUploadingAdapter_Base.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 namespace ramses::internal
 {
@@ -19,12 +18,6 @@ namespace ramses::internal
     class AnEmbeddedCompositingManager : public ::testing::Test
     {
     public:
-        AnEmbeddedCompositingManager()
-        {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-        }
-
         void expectStreamTexUpload(WaylandIviSurfaceId iviSurface, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle)
         {
             EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _, _)).WillOnce(Return(textureDeviceHandle));

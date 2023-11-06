@@ -8,14 +8,14 @@
 
 #include "internal/RendererLib/DisplayThread.h"
 #include "internal/RendererLib/DisplayBundle.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
     DisplayThread::DisplayThread(DisplayBundleShared displayBundle, DisplayHandle displayHandle, IThreadAliveNotifier& notifier)
         : m_displayHandle{ displayHandle }
         , m_display{ std::move(displayBundle) }
-        , m_thread{ fmt::format("R_DispThrd{}", displayHandle) }
+        , m_thread{ GetThreadName(displayHandle) }
         , m_notifier{ notifier }
         , m_aliveIdentifier{ notifier.registerThread() }
     {
@@ -25,14 +25,14 @@ namespace ramses::internal
     {
         if (m_thread.isRunning())
         {
-            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread stopping", m_displayHandle);
+            LOG_INFO_P(CONTEXT_RENDERER, "{} stopping", GetThreadName(m_displayHandle));
             {
                 std::lock_guard<std::mutex> lock{ m_lock };
                 m_thread.cancel();
                 m_sleepConditionVar.notify_one();
             }
             m_thread.join();
-            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread stopped", m_displayHandle);
+            LOG_INFO_P(CONTEXT_RENDERER, "{} stopped", GetThreadName(m_displayHandle));
         }
         m_notifier.unregisterThread(m_aliveIdentifier);
     }
@@ -41,12 +41,12 @@ namespace ramses::internal
     {
         if (!m_thread.isRunning())
         {
-            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread starting", m_displayHandle);
+            LOG_INFO_P(CONTEXT_RENDERER, "{} starting", GetThreadName(m_displayHandle));
             m_thread.start(*this);
-            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread started", m_displayHandle);
+            LOG_INFO_P(CONTEXT_RENDERER, "{} started", GetThreadName(m_displayHandle));
         }
 
-        LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread start update", m_displayHandle);
+        LOG_INFO_P(CONTEXT_RENDERER, "{} start update", GetThreadName(m_displayHandle));
         std::lock_guard<std::mutex> lock{ m_lock };
         m_isUpdating = true;
         m_sleepConditionVar.notify_one();
@@ -54,29 +54,27 @@ namespace ramses::internal
 
     void DisplayThread::stopUpdating()
     {
-        LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread stop update", m_displayHandle);
+        LOG_INFO_P(CONTEXT_RENDERER, "{} stop update", GetThreadName(m_displayHandle));
         std::lock_guard<std::mutex> lock{ m_lock };
         m_isUpdating = false;
     }
 
     void DisplayThread::setLoopMode(ELoopMode loopMode)
     {
-        LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread loop mode set to {}", m_displayHandle, loopMode == ELoopMode::UpdateAndRender ? "UpdateAndRender" : "UpdateOnly");
+        LOG_INFO_P(CONTEXT_RENDERER, "{} loop mode set to {}", GetThreadName(m_displayHandle), loopMode == ELoopMode::UpdateAndRender ? "UpdateAndRender" : "UpdateOnly");
         std::lock_guard<std::mutex> lock{ m_lock };
         m_loopMode = loopMode;
     }
 
     void DisplayThread::setMinFrameDuration(std::chrono::microseconds minLoopPeriod)
     {
-        LOG_INFO_P(CONTEXT_RENDERER, "DisplayThread min frame duration set to {} us", minLoopPeriod.count());
+        LOG_INFO_P(CONTEXT_RENDERER, "{} min frame duration set to {} us", GetThreadName(m_displayHandle), minLoopPeriod.count());
         std::lock_guard<std::mutex> lock{ m_lock };
         m_minFrameDuration = minLoopPeriod;
     }
 
     void DisplayThread::run()
     {
-        ThreadLocalLog::SetPrefix(static_cast<int>(m_displayHandle.asMemoryHandle()));
-
         std::chrono::milliseconds lastLoopSleepTime{ 0u };
         while (!isCancelRequested())
         {
@@ -120,8 +118,13 @@ namespace ramses::internal
         }
 
         // release display before thread exit, it might contain platform components that need to be deinitialized in same thread
-        LOG_INFO_RP(CONTEXT_RENDERER, "DisplayThread releasing display bundle components");
+        LOG_INFO_P(CONTEXT_RENDERER, "releasing display bundle components");
         m_display.destroy();
+    }
+
+    std::string DisplayThread::GetThreadName(DisplayHandle display)
+    {
+        return fmt::format("DispThrd{}", display);
     }
 
     std::chrono::milliseconds DisplayThread::SleepToControlFramerate(std::chrono::microseconds loopDuration, std::chrono::microseconds minimumFrameDuration)

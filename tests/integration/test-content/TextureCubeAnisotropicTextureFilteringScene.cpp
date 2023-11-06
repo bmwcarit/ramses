@@ -36,7 +36,7 @@
 namespace ramses::internal
 {
 
-    void TextureCubeAnisotropicTextureFilteringScene::FillMipLevelData(uint8_t* data, uint32_t resolution, uint32_t level)
+    void TextureCubeAnisotropicTextureFilteringScene::FillMipLevelData(std::byte* data, uint32_t resolution, uint32_t level)
     {
         switch (level)
         {
@@ -46,39 +46,39 @@ namespace ramses::internal
             {
                 for (uint32_t x = 0; x < resolution / 4; x++)
                 {
-                    *data++ = 0x00;
-                    *data++ = 0x00;
-                    *data++ = 0xff;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0xff);
 
-                    *data++ = 0x00;
-                    *data++ = 0xff;
-                    *data++ = 0x00;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0xff);
+                    *data++ = static_cast<std::byte>(0x00);
 
-                    *data++ = 0x00;
-                    *data++ = 0x00;
-                    *data++ = 0x00;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
 
-                    *data++ = 0x00;
-                    *data++ = 0x00;
-                    *data++ = 0x00;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
                 }
                 for (uint32_t x = 0; x < resolution / 4; x++)
                 {
-                    *data++ = 0x00;
-                    *data++ = 0x00;
-                    *data++ = 0x00;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
 
-                    *data++ = 0x00;
-                    *data++ = 0x00;
-                    *data++ = 0x00;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
 
-                    *data++ = 0x00;
-                    *data++ = 0x00;
-                    *data++ = 0xff;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0xff);
 
-                    *data++ = 0x00;
-                    *data++ = 0xff;
-                    *data++ = 0x00;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0xff);
+                    *data++ = static_cast<std::byte>(0x00);
                 }
             }
             break;
@@ -90,9 +90,9 @@ namespace ramses::internal
             {
                 for (uint32_t x = 0; x < resolution; x++)
                 {
-                    *data++ = 0xff;
-                    *data++ = 0x00;
-                    *data++ = 0x00;
+                    *data++ = static_cast<std::byte>(0xff);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
                 }
             }
             break;
@@ -103,9 +103,9 @@ namespace ramses::internal
             {
                 for (uint32_t x = 0; x < resolution; x++)
                 {
-                    *data++ = 0x00;
-                    *data++ = 0x00;
-                    *data++ = 0xff;
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0x00);
+                    *data++ = static_cast<std::byte>(0xff);
                 }
             }
             break;
@@ -129,18 +129,16 @@ namespace ramses::internal
         {
             const uint32_t resolution = textureResolution >> i;
             const uint32_t levelSize = resolution * resolution * 3;
-            auto* rgb8_data = new uint8_t[levelSize];
-            FillMipLevelData(rgb8_data, resolution, i);
+            MipLevelData rgb8_data(levelSize);
+            FillMipLevelData(rgb8_data.data(), resolution, i);
 
-            mipLevelData.emplace_back(CubeMipLevelData(
-                levelSize,
-                reinterpret_cast<const std::byte*>(rgb8_data),
-                reinterpret_cast<const std::byte*>(rgb8_data),
-                reinterpret_cast<const std::byte*>(rgb8_data),
-                reinterpret_cast<const std::byte*>(rgb8_data),
-                reinterpret_cast<const std::byte*>(rgb8_data),
-                reinterpret_cast<const std::byte*>(rgb8_data)
-                ));
+            mipLevelData.emplace_back(CubeMipLevelData{
+                rgb8_data,
+                rgb8_data,
+                rgb8_data,
+                rgb8_data,
+                rgb8_data,
+                rgb8_data });
         }
 
         ramses::Effect* effect(getTestEffect("ramses-test-client-textured-cube"));
@@ -179,10 +177,6 @@ namespace ramses::internal
             mipLevelData,
             false);
 
-        for (auto& data : mipLevelData)
-        {
-            delete[] data.m_dataNX;
-        }
         mipLevelData.clear();
 
         std::optional<ramses::UniformInput> textureInput = effect->findUniformInput("u_texture");

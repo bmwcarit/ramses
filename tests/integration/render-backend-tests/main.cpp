@@ -10,7 +10,6 @@
 
 #include "ramses/framework/RamsesFrameworkConfig.h"
 #include "RendererTestUtils.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "ramses-cli.h"
 
 int main(int argc, char* argv[])
@@ -35,9 +34,6 @@ int main(int argc, char* argv[])
     }
     CLI11_PARSE(cli, argc, argv);
     ramses::internal::RendererTestUtils::SetDefaultConfigForAllTests(rendererConfig, displayConfig);
-
-    // set log prefix for all tests
-    ramses::internal::ThreadLocalLog::SetPrefix(1);
 
     return RUN_ALL_TESTS();
 }

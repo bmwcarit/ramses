@@ -18,7 +18,7 @@
 #include "internal/RendererLib/PlatformInterface/IDisplayController.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/Core/Utils/Image.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -227,7 +227,7 @@ namespace ramses::internal
     void RendererCommandExecutor::operator()(const RendererCommand::LogInfo& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.logRendererInfo(cmd.topic, cmd.verbose, cmd.nodeFilter);
+        m_sceneUpdater.logRendererInfo(cmd);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCListIviSurfaces& cmd)

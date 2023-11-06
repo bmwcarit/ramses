@@ -16,6 +16,16 @@ namespace ramses
     {
     }
 
+    UniformInput::~UniformInput() = default;
+
+    UniformInput::UniformInput(const UniformInput& other) = default;
+
+    UniformInput::UniformInput(UniformInput&& other) noexcept = default;
+
+    UniformInput& UniformInput::operator=(const UniformInput& other) = default;
+
+    UniformInput& UniformInput::operator=(UniformInput&& other) noexcept = default;
+
     EEffectUniformSemantic UniformInput::getSemantics() const
     {
         return m_impl->getUniformSemantics();

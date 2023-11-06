@@ -46,7 +46,7 @@ if(ANY_WINDOW_TYPE_ENABLED)
 endif()
 
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19.0")
-    target_sources(ramses-api PUBLIC    ${RAMSES_FRAMEWORK_API_FILES_HEADER}
+    target_sources(ramses-api PRIVATE   ${RAMSES_FRAMEWORK_API_FILES_HEADER}
                                         ${RAMSES_CLIENT_API_FILES_HEADER}
                                         ${RAMSES_CLIENT_TEXT_API_FILES_HEADER}
                                         ${RAMSES_CLIENT_LOGIC_API_FILES_HEADER}

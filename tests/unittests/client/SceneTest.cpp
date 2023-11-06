@@ -308,8 +308,7 @@ namespace ramses::internal
     {
         ramses::Scene& anotherScene(*client.createScene(SceneConfig(sceneId_t{ 0xf00 })));
         {
-            const uint8_t data[] = { 1, 2, 3 };
-            const std::vector<MipLevelData> mipData({ MipLevelData(3u, data) });
+            const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
             Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
             ASSERT_TRUE(texture != nullptr);
 
@@ -317,8 +316,11 @@ namespace ramses::internal
             EXPECT_TRUE(nullptr == textureSampler);
         }
         {
-            const uint8_t data[1 * 2 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-            std::vector<MipLevelData> mipLevelData({ MipLevelData(sizeof(data), data) });
+            const MipLevelData data = {
+                std::byte{1}, std::byte{2}, std::byte{3}, std::byte{4}, std::byte{5}, std::byte{6}, std::byte{7}, std::byte{8},
+                std::byte{9}, std::byte{10}, std::byte{11}, std::byte{12}, std::byte{13}, std::byte{14}, std::byte{15}, std::byte{16} };
+            ASSERT_TRUE(data.size() == 1 * 2 * 2 * 4);
+            std::vector<MipLevelData> mipLevelData{ data };
             Texture3D* texture = anotherScene.createTexture3D(ETextureFormat::RGBA8, 2, 1, 2, mipLevelData, false, {});
             ASSERT_TRUE(nullptr != texture);
 
@@ -326,8 +328,8 @@ namespace ramses::internal
             EXPECT_TRUE(nullptr == textureSampler);
         }
         {
-            const std::byte data[4 * 10 * 10] = {};
-            std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+            const std::vector<std::byte> data(4 * 10 * 10);
+            std::vector<CubeMipLevelData> mipLevelData{ { data, data, data, data, data, data } };
             TextureCube* texture = anotherScene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false);
             ASSERT_TRUE(nullptr != texture);
 
@@ -930,8 +932,7 @@ namespace ramses::internal
         RamsesFrameworkConfig config{EFeatureLevel_Latest};
         RamsesFramework anotherFramework{config};
         ramses::Scene& anotherScene(*client.createScene(SceneConfig(sceneId_t{ 0xf00 })));
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         const Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -941,8 +942,7 @@ namespace ramses::internal
     TEST_F(AScene, reportsErrorWhenCreateTextureConsumerWithSamplerFromAnotherScene)
     {
         ramses::Scene& anotherScene = *client.createScene(SceneConfig(sceneId_t(12u)));
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -983,8 +983,7 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1002,13 +1001,11 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data1 = 0u;
-        const std::vector<MipLevelData> mipData1{ MipLevelData(1u, &data1) };
+        const std::vector<MipLevelData> mipData1{ { std::byte{ 0u } } };
         Texture2D* texture1 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData1, false);
         ASSERT_TRUE(nullptr != texture1);
 
-        uint8_t data2 = 1u;
-        const std::vector<MipLevelData> mipData2{ MipLevelData(1u, &data2) };
+        const std::vector<MipLevelData> mipData2{ { std::byte{ 1u } } };
         Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData2, false);
         ASSERT_TRUE(nullptr != texture2);
 
@@ -1027,8 +1024,7 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{0u} } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1088,8 +1084,7 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::R8, 1u, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1101,8 +1096,7 @@ namespace ramses::internal
 
     TEST_F(AScene, removesDataSlotsOfTextureSamplerOnDestruction)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1122,8 +1116,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotCreateMoreThanOneConsumerForATextureSampler)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1157,8 +1150,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotCreateMoreThanOneProviderForATexture)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1168,8 +1160,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotCreateMoreThanOneTextureConsumerOrProviderWithTheSameId)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
         Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
@@ -1191,8 +1182,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotUpdateTextureProviderWhichWasNotCreatedBefore)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 

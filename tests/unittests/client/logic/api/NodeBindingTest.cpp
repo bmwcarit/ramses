@@ -529,7 +529,7 @@ namespace ramses::internal
 
             EXPECT_EQ(messageType, ELogLevel::Warn);
             EXPECT_EQ(warningMessage,
-                      fmt::format("Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.",
+                      fmt::format("R.main: Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.",
                                   binding->impl().getIdentificationString()));
 
             EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
@@ -558,7 +558,7 @@ namespace ramses::internal
         EXPECT_EQ(
             warningMessage,
             fmt::format(
-                "Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.",
+                "R.main: Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.",
                 binding->impl().getIdentificationString()));
 
         EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));

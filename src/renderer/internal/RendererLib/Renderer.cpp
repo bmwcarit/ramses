@@ -22,7 +22,7 @@
 #include "internal/RendererLib/DisplayEventHandler.h"
 #include "internal/RendererLib/SceneExpirationMonitor.h"
 #include "internal/RendererLib/PlatformBase/Platform_Base.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <algorithm>
 
 namespace ramses::internal

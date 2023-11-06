@@ -89,9 +89,10 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
 
     # tools
     check_expectations(tools, "ivi-gears", "ivi-simple-dmabuf-egl", "ramses-daemon")
-    check_expectations(tools and renderer, "ramses-renderer-standalone", "ramses-scene-viewer", "ramses-stream-viewer", "ramses-imgui")
-    check_expectations(tools and logic and headless, "ramses-logic-viewer-headless")
-    check_expectations(tools and logic and full_shared_lib, "ramses-logic-viewer", "test-asset-producer")
+    check_expectations(tools and renderer, "ramses-renderer-standalone", "ramses-stream-viewer", "ramses-imgui")
+    check_expectations(tools and logic, "ramses-viewer-headless")
+    check_expectations(tools and logic and renderer, "ramses-viewer")
+    check_expectations(tools and logic and full_shared_lib, "test-asset-producer")
 
     # tests
     check_expectations(tests, "ramses-framework-test", "ramses-client-test")
@@ -102,8 +103,8 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
     check_expectations(wayland_shell and tests, "window-wayland-wl-shell-test")
 
     # tool tests
-    check_expectations(tests and tools and logic, "ramses-logic-viewer-test")
-    check_expectations(tests and tools and logic and full_shared_lib and use_imagemagick, "ramses-logic-viewer-gui-test")
+    check_expectations(tests and tools and logic, "ramses-viewer-test")
+    check_expectations(tests and tools and logic and renderer and use_imagemagick, "ramses-viewer-gui-test")
 
     # examples
     check_expectations(examples and (headless or full_shared_lib), "ramses-example-basic-geometry")
@@ -191,7 +192,11 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
 
         if logic and tools:
             expected_tests += [
-                'ramses-logic-viewer-test_UNITTEST']
+                'ramses-viewer-test_UNITTEST']
+
+        if logic and tools and renderer and use_imagemagick:
+            expected_tests += [
+                'ramses-viewer-gui-test_RNDSANDWICHTEST_SWRAST']
 
         # step 4: find missing and/or unexpected tests
         unexpected_tests = [t for t in ctest_test_entries if t not in expected_tests]

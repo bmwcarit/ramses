@@ -20,8 +20,7 @@ namespace ramses::internal
         mipDataSizes.reserve(mipLevelData.size());
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_size;
-            mipDataSizes.push_back(mipDataSize);
+            mipDataSizes.push_back(static_cast<uint32_t>(data.size()));
         }
     }
 
@@ -31,8 +30,7 @@ namespace ramses::internal
         mipDataSizes.reserve(mipLevelData.size());
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_faceDataSize;
-            mipDataSizes.push_back(mipDataSize);
+            mipDataSizes.push_back(static_cast<uint32_t>(data.m_dataPX.size()));
         }
     }
 
@@ -40,8 +38,8 @@ namespace ramses::internal
     {
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_size;
-            ramses::internal::PlatformMemory::Copy(dest, data.m_data, mipDataSize);
+            const size_t mipDataSize = data.size();
+            ramses::internal::PlatformMemory::Copy(dest, data.data(), mipDataSize);
             dest += mipDataSize;
         }
     }
@@ -50,38 +48,38 @@ namespace ramses::internal
     {
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPX, mipDataSize);
+            const size_t mipDataSize = data.m_dataPX.size();
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPX.data(), mipDataSize);
             dest += mipDataSize;
         }
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNX, mipDataSize);
+            const size_t mipDataSize = data.m_dataNX.size();
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNX.data(), mipDataSize);
             dest += mipDataSize;
         }
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPY, mipDataSize);
+            const size_t mipDataSize = data.m_dataPY.size();
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPY.data(), mipDataSize);
             dest += mipDataSize;
         }
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNY, mipDataSize);
+            const size_t mipDataSize = data.m_dataNY.size();
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNY.data(), mipDataSize);
             dest += mipDataSize;
         }
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPZ, mipDataSize);
+            const size_t mipDataSize = data.m_dataPZ.size();
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataPZ.data(), mipDataSize);
             dest += mipDataSize;
         }
         for (const auto& data : mipLevelData)
         {
-            const uint32_t mipDataSize = data.m_faceDataSize;
-            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNZ, mipDataSize);
+            const size_t mipDataSize = data.m_dataNZ.size();
+            ramses::internal::PlatformMemory::Copy(dest, data.m_dataNZ.data(), mipDataSize);
             dest += mipDataSize;
         }
     }
@@ -95,7 +93,7 @@ namespace ramses::internal
 
         for (size_t i = 0u; i < mipLevelData.size(); ++i)
         {
-            if (mipLevelData[i].m_data == nullptr || mipLevelData[i].m_size == 0u)
+            if (mipLevelData[i].empty())
             {
                 return false;
             }
@@ -107,11 +105,11 @@ namespace ramses::internal
             if (!ramses::internal::IsFormatCompressed(internalFormat))
             {
                 const uint32_t expectedMipDataSize = mipWidth * mipHeight * mipDepth * ramses::internal::GetTexelSizeFromFormat(internalFormat);
-                if (mipLevelData[i].m_size < expectedMipDataSize)
+                if (mipLevelData[i].size() < expectedMipDataSize)
                 {
                     return false;
                 }
-                if (mipLevelData[i].m_size > expectedMipDataSize)
+                if (mipLevelData[i].size() > expectedMipDataSize)
                 {
                     LOG_WARN(ramses::internal::CONTEXT_CLIENT, "Provided texture mip data does not match expected size, texture might not be as expected");
                 }
@@ -142,13 +140,18 @@ namespace ramses::internal
 
         for (size_t i = 0u; i < mipLevelData.size(); ++i)
         {
-            if (mipLevelData[i].m_dataPX == nullptr ||
-                mipLevelData[i].m_dataNX == nullptr ||
-                mipLevelData[i].m_dataPY == nullptr ||
-                mipLevelData[i].m_dataNY == nullptr ||
-                mipLevelData[i].m_dataPZ == nullptr ||
-                mipLevelData[i].m_dataNZ == nullptr ||
-                mipLevelData[i].m_faceDataSize == 0u)
+            if (mipLevelData[i].m_dataPX.empty() ||
+                mipLevelData[i].m_dataNX.empty() ||
+                mipLevelData[i].m_dataPY.empty() ||
+                mipLevelData[i].m_dataNY.empty() ||
+                mipLevelData[i].m_dataPZ.empty() ||
+                mipLevelData[i].m_dataNZ.empty() ||
+                (mipLevelData[i].m_dataPX.size() != mipLevelData[i].m_dataNX.size() ||
+                mipLevelData[i].m_dataNX.size() != mipLevelData[i].m_dataPY.size() ||
+                mipLevelData[i].m_dataPY.size() != mipLevelData[i].m_dataNY.size() ||
+                mipLevelData[i].m_dataNY.size() != mipLevelData[i].m_dataPZ.size() ||
+                mipLevelData[i].m_dataPZ.size() != mipLevelData[i].m_dataNZ.size() ||
+                mipLevelData[i].m_dataNZ.size() != mipLevelData[i].m_dataPX.size()))
             {
                 return false;
             }
@@ -158,11 +161,11 @@ namespace ramses::internal
             if (!ramses::internal::IsFormatCompressed(internalFormat))
             {
                 const uint32_t expectedMipDataSize = mipSize * mipSize * ramses::internal::GetTexelSizeFromFormat(internalFormat);
-                if (mipLevelData[i].m_faceDataSize < expectedMipDataSize)
+                if (mipLevelData[i].m_dataPX.size() < expectedMipDataSize)
                 {
                     return false;
                 }
-                if (mipLevelData[i].m_faceDataSize > expectedMipDataSize)
+                if (mipLevelData[i].m_dataPX.size() > expectedMipDataSize)
                 {
                     LOG_WARN(ramses::internal::CONTEXT_CLIENT, "Provided texture mip data does not match expected size, texture might not be as expected");
                 }

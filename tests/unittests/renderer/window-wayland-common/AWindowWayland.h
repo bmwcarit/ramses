@@ -12,7 +12,6 @@
 #include "TestWithWaylandEnvironment.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/Platform/Wayland/UnixDomainSocket.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include <chrono>
 
 namespace ramses::internal
@@ -23,7 +22,6 @@ namespace ramses::internal
     public:
         void SetUp() override
         {
-            ThreadLocalLog::SetPrefix(1);
             createWaylandWindow();
         }
 

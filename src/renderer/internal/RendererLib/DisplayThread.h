@@ -50,6 +50,7 @@ namespace ramses::internal
         {
             m_bundle->reset();
         }
+
     private:
         std::shared_ptr<std::unique_ptr<IDisplayBundle>> m_bundle;
     };
@@ -82,6 +83,7 @@ namespace ramses::internal
     private:
         void run() override;
 
+        static std::string GetThreadName(DisplayHandle display);
         static std::chrono::milliseconds SleepToControlFramerate(std::chrono::microseconds loopDuration, std::chrono::microseconds minimumFrameDuration);
 
         const DisplayHandle m_displayHandle;

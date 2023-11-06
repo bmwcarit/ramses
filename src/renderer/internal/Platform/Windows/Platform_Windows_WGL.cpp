@@ -12,7 +12,7 @@
 #include "internal/Platform/Windows/Window_Windows.h"
 #include "internal/RendererLib/PlatformBase/EmbeddedCompositor_Dummy.h"
 #include "internal/RendererLib/DisplayConfig.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

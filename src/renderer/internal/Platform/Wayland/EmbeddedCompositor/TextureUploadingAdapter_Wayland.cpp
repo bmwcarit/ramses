@@ -15,7 +15,7 @@
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 
 namespace ramses::internal

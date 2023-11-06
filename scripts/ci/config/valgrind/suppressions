@@ -71,24 +71,7 @@
     Memcheck:Leak
     match-leak-kinds: possible
     fun:calloc
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
-    obj:*
+    ...
     fun:_ZN6ramses8internal9Device_GL20drawIndexedTrianglesEiij
     ...
 }

@@ -10,7 +10,7 @@
 
 #include "internal/RendererLib/PlatformInterface/IContext.h"
 
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <array>
 #include <cassert>
 
@@ -44,17 +44,6 @@ namespace ramses::internal
                                        const void* userParam)
     {
         assert(userParam);
-
-        // NOTE (tobias) work around case where callback is called from another thread
-        // despite requesting synchronous dispatch via GL_DEBUG_OUTPUT_SYNCHRONOUS. This
-        // can happen when the driver is bugger or does not support synchronous operation.
-        // Prevent assert on log by ensuring there is always a valig TLS log prefix but
-        // set it to a very clear invalid value.
-        if (ThreadLocalLog::GetPrefixUnchecked() == -1)
-        {
-            ThreadLocalLog::SetPrefix(-2);
-            LOG_WARN(CONTEXT_RENDERER, "Detected broken OpenGL driver ignoring GL_DEBUG_OUTPUT_SYNCHRONOUS!");
-        }
 
         switch (type)
         {

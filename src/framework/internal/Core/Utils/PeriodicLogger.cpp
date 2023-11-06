@@ -22,7 +22,7 @@ namespace ramses::internal
     PeriodicLogger::PeriodicLogger(PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
         : m_isRunning(false)
         , m_periodicLogTimeoutSeconds(0)
-        , m_thread("R_PerLogger")
+        , m_thread("PerLogger")
         , m_frameworkLock(frameworkLock)
         , m_statisticCollection(statisticCollection)
         , m_triggerCounter(0)

@@ -12,7 +12,7 @@
 #include "internal/RendererLib/IRendererSceneUpdater.h"
 #include "internal/RendererLib/SceneReferenceOwnership.h"
 #include "internal/RendererLib/IRendererSceneEventSender.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <algorithm>
 
 namespace ramses::internal

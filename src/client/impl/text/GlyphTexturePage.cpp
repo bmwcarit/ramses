@@ -200,7 +200,7 @@ namespace ramses::internal
 
     void GlyphTexturePage::updateTextureResource(const Quad& updateQuade, const GlyphPageData& pageData)
     {
-        m_textureBuffer.updateData(0, updateQuade.getOrigin().x, updateQuade.getOrigin().y, updateQuade.getSize().x, updateQuade.getSize().y, pageData.data());
+        m_textureBuffer.updateData(0, updateQuade.getOrigin().x, updateQuade.getOrigin().y, updateQuade.getSize().x, updateQuade.getSize().y, reinterpret_cast<const std::byte*>(pageData.data()));
     }
 
     GlyphTexturePage::QuadIndex GlyphTexturePage::findFreeSpace(QuadSize const& size) const

@@ -11,7 +11,7 @@
 
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include "internal/Platform/OpenGL/ShaderProgramInfo.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "absl/strings/str_split.h"
 
 namespace ramses::internal

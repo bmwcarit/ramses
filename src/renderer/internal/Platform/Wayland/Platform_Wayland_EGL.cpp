@@ -13,7 +13,7 @@
 #include "internal/RendererLib/PlatformBase/EmbeddedCompositor_Dummy.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/EmbeddedCompositor_Wayland.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/TextureUploadingAdapter_Wayland.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

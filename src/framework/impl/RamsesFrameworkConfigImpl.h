@@ -54,6 +54,8 @@ namespace ramses::internal
         void setLogLevelConsole(ELogLevel logLevel);
 
         void setPeriodicLogInterval(std::chrono::seconds interval);
+        void setLoggingInstanceName(std::string_view instanceName);
+        [[nodiscard]] const std::string& getLoggingInstanceName() const;
 
         [[nodiscard]] bool setParticipantGuid(uint64_t guid);
         [[nodiscard]] Guid getUserProvidedGuid() const;
@@ -79,5 +81,6 @@ namespace ramses::internal
         std::string m_participantName;
         bool m_enableDltApplicationRegistration = true;
         Guid m_userProvidedGuid;
+        std::string m_loggingInstanceName = "R";
     };
 }

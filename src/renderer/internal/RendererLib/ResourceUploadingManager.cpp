@@ -15,7 +15,7 @@
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
 #include "internal/RendererLib/PlatformInterface/IEmbeddedCompositingManager.h"
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include <algorithm>

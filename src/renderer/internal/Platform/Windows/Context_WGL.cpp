@@ -9,7 +9,7 @@
 #include "internal/Platform/Windows/Context_WGL.h"
 #include "internal/Platform/Windows/HiddenWindow.h"
 #include "internal/Platform/Windows/Window_Windows.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

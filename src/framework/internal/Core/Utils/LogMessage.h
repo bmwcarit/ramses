@@ -9,46 +9,16 @@
 #pragma once
 
 #include "internal/Core/Utils/LogLevel.h"
-#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
+#include <string>
 
 namespace ramses::internal
 {
     class LogContext;
 
-    class LogMessage
+    struct LogMessage
     {
-    public:
-        LogMessage(const LogContext& context, ELogLevel logLevel, const StringOutputStream& stream);
-
-        [[nodiscard]] const StringOutputStream& getStream() const;
-        [[nodiscard]] const LogContext& getContext() const;
-        [[nodiscard]] ELogLevel getLogLevel() const;
-
-    private:
         const LogContext& m_context;
-        const ELogLevel m_logLevel;
-        const StringOutputStream& m_outputStream;
+        ELogLevel m_logLevel;
+        std::string m_message;
     };
-
-    inline LogMessage::LogMessage(const LogContext& context, ELogLevel logLevel, const StringOutputStream& stream)
-        : m_context(context)
-        , m_logLevel(logLevel)
-        , m_outputStream(stream)
-    {
-    }
-
-    inline const StringOutputStream& LogMessage::getStream() const
-    {
-        return m_outputStream;
-    }
-
-    inline const LogContext& LogMessage::getContext() const
-    {
-        return m_context;
-    }
-
-    inline ELogLevel LogMessage::getLogLevel() const
-    {
-        return m_logLevel;
-    }
 }

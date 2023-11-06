@@ -29,14 +29,14 @@
 #include "internal/RendererLib/SceneReferenceLogic.h"
 #include "internal/RendererLib/ResourceUploader.h"
 #include "internal/RendererLib/RendererEventCollector.h"
+#include "internal/RendererLib/SceneResourceUploader.h"
 #include "internal/Components/FlushTimeInformation.h"
 #include "internal/Components/SceneUpdate.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Image.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include "internal/PlatformAbstraction/Macros.h"
 #include <algorithm>
-#include "internal/RendererLib/SceneResourceUploader.h"
 
 namespace ramses::internal
 {
@@ -117,7 +117,7 @@ namespace ramses::internal
             IRenderBackend& renderBackend = displayController.getRenderBackend();
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
-            m_asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, static_cast<int>(m_display.asMemoryHandle()));
+            m_asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, m_display);
             if (!m_asyncEffectUploader->createResourceUploadRenderBackendAndStartThread())
             {
                 m_renderer.destroyDisplayContext();
@@ -1630,9 +1630,9 @@ namespace ramses::internal
         m_maximumPendingFlushesToKillScene = limitForPendingFlushesForceUnsubscribe;
     }
 
-    void RendererSceneUpdater::logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const
+    void RendererSceneUpdater::logRendererInfo(const RendererCommand::LogInfo& cmd) const
     {
-        RendererLogger::LogTopic(*this, topic, verbose, nodeFilter);
+        RendererLogger::LogTopic(*this, cmd);
     }
 
     void RendererSceneUpdater::setSkippingOfUnmodifiedScenes(bool enable)

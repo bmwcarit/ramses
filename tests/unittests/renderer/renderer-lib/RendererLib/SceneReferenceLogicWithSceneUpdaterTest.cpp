@@ -25,7 +25,6 @@
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "internal/Components/SceneUpdate.h"
 #include "internal/Watchdog/ThreadAliveNotifierMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -46,8 +45,6 @@ namespace ramses::internal
             , m_sceneLogic(m_sceneUpdater)
             , m_sceneRefLogic(m_scenes, m_sceneLogic, m_sceneUpdater, m_sceneEventSenderFromSceneRefLogic, m_sceneRefOwnership)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
             m_sceneUpdater.setSceneReferenceLogicHandler(m_sceneRefLogic);
         }
 

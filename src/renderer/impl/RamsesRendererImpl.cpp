@@ -583,7 +583,7 @@ namespace ramses::internal
 
     bool RamsesRendererImpl::logRendererInfo()
     {
-        m_pendingRendererCommands.push_back(RendererCommand::LogInfo{ ERendererLogTopic::All, true, {} });
+        m_pendingRendererCommands.push_back(RendererCommand::LogInfo{ ERendererLogTopic::All, true, {}, false, false, ELoopMode::UpdateAndRender, {} });
         return true;
     }
 

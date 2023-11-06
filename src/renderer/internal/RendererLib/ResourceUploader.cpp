@@ -14,7 +14,7 @@
 #include "internal/RendererLib/PlatformInterface/IBinaryShaderCache.h"
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/TextureMathUtils.h"
 #include "internal/Components/ManagedResource.h"
 #include "internal/RendererLib/ResourceDescriptor.h"

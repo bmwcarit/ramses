@@ -24,7 +24,7 @@
 #include "internal/RendererLib/PlatformInterface/IDeviceExtension.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/TextureMathUtils.h"
 #include "internal/PlatformAbstraction/PlatformStringUtils.h"
 #include "internal/PlatformAbstraction/Macros.h"

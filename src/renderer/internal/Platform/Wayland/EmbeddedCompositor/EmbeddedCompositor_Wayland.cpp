@@ -19,7 +19,7 @@
 #include "internal/Platform/EGL/Context_EGL.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/RendererLib/RendererLogContext.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include <algorithm>

@@ -56,7 +56,7 @@ namespace ramses::internal
 
         [[nodiscard]] bool isDltAppenderActive() const;
 
-        void log(const LogMessage& msg);
+        void log(LogMessage&& msg);
 
         void applyContextFilterCommand(const std::string& command);
         [[nodiscard]] std::vector<LogContextInformation> getAllContextsInformation() const;
@@ -73,13 +73,21 @@ namespace ramses::internal
         bool transmit(std::vector<std::byte>&& data, const std::string& filename) const;
         bool registerInjectionCallback(LogContext& ctx, uint32_t serviceId, int (*callback)(uint32_t serviceId, void* data, uint32_t length));
 
-        static const char* GetLogLevelText(ELogLevel logLevel);
-
         void setLogHandler(const LogHandlerFunc& logHandlerFunc);
+
+        static const char* GetLogLevelText(ELogLevel logLevel);
+        static void SetPrefixes(std::string_view instance, std::string_view thread, std::string_view additional = {});
+        static void SetPrefixAdditional(std::string_view additional);
+        static const std::string& GetPrefixInstance();
 
     private:
         static const ELogLevel LogLevelDefault_Contexts = ELogLevel::Info;
         static const ELogLevel LogLevelDefault_Console = ELogLevel::Info;
+
+        static thread_local std::string PrefixInstance;
+        static thread_local std::string PrefixThread;
+        static thread_local std::string PrefixAdditional;
+        static thread_local std::string PrefixCombined;
 
         void applyContextFilter(const std::string& context, ELogLevel logLevel);
 

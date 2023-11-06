@@ -1,10 +1,10 @@
 <!-- RAMSES -->
 
 # Table of Contents
-* [What is RAMSES](#what-is-ramses)
-* [Obtaining the source code](#obtaining-the-source-code)
-* [Building and testing](#building-and-testing)
-* [License](#license)
+* <project:#what-is-ramses>
+* <project:#obtaining-the-source-code>
+* <project:#build-instructions>
+* <project:#license>
 
 # What is RAMSES
 

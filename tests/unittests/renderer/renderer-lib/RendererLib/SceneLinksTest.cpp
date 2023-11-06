@@ -8,7 +8,6 @@
 
 #include "gtest/gtest.h"
 #include "internal/RendererLib/SceneLinks.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -27,8 +26,6 @@ public:
         , consumerSlot1(3u)
         , consumerSlot2(4u)
     {
-        // caller is expected to have a display prefix for logs
-        ThreadLocalLog::SetPrefix(1);
     }
 
 protected:

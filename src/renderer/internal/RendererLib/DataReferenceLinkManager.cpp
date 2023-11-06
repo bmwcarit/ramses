@@ -10,7 +10,7 @@
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/DataLinkUtils.h"
 #include "internal/SceneGraph/SceneUtils/DataInstanceHelper.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

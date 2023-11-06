@@ -11,6 +11,7 @@
 #include "internal/Core/Utils/LogMessage.h"
 #include "internal/Core/Utils/LogContext.h"
 #include "internal/Core/Utils/RamsesLogger.h"
+#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 #include "internal/PlatformAbstraction/FmtBase.h"
 
 namespace ramses::internal
@@ -53,7 +54,7 @@ namespace ramses
         {                                                                  \
             ramses::internal::StringOutputStream ramses_log_stream(80);   \
             ramses_log_stream << message; /* NOLINT(bugprone-macro-parentheses) */ \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses_log_stream)); \
+            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage{ (context), (logLevel), ramses_log_stream.release() }); \
         }                                                                  \
     } while (0)
 
@@ -79,7 +80,7 @@ namespace ramses
 #define LOG_COMMON_P(context, logLevel,  ...)            \
     do {                                                                   \
         if((logLevel) <= (context).getLogLevel())                          \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses::internal::StringOutputStream(::fmt::format(__VA_ARGS__)))); \
+            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage{ (context), (logLevel), ::fmt::format(__VA_ARGS__) }); \
     } while (0)
 
 #define LOG_TRACE_P(context, ...)                                \
@@ -107,7 +108,7 @@ namespace ramses
         {                                                                  \
             ramses::internal::StringOutputStream ramses_log_stream(160);  \
             callable(ramses_log_stream);                                   \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses_log_stream)); \
+            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage{ (context), (logLevel), ramses_log_stream.release() }); \
         }                                                                  \
     } while (0)
 
@@ -137,7 +138,7 @@ namespace ramses
         {                                                                                                                                                                      \
             fmt::memory_buffer ramses_fmtlib_buffer; \
             callable(ramses_fmtlib_buffer); \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses::internal::StringOutputStream(fmt::to_string(ramses_fmtlib_buffer)))); \
+            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage{ (context), (logLevel), fmt::to_string(ramses_fmtlib_buffer) });                              \
         }                                                                                                                                                                      \
     } while (0)
 

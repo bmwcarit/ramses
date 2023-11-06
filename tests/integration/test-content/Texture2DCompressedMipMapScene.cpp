@@ -30,13 +30,17 @@ namespace ramses::internal
     {
         createOrthoCamera();
 
-        const uint8_t dataLevel0[] = {0x7e, 0x80, 0x4, 0x7f, 0x0, 0x7, 0xe0, 0x0,0x81, 0x7e, 0x4, 0x2, 0xfe, 0x0, 0x1f, 0xc0, 0x80, 0x81, 0xfb, 0x82, 0x1, 0xf8, 0x0, 0x3f, 0xf8, 0xf8, 0xf8, 0x2, 0x0, 0x0, 0x0, 0x0};
+        const std::vector<std::byte> dataLevel0 = {
+            std::byte{0x7e}, std::byte{0x80}, std::byte{0x4}, std::byte{0x7f}, std::byte{0x0}, std::byte{0x7}, std::byte{0xe0}, std::byte{0x0},
+            std::byte{0x81}, std::byte{0x7e}, std::byte{0x4}, std::byte{0x2}, std::byte{0xfe}, std::byte{0x0}, std::byte{0x1f}, std::byte{0xc0},
+            std::byte{0x80}, std::byte{0x81}, std::byte{0xfb}, std::byte{0x82}, std::byte{0x1}, std::byte{0xf8}, std::byte{0x0}, std::byte{0x3f},
+            std::byte{0xf8}, std::byte{0xf8}, std::byte{0xf8}, std::byte{0x2}, std::byte{0x0}, std::byte{0x0}, std::byte{0x0}, std::byte{0x0} };
         // 8x8: red, green, blue, white
 
-        const uint8_t dataLevel1[] = {0x7e, 0x80, 0x4, 0x7f, 0x0, 0x7, 0xe0, 0x0};
+        const std::vector<std::byte> dataLevel1 = { std::byte{0x7e}, std::byte{0x80}, std::byte{0x4}, std::byte{0x7f}, std::byte{0x0}, std::byte{0x7}, std::byte{0xe0}, std::byte{0x0} };
         // 4x4: red
 
-        const std::vector<MipLevelData> mipLevelData = { MipLevelData{ 32u, dataLevel0 }, MipLevelData{ 8u, dataLevel1 } };
+        const std::vector<MipLevelData> mipLevelData = { dataLevel0, dataLevel1 };
         const ramses::Texture2D* texture = m_scene.createTexture2D(
             ramses::ETextureFormat::ETC2RGB,
             m_textureWidth, m_textureHeight,

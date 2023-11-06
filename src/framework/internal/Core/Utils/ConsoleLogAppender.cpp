@@ -25,7 +25,7 @@ namespace ramses::internal
 
     void ConsoleLogAppender::log(const LogMessage& logMessage)
     {
-        if(static_cast<int>(logMessage.getLogLevel()) > static_cast<int>(m_logLevel.load()))
+        if(static_cast<int>(logMessage.m_logLevel) > static_cast<int>(m_logLevel.load()))
             return;
 
         // TODO(tobias) make static initializer
@@ -35,7 +35,7 @@ namespace ramses::internal
         const char* logLevelColor = nullptr;
         const char* logLevelStr = nullptr;
 
-        switch(logMessage.getLogLevel())
+        switch(logMessage.m_logLevel)
         {
         case ELogLevel::Trace:
             logLevelColor = Console::White();
@@ -81,12 +81,12 @@ namespace ramses::internal
             fmt::print("{}{:%Y%m%d-%H:%M:%S}.{:03}{} | {}{}{} | {}{}{} | {}\n",
                        Console::White(), posix_tm, now % 1000, Console::Default(),
                        logLevelColor, logLevelStr, Console::Default(),
-                       Console::Cyan(), logMessage.getContext().getContextId(), Console::Default(),
-                       logMessage.getStream().data());
+                       Console::Cyan(), logMessage.m_context.getContextId(), Console::Default(),
+                       logMessage.m_message);
         }
         else
         {
-            fmt::print("{:%Y%m%d-%H:%M:%S}.{:03} | {} | {} | {}\n", posix_tm, now % 1000, logLevelStr, logMessage.getContext().getContextId(), logMessage.getStream().data());
+            fmt::print("{:%Y%m%d-%H:%M:%S}.{:03} | {} | {} | {}\n", posix_tm, now % 1000, logLevelStr, logMessage.m_context.getContextId(), logMessage.m_message);
         }
         std::fflush(stdout);
 

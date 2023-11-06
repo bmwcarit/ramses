@@ -84,7 +84,7 @@ namespace ramses::internal
         void setLimitFlushesForceApply(size_t limitForPendingFlushesForceApply) override;
         void setLimitFlushesForceUnsubscribe(size_t limitForPendingFlushesForceUnsubscribe) override;
         void setSkippingOfUnmodifiedScenes(bool enable) override;
-        void logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const override;
+        void logRendererInfo(const RendererCommand::LogInfo& cmd) const override;
 
         // IRendererSceneStateControl
         void handleSceneSubscriptionRequest     (SceneId sceneId) override;

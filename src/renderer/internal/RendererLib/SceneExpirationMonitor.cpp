@@ -12,7 +12,7 @@
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/SceneGraph/Scene/SceneActionApplier.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

@@ -9,7 +9,7 @@
 #include "internal/Platform/OpenGL/ShaderGPUResource_GL.h"
 #include "internal/Platform/OpenGL/Device_GL_platform.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

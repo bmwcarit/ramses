@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/Window_Wayland.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Platform/Wayland/WaylandEnvironmentUtils.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include <poll.h>

@@ -10,7 +10,7 @@
 
 namespace ramses::internal
 {
-    class LogMessage;
+    struct LogMessage;
 
     class LogAppenderBase
     {

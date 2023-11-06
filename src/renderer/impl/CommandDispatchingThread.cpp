@@ -19,20 +19,20 @@ namespace ramses::internal
         , m_commandBuffer{ commandBuffer }
         , m_watchdog{ watchdog }
         , m_aliveIdentifier{ watchdog.registerThread() }
-        , m_thread{ "R_RendererThrd" }
+        , m_thread{ "RndDispatchThrd" }
     {
-        LOG_INFO(CONTEXT_RENDERER, "Main renderer thread starting");
+        LOG_INFO(CONTEXT_RENDERER, "Renderer dispatcher thread starting");
         m_thread.start(*this);
-        LOG_INFO(CONTEXT_RENDERER, "Main renderer thread started");
+        LOG_INFO(CONTEXT_RENDERER, "Renderer dispatcher thread started");
     }
 
     CommandDispatchingThread::~CommandDispatchingThread()
     {
-        LOG_INFO(CONTEXT_RENDERER, "Main renderer thread stopping");
+        LOG_INFO(CONTEXT_RENDERER, "Renderer dispatcher thread stopping");
         m_thread.cancel();
         m_commandBuffer.interruptBlockingSwapCommands();
         m_thread.join();
-        LOG_INFO(CONTEXT_RENDERER, "Main renderer thread stopped");
+        LOG_INFO(CONTEXT_RENDERER, "Renderer dispatcher thread stopped");
 
         m_watchdog.unregisterThread(m_aliveIdentifier);
     }

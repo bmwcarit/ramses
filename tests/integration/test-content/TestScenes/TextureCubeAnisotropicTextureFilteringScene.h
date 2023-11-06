@@ -45,6 +45,6 @@ namespace ramses::internal
             float y);
 
         static uint32_t GetNextLargerPowerOf2Exponent(uint32_t value);
-        static void FillMipLevelData(uint8_t* data, uint32_t resolution, uint32_t level);
+        static void FillMipLevelData(std::byte* data, uint32_t resolution, uint32_t level);
     };
 }

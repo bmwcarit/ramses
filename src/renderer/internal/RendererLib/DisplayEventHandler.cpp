@@ -11,7 +11,7 @@
 #include "internal/RendererLib/PlatformInterface/IWindowEventHandler.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
 #include "internal/RendererLib/RendererEventCollector.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

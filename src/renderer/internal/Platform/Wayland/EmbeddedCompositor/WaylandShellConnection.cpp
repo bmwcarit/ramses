@@ -11,7 +11,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandShellConnection.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/NativeWaylandResource.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandClient.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal

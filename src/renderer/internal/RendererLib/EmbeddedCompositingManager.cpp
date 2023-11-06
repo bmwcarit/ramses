@@ -10,7 +10,7 @@
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
 #include "internal/RendererLib/PlatformInterface/IEmbeddedCompositor.h"
 #include "internal/RendererLib/PlatformInterface/ITextureUploadingAdapter.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

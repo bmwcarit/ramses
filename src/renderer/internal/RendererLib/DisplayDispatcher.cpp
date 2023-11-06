@@ -9,7 +9,7 @@
 #include "internal/RendererLib/DisplayDispatcher.h"
 #include "internal/RendererLib/RendererCommandBuffer.h"
 #include "internal/RendererLib/RendererCommandUtils.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -88,8 +88,8 @@ namespace ramses::internal
         assert(std::all_of(m_displays.cbegin(), m_displays.cend(), [](const auto& d) { return !d.second.displayThread; }));
         for (auto& display : m_displays)
         {
-            // in non-threaded mode overwrite the TLS log prefix before each display update
-            ThreadLocalLog::SetPrefix(static_cast<int>(display.first.asMemoryHandle()));
+            // in non-threaded mode use additional log prefix for each display update
+            RamsesLogger::SetPrefixAdditional(fmt::format("Display{}", display.first));
 
             // avoid unnecessary context switch if running only single display
             if (m_displays.size() > 1u || m_forceContextEnableNextLoop)
@@ -97,11 +97,12 @@ namespace ramses::internal
 
             display.second.displayBundle->doOneLoop(m_loopMode, sleepTime);
         }
+        RamsesLogger::SetPrefixAdditional({});
 
         m_forceContextEnableNextLoop = false;
     }
 
-    void DisplayDispatcher::preprocessCommand(const RendererCommand::Variant& cmd)
+    void DisplayDispatcher::preprocessCommand(RendererCommand::Variant& cmd)
     {
         if (std::holds_alternative<RendererCommand::CreateDisplay>(cmd))
         {
@@ -171,6 +172,14 @@ namespace ramses::internal
                 }
             }
         }
+        else if (std::holds_alternative<RendererCommand::LogInfo>(cmd))
+        {
+            // fill in global renderer info to be logged by displays
+            auto& logCmd = std::get<RendererCommand::LogInfo>(cmd);
+            logCmd.displaysThreaded = m_threadedDisplays;
+            logCmd.displaysThreadsRunning = m_displayThreadsUpdating;
+            logCmd.rendererLoopMode = m_loopMode;
+        }
     }
 
     DisplayDispatcher::Display DisplayDispatcher::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig)
@@ -234,7 +243,17 @@ namespace ramses::internal
         {
             // command is to be broadcast, dispatch a copy to each display
             for (auto& display : m_displays)
-                display.second.pendingCommands.push_back(RendererCommandUtils::Copy(cmd));
+            {
+                auto cmdCopy = RendererCommandUtils::Copy(cmd);
+
+                if (std::holds_alternative<RendererCommand::LogInfo>(cmdCopy))
+                {
+                    // fill displays framerate, it is available only here in dispatcher and displayThread but not display components
+                    std::get<RendererCommand::LogInfo>(cmdCopy).minFrameTime = (m_minFrameDurationsPerDisplay.count(display.first) != 0u ? m_minFrameDurationsPerDisplay[display.first] : DefaultMinFrameDuration);
+                }
+
+                display.second.pendingCommands.push_back(std::move(cmdCopy));
+            }
 
             RendererCommandUtils::AddAndConsolidateCommandToStash(std::move(cmd), m_stashedBroadcastCommandsForNewDisplays);
         }

@@ -8,7 +8,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 #include <unistd.h>
 

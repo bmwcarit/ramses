@@ -99,8 +99,8 @@ namespace ramses::internal
         });
         EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {}));
         ramses::RamsesFramework::SetLogHandler(nullptr);
-        EXPECT_THAT(logs, Contains("Metadata: 'foo-bar-baz'"));
-        EXPECT_THAT(logs, Contains("Exporter version: 1.2.3 (file format version 7)"));
+        EXPECT_THAT(logs, Contains("R.main: Metadata: 'foo-bar-baz'"));
+        EXPECT_THAT(logs, Contains("R.main: Exporter version: 1.2.3 (file format version 7)"));
     }
 
     TEST_F(ASceneLoadedFromFile, loadedSceneHasReferenceToClientAndFrameworkAndMatchingFeaturelevel)
@@ -1057,8 +1057,8 @@ namespace ramses::internal
     TEST_F(ASceneLoadedFromFile, canReadWriteTexture2DBuffer)
     {
         Texture2DBuffer& buffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2, "textureBuffer");
-        buffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data());
-        buffer.updateData(1, 0, 0, 1, 1, std::array<uint32_t, 1>{ {78} }.data());
+        buffer.updateData(0, 0, 0, 2, 2, UnsafeTestMemoryHelpers::ConvertToBytes({12, 23, 34, 56}));
+        buffer.updateData(1, 0, 0, 1, 1, UnsafeTestMemoryHelpers::ConvertToBytes({78}));
 
         doWriteReadCycle();
 
@@ -1241,8 +1241,8 @@ namespace ramses::internal
         const ETextureAddressMode wrapVMode = ETextureAddressMode::Repeat;
         const ETextureSamplingMethod minSamplingMethod = ETextureSamplingMethod::Linear_MipMapNearest;
         const ETextureSamplingMethod magSamplingMethod = ETextureSamplingMethod::Linear;
-        const uint8_t data[4] = { 0u };
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<std::byte> data(4, std::byte{ 0u });
+        const std::vector<MipLevelData> mipLevelData{ data };
         Texture2D* texture = this->m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "texture");
 
         auto* sampler = this->m_scene.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, *texture, 8u, "sampler");

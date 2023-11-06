@@ -44,7 +44,7 @@ namespace ramses::internal
         , m_aliveInterval(aliveInterval)
         , m_aliveIntervalTimeout(aliveTimeout)
         , m_frameworkLock(frameworkLock)
-        , m_thread("R_TCP_ConnSys")
+        , m_thread("TCP_ConnSys")
         , m_statisticCollection(statisticCollection)
         , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), CONTEXT_COMMUNICATION, "ramses", frameworkLock)
         , m_sceneProviderHandler(nullptr)

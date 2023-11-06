@@ -60,7 +60,7 @@ namespace ramses::internal
             return false;
         }
 
-        auto* dltContext = static_cast<DltContext*>(msg.getContext().getUserData());
+        auto* dltContext = static_cast<DltContext*>(msg.m_context.getUserData());
         if (dltContext == nullptr)
         {
             fmt::print(stderr, "DltAdapterImpl::logMessage: missing dlt context\n");
@@ -72,7 +72,7 @@ namespace ramses::internal
 
         auto ll = DLT_LOG_OFF;
 
-        switch(msg.getLogLevel())
+        switch(msg.m_logLevel)
         {
         case ELogLevel::Trace:
             ll = DLT_LOG_VERBOSE;
@@ -106,8 +106,8 @@ namespace ramses::internal
         // 21 bytes are needed for meta-data: 4 (standard header) + 10 (extended header) + 4 (argument type) + 2 (text length) + 1 (0-terminated string)
         maxLineCapacity -= 30u; //30 subtracted to have some buffer
 
-        const char* msgData = msg.getStream().c_str();
-        uint32_t msgLength = msg.getStream().size();
+        const char* msgData = msg.m_message.c_str();
+        uint32_t msgLength = msg.m_message.size();
         const char* msgDataEnd = msgData + msgLength;
 
         // check if shortcut is possible: short enough line and no linebreaks
