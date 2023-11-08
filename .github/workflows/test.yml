@@ -32,8 +32,8 @@ jobs:
           - target-platform: iphonesimulator
             os: macos-12
             type: Debug
-        # Test with latest Clang too
-          - os: ubuntu-22.04
+        # Test with Clang too
+          - os: ubuntu-20.04
             type: Debug
             compiler: clang
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
@@ -63,6 +63,8 @@ jobs:
         cmake_args="-DCMAKE_BUILD_TYPE=${{ matrix.type }}"
 
         if [[ "${{matrix.compiler}}" == "clang"* ]]; then
+          # Make it so that clang-12 is picked up (is already installed).
+          export PATH=/usr/lib/llvm-12/bin/:$PATH
           cmake_args+=" -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
           cmake_args+=" -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchain/Linux_X86_64_llvm.toolchain"
         fi
