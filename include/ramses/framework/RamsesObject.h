@@ -84,7 +84,7 @@ namespace ramses
         *
         * validate() may append issues to the provided report object, classified by warning or error:
         * - errors need to be fixed, otherwise the object's behaviour will be undefined
-        * - warnings indicate issues that are undesireable, but not necessarily cause problems
+        * - warnings indicate issues that are undesirable, but not necessarily cause problems
         *   (e.g. unused resources, performance issues)
         *
         * @note validate() will skip objects that are already part of the provided report. (Provide an empty report to force re-validation)

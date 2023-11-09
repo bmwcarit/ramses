@@ -65,7 +65,7 @@ namespace ramses
         * Sets saving mode for all #ramses::LuaScript and/or #ramses::LuaModule instances.
         * See #ramses::ELuaSavingMode for the available options and their implications.
         * Note that this is just a hint and the export logic will decide what to actually export,
-        * depending on availabilty of Lua source code or bytecode:
+        * depending on availability of Lua source code or bytecode:
         *  - if only source code is available
         *    then only source code is exported regardless of the selected saving \c mode
         *  - if only byte code is available then only bytecode is exported regardless of the selected saving \c mode

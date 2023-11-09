@@ -209,7 +209,7 @@ namespace ramses::internal
     {
         const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
         const EffectResource invalidEffect(
-            "--this is some invalide shader source code--",
+            "--this is some invalid shader source code--",
             templateEffect->getFragmentShader(),
             "", {},
             templateEffect->getUniformInputs(),
@@ -224,7 +224,7 @@ namespace ramses::internal
         const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
-            "--this is some invalide shader source code--",
+            "--this is some invalid shader source code--",
             "", {},
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
@@ -570,7 +570,7 @@ namespace ramses::internal
             }
         });
 
-        const auto invalidShader{"--this is some invalide shader source code--"};
+        const auto invalidShader{"--this is some invalid shader source code--"};
         const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
         {
             const EffectResource invalidEffect(invalidShader,

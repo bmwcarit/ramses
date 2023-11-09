@@ -68,7 +68,7 @@ namespace ramses
         * @brief Returns the used number of data elements.
         *
         * @details If data buffer fully set by #updateData, then used and maximum number of elements are equal. For #ArrayBuffer objects
-        *          of type #ramses::EDataType::ByteBlob this function returns the used size of buffer data in bytes becuase element is defined
+        *          of type #ramses::EDataType::ByteBlob this function returns the used size of buffer data in bytes because element is defined
         *          as byte for this type.
         *
         * @return Used size in number of elements

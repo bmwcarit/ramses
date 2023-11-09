@@ -84,7 +84,7 @@ namespace ramses
 
 
         /**
-        * @brief This method will be called when a mouse event action has occured while a display's window was focused
+        * @brief This method will be called when a mouse event action has occurred while a display's window was focused
         * @param displayId The display on which the event occurred
         * @param eventType Specifies which kind of mouse action has occurred
         * @param mousePosX Horizontal mouse position related to window (left = 0)

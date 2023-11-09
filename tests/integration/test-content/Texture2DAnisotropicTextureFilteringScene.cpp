@@ -28,7 +28,7 @@
 //
 // Mip-level 1 is completely red, mip-level 2 is blue, but not used in rendering.
 //
-// One pixel maps to 2x1 texel of mip-level 0, thus we have minification. Without anisotropic filtering, mip-level 1 is choosen, so the bottom half is red.
+// One pixel maps to 2x1 texel of mip-level 0, thus we have minification. Without anisotropic filtering, mip-level 1 is chosen, so the bottom half is red.
 // With anisotropic filtering mip-level 0 is used and the blue and green pixels are averaged by multiple samples. This gives the checkerboard pattern with
 // colors (0,127,127) and (0,0,0).
 

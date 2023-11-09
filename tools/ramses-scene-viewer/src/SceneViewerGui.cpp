@@ -749,15 +749,15 @@ namespace ramses::internal
 
         if (obj.isFrustumPlanesBound())
         {
-            ImGui::Text("Frustrum (l,r,b,t):");
-            auto frustrum = const_cast<ramses::DataObject*>(findDataObject(obj.getFrustrumPlanesHandle()));
-            if (frustrum != nullptr)
+            ImGui::Text("Frustum (l,r,b,t):");
+            auto frustum = const_cast<ramses::DataObject*>(findDataObject(obj.getFrustrumPlanesHandle()));
+            if (frustum != nullptr)
             {
                 ImGui::SameLine();
-                draw(frustrum->impl());
+                draw(frustum->impl());
             }
 
-            ImGui::Text("Frustrum (n,f):");
+            ImGui::Text("Frustum (n,f):");
             auto nearFar = const_cast<ramses::DataObject*>(findDataObject(obj.getFrustrumNearFarPlanesHandle()));
             if (nearFar != nullptr)
             {
@@ -775,9 +775,9 @@ namespace ramses::internal
             std::array<float, 2> nf{};
             nf[0] = obj.getNearPlane();
             nf[1] = obj.getFarPlane();
-            if (ImGui::DragFloat4("Frustrum (l,r,b,t)", lrbp.data(), 0.001f))
+            if (ImGui::DragFloat4("Frustum (l,r,b,t)", lrbp.data(), 0.001f))
                 obj.setFrustum(lrbp[0], lrbp[1], lrbp[2], lrbp[3], nf[0], nf[1]);
-            if (ImGui::DragFloat2("Frustrum (n,f)", nf.data(), 0.1f))
+            if (ImGui::DragFloat2("Frustum (n,f)", nf.data(), 0.1f))
                 obj.setFrustum(lrbp[0], lrbp[1], lrbp[2], lrbp[3], nf[0], nf[1]);
             if (obj.getType() == ramses::ERamsesObjectType::PerspectiveCamera)
             {
@@ -1921,7 +1921,7 @@ namespace ramses::internal
             {
                 m_resourceInfo->setDisplayLimit(displayLimit);
             }
-            ImGui::TextUnformatted(fmt::format("Resources sorted by {} (decending):", m_resourceInfo->orderCriteriaItems[m_resourceInfo->getOrderCriteriaIndex()]).c_str());
+            ImGui::TextUnformatted(fmt::format("Resources sorted by {} (descending):", m_resourceInfo->orderCriteriaItems[m_resourceInfo->getOrderCriteriaIndex()]).c_str());
             for (auto it : *m_resourceInfo)
             {
                 draw(it->impl());
@@ -2143,7 +2143,7 @@ namespace ramses::internal
 
         if (m_nodeVisibilityChanged)
         {
-            // refresh resource information in next interation
+            // refresh resource information in next iteration
             m_nodeVisibilityChanged = false;
             m_resourceInfo->clear();
         }

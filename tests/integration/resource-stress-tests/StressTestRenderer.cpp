@@ -41,10 +41,10 @@ namespace ramses::internal
         return displayId;
     }
 
-    displayBufferId_t StressTestRenderer::createOffscreenBuffer(displayId_t displayId, uint32_t width, uint32_t height, bool interruptable)
+    displayBufferId_t StressTestRenderer::createOffscreenBuffer(displayId_t displayId, uint32_t width, uint32_t height, bool interruptible)
     {
         displayBufferId_t offscreenBufferId;
-        if (interruptable)
+        if (interruptible)
         {
             offscreenBufferId = m_renderer.createInterruptibleOffscreenBuffer(displayId, width, height);
         }
