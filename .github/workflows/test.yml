@@ -25,7 +25,7 @@ jobs:
       run: |
         cmake -E make_directory ${{runner.workspace}}/build
         sudo apt install graphviz doxygen
-        # pip3 install -r $GITHUB_WORKSPACE/doc/sphinx/requirements.txt
+        pip3 install -r $GITHUB_WORKSPACE/doc/sphinx/requirements.txt
         # pip3 install pip-tools
         # pip-compile -o $GITHUB_WORKSPACE/doc/sphinx/docs.txt -v $GITHUB_WORKSPACE/doc/sphinx/requirements.txt
         # cat $GITHUB_WORKSPACE/doc/sphinx/docs.txt
